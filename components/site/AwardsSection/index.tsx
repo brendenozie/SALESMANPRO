@@ -28,6 +28,11 @@ const cardVariants: Variants = {
   visible: { opacity: 1, scale: 1, y: 0, transition: { duration: 0.6, ease: [0.2, 0.65, 0.3, 0.9] } },
 };
 
+// Loader remains the same for Next.js image optimization
+const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
+  `${src}?w=${width}&q=${quality || 75}`;
+
+
 export default function AwardsSection({ awards = sampleAwards }: { awards?: Award[] | null }) {
   const { storeFormData } = useStoreContext();
   const { themeSettings = {} } = storeFormData || {};
@@ -79,6 +84,7 @@ export default function AwardsSection({ awards = sampleAwards }: { awards?: Awar
                     <Image
                       src={src || 'https://via.placeholder.com/300x200?text=No+Image'}
                       alt={altText}
+                      loader={loader}
                       fill
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       className="object-contain p-4 group-hover:scale-105 transition-transform duration-500"

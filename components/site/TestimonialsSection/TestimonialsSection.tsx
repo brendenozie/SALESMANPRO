@@ -4,7 +4,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 
 // Main App component containing the "Testimonials" section
-export default function App() {
+export default function TestimonialsSection() {
   const testimonials = [
     {
       name: 'Johnathon',

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 // Assuming useStoreContext provides a way to get global data,
 // but for this example, we'll use local dummy data.
-import { useStoreContext } from "../../../../../contexts/StoreContext";
+import { useStoreContext } from "@/contexts/StoreContext";
 
 // Import your enhanced components
 import TestimonialsSection from "./components/TestimonialsSection"; // Renamed for clarity
@@ -420,7 +420,7 @@ export default function FitnessSite() {
     return (
         <div className="">
             {/* Hero Section */}
-            <HeroSection storeFormData={storeFormData || {}} onSearch={()=>{}} />
+            <HeroSection storeFormData={storeFormData || undefined} onSearch={()=>{}} />
 
             {/* Filter Bar */}
             <FilterBar

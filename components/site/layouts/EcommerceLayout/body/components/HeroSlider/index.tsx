@@ -270,7 +270,7 @@ export default function HeroSlider({ storeFormData }: HeroSliderProps) {
 
                   {/* Product image */}
                   <Image
-                    src={slide.imageUrl}
+                    src={slide.imageUrl || 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80'}
                     alt={slide.headline || 'Hero Image'}
                     fill
                     className="object-cover object-center rounded-r-3xl transition-transform duration-500 ease-out group-hover:scale-105"
