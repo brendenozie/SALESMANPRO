@@ -724,10 +724,10 @@ export default function AgentsPage({ params }: AgentsPageProps) {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
           <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
-            Manage Property Agents <span className="ml-2 text-purple-600 text-base sm:text-xl">🏠🔑</span>
+            Manage Agents <span className="ml-2 text-purple-600 text-base sm:text-xl">🏠🔑</span>
           </h1>
           <p className="text-md text-gray-600 mt-1">
-            Oversee your team of real estate professionals, track performance, and manage profiles.
+            Oversee your team of professionals, track performance, and manage profiles.
           </p>
         </div>
         <button
