@@ -5,25 +5,14 @@ import { motion } from "framer-motion";
 import { ArrowRightIcon } from "@heroicons/react/24/solid";
 import { FireIcon, StarIcon } from "@heroicons/react/24/outline";
 import { useStoreContext } from "@/contexts/StoreContext";
-import { IDestination } from "@/types/typings";
-
-// Tailwind theme colors
-const tailwindColors = {
-  primary: "#6366F1",
-  "primary-light": "#818CF8",
-  "primary-dark": "#4F46E5",
-  "primary-accent": "#A78BFA",
-};
+import { ICompanyLocation } from "@/types/typings";
 
 // Motion variants
 const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: {
-      staggerChildren: 0.15,
-      delayChildren: 0.2,
-    },
+    transition: { staggerChildren: 0.15, delayChildren: 0.2 },
   },
 };
 
@@ -141,52 +130,33 @@ const dummyLocations = [
     description:
       "Unleash your inner fighter with high-energy boxing and HIIT sessions.",
   },
-  {
-    id: "loc4",
-    name: "Pilates Haven Studios",
-    image: "https://placehold.co/600x400/6366F1/FFFFFF?text=Pilates+Haven",
-    programs: 28,
-    rating: 4.6,
-    description: "Precision Pilates focusing on core strength and flexibility.",
-    isNew: true,
-  },
-  {
-    id: "loc5",
-    name: "CrossFit Inferno",
-    image: "https://placehold.co/600x400/818CF8/FFFFFF?text=CrossFit+Inferno",
-    programs: 35,
-    rating: 4.5,
-    description:
-      "Push your limits with intense CrossFit workouts and a strong community.",
-  },
-  {
-    id: "loc6",
-    name: "Aqua Fitness Oasis",
-    image: "https://placehold.co/600x400/A78BFA/FFFFFF?text=Aqua+Fitness",
-    programs: 15,
-    rating: 4.7,
-    description:
-      "Low-impact, high-results water workouts for all fitness levels.",
-  },
 ];
 
 // --- Main Component ---
 export default function LocationsSection() {
   const { storeFormData } = useStoreContext();
-  const { destinations = [] } = storeFormData || {};
+  const { CompanyLocation = [] } = storeFormData || {};
 
   // Normalize: prefer store data, else dummy
   const normalizedLocations =
-    destinations && destinations.length > 0
-      ? destinations.map((d: IDestination, i: number) => ({
-          id: d.id,
-          name: `${d.name}, ${d.country}`,
-          image: d.bannerImage || d.images?.[0] || dummyLocations[i % dummyLocations.length].image,
-          programs: Math.floor(Math.random() * 50) + 10, // placeholder count
-          rating: d.averageRating || (4 + Math.random()), // fallback random ~4-5
-          description: d.description || dummyLocations[i % dummyLocations.length].description,
-          isNew: i % 2 === 0, // mark some as new
-        }))
+    CompanyLocation && CompanyLocation.length > 0
+      ? CompanyLocation.map((cl: ICompanyLocation, i: number) => {
+          const loc = cl.location || {}; // related Location
+          return {
+            id: cl.id,
+            name: cl.displayName || loc.name || "Unnamed Location",
+            image:
+              loc.imageUrl ||
+              "https://placehold.co/600x400/E0E7FF/4338CA?text=No+Image",
+            programs: Math.floor(Math.random() * 50) + 10, // placeholder
+            rating: loc.averageRating || 4 + Math.random(),
+            description:
+              cl.descriptionOverride ||
+              loc.description ||
+              dummyLocations[i % dummyLocations.length].description,
+            isNew: i % 2 === 0,
+          };
+        })
       : dummyLocations;
 
   return (
