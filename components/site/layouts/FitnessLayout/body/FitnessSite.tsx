@@ -435,7 +435,7 @@ export default function FitnessSite() {
             <LocationsSection  />
 
             {/* Virtual Tours */}
-            <VirtualTours videos={storeFormData?.blogs} />
+            <VirtualTours videos={storeFormData?.virtualTours} />
 
             {/* Experts Section */}
             <ExpertsSection educators={storeFormData?.Educator} />

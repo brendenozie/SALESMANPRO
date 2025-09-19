@@ -682,7 +682,12 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
         { label: "Clients & Members", href: `/admin/${adminSlug}/fitness-clients`, icon : UsersIcon}, // Manage client accounts, memberships, progress
         { label: "Locations & Facilities", href: `/admin/${adminSlug}/fitness-locations`, icon : MapPinIcon}, // Manage physical gym locations, equipment, rooms
         { label: "Bookings & Schedule", href: `/admin/${adminSlug}/fitness-bookings`, icon : CalendarDaysIcon}, // Manage class and personal training bookings
-        { label: "Notifications & Comms", href: `/admin/${adminSlug}/fitness-notifications`, icon : BellIcon}, // Send announcements, newsletters, client messages    
+        { label: "Notifications & Comms", href: `/admin/${adminSlug}/fitness-notifications`, icon : BellIcon}, // Send announcements, newsletters, client messages          
+        {
+          label: "Virtual Tours",
+          href: `/admin/${adminSlug}/fitness-virtual-tours`,
+          icon: PlayCircleIcon
+        },
         { label: "blogs", href: `/admin/${adminSlug}/blogs`, icon: WrenchScrewdriverIcon },
         { label: "Reports & Analytics", href: `/admin/${adminSlug}/fitness-reports`, icon : ChartBarIcon}, // View performance metrics, sales reports
         { label: "Settings", href: `/admin/${adminSlug}/fitness-settings`, icon : Cog6ToothIcon}, // General administrative settings, user roles
