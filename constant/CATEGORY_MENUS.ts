@@ -184,10 +184,45 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
 
   "Directory & Listings": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
-    { label: "Listings", href: `/admin/${adminSlug}/listings`, icon: BuildingOfficeIcon },
+    { label: "POS", href: `/admin/${adminSlug}/storepos`, icon: ClipboardDocumentListIcon },
     { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
-    { label: "Reviews", href: `/admin/${adminSlug}/reviews`, icon: ChatBubbleBottomCenterTextIcon },
+    {
+      label: "Products",
+      icon: ClipboardDocumentListIcon,
+      subItems: [
+        { label: "Browse Catalog", href: `/admin/${adminSlug}/inventory` },
+        { label: "Market List", href: `/admin/${adminSlug}/mymarketplace` },
+      ],
+    },
+    {
+      label:"Users",
+      icon: UsersIcon,
+      subItems: [
+        { label: "Sales Agents", href: `/admin/${adminSlug}/agents` },
+        { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
+      ],
+    },
+    {
+      label: "Orders",
+      icon: UsersIcon,
+      subItems: [
+        { label: "Agent Orders", href: `/admin/${adminSlug}/agentorders` },
+        { label: "Client Orders", href: `/admin/${adminSlug}/clientorders` },
+        { label: "Marketplace", href: `/admin/${adminSlug}/customerorders` },
+      ],
+    },
+    { label: "Reports", href: `/admin/${adminSlug}/revenuereport`, icon: ChartBarIcon },
+    { label: "Messages", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleBottomCenterTextIcon },
+    { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon },
   ],
+
+  // OLD PAth
+  // "Directory & Listings": [
+  //   { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+  //   { label: "Listings", href: `/admin/${adminSlug}/listings`, icon: BuildingOfficeIcon },
+  //   { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
+  //   { label: "Reviews", href: `/admin/${adminSlug}/reviews`, icon: ChatBubbleBottomCenterTextIcon },
+  // ],
 
   "Educational & Online Courses": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },    
@@ -441,7 +476,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
         href: `/admin/${adminSlug}/saas-status`,
         icon: ServerStackIcon,
       }
-    ],   
+  ],   
 
   "Dashboards": [
       {label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon,  },
@@ -504,7 +539,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
         href: `/admin/${adminSlug}/saas-status`,
         icon: ServerStackIcon,
       }
-    ],
+  ],
 
   "Media & Entertainment": [
     { 
@@ -673,6 +708,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       icon: Cog6ToothIcon
     }
   ],
+
   "Fitness & Wellness": [
         { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon }, // Overview of gym activity
         { label: "POS & Sales", href: `/admin/${adminSlug}/fitness-pos`, icon: CurrencyDollarIcon }, // Point of Sale and transaction management
@@ -691,27 +727,64 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
         { label: "blogs", href: `/admin/${adminSlug}/blogs`, icon: WrenchScrewdriverIcon },
         { label: "Reports & Analytics", href: `/admin/${adminSlug}/fitness-reports`, icon : ChartBarIcon}, // View performance metrics, sales reports
         { label: "Settings", href: `/admin/${adminSlug}/fitness-settings`, icon : Cog6ToothIcon}, // General administrative settings, user roles
-    ],
+  ],
+
     // You could also categorize into more specific sections if the admin grows
-    "Marketing & Engagement": [
-        { label: "Content Management", href: `/admin/${adminSlug}/content`, icon : PencilSquareIcon}, // Blog posts, articles, website content
-        { label: "Promotions & Deals", href: `/admin/${adminSlug}/promotions`, icon : TagIcon}, // Create and manage discounts, special offers
-        { label: "Testimonials", href: `/admin/${adminSlug}/testimonials`, icon : ChatBubbleLeftRightIcon}, // Manage client testimonials
-        { label: "FAQs", href: `/admin/${adminSlug}/faqs`, icon : QuestionMarkCircleIcon}, // Manage frequently asked questions
-    ],
-    "Billing & Finance": [
-        { label: "Invoices", href: `/admin/${adminSlug}/invoices`, icon : DocumentTextIcon},
-        { label: "Payments", href: `/admin/${adminSlug}/payments`, icon : CreditCardIcon},
-        { label: "Refunds", href: `/admin/${adminSlug}/refunds`, icon : ArrowUturnLeftIcon},
-    ],
+  "Marketing & Engagement": [
+      { label: "Content Management", href: `/admin/${adminSlug}/content`, icon : PencilSquareIcon}, // Blog posts, articles, website content
+      { label: "Promotions & Deals", href: `/admin/${adminSlug}/promotions`, icon : TagIcon}, // Create and manage discounts, special offers
+      { label: "Testimonials", href: `/admin/${adminSlug}/testimonials`, icon : ChatBubbleLeftRightIcon}, // Manage client testimonials
+      { label: "FAQs", href: `/admin/${adminSlug}/faqs`, icon : QuestionMarkCircleIcon}, // Manage frequently asked questions
+  ],
+
+  "Billing & Finance": [
+      { label: "Invoices", href: `/admin/${adminSlug}/invoices`, icon : DocumentTextIcon},
+      { label: "Payments", href: `/admin/${adminSlug}/payments`, icon : CreditCardIcon},
+      { label: "Refunds", href: `/admin/${adminSlug}/refunds`, icon : ArrowUturnLeftIcon},
+  ],
 
   "Marketplace": [
-    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
-    { label: "POS", href: `/admin/${adminSlug}/pos`, icon: ClipboardDocumentListIcon },
-    { label: "Vendors", href: `/admin/${adminSlug}/vendors`, icon: UsersIcon },
-    { label: "Products", href: `/admin/${adminSlug}/products`, icon: ClipboardDocumentListIcon },
-    { label: "Orders", href: `/admin/${adminSlug}/orders`, icon: UsersIcon },
+  { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+  { label: "POS", href: `/admin/${adminSlug}/storepos`, icon: ClipboardDocumentListIcon },
+  { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
+  {
+    label: "Products",
+    icon: ClipboardDocumentListIcon,
+    subItems: [
+      { label: "Browse Catalog", href: `/admin/${adminSlug}/inventory` },
+      { label: "Market List", href: `/admin/${adminSlug}/mymarketplace` },
+    ],
+  },
+  {
+    label:"Users",
+    icon: UsersIcon,
+    subItems: [
+      { label: "Sales Agents", href: `/admin/${adminSlug}/agents` },
+      { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
+    ],
+  },
+  {
+    label: "Orders",
+    icon: UsersIcon,
+    subItems: [
+      { label: "Agent Orders", href: `/admin/${adminSlug}/agentorders` },
+      { label: "Client Orders", href: `/admin/${adminSlug}/clientorders` },
+      { label: "Marketplace", href: `/admin/${adminSlug}/customerorders` },
+    ],
+  },
+  { label: "Reports", href: `/admin/${adminSlug}/revenuereport`, icon: ChartBarIcon },
+  { label: "Messages", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleBottomCenterTextIcon },
+  { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon },
   ],
+
+  //Old PAths
+  // "Marketplace": [
+  //   { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+  //   { label: "POS", href: `/admin/${adminSlug}/pos`, icon: ClipboardDocumentListIcon },
+  //   { label: "Vendors", href: `/admin/${adminSlug}/vendors`, icon: UsersIcon },
+  //   { label: "Products", href: `/admin/${adminSlug}/products`, icon: ClipboardDocumentListIcon },
+  //   { label: "Orders", href: `/admin/${adminSlug}/orders`, icon: UsersIcon },
+  // ],
 
   "Tutor": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
