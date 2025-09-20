@@ -190,7 +190,6 @@ export default function CreateStoreForm({
     events: [], // For company/school events
     Announcement: [], // For site announcements
 
-
     // --- JSON fields ---
     awards: [],
     metrics: [],
@@ -264,7 +263,10 @@ export default function CreateStoreForm({
     Collection: [],
     CoreValues: [],
     Expert: [],
-    packages: []
+    packages: [],
+    Educator: [],
+    destinations: [],
+    tourPackages: []
   };
 
   const [form, setForm] = useState<StoreForm>(() => {

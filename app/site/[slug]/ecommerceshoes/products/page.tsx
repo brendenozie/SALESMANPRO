@@ -6,6 +6,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { mockProducts } from '@/lib/mock-api';
 import FilterSidebar from './components/FilterSidebar/FilterSidebar';
 import ProductCard from './components/ProductCard/ProductCard';
+import Section from '@/components/site/Section/Section';
 
 // Define types for data and filters
 type Product = {
@@ -105,56 +106,58 @@ export default function ProductListPage() {
   }, []);
 
   return (
-    <div className="flex min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 p-8 mt-8">
-      {/* Filter Sidebar */}
-      <div className="w-1/4 pr-8 sticky top-0 self-start">
-        <FilterSidebar
-          filters={filters}
-          setFilters={setFilters}
-          categories={categories}
-        />
-      </div>
+    
+          <div className="flex min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 p-8 mt-24">
+            {/* Filter Sidebar */}
+            <div className="w-1/4 pr-8 sticky top-0 self-start">
+              <FilterSidebar
+                filters={filters}
+                setFilters={setFilters}
+                categories={categories}
+              />
+            </div>
 
-      {/* Main Content Area */}
-      <div className="w-3/4">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">Products</h1>
-          <div className="text-lg text-gray-600 dark:text-gray-400">
-            {loading ? 'Loading...' : `Showing ${products.length} Products`}
-          </div>
-        </div>
-
-        {loading ? (
-          <div className="flex justify-center items-center h-64 text-xl">
-            Loading products...
-          </div>
-        ) : (
-          <div
-            className="
-              columns-1
-              sm:columns-2
-              md:columns-3
-              lg:columns-4
-              gap-6
-              space-y-6
-            "
-          >
-            {products.map(product => (
-              <div key={product.id} className="break-inside-avoid">
-                <ProductCard
-                  product={{
-                    id: product.id,
-                    name: product.name,
-                    finalPrice: product.finalPrice,
-                    imageUrl: product.images[0]?.url,
-                    rating: product.rating,
-                  }}
-                />
+            {/* Main Content Area */}
+            <div className="w-3/4">
+              <div className="flex justify-between items-center mb-6">
+                <h1 className="text-3xl font-bold">Products</h1>
+                <div className="text-lg text-gray-600 dark:text-gray-400">
+                  {loading ? 'Loading...' : `Showing ${products.length} Products`}
+                </div>
               </div>
-            ))}
+
+              {loading ? (
+                <div className="flex justify-center items-center h-64 text-xl">
+                  Loading products...
+                </div>
+              ) : (
+                <div
+                  className="
+                    columns-1
+                    sm:columns-2
+                    md:columns-3
+                    lg:columns-4
+                    gap-6
+                    space-y-6
+                  "
+                >
+                  {products.map(product => (
+                    <div key={product.id} className="break-inside-avoid">
+                      <ProductCard
+                        product={{
+                          id: product.id,
+                          name: product.name,
+                          finalPrice: product.finalPrice,
+                          imageUrl: product.images[0]?.url,
+                          rating: product.rating,
+                        }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
-        )}
-      </div>
-    </div>
+              
   );
 }
