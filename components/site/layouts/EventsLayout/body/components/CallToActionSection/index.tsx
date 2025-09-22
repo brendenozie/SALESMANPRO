@@ -29,7 +29,7 @@ export default function CallToActionSection() {
     `/${store.slug}/host`;
 
   return (
-    <section className="relative bg-gray-900 py-24 sm:py-32 px-4 sm:px-10 overflow-hidden text-center">
+    <section id="contact" className="relative bg-gray-900 py-24 sm:py-32 px-4 sm:px-10 overflow-hidden text-center">
       {/* Decorative Blobs */}
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-600/10 rounded-full filter blur-3xl opacity-50 animate-blob" />
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-pink-600/10 rounded-full filter blur-3xl opacity-50 animate-blob animation-delay-2000" />

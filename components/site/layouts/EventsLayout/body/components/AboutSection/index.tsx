@@ -76,7 +76,7 @@ export default function AboutSection() {
   const gridImages = imageUrls.length > 0 ? imageUrls : fallbackImages;
 
   return (
-    <section className="relative bg-gray-900 py-24 sm:py-32 px-4 sm:px-10 overflow-hidden">
+    <section id="about" className="relative bg-gray-900 py-24 sm:py-32 px-4 sm:px-10 overflow-hidden">
       {/* Decorative blobs */}
       <div className="absolute top-0 left-0 w-96 h-96 bg-purple-600/20 rounded-full filter blur-3xl opacity-50 animate-blob" />
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-pink-500/20 rounded-full filter blur-3xl opacity-50 animate-blob animation-delay-2000" />

@@ -79,10 +79,10 @@ export default function Header() {
   }, []);
 
   const navItems = [
-    { label: "Home", href: `/${slug}` },
-    { label: "Events", href: `/${slug}/events` },
-    { label: "About", href: `/${slug}/about` },
-    { label: "Contact", href: `/${slug}/contact` },
+    { label: "Home", href: `/site/${slug}` },
+    { label: "Events", href: `/site/${slug}#events` },
+    { label: "About", href: `/site/${slug}#about` },
+    { label: "Contact", href: `/site/${slug}#contact` },
   ];
 
   return (
@@ -104,7 +104,7 @@ export default function Header() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
-            <Link href={`/${slug}`} className="flex-shrink-0">
+            <Link href={`/site/${slug}`} className="flex-shrink-0">
               {logoUrl ? (
                 <img
                   src={logoUrl}
@@ -143,7 +143,7 @@ export default function Header() {
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => router.push(`/${slug}/profile`)}
+                onClick={() => router.push(`site/${slug}/events/profile`)}
                 className="p-2 rounded-full text-gray-300 hover:text-white hover:bg-gray-700/50 transition-colors"
                 aria-label="Profile"
               >
