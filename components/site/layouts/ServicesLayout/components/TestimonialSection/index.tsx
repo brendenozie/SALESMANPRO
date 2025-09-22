@@ -62,7 +62,7 @@ export default function TestimonialSection() {
   };
 
   return (
-    <section className="bg-white dark:bg-gray-950 py-16 lg:py-24 px-4 relative overflow-hidden">
+    <section id="testimonials" className="bg-white dark:bg-gray-950 py-16 lg:py-24 px-4 relative overflow-hidden">
       {/* Subtle background pattern */}
       <div className="absolute inset-0 bg-dot-pattern opacity-5 dark:bg-dot-pattern-dark z-0" />
 

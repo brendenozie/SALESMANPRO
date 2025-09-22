@@ -52,7 +52,7 @@ export default function FAQSection() {
   };
 
   return (
-    <section className="bg-white dark:bg-gray-950 py-16 lg:py-24 px-4 relative overflow-hidden">
+    <section id="faq" className="bg-white dark:bg-gray-950 py-16 lg:py-24 px-4 relative overflow-hidden">
       {/* Background blobs for visual interest */}
       <div
         className="absolute top-0 -left-20 w-80 h-80 rounded-full mix-blend-multiply filter blur-xl opacity-10 animate-blob-alt animation-delay-0"

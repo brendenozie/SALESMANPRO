@@ -57,7 +57,7 @@ export default function ServicesSection() {
 
   return (
     <>
-      <section className="bg-white dark:bg-gray-950 py-16 lg:py-24 relative overflow-hidden">
+      <section id="services" className="bg-white dark:bg-gray-950 py-16 lg:py-24 relative overflow-hidden">
         {/* Subtle background shapes */}
         <motion.div
           className="absolute rounded-full opacity-5 blur-3xl -top-20 -right-20 w-80 h-80"

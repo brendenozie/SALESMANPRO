@@ -81,7 +81,7 @@ export default function PricingSection() {
   };
 
   return (
-    <section className="bg-white dark:bg-gray-950 py-16 lg:py-24 px-4 text-center text-gray-900 dark:text-gray-100 relative overflow-hidden">
+    <section  id="packages" className="bg-white dark:bg-gray-950 py-16 lg:py-24 px-4 text-center text-gray-900 dark:text-gray-100 relative overflow-hidden">
       {/* Subtle background pattern */}
       <div className="absolute inset-0 bg-dot-pattern opacity-5 dark:bg-dot-pattern-dark z-0" />
 
@@ -170,7 +170,8 @@ export default function PricingSection() {
                 }`}
               >
                 <div className="w-10 h-10" style={{ color: plan.isFeatured ? 'white' : primaryColor }}>
-                  {plan.icon}
+                  {/* {plan.icon} */}
+                  <RocketLaunchIcon />
                 </div>
               </div>
 

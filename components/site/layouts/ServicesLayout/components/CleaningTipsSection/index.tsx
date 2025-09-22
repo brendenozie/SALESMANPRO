@@ -73,7 +73,7 @@ export default function CleaningTipsSection() {
   };
 
   return (
-    <section className="bg-gray-50 dark:bg-gray-950 py-16 lg:py-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+    <section id="blog" className="bg-gray-50 dark:bg-gray-950 py-16 lg:py-24 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
       {/* Background blobs for visual interest */}
       <div
         className="absolute top-0 -left-20 w-80 h-80 rounded-full mix-blend-multiply filter blur-xl opacity-10 animate-blob-alt animation-delay-0"

@@ -54,11 +54,11 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
   const sections = [
     { id: 'hero', label: 'Home' },
     { id: 'services', label: 'Services' },
-    { id: 'featured', label: 'Packages' }, // Changed 'Featured' to 'Packages' for clarity
+    { id: 'packages', label: 'Packages' }, // Changed 'Featured' to 'Packages' for clarity
     { id: 'testimonials', label: 'Testimonials' },
     { id: 'faq', label: 'FAQs' }, // Changed 'FAQ' to 'FAQs'
-    { id: 'blog', label: 'Blog', href: `/${storeFormData.slug}/blog` }, // Added a blog link
-    { id: 'contact', label: 'Contact', href: `/${storeFormData.slug}/contact` }, // Added a contact link
+    { id: 'blog', label: 'Blog', },//href: `/${storeFormData.slug}/blog` }, // Added a blog link
+    { id: 'booking', label: 'Contact', },// href: `/${storeFormData.slug}/contact` }, // Added a contact link
   ];
 
   useEffect(() => {
@@ -138,7 +138,7 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
 
           {/* Desktop Nav */}
           <div className="hidden lg:flex items-center space-x-6 relative z-10">
-            {sections.map(({ id, label, href }) => (
+            {sections.map(({ id, label, href }:any) => (
               <Link
                 key={id}
                 href={href || `#${id}`}
@@ -165,9 +165,9 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
             ))}
 
             {/* Search and Cart/Booking Icon */}
-            <div className="flex items-center space-x-4 ml-6">
+            {/* <div className="flex items-center space-x-4 ml-6"> */}
               {/* Search */}
-              <motion.button
+              {/* <motion.button
                 onClick={() => setIsSearchOpen(!isSearchOpen)}
                 className={`relative p-2 rounded-full transition-all duration-300
                   ${scrolled ? 'bg-gray-100 dark:bg-gray-700' : 'bg-white/10'}
@@ -176,9 +176,9 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
                 whileTap={{ scale: 0.9 }}
               >
                 <MagnifyingGlassIcon className={`w-6 h-6 text-[var(--scrolled-text-color)] dark:text-[var(--scrolled-dark-text-color)]`} />
-              </motion.button>
+              </motion.button> */}
 
-              <AnimatePresence>
+              {/* <AnimatePresence>
                 {isSearchOpen && (
                   <motion.form
                     onSubmit={handleSearchSubmit}
@@ -204,27 +204,9 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
                     <MagnifyingGlassIcon className={`w-5 h-5 absolute left-3 top-2.5 ${scrolled ? 'text-gray-500 dark:text-gray-400' : 'text-white/80'}`} />
                   </motion.form>
                 )}
-              </AnimatePresence>
+              </AnimatePresence> */}
 
-              {/* Cart/Booking Link */}
-              <Link href={`/${storeFormData.slug}/booking`} passHref>
-                <motion.button
-                  className={`relative p-2 rounded-full transition-all duration-300
-                    ${scrolled ? 'bg-[var(--primary)]' : 'border-2 border-white text-white'}
-                  `}
-                  style={{ color: 'white' }} // Icon color is white inside this button
-                  whileHover={{ scale: 1.1, backgroundColor: scrolled ? primaryColor : 'rgba(255,255,255,0.3)' }}
-                  whileTap={{ scale: 0.9 }}
-                >
-                  <ShoppingCartIcon className="w-6 h-6" />
-                  {cartItems && cartItems.length > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center">
-                      {cartItems.length}
-                    </span>
-                  )}
-                </motion.button>
-              </Link>
-            </div>
+            {/* </div> */}
           </div>
 
           {/* Hamburger Menu (Mobile) */}
@@ -252,7 +234,7 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
               className="lg:hidden fixed inset-0 bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl z-40 flex flex-col items-center justify-center py-20"
             >
               <nav className="flex flex-col items-center space-y-8">
-                {sections.map(({ id, label, href }) => (
+                {sections.map(({ id, label, href } : any) => (
                   <Link
                     key={id}
                     href={href || `#${id}`}
@@ -264,7 +246,7 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
                   </Link>
                 ))}
                 {/* Mobile Search Input */}
-                <form onSubmit={handleSearchSubmit} className="relative w-full max-w-xs mt-8">
+                {/* <form onSubmit={handleSearchSubmit} className="relative w-full max-w-xs mt-8">
                   <input
                     type="search"
                     placeholder="Search..."
@@ -273,10 +255,10 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
                     className="pl-12 pr-4 py-3 w-full rounded-full bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
                   />
                   <MagnifyingGlassIcon className="w-6 h-6 absolute left-4 top-3 text-gray-500 dark:text-gray-400" />
-                </form>
+                </form> */}
 
                 {/* Mobile Cart/Booking Button */}
-                <Link href={`/${storeFormData.slug}/booking`} passHref>
+                {/* <Link href={`/${storeFormData.slug}/booking`} passHref>
                   <motion.button
                     className="inline-flex items-center justify-center px-8 py-3 rounded-full font-bold text-lg shadow-md transition-all duration-300 mt-6"
                     style={{ backgroundColor: secondaryColor, color: 'white' }}
@@ -287,7 +269,7 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
                     Book Now
                     <ShoppingCartIcon className="w-5 h-5 ml-2" />
                   </motion.button>
-                </Link>
+                </Link> */}
               </nav>
             </motion.div>
           )}

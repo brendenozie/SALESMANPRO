@@ -167,7 +167,7 @@ export default function BookingFormSection() {
               required
               placeholder="John Doe"
               className={`w-full border ${errors.name ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} rounded-lg px-5 py-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2`}
-              style={{ focusRingColor: primaryColor }}
+              // style={{ focusRingColor: primaryColor }}
             />
             {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
           </motion.div>
@@ -184,7 +184,7 @@ export default function BookingFormSection() {
               required
               placeholder="you@example.com"
               className={`w-full border ${errors.email ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} rounded-lg px-5 py-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2`}
-              style={{ focusRingColor: primaryColor }}
+              // style={{ focusRingColor: primaryColor }}
             />
             {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
           </motion.div>
@@ -201,7 +201,7 @@ export default function BookingFormSection() {
               required
               placeholder="+1 (555) 123-4567"
               className={`w-full border ${errors.phone ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} rounded-lg px-5 py-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2`}
-              style={{ focusRingColor: primaryColor }}
+              // style={{ focusRingColor: primaryColor }}
             />
             {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
           </motion.div>
@@ -216,14 +216,14 @@ export default function BookingFormSection() {
               onChange={handleChange}
               required
               className={`w-full border ${errors.serviceType ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} rounded-lg px-5 py-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 appearance-none pr-8`} // appearance-none for custom arrow
-              style={{ focusRingColor: primaryColor }}
+              // style={{ focusRingColor: primaryColor }}
             >
               <option value="" disabled>Select a service</option>
               {/* Populate with dynamic services from storeFormData.storeCategories or specific service list */}
-              {storeFormData?.storeCategories && storeFormData.storeCategories.length > 0 ? (
-                storeFormData.storeCategories.map((category) => (
-                  <option key={category.id} value={category.name}>
-                    {category.name}
+              {storeFormData?.StoreCategory && storeFormData.StoreCategory.length > 0 ? (
+                storeFormData.StoreCategory.map((category) => (
+                  <option key={category.id} value={category.displayName || ''}>
+                    {category.displayName}
                   </option>
                 ))
               ) : (
@@ -254,7 +254,7 @@ export default function BookingFormSection() {
                 onChange={handleChange}
                 required
                 className={`w-full border ${errors.preferredDate ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} rounded-lg px-5 py-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2`}
-                style={{ focusRingColor: primaryColor }}
+                // style={{ focusRingColor: primaryColor }}
               />
               {errors.preferredDate && <p className="text-red-500 text-xs mt-1">{errors.preferredDate}</p>}
             </motion.div>
@@ -272,7 +272,7 @@ export default function BookingFormSection() {
                 onChange={handleChange}
                 required
                 className={`w-full border ${errors.preferredTime ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} rounded-lg px-5 py-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2`}
-                style={{ focusRingColor: primaryColor }}
+                // style={{ focusRingColor: primaryColor }}
               />
               {errors.preferredTime && <p className="text-red-500 text-xs mt-1">{errors.preferredTime}</p>}
             </motion.div>
@@ -293,7 +293,7 @@ export default function BookingFormSection() {
               required
               placeholder="123 Main St, Anytown, USA"
               className={`w-full border ${errors.address ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} rounded-lg px-5 py-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2`}
-              style={{ focusRingColor: primaryColor }}
+              // style={{ focusRingColor: primaryColor }}
             />
             {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address}</p>}
           </motion.div>
@@ -310,7 +310,7 @@ export default function BookingFormSection() {
               placeholder="E.g., Number of rooms, specific cleaning instructions, preferred contact method, etc."
               rows={5}
               className={`w-full border ${errors.message ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'} rounded-lg px-5 py-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2`}
-              style={{ focusRingColor: primaryColor }}
+              // style={{ focusRingColor: primaryColor }}
             />
             {errors.message && <p className="text-red-500 text-xs mt-1">{errors.message}</p>}
           </motion.div>
