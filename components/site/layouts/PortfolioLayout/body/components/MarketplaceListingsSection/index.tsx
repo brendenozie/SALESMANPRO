@@ -176,7 +176,7 @@ export default function MarketplaceListingsSection() {
 
   return (
     <AnimatePresence>
-      <section id="marketplace-listings" className="relative py-24 md:py-32 px-6 lg:px-12 bg-white dark:bg-gray-950 overflow-hidden">
+      <section id="services" className="relative py-24 md:py-32 px-6 lg:px-12 bg-white dark:bg-gray-950 overflow-hidden">
         {/* Dynamic Background Gradients */}
         <div
           className="absolute inset-0 z-0 opacity-10 dark:opacity-20 pointer-events-none"
