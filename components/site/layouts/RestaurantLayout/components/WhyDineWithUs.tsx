@@ -164,7 +164,7 @@ export default function WhyDineWithUs() {
   };
 
   return (
-    <section className="py-20 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
+    <section id="about" className="py-20 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
       <div className="max-w-7xl mx-auto px-6">
         {/* Section Title */}
         <motion.div

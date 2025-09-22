@@ -193,7 +193,7 @@ export default function RestaurantFAQs() {
         </motion.div>
 
         {/* Call to Action for Unanswered Questions */}
-        <motion.div
+        <motion.div id="contact"
           className="text-center mt-16 p-8 dark:bg-gray-800 rounded-xl shadow-md"
           style={{ backgroundColor: `${primaryColor}10` }} // Light tint of primary color
           initial={{ opacity: 0, y: 50 }}
