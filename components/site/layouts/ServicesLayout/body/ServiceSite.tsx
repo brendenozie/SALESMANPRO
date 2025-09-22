@@ -6,7 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 
-import { useStoreContext } from "../../../../../contexts/StoreContext";
+import { useStoreContext } from "@/contexts/StoreContext";
 import bannerFallback from "../../../../../assets/homebanner.png";
 import HeroSection from "../components/HeroSection";
 import AboutSection from "../components/aboutUs";

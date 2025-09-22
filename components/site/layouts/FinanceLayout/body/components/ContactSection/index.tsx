@@ -45,7 +45,7 @@ export default function ContactSection() {
 
   return (
     <section
-      id="contact-us"
+      id="contact"
       className="py-20 sm:py-28 lg:py-36 relative overflow-hidden"
       style={{ background: darkBackground }} // Consistent dark background
     >

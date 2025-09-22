@@ -3,7 +3,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useStoreContext } from '../../../../../contexts/StoreContext';
+import { useStoreContext } from '@/contexts/StoreContext';
 import CategorySection from './components/CategorySection';
 import PromotionSection from './components/PromotionSection';
 import NewArrivalsSection from './components/NewArrivalsSection';

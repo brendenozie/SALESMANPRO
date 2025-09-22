@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { useStoreContext } from '../../../../../contexts/StoreContext';
+import { useStoreContext } from '@/contexts/StoreContext';
 import { FaceFrownIcon } from '@heroicons/react/24/outline';
 
 export default function Footer() {

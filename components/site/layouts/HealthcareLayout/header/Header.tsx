@@ -63,12 +63,12 @@ export default function Header() {
   }, []);
 
   const navItems = [
-    { label: 'Home', href: `/${slug}` },
-    { label: 'Services', href: `/${slug}/services` },
-    { label: 'Doctors', href: `/${slug}/doctors` },
-    { label: 'About Us', href: `/${slug}/about` }, // Changed to 'About Us' for clarity
-    { label: 'FAQs', href: `/${slug}/faqs` }, // Added FAQs to main nav
-    { label: 'Contact', href: `/${slug}/contact` },
+    { label: 'Home', href: `/site/${slug}` },
+    { label: 'Services', href: `/site/${slug}#services` },
+    { label: 'Doctors', href: `/site/${slug}#doctors` },
+    { label: 'About Us', href: `/site/${slug}#about` }, // Changed to 'About Us' for clarity
+    { label: 'FAQs', href: `/site/${slug}#faqs` }, // Added FAQs to main nav
+    { label: 'Contact', href: `/site/${slug}#contact` },
   ];
 
   const headerVariants = {
@@ -149,7 +149,7 @@ export default function Header() {
         >
           {logoUrl !== DEFAULT_LOGO_URL ? ( // Check if a custom logo is provided
             <Image
-              src={logoUrl}
+              src={logoUrl || ''}
               alt={name}
               width={56} // Slightly larger logo
               height={56}
@@ -222,7 +222,7 @@ export default function Header() {
             <div className="flex justify-between items-center mb-10">
               {logoUrl !== DEFAULT_LOGO_URL ? (
                 <Image
-                  src={logoUrl}
+                  src={logoUrl || ''}
                   alt={name}
                   width={60}
                   height={60}

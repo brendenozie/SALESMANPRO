@@ -51,7 +51,7 @@ export default function FeaturedArticlesSection({ featured, storeSlug }: Feature
   };
 
   return (
-    <section className="py-20 bg-gradient-to-br from-gray-950 to-black text-white overflow-hidden">
+    <section id="articles" className="py-20 bg-gradient-to-br from-gray-950 to-black text-white overflow-hidden">
       <div className="container mx-auto px-6 lg:px-12">
         {/* Section Header */}
         <motion.h2

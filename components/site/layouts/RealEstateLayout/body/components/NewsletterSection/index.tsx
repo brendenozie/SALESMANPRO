@@ -42,7 +42,7 @@ const formVariants = {
 export default function NewsletterSection({ handleNewsletter }: any) {
   return (
     <motion.section
-      className="relative py-20 sm:py-28 bg-gradient-to-br from-blue-500 to-indigo-600 dark:from-gray-900 dark:to-black overflow-hidden"
+      className="contact relative py-20 sm:py-28 bg-gradient-to-br from-blue-500 to-indigo-600 dark:from-gray-900 dark:to-black overflow-hidden"
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, amount: 0.4 }}

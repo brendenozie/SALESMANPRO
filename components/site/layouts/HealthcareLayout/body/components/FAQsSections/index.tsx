@@ -41,7 +41,7 @@ export default function FAQsSection({ name, slug, faqs }: FAQsSectionProps) {
   );
 
   return (
-    <section className="bg-gradient-to-br from-white to-sky-50 dark:from-gray-950 dark:to-gray-900 py-20 lg:py-28 relative overflow-hidden">
+    <section id="faqs" className="bg-gradient-to-br from-white to-sky-50 dark:from-gray-950 dark:to-gray-900 py-20 lg:py-28 relative overflow-hidden">
       {/* Background Gradients/Shapes for Visual Interest */}
       <div className="absolute inset-0 z-0 opacity-10">
         <motion.div

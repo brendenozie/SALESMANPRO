@@ -11,8 +11,8 @@ import {
   BellIcon,
   UserIcon,
 } from '@heroicons/react/24/outline';
-import { useStateContext } from '../../../../../contexts/ContextProvider';
-import { useStoreContext } from '../../../../../contexts/StoreContext';
+import { useStateContext } from '@/contexts/ContextProvider';
+import { useStoreContext } from '@/contexts/StoreContext';
 
 export default function EnhancedMediaHeader() {
   const { storeFormData } = useStoreContext();
@@ -21,11 +21,11 @@ export default function EnhancedMediaHeader() {
   const [scrolled, setScrolled] = useState(false);
 
   const navItems = [
-    { label: 'Home', href: `/site/${storeFormData.slug}` },
-    { label: 'Articles', href: `/site/${storeFormData.slug}/articles` },
-    { label: 'Videos', href: `/site/${storeFormData.slug}/videos` },
-    { label: 'Categories', href: `/site/${storeFormData.slug}/categories` },
-    { label: 'About', href: `/site/${storeFormData.slug}/about` },
+    { label: 'Home', href: `/site/${storeFormData?.slug}` },
+    { label: 'Articles', href: `/site/${storeFormData?.slug}#articles` },
+    { label: 'Videos', href: `/site/${storeFormData?.slug}#videos` },
+    { label: 'Categories', href: `/site/${storeFormData?.slug}#categories` },
+    { label: 'About', href: `/site/${storeFormData?.slug}#about` },
   ];
 
   const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
@@ -46,8 +46,8 @@ export default function EnhancedMediaHeader() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
-          <Link href={`/site/${storeFormData.slug}`} className="flex-shrink-0 flex items-center">
-            {storeFormData.logoUrl ? (
+          <Link href={`/site/${storeFormData?.slug}`} className="flex-shrink-0 flex items-center">
+            {storeFormData?.logoUrl ? (
               <Image
                 loader={loader}
                 src={storeFormData.logoUrl}
@@ -58,7 +58,7 @@ export default function EnhancedMediaHeader() {
                 priority
               />
             ) : (
-              <span className="text-2xl font-extrabold text-white">{storeFormData.name}</span>
+              <span className="text-2xl font-extrabold text-white">{storeFormData?.name}</span>
             )}
           </Link>
 

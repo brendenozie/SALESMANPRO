@@ -4,7 +4,7 @@ import React, { useState, useEffect, useContext } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowUpCircleIcon } from "@heroicons/react/24/solid"; // Added for scroll-to-top
-import { useStoreContext } from "../../../../../contexts/StoreContext";
+import { useStoreContext } from "@/contexts/StoreContext";
 
 // Import your enhanced child components
 import MediaHeroSection from "./components/HeroSection";

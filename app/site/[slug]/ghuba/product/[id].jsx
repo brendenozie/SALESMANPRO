@@ -9,7 +9,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { PrismaClient } from "@prisma/client";
 import { useRouter } from "next/navigation";
-import { useStateContext } from "../../../../../contexts/ContextProvider";
+import { useStateContext } from "@/contexts/ContextProvider";
 import { motion } from "framer-motion";
 import load from "../../../assets/load.png";
 import Image from "next/image";

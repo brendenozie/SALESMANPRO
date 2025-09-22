@@ -91,6 +91,7 @@ export default function TopPicksCarousel({ picks, onSelect }: TopPicksCarouselPr
 
   return (
     <section
+      id="categories"
       className="py-20 bg-gradient-to-br from-black to-gray-950 text-white overflow-hidden relative" // Added relative for absolute children
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}

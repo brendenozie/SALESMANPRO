@@ -13,9 +13,9 @@ import {
   SunIcon,
   UserCircleIcon,
 } from "@heroicons/react/24/outline";
-import { useStateContext } from "../../../../../contexts/ContextProvider";
+import { useStateContext } from "@/contexts/ContextProvider";
 import { useRouter } from "next/navigation";
-import { useStoreContext } from "../../../../../contexts/StoreContext";
+import { useStoreContext } from "@/contexts/StoreContext";
 
 interface HeaderProps { storeFormData: any; }
 const loader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality||75}`;

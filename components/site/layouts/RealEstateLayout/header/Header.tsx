@@ -14,8 +14,8 @@ import {
   EnvelopeIcon, // Added for contact email
   GlobeAltIcon, // Generic icon for social links
 } from "@heroicons/react/24/solid"; // Changed to solid for consistency with other sections
-import { useStateContext } from "../../../../../contexts/ContextProvider"; // Assuming this handles cart
-import { useStoreContext } from "../../../../../contexts/StoreContext";
+import { useStateContext } from "@/contexts/ContextProvider"; // Assuming this handles cart
+import { useStoreContext } from "@/contexts/StoreContext";
 import { useRouter } from "next/navigation";
 
 // Sample data for development/fallback if storeFormData is empty
@@ -135,7 +135,7 @@ export default function Header() {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6 }}
         >
-          <Link href={`/${slug}`} className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 rounded">
+          <Link href={`/site/${slug}`} className="block focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 rounded">
             {logoUrl ? (
               <Image
                 src={logoUrl}
@@ -161,11 +161,11 @@ export default function Header() {
         <nav className="hidden lg:flex items-center space-x-8">
           {[
             { label: "Home", path: "" },
-            { label: "Listings", path: "/listings" },
-            { label: "Agents", path: "/agents" }, // Added Agents as a top-level nav item
-            { label: "About", path: "/about" },
-            { label: "Blog", path: "/blog" }, // Added Blog as a top-level nav item
-            { label: "Contact", path: "/contact" },
+            { label: "Listings", path: `/site/${slug}#listings` },
+            { label: "Agents", path: `/site/${slug}#agents` }, // Added Agents as a top-level nav item
+            { label: "About", path: `/site/${slug}#about` },
+            { label: "Blog", path: `/site/${slug}#blog` }, // Added Blog as a top-level nav item
+            { label: "Contact", path: `/site/${slug}#contact` },
           ].map((item) => (
             <Link
               key={item.label}
@@ -238,26 +238,7 @@ export default function Header() {
           >
             <UserCircleIcon className="w-7 h-7" />
           </motion.button>
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            className="relative p-2 rounded-full text-gray-700 dark:text-gray-200
-                       hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors duration-200
-                       focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 rounded"
-            aria-label="View cart"
-            onClick={() => router.push(`/${slug}/checkout`)}
-          >
-            <ShoppingBagIcon className="w-7 h-7" />
-            {cart && cart.length > 0 && ( // Check if cart exists and has items
-              <motion.span
-                className="absolute -top-1 -right-1 bg-amber-500 dark:bg-amber-400 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold"
-                animate={{ scale: [1, 1.2, 1] }}
-                transition={{ repeat: Infinity, duration: 0.8, ease: "easeOut" }}
-              >
-                {cart.length}
-              </motion.span>
-            )}
-          </motion.button>
+          
           <button
             className="lg:hidden p-2 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-amber-500 rounded"
             onClick={() => setMobileMenu(!mobileMenu)}
@@ -294,11 +275,11 @@ export default function Header() {
             <nav className="flex flex-col space-y-6">
               {[
                 { label: "Home", path: "" },
-                { label: "Listings", path: "/listings" },
-                { label: "Agents", path: "/agents" },
-                { label: "About", path: "/about" },
-                { label: "Blog", path: "/blog" },
-                { label: "Contact", path: "/contact" },
+                { label: "Listings", path: "listings" },
+                { label: "Agents", path: "agents" },
+                { label: "About", path: "about" },
+                { label: "Blog", path: "blog" },
+                { label: "Contact", path: "contact" },
               ].map((item) => (
                 <Link
                   key={item.label}
@@ -306,7 +287,7 @@ export default function Header() {
                   className="text-gray-800 dark:text-gray-100 uppercase font-semibold text-lg
                              hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors duration-200
                              focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500 rounded py-2"
-                  onClick={() => handleLinkClick(`/${slug}${item.path}`)} // Close menu on click
+                  onClick={() => handleLinkClick(`/site/${slug}#${item.path}`)} // Close menu on click
                 >
                   {item.label}
                 </Link>
@@ -314,7 +295,7 @@ export default function Header() {
             </nav>
 
             {/* Mobile Search Input */}
-            <div className="relative mt-8">
+            {/* <div className="relative mt-8">
               <input
                 type="text"
                 placeholder="Search listings..."
@@ -328,7 +309,7 @@ export default function Header() {
                 }}
               />
               <MagnifyingGlassIcon className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            </div>
+            </div> */}
 
             {/* Mobile Contact Info (Optional: if needed in drawer) */}
             <div className="mt-auto pt-8 border-t border-gray-200 dark:border-gray-700 flex flex-col items-center space-y-4 text-gray-700 dark:text-gray-300">

@@ -54,7 +54,7 @@ export default function FAQsSection({ faqs }: FAQsSectionProps) {
   };
 
   return (
-    <section className="py-20 bg-gradient-to-br from-black to-gray-950 text-white overflow-hidden"> {/* Consistent dark gradient */}
+    <section id="about" className="py-20 bg-gradient-to-br from-black to-gray-950 text-white overflow-hidden"> {/* Consistent dark gradient */}
       <div className="container mx-auto px-6 lg:px-12 max-w-3xl"> {/* Increased max-width */}
         {/* Section Header */}
         <motion.h2

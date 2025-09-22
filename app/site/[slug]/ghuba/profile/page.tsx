@@ -26,7 +26,7 @@ import ShippingAddress from '../../../../../components/shippingAddress';
 import SecurityOverview from '../../../../../components/security';
 import CommunicationSupport from '../../../../../components/communicationSupport';
 import AchievementsBadges from '../../../../../components/AchievementsBadges';
-import { useStateContext } from '../../../../../contexts/ContextProvider.js';
+import { useStateContext } from '@/contexts/ContextProvider.js';
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';

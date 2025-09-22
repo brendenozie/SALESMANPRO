@@ -12,7 +12,7 @@ import {
   ChatBubbleLeftEllipsisIcon,
 } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
-import { useStoreContext } from "../../../../../contexts/StoreContext";
+import { useStoreContext } from "@/contexts/StoreContext";
 
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>

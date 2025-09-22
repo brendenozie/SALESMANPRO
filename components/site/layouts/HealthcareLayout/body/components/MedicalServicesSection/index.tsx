@@ -39,7 +39,7 @@ export default function MedicalServicesSection({ services, storeSlug }: MedicalS
   };
 
   return (
-    <section className="bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-950 py-20 lg:py-28">
+    <section id="services" className="bg-gradient-to-br from-gray-50 to-white dark:from-gray-900 dark:to-gray-950 py-20 lg:py-28">
       <div className="max-w-7xl mx-auto px-6">
         <div className="text-center mb-16">
           <motion.span

@@ -11,7 +11,7 @@ import {
   UserGroupIcon,
 } from "@heroicons/react/24/outline";
 
-import { useStoreContext } from "../../../../../contexts/StoreContext";
+import { useStoreContext } from "@/contexts/StoreContext";
 import { StoreForm } from "../../../../../types/typings";
 import Testimonials from "./components/TestimonialsSection";
 import Hero from "./components/HeroSection";

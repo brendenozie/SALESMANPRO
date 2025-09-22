@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion'; // Import motion for animations
-import { useStoreContext } from '../../../../../contexts/StoreContext';
+import { useStoreContext } from '@/contexts/StoreContext';
 import {
   EnvelopeIcon,
   MapPinIcon,

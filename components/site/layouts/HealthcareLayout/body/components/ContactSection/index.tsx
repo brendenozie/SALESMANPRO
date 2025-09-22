@@ -92,7 +92,7 @@ export default function ContactSection({ storeSlug, phoneNumber, email, address,
   };
 
   return (
-    <section className="bg-gradient-to-br from-white to-blue-50 dark:from-gray-900 dark:to-gray-950 py-20 lg:py-28 relative overflow-hidden">
+    <section id="contact" className="bg-gradient-to-br from-white to-blue-50 dark:from-gray-900 dark:to-gray-950 py-20 lg:py-28 relative overflow-hidden">
       {/* Background Shapes/Pattern */}
       <div className="absolute inset-0 z-0 opacity-10">
         <motion.div

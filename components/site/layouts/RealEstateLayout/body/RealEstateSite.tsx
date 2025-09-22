@@ -19,7 +19,7 @@ import ListingsSection from "./components/ListingsSection";
 import NewsletterSection from "./components/NewsletterSection";
 import TrendingLocations from "./components/TrendingLocations";
 import WhyChooseUs from "./components/WhyChooseUs";
-import { useStoreContext } from "../../../../../contexts/StoreContext";
+import { useStoreContext } from "@/contexts/StoreContext";
 import { StoreForm } from "@/types/typings";
 
 

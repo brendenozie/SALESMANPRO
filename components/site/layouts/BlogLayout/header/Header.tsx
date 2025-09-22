@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useStoreContext } from '../../../../../contexts/StoreContext';
+import { useStoreContext } from '@/contexts/StoreContext';
 
 // Mocking the context hook to make the component runnable.
 // In your actual application, you would use your real StoreContext.

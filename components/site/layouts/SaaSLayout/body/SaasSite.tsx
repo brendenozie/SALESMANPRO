@@ -5,7 +5,7 @@ import React from "react";
 import { useRouter } from "next/navigation";
 // Assuming useStoreContext might still be used elsewhere, keeping it,
 // but for the sake of this component, we'll define store data directly.
-import { useStoreContext } from "../../../../../contexts/StoreContext";
+import { useStoreContext } from "@/contexts/StoreContext";
 
 // Import all enhanced child components
 import EnhancedHeroSection from "./components/EnhancedHeroSection";

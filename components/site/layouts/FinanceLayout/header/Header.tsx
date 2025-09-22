@@ -44,7 +44,7 @@ const FinanceHeader = () => {
   const navItems = [
     { label: "Home", href: `#home` },
     { label: "Services", href: `#services` },
-    { label: "Why Us", href: `#usps` },
+    { label: "Why Us", href: `#whyus` },
     { label: "Testimonials", href: `#testimonials` },
     { label: "Contact", href: `#contact` },
   ];

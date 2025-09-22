@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { useStateContext } from '../../../../../contexts/ContextProvider';
+import { useStateContext } from '@/contexts/ContextProvider';
 import Confetti from 'react-confetti';
 import {
   CreditCardIcon,

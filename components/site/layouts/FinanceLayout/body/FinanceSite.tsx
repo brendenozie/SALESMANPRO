@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 // Assuming useStoreContext provides data for the site; if not, remove or adjust.
-import { useStoreContext } from "../../../../../contexts/StoreContext";
+import { useStoreContext } from "@/contexts/StoreContext";
 
 // Import all your transformed child components
 import HeroSection from "./components/heroSection";

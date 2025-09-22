@@ -10,7 +10,7 @@ import {
   XMarkIcon,
   RocketLaunchIcon, // A more engaging icon for "Get Started"
 } from "@heroicons/react/24/outline";
-import { useStoreContext } from "../../../../../contexts/StoreContext";
+import { useStoreContext } from "@/contexts/StoreContext";
 
 // Re-using the loader from your SaasSite component for consistency
 const loader = ({

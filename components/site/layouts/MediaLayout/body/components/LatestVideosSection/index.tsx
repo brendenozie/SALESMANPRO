@@ -50,7 +50,7 @@ export default function LatestVideosSection({ videos }: LatestVideosSectionProps
   };
 
   return (
-    <section className="py-20 bg-gradient-to-br from-gray-900 to-black text-white overflow-hidden">
+    <section id="videos" className="py-20 bg-gradient-to-br from-gray-900 to-black text-white overflow-hidden">
       <div className="container mx-auto px-6 lg:px-12">
         {/* Section Header */}
         <motion.h2

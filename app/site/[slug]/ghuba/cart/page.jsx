@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { PlusIcon, MinusIcon,TrashIcon } from '@heroicons/react/24/outline';
-import { useStateContext } from '../../../../../contexts/ContextProvider';
+import { useStateContext } from '@/contexts/ContextProvider';
 
 const Cart = () => {
   const { currentColor, cart } = useStateContext();

@@ -12,8 +12,8 @@ import {
   XMarkIcon,
   UserIcon,
 } from '@heroicons/react/24/outline';
-import { useStoreContext } from '../../../../../contexts/StoreContext';
-import { useStateContext } from '../../../../../contexts/ContextProvider';
+import { useStoreContext } from '@/contexts/StoreContext';
+import { useStateContext } from '@/contexts/ContextProvider';
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;

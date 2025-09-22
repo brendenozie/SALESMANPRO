@@ -9,7 +9,7 @@ import {
   MapPinIcon,
   ArrowRightIcon,
 } from "@heroicons/react/24/outline";
-import { useStoreContext } from "../../../../../contexts/StoreContext";
+import { useStoreContext } from "@/contexts/StoreContext";
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;

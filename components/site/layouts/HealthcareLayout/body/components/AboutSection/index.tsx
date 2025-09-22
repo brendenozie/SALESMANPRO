@@ -54,7 +54,7 @@ export default function AboutSection() {
   const coreValuesToRender = storeFormData?.CoreValues || fallbackCoreValues;
 
   return (
-    <section className="bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-950 py-20 lg:py-28 overflow-hidden">
+    <section id="about" className="bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-950 py-20 lg:py-28 overflow-hidden">
       <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
         {/* Text Content */}
         <motion.div

@@ -4,7 +4,7 @@ import React, { useContext, useState, useEffect } from "react";
 import Link from "next/link";
 // import { StoreContext } from "../path/to/StoreContext"; // adjust to your actual context path
 import { SunIcon, MoonIcon } from "@heroicons/react/24/outline";
-import { useStoreContext } from "../../../../../contexts/StoreContext";
+import { useStoreContext } from "@/contexts/StoreContext";
 
 export default function Footer() {
   const { storeFormData } = useStoreContext();

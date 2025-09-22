@@ -6,9 +6,9 @@ import Image from 'next/image';
 import Section from '@/components/site/Section/Section';
 import ProductGrid from '@/components/site/productGrid/ProductGrid';
 import NewsletterSection from '@/components/site/NewsletterSection/NewsletterSection';
-import { StoreContextProvider, Store } from '../../../../../contexts/StoreContext';
+import { StoreContextProvider, Store } from '@/contexts/StoreContext';
 import { StarIcon, PlusIcon, MinusIcon } from '@heroicons/react/24/solid';
-import { useStateContext } from '../../../../../contexts/ContextProvider';
+import { useStateContext } from '@/contexts/ContextProvider';
 import { useState } from 'react';
 
 interface PageProps {

@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useStoreContext } from '../../../../../contexts/StoreContext';
+import { useStoreContext } from '@/contexts/StoreContext';
 // import { MarketplaceListingForm } from '../../../../../types/typings';
 import HeroSection from './components/HeroSection';
 import BusinessSection from './components/BusinessSection';

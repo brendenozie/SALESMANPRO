@@ -9,7 +9,7 @@ import {
   ArrowRightIcon,
 } from '@heroicons/react/24/outline';
 import { FaceSmileIcon } from '@heroicons/react/24/solid';
-import { useStoreContext } from '../../../../../contexts/StoreContext';
+import { useStoreContext } from '@/contexts/StoreContext';
 
 export default function Footer() {
   const { storeFormData } = useStoreContext();

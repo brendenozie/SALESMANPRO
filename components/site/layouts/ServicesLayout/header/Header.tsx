@@ -11,7 +11,7 @@ import {
   ShoppingCartIcon, // Added for a cart/booking link
 } from '@heroicons/react/24/outline';
 import { useRouter, usePathname } from 'next/navigation';
-import { useStateContext } from '../../../../../contexts/ContextProvider'; // Assuming this provides cart and other global states
+import { useStateContext } from '@/contexts/ContextProvider'; // Assuming this provides cart and other global states
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?src=${src}&w=${width}&q=${quality || 75}`;

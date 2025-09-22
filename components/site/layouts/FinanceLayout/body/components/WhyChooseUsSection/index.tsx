@@ -92,7 +92,7 @@ export default function App() {
 
   return (
     <section
-      id="why-choose-us"
+      id="whyus"
       className="py-20 sm:py-28 lg:py-36 relative overflow-hidden font-sans"
       style={{ background: `linear-gradient(to right, ${darkBackground}, ${cardBackground})` }}
     >
