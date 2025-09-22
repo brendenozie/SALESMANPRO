@@ -1,12 +1,8 @@
 // File: components/site/layouts/DirectoryLayout/DirectorySite.tsx
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import Image from 'next/image';
-import Link from 'next/link';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { useStoreContext } from '../../../../../contexts/StoreContext';
 import CategorySection from './components/CategorySection';
 import PromotionSection from './components/PromotionSection';

@@ -66,7 +66,7 @@ export default function AboutUsSpotlight() {
   };
 
   return (
-    <section id="about" className="py-20 bg-gray-50 overflow-hidden">
+    <section id="donate" className="py-20 bg-gray-50 overflow-hidden">
       <div className="max-w-7xl mx-auto px-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
           <motion.div

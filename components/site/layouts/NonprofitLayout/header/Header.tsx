@@ -96,7 +96,7 @@ export default function Header() {
         <div className="flex items-center justify-between h-20">
           {/* Logo & Navigation (desktop) */}
           <div className="flex items-center space-x-4">
-            <a href={`/${slug}`} className="flex items-center space-x-2">
+            <a href={`/site/${slug}`} className="flex items-center space-x-2">
               {logoUrl ? (
                 <img
                   src={logoUrl}
@@ -114,7 +114,7 @@ export default function Header() {
 
             <nav className="hidden lg:flex space-x-6 font-medium text-gray-700 dark:text-gray-200">
               <a
-                href={`/${slug}`}
+                href={`/site/${slug}`}
                 className="hover:underline"
                 style={{ color: "#444" }}
                 onMouseEnter={(e) => (e.currentTarget.style.color = primary)}
@@ -125,7 +125,7 @@ export default function Header() {
                 Home
               </a>
               <a
-                href={`/${slug}/programs`}
+                href={`/site/${slug}#programs`}
                 className="hover:underline"
                 style={{ color: "#444" }}
                 onMouseEnter={(e) => (e.currentTarget.style.color = primary)}
@@ -137,7 +137,7 @@ export default function Header() {
               </a>
 
               <a
-                href={`/${slug}/donate`}
+                href={`/site/${slug}#donate`}
                 className="hover:underline"
                 style={{ color: "#444" }}
                 onMouseEnter={(e) => (e.currentTarget.style.color = primary)}
@@ -149,7 +149,7 @@ export default function Header() {
               </a>
 
               <a
-                href={`/${slug}/contact`}
+                href={`/site/${slug}#contact`}
                 className="hover:underline"
                 style={{ color: "#444" }}
                 onMouseEnter={(e) => (e.currentTarget.style.color = primary)}
@@ -165,7 +165,7 @@ export default function Header() {
           {/* User Icon (e.g., volunteer login) */}
           <div className="flex items-center space-x-4">
             <a
-              href={`/${slug}/profile`}
+              href={`/site/${slug}/nonprofit/profile`}
               className="text-gray-600 dark:text-gray-200"
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-6 w-6">
@@ -198,7 +198,7 @@ export default function Header() {
         <div className="lg:hidden bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 px-4 py-4 shadow-md">
           <div className="space-y-3">
             <a
-              href={`/${slug}`}
+              href={`/site/${slug}`}
               className="block hover:underline text-gray-700 dark:text-gray-200"
               style={{ color: "#444" }}
               onMouseEnter={(e) => (e.currentTarget.style.color = primary)}
@@ -210,7 +210,7 @@ export default function Header() {
             </a>
 
             <a
-              href={`/${slug}/programs`}
+              href={`/site/${slug}#programs`}
               className="block hover:underline text-gray-700 dark:text-gray-200"
               style={{ color: "#444" }}
               onMouseEnter={(e) => (e.currentTarget.style.color = primary)}
@@ -222,7 +222,7 @@ export default function Header() {
             </a>
 
             <a
-              href={`/${slug}/donate`}
+              href={`/site/${slug}#donate`}
               className="block hover:underline text-gray-700 dark:text-gray-200"
               style={{ color: "#444" }}
               onMouseEnter={(e) => (e.currentTarget.style.color = primary)}
@@ -234,7 +234,7 @@ export default function Header() {
             </a>
 
             <a
-              href={`/${slug}/contact`}
+              href={`/site/${slug}#contact`}
               className="block hover:underline text-gray-700 dark:text-gray-200"
               style={{ color: "#444" }}
               onMouseEnter={(e) => (e.currentTarget.style.color = primary)}

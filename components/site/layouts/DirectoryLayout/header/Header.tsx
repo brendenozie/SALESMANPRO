@@ -31,8 +31,8 @@ export default function Header() {
 
   const navItems = [
     { label: 'Home', href: `/site/${slug}` },
-    { label: 'Listings', href: `/site/${slug}/listings` },
-    { label: 'Categories', href: `/site/${slug}/categories` },
+    { label: 'Listings', href: `/site/${slug}/directorylistings/products` },
+    { label: 'Categories', href: `/site/${slug}/directorylistings/categories` },
     // Optionally add 'About Us', 'Contact Us', or 'Add Listing'
     // { label: 'Add Listing', href: `/site/${slug}/add-listing` },
   ];
@@ -131,7 +131,7 @@ export default function Header() {
             <motion.button
               whileHover={{ scale: 1.1, color: primaryColor }} // Animate color on hover
               whileTap={{ scale: 0.9 }}
-              onClick={() => router.push(`/site/${slug}/profile`)}
+              onClick={() => router.push(`/site/${slug}/directorylistings/profile`)}
               className="text-gray-600 dark:text-gray-300 transition-colors duration-200"
               aria-label="User Profile"
             >

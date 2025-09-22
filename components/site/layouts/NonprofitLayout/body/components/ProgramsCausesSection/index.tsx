@@ -138,7 +138,7 @@ export default function ProgramsCausesSection() {
   };
 
   return (
-    <section id="causes" className="py-20 bg-gray-50">
+    <section id="programs" className="py-20 bg-gray-50">
       <div className="max-w-7xl mx-auto px-6">
         <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-gray-900">
           Explore Our Impact Programs

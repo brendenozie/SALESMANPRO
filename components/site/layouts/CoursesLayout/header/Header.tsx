@@ -75,7 +75,7 @@ export default function Header() {
     contactEmail,
     contactPhone,
     socialLinks,
-    storeCategories,
+    StoreCategory,
     themeSettings,
   } = storeFormData || {}; // Added default empty object for safety
 
@@ -177,10 +177,10 @@ export default function Header() {
                 whileTap={{ scale: 0.98 }}
               >
                 Categories
-                <ChevronDownIcon className="h-4 w-4 transform group-hover:rotate-180 transition-transform duration-300 text-gray-500" /> {/* Adjusted icon color */}
+                {/* <ChevronDownIcon className="h-4 w-4 transform group-hover:rotate-180 transition-transform duration-300 text-gray-500" /> Adjusted icon color */}
               </motion.button>
-              <div className={`absolute left-1/2 -translate-x-1/2 mt-3 hidden group-hover:block bg-white border border-gray-200
-                              rounded-xl shadow-lg w-56 z-50 overflow-hidden transform origin-top scale-y-0 group-hover:scale-y-100 transition-transform duration-300`}> {/* Lighter dropdown */}
+              {/* <div className={`absolute left-1/2 -translate-x-1/2 mt-3 hidden group-hover:block bg-white border border-gray-200
+                              rounded-xl shadow-lg w-56 z-50 overflow-hidden transform origin-top scale-y-0 group-hover:scale-y-100 transition-transform duration-300`}> 
                 {storeCategories?.map((cat) => (
                   <motion.a
                     key={cat.id}
@@ -192,7 +192,7 @@ export default function Header() {
                     {cat.displayName}
                   </motion.a>
                 ))}
-              </div>
+              </div> */}
             </div>
           </nav>
 
@@ -221,7 +221,7 @@ export default function Header() {
             <motion.button whileHover={{ scale: 1.1 }} className={iconButtonClass} onClick={() => mockNavigation(`/${slug}/profile`)}>
               <UserIcon className={iconStyleClass} />
             </motion.button>
-            <motion.button whileHover={{ scale: 1.1 }} className={iconButtonClass} onClick={() => mockNavigation(`/${slug}/checkout`)}>
+            {/* <motion.button whileHover={{ scale: 1.1 }} className={iconButtonClass} onClick={() => mockNavigation(`/${slug}/checkout`)}>
               <div className="relative">
                 <ShoppingBagIcon className={iconStyleClass} />
                 {cart.length > 0 && (
@@ -230,7 +230,7 @@ export default function Header() {
                   </span>
                 )}
               </div>
-            </motion.button>
+            </motion.button> */}
             <button
               onClick={() => setMenuOpen(!menuOpen)}
               className="lg:hidden p-2 rounded-full hover:bg-gray-200 transition-colors duration-200" // Adjusted hover background
@@ -288,9 +288,9 @@ export default function Header() {
               <details className="group text-gray-800"> {/* Adjusted text color */}
                 <summary className="cursor-pointer flex items-center justify-between font-semibold hover:text-[${accentColor}] transition-colors duration-200 py-2">
                   Categories
-                  <ChevronDownIcon className="h-5 w-5 group-open:rotate-180 transition-transform text-gray-500" /> {/* Adjusted icon color */}
+                  {/* <ChevronDownIcon className="h-5 w-5 group-open:rotate-180 transition-transform text-gray-500" /> Adjusted icon color */}
                 </summary>
-                <div className="mt-2 pl-4 space-y-2 border-l border-gray-300 ml-2"> {/* Adjusted border */}
+                {/* <div className="mt-2 pl-4 space-y-2 border-l border-gray-300 ml-2">
                   {storeCategories?.map((cat) => (
                     <a
                       key={cat.id}
@@ -301,7 +301,7 @@ export default function Header() {
                       {cat.displayName}
                     </a>
                   ))}
-                </div>
+                </div> */}
               </details>
             </div>
           </motion.div>

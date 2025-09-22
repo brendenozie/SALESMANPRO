@@ -60,6 +60,7 @@ export default function CtaBoldSection() {
 
   return (
     <section
+      id='contact'
       className="py-20"
       style={{ background: `linear-gradient(to right, ${primaryColor}, ${primaryColor}E0)` }} // Dynamic primary color gradient
     >
