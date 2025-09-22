@@ -126,7 +126,7 @@ export default async function ProductListPage({ params, searchParams }: PageProp
     prisma.marketplaceListings.findMany({
       where,
       orderBy,
-      take: 20, // limit for demo
+      take: 20,
       select: {
         id: true,
         name: true,
@@ -136,16 +136,55 @@ export default async function ProductListPage({ params, searchParams }: PageProp
         productCategoryId: true,
       },
     }),
-    prisma.productCategory.findMany(
-      
-      { orderBy: { name: "asc" } ,    
-      where : { companyId: company.id }
-    },
-    ),
+    prisma.productCategory.findMany({
+      orderBy: { name: "asc" },
+      where: { companyId: company.id },
+    }),
   ]);
 
-  // Fallback if no DB data
-  const products: MarketListingForm[] = listings.length > 0 ? listings : mockProducts;
+  // --- Normalize DB results into MarketListingForm ---
+  const normalizedListings: MarketListingForm[] = listings.map((p) => ({
+    id: p.id,
+    name: p.name,
+    finalPrice: p.finalPrice || 0,
+    sellingPrice: p.sellingPrice || 0,
+    images: Array.isArray(p.images) ? p.images : [],
+    productCategoryId: p.productCategoryId,
+
+    // Fill in defaults for required fields
+    category: "",
+    color: [],
+    isNewArrival: false,
+    isOnOffer: false,
+    isFeatured: false,
+    isDiscounted: false,
+    status: "ACTIVE",
+    subCategory: undefined,
+    tags: [],
+    option: [],
+    size: [],
+    weight: [],
+    material: [],
+    quantity: 0,
+    buyingPrice: 0,
+    pricingTiers: [],
+    isAvailable: true,
+    isFlashDeal: false,
+    bedrooms: [],
+    studios: [],
+    features: [],
+    bookingSlots: [],
+    requiredClientInfo: [],
+    amenities: [],
+    delivery: false,
+    paymentOption: "",
+    duration: undefined,
+    location: null,
+  }));
+
+  // Fallback if DB empty
+  const products: MarketListingForm[] =
+    normalizedListings.length > 0 ? normalizedListings : mockProducts;
 
   // Normalize categories
   const cats = categories.length
