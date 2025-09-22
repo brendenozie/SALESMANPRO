@@ -1,163 +1,159 @@
-// app/[slug]/products/page.tsx
-'use client';
+// This is a Server Component, so no 'use client' directive
+import React from 'react';
+import { notFound } from 'next/navigation';
+import { MarketListingForm } from '@/types/typings';
+import ProductListWrapper from './components/ProductListWrapper/ProductListWrapper';
 
-import React, { useState, useEffect } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
-import { mockProducts } from '@/lib/mock-api';
-import FilterSidebar from './components/FilterSidebar/FilterSidebar';
-import ProductCard from './components/ProductCard/ProductCard';
-import Section from '@/components/site/Section/Section';
+// This is a Server Action or a server-side function. It directly uses the searchParams to filter data on the server.
+const fetchProducts = async (searchParams: { [key: string]: string | string[] | undefined }): Promise<MarketListingForm[]> => {
+  // In a real application, you would connect to your database here.
+  // For this example, we'll use a mock API.
+  // We'll also return a Promise to simulate network latency.
+  const mockProducts: MarketListingForm[] = [
+    {
+      id: '1',
+      name: 'Nike Air Force 1 LV5',
+      images: [{ _key: 'img1', url: 'https://via.placeholder.com/600/FF5733' }],
+      finalPrice: 99.95,
+      sellingPrice: 119.95,
+      category: "Men's Shoes",
+      color: ['white', 'red'],
+      isNewArrival: true,
+      isOnOffer: true,
+      isFeatured: false,
+      isDiscounted: true,
+      status: 'ACTIVE',
+      // ...other properties as defined in MarketListingForm
+      productCategoryId: 'cat_1', subCategory: undefined, tags: [], option: [], size: [], weight: [], material: [], quantity: 0, buyingPrice: 0, pricingTiers: [], isAvailable: true, isFlashDeal: false, bedrooms: [], studios: [], features: [], bookingSlots: [], requiredClientInfo: [], amenities: [], delivery: false, paymentOption: '', duration: undefined, location: null,
+    },
+    {
+      id: '2',
+      name: 'Red Runner Sneakers',
+      images: [{ _key: 'img2', url: 'https://via.placeholder.com/600/33FF57' }],
+      finalPrice: 159.95,
+      sellingPrice: 180.00,
+      category: "Men's Shoes",
+      color: ['red', 'black'],
+      isNewArrival: false,
+      isOnOffer: false,
+      isFeatured: true,
+      isDiscounted: false,
+      status: 'ACTIVE',
+      // ...other properties as defined in MarketListingForm
+      productCategoryId: 'cat_1', subCategory: undefined, tags: [], option: [], size: [], weight: [], material: [], quantity: 0, buyingPrice: 0, pricingTiers: [], isAvailable: true, isFlashDeal: false, bedrooms: [], studios: [], features: [], bookingSlots: [], requiredClientInfo: [], amenities: [], delivery: false, paymentOption: '', duration: undefined, location: null,
+    },
+    {
+      id: '3',
+      name: 'Classic Black Trainers',
+      images: [{ _key: 'img3', url: 'https://via.placeholder.com/600/3357FF' }],
+      finalPrice: 110.00,
+      sellingPrice: 180.00,
+      category: "Men's Shoes",
+      color: ['black'],
+      isNewArrival: false,
+      isOnOffer: true,
+      isFeatured: false,
+      isDiscounted: true,
+      status: 'ACTIVE',
+      // ...other properties as defined in MarketListingForm
+      productCategoryId: 'cat_1', subCategory: undefined, tags: [], option: [], size: [], weight: [], material: [], quantity: 0, buyingPrice: 0, pricingTiers: [], isAvailable: true, isFlashDeal: false, bedrooms: [], studios: [], features: [], bookingSlots: [], requiredClientInfo: [], amenities: [], delivery: false, paymentOption: '', duration: undefined, location: null,
+    },
+    {
+      id: '4',
+      name: 'Blue Sky Trainers',
+      images: [{ _key: 'img4', url: 'https://via.placeholder.com/600/FFFF33' }],
+      finalPrice: 135.00,
+      sellingPrice: 180.00,
+      category: "Men's Shoes",
+      color: ['blue', 'gray'],
+      isNewArrival: true,
+      isOnOffer: false,
+      isFeatured: false,
+      isDiscounted: false,
+      status: 'ACTIVE',
+      // ...other properties as defined in MarketListingForm
+      productCategoryId: 'cat_1', subCategory: undefined, tags: [], option: [], size: [], weight: [], material: [], quantity: 0, buyingPrice: 0, pricingTiers: [], isAvailable: true, isFlashDeal: false, bedrooms: [], studios: [], features: [], bookingSlots: [], requiredClientInfo: [], amenities: [], delivery: false, paymentOption: '', duration: undefined, location: null,
+    },
+    {
+      id: '5',
+      name: 'Gray Casual Loafers',
+      images: [{ _key: 'img5', url: 'https://via.placeholder.com/600/57FF33' }],
+      finalPrice: 85.00,
+      sellingPrice: 95.00,
+      category: "Men's Shoes",
+      color: ['gray'],
+      isNewArrival: false,
+      isOnOffer: true,
+      isFeatured: false,
+      isDiscounted: true,
+      status: 'ACTIVE',
+      // ...other properties as defined in MarketListingForm
+      productCategoryId: 'cat_1', subCategory: undefined, tags: [], option: [], size: [], weight: [], material: [], quantity: 0, buyingPrice: 0, pricingTiers: [], isAvailable: true, isFlashDeal: false, bedrooms: [], studios: [], features: [], bookingSlots: [], requiredClientInfo: [], amenities: [], delivery: false, paymentOption: '', duration: undefined, location: null,
+    },
+    {
+      id: '6',
+      name: 'High-Top Sneakers',
+      images: [{ _key: 'img6', url: 'https://via.placeholder.com/600/FF3357' }],
+      finalPrice: 165.00,
+      sellingPrice: 180.00,
+      category: "Men's Shoes",
+      color: ['black', 'white'],
+      isNewArrival: false,
+      isOnOffer: false,
+      isFeatured: true,
+      isDiscounted: false,
+      status: 'ACTIVE',
+      // ...other properties as defined in MarketListingForm
+      productCategoryId: 'cat_1', subCategory: undefined, tags: [], option: [], size: [], weight: [], material: [], quantity: 0, buyingPrice: 0, pricingTiers: [], isAvailable: true, isFlashDeal: false, bedrooms: [], studios: [], features: [], bookingSlots: [], requiredClientInfo: [], amenities: [], delivery: false, paymentOption: '', duration: undefined, location: null,
+    },
+  ];
 
-// Define types for data and filters
-type Product = {
-  id: string;
-  name: string;
-  finalPrice: number;
-  sellingPrice?: number; // Optional
-  images: { url: string }[];
-  category: string;
-  color: string;
-  rating: number;
-};
+  await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API delay
 
-type FilterState = {
-  search: string;
-  category: string | null;
-  sort: string;
-  minPrice: number;
-  maxPrice: number;
-  colors: string[];
-};
+  const search = (searchParams.search as string)?.toLowerCase() || '';
+  const category = (searchParams.category as string) || null;
+  const sort = (searchParams.sort as string) || 'newest';
+  const minPrice = parseFloat(searchParams.minPrice as string || '0');
+  const maxPrice = parseFloat(searchParams.maxPrice as string || '1000');
+  const colors = (searchParams.colors as string)?.split(',') || [];
 
-// In a real app, this would be an API call or a server component fetching data
-const fetchProducts = async (filters: FilterState): Promise<Product[]> => {
-  return new Promise(resolve => {
-    setTimeout(() => {
-      const filtered = mockProducts.filter(p => {
-        if (filters.category && p.category !== filters.category) return false;
-        if (filters.colors.length > 0 && !filters.colors.includes(p.color)) return false;
-        if (p.finalPrice < filters.minPrice || p.finalPrice > filters.maxPrice) return false;
-        if (filters.search && !p.name.toLowerCase().includes(filters.search.toLowerCase())) return false;
-        return true;
-      });
-
-      const sorted = filtered.sort((a, b) => {
-        if (filters.sort === 'priceAsc') return a.finalPrice - b.finalPrice;
-        if (filters.sort === 'priceDesc') return b.finalPrice - a.finalPrice;
-        if (filters.sort === 'rating') return b.rating - a.rating;
-        return 0; // default to original order
-      });
-
-      resolve(sorted);
-    }, 500);
+  const filtered = mockProducts.filter(p => {
+    if (category && p.productCategoryId !== category) return false;
+    if (colors.length > 0 && !p.color.some(c => colors.includes(c))) return false;
+    if ((p?.finalPrice || 0) < minPrice || (p?.finalPrice ?? 0) > maxPrice) return false;
+    if (search && !p.name.toLowerCase().includes(search)) return false;
+    return true;
   });
+
+  const sorted = filtered.sort((a, b) => {
+    if (sort === 'priceAsc') return (a.finalPrice || 0) - (b.finalPrice || 0);
+    if (sort === 'priceDesc') return (b.finalPrice || 0) - (a.finalPrice || 0);
+    return 0; // Default to original order
+  });
+
+  return sorted;
 };
 
-const fetchCategories = async () => {
-  return [
-    { id: 'cat_1', name: 'Clothing' },
+// This component is now an async Server Component
+export default async function ProductListPage({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | string[] | undefined };
+}) {
+
+  // Await the product data directly on the server
+  const products = await fetchProducts(searchParams);
+
+  // Example categories - in a real app, this would be fetched from the backend
+  const categories = [
+    { id: 'cat_1', name: "Men's Shoes" },
     { id: 'cat_2', name: 'Accessories' },
     { id: 'cat_3', name: 'Home Goods' },
   ];
-};
-
-export default function ProductListPage() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-
-  const [filters, setFilters] = useState<FilterState>({
-    search: searchParams.get('search') || '',
-    category: searchParams.get('category') || null,
-    sort: searchParams.get('sort') || 'newest',
-    minPrice: parseFloat(searchParams.get('minPrice') || '0'),
-    maxPrice: parseFloat(searchParams.get('maxPrice') || '1000'),
-    colors: searchParams.get('colors')?.split(',') || [],
-  });
-
-  const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  // Update URL and fetch data whenever filters change
-  useEffect(() => {
-    const fetchAndFilter = async () => {
-      setLoading(true);
-      const newParams = new URLSearchParams();
-      if (filters.search) newParams.set('search', filters.search);
-      if (filters.category) newParams.set('category', filters.category);
-      if (filters.sort) newParams.set('sort', filters.sort);
-      newParams.set('minPrice', filters.minPrice.toString());
-      newParams.set('maxPrice', filters.maxPrice.toString());
-      if (filters.colors.length > 0) newParams.set('colors', filters.colors.join(','));
-
-      router.push(`?${newParams.toString()}`, { scroll: false });
-
-      const newProducts = await fetchProducts(filters);
-      setProducts(newProducts);
-      setLoading(false);
-    };
-
-    fetchAndFilter();
-  }, [filters, router]);
-
-  // Fetch categories once on component mount
-  useEffect(() => {
-    fetchCategories().then(setCategories);
-  }, []);
 
   return (
-    
-          <div className="flex min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 p-8 mt-24">
-            {/* Filter Sidebar */}
-            <div className="w-1/4 pr-8 sticky top-0 self-start">
-              <FilterSidebar
-                filters={filters}
-                setFilters={setFilters}
-                categories={categories}
-              />
-            </div>
-
-            {/* Main Content Area */}
-            <div className="w-3/4">
-              <div className="flex justify-between items-center mb-6">
-                <h1 className="text-3xl font-bold">Products</h1>
-                <div className="text-lg text-gray-600 dark:text-gray-400">
-                  {loading ? 'Loading...' : `Showing ${products.length} Products`}
-                </div>
-              </div>
-
-              {loading ? (
-                <div className="flex justify-center items-center h-64 text-xl">
-                  Loading products...
-                </div>
-              ) : (
-                <div
-                  className="
-                    columns-1
-                    sm:columns-2
-                    md:columns-3
-                    lg:columns-4
-                    gap-6
-                    space-y-6
-                  "
-                >
-                  {products.map(product => (
-                    <div key={product.id} className="break-inside-avoid">
-                      <ProductCard
-                        product={{
-                          id: product.id,
-                          name: product.name,
-                          finalPrice: product.finalPrice,
-                          imageUrl: product.images[0]?.url,
-                          rating: product.rating,
-                        }}
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-              
+    <div className="flex min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 p-8 pt-24">
+      <ProductListWrapper products={products} categories={categories} />
+    </div>
   );
 }

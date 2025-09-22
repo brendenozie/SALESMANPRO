@@ -108,9 +108,9 @@ export default function Header() {
 
   // Define navigation links as constants
   const navLinks = [
-    { label: 'Home', href: `/site/${slug}/ecommerce` },
-    { label: 'Shop', href: `/site/${slug}/ecommerce/products` },
-    { label: 'Categories', href: `/site/${slug}/ecommerce/categories` },
+    { label: 'Home', href: `/site/${slug}` },
+    { label: 'Shop', href: `/site/${slug}/ecommerceshoes/products` },
+    { label: 'Categories', href: `/site/${slug}/ecommerceshoes/categories` },
   ];
 
   // Debounced search handler (simulate API call)
@@ -119,7 +119,7 @@ export default function Header() {
       if (query.length > 2) { // Only search if query is at least 3 characters
         console.log('Performing search for:', query);
         // In a real application, you would dispatch an action or fetch data here
-        // e.g., router.push(`/site/${slug}/ecommerce/search?q=${query}`);
+        // e.g., router.push(`/site/${slug}/ecommerceshoes/search?q=${query}`);
         // Or fetch suggestions and display them in a dropdown.
       }
     }, 300),
@@ -279,7 +279,7 @@ export default function Header() {
             <motion.button
               whileHover={{ scale: 1.1, color: primaryColor }}
               className="transition-colors text-gray-900"
-              onClick={() => router.push(`/site/${slug}/ecommerce/profile`)}
+              onClick={() => router.push(`/site/${slug}/ecommerceshoes/profile`)}
               aria-label="Profile page"
             >
               <UserIcon className="h-6 w-6" />
@@ -289,7 +289,7 @@ export default function Header() {
             <motion.button
               whileHover={{ scale: 1.1, color: primaryColor }}
               className="relative transition-colors text-gray-900"
-              onClick={() => router.push(`/site/${slug}/ecommerce/checkout`)}
+              onClick={() => router.push(`/site/${slug}/ecommerceshoes/checkout`)}
               aria-label={`Shopping cart with ${cart.length} items`}
             >
               <ShoppingBagIcon className="h-6 w-6" />
