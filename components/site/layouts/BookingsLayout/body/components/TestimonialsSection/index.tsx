@@ -17,31 +17,31 @@ const loader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality 
 // Fallback static testimonials - updated with more diverse avatars and quotes
 const staticTestimonials = [
   {
-    author: 'Sarah L.',
+    authorName: 'Sarah L.',
     quote: 'Booking my service through this platform is incredibly smooth and easy. The user interface is intuitive, and I always find exactly what I need. Highly recommend!',
     rating: 5,
     avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734b319?q=80&w=2669&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
   },
   {
-    author: 'James K.',
+    authorName: 'James K.',
     quote: 'I was impressed by the quality of service providers and the seamless booking process. This platform truly sets a new standard for convenience and excellence.',
     rating: 5,
     avatarUrl: 'https://images.unsplash.com/photo-1549040846-95ff88301f2f?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
   },
   {
-    author: 'Amara N.',
+    authorName: 'Amara N.',
     quote: 'The personalized experience I received was outstanding. Every detail was taken care of, making my well-being journey truly special. A fantastic discovery!',
     rating: 5,
     avatarUrl: 'https://images.unsplash.com/photo-1542345513-8a9d18b6e632?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
   },
   {
-    author: 'David R.',
+    authorName: 'David R.',
     quote: 'Finally, a platform that understands what clients need. Quick, reliable, and with top-tier professionals. My go-to for all my wellness needs now.',
     rating: 4,
     avatarUrl: 'https://images.unsplash.com/photo-1557088924-d2e825a0b73c?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
   },
   {
-    author: 'Fatuma A.',
+    authorName: 'Fatuma A.',
     quote: 'The secure payment system gave me great peace of mind. Combined with the easy scheduling, it made the whole process stress-free from start to finish.',
     rating: 5,
     avatarUrl: 'https://images.unsplash.com/photo-1596461404986-e88e404b4c73?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
@@ -114,7 +114,7 @@ export default function TestimonialsSection() {
   };
 
   return (
-    <section className="relative bg-gray-50 py-24 lg:py-36 px-6 lg:px-12 text-gray-900 overflow-hidden">
+    <section id="testimonials" className="relative bg-gray-50 py-24 lg:py-36 px-6 lg:px-12 text-gray-900 overflow-hidden">
       {/* Subtle, abstract background pattern */}
       <div className="absolute inset-0 z-0 opacity-5" style={{
         backgroundImage: 'radial-gradient(circle, #00A88030 1px, transparent 1px)',
@@ -180,13 +180,13 @@ export default function TestimonialsSection() {
                   <Image
                     loader={loader}
                     src={t.avatarUrl || 'https://images.unsplash.com/photo-1542345513-8a9d18b6e632?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'}
-                    alt={`Avatar of ${t.author}`}
+                    alt={`Avatar of ${t.authorName}`}
                     width={56}
                     height={56}
                     className="rounded-full object-cover border-2 border-emerald-300 shadow-md"
                   />
                   <div className="text-left">
-                    <p className="text-lg font-bold text-gray-900">{t.author}</p>
+                    <p className="text-lg font-bold text-gray-900">{t.authorName}</p>
                     <div className="flex text-yellow-500 mt-1">
                       {Array.from({ length: t.rating ?? 0 }).map((_, idx) => (
                         <StarIcon key={idx} className="w-5 h-5" />

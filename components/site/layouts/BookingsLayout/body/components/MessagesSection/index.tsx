@@ -5,9 +5,10 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
 import Link from 'next/link';
-import { ServiceItem } from '@/app/admin/[slug]/services/AdminServicesClient';
+// import { ServiceItem } from '@/app/admin/[slug]/services/AdminServicesClient';
 import { XMarkIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import BookingForm from '../../../components/BookingForm';
+import { MarketListingForm } from '@/types/typings';
 
 const loader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality || 75}`;
 
@@ -74,7 +75,7 @@ export default function ServicesSection() {
   const { marketplaceListings = [], themeSettings } = storeFormData || sampleData;
 
   const [search, setSearch] = useState('');
-  const [selected, setSelected] = useState<ServiceItem | null>(null);
+  const [selected, setSelected] = useState<MarketListingForm | null>(null);
 
   const primaryColor = themeSettings?.primaryColor || '#00A880';
 
@@ -100,7 +101,7 @@ export default function ServicesSection() {
   };
 
   return (
-    <section className="relative bg-white py-24 overflow-hidden text-gray-900">
+    <section id="services" className="relative bg-white py-24 overflow-hidden text-gray-900">
       <div className="max-w-7xl mx-auto px-6 lg:px-12">
         {/* Header and Search */}
         <div className="text-center mb-16">

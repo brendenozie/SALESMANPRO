@@ -102,7 +102,7 @@ export default function FeaturesSection() {
   const processCoreValues = CoreValues.length ? CoreValues : features;
 
   return (
-    <section className="relative bg-gray-50 py-24 px-6 sm:px-12 text-gray-900 overflow-hidden">
+    <section id="benefits" className="relative bg-gray-50 py-24 px-6 sm:px-12 text-gray-900 overflow-hidden">
       {/* Background visual elements */}
       <div className="absolute inset-0 -z-10">
         <motion.div
