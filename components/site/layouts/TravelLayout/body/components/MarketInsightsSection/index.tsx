@@ -171,7 +171,7 @@ export default function MarketInsights({
     blogPosts && blogPosts.length > 0 ? blogPosts : fallbackPosts;
 
   return (
-    <section className="py-16 px-4 bg-gray-50 overflow-hidden">
+    <section id="about" className="py-16 px-4 bg-gray-50 overflow-hidden">
       <div className="max-w-7xl mx-auto">
         <motion.h2
           className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4 text-center leading-tight"

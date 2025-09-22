@@ -56,7 +56,7 @@ type Props = {
 // Component
 export default function EducatorsSection({ educators = [] }: Props) {
   return (
-    <section className="py-20 bg-gradient-to-br from-purple-50 to-indigo-100 relative overflow-hidden">
+    <section id="trainers" className="py-20 bg-gradient-to-br from-purple-50 to-indigo-100 relative overflow-hidden">
       {/* Background abstract shapes */}
       <div className="absolute top-0 left-0 w-48 h-48 bg-primary-light opacity-10 rounded-full mix-blend-multiply filter blur-xl animate-blob" />
       <div className="absolute bottom-0 right-0 w-48 h-48 bg-primary-accent opacity-10 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-2000" />
@@ -70,7 +70,7 @@ export default function EducatorsSection({ educators = [] }: Props) {
           viewport={{ once: true, amount: 0.5 }}
         >
           Meet Our{" "}
-          <span className="text-primary-dark">World-Class Educators</span> 🎓
+          <span className="text-primary-dark">World-Class Trainers</span> 🎓
         </motion.h2>
 
         <motion.div

@@ -25,10 +25,10 @@ export default function Header({ storeName = "Fitness" }: HeaderProps) {
 
     const navLinks = [
         { name: "Home", href: "#" },
-        { name: "Programs", href: "#" },
-        { name: "Trainers", href: "#" },
-        { name: "About", href: "#" },
-        { name: "Contact", href: "#" },
+        { name: "Programs", href: "#programs" },
+        { name: "Trainers", href: "#trainers" },
+        { name: "About", href: "#about" },
+        { name: "Contact", href: "#contact" },
     ];
 
     const menuVariants = {
@@ -58,7 +58,7 @@ export default function Header({ storeName = "Fitness" }: HeaderProps) {
                     ))}
 
                     {/* Theme Toggle */}
-                    <button
+                    {/* <button
                         onClick={() => setDarkMode(!darkMode)}
                         className="ml-4 p-2 rounded-full bg-gray-200/50 hover:bg-gray-300/50 transition"
                         aria-label="Toggle Dark Mode"
@@ -68,7 +68,7 @@ export default function Header({ storeName = "Fitness" }: HeaderProps) {
                         ) : (
                             <MoonIcon className="w-5 h-5 text-gray-800" />
                         )}
-                    </button>
+                    </button> */}
                 </div>
 
                 {/* Mobile Menu Button */}
@@ -110,7 +110,7 @@ export default function Header({ storeName = "Fitness" }: HeaderProps) {
                             ))}
 
                             {/* Mobile Theme Toggle */}
-                            <button
+                            {/* <button
                                 onClick={() => setDarkMode(!darkMode)}
                                 className="flex items-center space-x-2 mt-4 p-2 rounded-full bg-gray-200/50 hover:bg-gray-300/50 transition text-gray-800"
                                 aria-label="Toggle Dark Mode"
@@ -126,7 +126,7 @@ export default function Header({ storeName = "Fitness" }: HeaderProps) {
                                         <span>Dark Mode</span>
                                     </>
                                 )}
-                            </button>
+                            </button> */}
                         </div>
                     </motion.div>
                 )}

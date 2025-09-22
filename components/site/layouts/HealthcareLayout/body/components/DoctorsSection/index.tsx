@@ -48,7 +48,7 @@ export default function DoctorsSection({ doctors, storeSlug }: DoctorsSectionPro
   };
 
   return (
-    <section className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-950 dark:to-gray-900 py-20 lg:py-28 relative overflow-hidden">
+    <section id="doctors" className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-950 dark:to-gray-900 py-20 lg:py-28 relative overflow-hidden">
       {/* Background Shapes for Visual Texture */}
       <div className="absolute inset-0 z-0 opacity-10">
         <div className="absolute w-80 h-80 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl top-1/4 left-1/4 transform -translate-x-1/2 -translate-y-1/2" />

@@ -38,7 +38,7 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }: any) => {
   const [isSearchVisible, setIsSearchVisible] = useState(false);
   const router = useRouter();
 
-  const navItems = ["Home", "Shop", "Categories"];
+  const navItems = ["Home", "Listings", "Categories"];
 
   return (
     <header className="absolute inset-x-0 top-0 z-50">
@@ -84,7 +84,7 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }: any) => {
                   // Changed text-white to a dark gray and hover:text-blue-400 to blue-600
                 >
                   <Link
-                    href={`/site/${storeFormData.slug}/${label === "Home" ? "" : label.toLowerCase()}`}
+                    href={`/site/${storeFormData.slug}${label === "Home" ? "" : "#"+label.toLowerCase()}`}
                     scroll={false}
                     className="py-2"
                   >
@@ -123,7 +123,7 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }: any) => {
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
-                onClick={() => router.push(`/site/${storeFormData.slug}/profile`)}
+                onClick={() => router.push(`/site/${storeFormData.slug}/automotive/profile`)}
                 className="p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition-colors text-gray-700"
                 // Changed colors for light mode
               >
@@ -161,7 +161,7 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }: any) => {
                 {navItems.map((label) => (
                   <Link
                     key={label}
-                    href={`/site/${storeFormData.slug}/${label === "Home" ? "" : label.toLowerCase()}`}
+                    href={`/site/${storeFormData.slug}${label === "Home" ? "" : "#"+label.toLowerCase()}`}
                     className="text-gray-900 font-medium hover:text-blue-600 transition"
                     // Changed colors for light mode
                     onClick={() => setMobileMenuOpen(false)}

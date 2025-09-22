@@ -24,15 +24,15 @@ export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   // Fallback colors if not provided
-  const primaryColor = storeFormData.themeSettings?.primaryColor || "#ffffff";
-  const accentColor = storeFormData.themeSettings?.secondaryColor || "#10B981";
+  const primaryColor = storeFormData?.themeSettings?.primaryColor || "#ffffff";
+  const accentColor = storeFormData?.themeSettings?.secondaryColor || "#10B981";
 
   const navItems = [
-    { label: "Home", href: `/${storeFormData.slug}` },
-    { label: "Destinations", href: `/${storeFormData.slug}/destinations` },
-    { label: "Tours", href: `/${storeFormData.slug}/tours` },
-    { label: "About", href: `/${storeFormData.slug}/about` },
-    { label: "Contact", href: `/${storeFormData.slug}/contact` },
+    { label: "Home", href: `/${storeFormData?.slug}` },
+    { label: "Destinations", href: `/site/${storeFormData?.slug}#destinations` },
+    { label: "Tours", href: `/site/${storeFormData?.slug}#tours` },
+    { label: "About", href: `/site/${storeFormData?.slug}#about` },
+    { label: "Contact", href: `/site/${storeFormData?.slug}#contact` },
   ];
 
   return (
@@ -43,8 +43,8 @@ export default function Header() {
           <div className="flex items-center justify-between h-16">
             {/* Logo / Site Name */}
             <div className="flex items-center">
-              {storeFormData.logoUrl ? (
-                <Link href={`/${storeFormData.slug}`}>
+              {storeFormData?.logoUrl ? (
+                <Link href={`/site/${storeFormData.slug}`}>
                   <Image
                     src={storeFormData.logoUrl}
                     alt={storeFormData.name}
@@ -55,9 +55,9 @@ export default function Header() {
                   />
                 </Link>
               ) : (
-                <Link href={`/${storeFormData.slug}`}>
+                <Link href={`/site/${storeFormData?.slug}`}>
                   <span className="text-2xl font-extrabold cursor-pointer">
-                    {storeFormData.name}
+                    {storeFormData?.name}
                   </span>
                 </Link>
               )}
@@ -85,21 +85,21 @@ export default function Header() {
             {/* Search, Profile, Chat Icons */}
             <div className="hidden lg:flex items-center space-x-4">
               <button
-                onClick={() => router.push(`/${storeFormData.slug}/search`)}
+                onClick={() => router.push(`/site/${storeFormData?.slug}/search`)}
                 aria-label="Search"
                 className="p-1 rounded-full hover:bg-white/20 transition"
               >
                 <MagnifyingGlassIcon className="h-6 w-6" />
               </button>
               <button
-                onClick={() => router.push(`/${storeFormData.slug}/profile`)}
+                onClick={() => router.push(`/site/${storeFormData?.slug}/profile`)}
                 aria-label="Profile"
                 className="p-1 rounded-full hover:bg-white/20 transition"
               >
                 <UserCircleIcon className="h-6 w-6" />
               </button>
               <button
-                onClick={() => router.push(`/${storeFormData.slug}/chat`)}
+                onClick={() => router.push(`/${storeFormData?.slug}/chat`)}
                 aria-label="Chat"
                 className="p-1 rounded-full hover:bg-white/20 transition"
               >
@@ -137,7 +137,7 @@ export default function Header() {
           >
             <div className="px-4 py-6">
               <div className="flex items-center justify-between mb-8">
-                {storeFormData.logoUrl ? (
+                {storeFormData?.logoUrl ? (
                   <Image
                     src={storeFormData.logoUrl}
                     alt={storeFormData.name}
@@ -147,7 +147,7 @@ export default function Header() {
                     className="object-contain"
                   />
                 ) : (
-                  <span className="text-xl font-bold">{storeFormData.name}</span>
+                  <span className="text-xl font-bold">{storeFormData?.name}</span>
                 )}
                 <button
                   onClick={() => setMobileOpen(false)}
@@ -174,7 +174,7 @@ export default function Header() {
               <div className="mt-8 border-t border-white/20 pt-6 space-y-4">
                 <button
                   onClick={() => {
-                    router.push(`/${storeFormData.slug}/search`);
+                    router.push(`/site/${storeFormData?.slug}/search`);
                     setMobileOpen(false);
                   }}
                   className="flex items-center space-x-2 hover:text-green-200 transition"
@@ -184,7 +184,7 @@ export default function Header() {
                 </button>
                 <button
                   onClick={() => {
-                    router.push(`/${storeFormData.slug}/profile`);
+                    router.push(`/${storeFormData?.slug}/profile`);
                     setMobileOpen(false);
                   }}
                   className="flex items-center space-x-2 hover:text-green-200 transition"
@@ -194,7 +194,7 @@ export default function Header() {
                 </button>
                 <button
                   onClick={() => {
-                    router.push(`/${storeFormData.slug}/chat`);
+                    router.push(`/site/${storeFormData?.slug}/chat`);
                     setMobileOpen(false);
                   }}
                   className="flex items-center space-x-2 hover:text-green-200 transition"

@@ -51,6 +51,7 @@ export default function NewsletterSection() {
 
     return (
         <motion.section
+            id="contact"
             className="relative py-20 px-4 md:px-8 bg-gradient-to-br from-slate-900 to-indigo-950 text-white rounded-[3rem] mx-4 md:mx-8 lg:mx-16 my-20 overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.3)]"
             variants={sectionVariants}
             initial="hidden"

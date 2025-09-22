@@ -67,7 +67,7 @@ export default function NewsletterSignup() {
   };
 
   return (
-    <section className="py-20 px-4 bg-gradient-to-br from-indigo-600 to-purple-700 relative overflow-hidden">
+    <section id="contact" className="py-20 px-4 bg-gradient-to-br from-indigo-600 to-purple-700 relative overflow-hidden">
       {/* Decorative Background Elements */}
       <motion.div
         className="absolute top-1/4 left-1/4 w-40 h-40 bg-white opacity-10 rounded-full mix-blend-overlay"

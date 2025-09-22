@@ -109,7 +109,7 @@ export default function ListingsGrid({
     storeFormData?.themeSettings || {};
 
   return (
-    <section className="py-16 px-4 md:px-8 bg-gray-50 relative">
+    <section id="programs" className="py-16 px-4 md:px-8 bg-gray-50 relative">
       <div className="max-w-7xl mx-auto">
         {/* Heading */}
         <motion.h2
@@ -120,7 +120,7 @@ export default function ListingsGrid({
           transition={{ duration: 0.8, delay: 0.1 }}
         >
           Explore Our{" "}
-          <span style={{ color: secondaryColor }}>Curated Courses</span> ✨
+          <span style={{ color: secondaryColor }}>Curated Programs</span> ✨
         </motion.h2>
 
         {/* Grid */}

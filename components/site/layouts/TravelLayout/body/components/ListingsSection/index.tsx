@@ -212,7 +212,7 @@ function ListingCard({ listing = listingSamples }: { listing: any }) {
 export default function ListingsSection( {listings, slug }: any) {
 
   return (
-    <section className="py-16 px-4 bg-gray-50">
+    <section id="tours" className="py-16 px-4 bg-gray-50">
       <div className="max-w-7xl mx-auto">
         <motion.h2
           className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4 text-center leading-tight"

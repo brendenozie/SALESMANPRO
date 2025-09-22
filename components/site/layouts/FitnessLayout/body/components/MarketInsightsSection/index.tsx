@@ -58,7 +58,7 @@ const getIconForCategory = (category?: string) => {
 
 export default function WellnessHubSection({ blogs = [] }: { blogs?: IBlog[] }) {
   return (
-    <section className="py-20 bg-gradient-to-br from-blue-50 to-indigo-50 relative overflow-hidden">
+    <section id="about" className="py-20 bg-gradient-to-br from-blue-50 to-indigo-50 relative overflow-hidden">
       {/* background blobs */}
       <div className="absolute top-0 left-0 w-72 h-72 bg-blue-200 opacity-15 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-4000" />
       <div className="absolute bottom-0 right-0 w-72 h-72 bg-indigo-200 opacity-15 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000" />

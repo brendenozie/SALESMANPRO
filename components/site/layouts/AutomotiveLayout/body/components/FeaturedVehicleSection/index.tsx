@@ -148,7 +148,7 @@ export default function FeaturedVehicleSection({
   }
 
   return (
-    <section className="py-16 sm:py-24 bg-gray-50 dark:bg-gray-950">
+    <section id="listings" className="py-16 sm:py-24 bg-gray-50 dark:bg-gray-950">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <motion.h2
           className="text-4xl sm:text-5xl font-extrabold text-gray-900 dark:text-gray-50 mb-12 text-center"
