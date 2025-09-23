@@ -3,138 +3,43 @@
 import React, { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { TrashIcon } from "@heroicons/react/24/outline";
-// Note: Assuming these types are available or defined elsewhere
-// For this example, we'll use a placeholder for the types
-// import { StoreForm, IStoreCategory, MarketListingForm } from "@/types/typings";
+import { useStoreContext } from "@/contexts/StoreContext";
+import { StoreForm } from "@/types/typings";
 
-// Define placeholder types to make the code runnable
-type MarketListingForm = {
-  id: string;
-  name: string;
-  brand: string;
-  category: string;
-  finalPrice: number;
-  images: { url: string; alt: string }[];
-};
-
-type IStoreCategory = {
-  id: string;
-  displayName: string;
-  allBrands: string[];
-};
-
-type StoreForm = {
-  id: string;
-  StoreCategory: IStoreCategory[];
-  marketplaceListings: MarketListingForm[];
-};
-
-
-// Define your sample data here
-const sampleData: StoreForm = {
-  // A placeholder ID, though not used in this example
-  id: "sample-store-id",
-
-  // Sample categories with brands
-  StoreCategory: [
-    {
-      id: "cat-1",
-      displayName: "Electronics",
-      allBrands: ["BrandA", "BrandB", "BrandC"],
-    },
-    {
-      id: "cat-2",
-      displayName: "Apparel",
-      allBrands: ["BrandX", "BrandY"],
-    },
-    {
-      id: "cat-3",
-      displayName: "Home Goods",
-      allBrands: ["BrandZ"],
-    },
-  ],
-
-  // A list of sample products
-  marketplaceListings: [
-    {
-      id: "prod-1",
-      name: "Wireless Headphones",
-      brand: "BrandA",
-      category: "Electronics",
-      finalPrice: 199.99,
-      images: [{ url: "https://placehold.co/200x200/2563EB/ffffff?text=Headphones", alt: "Wireless Headphones" }],
-    },
-    {
-      id: "prod-2",
-      name: "Vintage T-Shirt",
-      brand: "BrandX",
-      category: "Apparel",
-      finalPrice: 29.50,
-      images: [{ url: "https://placehold.co/200x200/F97316/ffffff?text=T-Shirt", alt: "Vintage T-Shirt" }],
-    },
-    {
-      id: "prod-3",
-      name: "Smart Speaker",
-      brand: "BrandB",
-      category: "Electronics",
-      finalPrice: 89.99,
-      images: [{ url: "https://placehold.co/200x200/2563EB/ffffff?text=Speaker", alt: "Smart Speaker" }],
-    },
-    {
-      id: "prod-4",
-      name: "Wool Scarf",
-      brand: "BrandY",
-      category: "Apparel",
-      finalPrice: 45.00,
-      images: [{ url: "https://placehold.co/200x200/F97316/ffffff?text=Scarf", alt: "Wool Scarf" }],
-    },
-    {
-      id: "prod-5",
-      name: "Desk Lamp",
-      brand: "BrandZ",
-      category: "Home Goods",
-      finalPrice: 55.00,
-      images: [{ url: "https://placehold.co/200x200/A855F7/ffffff?text=Lamp", alt: "Desk Lamp" }],
-    },
-    {
-      id: "prod-6",
-      name: "4K Monitor",
-      brand: "BrandC",
-      category: "Electronics",
-      finalPrice: 349.00,
-      images: [{ url: "https://placehold.co/200x200/2563EB/ffffff?text=Monitor", alt: "4K Monitor" }],
-    },
-  ],
-};
-
-
-// Main component to hold the entire filterable store section
 export default function StorePage() {
+  const { storeFormData } = useStoreContext();
+
+  // Destructure live data with fallbacks
+  const {
+    StoreCategory = [],
+    marketplaceListings = [],
+    themeSettings = {},
+  } = storeFormData || {};
+
+  const primary = themeSettings?.primaryColor || "#f97316";
+  const secondary = themeSettings?.secondaryColor || "#3b82f6";
+
   const [activeFilters, setActiveFilters] = useState<{
     category: string | null;
     brand: string | null;
   }>({ category: null, brand: null });
 
-  const dataToUse = sampleData;
-
+  // Filter logic
   const filteredProducts = useMemo(() => {
-    return dataToUse.marketplaceListings?.filter((p) => {
+    return marketplaceListings?.filter((p) => {
       if (activeFilters.category && p.category !== activeFilters.category) return false;
       if (activeFilters.brand && p.brand !== activeFilters.brand) return false;
       return true;
     });
-  }, [dataToUse, activeFilters]);
+  }, [marketplaceListings, activeFilters]);
 
-  const clearFilters = () => {
-    setActiveFilters({ category: null, brand: null });
-  };
+  const clearFilters = () => setActiveFilters({ category: null, brand: null });
 
   const handleCategoryClick = (categoryName: string) => {
     setActiveFilters((prev) => ({
       ...prev,
       category: prev.category === categoryName ? null : categoryName,
-      // Reset brand filter when category changes
-      brand: null,
+      brand: null, // reset brand when switching categories
     }));
   };
 
@@ -152,11 +57,14 @@ export default function StorePage() {
 
       <div className="relative z-10 max-w-7xl mx-auto">
         <h1 className="text-3xl sm:text-4xl font-extrabold text-center mb-12">
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-800">
+          <span
+            className="text-transparent bg-clip-text bg-gradient-to-r"
+            style={{ backgroundImage: `linear-gradient(to right, ${primary}, ${secondary})` }}
+          >
             Our Products
           </span>
         </h1>
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Filter Sidebar */}
           <motion.aside
@@ -166,7 +74,7 @@ export default function StorePage() {
             transition={{ duration: 0.5 }}
           >
             <h2 className="text-2xl font-bold mb-4 text-gray-900">Filters</h2>
-            
+
             <AnimatePresence>
               {(activeFilters.category || activeFilters.brand) && (
                 <motion.button
@@ -181,21 +89,25 @@ export default function StorePage() {
                 </motion.button>
               )}
             </AnimatePresence>
-            
+
             {/* Categories */}
             <div>
               <h3 className="font-bold text-lg mb-4 text-gray-900">Categories</h3>
               <div className="flex flex-wrap gap-2">
-                {dataToUse.StoreCategory.map((cat) => (
+                {StoreCategory.map((cat) => (
                   <button
                     key={cat.id}
                     onClick={() => handleCategoryClick(cat.displayName || "")}
                     className={`py-2 px-4 rounded-full font-medium transition-all duration-300 transform hover:scale-105 
                       ${activeFilters.category === cat.displayName
-                        ? 'bg-blue-600 text-white shadow-md'
-                        : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
-                      }
-                    `}
+                        ? `text-white shadow-md`
+                        : "bg-gray-200 text-gray-800 hover:bg-gray-300"
+                      }`}
+                    style={
+                      activeFilters.category === cat.displayName
+                        ? { backgroundColor: primary }
+                        : {}
+                    }
                   >
                     {cat.displayName}
                   </button>
@@ -214,18 +126,21 @@ export default function StorePage() {
                 >
                   <h3 className="font-bold text-lg mt-4 mb-4 text-gray-900">Brands</h3>
                   <div className="flex flex-wrap gap-2">
-                    {dataToUse.StoreCategory
-                      .find((c) => c.displayName === activeFilters.category)
+                    {StoreCategory.find((c) => c.displayName === activeFilters.category)
                       ?.allBrands.map((brand) => (
                         <button
                           key={brand}
                           onClick={() => handleBrandClick(brand)}
                           className={`py-2 px-4 rounded-full font-medium transition-all duration-300 transform hover:scale-105
                             ${activeFilters.brand === brand
-                              ? 'bg-purple-600 text-white shadow-md'
-                              : 'bg-gray-200 text-gray-800 hover:bg-gray-300'
-                            }
-                          `}
+                              ? `text-white shadow-md`
+                              : "bg-gray-200 text-gray-800 hover:bg-gray-300"
+                            }`}
+                          style={
+                            activeFilters.brand === brand
+                              ? { backgroundColor: secondary }
+                              : {}
+                          }
                         >
                           {brand}
                         </button>
@@ -246,11 +161,7 @@ export default function StorePage() {
                   initial="hidden"
                   animate="visible"
                   variants={{
-                    visible: {
-                      transition: {
-                        staggerChildren: 0.1,
-                      },
-                    },
+                    visible: { transition: { staggerChildren: 0.1 } },
                   }}
                 >
                   {filteredProducts.map((product) => (
@@ -265,7 +176,7 @@ export default function StorePage() {
                     >
                       <div className="relative overflow-hidden flex flex-col items-center p-6 shadow-xl rounded-2xl backdrop-blur-lg bg-white/50 border border-gray-200">
                         <img
-                          src={product.images[0].url || "https://placehold.co/200x200/52525B/ffffff?text=Image"}
+                          src={product.images?.[0]?.url || "https://placehold.co/200x200/52525B/ffffff?text=Image"}
                           alt={product.name}
                           className="h-40 w-full object-contain mb-4 transition-transform duration-300 group-hover:scale-105"
                         />
@@ -274,7 +185,7 @@ export default function StorePage() {
                             {product.name}
                           </h4>
                           <p className="text-sm text-gray-600">{product.brand}</p>
-                          <p className="font-extrabold text-2xl mt-4 text-green-600">
+                          <p className="font-extrabold text-2xl mt-4" style={{ color: primary }}>
                             ${product.finalPrice}
                           </p>
                         </div>

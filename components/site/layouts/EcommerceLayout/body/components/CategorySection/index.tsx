@@ -3,7 +3,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRightCircleIcon } from '@heroicons/react/24/outline';
-import { useStoreContext } from '../../@/contexts/StoreContext';
+import { useStoreContext } from '@/contexts/StoreContext';
 import { IStoreCategory, StoreForm } from '@/types/typings';
 
 export interface HeroSliderProps {

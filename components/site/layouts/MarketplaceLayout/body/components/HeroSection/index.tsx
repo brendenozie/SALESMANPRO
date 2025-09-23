@@ -15,6 +15,29 @@ export interface HeroBannerProps {
   storeFormData: StoreForm | null;
 }
 
+// Fallback slides (same as HeroSlider)
+const defaultSlides = [
+  {
+    imageUrl:
+      "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80",
+    headline: "STEP INTO STYLE & COMFORT",
+    subline: "Shoes",
+    badgeText:
+      "Out too the been like hard off. Improve enquire welcome own beloved matters her.",
+    ctaText: "Buy Now",
+    ctaLink: "/shop",
+  },
+  {
+    imageUrl:
+      "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80",
+    headline: "ELEVATE YOUR LOOK TODAY",
+    subline: "Awesome",
+    badgeText: "Discover fresh drops and timeless classics. Comfort and style perfectly combined.",
+    ctaText: "Shop Now",
+    ctaLink: "/collection",
+  },
+];
+
 export default function HeroBanner({ storeFormData }: HeroBannerProps) {
   const carouselRef = useRef<HTMLDivElement>(null);
 
@@ -25,22 +48,27 @@ export default function HeroBanner({ storeFormData }: HeroBannerProps) {
     carouselRef.current.scrollTo({ left: scrollLeft + offset, behavior: "smooth" });
   };
 
-  // Map heroSlides into product cards
-  const products =
-    storeFormData?.heroSlides?.map((slide, idx) => ({
-      id: idx.toString(),
-      name: slide.headline || `Product ${idx + 1}`,
-      imageUrl: slide.imageUrl,
-      link: slide.ctaLink || "/shop",
-    })) || [];
+  // Normalize heroSlides with fallbacks
+  const slides =
+    storeFormData?.heroSlides && storeFormData.heroSlides.length > 0
+      ? storeFormData.heroSlides.map((s, idx) => ({
+          id: idx.toString(),
+          imageUrl: s.imageUrl || defaultSlides[idx % defaultSlides.length].imageUrl,
+          headline: s.headline || defaultSlides[idx % defaultSlides.length].headline,
+          subline: s.subline || defaultSlides[idx % defaultSlides.length].subline,
+          badgeText: (s as any).badgeText || defaultSlides[idx % defaultSlides.length].badgeText,
+          ctaText: s.ctaText || defaultSlides[idx % defaultSlides.length].ctaText,
+          ctaLink: s.ctaLink || defaultSlides[idx % defaultSlides.length].ctaLink,
+        }))
+      : defaultSlides.map((s, idx) => ({ ...s, id: idx.toString() }));
 
   return (
     <section className="relative overflow-hidden">
       {/* Hero Section */}
       <div className="relative h-[600px] sm:h-[700px]">
         <Image
-          src={products[0]?.imageUrl || "/images/hero-banner.jpg"}
-          alt={products[0]?.name || "Hero Banner"}
+          src={slides[0].imageUrl}
+          alt={slides[0].headline}
           fill
           className="object-cover"
           loader={loader}
@@ -66,7 +94,7 @@ export default function HeroBanner({ storeFormData }: HeroBannerProps) {
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.8 }}
           >
-            {products[0]?.name || "Step Up Your Style"}
+            {slides[0].headline}
           </motion.h1>
           <motion.p
             className="mt-4 text-lg sm:text-2xl text-gray-200 max-w-2xl"
@@ -74,8 +102,7 @@ export default function HeroBanner({ storeFormData }: HeroBannerProps) {
             animate={{ opacity: 1 }}
             transition={{ delay: 0.8, duration: 0.6 }}
           >
-            {storeFormData?.heroSlides?.[0]?.badgeText ||
-              "Discover the latest arrivals made for movement"}
+            {slides[0].badgeText}
           </motion.p>
           <motion.div
             className="mt-8 flex space-x-4"
@@ -84,10 +111,10 @@ export default function HeroBanner({ storeFormData }: HeroBannerProps) {
             transition={{ delay: 1.2, duration: 0.6 }}
           >
             <Link
-              href={products[0]?.link || "/shop"}
+              href={slides[0].ctaLink}
               className="px-8 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-full text-lg font-semibold shadow-xl hover:scale-105 transition"
             >
-              {storeFormData?.heroSlides?.[0]?.ctaText || "Shop Now"}
+              {slides[0].ctaText}
             </Link>
             <button className="px-6 py-3 bg-transparent border-2 border-white text-white rounded-full text-lg font-medium hover:bg-white hover:text-black transition">
               Learn More
@@ -97,7 +124,7 @@ export default function HeroBanner({ storeFormData }: HeroBannerProps) {
       </div>
 
       {/* Product Carousel */}
-      {products.length > 1 && (
+      {slides.length > 1 && (
         <div className="mt-12 relative">
           <button
             onClick={() => scroll("left")}
@@ -116,28 +143,28 @@ export default function HeroBanner({ storeFormData }: HeroBannerProps) {
             ref={carouselRef}
             className="flex overflow-x-auto snap-x snap-mandatory space-x-6 px-8 py-8 scrollbar-hide"
           >
-            {products.map((p) => (
+            {slides.map((s) => (
               <motion.div
-                key={p.id}
+                key={s.id}
                 className="min-w-[220px] snap-center bg-white rounded-2xl overflow-hidden shadow-2xl hover:shadow-2xl transition-shadow"
                 whileHover={{ scale: 1.05 }}
                 transition={{ duration: 0.3 }}
               >
                 <Image
-                  src={p.imageUrl || ""}
-                  alt={p.name}
+                  src={s.imageUrl}
+                  alt={s.headline}
                   width={240}
                   height={160}
                   className="object-cover"
                   loader={loader}
                 />
                 <div className="p-4 text-center bg-gray-50">
-                  <h3 className="font-semibold text-lg mb-2">{p.name}</h3>
+                  <h3 className="font-semibold text-lg mb-2">{s.headline}</h3>
                   <Link
-                    href={p.link}
+                    href={s.ctaLink}
                     className="px-4 py-2 bg-indigo-600 text-white rounded-full text-sm font-medium hover:bg-indigo-700 transition"
                   >
-                    View Product
+                    {s.ctaText}
                   </Link>
                 </div>
               </motion.div>

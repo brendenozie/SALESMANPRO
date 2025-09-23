@@ -14,9 +14,7 @@ const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-    },
+    transition: { staggerChildren: 0.1 },
   },
 };
 
@@ -25,27 +23,22 @@ const itemVariants = {
   visible: {
     opacity: 1,
     y: 0,
-    transition: {
-      type: "spring",
-      stiffness: 100,
-      damping: 10,
-    },
+    transition: { type: "spring", stiffness: 100, damping: 10 },
   },
 };
 
 export default function CategoryCarousel({ storeFormData }: CategoryCarouselProps) {
-  const carouselRef = useRef(null);
+  const carouselRef = useRef<HTMLDivElement>(null);
 
-  // Scroll handler for the carousel
-  const scroll = (dir) => {
+  const scroll = (dir: "left" | "right") => {
     if (!carouselRef.current) return;
     const { clientWidth, scrollLeft } = carouselRef.current;
     const delta = dir === "left" ? -clientWidth * 0.7 : clientWidth * 0.7;
     carouselRef.current.scrollTo({ left: scrollLeft + delta, behavior: "smooth" });
   };
 
-  // Use categories from storeFormData or a compelling fallback
-  const cats =
+  // Map store categories or fallback
+  const cats: IStoreCategory[] =
     storeFormData?.StoreCategory?.length
       ? storeFormData.StoreCategory
       : [
@@ -67,7 +60,7 @@ export default function CategoryCarousel({ storeFormData }: CategoryCarouselProp
 
       <div className="container mx-auto relative px-4 z-10">
         <motion.h2
-          className="text-4xl md:text-5xl font-extrabold text-center mb-16 relative"
+          className="text-4xl md:text-5xl font-extrabold text-center mb-16"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
@@ -77,7 +70,7 @@ export default function CategoryCarousel({ storeFormData }: CategoryCarouselProp
           </span>
         </motion.h2>
 
-        {/* Carousel Container */}
+        {/* Carousel */}
         <motion.div
           className="relative"
           variants={containerVariants}
@@ -88,7 +81,7 @@ export default function CategoryCarousel({ storeFormData }: CategoryCarouselProp
           {/* Navigation Buttons */}
           <button
             onClick={() => scroll("left")}
-            className="absolute left-0 top-1/2 -translate-y-1/2 transform bg-white/60 backdrop-blur-sm p-3 rounded-full shadow-lg z-20 transition-all duration-300 hover:scale-110 hover:bg-gray-200/80 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="absolute left-0 top-1/2 -translate-y-1/2 transform bg-white/60 backdrop-blur-sm p-3 rounded-full shadow-lg z-20 transition hover:scale-110 hover:bg-gray-200/80"
             aria-label="Previous category"
           >
             <ChevronLeftIcon className="h-7 w-7 text-gray-600" />
@@ -96,50 +89,63 @@ export default function CategoryCarousel({ storeFormData }: CategoryCarouselProp
 
           <button
             onClick={() => scroll("right")}
-            className="absolute right-0 top-1/2 -translate-y-1/2 transform bg-white/60 backdrop-blur-sm p-3 rounded-full shadow-lg z-20 transition-all duration-300 hover:scale-110 hover:bg-gray-200/80 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="absolute right-0 top-1/2 -translate-y-1/2 transform bg-white/60 backdrop-blur-sm p-3 rounded-full shadow-lg z-20 transition hover:scale-110 hover:bg-gray-200/80"
             aria-label="Next category"
           >
             <ChevronRightIcon className="h-7 w-7 text-gray-600" />
           </button>
 
-          {/* Carousel */}
           <div
             ref={carouselRef}
             className="flex overflow-x-auto gap-8 px-4 py-6 scrollbar-hide snap-x snap-mandatory"
           >
-            {cats.map((c) => (
-              <motion.div
-                key={c.id}
-                className="snap-center flex-shrink-0 w-48"
-                variants={itemVariants}
-              >
-                <a href={`/shop?category=${c.displayName?.toLowerCase()}`}>
-                  <motion.div
-                    className="flex flex-col items-center p-8 bg-white/50 rounded-3xl border border-gray-200 backdrop-blur-lg cursor-pointer"
-                    whileHover={{
-                      scale: 1.05,
-                      y: -8,
-                      boxShadow: "0px 15px 30px rgba(0,0,0,0.1)",
-                    }}
-                    transition={{ type: "spring", stiffness: 300, damping: 15 }}
-                  >
+            {cats.map((c) => {
+              const categoryName = c.displayName || c.category?.name || "Category";
+              return (
+                <motion.div
+                  key={c.id}
+                  className="snap-center flex-shrink-0 w-48"
+                  variants={itemVariants}
+                >
+                  <a href={`/shop?category=${encodeURIComponent(categoryName.toLowerCase())}`}>
                     <motion.div
-                      className="w-24 h-24 rounded-full flex items-center justify-center text-5xl bg-gradient-to-tr from-blue-500 to-purple-600 shadow-xl"
-                      whileHover={{ scale: 1.1, rotate: 10 }}
-                      transition={{ type: "spring", stiffness: 300 }}
+                      className="flex flex-col items-center p-8 bg-white/50 rounded-3xl border border-gray-200 backdrop-blur-lg cursor-pointer"
+                      whileHover={{
+                        scale: 1.05,
+                        y: -8,
+                        boxShadow: "0px 15px 30px rgba(0,0,0,0.1)",
+                      }}
+                      transition={{ type: "spring", stiffness: 300, damping: 15 }}
                     >
-                      {c.icon}
+                      {/* Icon handling */}
+                      <motion.div
+                        className="w-24 h-24 rounded-full flex items-center justify-center text-5xl bg-gradient-to-tr from-blue-500 to-purple-600 shadow-xl"
+                        whileHover={{ scale: 1.1, rotate: 10 }}
+                        transition={{ type: "spring", stiffness: 300 }}
+                      >
+                        {c.icon?.startsWith("http") ? (
+                          <img
+                            src={c.icon}
+                            alt={categoryName}
+                            className="w-12 h-12 object-contain"
+                          />
+                        ) : (
+                          <span>{c.icon || "📦"}</span>
+                        )}
+                      </motion.div>
+
+                      <span className="mt-8 text-lg font-bold text-gray-800 text-center">
+                        {categoryName}
+                      </span>
                     </motion.div>
-                    <span className="mt-8 text-lg font-bold text-gray-800 text-center">
-                      {c.displayName}
-                    </span>
-                  </motion.div>
-                </a>
-              </motion.div>
-            ))}
+                  </a>
+                </motion.div>
+              );
+            })}
           </div>
         </motion.div>
       </div>
+
       <style jsx>{`
         .radial-gradient-to-br {
           background-image: radial-gradient(
