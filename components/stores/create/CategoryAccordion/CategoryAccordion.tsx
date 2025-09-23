@@ -55,10 +55,10 @@ export default function CategoryTree({
         return categoriesForContext
             .map(cat => ({
                 ...cat,
-                subcategories: cat.subcategories.filter(c => c.name.toLowerCase().includes(q)),
+                subcategories: cat.subcategories?.filter(c => c.name.toLowerCase().includes(q)),
                 allBrands: (cat.allBrands || []).filter(b => b.toLowerCase().includes(q)),
             }))
-            .filter(cat => cat.name?.toLowerCase().includes(q) || cat.subcategories.length > 0 || (cat.allBrands?.length || 0) > 0);
+            .filter(cat => cat.name?.toLowerCase().includes(q) || cat?.subcategories && cat.subcategories.length > 0 || (cat.allBrands?.length || 0) > 0);
     }, [search, categoriesForContext]);
 
     const selectedParentMap = useMemo(() => {
@@ -158,7 +158,7 @@ export default function CategoryTree({
                             const { isFullySelected, isPartiallySelected } = getSelectionStatus(cat);
                             const selectedParent = selectedParentMap.get(cat.id);
                             const isOpen = expanded.has(cat.id);
-                            const totalCount = (cat.subcategories.length || 0) + (cat.allBrands?.length || 0);
+                            const totalCount = (cat.subcategories?.length || 0) + (cat.allBrands?.length || 0);
                             const selectedCount = (selectedParent?.subcategories.length || 0) + (selectedParent?.allBrands?.length || 0);
 
                             return (
@@ -177,7 +177,7 @@ export default function CategoryTree({
                                     <AnimatePresence>
                                         {isOpen && (
                                             <motion.div initial={{ height: 0 }} animate={{ height: 'auto' }} exit={{ height: 0 }} className="overflow-hidden">
-                                                {cat.subcategories.length > 0 && 
+                                                {cat?.subcategories && cat?.subcategories.length > 0 && 
                                                     <div className="p-4 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 border-t">
                                                       {cat.subcategories.map(item => {
                                                           const isSel = selectedParent?.subcategories.some( s => resolveId(s) === resolveId(item));

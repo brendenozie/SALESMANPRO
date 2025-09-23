@@ -26,21 +26,6 @@ export default async function ProductPage({ params }: PageProps) {
   const rawStore = await prisma.company.findUnique({ where: { slug } });
   if (!rawStore) notFound();
 
-  const store: StoreForm = {
-    id: rawStore.id,
-    name: rawStore.name,
-    slug: rawStore.slug,
-    description: rawStore.description || undefined,
-    category: rawStore.category,
-    logoUrl: rawStore.logoUrl || undefined,
-    bannerUrl: rawStore.bannerUrl || undefined,
-    contactEmail: rawStore.contactEmail,
-    contactPhone: rawStore.contactPhone || undefined,
-    address: rawStore.address || undefined,
-    themeSettings: rawStore.themeSettings,
-    StoreCategory: [], socialLinks: [], policies: [], faqs: [], testimonials: [], heroSlides: [], promotions: [], products: []
-  };
-
   // Fetch product and related items
   const product = await prisma.marketplaceListings.findFirst({
     where: { id: productId, company: { slug } },
@@ -60,9 +45,9 @@ export default async function ProductPage({ params }: PageProps) {
 
   // Render inside context provider
   return (
-    <StoreContextProvider initialStore={store} children={undefined} userRole={''} userId={''}>
+    // <StoreContextProvider initialStore={store} children={undefined} userRole={''} userId={''}>
       <ProductDetail product={product} related={related} />
-    </StoreContextProvider>
+    // </StoreContextProvider>
   );
 }
 

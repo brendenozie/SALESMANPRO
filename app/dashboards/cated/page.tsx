@@ -302,7 +302,7 @@ export default function CategoryManager() {
                     <img src={cat.thumbnail} alt={cat.imageAlt} className="w-12 h-12 object-cover rounded-md mr-4" />
                   )}
                   <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-800">{cat.name}</h3>
+                    <h3 className="text-lg font-semibold text-gray-800">{cat.displayName}</h3>
                     <p className="text-sm text-gray-500">{cat.slug}</p>
                   </div>
                   {cat.isFeatured && (

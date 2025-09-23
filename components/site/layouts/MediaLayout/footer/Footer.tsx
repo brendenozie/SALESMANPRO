@@ -56,10 +56,10 @@ const Footer: React.FC = () => {
         {/* About */}
         <div>
           <h3 className="text-xl font-semibold text-white mb-4">
-            About {storeFormData.name}
+            About {storeFormData?.name}
           </h3>
           <p className="text-sm leading-relaxed text-gray-400">
-            {storeFormData.description ||
+            {storeFormData?.description ||
               "Discover inspiring stories, videos, and insights—stay connected and informed with Pulse Media."}
           </p>
         </div>
@@ -70,13 +70,13 @@ const Footer: React.FC = () => {
             Categories
           </h3>
           <ul className="space-y-2 text-sm">
-            {storeFormData.StoreCategory.map((cat) => (
+            {storeFormData?.StoreCategory.map((cat) => (
               <li key={cat.id}>
                 <Link
                   href={`/site/${storeFormData.slug}/category/${cat.id}`}
                   className="hover:text-white transition-colors"
                 >
-                  {cat.name}
+                  {cat.displayName}
                 </Link>
               </li>
             ))}
@@ -91,7 +91,7 @@ const Footer: React.FC = () => {
           <ul className="space-y-2 text-sm">
             <li>
               <Link
-                href={`/site/${storeFormData.slug}`}
+                href={`/site/${storeFormData?.slug}`}
                 className="hover:text-white transition-colors"
               >
                 Home
@@ -99,7 +99,7 @@ const Footer: React.FC = () => {
             </li>
             <li>
               <Link
-                href={`/site/${storeFormData.slug}/articles`}
+                href={`/site/${storeFormData?.slug}/articles`}
                 className="hover:text-white transition-colors"
               >
                 Articles
@@ -107,7 +107,7 @@ const Footer: React.FC = () => {
             </li>
             <li>
               <Link
-                href={`/site/${storeFormData.slug}/videos`}
+                href={`/site/${storeFormData?.slug}/videos`}
                 className="hover:text-white transition-colors"
               >
                 Videos
@@ -115,7 +115,7 @@ const Footer: React.FC = () => {
             </li>
             <li>
               <Link
-                href={`/site/${storeFormData.slug}/about`}
+                href={`/site/${storeFormData?.slug}/about`}
                 className="hover:text-white transition-colors"
               >
                 About Us
@@ -123,7 +123,7 @@ const Footer: React.FC = () => {
             </li>
             <li>
               <Link
-                href={`/site/${storeFormData.slug}/contact`}
+                href={`/site/${storeFormData?.slug}/contact`}
                 className="hover:text-white transition-colors"
               >
                 Contact
@@ -138,7 +138,7 @@ const Footer: React.FC = () => {
             Follow Us
           </h3>
           <div className="flex space-x-4 mb-6">
-            {storeFormData.socialLinks.map((s) => (
+            {storeFormData?.socialLinks.map((s) => (
               <motion.a
                 key={s.channel}
                 href={s.url}
@@ -158,7 +158,7 @@ const Footer: React.FC = () => {
           <ul className="space-y-2 text-sm">
             <li>
               <Link
-                href={`/site/${storeFormData.slug}/privacy`}
+                href={`/site/${storeFormData?.slug}/privacy`}
                 className="hover:text-white transition-colors"
               >
                 Privacy Policy
@@ -166,7 +166,7 @@ const Footer: React.FC = () => {
             </li>
             <li>
               <Link
-                href={`/site/${storeFormData.slug}/terms`}
+                href={`/site/${storeFormData?.slug}/terms`}
                 className="hover:text-white transition-colors"
               >
                 Terms of Service
@@ -177,7 +177,7 @@ const Footer: React.FC = () => {
       </div>
 
       <div className="mt-8 text-center text-sm text-gray-500 pb-8">
-        &copy; {year} {storeFormData.name}. All rights reserved.
+        &copy; {year} {storeFormData?.name}. All rights reserved.
       </div>
     </footer>
   );

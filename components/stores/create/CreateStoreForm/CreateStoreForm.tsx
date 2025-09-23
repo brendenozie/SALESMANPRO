@@ -1688,7 +1688,7 @@ const renderReviewContent = (stepKey: any, form: any) => {
           {renderList(
             form.storeCategories,
             (cat: any) => (
-              <li key={cat.id}>{cat.name}</li>
+              <li key={cat.id}>{cat.displayName}</li>
             ),
             "No categories"
           )}

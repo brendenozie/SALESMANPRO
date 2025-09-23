@@ -71,7 +71,7 @@ interface HeroSectionProps {
 
 export default function HeroSection({ store, trendingLocations, filters, setFilters, onSearch }: HeroSectionProps) {
   const heroSlides = store?.heroSlides?.length ? store.heroSlides : heroSlidesData;
-  const categories = store?.StoreCategory ?? [];
+  const categories = store?.storeFormData?.StoreCategory ?? [];
 
   const [current, setCurrent] = useState<number>(0);
   const [direction, setDirection] = useState<number>(0);

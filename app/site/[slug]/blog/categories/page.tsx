@@ -12,8 +12,8 @@ const loader = ({ src, width, quality }: { src: string; width: number; quality?:
 
 export default function CategoriesPage() {
   const store  = useStore();
-  const categories = store?.StoreCategory || [];
-  const storeSlug = store?.slug;
+  const categories = store?.storeFormData?.StoreCategory || [];
+  const storeSlug = store?.storeFormData?.slug;
 
   if (!storeSlug) {
     return (
@@ -36,8 +36,8 @@ export default function CategoriesPage() {
               >
                 <div className="relative h-48 w-full">
                   <Image
-                    src={cat.imageUrl}
-                    alt={cat.name}
+                    src={cat.icon || ''}
+                    alt={cat.displayName || ''}
                     loader={loader}
                     fill
                     sizes="(min-width: 1024px) 25vw, (min-width: 768px) 33vw, 50vw"
@@ -47,7 +47,7 @@ export default function CategoriesPage() {
                 <div className="p-4 text-center">
                   {cat.icon && <div className="mb-2 text-3xl">{cat.icon}</div>}
                   <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
-                    {cat.name}
+                    {cat.displayName}
                   </h3>
                 </div>
               </Link>

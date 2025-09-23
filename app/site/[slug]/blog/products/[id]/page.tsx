@@ -26,7 +26,7 @@ const useStoreContext = () => ({
 });
 
 // Local loader for next/image
-const loader = ({ src, width, quality }) => `${src}?w=${width}&q=${quality || 75}`;
+const loader = ({ src, width, quality }:any) => `${src}?w=${width}&q=${quality || 75}`;
 
 // Mock Data for a Blog Post
 const mockBlogPost = {
@@ -101,7 +101,7 @@ export default function ContentPage() {
   const { themeSettings: { primaryColor = '#0EA5E9' } = {} } = storeFormData || {}; // Default primary color
 
   // Function to handle image loading errors
-  const handleImageError = (e) => {
+  const handleImageError = (e:any) => {
     e.target.onerror = null;
     e.target.src = 'https://placehold.co/1200x600/CCCCCC/333333?text=Content+Image+Not+Found';
   };
