@@ -8,26 +8,26 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
 import ConfirmationModal from '@/components/ConfirmationModal';
-import ExpertModal from './ExpertModal';
+import ExpertModal, { ExpertData } from './ExpertModal';
 // import { toast } from 'react-toastify'; // Use a toast library for better feedback
 // import 'react-toastify/dist/ReactToastify.css'; // Don't forget to import the CSS
 
 // Define the ExpertData interface to match the API response
-interface ExpertData {
-  id: string;
-  userId: string;
-  name: string | null;
-  email: string;
-  phone: string | null;
-  specialty: string;
-  experienceYears: number;
-  travelsCompleted: number;
-  photoUrl: string | null;
-  bio: string | null;
-  contactEmail: string | null;
-  contactPhone: string | null;
-  status: 'ACTIVE' | 'INACTIVE' | 'PENDING';
-}
+// interface ExpertData {
+//   id: string;
+//   userId: string;
+//   name: string | null;
+//   email: string;
+//   phone: string | null;
+//   specialty: string;
+//   experienceYears: number;
+//   travelsCompleted: number;
+//   photoUrl: string | null;
+//   bio: string | null;
+//   contactEmail: string | null;
+//   contactPhone: string | null;
+//   status: 'ACTIVE' | 'INACTIVE' | 'PENDING';
+// }
 
 const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => {
   return `${src}?w=${width}&q=${quality || 75}`;

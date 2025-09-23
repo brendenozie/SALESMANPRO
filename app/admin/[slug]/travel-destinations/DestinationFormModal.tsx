@@ -18,7 +18,7 @@ import {
 import { all } from 'axios';
 
 // --- Types and Interfaces (from user's code) ---
-interface Destination {
+export interface Destination {
   id: string;
   name: string;
   slug: string;
@@ -41,7 +41,8 @@ interface Destination {
   locationId: string | null;
   localization?: any;
   attributes?: any;
-  children?: Destination[];
+  children?: Destination[];  
+  parentId: string | null; // This now refers to a Location's ID
 }
 
 interface Location {
@@ -124,6 +125,7 @@ const getContinentAndCountry = (locationId: string | null, allLocations: Locatio
   }
 
   const locationMap = new Map<string, Location>();
+  
   if(allLocations.length > 0){
 
    allLocations.forEach(loc => locationMap.set(loc.id, loc));
@@ -182,6 +184,7 @@ export function DestinationFormModal({ isOpen, onClose, onSuccess, destination, 
     createdBy: destination?.createdBy || '',
     updatedBy: destination?.updatedBy || '',
     bannerImage: destination?.bannerImage || 'https://hold.co/400x300/F0F4F8/3B4254?text=desti+nation',
+    parentId: destination?.parentId || ''
   }));
 
   const [loading, setLoading] = useState(false);
@@ -222,6 +225,7 @@ export function DestinationFormModal({ isOpen, onClose, onSuccess, destination, 
         createdBy: destination.createdBy || '',
         updatedBy: destination.updatedBy || '',
         bannerImage: destination.bannerImage || 'https://hold.co/400x300/F0F4F8/3B4254?text=desti+nation',
+        parentId: destination?.parentId || ''
       });
     }
   }, [destination, isEditing]);

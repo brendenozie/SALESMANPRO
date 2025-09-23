@@ -15,6 +15,7 @@ import {
   CheckBadgeIcon,
 } from '@heroicons/react/24/solid';
 import toast from 'react-hot-toast';
+import { TravelBookingData } from './page';
 
 // Define interfaces for data fetched by the modal
 interface ClientOption {
@@ -34,23 +35,23 @@ interface DestinationOption {
 }
 
 // Define the BookingData interface to match the expected API response
-interface TravelBookingData {
-  id?: string; // Optional for new bookings
-  title: string;
-  description: string | null;
-  bookingType: 'TOUR_PACKAGE_BOOKING' | 'CUSTOM_TRIP_BOOKING' | 'ACCOMMODATION_BOOKING' | 'FLIGHT_BOOKING' | 'OTHER_TRAVEL_SERVICE';
-  startDate: string; // YYYY-MM-DD
-  endDate: string;   // YYYY-MM-DD
-  totalPrice: number;
-  status: 'CONFIRMED' | 'PENDING' | 'CANCELLED' | 'COMPLETED';
-  clientId: string;
-  customerName?: string; // For display
-  tourPackageId: string | null;
-  tourPackageName?: string; // For display
-  destinationId: string | null;
-  destinationName?: string; // For display
-  notes: string | null;
-}
+// interface TravelBookingData {
+//   id?: string; // Optional for new bookings
+//   title: string;
+//   description: string | null;
+//   bookingType: 'TOUR_PACKAGE_BOOKING' | 'CUSTOM_TRIP_BOOKING' | 'ACCOMMODATION_BOOKING' | 'FLIGHT_BOOKING' | 'OTHER_TRAVEL_SERVICE';
+//   startDate: string; // YYYY-MM-DD
+//   endDate: string;   // YYYY-MM-DD
+//   totalPrice: number;
+//   status: 'CONFIRMED' | 'PENDING' | 'CANCELLED' | 'COMPLETED';
+//   clientId: string;
+//   customerName?: string; // For display
+//   tourPackageId: string | null;
+//   tourPackageName?: string; // For display
+//   destinationId: string | null;
+//   destinationName?: string; // For display
+//   notes: string | null;
+// }
 
 interface TravelBookingModalProps {
   isOpen: boolean;

@@ -633,7 +633,9 @@ const WritersClient: React.FC<ClientProps> = ({ writersData, companyId }) => {
                     grid: { color: "#444" }
                   },
                   y: {
-                    ticks: { color: "#ddd", beginAtZero: true },
+                    ticks: { color: "#ddd", 
+                      // beginAtZero: true 
+                    },
                     grid: { color: "#444" }
                   }
                 }

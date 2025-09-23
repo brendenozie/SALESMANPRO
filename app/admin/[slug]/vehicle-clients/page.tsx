@@ -10,7 +10,7 @@ import {
 } from '@heroicons/react/24/solid';
 
 // Dummy Data
-const getClientsData = (adminSlug) => [
+const getClientsData = (adminSlug:any) => [
   {
     id: 'cl001',
     name: 'Alice Johnson',
@@ -94,7 +94,7 @@ export default function AdminClientsPage() {
     currentPage * itemsPerPage
   );
 
-  const handleViewDetails = (id) => {
+  const handleViewDetails = (id:any) => {
     alert(`Viewing details for client ${id}`);
     // Implement actual view client details logic (e.g., navigate to client profile page)
   };

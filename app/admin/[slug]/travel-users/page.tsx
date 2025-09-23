@@ -8,22 +8,22 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
 import ConfirmationModal from '@/components/ConfirmationModal';
-import ClientModal from './ClientModal';
+import ClientModal, { ClientData } from './ClientModal';
 import toast from 'react-hot-toast'; // Import react-hot-toast
 
 // Define the ClientData interface
-interface ClientData {
-  id: string;
-  userId: string;
-  name: string | null;
-  email: string;
-  phone: string | null;
-  membershipType: string;
-  membershipStatus: 'ACTIVE' | 'EXPIRED' | 'FROZEN' | 'PENDING';
-  joinDate: string; // YYYY-MM-DD
-  lastActive: string; // YYYY-MM-DD
-  photoUrl: string | null;
-}
+// interface ClientData {
+//   id: string;
+//   userId: string;
+//   name: string | null;
+//   email: string;
+//   phone: string | null;
+//   membershipType: string;
+//   membershipStatus: 'ACTIVE' | 'EXPIRED' | 'FROZEN' | 'PENDING';
+//   joinDate: string; // YYYY-MM-DD
+//   lastActive: string; // YYYY-MM-DD
+//   photoUrl: string | null;
+// }
 
 interface ClientsPageProps {
   params: {
@@ -364,7 +364,7 @@ export default function ClientsPage({ params }: ClientsPageProps) {
 
       {/* Confirmation Modal for Deletion */}
       <ConfirmationModal
-        isOpen={isConfirmModalOpen}
+        // isOpen={isConfirmModalOpen}
         onClose={() => setIsConfirmModalOpen(false)}
         onConfirm={confirmDeleteClient}
         title="Confirm Deletion"

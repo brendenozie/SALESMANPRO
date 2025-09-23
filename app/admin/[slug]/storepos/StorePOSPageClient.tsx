@@ -26,7 +26,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-import { MarketListingForm, StoreCategory } from '@/types/typings';
+import { MarketListingForm, IStoreCategory } from '@/types/typings';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -82,7 +82,7 @@ const generateReceiptHtml = (details: ReceiptDetails): string => {
     <div style="display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 4px;">
       <span style="flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.name}</span>
       <span style="width: 40px; text-align: center;">x${item.quantity}</span>
-      <span style="width: 80px; text-align: right;">${details.currencySymbol} ${item.finalPrice.toFixed(2)}</span>
+      <span style="width: 80px; text-align: right;">${details.currencySymbol} ${item.finalPrice?.toFixed(2)}</span>
       <span style="width: 100px; text-align: right; font-weight: bold;">${details.currencySymbol} ${item.subtotal.toFixed(2)}</span>
     </div>
   `).join('');
@@ -197,14 +197,14 @@ const printReceipt = (htmlContent: string) => {
 // Props for initial data and company ID, passed from the server-side Page.tsx
 interface StorePOSPageClientProps {
   initialProducts?: MarketListingForm[]; // If you pre-fetch on the server
-  initialCategories?: StoreCategory[]; // If you pre-fetch on the server
+  initialCategories?: IStoreCategory[]; // If you pre-fetch on the server
   companyId: string; // The company ID is essential for fetching relevant data
 }
 
 const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, initialProducts, initialCategories }) => {
   // --- State Variables (now initialized as empty, will be populated by API calls) ---
   const [products, setProducts] = useState<MarketListingForm[]>(initialProducts || []);
-  const [categories, setCategories] = useState<StoreCategory[]>(initialCategories || []);
+  const [categories, setCategories] = useState<IStoreCategory[]>(initialCategories || []);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [discountPercentage, setDiscountPercentage] = useState(0);
@@ -338,7 +338,7 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
         // }
         return prevCart.map(item =>
           item.id === product.id
-            ? { ...item, quantity: newQuantity, subtotal: product.finalPrice * newQuantity }
+            ? { ...item, quantity: newQuantity, subtotal: (product.finalPrice ?? 0) * newQuantity }
             : item
         );
       } else {
@@ -361,7 +361,7 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
           //   alert(`Cannot add more than available stock (${item.stock}) for ${item.name}`);
           //   return item;
           // }
-          return { ...item, quantity: newQuantity, subtotal: item.finalPrice * newQuantity };
+          return { ...item, quantity: newQuantity, subtotal: (item.finalPrice ?? 0) * newQuantity };
         }
         return item;
       }).filter(Boolean) as CartItem[];
@@ -539,7 +539,7 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
                     </div>
                     <div className="flex justify-between items-end mt-auto">
                       <div>
-                        <p className="text-lg font-bold text-green-400">{currencySymbol} {product.finalPrice.toFixed(2)}</p>
+                        <p className="text-lg font-bold text-green-400">{currencySymbol} {product.finalPrice?.toFixed(2)}</p>
                         <p className="text-xs text-gray-400">Stock: - </p> 
                           {/* {product.stock}*/}
                       </div>
@@ -591,7 +591,7 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
                     />
                     <div className="flex-grow">
                       <h3 className="text-lg font-semibold text-white truncate">{item.name}</h3>
-                      <p className="text-sm text-gray-400">{currencySymbol} {item.finalPrice.toFixed(2)} / item</p>
+                      <p className="text-sm text-gray-400">{currencySymbol} {item.finalPrice?.toFixed(2)} / item</p>
                     </div>
                   </div>
                   <div className="flex items-center space-x-2 ml-4">

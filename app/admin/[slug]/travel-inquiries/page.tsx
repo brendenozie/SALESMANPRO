@@ -1,4 +1,3 @@
-// AdminInquiries.jsx
 "use client";
 
 import React, { useState } from 'react';
@@ -8,45 +7,61 @@ import {
 } from '@heroicons/react/24/solid';
 import { motion } from 'framer-motion';
 
+// --- Type Definitions ---
+interface Inquiry {
+  id: string;
+  name: string;
+  email: string;
+  type: string;
+  message: string;
+  status: 'Pending' | 'Resolved';
+  date: string;
+}
+
+interface InquiryModalProps {
+  inquiry: Inquiry | null;
+  onClose: () => void;
+}
+
 // Dummy Data
-const initialInquiries = [
+const initialInquiries: Inquiry[] = [
   { id: 'INQ001', name: 'John Doe', email: 'john.doe@example.com', type: 'Booking Issue', message: 'I need to change my booking date for BKG001.', status: 'Pending', date: '2025-07-14' },
   { id: 'INQ002', name: 'Jane Smith', email: 'jane.smith@example.com', type: 'General Question', message: 'What are the visa requirements for Japan?', status: 'Resolved', date: '2025-07-13' },
   { id: 'INQ003', name: 'Peter Jones', email: 'peter.j@example.com', type: 'Expert Consultation', message: 'I\'d like to speak with an expert about a safari trip.', status: 'Pending', date: '2025-07-12' },
 ];
 
 export default function AdminInquiries() {
-  const [inquiries, setInquiries] = useState(initialInquiries);
-  const [filterStatus, setFilterStatus] = useState('All');
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentInquiry, setCurrentInquiry] = useState(null);
+  const [inquiries, setInquiries] = useState<Inquiry[]>(initialInquiries);
+  const [filterStatus, setFilterStatus] = useState<'All' | 'Pending' | 'Resolved'>('All');
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [currentInquiry, setCurrentInquiry] = useState<Inquiry | null>(null);
 
-  const filteredInquiries = inquiries.filter(inquiry =>
+  const filteredInquiries = inquiries.filter((inquiry: Inquiry) =>
     filterStatus === 'All' || inquiry.status === filterStatus
   );
 
-  const handleMarkResolved = (id) => {
+  const handleMarkResolved = (id: string) => {
     if (confirm(`Mark inquiry ${id} as resolved?`)) {
-      setInquiries(inquiries.map(inquiry =>
+      setInquiries(inquiries.map((inquiry: Inquiry) =>
         inquiry.id === id ? { ...inquiry, status: 'Resolved' } : inquiry
       ));
       alert(`Inquiry ${id} marked as resolved.`);
     }
   };
 
-  const handleDeleteInquiry = (id) => {
+  const handleDeleteInquiry = (id: string) => {
     if (confirm(`Are you sure you want to delete inquiry ${id}?`)) {
-      setInquiries(inquiries.filter(inquiry => inquiry.id !== id));
+      setInquiries(inquiries.filter((inquiry: Inquiry) => inquiry.id !== id));
       alert(`Inquiry ${id} deleted.`);
     }
   };
 
-  const openViewModal = (inquiry) => {
+  const openViewModal = (inquiry: Inquiry) => {
     setCurrentInquiry(inquiry);
     setIsModalOpen(true);
   };
 
-  const getStatusColor = (status) => {
+  const getStatusColor = (status: Inquiry['status']) => {
     switch (status) {
       case 'Pending': return 'bg-yellow-100 text-yellow-800';
       case 'Resolved': return 'bg-green-100 text-green-800';
@@ -77,7 +92,7 @@ export default function AdminInquiries() {
           <select
             id="inquiryStatusFilter"
             value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
+            onChange={(e) => setFilterStatus(e.target.value as 'All' | 'Pending' | 'Resolved')}
             className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500"
           >
             <option value="All">All</option>
@@ -102,7 +117,7 @@ export default function AdminInquiries() {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {filteredInquiries.length > 0 ? (
-                filteredInquiries.map((inquiry) => (
+                filteredInquiries.map((inquiry: Inquiry) => (
                   <tr key={inquiry.id}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{inquiry.id}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{inquiry.name}</td>
@@ -155,7 +170,7 @@ export default function AdminInquiries() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="8" className="px-6 py-4 text-center text-gray-500">No inquiries found.</td>
+                  <td colSpan={8} className="px-6 py-4 text-center text-gray-500">No inquiries found.</td>
                 </tr>
               )}
             </tbody>
@@ -175,7 +190,9 @@ export default function AdminInquiries() {
 }
 
 // InquiryModal.jsx (Internal Component for Viewing Details)
-function InquiryModal({ inquiry, onClose }) {
+const InquiryModal: React.FC<InquiryModalProps> = ({ inquiry, onClose }) => {
+  if (!inquiry) return null; // Defensive check for TypeScript
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -190,7 +207,7 @@ function InquiryModal({ inquiry, onClose }) {
         exit={{ scale: 0.9, y: 50 }}
         transition={{ type: "spring", stiffness: 200, damping: 25 }}
         className="bg-white rounded-xl shadow-2xl p-8 w-full max-w-md"
-        onClick={(e) => e.stopPropagation()}
+        onClick={(e:any) => e.stopPropagation()}
       >
         <h2 className="text-2xl font-bold text-gray-900 mb-6">Inquiry Details</h2>
         <div className="space-y-4 text-gray-700">

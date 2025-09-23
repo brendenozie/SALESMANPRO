@@ -5,12 +5,13 @@ import React from 'react';
 import { useParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import {
-  HomeIcon, CarIcon, ClipboardDocumentListIcon, UsersIcon,
+  HomeIcon, ClipboardDocumentListIcon, UsersIcon,
   CurrencyDollarIcon, ArrowTrendingUpIcon, WalletIcon
 } from '@heroicons/react/24/solid';
+import { VideoCameraSlashIcon } from '@heroicons/react/24/outline';
 
 // Dummy Data
-const getDashboardData = (adminSlug) => ({
+const getDashboardData = (adminSlug : any) => ({
   storeName: adminSlug,//.replace(/-/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
   totalVehicles: 150,
   activeListings: 120,
@@ -46,7 +47,7 @@ const itemVariants = {
   visible: { y: 0, opacity: 1 },
 };
 
-const Card = ({ icon: Icon, title, value, description, bgColor }) => (
+const Card = ({ icon: Icon, title, value, description, bgColor } : any) => (
   <motion.div
     variants={itemVariants}
     className={`p-6 rounded-2xl shadow-lg ${bgColor} text-white flex flex-col justify-between h-full`}
@@ -83,7 +84,7 @@ export default function AdminDashboardPage() {
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-10"
       >
         <Card
-          icon={CarIcon}
+          icon={VideoCameraSlashIcon}
           title="Total Vehicles"
           value={data.totalVehicles}
           description="In your inventory"

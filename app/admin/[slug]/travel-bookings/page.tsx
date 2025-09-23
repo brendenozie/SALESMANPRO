@@ -24,7 +24,7 @@ import TravelBookingModal from './TravelBookingModal';
 import toast from 'react-hot-toast'; // Replaced native alerts with a modern toast library
 
 // Define the TravelBookingData interface to match the API response
-interface TravelBookingData {
+export interface TravelBookingData {
   id: string;
   title: string;
   description: string | null;

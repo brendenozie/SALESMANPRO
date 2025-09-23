@@ -7,7 +7,7 @@ import Image from 'next/image';
 import toast from 'react-hot-toast';
 
 // Define the VirtualTourData interface to match the expected API response
-interface VirtualTourData {
+export interface VirtualTourData {
   id?: string;
   title: string;
   location: string;
@@ -136,7 +136,7 @@ const VirtualTourModal: React.FC<VirtualTourModalProps> = ({ isOpen, onClose, on
           animate={{ scale: 1, y: 0 }}
           exit={{ scale: 0.9, y: 50 }}
           transition={{ type: "spring", stiffness: 200, damping: 25 }}
-          onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside modal
+          onClick={(e:any) => e.stopPropagation()} // Prevent closing when clicking inside modal
         >
           <motion.button
             onClick={onClose}

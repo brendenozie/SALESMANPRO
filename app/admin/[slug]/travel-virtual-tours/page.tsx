@@ -8,22 +8,22 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
 import ConfirmationModal from '@/components/ConfirmationModal';
-import VirtualTourModal from './VirtualTourModal';
+import VirtualTourModal, { VirtualTourData } from './VirtualTourModal';
 import VideoPlayerModal from './VideoPlayerModal';
 import toast from 'react-hot-toast';
 
 // Define the VirtualTourData interface to match the API response
-interface VirtualTourData {
-  id: string;
-  title: string;
-  location: string;
-  duration: string;
-  category: string;
-  videoUrl: string;
-  thumbnailUrl: string;
-  description?: string;
-  published?: boolean;
-}
+// interface VirtualTourData {
+//   id: string;
+//   title: string;
+//   location: string;
+//   duration: string;
+//   category: string;
+//   videoUrl: string;
+//   thumbnailUrl: string;
+//   description?: string;
+//   published?: boolean;
+// }
 
 const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => {
   return `${src}?w=${width}&q=${quality || 75}`;
@@ -289,7 +289,7 @@ export default function AdminVirtualToursPage() {
 
       {/* Confirmation Modal for Deletion */}
       <ConfirmationModal
-        isOpen={isConfirmModalOpen}
+        // isOpen={isConfirmModalOpen}
         onClose={() => setIsConfirmModalOpen(false)}
         onConfirm={confirmDeleteTour}
         title="Confirm Deletion"

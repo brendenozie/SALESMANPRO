@@ -10,7 +10,7 @@ import {
 } from '@heroicons/react/24/solid';
 
 // Dummy Data
-const getRequestsData = (adminSlug) => [
+const getRequestsData = (adminSlug:any) => [
   {
     id: 'req001',
     clientName: 'Alice Johnson',
@@ -96,14 +96,14 @@ export default function AdminRequestsPage() {
     currentPage * itemsPerPage
   );
 
-  const handleUpdateStatus = (id, newStatus) => {
+  const handleUpdateStatus = (id:any, newStatus:any) => {
     setRequests(requests.map(req =>
       req.id === id ? { ...req, status: newStatus } : req
     ));
     alert(`Request ${id} status updated to ${newStatus}`);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = (id:any) => {
     if (confirm(`Are you sure you want to delete request ${id}?`)) {
       setRequests(requests.filter(req => req.id !== id));
     }

@@ -3,35 +3,35 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { PlusIcon } from '@heroicons/react/24/solid';
 import { BuildingLibraryIcon, ChevronDoubleDownIcon, ChevronDoubleUpIcon, GlobeAltIcon, MapIcon, PencilSquareIcon, SquaresPlusIcon, TrashIcon } from '@heroicons/react/24/outline';
-import { DestinationFormModal, DeleteConfirmModal } from './DestinationFormModal'; // Assuming modals are now in a single file for cleaner import
+import { DestinationFormModal, DeleteConfirmModal, Destination } from './DestinationFormModal'; // Assuming modals are now in a single file for cleaner import
 
 import { useParams } from 'next/navigation';
 
 // --- Types and Interfaces ---
 // Ensure this Destination interface matches your Prisma Destination model exactly
-interface Destination {
-  id: string;
-  name: string;
-  slug: string;
-  description?: string;
-  country?: string;
-  latitude?: number;
-  longitude?: number;
-  seoTitle?: string;
-  seoDescription?: string;
-  metaKeywords: string[];
-  sortOrder: number;
-  visible: boolean;
-  createdAt?: Date;
-  updatedAt?: Date;
-  createdBy?: string;
-  updatedBy?: string;
-  status: 'active' | 'inactive' | 'draft';
-  parentId: string | null; // This now refers to a Location's ID
-  localization?: any; // Prisma.JsonValue
-  attributes?: any; // Prisma.JsonValue
-  children?: Destination[]; // This is for client-side tree building if needed, but not in the new model
-}
+// interface Destination {
+//   id: string;
+//   name: string;
+//   slug: string;
+//   description?: string;
+//   country?: string;
+//   latitude?: number;
+//   longitude?: number;
+//   seoTitle?: string;
+//   seoDescription?: string;
+//   metaKeywords: string[];
+//   sortOrder: number;
+//   visible: boolean;
+//   createdAt?: Date;
+//   updatedAt?: Date;
+//   createdBy?: string;
+//   updatedBy?: string;
+//   status: 'active' | 'inactive' | 'draft';
+//   parentId: string | null; // This now refers to a Location's ID
+//   localization?: any; // Prisma.JsonValue
+//   attributes?: any; // Prisma.JsonValue
+//   children?: Destination[]; // This is for client-side tree building if needed, but not in the new model
+// }
 
 // Interface for Location
 interface Location {

@@ -6,11 +6,61 @@ import Image from 'next/image';
 import {
   BellAlertIcon, BriefcaseIcon, CheckCircleIcon, ClockIcon, InformationCircleIcon,
   MapPinIcon, PencilSquareIcon, PlusCircleIcon, StarIcon, TrashIcon, XMarkIcon
-} from '@heroicons/react/24/solid'; // Using solid icons for better visual weight
-import toast from 'react-hot-toast'; // Replaced custom notification with react-hot-toast
+} from '@heroicons/react/24/solid';
+import toast from 'react-hot-toast';
 import ConfirmationModal from '@/components/ConfirmationModal';
 
 import { useParams } from 'next/navigation';
+
+// Define the data structure for a Tour Package
+interface TourPackage {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  longDescription?: string;
+  duration: string;
+  price: number;
+  status: 'ACTIVE' | 'DRAFT' | 'ARCHIVED' | 'INACTIVE' | 'FEATURED';
+  imageUrl: string;
+  destinations: Destination[];
+}
+
+// Define the data structure for a Destination
+interface Destination {
+  id: string;
+  name: string;
+}
+
+// Define props for the TourPackageCard component
+interface TourPackageCardProps {
+  pkg: TourPackage;
+  onEdit: (pkg: TourPackage) => void;
+  onDelete: (id: string, name: string) => void;
+}
+
+// Define props for the TourPackageModal component
+interface TourPackageModalProps {
+  pkg: TourPackage | null;
+  onSave: (data: TourPackageFormData) => Promise<void>;
+  onClose: () => void;
+  destinations: Destination[];
+  isLoading: boolean;
+}
+
+// Define the shape of the form data
+interface TourPackageFormData {
+  id?: string;
+  name: string;
+  slug: string;
+  description: string;
+  longDescription?: string;
+  duration: string;
+  price: number;
+  status: 'ACTIVE' | 'DRAFT' | 'ARCHIVED' | 'INACTIVE' | 'FEATURED';
+  imageUrl: string;
+  destinationIds: string[];
+}
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
 
@@ -18,8 +68,8 @@ const loader = ({ src, width, quality }: { src: string; width: number; quality?:
 // =======================================================================
 // Helper component for each package card
 // =======================================================================
-const TourPackageCard = ({ pkg, onEdit, onDelete }) => {
-  const getStatusColor = (status) => {
+const TourPackageCard: React.FC<TourPackageCardProps> = ({ pkg, onEdit, onDelete }) => {
+  const getStatusColor = (status: TourPackage['status']) => {
     switch (status) {
       case 'ACTIVE': return 'bg-green-100 text-green-800';
       case 'DRAFT': return 'bg-yellow-100 text-yellow-800';
@@ -108,8 +158,8 @@ const TourPackageCard = ({ pkg, onEdit, onDelete }) => {
 // =======================================================================
 // Helper component for the Add/Edit modal
 // =======================================================================
-const TourPackageModal = ({ pkg, onSave, onClose, destinations, isLoading }) => {
-  const [formData, setFormData] = useState({
+const TourPackageModal: React.FC<TourPackageModalProps> = ({ pkg, onSave, onClose, destinations, isLoading }) => {
+  const [formData, setFormData] = useState<TourPackageFormData>({
     name: pkg?.name || '',
     slug: pkg?.slug || '',
     description: pkg?.description || '',
@@ -121,17 +171,17 @@ const TourPackageModal = ({ pkg, onSave, onClose, destinations, isLoading }) => 
     destinationIds: pkg?.destinations?.map(d => d.id) || [],
   });
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleDestinationChange = (e) => {
+  const handleDestinationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedOptions = Array.from(e.target.selectedOptions).map(option => option.value);
     setFormData(prev => ({ ...prev, destinationIds: selectedOptions }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     onSave({ ...formData, id: pkg?.id, price: Number(formData.price) });
   };
@@ -150,7 +200,7 @@ const TourPackageModal = ({ pkg, onSave, onClose, destinations, isLoading }) => 
         exit={{ scale: 0.95, opacity: 0, y: 20 }}
         transition={{ type: "spring", stiffness: 200, damping: 25 }}
         className="relative w-full max-w-lg p-8 bg-white rounded-3xl shadow-2xl max-h-[90vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
+        onClick={(e:any) => e.stopPropagation()}
       >
         <button
           onClick={onClose}
@@ -190,7 +240,7 @@ const TourPackageModal = ({ pkg, onSave, onClose, destinations, isLoading }) => 
                 multiple
                 className="block w-full px-4 py-3 mt-1 transition-colors border border-slate-300 rounded-xl shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none h-32"
               >
-                {destinations.map(destination => (
+                {destinations.map((destination: Destination) => (
                   <option key={destination.id} value={destination.id}>{destination.name}</option>
                 ))}
               </select>
@@ -259,17 +309,16 @@ const TourPackageModal = ({ pkg, onSave, onClose, destinations, isLoading }) => 
 // Main component
 // =======================================================================
 export default function AdminPackages() {
-
   const params = useParams();
-    const slug = params.slug as string;
+  const slug = params.slug as string;
 
-  const [tourPackages, setTourPackages] = useState([]);
-  const [destinations, setDestinations] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentPackage, setCurrentPackage] = useState(null);
-  const [packageToDeleteId, setPackageToDeleteId] = useState(null);
-  const [packageToDeleteName, setPackageToDeleteName] = useState(null);
+  const [tourPackages, setTourPackages] = useState<TourPackage[]>([]);
+  const [destinations, setDestinations] = useState<Destination[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [currentPackage, setCurrentPackage] = useState<TourPackage | null>(null);
+  const [packageToDeleteId, setPackageToDeleteId] = useState<string | null>(null);
+  const [packageToDeleteName, setPackageToDeleteName] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
@@ -279,31 +328,32 @@ export default function AdminPackages() {
         fetch(`/api/admin/destinations?companyId=${slug}`)
       ]);
 
-      const packagesData = await packagesRes.json();
-      const destinationsData = await destinationsRes.json();
+      const packagesData: TourPackage[] = await packagesRes.json();
+      const destinationsData: Destination[] = await destinationsRes.json();
 
       if (!packagesRes.ok || !destinationsRes.ok) {
-        throw new Error(packagesData.message || destinationsData.message || 'Failed to fetch data');
+        throw new Error('Failed to fetch data');
+        // packagesData.message || destinationsData.message || 
       }
 
       setTourPackages(packagesData);
       setDestinations(destinationsData);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching data:', error);
-      toast.error(`Failed to fetch data: error.message `);
+      toast.error(`Failed to fetch data: ${error.message}`);
       setTourPackages([]);
       setDestinations([]);
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [slug]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
-  const handleSavePackage = async (formData) => {
+  const handleSavePackage = async (formData: TourPackageFormData) => {
     setIsModalOpen(false);
     const isEditing = !!formData.id;
     const method = isEditing ? 'PUT' : 'POST';
@@ -327,7 +377,7 @@ export default function AdminPackages() {
 
       await fetchData();
       toast.success(`Package "${formData.name}" ${successText} successfully! 🎉`, { id: toastId });
-    } catch (error) {
+    } catch (error: any) {
       console.error(`Error ${actionText} package:`, error);
       toast.error(error.message, { id: toastId });
     } finally {
@@ -359,7 +409,7 @@ export default function AdminPackages() {
       await fetchData();
       toast.success(`Package "${name}" deleted successfully!`, { id: toastId });
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting package:', error);
       toast.error(error.message, { id: toastId });
     }
@@ -370,14 +420,19 @@ export default function AdminPackages() {
     setIsModalOpen(true);
   };
 
-  const openEditModal = (pkg) => {
+  const openEditModal = (pkg: TourPackage) => {
     setCurrentPackage(pkg);
     setIsModalOpen(true);
   };
 
-  const handleDeletePackage = (id, name) => {
+  const handleDeletePackage = (id: string, name: string) => {
     setPackageToDeleteId(id);
     setPackageToDeleteName(name);
+  };
+  
+  const handleCancelDelete = () => {
+    setPackageToDeleteId(null);
+    setPackageToDeleteName(null);
   };
 
   return (
@@ -434,7 +489,7 @@ export default function AdminPackages() {
               className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
             >
               <AnimatePresence>
-                {tourPackages.map((pkg) => (
+                {tourPackages.map((pkg: TourPackage) => (
                   <TourPackageCard
                     key={pkg.id}
                     pkg={pkg}
@@ -470,14 +525,14 @@ export default function AdminPackages() {
             isLoading={isLoading}
           />
         )}
-        {packageToDeleteId && (
+        {/* {packageToDeleteId && (
           <ConfirmationModal
             title="Delete Package"
             message={`Are you sure you want to delete "${packageToDeleteName}"? This action cannot be undone.`}
             onConfirm={confirmDelete}
-            onCancel={() => setPackageToDeleteId(null)}
+            onCancel={() => handleCancelDelete()}
           />
-        )}
+        )} */}
       </AnimatePresence>
     </div>
   );

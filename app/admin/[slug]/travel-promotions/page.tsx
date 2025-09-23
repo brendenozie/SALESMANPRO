@@ -8,7 +8,7 @@ import {
 import { motion } from 'framer-motion';
 import { useParams } from 'next/navigation';
 import ConfirmationModal from '@/components/ConfirmationModal';
-import PromotionModal from './PromotionModal';
+import PromotionModal, { PromotionData } from './PromotionModal';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
 import { PercentBadgeIcon } from '@heroicons/react/24/outline';
@@ -16,19 +16,7 @@ import { PercentBadgeIcon } from '@heroicons/react/24/outline';
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
 
 // Define the PromotionData interface
-interface PromotionData {
-  id: string;
-  name: string;
-  code: string;
-  discount: string;
-  discountValue: number;
-  discountType: 'PERCENTAGE' | 'FIXED_AMOUNT';
-  startDate: string;
-  endDate: string;
-  status: 'ACTIVE' | 'SCHEDULED' | 'EXPIRED' | 'DRAFT';
-  description?: string;
-  imageUrl?: string;
-}
+
 
 // Function to get the color for the status badge
 const getStatusColor = (status: PromotionData['status']) => {
@@ -279,7 +267,7 @@ export default function AdminPromotionsPage() {
 
       {/* Confirmation Modal for Deletion */}
       <ConfirmationModal
-        isOpen={isConfirmModalOpen}
+        // isOpen={isConfirmModalOpen}
         onClose={() => setIsConfirmModalOpen(false)}
         onConfirm={confirmDeletePromotion}
         title="Confirm Deletion"

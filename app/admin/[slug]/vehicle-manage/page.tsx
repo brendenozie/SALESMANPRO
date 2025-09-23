@@ -11,7 +11,7 @@ import {
 } from '@heroicons/react/24/solid';
 
 // Dummy Data
-const getVehiclesData = (adminSlug) => [
+const getVehiclesData = (adminSlug : any) => [
   {
     id: 'v001',
     make: 'Tesla',
@@ -65,7 +65,7 @@ const getVehiclesData = (adminSlug) => [
 ];
 
 // Custom Image Loader (if using Next.js Image)
-const customLoader = ({ src, width, quality }) => {
+const customLoader = ({ src, width, quality }:any) => {
   return `${src}?w=${width}&q=${quality || 75}`;
 };
 
@@ -106,12 +106,12 @@ export default function AdminVehiclesPage() {
     currentPage * itemsPerPage
   );
 
-  const handleEdit = (id) => {
+  const handleEdit = (id:any) => {
     alert(`Edit vehicle ${id}`);
     // Implement actual edit logic (e.g., navigate to edit page, open modal)
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = (id:any) => {
     if (confirm(`Are you sure you want to delete vehicle ${id}?`)) {
       setVehicles(vehicles.filter(v => v.id !== id));
     }

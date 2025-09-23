@@ -1,11 +1,10 @@
-// components/ConfirmationModal.tsx
-"use client"; // This component is client-side
+"use client";
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+// Remove the `isOpen` prop from the interface
 interface ConfirmationModalProps {
-  isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
   title: string;
@@ -15,7 +14,6 @@ interface ConfirmationModalProps {
 }
 
 const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
-  isOpen,
   onClose,
   onConfirm,
   title,
@@ -23,8 +21,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   confirmText = 'Confirm',
   cancelText = 'Cancel',
 }) => {
-  if (!isOpen) return null;
-
+  // Since it's being conditionally rendered, we don't need `if (!isOpen)`
   return (
     <AnimatePresence>
       <motion.div

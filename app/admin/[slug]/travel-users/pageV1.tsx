@@ -265,13 +265,13 @@ export default function AdminUsersPage() {
       </motion.div>
 
       <ConfirmationModal
-        isOpen={isConfirmModalOpen}
+        // isOpen={isConfirmModalOpen}
         onClose={() => setIsConfirmModalOpen(false)}
         onConfirm={confirmDeleteUser}
         title="Confirm Deletion"
         message={`Are you sure you want to permanently delete user "${userToDelete?.name || 'N/A'}"? This action cannot be undone.`}
         confirmText="Delete"
-        isDestructive={true}
+        // isDestructive={true}
       />
 
       <CreateUserModal

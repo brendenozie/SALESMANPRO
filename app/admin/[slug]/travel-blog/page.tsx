@@ -1,4 +1,3 @@
-// AdminBlog.jsx
 "use client";
 
 import React, { useState } from 'react';
@@ -7,50 +6,74 @@ import {
 } from '@heroicons/react/24/solid';
 import { motion } from 'framer-motion';
 
+// --- Type Definitions ---
+interface BlogPost {
+  id: string;
+  title: string;
+  author: string;
+  date: string;
+  status: 'Published' | 'Draft';
+  content?: string; // Content is optional in the initial data
+}
+
+interface BlogPostForm {
+  id?: string;
+  title: string;
+  content: string;
+  status: 'Published' | 'Draft';
+}
+
+interface BlogPostModalProps {
+  post: BlogPost | null;
+  onSave: (formData: BlogPostForm) => void;
+  onClose: () => void;
+}
+
 // Dummy Data
-const initialBlogPosts = [
+const initialBlogPosts: BlogPost[] = [
   { id: 'BP001', title: '10 Essential Tips for Solo Travelers', author: 'Admin', date: '2024-07-10', status: 'Published' },
   { id: 'BP002', title: 'Budgeting Your Dream European Vacation', author: 'Admin', date: '2024-07-05', status: 'Draft' },
   { id: 'BP003', title: 'Hidden Gems: Uncovering Asia\'s Best-Kept Secrets', author: 'Admin', date: '2024-06-28', status: 'Published' },
 ];
 
 export default function AdminBlog() {
-  const [blogPosts, setBlogPosts] = useState(initialBlogPosts);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentPost, setCurrentPost] = useState(null); // For edit mode
+  const [blogPosts, setBlogPosts] = useState<BlogPost[]>(initialBlogPosts);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [currentPost, setCurrentPost] = useState<BlogPost | null>(null); // For edit mode
 
   const openAddModal = () => {
     setCurrentPost(null);
     setIsModalOpen(true);
   };
 
-  const openEditModal = (post) => {
+  const openEditModal = (post: BlogPost) => {
     setCurrentPost(post);
     setIsModalOpen(true);
   };
 
-  const handleSavePost = (formData) => {
-    if (currentPost) {
+  const handleSavePost = (formData: BlogPostForm) => {
+    if (formData.id) {
       // Edit existing
-      setBlogPosts(blogPosts.map(p => p.id === formData.id ? formData : p));
+      setBlogPosts(blogPosts.map(p => p.id === formData.id ? { ...p, ...formData } : p));
       alert(`Blog post "${formData.title}" updated.`);
     } else {
       // Add new
       const newId = `BP${String(blogPosts.length + 1).padStart(3, '0')}`;
-      setBlogPosts([...blogPosts, { ...formData, id: newId, author: 'Admin', date: new Date().toISOString().slice(0, 10) }]);
+      const newPost: BlogPost = { ...formData, id: newId, author: 'Admin', date: new Date().toISOString().slice(0, 10) };
+      setBlogPosts([...blogPosts, newPost]);
       alert(`Blog post "${formData.title}" added.`);
     }
     setIsModalOpen(false);
   };
 
-  const handleDeletePost = (id) => {
-    if (confirm(`Are you sure you want to delete blog post ${id}?`)) {
+  const handleDeletePost = (id: string) => {
+    if (window.confirm(`Are you sure you want to delete blog post ${id}?`)) {
       setBlogPosts(blogPosts.filter(p => p.id !== id));
       alert(`Blog post ${id} deleted.`);
     }
   };
 
-  const getStatusColor = (status) => {
+  const getStatusColor = (status: BlogPost['status']) => {
     switch (status) {
       case 'Published': return 'bg-green-100 text-green-800';
       case 'Draft': return 'bg-yellow-100 text-yellow-800';
@@ -148,7 +171,7 @@ export default function AdminBlog() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="6" className="px-6 py-4 text-center text-gray-500">No blog posts found.</td>
+                  <td colSpan={6} className="px-6 py-4 text-center text-gray-500">No blog posts found.</td>
                 </tr>
               )}
             </tbody>
@@ -169,12 +192,12 @@ export default function AdminBlog() {
 }
 
 // BlogPostModal.jsx (Internal Component for Add/Edit)
-function BlogPostModal({ post, onSave, onClose }) {
-  const [title, setTitle] = useState(post?.title || '');
-  const [content, setContent] = useState(post?.content || ''); // Assuming content field exists
-  const [status, setStatus] = useState(post?.status || 'Draft');
+const BlogPostModal: React.FC<BlogPostModalProps> = ({ post, onSave, onClose }) => {
+  const [title, setTitle] = useState<string>(post?.title || '');
+  const [content, setContent] = useState<string>(post?.content || ''); // Assuming content field exists
+  const [status, setStatus] = useState<'Published' | 'Draft'>(post?.status || 'Draft');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave({
       id: post?.id,
@@ -198,7 +221,7 @@ function BlogPostModal({ post, onSave, onClose }) {
         exit={{ scale: 0.9, y: 50 }}
         transition={{ type: "spring", stiffness: 200, damping: 25 }}
         className="bg-white rounded-xl shadow-2xl p-8 w-full max-w-md"
-        onClick={(e) => e.stopPropagation()}
+        onClick={(e:any) => e.stopPropagation()}
       >
         <h2 className="text-2xl font-bold text-gray-900 mb-6">
           {post ? 'Edit Blog Post' : 'Create New Blog Post'}
@@ -221,7 +244,7 @@ function BlogPostModal({ post, onSave, onClose }) {
               id="postContent"
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              rows="8"
+              rows={8}
               className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
               required
             ></textarea>
@@ -231,7 +254,7 @@ function BlogPostModal({ post, onSave, onClose }) {
             <select
               id="postStatus"
               value={status}
-              onChange={(e) => setStatus(e.target.value)}
+              onChange={(e) => setStatus(e.target.value as 'Published' | 'Draft')}
               className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
             >
               <option value="Draft">Draft</option>

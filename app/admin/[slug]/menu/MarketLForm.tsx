@@ -7,9 +7,9 @@ import {
   
 } from '@heroicons/react/24/solid'; // Icons from Lucide
 import { ArchiveBoxArrowDownIcon, ArchiveBoxIcon, BookOpenIcon, CheckCircleIcon, ChevronLeftIcon, ChevronRightIcon, CurrencyDollarIcon, HomeIcon, InformationCircleIcon, MapPinIcon, PhotoIcon, VideoCameraSlashIcon, WalletIcon } from "@heroicons/react/24/outline";
-import { MarketListingForm, StoreCategory } from "@/types/typings";
+import { MarketListingForm, IStoreCategory } from "@/types/typings";
 
-// --- Type Definitions (Updated for MarketListingForm and StoreCategory) ---
+// --- Type Definitions (Updated for MarketListingForm and IStoreCategory) ---
 interface ImageAsset {
   id?: string;
   url: string;
@@ -24,9 +24,9 @@ interface ImageAsset {
 //   images: string[]; // Changed to string[] based on your snippet `images: imageUrl ? [imageUrl] : []`
 //   video: string | null;
 //   tags: string[];
-//   productCategoryId: string; // Renamed from productCategoryId to categoryId if it refers to StoreCategory
+//   productCategoryId: string; // Renamed from productCategoryId to categoryId if it refers to IStoreCategory
 //   // Assuming 'category' is a client-side populated field for display, not for submission
-//   category?: StoreCategory;
+//   category?: IStoreCategory;
 
 //   // Pricing & Availability
 //   buyingPrice: number; // Renamed from costPrice
@@ -141,7 +141,7 @@ interface ImageAsset {
 //   updatedAt?: string; // Optional, set by backend
 // }
 
-// interface StoreCategory {
+// interface IStoreCategory {
 //   id: string;
 //   name: string;
 //   slug?: string;
@@ -172,7 +172,7 @@ interface MarketListingFormProps {
   onSubmit: (listing: Omit<MarketListingForm, 'id' | 'createdAt' | 'updatedAt' | 'category'>) => void;
   onCancel: () => void;
   isLoading: boolean;
-  categories: StoreCategory[];
+  categories: IStoreCategory[];
   initialData?: MarketListingForm; // For editing
 }
 
@@ -183,7 +183,7 @@ const MarketLForm: React.FC<MarketListingFormProps> = ({ onSubmit, onCancel, isL
   const [productCategoryId, setProductCategoryId] = useState(initialData?.productCategoryId || '');
   const [sellingPrice, setSellingPrice] = useState<string>(initialData?.sellingPrice.toString() || '');
   const [buyingPrice, setBuyingPrice] = useState<string>(initialData?.buyingPrice.toString() || '');
-  const [discount, setDiscount] = useState<string>(initialData?.discount.toString() || '0');
+  const [discount, setDiscount] = useState<string>(initialData?.discount?.toString() || '0');
   const [isAvailable, setIsAvailable] = useState(initialData?.isAvailable ?? true);
   const [isOnOffer, setIsOnOffer] = useState(initialData?.isOnOffer ?? false);
   const [ingredients, setIngredients] = useState(initialData?.ingredients || ''); // General purpose 'components'

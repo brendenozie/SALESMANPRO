@@ -3,20 +3,20 @@
 import React, { useState } from "react";
 import ProductRequestModal from "@/components/ProductRequestModal";
 import AddToProductMarketModal from "@/components/AddToProductMarketModal";
-import { MarketListingForm } from "@/types/typings";
+import { IStoreCategory, MarketListingForm } from "@/types/typings";
 
-type Category = {
-  id: string;
-  name: string;
-  image: string;
-  tags: string[];
-  status: string;
-};
+// type Category = {
+//   id: string;
+//   name: string;
+//   image: string;
+//   tags: string[];
+//   status: string;
+// };
 
 interface ClientProps {
   companyId: string;
   productsData: MarketListingForm[];
-  categoriesData: Category[];
+  categoriesData: IStoreCategory[];
 }
 
 export default function ClientInventoryClient({ companyId, categoriesData, productsData }: ClientProps) {
@@ -75,7 +75,7 @@ export default function ClientInventoryClient({ companyId, categoriesData, produ
           {productsData && productsData.length > 0 ? (
             productsData.map((product, index) => (
               <div
-                key={product._id || index} // Use _id if available, fallback to index
+                key={product.id || index} // Use _id if available, fallback to index
                 className="bg-white border border-gray-200 rounded-2xl p-6 shadow-lg hover:shadow-xl transition transform hover:-translate-y-1 duration-300 relative overflow-hidden"
               >
                 {/* Product Status Badges (Example - add logic based on your data) */}
@@ -88,9 +88,9 @@ export default function ClientInventoryClient({ companyId, categoriesData, produ
 
 
                 <h3 className="text-2xl font-extrabold text-gray-900 mb-2 leading-snug">
-                  {product.name || product.title || "Untitled Product"}
+                  {product.name || "Untitled Product"}
                 </h3>
-                <p className="text-sm text-gray-600 mb-4 line-clamp-2" title={product.description}>
+                <p className="text-sm text-gray-600 mb-4 line-clamp-2" >
                   {product.description || "No description provided."}
                 </p>
 
@@ -104,7 +104,7 @@ export default function ClientInventoryClient({ companyId, categoriesData, produ
                   <p className="text-md text-gray-700 font-medium">
                     Selling Price: <span className="font-bold text-blue-600">${product.sellingPrice.toFixed(2)}</span>
                   </p>
-                  {product.discount > 0 && (
+                  {product.discount && product.discount > 0 && (
                      <p className="text-md text-gray-700 font-medium">
                         Discount: <span className="font-bold text-red-500">{product.discount}%</span>
                     </p>
@@ -175,6 +175,7 @@ export default function ClientInventoryClient({ companyId, categoriesData, produ
           marketListItem={selectedProduct} // Pass selectedProduct for edit, null for new
           categories={categoriesData}
           companyId={companyId}
+          locations={[]}
         />
       )}
 

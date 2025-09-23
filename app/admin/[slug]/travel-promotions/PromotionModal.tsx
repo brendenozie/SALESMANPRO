@@ -9,7 +9,7 @@ import Image from 'next/image';
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
 
 // Define the PromotionData interface
-interface PromotionData {
+export interface PromotionData {
   id?: string;
   name: string;
   code: string;
@@ -147,7 +147,7 @@ const PromotionModal: React.FC<PromotionModalProps> = ({ isOpen, onClose, onSave
           animate={{ scale: 1, y: 0 }}
           exit={{ scale: 0.9, y: 50 }}
           transition={{ type: "spring", stiffness: 200, damping: 25 }}
-          onClick={(e) => e.stopPropagation()}
+          onClick={(e:any) => e.stopPropagation()}
         >
           <motion.button
             onClick={onClose}

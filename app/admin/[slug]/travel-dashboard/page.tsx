@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {
-  HomeIcon, UsersIcon, CalendarDaysIcon, GlobeAltIcon, CurrencyDollarIcon, ChartBarIcon
+  QuestionMarkCircleIcon, UsersIcon, CalendarDaysIcon, GlobeAltIcon, CurrencyDollarIcon, BriefcaseIcon
 } from '@heroicons/react/24/solid';
 import { motion } from 'framer-motion';
 

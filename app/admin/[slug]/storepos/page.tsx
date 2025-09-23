@@ -1,7 +1,7 @@
 // app/admin/[slug]/pos/page.tsx
 import React from "react";
 import StorePOSPageClient, { Product } from "./StorePOSPageClient"; // Import Product type
-import { MarketListingForm, StoreCategory } from "@/types/typings";
+import { MarketListingForm, IStoreCategory } from "@/types/typings";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -17,7 +17,7 @@ interface PageProps {
 export default async function PosPage({ params }: PageProps) {
   const companyId = params.slug;
 
-  let initialCategories: StoreCategory[] = [];
+  let initialCategories: IStoreCategory[] = [];
   let initialProducts: MarketListingForm[] = [];
 
   try {

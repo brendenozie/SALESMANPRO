@@ -55,7 +55,7 @@ const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({ isOpen, onClose, vi
             damping: 20,
             stiffness: 100
           }}
-          onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside modal
+          onClick={(e:any) => e.stopPropagation()} // Prevent closing when clicking inside modal
         >
           <motion.button
             onClick={onClose}

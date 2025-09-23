@@ -21,7 +21,7 @@ import {
 } from '@heroicons/react/24/outline'; // Icons from Heroicons
 import { CheckIcon } from "@heroicons/react/20/solid";
 import { ArchiveBoxIcon } from "@heroicons/react/24/solid";
-import { MarketListingForm, StoreCategory } from "@/types/typings";
+import { MarketListingForm, IStoreCategory } from "@/types/typings";
 import MarketLForm from "./MarketLForm";
 import AddToProductMarketModal from "@/components/AddToProductMarketModal";
 
@@ -53,7 +53,7 @@ interface PaginatedListings {
 //   video: string | null;
 //   tags: string[];
 //   productCategoryId: string;
-//   category?: StoreCategory; // Optional, will be populated on client
+//   category?: IStoreCategory; // Optional, will be populated on client
 //   costPrice: number;
 //   salesPrice: number;
 //   finalPrice: number;
@@ -69,7 +69,7 @@ interface PaginatedListings {
 //   updatedAt: string;
 // }
 
-// interface StoreCategory {
+// interface IStoreCategory {
 //   id: string;
 //   name: string;
 //   slug: string;
@@ -102,7 +102,7 @@ const loader = ({
 
 // --- Custom Hook for Menu Data ---
 const useMenuData = (companyId: string) => {
-  const [categories, setCategories] = useState<StoreCategory[]>([]);
+  const [categories, setCategories] = useState<IStoreCategory[]>([]);
   const [products, setProducts] = useState<MarketListingForm[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -118,10 +118,10 @@ const useMenuData = (companyId: string) => {
       if (categoriesRes.ok && productsRes.ok) {
         
         const categoriesJson = (await categoriesRes.json()) as {
-                                  results: StoreCategory[];
+                                  results: IStoreCategory[];
                                 };
 
-        const fetchedCategories: StoreCategory[] = categoriesJson.results;
+        const fetchedCategories: IStoreCategory[] = categoriesJson.results;
 
         const data = (await productsRes.json()) as PaginatedListings;
 
@@ -179,7 +179,7 @@ const menuApiService = {
     }
   },
 
-  addCategory: async (newCategory: Omit<StoreCategory, 'id' | 'createdAt' | 'updatedAt'>) => {
+  addCategory: async (newCategory: Omit<IStoreCategory, 'id' | 'createdAt' | 'updatedAt'>) => {
     toast.loading('Adding category...');
     try {
       // Simulate API call
@@ -242,7 +242,7 @@ const menuApiService = {
     }
   },
 
-  updateCategory: async (categoryId: string, updates: Partial<StoreCategory>) => {
+  updateCategory: async (categoryId: string, updates: Partial<IStoreCategory>) => {
     toast.loading('Updating category...');
     try {
       // Simulate API call
@@ -491,7 +491,7 @@ interface ClientProps {
   // These would typically come from server-side props in Next.js
   // For this self-contained example, we'll let useMenuData handle initial fetch.
   companyId: string;
-  categoriesData: StoreCategory[];
+  categoriesData: IStoreCategory[];
   productsData: MarketListingForm[];
 
 }
@@ -510,7 +510,7 @@ const MenuClient: React.FC<ClientProps> = ({ companyId, categoriesData, products
   const [editingProduct, setEditingProduct] = useState<MarketListingForm | null | undefined>(null);
   const [isAddCategoryModalOpen, setIsAddCategoryModalOpen] = useState<boolean>(false);
   const [isEditCategoryModalOpen, setIsEditCategoryModalOpen] = useState<boolean>(false);
-  const [editingCategory, setEditingCategory] = useState<StoreCategory | null>(null);
+  const [editingCategory, setEditingCategory] = useState<IStoreCategory | null>(null);
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState<boolean>(false);
   const [itemToDelete, setItemToDelete] = useState<{ id: string; type: 'product' | 'category' } | null>(null);
   const [isActionLoading, setIsActionLoading] = useState<boolean>(false);
@@ -542,9 +542,9 @@ const MenuClient: React.FC<ClientProps> = ({ companyId, categoriesData, products
         case 'name-desc':
           return b.name?.localeCompare(a.name);
         case 'price-asc':
-          return a.finalPrice - b.finalPrice;
+          return (a.finalPrice ?? 0) - (b.finalPrice ?? 0);
         case 'price-desc':
-          return b.finalPrice - a.finalPrice;
+          return (b.finalPrice ?? 0) - (a.finalPrice ?? 0);
         case 'date-desc':
           return new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime();
         default:
@@ -837,7 +837,7 @@ const MenuClient: React.FC<ClientProps> = ({ companyId, categoriesData, products
           {categoriesData.map(category => (
             <button
               key={category.id}
-              onClick={() => { setActiveCategoryFilter(category.categoryId); setCurrentPage(1); }}
+              onClick={() => { setActiveCategoryFilter(category.categoryId || ''); setCurrentPage(1); }}
               className={`px-6 py-2 text-sm md:text-base font-semibold rounded-full transition-all duration-300
                 ${activeCategoryFilter === category.categoryId
                   ? "bg-rose-500 text-white shadow-md transform scale-105"
@@ -922,6 +922,7 @@ const MenuClient: React.FC<ClientProps> = ({ companyId, categoriesData, products
                       marketListItem={null}
                       categories={categoriesData}
                       companyId={companyId}
+                      locations={[]}
                     />
       </Modal>
 
@@ -942,6 +943,7 @@ const MenuClient: React.FC<ClientProps> = ({ companyId, categoriesData, products
                       marketListItem={editingProduct}
                       categories={categoriesData}
                       companyId={companyId}
+                      locations={[]}
                     />
         )}
       </Modal>

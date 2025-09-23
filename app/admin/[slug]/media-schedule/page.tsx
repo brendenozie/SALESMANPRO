@@ -1,35 +1,137 @@
-// app/admin/[adminSlug]/schedule/page.tsx
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { PlusIcon, TrashIcon, CalendarIcon, ArrowPathIcon, XMarkIcon } from '@heroicons/react/24/solid';
-import { format, parseISO } from 'date-fns';
-import Image from 'next/image';
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  PlusIcon,
+  TrashIcon,
+  CalendarIcon,
+  ArrowPathIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/solid";
+import { format, parseISO, isValid } from "date-fns";
+import Image from "next/image";
+import { useParams } from "next/navigation";
+import { StaticImageData } from "next/image";
 
-// Custom loader for Next.js Image component
-const loader = ({ src, width, quality }) => `${src}?w=${width}&q=${quality || 75}`;
+/**
+ * Type Definitions
+ */
 
-// Placeholder for your AdminLayout component
-const AdminLayout = ({ children }) => (
+interface ImageLoaderProps {
+  src: string | StaticImageData;
+  width: number;
+  quality?: number;
+}
+
+interface Photo {
+  id: string;
+  imageUrl: string;
+}
+
+interface Video {
+  id: string;
+  thumbnailUrl: string;
+}
+
+interface PhotoAlbum {
+  id: string;
+  title: string;
+  photos: Photo[];
+}
+
+interface VideoAlbum {
+  id: string;
+  title: string;
+  videos: Video[];
+}
+
+interface BaseContent {
+  id: string;
+  title: string;
+  publishDate: string;
+  type: "Article" | "PhotoAlbum" | "VideoAlbum";
+}
+
+interface ArticleContent extends BaseContent {
+  type: "Article";
+}
+
+interface PhotoAlbumContent extends BaseContent {
+  type: "PhotoAlbum";
+  photoAlbumId: string;
+  photoAlbum: PhotoAlbum;
+}
+
+interface VideoAlbumContent extends BaseContent {
+  type: "VideoAlbum";
+  videoAlbumId: string;
+  videoAlbum: VideoAlbum;
+}
+
+type ScheduledContent = ArticleContent | PhotoAlbumContent | VideoAlbumContent;
+
+interface AdminLayoutProps {
+  children: React.ReactNode;
+}
+
+interface ModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  children: React.ReactNode;
+  size?: "sm" | "md" | "lg" | "xl";
+}
+
+interface DeleteConfirmationModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+  item: ScheduledContent | null;
+  isSubmitting: boolean;
+}
+
+interface ScheduleFormProps {
+  onSubmit: (formData: ScheduleFormData) => void;
+  onCancel: () => void;
+  isSubmitting: boolean;
+  photoAlbums: PhotoAlbum[];
+  videoAlbums: VideoAlbum[];
+}
+
+interface ScheduleFormData {
+  title: string;
+  type: "Article" | "PhotoAlbum" | "VideoAlbum";
+  publishDate: string;
+  photoAlbumId: string;
+  videoAlbumId: string;
+}
+
+interface ContentCardProps {
+  content: ScheduledContent;
+  onDelete: (content: ScheduledContent) => void;
+}
+
+/* Next image loader */
+const loader = ({ src, width, quality }: ImageLoaderProps) =>
+  `${src}?w=${width}&q=${quality || 75}`;
+
+/* Simple Admin layout wrapper */
+const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => (
   <div className="min-h-screen bg-gray-950 text-gray-100 p-8 font-['Inter']">
-    <div className="max-w-7xl mx-auto">
-      {children}
-    </div>
+    <div className="max-w-7xl mx-auto">{children}</div>
   </div>
 );
 
-// --- Reusable Modal Component ---
-const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
+/* Reusable modal */
+const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, size = "md" }) => {
   if (!isOpen) return null;
-  
-  const sizeClasses = {
-    sm: 'max-w-xl',
-    md: 'max-w-3xl',
-    lg: 'max-w-5xl',
-    xl: 'max-w-7xl'
+  const sizeClasses: Record<string, string> = {
+    sm: "max-w-xl",
+    md: "max-w-3xl",
+    lg: "max-w-5xl",
+    xl: "max-w-7xl",
   };
-
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-75 flex items-center justify-center p-4 backdrop-blur-sm">
       <motion.div
@@ -50,22 +152,46 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
   );
 };
 
-// --- Schedule Form Component ---
-const ScheduleForm = ({ onSubmit, onCancel, isSubmitting, photoAlbums, videoAlbums }) => {
-  const [form, setForm] = useState({
-    title: '',
-    type: 'Article',
-    publishDate: '',
-    photoAlbumId: '',
-    videoAlbumId: '',
+/* Delete confirmation modal */
+const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({ isOpen, onClose, onConfirm, item, isSubmitting }) => {
+  if (!isOpen) return null;
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title="Confirm Deletion" size="sm">
+      <p className="text-gray-300 mb-6 text-lg">
+        Are you sure you want to delete <strong className="text-white">"{item?.title || "this item"}"</strong>? This action cannot be undone.
+      </p>
+      <div className="flex justify-end space-x-4">
+        <button onClick={onClose} className="px-6 py-3 rounded-full bg-gray-700 text-white hover:bg-gray-600">
+          Cancel
+        </button>
+        <button
+          onClick={onConfirm}
+          disabled={isSubmitting}
+          className={`px-6 py-3 rounded-full font-semibold ${isSubmitting ? "bg-red-800 text-gray-400 cursor-not-allowed" : "bg-red-600 hover:bg-red-700 text-white"}`}
+        >
+          {isSubmitting ? "Deleting..." : "Delete"}
+        </button>
+      </div>
+    </Modal>
+  );
+};
+
+/* Schedule form */
+const ScheduleForm: React.FC<ScheduleFormProps> = ({ onSubmit, onCancel, isSubmitting, photoAlbums, videoAlbums }) => {
+  const [form, setForm] = useState<ScheduleFormData>({
+    title: "",
+    type: "Article",
+    publishDate: "",
+    photoAlbumId: "",
+    videoAlbumId: "",
   });
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setForm(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit(form);
   };
@@ -73,316 +199,226 @@ const ScheduleForm = ({ onSubmit, onCancel, isSubmitting, photoAlbums, videoAlbu
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div>
-        <label htmlFor="title" className="block text-sm font-medium text-gray-300 mb-1">Title</label>
-        <input
-          type="text"
-          id="title"
-          name="title"
-          value={form.title}
-          onChange={handleChange}
-          required
-          className="mt-1 block w-full rounded-xl bg-gray-800 border-gray-700 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 transition-colors"
-        />
+        <label className="block text-sm font-medium text-gray-300 mb-1">Title</label>
+        <input name="title" value={form.title} onChange={handleChange} required className="mt-1 block w-full rounded-xl bg-gray-800 border-gray-700 text-white p-3" />
       </div>
 
       <div>
-        <label htmlFor="type" className="block text-sm font-medium text-gray-300 mb-1">Content Type</label>
-        <select
-          id="type"
-          name="type"
-          value={form.type}
-          onChange={handleChange}
-          className="mt-1 block w-full rounded-xl bg-gray-800 border-gray-700 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 transition-colors"
-        >
+        <label className="block text-sm font-medium text-gray-300 mb-1">Content Type</label>
+        <select name="type" value={form.type} onChange={handleChange} className="mt-1 block w-full rounded-xl bg-gray-800 border-gray-700 text-white p-3">
           <option value="Article">Article</option>
           <option value="PhotoAlbum">Photo Album</option>
           <option value="VideoAlbum">Video Album</option>
         </select>
       </div>
 
-      {form.type === 'PhotoAlbum' && (
+      {form.type === "PhotoAlbum" && (
         <div>
-          <label htmlFor="photoAlbumId" className="block text-sm font-medium text-gray-300 mb-1">Select Photo Album</label>
-          <select
-            id="photoAlbumId"
-            name="photoAlbumId"
-            value={form.photoAlbumId}
-            onChange={handleChange}
-            required
-            className="mt-1 block w-full rounded-xl bg-gray-800 border-gray-700 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 transition-colors"
-          >
+          <label className="block text-sm font-medium text-gray-300 mb-1">Select Photo Album</label>
+          <select name="photoAlbumId" value={form.photoAlbumId} onChange={handleChange} required className="mt-1 block w-full rounded-xl bg-gray-800 border-gray-700 text-white p-3">
             <option value="">-- Select an album --</option>
-            {photoAlbums.map(album => (
-              <option key={album.id} value={album.id}>{album.title}</option>
-            ))}
+            {photoAlbums.map((a: PhotoAlbum) => <option key={a.id} value={a.id}>{a.title}</option>)}
           </select>
         </div>
       )}
 
-      {form.type === 'VideoAlbum' && (
+      {form.type === "VideoAlbum" && (
         <div>
-          <label htmlFor="videoAlbumId" className="block text-sm font-medium text-gray-300 mb-1">Select Video Album</label>
-          <select
-            id="videoAlbumId"
-            name="videoAlbumId"
-            value={form.videoAlbumId}
-            onChange={handleChange}
-            required
-            className="mt-1 block w-full rounded-xl bg-gray-800 border-gray-700 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 transition-colors"
-          >
+          <label className="block text-sm font-medium text-gray-300 mb-1">Select Video Album</label>
+          <select name="videoAlbumId" value={form.videoAlbumId} onChange={handleChange} required className="mt-1 block w-full rounded-xl bg-gray-800 border-gray-700 text-white p-3">
             <option value="">-- Select an album --</option>
-            {videoAlbums.map(album => (
-              <option key={album.id} value={album.id}>{album.title}</option>
-            ))}
+            {videoAlbums.map((a: VideoAlbum) => <option key={a.id} value={a.id}>{a.title}</option>)}
           </select>
         </div>
       )}
 
       <div>
-        <label htmlFor="publishDate" className="block text-sm font-medium text-gray-300 mb-1">Publish Date</label>
-        <input
-          type="datetime-local"
-          id="publishDate"
-          name="publishDate"
-          value={form.publishDate}
-          onChange={handleChange}
-          required
-          className="mt-1 block w-full rounded-xl bg-gray-800 border-gray-700 text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 p-3 transition-colors"
-        />
+        <label className="block text-sm font-medium text-gray-300 mb-1">Publish Date</label>
+        <input name="publishDate" type="datetime-local" value={form.publishDate} onChange={handleChange} required className="mt-1 block w-full rounded-xl bg-gray-800 border-gray-700 text-white p-3" />
       </div>
 
       <div className="flex justify-end space-x-4 mt-8">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="px-6 py-3 rounded-full bg-gray-700 text-white hover:bg-gray-600 transition-colors font-semibold"
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className={`px-6 py-3 rounded-full font-semibold transition-colors ${
-            isSubmitting ? 'bg-indigo-800 text-gray-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 text-white'
-          }`}
-        >
-          {isSubmitting ? 'Scheduling...' : 'Schedule Content'}
+        <button type="button" onClick={onCancel} className="px-6 py-3 rounded-full bg-gray-700 hover:bg-gray-600">Cancel</button>
+        <button type="submit" disabled={isSubmitting} className={`px-6 py-3 rounded-full font-semibold ${isSubmitting ? "bg-indigo-800 text-gray-400" : "bg-indigo-600 hover:bg-indigo-700 text-white"}`}>
+          {isSubmitting ? "Scheduling..." : "Schedule Content"}
         </button>
       </div>
     </form>
   );
 };
 
-// --- Content Card Components ---
-const PhotoAlbumContentCard = ({ content, onDelete }) => (
-  <motion.div
-    layout
-    initial={{ opacity: 0, scale: 0.95 }}
-    animate={{ opacity: 1, scale: 1 }}
-    exit={{ opacity: 0, scale: 0.95 }}
-    transition={{ duration: 0.3 }}
-    className="bg-gray-900 border border-gray-800 rounded-3xl shadow-xl overflow-hidden relative group"
-  >
-    <div className="p-6 flex items-center space-x-4">
-      <div className="flex-shrink-0 w-24 h-24 relative rounded-xl overflow-hidden border border-gray-700">
-        <Image
-          src={content.photoAlbum?.photos?.[0]?.imageUrl || 'https://placehold.co/100x100/1e293b/d1d5db?text=Album'}
-          alt={content.title}
-          fill
-          loader={loader}
-          className="object-cover"
-        />
-      </div>
-      <div className="flex-grow">
-        <h3 className="text-xl font-bold text-white mb-1">{content.title}</h3>
-        <p className="text-sm text-gray-400 mb-2">Photo Album</p>
-        <p className="text-xs text-gray-500">Scheduled for: {format(parseISO(content.publishDate), 'MMM d, yyyy h:mm a')}</p>
-      </div>
-      <div className="absolute top-4 right-4 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-        <motion.button
-          onClick={() => onDelete(content)}
-          className="p-2 rounded-full bg-gray-900/70 backdrop-blur-sm text-red-400 hover:bg-red-900/50 transition-colors"
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          aria-label="Delete Album"
-        >
-          <TrashIcon className="h-5 w-5" />
-        </motion.button>
-      </div>
-    </div>
-  </motion.div>
-);
+/* Content cards */
+const PhotoAlbumContentCard: React.FC<ContentCardProps> = ({ content, onDelete }) => {
+  // Type guard to ensure content is PhotoAlbumContent
+  if (content.type !== "PhotoAlbum") return null;
 
-const VideoAlbumContentCard = ({ content, onDelete }) => (
-  <motion.div
-    layout
-    initial={{ opacity: 0, scale: 0.95 }}
-    animate={{ opacity: 1, scale: 1 }}
-    exit={{ opacity: 0, scale: 0.95 }}
-    transition={{ duration: 0.3 }}
-    className="bg-gray-900 border border-gray-800 rounded-3xl shadow-xl overflow-hidden relative group"
-  >
-    <div className="p-6 flex items-center space-x-4">
-      <div className="flex-shrink-0 w-24 h-24 relative rounded-xl overflow-hidden border border-gray-700">
-        <Image
-          src={content.videoAlbum?.videos?.[0]?.thumbnailUrl || 'https://placehold.co/100x100/1e293b/d1d5db?text=Video'}
-          alt={content.title}
-          fill
-          loader={loader}
-          className="object-cover"
-        />
+  return (
+    <motion.div layout initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.3 }} className="bg-gray-900 border border-gray-800 rounded-3xl shadow-xl overflow-hidden relative group">
+      <div className="p-6 flex items-center space-x-4">
+        <div className="flex-shrink-0 w-24 h-24 relative rounded-xl overflow-hidden border border-gray-700">
+          <Image src={content.photoAlbum?.photos?.[0]?.imageUrl || "https://placehold.co/100x100/1e293b/d1d5db?text=Album"} alt={content.title} fill loader={loader} className="object-cover" />
+        </div>
+        <div className="flex-grow">
+          <h3 className="text-xl font-bold text-white mb-1">{content.title}</h3>
+          <p className="text-sm text-gray-400 mb-2">Photo Album</p>
+          <p className="text-xs text-gray-500">Scheduled for: {formatDate(content.publishDate)}</p>
+        </div>
+        <div className="absolute top-4 right-4 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <motion.button onClick={() => onDelete(content)} className="p-2 rounded-full bg-gray-900/70 text-red-400 hover:bg-red-900/50" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} aria-label="Delete Album"><TrashIcon className="h-5 w-5" /></motion.button>
+        </div>
       </div>
-      <div className="flex-grow">
-        <h3 className="text-xl font-bold text-white mb-1">{content.title}</h3>
-        <p className="text-sm text-gray-400 mb-2">Video Album</p>
-        <p className="text-xs text-gray-500">Scheduled for: {format(parseISO(content.publishDate), 'MMM d, yyyy h:mm a')}</p>
-      </div>
-      <div className="absolute top-4 right-4 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-        <motion.button
-          onClick={() => onDelete(content)}
-          className="p-2 rounded-full bg-gray-900/70 backdrop-blur-sm text-red-400 hover:bg-red-900/50 transition-colors"
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          aria-label="Delete Album"
-        >
-          <TrashIcon className="h-5 w-5" />
-        </motion.button>
-      </div>
-    </div>
-  </motion.div>
-);
+    </motion.div>
+  );
+};
 
-const ArticleContentCard = ({ content, onDelete }) => (
-  <motion.div
-    layout
-    initial={{ opacity: 0, scale: 0.95 }}
-    animate={{ opacity: 1, scale: 1 }}
-    exit={{ opacity: 0, scale: 0.95 }}
-    transition={{ duration: 0.3 }}
-    className="bg-gray-900 border border-gray-800 rounded-3xl shadow-xl overflow-hidden relative group"
-  >
-    <div className="p-6">
-      <div className="flex-grow">
-        <h3 className="text-xl font-bold text-white mb-1">{content.title}</h3>
-        <p className="text-sm text-gray-400 mb-2">Article</p>
-        <p className="text-xs text-gray-500">Scheduled for: {format(parseISO(content.publishDate), 'MMM d, yyyy h:mm a')}</p>
+const VideoAlbumContentCard: React.FC<ContentCardProps> = ({ content, onDelete }) => {
+  // Type guard to ensure content is VideoAlbumContent
+  if (content.type !== "VideoAlbum") return null;
+  return (
+    <motion.div layout initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.3 }} className="bg-gray-900 border border-gray-800 rounded-3xl shadow-xl overflow-hidden relative group">
+      <div className="p-6 flex items-center space-x-4">
+        <div className="flex-shrink-0 w-24 h-24 relative rounded-xl overflow-hidden border border-gray-700">
+          <Image src={content.videoAlbum?.videos?.[0]?.thumbnailUrl || "https://placehold.co/100x100/1e293b/d1d5db?text=Video"} alt={content.title} fill loader={loader} className="object-cover" />
+        </div>
+        <div className="flex-grow">
+          <h3 className="text-xl font-bold text-white mb-1">{content.title}</h3>
+          <p className="text-sm text-gray-400 mb-2">Video Album</p>
+          <p className="text-xs text-gray-500">Scheduled for: {formatDate(content.publishDate)}</p>
+        </div>
+        <div className="absolute top-4 right-4 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <motion.button onClick={() => onDelete(content)} className="p-2 rounded-full bg-gray-900/70 text-red-400 hover:bg-red-900/50" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} aria-label="Delete Album"><TrashIcon className="h-5 w-5" /></motion.button>
+        </div>
       </div>
-      <div className="absolute top-4 right-4 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-        <motion.button
-          onClick={() => onDelete(content)}
-          className="p-2 rounded-full bg-gray-900/70 backdrop-blur-sm text-red-400 hover:bg-red-900/50 transition-colors"
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          aria-label="Delete Content"
-        >
-          <TrashIcon className="h-5 w-5" />
-        </motion.button>
-      </div>
-    </div>
-  </motion.div>
-);
+    </motion.div>
+  );
+};
 
-// --- Main Page Component ---
+const ArticleContentCard: React.FC<ContentCardProps> = ({ content, onDelete }) => {
+  // Type guard to ensure content is ArticleContent
+  if (content.type !== "Article") return null;
+  return (
+    <motion.div layout initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: 0.3 }} className="bg-gray-900 border border-gray-800 rounded-3xl shadow-xl overflow-hidden relative group">
+      <div className="p-6">
+        <div className="flex-grow">
+          <h3 className="text-xl font-bold text-white mb-1">{content.title}</h3>
+          <p className="text-sm text-gray-400 mb-2">Article</p>
+          <p className="text-xs text-gray-500">Scheduled for: {formatDate(content.publishDate)}</p>
+        </div>
+        <div className="absolute top-4 right-4 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          <motion.button onClick={() => onDelete(content)} className="p-2 rounded-full bg-gray-900/70 text-red-400 hover:bg-red-900/50" whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} aria-label="Delete Content"><TrashIcon className="h-5 w-5" /></motion.button>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+/* Format date safely */
+function formatDate(iso?: string) {
+  if (!iso) return "—";
+  const parsed = parseISO(iso);
+  return isValid(parsed) ? format(parsed, "MMM d, yyyy h:mm a") : iso;
+}
+
+/* Main page */
 export default function SchedulePage() {
-  const [scheduledContent, setScheduledContent] = useState([]);
-  const [photoAlbums, setPhotoAlbums] = useState([]);
-  const [videoAlbums, setVideoAlbums] = useState([]);
+  const params = useParams();
+  const adminSlug = params?.slug as string ?? "";
+
+  const [scheduledContent, setScheduledContent] = useState<ScheduledContent[]>([]);
+  const [photoAlbums, setPhotoAlbums] = useState<PhotoAlbum[]>([]);
+  const [videoAlbums, setVideoAlbums] = useState<VideoAlbum[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [selectedContent, setSelectedContent] = useState(null);
+  const [selectedContent, setSelectedContent] = useState<ScheduledContent | null>(null);
 
   useEffect(() => {
-    fetchScheduledContent();
-    fetchAlbums();
-  }, []);
+    // only fetch when we have adminSlug available
+    if (adminSlug) {
+      fetchScheduledContent();
+      fetchAlbums();
+    }
+  }, [adminSlug]);
 
-  const fetchScheduledContent = async () => {
+  async function fetchScheduledContent() {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/content');
-      if (!response.ok) {
-        throw new Error('Failed to fetch content');
-      }
-      const fetchedContent = await response.json();
-      setScheduledContent(fetchedContent);
-    } catch (error) {
-      console.error("Failed to fetch scheduled content:", error);
+      const res = await fetch(`/api/admin/content?companyId=${adminSlug}`);
+      if (!res.ok) throw new Error("Failed to fetch content");
+      const data: ScheduledContent[] = await res.json();
+      setScheduledContent(data || []);
+    } catch (err) {
+      console.error("Failed to fetch scheduled content:", err);
+      setScheduledContent([]);
     } finally {
       setIsLoading(false);
     }
-  };
+  }
 
-  const fetchAlbums = async () => {
+  async function fetchAlbums() {
     try {
-      const photoResponse = await fetch('/api/admin/photo-albums?companyId=${adminSlug}');
-      const videoResponse = await fetch('/api/admin/video-albums?companyId=${adminSlug}');
-      if (photoResponse.ok) {
-        const photos = await photoResponse.json();
-        setPhotoAlbums(photos);
+      const [photoRes, videoRes] = await Promise.all([
+        fetch(`/api/admin/photo-albums?companyId=${adminSlug}`),
+        fetch(`/api/admin/video-albums?companyId=${adminSlug}`),
+      ]);
+      if (photoRes.ok) {
+        const photos: PhotoAlbum[] = await photoRes.json();
+        setPhotoAlbums(photos || []);
       }
-      if (videoResponse.ok) {
-        const videos = await videoResponse.json();
-        setVideoAlbums(videos);
+      if (videoRes.ok) {
+        const videos: VideoAlbum[] = await videoRes.json();
+        setVideoAlbums(videos || []);
       }
-    } catch (error) {
-      console.error("Failed to fetch albums:", error);
+    } catch (err) {
+      console.error("Failed to fetch albums:", err);
+      setPhotoAlbums([]);
+      setVideoAlbums([]);
     }
-  };
+  }
 
-  const handleOpenScheduleModal = () => {
-    setIsScheduleModalOpen(true);
-  };
-
-  const handleAddSchedule = async (contentData) => {
+  async function handleAddSchedule(formData: ScheduleFormData) {
     setIsSubmitting(true);
     try {
-      const response = await fetch('api/admin/content', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(contentData),
+      // POST with companyId in query to match other calls
+      const res = await fetch(`/api/admin/content?companyId=${adminSlug}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...formData, companyId: adminSlug }),
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to add schedule item');
-      }
-      const addedContent = await response.json();
-      setScheduledContent(prev => [...prev, addedContent]);
+      if (!res.ok) throw new Error("Failed to add schedule item");
+      const added: ScheduledContent = await res.json();
+      setScheduledContent(prev => [...prev, added]);
       setIsScheduleModalOpen(false);
-    } catch (error) {
-      console.error("Failed to add schedule item:", error);
+    } catch (err) {
+      console.error("Failed to add schedule item:", err);
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }
 
-  const handleDeleteContent = (content) => {
+  function handleDeleteContent(content: ScheduledContent) {
     setSelectedContent(content);
     setIsDeleteModalOpen(true);
-  };
-  
-  const handleConfirmDeleteContent = async () => {
+  }
+
+  async function handleConfirmDeleteContent() {
     if (!selectedContent) return;
     setIsSubmitting(true);
     try {
-      const response = await fetch(`api/admin/content/${selectedContent.id}`, {
-        method: 'DELETE',
+      const res = await fetch(`/api/admin/content/${selectedContent.id}?companyId=${adminSlug}`, {
+        method: "DELETE",
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete content');
-      }
-
-      setScheduledContent(prev => prev.filter(item => item.id !== selectedContent.id));
+      if (!res.ok) throw new Error("Failed to delete content");
+      setScheduledContent(prev => prev.filter(c => c.id !== selectedContent.id));
       setIsDeleteModalOpen(false);
       setSelectedContent(null);
-    } catch (error) {
-      console.error("Failed to delete content:", error);
+    } catch (err) {
+      console.error("Failed to delete content:", err);
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }
 
   return (
     <AdminLayout>
@@ -391,20 +427,11 @@ export default function SchedulePage() {
           Scheduled <span className="bg-clip-text text-transparent bg-gradient-to-r from-teal-400 to-indigo-600">Content</span>
         </h1>
         <div className="flex space-x-4">
-          <motion.button
-            onClick={fetchScheduledContent}
-            className="inline-flex items-center px-6 py-3 bg-gray-800 text-gray-300 font-bold rounded-full shadow-lg transition-colors duration-200 focus:outline-none focus:ring-4 focus:ring-gray-700/50 hover:bg-gray-700"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
+          <motion.button onClick={fetchScheduledContent} className="inline-flex items-center px-6 py-3 bg-gray-800 text-gray-300 font-bold rounded-full shadow-lg" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <ArrowPathIcon className="h-5 w-5 mr-2" /> Refresh
           </motion.button>
-          <motion.button
-            onClick={handleOpenScheduleModal}
-            className="inline-flex items-center px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-full shadow-lg transition-colors duration-200 focus:outline-none focus:ring-4 focus:ring-indigo-500/50"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
+
+          <motion.button onClick={() => setIsScheduleModalOpen(true)} className="inline-flex items-center px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-full shadow-lg" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <PlusIcon className="h-5 w-5 mr-2" /> Schedule New
           </motion.button>
         </div>
@@ -413,9 +440,7 @@ export default function SchedulePage() {
       <div className="bg-gray-900 rounded-3xl shadow-2xl p-6">
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {[...Array(4)].map((_, index) => (
-              <div key={index} className="bg-gray-800 rounded-3xl animate-pulse h-32"></div>
-            ))}
+            {[...Array(4)].map((_, i) => <div key={i} className="bg-gray-800 rounded-3xl animate-pulse h-32" />)}
           </div>
         ) : scheduledContent.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-64 text-center">
@@ -424,16 +449,13 @@ export default function SchedulePage() {
             <p className="text-gray-500">Schedule your first content item to get started!</p>
           </div>
         ) : (
-          <motion.div
-            layout
-            className="grid grid-cols-1 md:grid-cols-2 gap-6"
-          >
+          <motion.div layout className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <AnimatePresence>
               {scheduledContent.map((content) => {
-                if (content.type === 'PhotoAlbum' && content.photoAlbum) {
+                if (content.type === "PhotoAlbum") {
                   return <PhotoAlbumContentCard key={content.id} content={content} onDelete={handleDeleteContent} />;
                 }
-                if (content.type === 'VideoAlbum' && content.videoAlbum) {
+                if (content.type === "VideoAlbum") {
                   return <VideoAlbumContentCard key={content.id} content={content} onDelete={handleDeleteContent} />;
                 }
                 return <ArticleContentCard key={content.id} content={content} onDelete={handleDeleteContent} />;
@@ -445,21 +467,10 @@ export default function SchedulePage() {
 
       <AnimatePresence>
         <Modal isOpen={isScheduleModalOpen} onClose={() => setIsScheduleModalOpen(false)} title="Schedule New Content">
-          <ScheduleForm 
-            onSubmit={handleAddSchedule} 
-            onCancel={() => setIsScheduleModalOpen(false)} 
-            isSubmitting={isSubmitting} 
-            photoAlbums={photoAlbums}
-            videoAlbums={videoAlbums}
-          />
+          <ScheduleForm onSubmit={handleAddSchedule} onCancel={() => setIsScheduleModalOpen(false)} isSubmitting={isSubmitting} photoAlbums={photoAlbums} videoAlbums={videoAlbums} />
         </Modal>
-        {/* <DeleteConfirmationModal 
-          isOpen={isDeleteModalOpen} 
-          onClose={() => setIsDeleteModalOpen(false)} 
-          onConfirm={handleConfirmDeleteContent} 
-          item={selectedContent} 
-          isSubmitting={isSubmitting}
-        /> */}
+
+        <DeleteConfirmationModal isOpen={isDeleteModalOpen} onClose={() => setIsDeleteModalOpen(false)} onConfirm={handleConfirmDeleteContent} item={selectedContent} isSubmitting={isSubmitting} />
       </AnimatePresence>
     </AdminLayout>
   );

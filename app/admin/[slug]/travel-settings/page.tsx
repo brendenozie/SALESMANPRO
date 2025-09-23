@@ -20,13 +20,13 @@ export default function AdminSettings() {
   const [contactEmail, setContactEmail] = useState('info@travelsite.com');
   const [adminUsers, setAdminUsers] = useState(initialAdminUsers);
 
-  const handleSaveGeneralSettings = (e) => {
+  const handleSaveGeneralSettings = (e:any) => {
     e.preventDefault();
     alert('General settings saved!');
     console.log({ siteName, contactEmail });
   };
 
-  const handleAddAdmin = (e) => {
+  const handleAddAdmin = (e:any) => {
     e.preventDefault();
     const newAdminName = e.target.elements.newAdminName.value;
     const newAdminEmail = e.target.elements.newAdminEmail.value;
@@ -37,7 +37,7 @@ export default function AdminSettings() {
     e.target.reset();
   };
 
-  const handleDeleteAdmin = (id) => {
+  const handleDeleteAdmin = (id:any) => {
     if (confirm(`Are you sure you want to delete this admin user?`)) {
       setAdminUsers(adminUsers.filter(admin => admin.id !== id));
       alert('Admin user deleted!');
@@ -149,7 +149,9 @@ export default function AdminSettings() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="5" className="px-6 py-4 text-center text-gray-500">No admin users found.</td>
+                  <td 
+                  // colSpan="5"
+                   className="px-6 py-4 text-center text-gray-500">No admin users found.</td>
                 </tr>
               )}
             </tbody>

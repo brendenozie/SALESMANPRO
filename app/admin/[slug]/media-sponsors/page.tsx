@@ -1,4 +1,3 @@
-// app/admin/[adminSlug]/sponsors/page.tsx
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -15,11 +14,55 @@ import {
   UserCircleIcon,
   ArrowPathIcon
 } from '@heroicons/react/24/solid';
-import Image from 'next/image';
+import Image, { ImageLoaderProps } from 'next/image';
 import { useParams } from 'next/navigation';
 
+// --- Type Definitions ---
+type SponsorStatus = 'ACTIVE' | 'PENDING' | 'INACTIVE';
+
+interface Sponsor {
+  id: string;
+  companyName: string;
+  contactName: string;
+  contactEmail: string;
+  contactPhone?: string; // Optional property
+  websiteUrl: string;
+  logoUrl?: string; // Optional property
+  status: SponsorStatus;
+  companyId: string;
+}
+
+interface ModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  children: React.ReactNode;
+  size?: 'sm' | 'md' | 'lg' | 'xl';
+}
+
+interface SponsorFormProps {
+  sponsor?: Sponsor; // Optional for the add form
+  onSubmit: (sponsorData: Omit<Sponsor, 'id' | 'companyId'> & { id?: string }) => Promise<void>;
+  onCancel: () => void;
+  isSubmitting: boolean;
+}
+
+interface DeleteConfirmationModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: () => Promise<void>;
+  item: Sponsor | null;
+  isSubmitting: boolean;
+}
+
+interface SponsorCardProps {
+  sponsor: Sponsor;
+  onEdit: (sponsor: Sponsor) => void;
+  onDelete: (sponsor: Sponsor) => void;
+}
+
 // Placeholder for your AdminLayout component
-const AdminLayout = ({ children }) => (
+const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <div className="min-h-screen bg-gray-950 text-gray-100 p-8 font-['Inter']">
     <div className="max-w-7xl mx-auto">
       {children}
@@ -28,10 +71,10 @@ const AdminLayout = ({ children }) => (
 );
 
 // Custom loader for Next.js Image component
-const loader = ({ src, width, quality }) => `${src}?w=${width}&q=${quality || 75}`;
+const loader = ({ src, width, quality }: ImageLoaderProps) => `${src}?w=${width}&q=${quality || 75}`;
 
 // --- Reusable Modal Component ---
-const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
+const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, size = 'md' }) => {
   if (!isOpen) return null;
 
   const sizeClasses = {
@@ -62,8 +105,8 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
 };
 
 // --- Sponsor Form Component for Add/Edit ---
-const SponsorForm = ({ sponsor, onSubmit, onCancel, isSubmitting }) => {
-  const [form, setForm] = useState(sponsor || {
+const SponsorForm: React.FC<SponsorFormProps> = ({ sponsor, onSubmit, onCancel, isSubmitting }) => {
+  const [form, setForm] = useState<Omit<Sponsor, 'id' | 'companyId'> & { id?: string }>(sponsor || {
     companyName: '',
     contactName: '',
     contactEmail: '',
@@ -74,12 +117,12 @@ const SponsorForm = ({ sponsor, onSubmit, onCancel, isSubmitting }) => {
   });
   const isEditing = !!sponsor;
 
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setForm(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSubmit(form);
   };
@@ -194,7 +237,7 @@ const SponsorForm = ({ sponsor, onSubmit, onCancel, isSubmitting }) => {
 };
 
 // --- Delete Confirmation Modal Component ---
-const DeleteConfirmationModal = ({ isOpen, onClose, onConfirm, item, isSubmitting }) => {
+const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({ isOpen, onClose, onConfirm, item, isSubmitting }) => {
   if (!isOpen) return null;
 
   return (
@@ -224,7 +267,7 @@ const DeleteConfirmationModal = ({ isOpen, onClose, onConfirm, item, isSubmittin
 };
 
 // --- Sponsor Card Component for Grid View ---
-const SponsorCard = ({ sponsor, onEdit, onDelete }) => {
+const SponsorCard: React.FC<SponsorCardProps> = ({ sponsor, onEdit, onDelete }) => {
   const statusColor = sponsor.status === 'ACTIVE'
     ? 'text-green-400 bg-green-900/50'
     : sponsor.status === 'PENDING'
@@ -309,17 +352,17 @@ export default function SponsorsPage() {
     const params = useParams();
     const companyId = params.slug as string;
 
-  const [sponsors, setSponsors] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [selectedSponsor, setSelectedSponsor] = useState(null);
+  const [sponsors, setSponsors] = useState<Sponsor[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState<boolean>(false);
+  const [selectedSponsor, setSelectedSponsor] = useState<Sponsor | null>(null);
 
   useEffect(() => {
     fetchSponsors();
-  }, []);
+  }, [companyId]); // Add companyId to the dependency array
 
   const fetchSponsors = async () => {
     setIsLoading(true);
@@ -328,7 +371,7 @@ export default function SponsorsPage() {
       if (!response.ok) {
         throw new Error('Failed to fetch sponsors');
       }
-      const fetchedSponsors = await response.json();
+      const fetchedSponsors: Sponsor[] = await response.json();
       setSponsors(fetchedSponsors);
     } catch (error) {
       console.log("Failed to fetch sponsors:", error);
@@ -337,7 +380,7 @@ export default function SponsorsPage() {
     }
   };
 
-  const handleAddSponsor = async (sponsorData) => {
+  const handleAddSponsor = async (sponsorData: Omit<Sponsor, 'id' | 'companyId'> & { id?: string }) => {
     setIsSubmitting(true);
     try {
       const response = await fetch('/api/admin/sponsors', {
@@ -349,7 +392,7 @@ export default function SponsorsPage() {
       if (!response.ok) {
         throw new Error('Failed to add sponsor');
       }
-      const newSponsor = await response.json();
+      const newSponsor: Sponsor = await response.json();
       setSponsors(prev => [...prev, newSponsor]);
       setIsAddModalOpen(false);
     } catch (error) {
@@ -359,12 +402,12 @@ export default function SponsorsPage() {
     }
   };
 
-  const handleEditSponsor = (sponsor) => {
+  const handleEditSponsor = (sponsor: Sponsor) => {
     setSelectedSponsor(sponsor);
     setIsEditModalOpen(true);
   };
 
-  const handleUpdateSponsor = async (updatedSponsorData) => {
+  const handleUpdateSponsor = async (updatedSponsorData: Omit<Sponsor, 'id' | 'companyId'> & { id?: string }) => {
     setIsSubmitting(true);
     try {
       const response = await fetch(`/api/admin/sponsors/${updatedSponsorData.id}`, {
@@ -376,7 +419,7 @@ export default function SponsorsPage() {
       if (!response.ok) {
         throw new Error('Failed to update sponsor');
       }
-      const updatedSponsor = await response.json();
+      const updatedSponsor: Sponsor = await response.json();
       setSponsors(prev => prev.map(s => s.id === updatedSponsor.id ? updatedSponsor : s));
       setIsEditModalOpen(false);
     } catch (error) {
@@ -386,7 +429,7 @@ export default function SponsorsPage() {
     }
   };
 
-  const handleDeleteSponsor = (sponsor) => {
+  const handleDeleteSponsor = (sponsor: Sponsor) => {
     setSelectedSponsor(sponsor);
     setIsDeleteModalOpen(true);
   };
@@ -476,7 +519,7 @@ export default function SponsorsPage() {
           <SponsorForm onSubmit={handleAddSponsor} onCancel={() => setIsAddModalOpen(false)} isSubmitting={isSubmitting} />
         </Modal>
         <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} title="Edit Sponsor Details">
-          <SponsorForm sponsor={selectedSponsor} onSubmit={handleUpdateSponsor} onCancel={() => setIsEditModalOpen(false)} isSubmitting={isSubmitting} />
+          <SponsorForm sponsor={selectedSponsor || undefined} onSubmit={handleUpdateSponsor} onCancel={() => setIsEditModalOpen(false)} isSubmitting={isSubmitting} />
         </Modal>
         <DeleteConfirmationModal
           isOpen={isDeleteModalOpen}

@@ -1,6 +1,6 @@
 import React from "react";
 import ClientInventoryClient from "./ClientInventoryClient";
-import { MarketListingForm } from "@/types/typings";
+import { IStoreCategory, MarketListingForm } from "@/types/typings";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -22,7 +22,7 @@ export default async function ClientInventoryPage({ params }: PageProps) {
   const companyId = params.slug;
 
   let productsData: MarketListingForm[] = [];
-  let categoriesData: Category[] = [];
+  let categoriesData: IStoreCategory[] = [];
 
   try {
     // --- Fetch marketplace listings ---
