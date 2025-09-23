@@ -1,42 +1,95 @@
 // app/admin/[adminSlug]/analytics/page.tsx
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import dynamic from 'next/dynamic';
-import { motion } from 'framer-motion';
-import { ChartBarIcon, UsersIcon, EyeIcon, ClockIcon, DeviceTabletIcon, FilmIcon, SparklesIcon, CalendarDaysIcon } from '@heroicons/react/24/solid';
+import React, { SVGProps, ComponentType, ForwardRefExoticComponent, RefAttributes, useState, useMemo } from "react";
+import dynamic from "next/dynamic";
+import { motion } from "framer-motion";
+import {
+  ChartBarIcon,
+  UsersIcon,
+  EyeIcon,
+  ClockIcon,
+  DeviceTabletIcon,
+  FilmIcon,
+  SparklesIcon,
+  CalendarDaysIcon,
+} from "@heroicons/react/24/solid";
 
-// Dynamically import ApexCharts to ensure it's rendered on the client-side
-const ApexCharts = dynamic(() => import('react-apexcharts'), { ssr: false });
+export interface DashboardCardProps {
+  delay: number;
+  title: string;
+  value: string;
+  icon:
+    | ComponentType<SVGProps<SVGSVGElement>>
+    | ForwardRefExoticComponent<SVGProps<SVGSVGElement> & RefAttributes<SVGSVGElement>>;
+  gradient: string;
+  key: string;
+}
 
-// Placeholder for your AdminLayout component
-const AdminLayout = ({ children }) => (
+
+
+// Dynamically import ApexCharts for client-side rendering
+const ApexCharts = dynamic(() => import("react-apexcharts"), { ssr: false });
+
+// --- Layout ---
+interface AdminLayoutProps {
+  children: React.ReactNode;
+}
+const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => (
   <div className="min-h-screen bg-gray-950 text-gray-100 p-8 font-['Inter']">
-    <div className="max-w-7xl mx-auto">
-      {children}
-    </div>
+    <div className="max-w-7xl mx-auto">{children}</div>
   </div>
 );
 
-// --- Mock Data and ApexCharts Configuration ---
-const dailyViewsData = [4000, 3000, 2000, 2780, 1890, 2390, 3490];
-const dailyViewsCategories = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'];
+// --- Types ---
 
-const topContentData = [250000, 180000, 150000, 120000, 90000];
-const topContentCategories = ['Episode 1', 'Documentary', 'Q&A Session', 'Highlight Reel', 'Trailer'];
+// export interface DashboardCardProps {
+//   delay: number;
+//   title: string;
+//   value: string;
+//   icon: ComponentType<SVGProps<SVGSVGElement>>; // works with Heroicons too
+//   gradient: string;
+//   key: string;
+// }
 
-const deviceData = [400, 300, 300, 200];
-const deviceLabels = ['Desktop', 'Mobile', 'Tablet', 'Other'];
 
-// --- Dashboard Component ---
-const DashboardCard = ({ title, value, icon, gradient, delay }) => {
-  const Icon = icon;
+// --- Mock Data (replace with API later) ---
+const dailyViewsData: { date: string; value: number }[] = [
+  { date: "2025-08-25", value: 2000 },
+  { date: "2025-09-01", value: 4000 },
+  { date: "2025-09-05", value: 3000 },
+  { date: "2025-09-10", value: 2000 },
+  { date: "2025-09-15", value: 2780 },
+  { date: "2025-09-20", value: 2390 },
+  { date: "2025-09-22", value: 3490 },
+];
+
+const topContentData: number[] = [250000, 180000, 150000, 120000, 90000];
+const topContentCategories: string[] = [
+  "Episode 1",
+  "Documentary",
+  "Q&A Session",
+  "Highlight Reel",
+  "Trailer",
+];
+
+const deviceData: number[] = [400, 300, 300, 200];
+const deviceLabels: string[] = ["Desktop", "Mobile", "Tablet", "Other"];
+
+// --- Components ---
+const DashboardCard: React.FC<DashboardCardProps> = ({
+  title,
+  value,
+  icon: Icon,
+  gradient,
+  delay,
+}) => {
   return (
     <motion.div
       className={`relative p-6 rounded-3xl shadow-xl overflow-hidden backdrop-blur-sm bg-gradient-to-br ${gradient}`}
       initial={{ opacity: 0, y: 50, scale: 0.9 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ delay, duration: 0.5, ease: 'easeOut' }}
+      transition={{ delay, duration: 0.5, ease: "easeOut" }}
     >
       <div className="flex items-center justify-between">
         <div>
@@ -61,115 +114,69 @@ const analyticsOverview = [
   { title: "Top Content", value: "Cosmic Echo", icon: SparklesIcon, gradient: "from-purple-600 to-pink-700" },
 ];
 
+// --- Main Page ---
 export default function AnalyticsPage() {
-  // Chart options for ApexCharts
-  const areaChartOptions = {
-    chart: {
-      id: 'daily-views-chart',
-      toolbar: { show: false },
-      background: 'transparent',
-    },
-    theme: {
-      mode: 'dark',
-    },
+  const [selectedRange, setSelectedRange] = useState<number>(30);
+
+  // Filter daily views based on selected range
+  const filteredViews = useMemo(() => {
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - selectedRange);
+    return dailyViewsData.filter((d) => new Date(d.date) >= cutoff);
+  }, [selectedRange]);
+
+  // Chart configs
+  const areaChartOptions: ApexCharts.ApexOptions = {
+    chart: { id: "daily-views-chart", toolbar: { show: false }, background: "transparent" },
+    theme: { mode: "dark" },
     dataLabels: { enabled: false },
-    stroke: { curve: 'smooth' },
+    stroke: { curve: "smooth" },
     xaxis: {
-      categories: dailyViewsCategories,
-      labels: { style: { colors: '#9ca3af' } },
+      categories: filteredViews.map((d) => d.date),
+      labels: { style: { colors: "#9ca3af" } },
       axisBorder: { show: false },
       axisTicks: { show: false },
     },
-    yaxis: {
-      labels: { style: { colors: '#9ca3af' } },
-    },
-    tooltip: {
-      theme: 'dark',
-    },
-    grid: {
-      borderColor: '#374151',
-    },
+    yaxis: { labels: { style: { colors: "#9ca3af" } } },
+    tooltip: { theme: "dark" },
+    grid: { borderColor: "#374151" },
     fill: {
-      type: 'gradient',
-      gradient: {
-        shadeIntensity: 1,
-        opacityFrom: 0.7,
-        opacityTo: 0.9,
-        stops: [0, 100],
-      },
+      type: "gradient",
+      gradient: { shadeIntensity: 1, opacityFrom: 0.7, opacityTo: 0.9, stops: [0, 100] },
     },
-    colors: ['#8884d8'],
+    colors: ["#8884d8"],
   };
 
-  const barChartOptions = {
-    chart: {
-      id: 'top-content-chart',
-      toolbar: { show: false },
-      background: 'transparent',
-    },
-    theme: {
-      mode: 'dark',
-    },
-    plotOptions: {
-      bar: {
-        horizontal: true,
-        borderRadius: 10,
-        dataLabels: {
-          position: 'top',
-        },
-      },
-    },
+  const barChartOptions: ApexCharts.ApexOptions = {
+    chart: { id: "top-content-chart", toolbar: { show: false }, background: "transparent" },
+    theme: { mode: "dark" },
+    plotOptions: { bar: { horizontal: true, borderRadius: 10 } },
     dataLabels: { enabled: false },
     xaxis: {
       categories: topContentCategories,
-      labels: { style: { colors: '#9ca3af' } },
+      labels: { style: { colors: "#9ca3af" } },
       axisBorder: { show: false },
       axisTicks: { show: false },
     },
-    yaxis: {
-      labels: { style: { colors: '#9ca3af' } },
-    },
-    tooltip: {
-      theme: 'dark',
-    },
-    grid: {
-      borderColor: '#374151',
-    },
-    colors: ['#82ca9d'],
+    yaxis: { labels: { style: { colors: "#9ca3af" } } },
+    tooltip: { theme: "dark" },
+    grid: { borderColor: "#374151" },
+    colors: ["#82ca9d"],
   };
 
-  const pieChartOptions = {
-    chart: {
-      id: 'device-data-chart',
-      toolbar: { show: false },
-      background: 'transparent',
-    },
-    theme: {
-      mode: 'dark',
-    },
+  const pieChartOptions: ApexCharts.ApexOptions = {
+    chart: { id: "device-data-chart", toolbar: { show: false }, background: "transparent" },
+    theme: { mode: "dark" },
     labels: deviceLabels,
-    legend: {
-      position: 'bottom',
-      labels: {
-        colors: '#9ca3af',
-      },
-    },
-    tooltip: {
-      theme: 'dark',
-    },
-    responsive: [{
-      breakpoint: 480,
-      options: {
-        legend: {
-          position: 'bottom'
-        }
-      }
-    }],
-    colors: ['#8884d8', '#82ca9d', '#ffc658', '#FF7F50'],
+    legend: { position: "bottom", labels: { colors: "#9ca3af" } },
+    tooltip: { theme: "dark" },
+    responsive: [{ breakpoint: 480, options: { legend: { position: "bottom" } } }],
+    colors: ["#8884d8", "#82ca9d", "#ffc658", "#FF7F50"],
   };
 
   return (
     <AdminLayout>
+      {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -177,31 +184,37 @@ export default function AnalyticsPage() {
         className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-12"
       >
         <h1 className="text-4xl md:text-5xl font-extrabold text-white leading-tight mb-4 sm:mb-0">
-          Content <span className="bg-clip-text text-transparent bg-gradient-to-r from-teal-400 to-blue-600">Analytics</span>
+          Content{" "}
+          <span className="bg-clip-text text-transparent bg-gradient-to-r from-teal-400 to-blue-600">
+            Analytics
+          </span>
         </h1>
+
+        {/* Date Range Selector */}
         <div className="flex items-center space-x-2 text-gray-400">
           <CalendarDaysIcon className="h-5 w-5" />
-          <p className="font-medium">Last 30 Days</p>
+          <select
+            value={selectedRange}
+            onChange={(e) => setSelectedRange(Number(e.target.value))}
+            className="bg-gray-800 border border-gray-700 rounded-md px-3 py-1 text-sm focus:ring-2 focus:ring-blue-500"
+          >
+            <option value={7}>Last 7 Days</option>
+            <option value={30}>Last 30 Days</option>
+            <option value={90}>Last 90 Days</option>
+          </select>
         </div>
       </motion.div>
 
-      {/* --- Key Metrics Grid --- */}
+      {/* Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
         {analyticsOverview.map((stat, index) => (
-          <DashboardCard
-            key={index}
-            title={stat.title}
-            value={stat.value}
-            icon={stat.icon}
-            gradient={stat.gradient}
-            delay={index * 0.1 + 0.3}
-          />
+          <DashboardCard key={stat.title} {...stat} delay={index * 0.1 + 0.3} />
         ))}
       </div>
 
-      {/* --- Charts Section --- */}
+      {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
-        {/* Daily Views Chart */}
+        {/* Daily Views */}
         <motion.div
           className="bg-gray-900 rounded-3xl shadow-2xl p-6"
           initial={{ opacity: 0, y: 20 }}
@@ -212,12 +225,15 @@ export default function AnalyticsPage() {
             <EyeIcon className="h-6 w-6 mr-3 text-purple-400" />
             Daily Content Views
           </h2>
-          <div className="w-full">
-            <ApexCharts options={areaChartOptions} series={[{ name: 'Views', data: dailyViewsData }]} type="area" height={300} />
-          </div>
+          <ApexCharts
+            options={areaChartOptions}
+            series={[{ name: "Views", data: filteredViews.map((d) => d.value) }]}
+            type="area"
+            height={300}
+          />
         </motion.div>
 
-        {/* Top Content Chart */}
+        {/* Top Content */}
         <motion.div
           className="bg-gray-900 rounded-3xl shadow-2xl p-6"
           initial={{ opacity: 0, y: 20 }}
@@ -228,13 +244,16 @@ export default function AnalyticsPage() {
             <FilmIcon className="h-6 w-6 mr-3 text-red-400" />
             Top Content by Views
           </h2>
-          <div className="w-full">
-            <ApexCharts options={barChartOptions} series={[{ name: 'Views', data: topContentData }]} type="bar" height={300} />
-          </div>
+          <ApexCharts
+            options={barChartOptions}
+            series={[{ name: "Views", data: topContentData }]}
+            type="bar"
+            height={300}
+          />
         </motion.div>
       </div>
 
-      {/* Audience Demographics Chart */}
+      {/* Audience by Device */}
       <motion.div
         className="bg-gray-900 rounded-3xl shadow-2xl p-6"
         initial={{ opacity: 0, y: 20 }}
@@ -246,7 +265,7 @@ export default function AnalyticsPage() {
           Audience by Device Type
         </h2>
         <div className="flex justify-center items-center w-full">
-          <ApexCharts options={pieChartOptions} series={deviceData} type="pie" width="100%" height={300} />
+          <ApexCharts options={pieChartOptions} series={deviceData} type="pie" height={300} />
         </div>
       </motion.div>
     </AdminLayout>

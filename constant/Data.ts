@@ -279,6 +279,7 @@ export const getDashboardData = (adminSlug: string): DashboardMetrics => ({
 export interface SaleItem {
   id: string;
   name: string;
+  description:string;
   price: number;
   quantity: number;
   total: number;
@@ -287,11 +288,11 @@ export interface SaleItem {
 }
 
 export const getSalesData = (slug: string): SaleItem[] => ([
-  { id: "sale001", name: "Premium Membership", price: 99.99, quantity: 1, total: 99.99, date: "2025-07-16", customer: "Jane Doe" },
-  { id: "sale002", name: "Yoga Mat", price: 29.99, quantity: 1, total: 29.99, date: "2025-07-16", customer: "John Smith" },
-  { id: "sale003", name: "HIIT Class Drop-in", price: 25.00, quantity: 2, total: 50.00, date: "2025-07-15", customer: "Emily White" },
-  { id: "sale004", name: "Personal Training Session (1hr)", price: 80.00, quantity: 1, total: 80.00, date: "2025-07-15", customer: "David Kim" },
-  { id: "sale005", name: "Protein Bar", price: 3.50, quantity: 5, total: 17.50, date: "2025-07-14" },
+  { id: "sale001", name: "Premium Membership", description:'', price: 99.99, quantity: 1, total: 99.99, date: "2025-07-16", customer: "Jane Doe" },
+  { id: "sale002", name: "Yoga Mat", price: 29.99, description:'', quantity: 1, total: 29.99, date: "2025-07-16", customer: "John Smith" },
+  { id: "sale003", name: "HIIT Class Drop-in", price: 25.00, description:'', quantity: 2, total: 50.00, date: "2025-07-15", customer: "Emily White" },
+  { id: "sale004", name: "Personal Training Session (1hr)", description:'', price: 80.00, quantity: 1, total: 80.00, date: "2025-07-15", customer: "David Kim" },
+  { id: "sale005", name: "Protein Bar", price: 3.50, quantity: 5, description:'', total: 17.50, date: "2025-07-14" },
 ]);
 
 // --- Programs & Classes Data ---

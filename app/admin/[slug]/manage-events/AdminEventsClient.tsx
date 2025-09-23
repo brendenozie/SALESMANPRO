@@ -18,7 +18,7 @@ import { debounce } from 'lodash'; // For debouncing search input
 import EventForm from './EventForm'; // Import the EventForm component
 
 import {
-  Event
+  IEvent
 } from '@/types/typings';
 
 type Agent = {
@@ -31,7 +31,7 @@ interface AdminEventsProps {
 
   slug?: string;
   allOrganizers?: Agent[]; 
-  allEvents?: Event[]
+  allEvents?: IEvent[]
   
   // Optional organizers prop
 }
@@ -65,7 +65,7 @@ export default function AdminEventsClient({ slug, allOrganizers, allEvents }: Ad
 
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [currentEvent, setCurrentEvent] = useState<Event | null>(null); // For edit/add
+  const [currentEvent, setCurrentEvent] = useState<IEvent | null>(null); // For edit/add
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);

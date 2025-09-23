@@ -86,7 +86,7 @@ const testimonialsData = [
 ];
 
 // Reusable components
-const ExpertCard = ({ expert }) => (
+const ExpertCard = ({ expert }:any) => (
   <motion.div
     className="bg-gray-800 rounded-2xl p-6 shadow-xl flex flex-col items-center text-center hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 transform border border-gray-700"
     whileHover={{ scale: 1.05 }}
@@ -101,7 +101,7 @@ const ExpertCard = ({ expert }) => (
     <p className="text-sm text-blue-400 font-semibold mb-2">{expert.title}</p>
     <p className="text-sm text-gray-400 mb-4 h-12 overflow-hidden">{expert.bio}</p>
     <div className="flex flex-wrap justify-center gap-2">
-      {expert.expertise.map(tag => (
+      {expert.expertise.map((tag:any) => (
         <span key={tag} className="bg-blue-900/50 text-blue-300 text-xs px-3 py-1 rounded-full">{tag}</span>
       ))}
     </div>
@@ -115,7 +115,7 @@ const ExpertCard = ({ expert }) => (
   </motion.div>
 );
 
-const TestimonialCard = ({ testimonial }) => (
+const TestimonialCard = ({ testimonial }:any) => (
   <motion.div
     className="bg-gray-800 rounded-2xl p-6 shadow-md border border-gray-700"
     initial={{ opacity: 0, y: 20 }}
@@ -136,7 +136,10 @@ export default function ExpertPage() {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const expertiseCategories = ['All', ...new Set(expertsData.flatMap(e => e.expertise))];
+  // const expertiseCategories = ['All', ...new Set(expertsData.flatMap(e => e.expertise))];
+  const expertiseCategories = ['All', ...Array.from(new Set(
+    expertsData.flatMap(e => e.expertise)
+  ))];
 
   const filteredExperts = expertsData.filter(expert => {
     const matchesCategory = selectedCategory === 'All' || expert.expertise.includes(selectedCategory);

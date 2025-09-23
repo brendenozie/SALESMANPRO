@@ -228,16 +228,29 @@ export default function AdminAppointmentsClient({ initialAppointments, initialOr
         }
 
         const updatedOrder = await res.json(); // Assuming backend returns the updated item
+        // setUnifiedItems(prev =>
+        //   prev.map(item =>
+        //     item.id === selectedItem.id ? {
+        //       ...item,
+        //       status: updatedOrder.status,
+        //       order: { ...item.order, status: updatedOrder.status, rider: updatedOrder.rider }
+        //     } : item
+        //   )
+        // );
         setUnifiedItems(prev =>
-          prev.map(item =>
-            item.id === selectedItem.id ? {
-              ...item,
-              status: updatedOrder.status,
-              order: { ...item.order, status: updatedOrder.status, rider: updatedOrder.rider }
-            } : item
-          )
-        );
-        toast.success(`Order for "${selectedItem.marketplaceListing?.name || selectedItem.name}" updated to "${newStatus}"!`);
+            prev.map(item => {
+              if (item.id === selectedItem.id && "order" in item) {
+                return {
+                  ...item,
+                  status: updatedOrder.status,
+                  order: { ...item.order, status: updatedOrder.status, rider: updatedOrder.rider }
+                };
+              }
+              return item;
+            })
+          );
+
+          toast.success(`Order for "${selectedItem.marketplaceListing?.name || selectedItem.name}" updated to "${newStatus}"!`);
       }
       closeModal();
     } catch (error: any) {

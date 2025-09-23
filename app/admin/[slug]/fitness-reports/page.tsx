@@ -32,7 +32,7 @@ const statCardVariants = {
   },
 };
 
-const StatCard = ({ title, value, description, icon, color }) => (
+const StatCard = ({ title, value, description, icon, color }:any) => (
   <motion.div
     className="bg-gray-800 p-6 rounded-2xl shadow-xl border border-gray-700 flex flex-col items-center text-center"
     variants={statCardVariants}

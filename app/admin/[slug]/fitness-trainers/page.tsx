@@ -8,25 +8,25 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
 import ConfirmationModal from '@/components/ConfirmationModal';
-import TrainerModal from './TrainerModal';
+import TrainerModal, { TrainerData } from './TrainerModal';
 import toast from 'react-hot-toast';
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
 
 
 // Define the TrainerData interface
-interface TrainerData {
-  id: string;
-  userId: string;
-  name: string | null;
-  email: string;
-  phone: string | null;
-  specialty: string;
-  bio: string | null;
-  certifications: string[];
-  photoUrl: string | null;
-  status: 'ACTIVE' | 'ON_LEAVE' | 'INACTIVE';
-}
+// interface TrainerData {
+//   id: string;
+//   userId: string;
+//   name: string | null;
+//   email: string;
+//   phone: string | null;
+//   specialty: string;
+//   bio: string | null;
+//   certifications: string[];
+//   photoUrl: string | null;
+//   status: 'ACTIVE' | 'ON_LEAVE' | 'INACTIVE';
+// }
 
 interface TrainersPageProps {
   params: {

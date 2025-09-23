@@ -11,26 +11,26 @@ import AssignProductModal from "@/components/AssignProductModal";
 import RestockProductModal from "@/components/RestockProductModal";
 import ReturnProductModal from "@/components/ReturnProductModal";
 // Assuming ProductForm and InventoryItem are distinct types for consistency
-import { InventoryItem, ProductForm, StoreCategory } from "@/types/typings";
+import { ProductForm, IStoreCategory } from "@/types/typings";
 
 // Define InventoryItem more clearly for display purposes, assuming productItem is what you pass to modals
 // If productItem is the same as ProductForm, ensure consistency.
 // Example of how InventoryItem might look based on usage:
-// interface InventoryItem {
-//   id: string;
-//   name: string;
-//   description: string; // Added for richer cards
-//   companyStock: number;
-//   agentStock: number;
-//   sales: number;
-//   commissionType: string;
-//   commissionRate: number;
-//   category: {
-//     displayName: string;
-//     // ... other category properties if needed
-//   };
-//   productItem: ProductForm; // The full product details for modals
-// }
+export interface InventoryItem {
+  id: string;
+  name: string;
+  description: string; // Added for richer cards
+  companyStock: number;
+  agentStock: number;
+  sales: number;
+  commissionType: string;
+  commissionRate: number;
+  category: {
+    displayName: string;
+    // ... other category properties if needed
+  };
+  productItem: ProductForm; // The full product details for modals
+}
 
 type Agent = {
   id: string;
@@ -40,7 +40,7 @@ type Agent = {
 interface ClientProps {
   companyId: string;
   productsData: InventoryItem[];
-  categoriesData: StoreCategory[];
+  categoriesData: IStoreCategory[];
   agentsData: Agent[];
 }
 
@@ -341,6 +341,7 @@ export default function AdminInventoryClient({
           categories={categoriesData}
           product={selectedProduct}
           companyId={companyId}
+          locations={[]}
           // Assuming marketListItem is not strictly needed when adding from admin inventory
           // or if it shares structure with ProductForm, you might pass selectedProduct to it.
           // marketListItem={null} 

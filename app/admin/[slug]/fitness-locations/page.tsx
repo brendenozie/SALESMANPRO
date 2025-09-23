@@ -8,27 +8,27 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { useParams } from 'next/navigation';
 import ConfirmationModal from '@/components/ConfirmationModal';
-import LocationModal from './LocationModal';
+import LocationModal, { LocationData } from './LocationModal';
 import toast from 'react-hot-toast';
 
 // Define the LocationData interface to match the API response
-interface LocationData {
-  id: string;
-  name: string;
-  slug: string;
-  address: string;
-  city: string;
-  state: string | null;
-  zipCode: string | null;
-  country: string;
-  description: string | null;
-  imageUrl: string | null;
-  phone: string | null;
-  email: string | null;
-  capacity: number | null;
-  openHours: string | null;
-  status: 'OPEN' | 'CLOSED' | 'MAINTENANCE';
-}
+// interface LocationData {
+//   id: string;
+//   name: string;
+//   slug: string;
+//   address: string;
+//   city: string;
+//   state: string | null;
+//   zipCode: string | null;
+//   country: string;
+//   description: string | null;
+//   imageUrl: string | null;
+//   phone: string | null;
+//   email: string | null;
+//   capacity: number | null;
+//   openHours: string | null;
+//   status: 'OPEN' | 'CLOSED' | 'MAINTENANCE';
+// }
 
 interface LocationsPageProps {
   params: {

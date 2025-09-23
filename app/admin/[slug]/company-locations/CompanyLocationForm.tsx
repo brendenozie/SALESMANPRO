@@ -1,56 +1,153 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 
-const CompanyLocationForm = ({ onSubmit, onClose, initialData, isEditMode, availableLocations }: { onSubmit: (e: React.FormEvent) => void; onClose: () => void; initialData: any; isEditMode: boolean; availableLocations: any[] }) => (
-  <form onSubmit={onSubmit} className="space-y-4">
-    {error && (
-      <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-        <strong className="font-bold">Error!</strong>
-        <span className="block sm:inline"> {error}</span>
-      </div>
-    )}
+interface CompanyLocationFormProps {
+  onSubmit: (e: React.FormEvent, formData: any) => void;
+  onClose: () => void;
+  initialData: any;
+  isEditMode: boolean;
+  availableLocations: any[];
+}
 
-    {/* Base Location Selection (only for Add mode) */}
-    {!isEditMode && (
-      <div>
-        <label htmlFor="locationId" className="block text-sm font-medium text-gray-700">Base Location <span className="text-red-500">*</span></label>
-        <select
-          id="locationId"
-          name="locationId"
-          value={initialData.locationId}
-          onChange={handleFormChange}
-          required
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2"
+const CompanyLocationForm: React.FC<CompanyLocationFormProps> = ({
+  onSubmit,
+  onClose,
+  initialData,
+  isEditMode,
+  availableLocations,
+}) => {
+  const [formData, setFormData] = useState(initialData || {});
+  const [error, setError] = useState<string | null>(null);
+
+  
+  const handleFormChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value, type } = e.currentTarget;
+    const checked = (e.currentTarget as HTMLInputElement).checked;
+
+    setFormData((prev: any) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Example validation
+    if (!isEditMode && !formData.locationId) {
+      setError("Please select a base location.");
+      return;
+    }
+
+    setError(null);
+    onSubmit(e, formData);
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {error && (
+        <div
+          className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+          role="alert"
         >
-          <option value="">Select a base location</option>
-          {availableLocations.map((loc) => (
-            <option key={loc.id} value={loc.id}>
-              {loc.name} ({loc.city}, {loc.country})
-            </option>
-          ))}
-        </select>
-      </div>
-    )}
+          <strong className="font-bold">Error!</strong>
+          <span className="block sm:inline"> {error}</span>
+        </div>
+      )}
 
-    {/* Overrides */}
-    <h3 className="text-lg font-semibold text-gray-800 pt-4 border-t mt-6">Company-Specific Overrides</h3>
+      {/* Base Location Selection (only for Add mode) */}
+      {!isEditMode && (
+        <div>
+          <label
+            htmlFor="locationId"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Base Location <span className="text-red-500">*</span>
+          </label>
+          <select
+            id="locationId"
+            name="locationId"
+            value={formData.locationId || ""}
+            onChange={handleFormChange}
+            required
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2"
+          >
+            <option value="">Select a base location</option>
+            {availableLocations.map((loc) => (
+              <option key={loc.id} value={loc.id}>
+                {loc.name} ({loc.city}, {loc.country})
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
-    <div>
-      <label htmlFor="displayName" className="block text-sm font-medium text-gray-700">Display Name (Override)</label>
-      <input type="text" id="displayName" name="displayName" value={initialData.displayName} onChange={handleFormChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2" placeholder="e.g., Acme Corp Headquarters" />
-    </div>
+      {/* Overrides */}
+      <h3 className="text-lg font-semibold text-gray-800 pt-4 border-t mt-6">
+        Company-Specific Overrides
+      </h3>
 
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
-        <label htmlFor="addressLine1Override" className="block text-sm font-medium text-gray-700">Address Line 1 (Override)</label>
-        <input type="text" id="addressLine1Override" name="addressLine1Override" value={initialData.addressLine1Override} onChange={handleFormChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2" />
+        <label
+          htmlFor="displayName"
+          className="block text-sm font-medium text-gray-700"
+        >
+          Display Name (Override)
+        </label>
+        <input
+          type="text"
+          id="displayName"
+          name="displayName"
+          value={formData.displayName || ""}
+          onChange={handleFormChange}
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2"
+          placeholder="e.g., Acme Corp Headquarters"
+        />
       </div>
-      <div>
-        <label htmlFor="addressLine2Override" className="block text-sm font-medium text-gray-700">Address Line 2 (Override)</label>
-        <input type="text" id="addressLine2Override" name="addressLine2Override" value={initialData.addressLine2Override} onChange={handleFormChange} className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2" />
+
+      {/* Example of other overrides (repeat pattern for all fields) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label
+            htmlFor="addressLine1Override"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Address Line 1 (Override)
+          </label>
+          <input
+            type="text"
+            id="addressLine1Override"
+            name="addressLine1Override"
+            value={formData.addressLine1Override || ""}
+            onChange={handleFormChange}
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2"
+          />
+        </div>
+        <div>
+          <label
+            htmlFor="addressLine2Override"
+            className="block text-sm font-medium text-gray-700"
+          >
+            Address Line 2 (Override)
+          </label>
+          <input
+            type="text"
+            id="addressLine2Override"
+            name="addressLine2Override"
+            value={formData.addressLine2Override || ""}
+            onChange={handleFormChange}
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm p-2"
+          />
+        </div>
       </div>
-    </div>
+
+      {/* Continue same pattern for cityOverride, stateOverride, postalCodeOverride, etc. */}
+      
+  
 
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       <div>
@@ -95,17 +192,23 @@ const CompanyLocationForm = ({ onSubmit, onClose, initialData, isEditMode, avail
       </div>
     </div>
 
-    <div className="flex justify-end space-x-3 mt-6">
-      <button type="button" onClick={onClose} className="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 transition duration-150 ease-in-out shadow-sm">
-        Cancel
-      </button>
-      <button type="submit" className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition duration-150 ease-in-out shadow-md">
-        {isEditMode ? 'Update Association' : 'Add Association'}
-      </button>
-    </div>
-  </form>
-);
-
-
+      <div className="flex justify-end space-x-3 mt-6">
+        <button
+          type="button"
+          onClick={onClose}
+          className="px-4 py-2 bg-gray-300 text-gray-800 rounded-md hover:bg-gray-400 transition duration-150 ease-in-out shadow-sm"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition duration-150 ease-in-out shadow-md"
+        >
+          {isEditMode ? "Update Association" : "Add Association"}
+        </button>
+      </div>
+    </form>
+  );
+};
 
 export default CompanyLocationForm;

@@ -7,28 +7,28 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { useParams } from 'next/navigation';
 import ConfirmationModal from '@/components/ConfirmationModal';
-import BookingModal from './BookingModal';
+import BookingModal, { BookingData } from './BookingModal';
 import toast from 'react-hot-toast';
 
 // Define the BookingData interface to match the API response
-interface BookingData {
-  id: string;
-  title: string;
-  description: string | null;
-  bookingType: 'CLASS' | 'PERSONAL_TRAINING' | 'VIRTUAL_TOUR' | 'OTHER';
-  startTime: string; // ISO string for internal use
-  endTime: string;   // ISO string for internal use
-  date: string;      // Formatted date for display
-  time: string;      // Formatted time range for display
-  status: 'CONFIRMED' | 'PENDING' | 'CANCELLED' | 'COMPLETED';
-  clientId: string;
-  clientName: string;
-  educatorId: string | null;
-  educatorName: string;
-  locationId: string | null;
-  locationName: string;
-  notes: string | null;
-}
+// interface BookingData {
+  // id: string;
+  // title: string;
+  // description: string | null;
+  // bookingType: 'CLASS' | 'PERSONAL_TRAINING' | 'VIRTUAL_TOUR' | 'OTHER';
+  // startTime: string; // ISO string for internal use
+  // endTime: string;   // ISO string for internal use
+  // date: string;      // Formatted date for display
+  // time: string;      // Formatted time range for display
+  // status: 'CONFIRMED' | 'PENDING' | 'CANCELLED' | 'COMPLETED';
+  // clientId: string;
+  // clientName: string;
+  // educatorId: string | null;
+  // educatorName: string;
+  // locationId: string | null;
+  // locationName: string;
+  // notes: string | null;
+// }
 
 interface BookingsPageProps {
   params: {

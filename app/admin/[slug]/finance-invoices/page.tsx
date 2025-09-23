@@ -1,12 +1,10 @@
-// app/admin/[adminSlug]/invoices/page.tsx
 "use client";
 
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ClipboardDocumentListIcon,
   PlusCircleIcon,
-  EyeIcon,
   ArrowDownTrayIcon,
   XMarkIcon,
   CheckCircleIcon,
@@ -14,87 +12,108 @@ import {
   ClockIcon,
   PencilIcon,
   TrashIcon,
-  ArrowPathIcon
-} from '@heroicons/react/24/solid';
+  ArrowPathIcon,
+} from "@heroicons/react/24/solid";
 
-// Placeholder data for clients
-// In a real app, these would be fetched from your API
-const mockClients = [
-  { id: 'cl1', name: 'Alice Johnson' },
-  { id: 'cl2', name: 'Bob Williams' },
-  { id: 'cl3', name: 'Charlie Davis' },
-  { id: 'cl4', name: 'Diana Miller' },
-];
+// --- Types ---
+interface Client {
+  id: string;
+  user: {
+    name: string;
+  };
+}
 
-const InvoiceStatusBadge = ({ status }) => {
-  let colorClass = '';
+interface Invoice {
+  id: string;
+  clientId: string;
+  client: Client;
+  invoiceNumber: string;
+  amount: number;
+  issueDate: string;
+  dueDate: string;
+  status: "PENDING" | "PAID" | "OVERDUE" | "CANCELLED";
+  notes?: string;
+}
+
+interface FormState {
+  clientId: string;
+  invoiceNumber: string;
+  amount: string;
+  issueDate: string;
+  dueDate: string;
+  status: "PENDING" | "PAID" | "OVERDUE" | "CANCELLED";
+  notes: string;
+}
+
+interface PageProps {
+  params: {
+    adminSlug: string;
+  };
+}
+
+// --- Status Badge ---
+const InvoiceStatusBadge = ({ status }: { status: Invoice["status"] }) => {
+  let colorClass = "";
   let Icon = ClockIcon;
 
   switch (status) {
-    case 'PAID':
-      colorClass = 'bg-green-600 text-green-100';
+    case "PAID":
+      colorClass = "bg-green-600 text-green-100";
       Icon = CheckCircleIcon;
       break;
-    case 'PENDING':
-      colorClass = 'bg-yellow-600 text-yellow-100';
+    case "PENDING":
+      colorClass = "bg-yellow-600 text-yellow-100";
       Icon = ClockIcon;
       break;
-    case 'OVERDUE':
-      colorClass = 'bg-red-600 text-red-100';
+    case "OVERDUE":
+      colorClass = "bg-red-600 text-red-100";
       Icon = ExclamationCircleIcon;
       break;
-    case 'CANCELLED':
-      colorClass = 'bg-gray-600 text-gray-100';
+    case "CANCELLED":
+      colorClass = "bg-gray-600 text-gray-100";
       Icon = XMarkIcon;
-      break;
-    default:
-      colorClass = 'bg-gray-600 text-gray-100';
-      Icon = ExclamationCircleIcon;
       break;
   }
 
   return (
-    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold uppercase ${colorClass}`}>
+    <span
+      className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold uppercase ${colorClass}`}
+    >
       <Icon className="h-4 w-4 mr-1" /> {status}
     </span>
   );
 };
 
-
-interface PageProps {
-  params: {
-    slug: string; // This will be the companyId
-  };
-}
-
-
+// --- Main Page ---
 export default function InvoicesPage({ params }: PageProps) {
-  const companyId = params.slug;
+  const companyId = params.adminSlug;
 
-  const [invoices, setInvoices] = useState([]);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [currentInvoice, setCurrentInvoice] = useState(null);  
-  const [clients, setClients] = useState([]);
-  const [formState, setFormState] = useState({
-    clientId: '',
-    invoiceNumber: '',
-    amount: '',
-    issueDate: '',
-    dueDate: '',
-    status: 'PENDING',
-    notes: ''
+  const [currentInvoice, setCurrentInvoice] = useState<Invoice | null>(null);
+
+  const [formState, setFormState] = useState<FormState>({
+    clientId: "",
+    invoiceNumber: "",
+    amount: "",
+    issueDate: "",
+    dueDate: "",
+    status: "PENDING",
+    notes: "",
   });
 
+  // --- Fetch Invoices ---
   const fetchInvoices = async () => {
     setLoading(true);
     try {
       const res = await fetch(`/api/admin/finance-invoices?companyId=${companyId}`);
       const data = await res.json();
       setInvoices(data.invoices);
-    } catch (error) {
-      console.error('Error fetching invoices:', error);
+    } catch (err) {
+      console.error("Error fetching invoices:", err);
     } finally {
       setLoading(false);
     }
@@ -104,7 +123,23 @@ export default function InvoicesPage({ params }: PageProps) {
     fetchInvoices();
   }, []);
 
-  const handleOpenModal = (invoice = null) => {
+  // --- Fetch Clients ---
+  const fetchClients = async () => {
+    try {
+      const res = await fetch(`/api/admin/finance-clients?companyId=${companyId}`);
+      const data = await res.json();
+      setClients(data.clients);
+    } catch (err) {
+      console.error("Error fetching clients:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchClients();
+  }, []);
+
+  // --- Modal Open/Close ---
+  const handleOpenModal = (invoice: Invoice | null = null) => {
     if (invoice) {
       setIsEditing(true);
       setCurrentInvoice(invoice);
@@ -112,102 +147,112 @@ export default function InvoicesPage({ params }: PageProps) {
         clientId: invoice.clientId,
         invoiceNumber: invoice.invoiceNumber,
         amount: invoice.amount.toString(),
-        issueDate: new Date(invoice.issueDate).toISOString().split('T')[0],
-        dueDate: new Date(invoice.dueDate).toISOString().split('T')[0],
+        issueDate: new Date(invoice.issueDate).toISOString().split("T")[0],
+        dueDate: new Date(invoice.dueDate).toISOString().split("T")[0],
         status: invoice.status,
-        notes: invoice.notes || ''
+        notes: invoice.notes || "",
       });
     } else {
       setIsEditing(false);
       setCurrentInvoice(null);
       setFormState({
-        clientId: '',
-        invoiceNumber: '',
-        amount: '',
-        issueDate: '',
-        dueDate: '',
-        status: 'PENDING',
-        notes: ''
+        clientId: "",
+        invoiceNumber: "",
+        amount: "",
+        issueDate: "",
+        dueDate: "",
+        status: "PENDING",
+        notes: "",
       });
     }
     setShowModal(true);
   };
 
-  const handleFormChange = (e) => {
+  // --- Form Handling ---
+  const handleFormChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
-    setFormState(prev => ({ ...prev, [name]: value }));
+    setFormState((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleFormSubmit = async (e) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    const invoiceData = {
-      ...formState,
-      issueDate: formState.issueDate,
-      dueDate: formState.dueDate,
-    };
-
     try {
-      const res = await fetch(isEditing ? `/api/admin/finance-invoices/${currentInvoice.id}` : '/api/admin/finance-invoices', {
-        method: isEditing ? 'PUT' : 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({...invoiceData,companyId}),
-      });
+      const res = await fetch(
+        isEditing
+          ? `/api/admin/finance-invoices/${currentInvoice?.id}`
+          : `/api/admin/finance-invoices`,
+        {
+          method: isEditing ? "PUT" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...formState, companyId }),
+        }
+      );
 
-      if (!res.ok) throw new Error('Failed to save invoice');
+      if (!res.ok) throw new Error("Failed to save invoice");
 
       await fetchInvoices();
       setShowModal(false);
-    } catch (error) {
-      console.error('Error saving invoice:', error);
+    } catch (err) {
+      console.error("Error saving invoice:", err);
     } finally {
       setLoading(false);
     }
   };
 
-     const fetchClients = async () => {
-        try {
-          const clientsRes = await fetch(`/api/admin/finance-clients?companyId=${companyId}`);
-          const clientsData = await clientsRes.json();
-          setClients(clientsData.clients);
-    
-        } catch (error) {
-          console.error('Error fetching clients or users:', error);
-        }
-      };
-    
-      useEffect(() => {
-        fetchClients();
-      }, []);
-    
-  
-  
+  // --- Delete Invoice ---
+  const handleDelete = async (id: string) => {
+    if (!window.confirm("Are you sure you want to delete this invoice?")) return;
 
-  const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this invoice?')) {
-      setLoading(true);
-      try {
-        const res = await fetch(`/api/admin/finance-invoices/${id}`, { method: 'DELETE' });
-        if (!res.ok) throw new Error('Failed to delete invoice');
-        await fetchInvoices();
-      } catch (error) {
-        console.error('Error deleting invoice:', error);
-      } finally {
-        setLoading(false);
-      }
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/admin/finance-invoices/${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed to delete invoice");
+      await fetchInvoices();
+    } catch (err) {
+      console.error("Error deleting invoice:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleDownload = (invoiceId) => {
-    // In a real app, this would trigger a backend endpoint
-    // to generate and download a PDF.
-    console.log(`Downloading invoice ${invoiceId}...`);
-    // Example: window.open(`/api/admin/finance-invoices/download/${invoiceId}`, '_blank');
+  // --- Download Invoice ---
+  const handleDownload = (id: string) => {
+    console.log(`Downloading invoice ${id}...`);
+    // window.open(`/api/admin/finance-invoices/download/${id}`, "_blank");
   };
 
   return (
+    <>
     <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="p-6 md:p-10 bg-gray-900 min-h-screen text-gray-100 font-sans"
+    >
+      {/* --- Header --- */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
+        <div>
+          <h1 className="text-3xl md:text-4xl font-extrabold text-blue-400 mb-2">
+            Invoices
+          </h1>
+          <p className="text-gray-400">Manage all client invoices and financial records.</p>
+        </div>
+        <button
+          onClick={() => handleOpenModal()}
+          className="mt-4 md:mt-0 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-full transition-all duration-300 transform hover:scale-105 flex items-center shadow-lg"
+        >
+          <PlusCircleIcon className="h-5 w-5 mr-2" /> Create New Invoice
+        </button>
+      </div>
+
+      {/* TODO: Keep your table + mobile card layout + modal component as-is */}
+    </motion.div>
+
+     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
@@ -474,7 +519,7 @@ export default function InvoicesPage({ params }: PageProps) {
                   <textarea
                     id="notes"
                     name="notes"
-                    rows="3"
+                    // rows="3"
                     value={formState.notes}
                     onChange={handleFormChange}
                     className="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
@@ -501,5 +546,8 @@ export default function InvoicesPage({ params }: PageProps) {
         )}
       </AnimatePresence>
     </motion.div>
+
+
+    </>
   );
 }

@@ -1,18 +1,41 @@
 "use client";
 
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { getProgramsData, SaleItem } from '@/constant/Data';
-import { CreditCardIcon, MagnifyingGlassCircleIcon, MinusCircleIcon, PlusCircleIcon, ShoppingBagIcon, TrashIcon } from '@heroicons/react/24/outline';
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { getProgramsData, getSalesData, SaleItem } from "@/constant/Data";
+import {
+  CreditCardIcon,
+  MagnifyingGlassCircleIcon,
+  MinusCircleIcon,
+  PlusCircleIcon,
+  ShoppingBagIcon,
+  TrashIcon,
+} from "@heroicons/react/24/outline";
 
+// Animation variants for product cards
 const productCardVariants = {
   initial: { opacity: 0, scale: 0.9 },
   animate: { opacity: 1, scale: 1, transition: { duration: 0.4 } },
-  hover: { scale: 1.05, boxShadow: "0 10px 20px rgba(0, 0, 0, 0.4)", transition: { duration: 0.2 } },
+  hover: {
+    scale: 1.05,
+    boxShadow: "0 10px 20px rgba(0, 0, 0, 0.4)",
+    transition: { duration: 0.2 },
+  },
   tap: { scale: 0.95 },
 };
 
-const ProductCard = ({ product, onAdd }) => (
+// Cart item type extends SaleItem with quantity + total
+interface CartItemType extends SaleItem {
+  quantity: number;
+  total: number;
+}
+
+interface ProductCardProps {
+  product: SaleItem;
+  onAdd: (product: SaleItem) => void;
+}
+
+const ProductCard: React.FC<ProductCardProps> = ({ product, onAdd }) => (
   <motion.div
     variants={productCardVariants}
     initial="initial"
@@ -24,19 +47,35 @@ const ProductCard = ({ product, onAdd }) => (
   >
     <div className="absolute inset-0 bg-gradient-to-br from-indigo-900 to-gray-800 opacity-20 z-0"></div>
     <div className="relative z-10 flex flex-col h-full">
-      <h4 className="font-extrabold text-xl text-white mb-2 leading-tight">{product.name}</h4>
-      <p className="text-sm text-gray-400 mb-4 flex-grow">{product.description}</p>
+      <h4 className="font-extrabold text-xl text-white mb-2 leading-tight">
+        {product.name}
+      </h4>
+      <p className="text-sm text-gray-400 mb-4 flex-grow">
+        {product.description}
+      </p>
       <div className="flex justify-between items-center mt-auto">
-        <p className="text-2xl font-bold text-indigo-400">${product.price.toFixed(2)}</p>
+        <p className="text-2xl font-bold text-indigo-400">
+          ${product.price.toFixed(2)}
+        </p>
         <div className="bg-indigo-600 rounded-full w-10 h-10 flex items-center justify-center text-white text-xl">
-          <PlusCircleIcon className='w-6 h-6' />
+          <PlusCircleIcon className="w-6 h-6" />
         </div>
       </div>
     </div>
   </motion.div>
 );
 
-const CartItem = ({ item, onRemove, onUpdateQuantity }) => {
+interface CartItemProps {
+  item: CartItemType;
+  onRemove: (id: string | number) => void;
+  onUpdateQuantity: (id: string | number, newQuantity: number) => void;
+}
+
+const CartItem: React.FC<CartItemProps> = ({
+  item,
+  onRemove,
+  onUpdateQuantity,
+}) => {
   return (
     <motion.div
       layout
@@ -49,64 +88,75 @@ const CartItem = ({ item, onRemove, onUpdateQuantity }) => {
         <p className="font-semibold text-white">{item.name}</p>
         <p className="text-sm text-gray-400">${item.price.toFixed(2)}</p>
       </div>
-      
+
       <div className="flex items-center gap-3">
         <motion.button
-          whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
           onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}
           className="p-2 text-indigo-400 hover:text-indigo-300"
         >
-          <MinusCircleIcon className='w-6 h-6' />
+          <MinusCircleIcon className="w-6 h-6" />
         </motion.button>
         <span className="font-bold text-lg text-white">{item.quantity}</span>
         <motion.button
-          whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
           onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
           className="p-2 text-indigo-400 hover:text-indigo-300"
         >
-          <PlusCircleIcon className='w-6 h-6' />
+          <PlusCircleIcon className="w-6 h-6" />
         </motion.button>
-        <p className="font-bold text-xl text-indigo-400 ml-4">${item.total.toFixed(2)}</p>
+        <p className="font-bold text-xl text-indigo-400 ml-4">
+          ${item.total.toFixed(2)}
+        </p>
         <motion.button
-          whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
           onClick={() => onRemove(item.id)}
           className="ml-4 p-2 text-red-400 hover:text-red-300 transition-colors"
         >
-          <TrashIcon className='w-6 h-6' />
+          <TrashIcon className="w-6 h-6" />
         </motion.button>
       </div>
     </motion.div>
   );
 };
 
-const POSPage = () => {
-  const [cart, setCart] = useState([]);
-  const products = getProgramsData("");
+const POSPage: React.FC = () => {
+  const [cart, setCart] = useState<CartItemType[]>([]);
+  const products: SaleItem[] = getSalesData("");
 
-  const handleAddToCart = (product) => {
-    const existingItemIndex = cart.findIndex((item) => item.id === product.id);
-    if (existingItemIndex > -1) {
-      const newCart = [...cart];
-      newCart[existingItemIndex].quantity += 1;
-      newCart[existingItemIndex].total = newCart[existingItemIndex].quantity * newCart[existingItemIndex].price;
-      setCart(newCart);
-    } else {
-      setCart([...cart, { ...product, quantity: 1, total: product.price }]);
-    }
+  const handleAddToCart = (product: SaleItem) => {
+    setCart((prevCart) => {
+      const existingItemIndex = prevCart.findIndex(
+        (item) => item.id === product.id
+      );
+      if (existingItemIndex > -1) {
+        const newCart = [...prevCart];
+        newCart[existingItemIndex].quantity += 1;
+        newCart[existingItemIndex].total =
+          newCart[existingItemIndex].quantity * newCart[existingItemIndex].price;
+        return newCart;
+      }
+      return [...prevCart, { ...product, quantity: 1, total: product.price }];
+    });
   };
 
-  const handleUpdateQuantity = (id, newQuantity) => {
-    if (newQuantity <= 0) {
-      setCart(cart.filter(item => item.id !== id));
-    } else {
-      setCart(cart.map(item =>
-        item.id === id ? { ...item, quantity: newQuantity, total: newQuantity * item.price } : item
-      ));
-    }
+  const handleUpdateQuantity = (id: string | number, newQuantity: number) => {
+    setCart((prevCart) =>
+      newQuantity <= 0
+        ? prevCart.filter((item) => item.id !== id)
+        : prevCart.map((item) =>
+            item.id === id
+              ? { ...item, quantity: newQuantity, total: newQuantity * item.price }
+              : item
+          )
+    );
   };
-  
-  const handleRemoveFromCart = (id) => {
-    setCart(cart.filter(item => item.id !== id));
+
+  const handleRemoveFromCart = (id: string | number) => {
+    setCart((prevCart) => prevCart.filter((item) => item.id !== id));
   };
 
   const totalAmount = cart.reduce((sum, item) => sum + item.total, 0);
@@ -120,7 +170,9 @@ const POSPage = () => {
         transition={{ duration: 0.5 }}
         className="flex-1 flex flex-col bg-gray-900 rounded-2xl p-6"
       >
-        <h2 className="text-4xl font-extrabold mb-6 text-white">Products & Services</h2>
+        <h2 className="text-4xl font-extrabold mb-6 text-white">
+          Products & Services
+        </h2>
         <div className="relative mb-6">
           <input
             type="text"
@@ -129,7 +181,7 @@ const POSPage = () => {
           />
           <MagnifyingGlassCircleIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 w-6 h-6" />
         </div>
-        
+
         {/* Product Grid */}
         <motion.div
           layout
@@ -154,7 +206,7 @@ const POSPage = () => {
           <ShoppingBagIcon className="text-3xl text-indigo-400 w-6 h-6" />
           <h3 className="text-3xl font-extrabold text-white">Current Order</h3>
         </div>
-        
+
         <div className="flex-1 overflow-y-auto custom-scrollbar">
           <AnimatePresence>
             {cart.length === 0 ? (
@@ -183,18 +235,20 @@ const POSPage = () => {
         <div className="mt-6 pt-6 border-t border-gray-700">
           <div className="flex justify-between items-center text-xl font-bold mb-4">
             <span>Total:</span>
-            <span className="text-indigo-400 text-3xl">${totalAmount.toFixed(2)}</span>
+            <span className="text-indigo-400 text-3xl">
+              ${totalAmount.toFixed(2)}
+            </span>
           </div>
-          
+
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             className="w-full py-4 rounded-xl bg-indigo-600 text-white font-bold text-xl hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
           >
-            <CreditCardIcon className='w-6 h-6' />
+            <CreditCardIcon className="w-6 h-6" />
             Process Payment
           </motion.button>
-          
+
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}

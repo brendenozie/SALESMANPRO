@@ -1,47 +1,69 @@
-// app/admin/[adminSlug]/clients/page.tsx
 "use client";
 
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   PencilIcon,
   TrashIcon,
   PlusCircleIcon,
   MagnifyingGlassIcon,
   XMarkIcon,
-} from '@heroicons/react/24/solid';
-
+} from "@heroicons/react/24/solid";
 
 interface PageProps {
   params: {
-    slug: string; // This will be the companyId
+    slug: string; // companyId
   };
+}
+
+type ClientStatus = "ACTIVE" | "INACTIVE" | "SUSPENDED";
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  status: ClientStatus;
+}
+
+interface Client {
+  id: string;
+  user: User;
+}
+
+interface FormState {
+  name: string;
+  email: string;
+  phone: string;
+  status: ClientStatus;
 }
 
 export default function ClientsPage({ params }: PageProps) {
   const companyId = params.slug;
 
-  const [clients, setClients] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [showModal, setShowModal] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [currentClient, setCurrentClient] = useState(null);
-  const [formState, setFormState] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    status: 'ACTIVE',
+  const [clients, setClients] = useState<Client[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [showModal, setShowModal] = useState<boolean>(false);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [currentClient, setCurrentClient] = useState<Client | null>(null);
+  const [formState, setFormState] = useState<FormState>({
+    name: "",
+    email: "",
+    phone: "",
+    status: "ACTIVE",
   });
 
   const fetchClients = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/admin/finance-clients?companyId=${companyId}`);
-      const data = await res.json();
+      const res = await fetch(
+        `/api/admin/finance-clients?companyId=${companyId}`
+      );
+      const data: { clients: Client[] } = await res.json();
       setClients(data.clients);
     } catch (error) {
-      console.error('Error fetching clients:', error);
+      console.error("Error fetching clients:", error);
     } finally {
       setLoading(false);
     }
@@ -51,51 +73,56 @@ export default function ClientsPage({ params }: PageProps) {
     fetchClients();
   }, []);
 
-  const handleCreateOrUpdate = async (e) => {
+  const handleCreateOrUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const url = isEditing ? `/api/admin/finance-clients/${currentClient.id}` : `/api/admin/finance-clients?companyId=${companyId}`;
-    const method = isEditing ? 'PUT' : 'POST';
+    const url = isEditing
+      ? `/api/admin/finance-clients/${currentClient?.id}`
+      : `/api/admin/finance-clients?companyId=${companyId}`;
+    const method = isEditing ? "PUT" : "POST";
 
     try {
       const res = await fetch(url, {
         method,
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(formState),
       });
 
       if (!res.ok) {
-        throw new Error('API request failed');
+        throw new Error("API request failed");
       }
 
       await fetchClients();
       setShowModal(false);
       setIsEditing(false);
       setCurrentClient(null);
-      setFormState({ name: '', email: '', phone: '', status: 'ACTIVE' });
+      setFormState({ name: "", email: "", phone: "", status: "ACTIVE" });
     } catch (error) {
-      console.error(`Error ${isEditing ? 'updating' : 'creating'} client:`, error);
+      console.error(
+        `Error ${isEditing ? "updating" : "creating"} client:`,
+        error
+      );
     }
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this client?')) {
+  const handleDelete = async (id: string) => {
+    if (window.confirm("Are you sure you want to delete this client?")) {
       try {
         const res = await fetch(`/api/admin/finance-clients/${id}`, {
-          method: 'DELETE',
+          method: "DELETE",
         });
         if (!res.ok) {
-          throw new Error('API request failed');
+          throw new Error("API request failed");
         }
         await fetchClients();
       } catch (error) {
-        console.error('Error deleting client:', error);
+        console.error("Error deleting client:", error);
       }
     }
   };
 
-  const handleEditClick = (client) => {
+  const handleEditClick = (client: Client) => {
     setCurrentClient(client);
     setIsEditing(true);
     setFormState({
@@ -110,15 +137,26 @@ export default function ClientsPage({ params }: PageProps) {
   const handleAddClick = () => {
     setIsEditing(false);
     setCurrentClient(null);
-    setFormState({ name: '', email: '', phone: '', status: 'ACTIVE' });
+    setFormState({ name: "", email: "", phone: "", status: "ACTIVE" });
     setShowModal(true);
   };
 
-  const filteredClients = clients.length > 0 && clients.filter((client) =>
-    client.user?.name.toLowerCase().includes(searchTerm.toLowerCase()) || client.user?.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredClients =
+    clients.length > 0
+      ? clients.filter(
+          (client) =>
+            client.user?.name
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase()) ||
+            client.user?.email
+              .toLowerCase()
+              .includes(searchTerm.toLowerCase())
+        )
+      : [];
 
   return (
+    // ✅ your full JSX stays the same, no design changes
+    // (not trimming because JSX is already provided)
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -321,7 +359,7 @@ export default function ClientsPage({ params }: PageProps) {
                   <select
                     id="status"
                     value={formState.status}
-                    onChange={(e) => setFormState({ ...formState, status: e.target.value })}
+                    onChange={(e) => setFormState({ ...formState, status: e.target.value  as "ACTIVE" | "INACTIVE" | "SUSPENDED", })}
                     className="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                   >
                     <option value="ACTIVE">Active</option>

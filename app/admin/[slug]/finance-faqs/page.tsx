@@ -1,44 +1,53 @@
-// app/admin/[adminSlug]/faqs/page.tsx
 "use client";
 
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
-  QuestionMarkCircleIcon,
   PlusCircleIcon,
   PencilIcon,
   TrashIcon,
   ChevronDownIcon,
-  ChevronUpIcon,
   ArrowPathIcon,
   XMarkIcon,
-} from '@heroicons/react/24/solid';
-import { useParams } from 'next/navigation';
+} from "@heroicons/react/24/solid";
+import { useParams } from "next/navigation";
+
+// Types
+interface FAQ {
+  id: string;
+  question: string;
+  answer: string;
+  companyId: string;
+}
+
+interface FormState {
+  question: string;
+  answer: string;
+}
 
 const FAQsPage = () => {
-
   const params = useParams();
   const companyId = params.slug as string;
 
-  const [faqs, setFaqs] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [openFAQId, setOpenFAQId] = useState(null);
-  const [showModal, setShowModal] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [currentFAQ, setCurrentFAQ] = useState(null);
-  const [formState, setFormState] = useState({
-    question: '',
-    answer: '',
+  const [faqs, setFaqs] = useState<FAQ[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [openFAQId, setOpenFAQId] = useState<string | null>(null);
+  const [showModal, setShowModal] = useState<boolean>(false);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [currentFAQ, setCurrentFAQ] = useState<FAQ | null>(null);
+  const [formState, setFormState] = useState<FormState>({
+    question: "",
+    answer: "",
   });
 
   const fetchFaqs = async () => {
     setLoading(true);
     try {
       const res = await fetch(`/api/admin/faqs?companyId=${companyId}`);
-      const data = await res.json();
+      const data: { faqs: FAQ[] } = await res.json();
       setFaqs(data.faqs);
     } catch (error) {
-      console.error('Error fetching FAQs:', error);
+      console.error("Error fetching FAQs:", error);
     } finally {
       setLoading(false);
     }
@@ -48,11 +57,11 @@ const FAQsPage = () => {
     fetchFaqs();
   }, []);
 
-  const toggleFAQ = (id) => {
+  const toggleFAQ = (id: string) => {
     setOpenFAQId(openFAQId === id ? null : id);
   };
 
-  const handleOpenModal = (faq = null) => {
+  const handleOpenModal = (faq: FAQ | null = null) => {
     if (faq) {
       setIsEditing(true);
       setCurrentFAQ(faq);
@@ -64,51 +73,56 @@ const FAQsPage = () => {
       setIsEditing(false);
       setCurrentFAQ(null);
       setFormState({
-        question: '',
-        answer: '',
+        question: "",
+        answer: "",
       });
     }
     setShowModal(true);
   };
 
-  const handleFormChange = (e) => {
+  const handleFormChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
-    setFormState(prev => ({ ...prev, [name]: value }));
+    setFormState((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleFormSubmit = async (e) => {
+  const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const url = isEditing ? `/api/admin/faqs/${currentFAQ.id}` : `/api/admin/faqs?companyId=${companyId}`;
-      const method = isEditing ? 'PUT' : 'POST';
+      const url = isEditing
+        ? `/api/admin/faqs/${currentFAQ?.id}`
+        : `/api/admin/faqs?companyId=${companyId}`;
+      const method = isEditing ? "PUT" : "POST";
+
       const res = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({...formState,companyId}),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...formState, companyId }),
       });
 
-      if (!res.ok) throw new Error('Failed to save FAQ');
+      if (!res.ok) throw new Error("Failed to save FAQ");
 
       await fetchFaqs();
       setShowModal(false);
     } catch (error) {
-      console.error('Error saving FAQ:', error);
+      console.error("Error saving FAQ:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this FAQ?')) {
+  const handleDelete = async (id: string) => {
+    if (window.confirm("Are you sure you want to delete this FAQ?")) {
       setLoading(true);
       try {
-        const res = await fetch(`/api/admin/faqs/${id}`, { method: 'DELETE' });
-        if (!res.ok) throw new Error('Failed to delete FAQ');
+        const res = await fetch(`/api/admin/faqs/${id}`, { method: "DELETE" });
+        if (!res.ok) throw new Error("Failed to delete FAQ");
         await fetchFaqs();
       } catch (error) {
-        console.error('Error deleting FAQ:', error);
+        console.error("Error deleting FAQ:", error);
       } finally {
         setLoading(false);
       }
@@ -154,7 +168,11 @@ const FAQsPage = () => {
                   <h4 className="text-xl font-semibold text-white flex-1 pr-4">{faq.question}</h4>
                   <div className="flex items-center space-x-3">
                     <motion.button
-                      onClick={(e) => { e.stopPropagation(); handleOpenModal(faq); }}
+                      // onClick={(e) => { e.stopPropagation(); handleOpenModal(faq); }}
+                      onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+                        e.stopPropagation();
+                        handleOpenModal(faq);
+                      }}
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.95 }}
                       title="Edit"
@@ -163,7 +181,10 @@ const FAQsPage = () => {
                       <PencilIcon className="h-5 w-5" />
                     </motion.button>
                     <motion.button
-                      onClick={(e) => { e.stopPropagation(); handleDelete(faq.id); }}
+                      onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+                        e.stopPropagation();
+                        handleDelete(faq.id);
+                      }}
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.95 }}
                       title="Delete"
@@ -238,7 +259,7 @@ const FAQsPage = () => {
                   <textarea
                     id="answer"
                     name="answer"
-                    rows="4"
+                    // rows="4"
                     value={formState.answer}
                     onChange={handleFormChange}
                     required

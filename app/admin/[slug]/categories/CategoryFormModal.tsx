@@ -1,29 +1,40 @@
+import { IStoreCategory } from '@/types/typings';
 import React, { useState, useEffect } from 'react';
-import { StoreCategory } from './CategoryManagerClient'; // Import type
+// import { IStoreCategory } from './CategoryManagerClient'; // Import type
 
 interface CategoryFormModalProps {
-  categoryData: StoreCategory | null;
+  categoryData: IStoreCategory | null;
   onClose: () => void;
-  onSave: (category: StoreCategory) => Promise<void>;
+  onSave: (category: IStoreCategory) => Promise<void>;
   isLoading: boolean;
 }
 
 const CategoryFormModal: React.FC<CategoryFormModalProps> = ({ categoryData, onClose, onSave, isLoading }) => {
-  const [formData, setFormData] = useState<StoreCategory>({
+  const [formData, setFormData] = useState<IStoreCategory>({
     id: '',
     displayName: '',
     icon: '📦', // Default icon
     sortOrder: 0,
     visible: true,
-    items: [], // Subcategories are managed separately
+    categoryId:'', 
+    allBrands:[], 
+    subcategories: [], // Subcategories are managed separately
     ...(categoryData || {}), // Pre-fill if editing
   });
 
   useEffect(() => {
     if (categoryData) {
-      setFormData({ ...categoryData, items: [] }); // Ensure items is an empty array for form state
+      setFormData({ ...categoryData, subcategories: [] }); // Ensure items is an empty array for form state
     } else {
-      setFormData({ id: '', displayName: '', icon: '📦', sortOrder: 0, visible: true, items: [] });
+      setFormData({ id: '', 
+                    displayName: '', 
+                    icon: '📦', 
+                    sortOrder: 0, 
+                    visible: true, 
+                    subcategories: [],
+                    categoryId:'', 
+                    allBrands:[] 
+                  });
     }
   }, [categoryData]);
 
@@ -54,7 +65,7 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({ categoryData, onC
               type="text"
               name="displayName"
               id="displayName"
-              value={formData.displayName}
+              value={formData.displayName || ''}
               onChange={handleChange}
               required
               className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base"
@@ -66,7 +77,7 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({ categoryData, onC
               type="text"
               name="icon"
               id="icon"
-              value={formData.icon}
+              value={formData.icon || '📚'}
               onChange={handleChange}
               placeholder="e.g., 🎵, 📚, 🚗"
               className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base"

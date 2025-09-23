@@ -1,8 +1,7 @@
-// app/admin/[adminSlug]/documents/page.tsx
 "use client";
 
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   EyeIcon,
   ArrowDownTrayIcon,
@@ -10,34 +9,61 @@ import {
   PlusCircleIcon,
   MagnifyingGlassIcon,
   XMarkIcon,
-  DocumentIcon
-} from '@heroicons/react/24/solid';
+  DocumentIcon,
+} from "@heroicons/react/24/solid";
+
+// Types
+interface Uploader {
+  id: string;
+  name: string;
+}
+
+export interface DocumentItem {
+  id: string;
+  name: string;
+  fileUrl: string;
+  mimeType: string;
+  fileSize: number;
+  createdAt: string; // ISO date string
+  uploader?: Uploader | null;
+  uploaderId: string;
+  companyId: string;
+}
+
+interface UploadPayload {
+  name: string;
+  fileUrl: string;
+  mimeType: string;
+  fileSize: number;
+  uploaderId: string;
+  companyId: string;
+}
 
 // Helper function to format file size
-const formatFileSize = (bytes) => {
-  if (bytes === 0) return '0 Bytes';
+const formatFileSize = (bytes: number): string => {
+  if (bytes === 0) return "0 Bytes";
   const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
 };
 
 export default function DocumentsPage() {
-  const [documents, setDocuments] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [showModal, setShowModal] = useState(false);
-  const [fileToUpload, setFileToUpload] = useState(null);
-  const [fileName, setFileName] = useState('');
+  const [documents, setDocuments] = useState<DocumentItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [showModal, setShowModal] = useState<boolean>(false);
+  const [fileToUpload, setFileToUpload] = useState<File | null>(null);
+  const [fileName, setFileName] = useState<string>("");
 
-  const fetchDocuments = async () => {
+  const fetchDocuments = async (): Promise<void> => {
     setLoading(true);
     try {
-      const res = await fetch('/api/documents');
-      const data = await res.json();
+      const res = await fetch("/api/documents");
+      const data: DocumentItem[] = await res.json();
       setDocuments(data);
     } catch (error) {
-      console.error('Error fetching documents:', error);
+      console.error("Error fetching documents:", error);
     } finally {
       setLoading(false);
     }
@@ -47,54 +73,55 @@ export default function DocumentsPage() {
     fetchDocuments();
   }, []);
 
-  const handleUpload = async (e) => {
+  const handleUpload = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!fileToUpload) return;
 
-    // Simulate file upload metadata
-    const newDocumentData = {
+    const newDocumentData: UploadPayload = {
       name: fileName || fileToUpload.name,
-      fileUrl: `https://placeholder-url.com/${Date.now()}/${fileName || fileToUpload.name}`,
+      fileUrl: `https://placeholder-url.com/${Date.now()}/${
+        fileName || fileToUpload.name
+      }`,
       mimeType: fileToUpload.type,
       fileSize: fileToUpload.size,
-      uploaderId: 'clx0j25gq0000j212c4x11w4t', // Placeholder user ID
-      companyId: 'clx0j25gq0001j212c4x11w4t', // Placeholder company ID
+      uploaderId: "clx0j25gq0000j212c4x11w4t", // Placeholder
+      companyId: "clx0j25gq0001j212c4x11w4t", // Placeholder
     };
 
     try {
-      const res = await fetch('/api/documents', {
-        method: 'POST',
+      const res = await fetch("/api/documents", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(newDocumentData),
       });
 
       if (!res.ok) {
-        throw new Error('API request failed');
+        throw new Error("API request failed");
       }
 
       await fetchDocuments();
       setShowModal(false);
       setFileToUpload(null);
-      setFileName('');
+      setFileName("");
     } catch (error) {
-      console.error('Error uploading document:', error);
+      console.error("Error uploading document:", error);
     }
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this document?')) {
+  const handleDelete = async (id: string) => {
+    if (window.confirm("Are you sure you want to delete this document?")) {
       try {
         const res = await fetch(`/api/documents/${id}`, {
-          method: 'DELETE',
+          method: "DELETE",
         });
         if (!res.ok) {
-          throw new Error('API request failed');
+          throw new Error("API request failed");
         }
         await fetchDocuments();
       } catch (error) {
-        console.error('Error deleting document:', error);
+        console.error("Error deleting document:", error);
       }
     }
   };
@@ -104,7 +131,7 @@ export default function DocumentsPage() {
   );
 
   return (
-    <motion.div
+     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
@@ -289,7 +316,10 @@ export default function DocumentsPage() {
                   <input
                     type="file"
                     id="file"
-                    onChange={(e) => setFileToUpload(e.target.files[0])}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                      const file = e.target.files?.[0] ?? null;
+                      setFileToUpload(file);
+                    }}
                     className="mt-1 block w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                     required
                   />

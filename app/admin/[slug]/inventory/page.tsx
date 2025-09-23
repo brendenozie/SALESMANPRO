@@ -1,8 +1,8 @@
 // app/admin/[slug]/inventory/page.tsx
 
 import React from "react";
-import AdminInventoryClient from "./AdminInventoryClient";
-import { InventoryItem, StoreCategory } from "@/types/typings";
+import AdminInventoryClient, { InventoryItem } from "./AdminInventoryClient";
+import { IStoreCategory, ProductForm } from "@/types/typings";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -34,7 +34,7 @@ export default async function AdminInventoryPage({ params }: Props) {
   const companyId = params.slug;
 
   let productsData: InventoryItem[] = [];
-  let categoriesData: StoreCategory[] = [];
+  let categoriesData: IStoreCategory[] = [];
   let agentsData: Agent[] = [];
 
   try {
@@ -53,7 +53,7 @@ export default async function AdminInventoryPage({ params }: Props) {
     );
 
     if (categoriesRes.ok) {
-          const { results } = await categoriesRes.json() as { results: StoreCategory[] };
+          const { results } = await categoriesRes.json() as { results: IStoreCategory[] };
           categoriesData = Array.isArray(results) ? results : [];
     }
 

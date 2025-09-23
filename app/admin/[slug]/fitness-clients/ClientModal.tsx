@@ -18,7 +18,7 @@ import Image from 'next/image';
 import toast from 'react-hot-toast';
 
 // Define the ClientData interface to match the expected API response
-interface ClientData {
+export interface ClientData {
   id?: string; // Optional for new clients
   userId?: string; // Optional for new clients
   name: string | null;
@@ -167,7 +167,7 @@ const ClientModal: React.FC<ClientModalProps> = ({ isOpen, onClose, onSave, clie
           animate={{ scale: 1, y: 0 }}
           exit={{ scale: 0.9, y: 50 }}
           transition={{ type: "spring", stiffness: 200, damping: 25 }}
-          onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside modal
+          onClick={(e:any) => e.stopPropagation()} // Prevent closing when clicking inside modal
         >
           <motion.button
             onClick={onClose}

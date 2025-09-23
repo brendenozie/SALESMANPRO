@@ -1,10 +1,11 @@
 import React from 'react';
 import { PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { Subcategory } from './CategoryManagerClient'; // Import type
+import { ISubcategory } from '@/types/typings';
 
 interface SubcategoryItemProps {
-  subcategory: Subcategory;
-  onEditSubcategory: (sub: Subcategory) => void;
+  subcategory: ISubcategory;
+  onEditSubcategory: (sub: ISubcategory) => void;
   onDeleteSubcategory: () => Promise<void>;
 }
 

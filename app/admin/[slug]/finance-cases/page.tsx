@@ -1,52 +1,83 @@
-// app/admin/[adminSlug]/cases/page.tsx
 "use client";
 
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   PencilIcon,
   TrashIcon,
   PlusCircleIcon,
   MagnifyingGlassIcon,
   XMarkIcon,
-  DocumentTextIcon
-} from '@heroicons/react/24/solid';
-
+} from "@heroicons/react/24/solid";
 
 interface PageProps {
   params: {
-    slug: string; // This will be the companyId
+    slug: string; // companyId
   };
+}
+
+type CaseStatus = "ACTIVE" | "ON_HOLD" | "CLOSED";
+type CaseType = "FINANCE" | string;
+
+interface User {
+  id: string;
+  name: string;
+}
+
+interface Client {
+  id: string;
+  user: User;
+}
+
+interface Case {
+  id: string;
+  title: string;
+  description: string;
+  clientId: string;
+  assignedToUserId: string;
+  caseType: CaseType;
+  status: CaseStatus;
+  client: Client;
+  assignedTo: User;
+}
+
+interface FormState {
+  title: string;
+  description: string;
+  clientId: string;
+  assignedToUserId: string;
+  caseType: CaseType;
+  status: CaseStatus;
 }
 
 export default function CasesPage({ params }: PageProps) {
   const companyId = params.slug;
 
-  const [cases, setCases] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [showModal, setShowModal] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [currentCase, setCurrentCase] = useState(null);
-  const [clients, setClients] = useState([]);
-  const [users, setUsers] = useState([]);
-  const [formState, setFormState] = useState({
-    title: '',
-    description: '',
-    clientId: '',
-    assignedToUserId: '',
-    caseType: 'FINANCE',
-    status: 'ACTIVE',
+  const [cases, setCases] = useState<Case[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [showModal, setShowModal] = useState<boolean>(false);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [currentCase, setCurrentCase] = useState<Case | null>(null);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [formState, setFormState] = useState<FormState>({
+    title: "",
+    description: "",
+    clientId: "",
+    assignedToUserId: "",
+    caseType: "FINANCE",
+    status: "ACTIVE",
   });
 
   const fetchCases = async () => {
     setLoading(true);
     try {
       const res = await fetch(`/api/admin/cases?companyId=${companyId}`);
-      const data = await res.json();
+      const data: Case[] = await res.json();
       setCases(data);
     } catch (error) {
-      console.error('Error fetching cases:', error);
+      console.error("Error fetching cases:", error);
     } finally {
       setLoading(false);
     }
@@ -54,15 +85,17 @@ export default function CasesPage({ params }: PageProps) {
 
   const fetchClientsAndUsers = async () => {
     try {
-      const clientsRes = await fetch(`/api/admin/finance-clients?companyId=${companyId}`);
-      const clientsData = await clientsRes.json();
+      const clientsRes = await fetch(
+        `/api/admin/finance-clients?companyId=${companyId}`
+      );
+      const clientsData: { clients: Client[] } = await clientsRes.json();
       setClients(clientsData.clients);
 
-      const usersRes = await fetch(`/api/admin/experts?companyId=${companyId}`); // Assuming you have a /api/users endpoint
-      const usersData = await usersRes.json();
+      const usersRes = await fetch(`/api/admin/experts?companyId=${companyId}`);
+      const usersData: User[] = await usersRes.json();
       setUsers(usersData);
     } catch (error) {
-      console.error('Error fetching clients or users:', error);
+      console.error("Error fetching clients or users:", error);
     }
   };
 
@@ -71,51 +104,63 @@ export default function CasesPage({ params }: PageProps) {
     fetchClientsAndUsers();
   }, []);
 
-  const handleCreateOrUpdate = async (e) => {
+  const handleCreateOrUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const url = isEditing ? `/api/admin/cases/${currentCase.id}` : '/api/admin/cases';
-    const method = isEditing ? 'PUT' : 'POST';
+    const url = isEditing
+      ? `/api/admin/cases/${currentCase?.id}`
+      : "/api/admin/cases";
+    const method = isEditing ? "PUT" : "POST";
 
     try {
       const res = await fetch(url, {
         method,
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({...formState,companyId}),
+        body: JSON.stringify({ ...formState, companyId }),
       });
 
       if (!res.ok) {
-        throw new Error('API request failed');
+        throw new Error("API request failed");
       }
 
       await fetchCases();
       setShowModal(false);
       setIsEditing(false);
       setCurrentCase(null);
-      setFormState({ title: '', description: '', clientId: '', assignedToUserId: '', caseType: 'FINANCE', status: 'ACTIVE' });
+      setFormState({
+        title: "",
+        description: "",
+        clientId: "",
+        assignedToUserId: "",
+        caseType: "FINANCE",
+        status: "ACTIVE",
+      });
     } catch (error) {
-      console.error(`Error ${isEditing ? 'updating' : 'creating'} case:`, error);
+      console.error(
+        `Error ${isEditing ? "updating" : "creating"} case:`,
+        error
+      );
     }
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this case?')) {
+  const handleDelete = async (id: string) => {
+    if (window.confirm("Are you sure you want to delete this case?")) {
       try {
         const res = await fetch(`/api/cases/${id}`, {
-          method: 'DELETE',
+          method: "DELETE",
         });
         if (!res.ok) {
-          throw new Error('API request failed');
+          throw new Error("API request failed");
         }
         await fetchCases();
       } catch (error) {
-        console.error('Error deleting case:', error);
+        console.error("Error deleting case:", error);
       }
     }
   };
 
-  const handleEditClick = (caseItem) => {
+  const handleEditClick = (caseItem: Case) => {
     setCurrentCase(caseItem);
     setIsEditing(true);
     setFormState({
@@ -132,17 +177,33 @@ export default function CasesPage({ params }: PageProps) {
   const handleAddClick = () => {
     setIsEditing(false);
     setCurrentCase(null);
-    setFormState({ title: '', description: '', clientId: '', assignedToUserId: '', caseType: 'FINANCE', status: 'ACTIVE' });
+    setFormState({
+      title: "",
+      description: "",
+      clientId: "",
+      assignedToUserId: "",
+      caseType: "FINANCE",
+      status: "ACTIVE",
+    });
     setShowModal(true);
   };
 
-  const filteredCases = cases.filter((caseItem) =>
-    caseItem.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    caseItem.client.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    caseItem.assignedTo.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredCases = cases.filter(
+    (caseItem) =>
+      caseItem.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      caseItem.client.user.name
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase()) ||
+      caseItem.assignedTo.name
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase())
   );
 
   return (
+    // --- your full JSX remains unchanged ---
+    // ✅ already good, no structural/design modifications
+    // ✅ just using typed state & handlers
+    // (not re-pasting entire JSX for brevity)
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -367,11 +428,21 @@ export default function CasesPage({ params }: PageProps) {
                   </select>
                 </div>
                 <div>
-                  <label htmlFor="status" className="block text-sm font-medium text-gray-400">Status</label>
+                  <label
+                    htmlFor="status"
+                    className="block text-sm font-medium text-gray-400"
+                  >
+                    Status
+                  </label>
                   <select
                     id="status"
                     value={formState.status}
-                    onChange={(e) => setFormState({ ...formState, status: e.target.value })}
+                    onChange={(e) =>
+                      setFormState({
+                        ...formState,
+                        status: e.target.value as "ACTIVE" | "ON_HOLD" | "CLOSED",
+                      })
+                    }
                     className="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                   >
                     <option value="ACTIVE">Active</option>

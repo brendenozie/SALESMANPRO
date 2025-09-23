@@ -9,6 +9,7 @@ import { PlusCircleIcon, SquaresPlusIcon, TagIcon, SparklesIcon } from '@heroico
 import CategoryCard from './CategoryCard';
 import CategoryFormModal from './CategoryFormModal';
 import SubcategoryFormModal from './SubcategoryFormModal';
+import { IStoreCategory, ISubcategory } from '@/types/typings';
 
 // --- Types (Simplified for client-side use) ---
 export type Subcategory = {
@@ -19,28 +20,28 @@ export type Subcategory = {
   visible: boolean;
 };
 
-export type StoreCategory = {
-  id: string;
-  displayName: string;
-  icon?: string; // Emoji or icon class
-  sortOrder: number;
-  visible: boolean;
-  items: Subcategory[]; // Renamed from 'subcategories' for consistency with 'items' in your sample
-  // Add other fields from your sample if needed, e.g., categoryId, companyId
-};
+// export type IStoreCategory = {
+//   id: string;
+//   displayName: string;
+//   icon?: string; // Emoji or icon class
+//   sortOrder: number;
+//   visible: boolean;
+//   subcategories: Subcategory[]; // Renamed from 'subcategories' for consistency with 'items' in your sample
+//   // Add other fields from your sample if needed, e.g., categoryId, companyId
+// };
 
 interface Props {
-  initialCategories: StoreCategory[];
+  initialCategories: IStoreCategory[];
   apiUrl: string;
   companyId: string;
 }
 
 export default function CategoryManagerClient({ initialCategories, apiUrl, companyId }: Props) {
-  const [categories, setCategories] = useState<StoreCategory[]>(initialCategories);
+  const [categories, setCategories] = useState<IStoreCategory[]>(initialCategories);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [showSubcategoryModal, setShowSubcategoryModal] = useState(false);
-  const [editingCat, setEditingCat] = useState<StoreCategory | null>(null);
-  const [editingSub, setEditingSub] = useState<{ parentId: string; sub: Subcategory } | null>(null);
+  const [editingCat, setEditingCat] = useState<IStoreCategory | null>(null);
+  const [editingSub, setEditingSub] = useState<{ parentId: string; sub: ISubcategory } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeDragId, setActiveDragId] = useState<string | null>(null); // For DragOverlay
@@ -72,7 +73,7 @@ export default function CategoryManagerClient({ initialCategories, apiUrl, compa
             icon: sc.icon || sc.category.icon,
             sortOrder: sc.sortOrder,
             visible: sc.visible,
-            items: Array.isArray(sc.items)
+            subcategories: Array.isArray(sc.items)
               ? sc.items.map((sub: any) => ({
                   id: sub.id,
                   name: sub.name,
@@ -141,7 +142,7 @@ export default function CategoryManagerClient({ initialCategories, apiUrl, compa
     }
   }, [fetchCategories, initialCategories]);
 
-  const syncCategoryOrder = useCallback(async (updatedCategories: StoreCategory[]) => {
+  const syncCategoryOrder = useCallback(async (updatedCategories: IStoreCategory[]) => {
     setIsLoading(true);
     setError(null);
     try {
@@ -164,7 +165,7 @@ export default function CategoryManagerClient({ initialCategories, apiUrl, compa
     }
   }, [apiUrl, companyId, initialCategories]);
 
-  const saveCategory = useCallback(async (cat: StoreCategory) => {
+  const saveCategory = useCallback(async (cat: IStoreCategory) => {
     setIsLoading(true);
     setError(null);
     
@@ -212,7 +213,7 @@ export default function CategoryManagerClient({ initialCategories, apiUrl, compa
     }
   }, [apiUrl, fetchCategories]);
 
-  const saveSubcategory = useCallback(async (parentId: string, sub: Subcategory) => {
+  const saveSubcategory = useCallback(async (parentId: string, sub: ISubcategory) => {
     setIsLoading(true);
     setError(null);
 
@@ -302,7 +303,15 @@ export default function CategoryManagerClient({ initialCategories, apiUrl, compa
         </div>
         <button
           onClick={() => {
-            setEditingCat({ id: '', displayName: '', icon: '📦', sortOrder: categories.length, visible: true, items: [] });
+            setEditingCat({ id: '', 
+              displayName: '', 
+              icon: '📦', 
+              sortOrder: 0,//categories.length, 
+              visible: true, 
+              subcategories: [],
+              allBrands: [],
+              categoryId:''
+              });
             setEditingSub(null);
             setShowCategoryModal(true);
           }}
@@ -348,7 +357,7 @@ export default function CategoryManagerClient({ initialCategories, apiUrl, compa
                   category={cat}
                   onEditCategory={() => { setEditingCat(cat); setEditingSub(null); setShowCategoryModal(true); }}
                   onDeleteCategory={deleteCategory}
-                  onAddSubcategory={() => { setEditingSub({ parentId: cat.id, sub: { id: '', name: '', slug: '', sortOrder: cat.items.length, visible: true } }); setEditingCat(null); setShowSubcategoryModal(true); }}
+                  onAddSubcategory={() => { setEditingSub({ parentId: cat.id, sub: { id: '', name: '', slug: '', sortOrder: cat.subcategories.length, visible: true } }); setEditingCat(null); setShowSubcategoryModal(true); }}
                   onEditSubcategory={(sub) => { setEditingSub({ parentId: cat.id, sub }); setEditingCat(null); setShowSubcategoryModal(true); }}
                   onDeleteSubcategory={deleteSubcategory}
                 />

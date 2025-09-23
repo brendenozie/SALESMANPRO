@@ -13,7 +13,7 @@ interface ClientOption {
 }
 
 // Define the CommunicationData interface to match the expected API response
-interface CommunicationData {
+export interface CommunicationData {
   id?: string; // Optional for new communications
   subject: string;
   content: string;
@@ -171,7 +171,7 @@ const CommunicationModal: React.FC<CommunicationModalProps> = ({ isOpen, onClose
           initial={{ y: -50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: 50, opacity: 0 }}
-          onClick={(e) => e.stopPropagation()} // Prevent closing modal when clicking inside
+          onClick={(e:any) => e.stopPropagation()} // Prevent closing modal when clicking inside
         >
           <button
             onClick={onClose}

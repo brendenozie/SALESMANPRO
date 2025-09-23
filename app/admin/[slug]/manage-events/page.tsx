@@ -2,7 +2,7 @@
 
 import React from "react";
 import AdminEventsClient from "./AdminEventsClient";
-import { InventoryItem, StoreCategory, Event } from "@/types/typings";
+import { IStoreCategory, IEvent } from "@/types/typings";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -36,28 +36,20 @@ export type OrganizerOption = { id: string; name: string; email: string };
 export default async function AdminInventoryPage({ params }: Props) {
   const companyId = params.slug;
 
-  let productsData: InventoryItem[] = [];
-  let categoriesData: StoreCategory[] = [];
-  let allEvents: Event[] = [];
+  let categoriesData: IStoreCategory[] = [];
+  let allEvents: IEvent[] = [];
   let allOrganizers: Agent[] = [];
 
   try {
     // Fetch all products for this company
-    const productsRes = await fetch(`${apiUrl}/admin/get-all-inventory?companyId=${encodeURIComponent(companyId)}`,
-      { cache: "no-store" } // equivalent to SSR on every request
-    );
-
-    if (productsRes.ok) {
-      productsData = (await productsRes.json()).data as InventoryItem[];
-    }
-
+   
     // Fetch all categories for this company
     const categoriesRes = await fetch(`${apiUrl}/admin/get-store-categories?companyId=${encodeURIComponent(companyId )}`,
       { cache: "no-store" }
     );
 
     if (categoriesRes.ok) {
-          const { results } = await categoriesRes.json() as { results: StoreCategory[] };
+          const { results } = await categoriesRes.json() as { results: IStoreCategory[] };
           categoriesData = Array.isArray(results) ? results : [];
     }
 
@@ -87,7 +79,7 @@ export default async function AdminInventoryPage({ params }: Props) {
     });
 
     if (eventsRes.ok) {
-      allEvents = (await eventsRes.json()) as Event[];
+      allEvents = (await eventsRes.json()) as IEvent[];
     
     }else {
       const errorData = await eventsRes.json();
@@ -95,9 +87,7 @@ export default async function AdminInventoryPage({ params }: Props) {
     }
 
     // Sanity check: ensure arrays
-    if (!Array.isArray(productsData)) {
-      throw new Error("Products API response is not an array.");
-    }
+   
     if (!Array.isArray(categoriesData)) {
       throw new Error("Categories API response is not an array.");
     }

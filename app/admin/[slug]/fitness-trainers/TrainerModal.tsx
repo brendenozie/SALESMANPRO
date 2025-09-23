@@ -18,7 +18,7 @@ import Image from 'next/image';
 import toast from 'react-hot-toast'; // Import react-hot-toast
 
 // Define the TrainerData interface to match the expected API response
-interface TrainerData {
+export interface TrainerData {
   id?: string; // Optional for new trainers
   userId?: string; // Optional for new trainers
   name: string | null;
@@ -176,7 +176,7 @@ const TrainerModal: React.FC<TrainerModalProps> = ({ isOpen, onClose, onSave, tr
           animate={{ scale: 1, y: 0 }}
           exit={{ scale: 0.9, y: 50 }}
           transition={{ type: "spring", stiffness: 200, damping: 25 }}
-          onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside modal
+          onClick={(e:any) => e.stopPropagation()} // Prevent closing when clicking inside modal
         >
           <motion.button
             onClick={onClose}

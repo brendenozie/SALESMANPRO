@@ -1,214 +1,257 @@
-// app/admin/[adminSlug]/appointments/page.tsx
 "use client";
 
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
-  CalendarDaysIcon,
   CheckCircleIcon,
   XCircleIcon,
-  ClockIcon,
-  UserIcon,
-  PlusCircleIcon,
-  PencilIcon,
-  TrashIcon,
-  XMarkIcon,
-  CheckIcon,
+  CalendarDaysIcon,
   ExclamationCircleIcon,
-  ArrowPathIcon
-} from '@heroicons/react/24/solid';
+  PencilIcon,
+  PlusCircleIcon,
+  ArrowPathIcon,
+  ClockIcon,
+  TrashIcon,
+  UserIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/solid";
 
-// Placeholder data for clients and experts
-// In a real app, these would be fetched from your API
-const mockClients = [
-  { id: 'cl1', name: 'Alice Johnson' },
-  { id: 'cl2', name: 'Bob Williams' },
-  { id: 'cl3', name: 'Charlie Davis' },
-];
+// ---------- Types ----------
+type AppointmentStatus = "SCHEDULED" | "CONFIRMED" | "CANCELLED" | "COMPLETED";
 
-const mockExperts = [
-  { id: 'exp1', name: 'Dr. Evelyn Reed' },
-  { id: 'exp2', name: 'Mr. Benjamin Carter' },
-  { id: 'exp3', name: 'Ms. Olivia Hayes' },
-  { id: 'exp4', name: 'Mr. Alex Thorne' },
-];
+interface Client {
+  id: string;
+  user: {
+    id: string;
+    name: string;
+  };
+}
 
-const AppointmentStatusBadge = ({ status }) => {
-  let colorClass = '';
+interface Expert {
+  id: string;
+  name: string;
+}
+
+interface Appointment {
+  id: string;
+  clientId: string;
+  expertId: string;
+  date: string; // ISO string
+  notes?: string;
+  status: AppointmentStatus;
+  client: Client;
+  expert: Expert;
+}
+
+interface AppointmentFormState {
+  clientId: string;
+  expertId: string;
+  date: string;
+  time: string;
+  notes: string;
+  status: AppointmentStatus;
+}
+
+interface PageProps {
+  params: {
+    slug: string; // companyId
+  };
+}
+
+interface AppointmentStatusBadgeProps {
+  status: AppointmentStatus;
+}
+
+// ---------- Components ----------
+const AppointmentStatusBadge: React.FC<AppointmentStatusBadgeProps> = ({
+  status,
+}) => {
+  let colorClass = "";
   let Icon = CalendarDaysIcon;
 
   switch (status) {
-    case 'CONFIRMED':
-      colorClass = 'bg-green-600 text-green-100';
+    case "CONFIRMED":
+      colorClass = "bg-green-600 text-green-100";
       Icon = CheckCircleIcon;
       break;
-    case 'SCHEDULED':
-      colorClass = 'bg-blue-600 text-blue-100';
+    case "SCHEDULED":
+      colorClass = "bg-blue-600 text-blue-100";
       Icon = CalendarDaysIcon;
       break;
-    case 'CANCELLED':
-      colorClass = 'bg-red-600 text-red-100';
+    case "CANCELLED":
+      colorClass = "bg-red-600 text-red-100";
       Icon = XCircleIcon;
       break;
-    case 'COMPLETED':
-      colorClass = 'bg-gray-600 text-gray-100';
+    case "COMPLETED":
+      colorClass = "bg-gray-600 text-gray-100";
       Icon = CheckCircleIcon;
       break;
     default:
-      colorClass = 'bg-gray-600 text-gray-100';
+      colorClass = "bg-gray-600 text-gray-100";
       Icon = ExclamationCircleIcon;
       break;
   }
 
   return (
-    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold uppercase ${colorClass}`}>
+    <span
+      className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold uppercase ${colorClass}`}
+    >
       <Icon className="h-4 w-4 mr-1" /> {status}
     </span>
   );
 };
 
-interface PageProps {
-  params: {
-    slug: string; // This will be the companyId
-  };
-}
-
-
+// ---------- Main Page ----------
 export default function AppointmentsPage({ params }: PageProps) {
   const companyId = params.slug;
 
-  const [appointments, setAppointments] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [currentAppointment, setCurrentAppointment] = useState(null);
-  const [formState, setFormState] = useState({
-    clientId: '',
-    expertId: '',
-    date: '',
-    time: '',
-    notes: '',
-    status: 'SCHEDULED'
-  });
-  
-  const [clients, setClients] = useState([]);
-  const [users, setUsers] = useState([]);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [showModal, setShowModal] = useState<boolean>(false);
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [currentAppointment, setCurrentAppointment] =
+    useState<Appointment | null>(null);
 
+  const [formState, setFormState] = useState<AppointmentFormState>({
+    clientId: "",
+    expertId: "",
+    date: "",
+    time: "",
+    notes: "",
+    status: "SCHEDULED",
+  });
+
+  const [clients, setClients] = useState<Client[]>([]);
+  const [users, setUsers] = useState<Expert[]>([]);
+
+  // ---------- API Fetch ----------
   const fetchAppointments = async () => {
     setLoading(true);
     try {
       const res = await fetch(`/api/admin/finance-appointments?companyId=${companyId}`);
-      const data = await res.json();
-      console.log(data);
-      setAppointments(data.appointments);
+      if (!res.ok) throw new Error("Failed to fetch appointments");
+      const data: Appointment[] = await res.json();
+      setAppointments(data);
     } catch (error) {
-      console.error('Error fetching appointments:', error);
+      console.error("Error fetching appointments:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  
-    const fetchClientsAndUsers = async () => {
-      try {
-        const clientsRes = await fetch(`/api/admin/finance-clients?companyId=${companyId}`);
-        const clientsData = await clientsRes.json();
-        setClients(clientsData.clients);
-  
-        const usersRes = await fetch(`/api/admin/experts?companyId=${companyId}`); // Assuming you have a /api/users endpoint
-        const usersData = await usersRes.json();
-        setUsers(usersData);
-      } catch (error) {
-        console.error('Error fetching clients or users:', error);
-      }
-    };
-  
-    useEffect(() => {
-      fetchAppointments();
-      fetchClientsAndUsers();
-    }, []);
-  
+  const fetchClientsAndUsers = async () => {
+    try {
+      const [clientsRes, usersRes] = await Promise.all([
+        fetch(`/api/admin/finance-clients?companyId=${companyId}`),
+        fetch(`/api/admin/finance-experts?companyId=${companyId}`),
+      ]);
+      if (!clientsRes.ok || !usersRes.ok)
+        throw new Error("Failed to fetch clients or users");
 
+      const clientsData: Client[] = await clientsRes.json();
+      const usersData: Expert[] = await usersRes.json();
 
+      setClients(clientsData);
+      setUsers(usersData);
+    } catch (error) {
+      console.error("Error fetching clients and users:", error);
+    }
+  };
 
-  const handleOpenModal = (appointment = null) => {
+  useEffect(() => {
+    fetchAppointments();
+    fetchClientsAndUsers();
+  }, []);
+
+  // ---------- Handlers ----------
+  const handleOpenModal = (appointment: Appointment | null = null) => {
     if (appointment) {
       setIsEditing(true);
       setCurrentAppointment(appointment);
-      const [date, time] = appointment.date.split('T');
+      const [date, time] = appointment.date.split("T");
       setFormState({
         clientId: appointment.clientId,
         expertId: appointment.expertId,
         date: date,
         time: time.slice(0, 5),
-        notes: appointment.notes || '',
+        notes: appointment.notes || "",
         status: appointment.status,
       });
     } else {
       setIsEditing(false);
       setCurrentAppointment(null);
       setFormState({
-        clientId: '',
-        expertId: '',
-        date: '',
-        time: '',
-        notes: '',
-        status: 'SCHEDULED'
+        clientId: "",
+        expertId: "",
+        date: "",
+        time: "",
+        notes: "",
+        status: "SCHEDULED",
       });
     }
     setShowModal(true);
   };
 
-  const handleFormChange = (e) => {
-    const { name, value } = e.target;
-    setFormState(prev => ({ ...prev, [name]: value }));
+  const handleFormChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
+  ) => {
+    const { name, value } = e.currentTarget;
+    setFormState((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleFormSubmit = async (e) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     const fullDate = `${formState.date}T${formState.time}:00.000Z`;
-    const appointmentData = {
-      ...formState,
-      date: fullDate,
-    };
+    const appointmentData = { ...formState, date: fullDate };
 
     try {
-      const res = await fetch(isEditing ? `/api/admin/finance-appointments/${currentAppointment.id}` : '/api/admin/finance-appointments', {
-        method: isEditing ? 'PUT' : 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({...appointmentData,companyId}),
-      });
+      const res = await fetch(
+        isEditing
+          ? `/api/admin/finance-appointments/${currentAppointment?.id}`
+          : "/api/admin/finance-appointments",
+        {
+          method: isEditing ? "PUT" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...appointmentData, companyId }),
+        }
+      );
 
-      if (!res.ok) throw new Error('Failed to save appointment');
+      if (!res.ok) throw new Error("Failed to save appointment");
 
       await fetchAppointments();
       setShowModal(false);
     } catch (error) {
-      console.error('Error saving appointment:', error);
+      console.error("Error saving appointment:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this appointment?')) {
+  const handleDelete = async (id: string) => {
+    if (window.confirm("Are you sure you want to delete this appointment?")) {
       setLoading(true);
       try {
-        const res = await fetch(`/api/admin/finance-appointments/${id}`, { method: 'DELETE' });
-        if (!res.ok) throw new Error('Failed to delete appointment');
+        const res = await fetch(`/api/admin/finance-appointments/${id}`, {
+          method: "DELETE",
+        });
+        if (!res.ok) throw new Error("Failed to delete appointment");
         await fetchAppointments();
       } catch (error) {
-        console.error('Error deleting appointment:', error);
+        console.error("Error deleting appointment:", error);
       } finally {
         setLoading(false);
       }
     }
   };
 
+  // ---------- Render ----------
   return (
-    <motion.div
+    <div className="p-6">
+      <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
@@ -452,7 +495,7 @@ export default function AppointmentsPage({ params }: PageProps) {
                   <textarea
                     id="notes"
                     name="notes"
-                    rows="3"
+                    // rows="3"
                     value={formState.notes}
                     onChange={handleFormChange}
                     className="mt-1 block w-full rounded-md bg-gray-700 border-gray-600 text-white shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
@@ -479,5 +522,179 @@ export default function AppointmentsPage({ params }: PageProps) {
         )}
       </AnimatePresence>
     </motion.div>
+    
+      <div className="flex justify-between mb-4">
+        <h1 className="text-xl font-bold">Appointments</h1>
+        <button
+          onClick={() => handleOpenModal()}
+          className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+        >
+          Add Appointment
+        </button>
+      </div>
+
+      {loading ? (
+        <p>Loading...</p>
+      ) : (
+        <div className="space-y-3">
+          {appointments.map((appt) => (
+            <motion.div
+              key={appt.id}
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className="p-4 border rounded-md shadow-sm bg-white"
+            >
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="font-semibold">{appt.client.user.name}</p>
+                  <p className="text-sm text-gray-500">
+                    {new Date(appt.date).toLocaleString()}
+                  </p>
+                </div>
+                <AppointmentStatusBadge status={appt.status} />
+              </div>
+              <div className="mt-2 text-sm text-gray-600">{appt.notes}</div>
+              <div className="mt-3 flex space-x-2">
+                <button
+                  onClick={() => handleOpenModal(appt)}
+                  className="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => handleDelete(appt.id)}
+                  className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
+                >
+                  Delete
+                </button>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      )}
+
+      {/* Modal */}
+      <AnimatePresence>
+        {showModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+          >
+            <motion.div
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.9 }}
+              className="bg-white rounded-lg p-6 w-full max-w-lg shadow-lg"
+            >
+              <h2 className="text-lg font-bold mb-4">
+                {isEditing ? "Edit Appointment" : "Add Appointment"}
+              </h2>
+              <form onSubmit={handleFormSubmit} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium">Client</label>
+                  <select
+                    name="clientId"
+                    value={formState.clientId}
+                    onChange={handleFormChange}
+                    required
+                    className="w-full border rounded p-2"
+                  >
+                    <option value="">Select client</option>
+                    {clients.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.user.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium">Expert</label>
+                  <select
+                    name="expertId"
+                    value={formState.expertId}
+                    onChange={handleFormChange}
+                    required
+                    className="w-full border rounded p-2"
+                  >
+                    <option value="">Select expert</option>
+                    {users.map((u) => (
+                      <option key={u.id} value={u.id}>
+                        {u.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium">Date</label>
+                    <input
+                      type="date"
+                      name="date"
+                      value={formState.date}
+                      onChange={handleFormChange}
+                      required
+                      className="w-full border rounded p-2"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium">Time</label>
+                    <input
+                      type="time"
+                      name="time"
+                      value={formState.time}
+                      onChange={handleFormChange}
+                      required
+                      className="w-full border rounded p-2"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium">Notes</label>
+                  <textarea
+                    name="notes"
+                    value={formState.notes}
+                    onChange={handleFormChange}
+                    className="w-full border rounded p-2"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium">Status</label>
+                  <select
+                    name="status"
+                    value={formState.status}
+                    onChange={handleFormChange}
+                    required
+                    className="w-full border rounded p-2"
+                  >
+                    <option value="SCHEDULED">Scheduled</option>
+                    <option value="CONFIRMED">Confirmed</option>
+                    <option value="CANCELLED">Cancelled</option>
+                    <option value="COMPLETED">Completed</option>
+                  </select>
+                </div>
+                <div className="flex justify-end space-x-2 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowModal(false)}
+                    className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+                  >
+                    {isEditing ? "Update" : "Create"}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }

@@ -5,14 +5,15 @@ import { PencilIcon, TrashIcon, PlusCircleIcon, ChevronDownIcon, ChevronUpIcon }
 import { Bars3Icon } from '@heroicons/react/24/solid'; // For drag handle
 
 import SubcategoryItem from './SubcategoryItem';
-import { StoreCategory, Subcategory } from './CategoryManagerClient'; // Import types
+import { Subcategory } from './CategoryManagerClient'; // Import types
+import { IStoreCategory, ISubcategory } from '@/types/typings';
 
 interface CategoryCardProps {
-  category: StoreCategory;
-  onEditCategory: (category: StoreCategory) => void;
+  category: IStoreCategory;
+  onEditCategory: (category: IStoreCategory) => void;
   onDeleteCategory: (id: string) => Promise<void>;
   onAddSubcategory: (parentId: string) => void;
-  onEditSubcategory: (sub: Subcategory) => void;
+  onEditSubcategory: (sub: ISubcategory) => void;
   onDeleteSubcategory: (parentId: string, subId: string) => Promise<void>;
 }
 
@@ -64,7 +65,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
           <div className="flex-grow">
             <h3 className="text-xl font-bold text-gray-900">{category.displayName}</h3>
             <p className="text-sm text-gray-500">
-              {category.items.length} Subcategories
+              {category.subcategories.length} Subcategories
               <span className={`ml-3 px-2 py-0.5 rounded-full text-xs font-semibold ${category.visible ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                 {category.visible ? 'Visible' : 'Hidden'}
               </span>
@@ -95,7 +96,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
           >
             <PlusCircleIcon className="h-5 w-5" />
           </button>
-          {category.items.length > 0 && (
+          {category.subcategories.length > 0 && (
             <button
               onClick={() => setIsSubcategoriesOpen(!isSubcategoriesOpen)}
               className="p-2 rounded-full text-gray-600 hover:bg-gray-100 transition-colors duration-200"
@@ -108,11 +109,11 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
       </div>
 
       {/* Subcategories List (Collapsible) */}
-      {category.items.length > 0 && (
+      {category.subcategories.length > 0 && (
         <div className={`overflow-y-auto transition-all duration-300 ease-in-out ${isSubcategoriesOpen ? 'max-h-screen opacity-100 mt-4' : 'max-h-0 opacity-0'}`}>
           <h4 className="text-md font-semibold text-gray-700 mb-3 ml-12 border-b border-gray-100 pb-2">Subcategories:</h4>
           <ul className="ml-12 space-y-2">
-            {category.items.sort((a, b) => a.sortOrder - b.sortOrder).map(sub => (
+            {category.subcategories.map(sub => (//sort((a, b) => a.sortOrder - b.sortOrder)
               <SubcategoryItem
                 key={sub.id}
                 subcategory={sub}

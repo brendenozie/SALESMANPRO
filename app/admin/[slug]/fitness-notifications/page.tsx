@@ -8,19 +8,19 @@ import {
 import { useParams } from 'next/navigation';
 import toast from 'react-hot-toast'; // Import react-hot-toast
 import ConfirmationModal from '@/components/ConfirmationModal'; // Re-used ConfirmationModal
-import CommunicationModal from './CommunicationModal'; // Re-used CommunicationModal
+import CommunicationModal, { CommunicationData } from './CommunicationModal'; // Re-used CommunicationModal
 
 // Define the CommunicationData interface to match the API response
-interface CommunicationData {
-  id: string;
-  subject: string;
-  content: string;
-  communicationType: 'EMAIL' | 'SMS' | 'NOTIFICATION' | 'IN_APP_MESSAGE';
-  status: 'DRAFT' | 'SCHEDULED' | 'SENT' | 'FAILED';
-  recipients: string[];
-  sentDate: string | null;
-  scheduledDate: string | null;
-}
+// interface CommunicationData {
+//   id: string;
+//   subject: string;
+//   content: string;
+//   communicationType: 'EMAIL' | 'SMS' | 'NOTIFICATION' | 'IN_APP_MESSAGE';
+//   status: 'DRAFT' | 'SCHEDULED' | 'SENT' | 'FAILED';
+//   recipients: string[];
+//   sentDate: string | null;
+//   scheduledDate: string | null;
+// }
 
 interface CommunicationsPageProps {
   params: {

@@ -8,7 +8,7 @@ import Image from 'next/image';
 import toast from 'react-hot-toast';
 
 // Define the ExpertData interface to match the expected API response
-interface ExpertData {
+export interface ExpertData {
   id?: string;
   userId?: string;
   name: string | null;

@@ -5,7 +5,7 @@
 import React, { useState } from "react";
 import ProductRequestModal from "@/components/ProductRequestModal";
 import AddToProductMarketModal from "@/components/AddToProductMarketModal";
-import { MarketListingForm, StoreCategory } from "@/types/typings";
+import { MarketListingForm, IStoreCategory } from "@/types/typings";
 
 
 
@@ -13,7 +13,7 @@ import { MarketListingForm, StoreCategory } from "@/types/typings";
 interface ClientProps {
   companyId: string;
   productsData: MarketListingForm[];  
-  categoriesData: StoreCategory[];
+  categoriesData: IStoreCategory[];
 }
 
 export default function ListingsClient({ companyId, categoriesData, productsData }: ClientProps) {
@@ -112,6 +112,7 @@ export default function ListingsClient({ companyId, categoriesData, productsData
               marketListItem={selectedProduct}
               categories={categoriesData}
               companyId={companyId}
+              locations={[]}
             />
           )}
 

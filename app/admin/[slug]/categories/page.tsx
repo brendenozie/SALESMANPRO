@@ -1,6 +1,6 @@
 import React from 'react';
 import CategoryManagerClient from './CategoryManagerClient';
-import { StoreCategory } from '@/types/typings';
+import { IStoreCategory } from '@/types/typings';
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
@@ -15,7 +15,7 @@ interface PageProps {
  * and passes them down to the client component.
  */
 export default async function CategoryManagerPage({ params }: PageProps) {
-  let storeCategories: StoreCategory[] = [];
+  let storeCategories: IStoreCategory[] = [];
   const companyId = params.slug;
 
   try {
@@ -44,7 +44,7 @@ export default async function CategoryManagerPage({ params }: PageProps) {
         icon: sc.icon || sc.category.icon,
         sortOrder: sc.sortOrder,
         visible: sc.visible,
-        items: Array.isArray(sc.items)
+        subcategories: Array.isArray(sc.items)
           ? sc.items.map((sub: any) => ({
               id: sub.id,
               name: sub.name,

@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Subcategory } from './CategoryManagerClient'; // Import type
+import { ISubcategory } from '@/types/typings';
 
 interface SubcategoryFormModalProps {
   parentId: string; // The ID of the parent category
-  subcategoryData: Subcategory | null;
+  subcategoryData: ISubcategory | null;
   onClose: () => void;
-  onSave: (parentId: string, subcategory: Subcategory) => Promise<void>;
+  onSave: (parentId: string, subcategory: ISubcategory) => Promise<void>;
   isLoading: boolean;
 }
 
 const SubcategoryFormModal: React.FC<SubcategoryFormModalProps> = ({ parentId, subcategoryData, onClose, onSave, isLoading }) => {
-  const [formData, setFormData] = useState<Subcategory>({
+  const [formData, setFormData] = useState<ISubcategory>({
     id: '',
     name: '',
     slug: '',

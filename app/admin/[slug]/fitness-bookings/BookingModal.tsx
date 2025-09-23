@@ -34,7 +34,7 @@ interface LocationOption {
 }
 
 // Define the BookingData interface to match the expected API response
-interface BookingData {
+export interface BookingData {
   id?: string;
   title: string;
   description: string | null;
@@ -49,6 +49,11 @@ interface BookingData {
   locationId: string | null;
   locationName?: string;
   notes: string | null;
+
+  date: string;      // Formatted date for display
+  time: string;      // Formatted time range for display
+  
+  
 }
 
 interface BookingModalProps {

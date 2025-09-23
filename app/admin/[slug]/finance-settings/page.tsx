@@ -1,8 +1,8 @@
 // app/admin/[adminSlug]/settings/page.tsx
 "use client";
 
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   CogIcon,
   UserIcon,
@@ -10,23 +10,48 @@ import {
   PlusIcon,
   PencilIcon,
   TrashIcon,
-  CheckCircleIcon,
   XCircleIcon,
   ArrowsUpDownIcon,
-  PhoneIcon,
-  HomeIcon
-} from '@heroicons/react/24/solid';
-import { usePathname } from 'next/navigation';
+} from "@heroicons/react/24/solid";
+import { usePathname } from "next/navigation";
+
+interface GeneralSettings {
+  name: string;
+  contactEmail: string;
+  contactPhone: string;
+  address: string;
+}
+
+type UserRole = "ADMIN" | "STAFF" | "MODERATOR" | "USER";
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  status: "ACTIVE" | "INACTIVE";
+}
+
+interface UserForm {
+  name: string;
+  email: string;
+  role: UserRole;
+}
+
+interface Notifications {
+  newClientNotify: boolean;
+  invoicePaidNotify: boolean;
+}
 
 const TABS = [
-  { id: 'general', label: 'General', icon: CogIcon },
-  { id: 'users', label: 'User Management', icon: UserIcon },
-  { id: 'notifications', label: 'Notifications', icon: BellIcon },
+  { id: "general", label: "General", icon: CogIcon },
+  { id: "users", label: "User Management", icon: UserIcon },
+  { id: "notifications", label: "Notifications", icon: BellIcon },
 ];
 
 // Helper to extract adminSlug from URL
-const getAdminSlug = (pathname) => {
-  const parts = pathname.split('/');
+const getAdminSlug = (pathname: string) => {
+  const parts = pathname.split("/");
   return parts[2];
 };
 
@@ -35,26 +60,38 @@ const SettingsPage = () => {
   const adminSlug = getAdminSlug(pathname);
 
   // General Settings State
-  const [generalSettings, setGeneralSettings] = useState({ name: '', contactEmail: '', contactPhone: '', address: '' });
+  const [generalSettings, setGeneralSettings] = useState<GeneralSettings>({
+    name: "",
+    contactEmail: "",
+    contactPhone: "",
+    address: "",
+  });
   const [generalLoading, setGeneralLoading] = useState(true);
 
   // User Management State
-  const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [usersLoading, setUsersLoading] = useState(true);
   const [userModalOpen, setUserModalOpen] = useState(false);
   const [isEditingUser, setIsEditingUser] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null);
-  const [userForm, setUserForm] = useState({ name: '', email: '', role: 'ADMIN' });
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [userForm, setUserForm] = useState<UserForm>({
+    name: "",
+    email: "",
+    role: "ADMIN",
+  });
 
   // Notifications State
-  const [notifications, setNotifications] = useState({ newClientNotify: false, invoicePaidNotify: false });
+  const [notifications, setNotifications] = useState<Notifications>({
+    newClientNotify: false,
+    invoicePaidNotify: false,
+  });
   const [notificationsLoading, setNotificationsLoading] = useState(true);
 
-  const [activeTab, setActiveTab] = useState('general');
+  const [activeTab, setActiveTab] = useState<"general" | "users" | "notifications">("general");
   const [saving, setSaving] = useState(false);
-  
-  // Use a mock userId for now, replace with actual user context
-  const mockUserId = '65d1d6a8b792167d30f40d04'; // A valid ObjectId for testing
+
+  // Mock userId
+  const mockUserId = "65d1d6a8b792167d30f40d04";
 
   // Fetching Data
   const fetchGeneralSettings = async () => {
@@ -66,7 +103,7 @@ const SettingsPage = () => {
         setGeneralSettings(data);
       }
     } catch (error) {
-      console.error('Failed to fetch general settings:', error);
+      console.error("Failed to fetch general settings:", error);
     } finally {
       setGeneralLoading(false);
     }
@@ -81,7 +118,7 @@ const SettingsPage = () => {
         setUsers(data);
       }
     } catch (error) {
-      console.error('Failed to fetch users:', error);
+      console.error("Failed to fetch users:", error);
     } finally {
       setUsersLoading(false);
     }
@@ -98,7 +135,7 @@ const SettingsPage = () => {
         }
       }
     } catch (error) {
-      console.error('Failed to fetch notifications:', error);
+      console.error("Failed to fetch notifications:", error);
     } finally {
       setNotificationsLoading(false);
     }
@@ -113,29 +150,29 @@ const SettingsPage = () => {
   }, [adminSlug]);
 
   // General Settings Handlers
-  const handleGeneralChange = (e) => {
+  const handleGeneralChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setGeneralSettings(prev => ({ ...prev, [name]: value }));
+    setGeneralSettings((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleGeneralSubmit = async (e) => {
+  const handleGeneralSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
     try {
       await fetch(`/api/settings/company?companyId=${adminSlug}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(generalSettings),
       });
     } catch (error) {
-      console.error('Failed to save general settings:', error);
+      console.error("Failed to save general settings:", error);
     } finally {
       setSaving(false);
     }
   };
 
   // User Management Handlers
-  const handleUserModalOpen = (user = null) => {
+  const handleUserModalOpen = (user: User | null = null) => {
     if (user) {
       setIsEditingUser(true);
       setCurrentUser(user);
@@ -143,27 +180,31 @@ const SettingsPage = () => {
     } else {
       setIsEditingUser(false);
       setCurrentUser(null);
-      setUserForm({ name: '', email: '', role: 'ADMIN' });
+      setUserForm({ name: "", email: "", role: "ADMIN" });
     }
     setUserModalOpen(true);
   };
 
-  const handleUserFormChange = (e) => {
+  const handleUserFormChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
-    setUserForm(prev => ({ ...prev, [name]: value }));
+    setUserForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleUserFormSubmit = async (e) => {
+  const handleUserFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
     try {
-      const url = isEditingUser ? `/api/settings/users/${currentUser.id}` : `/api/settings/users`;
-      const method = isEditingUser ? 'PUT' : 'POST';
+      const url = isEditingUser
+        ? `/api/settings/users/${currentUser?.id}`
+        : `/api/settings/users`;
+      const method = isEditingUser ? "PUT" : "POST";
       const body = isEditingUser ? userForm : { ...userForm, companyId: adminSlug };
-      
+
       const res = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
 
@@ -172,45 +213,46 @@ const SettingsPage = () => {
         setUserModalOpen(false);
       }
     } catch (error) {
-      console.error('Failed to save user:', error);
+      console.error("Failed to save user:", error);
     } finally {
       setSaving(false);
     }
   };
 
-  const handleDeleteUser = async (id) => {
-    if (window.confirm('Are you sure you want to delete this user?')) {
+  const handleDeleteUser = async (id: string) => {
+    if (window.confirm("Are you sure you want to delete this user?")) {
       try {
-        await fetch(`/api/settings/users/${id}`, { method: 'DELETE' });
+        await fetch(`/api/settings/users/${id}`, { method: "DELETE" });
         await fetchUsers();
       } catch (error) {
-        console.error('Failed to delete user:', error);
+        console.error("Failed to delete user:", error);
       }
     }
   };
 
   // Notifications Handlers
-  const handleNotificationsChange = (e) => {
+  const handleNotificationsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, checked } = e.target;
-    setNotifications(prev => ({ ...prev, [name]: checked }));
+    setNotifications((prev) => ({ ...prev, [name]: checked }));
   };
 
-  const handleNotificationsSubmit = async (e) => {
+  const handleNotificationsSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
     try {
       await fetch(`/api/settings/notifications/${mockUserId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(notifications),
       });
     } catch (error) {
-      console.error('Failed to save notification preferences:', error);
+      console.error("Failed to save notification preferences:", error);
     } finally {
       setSaving(false);
     }
   };
 
+  // ... renderContent() remains unchanged (just uses typed state)
   const renderContent = () => {
     switch (activeTab) {
       case 'general':
@@ -433,8 +475,9 @@ const SettingsPage = () => {
     }
   };
 
+  // Return stays same, no type errors now
   return (
-    <div className="p-6 md:p-10 bg-gray-900 min-h-screen text-gray-100 font-sans">
+     <div className="p-6 md:p-10 bg-gray-900 min-h-screen text-gray-100 font-sans">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
         <div>
           <h1 className="text-3xl md:text-4xl font-extrabold text-blue-400 mb-2">Admin Settings</h1>
@@ -448,7 +491,7 @@ const SettingsPage = () => {
             {TABS.map((tab) => (
               <motion.button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => setActiveTab(tab.id as "general" | "users" | "notifications")}
                 className={`py-4 px-1 inline-flex items-center font-medium text-sm transition-colors
                   ${activeTab === tab.id
                     ? 'text-blue-400 border-b-2 border-blue-400'

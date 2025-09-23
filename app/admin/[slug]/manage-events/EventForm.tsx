@@ -20,7 +20,7 @@ import {
   UsersIcon,
 } from '@heroicons/react/24/outline';
 import {
-  Event
+  IEvent
 } from '@/types/typings';
 
 // --- Shared Constants (Create a separate file, e.g., constants/event.ts) ---
@@ -100,8 +100,8 @@ type Agent = {
 
 // --- Event Form Component ---
 interface EventFormProps {
-  event?: Event | null;
-  onSave: (eventData: Partial<Event>) => void;
+  event?: IEvent | null;
+  onSave: (eventData: Partial<IEvent>) => void;
   onClose: () => void;
   isSaving: boolean;
   apiError: string | null;
@@ -116,7 +116,7 @@ interface EventFormProps {
 
 export default function EventForm({ event, onSave, onClose, isSaving, apiError, companyId, allOrganizers }: EventFormProps) {
 
-  const [formData, setFormData] = useState<Partial<Event>>({
+  const [formData, setFormData] = useState<Partial<IEvent>>({
     title: '',
     summary: '',
     description: '',
@@ -196,9 +196,9 @@ export default function EventForm({ event, onSave, onClose, isSaving, apiError, 
     setFormData(prev => {
       const updatedData = { ...prev };
       if (type === 'checkbox') {
-        updatedData[name as keyof Partial<Event>] = checked as any;
+        updatedData[name as keyof Partial<IEvent>] = checked as any;
       } else {
-        updatedData[name as keyof Partial<Event>] = value as any;
+        updatedData[name as keyof Partial<IEvent>] = value as any;
       }
 
       // Clear specific validation error when user starts typing/changing
@@ -226,7 +226,7 @@ export default function EventForm({ event, onSave, onClose, isSaving, apiError, 
   };
 
   // Handler for multi-select (e.g., for target audiences) - Example for a hypothetical MultiSelect component
-  const handleMultiSelectChange = (name: keyof Partial<Event>, selectedIds: string[]) => {
+  const handleMultiSelectChange = (name: keyof Partial<IEvent>, selectedIds: string[]) => {
     setFormData(prev => ({
       ...prev,
       [name]: selectedIds,
@@ -392,7 +392,7 @@ export default function EventForm({ event, onSave, onClose, isSaving, apiError, 
 
   // Helper for rendering input fields with consistent styling and error display
   const renderInputField = (
-    id: keyof Partial<Event>,
+    id: keyof Partial<IEvent>,
     label: string,
     type: string = 'text',
     required: boolean = false,
@@ -410,7 +410,7 @@ export default function EventForm({ event, onSave, onClose, isSaving, apiError, 
         <textarea
           id={id as string}
           name={id as string}
-          value={formData[id as keyof Partial<Event>] as string || ''}
+          value={formData[id as keyof Partial<IEvent>] as string || ''}
           onChange={handleChange}
           rows={3}
           className={`w-full px-4 py-3 rounded-lg bg-gray-900 border ${validationErrors[id as string] ? 'border-red-500' : 'border-gray-700'} text-white focus:outline-none focus:border-indigo-500 transition-colors duration-200`}
@@ -422,7 +422,7 @@ export default function EventForm({ event, onSave, onClose, isSaving, apiError, 
           type={type}
           id={id as string}
           name={id as string}
-          value={(formData[id as keyof Partial<Event>] ?? '') as string | number}
+          value={(formData[id as keyof Partial<IEvent>] ?? '') as string | number}
           onChange={type === 'number' ? handleNumericChange : handleChange}
           className={`w-full px-4 py-3 rounded-lg bg-gray-900 border ${validationErrors[id as string] ? 'border-red-500' : 'border-gray-700'} text-white focus:outline-none focus:border-indigo-500 transition-colors duration-200`}
           required={required}
@@ -440,7 +440,7 @@ export default function EventForm({ event, onSave, onClose, isSaving, apiError, 
   );
 
   const renderSelectField = (
-    id: keyof Partial<Event>,
+    id: keyof Partial<IEvent>,
     label: string,
     options: Record<string, string>,
     required: boolean = false,
@@ -454,7 +454,7 @@ export default function EventForm({ event, onSave, onClose, isSaving, apiError, 
       <select
         id={id as string}
         name={id as string}
-        value={formData[id as keyof Partial<Event>] as string || ''}
+        value={formData[id as keyof Partial<IEvent>] as string || ''}
         onChange={handleChange}
         className={`w-full px-4 py-3 rounded-lg bg-gray-900 border ${validationErrors[id as string] ? 'border-red-500' : 'border-gray-700'} text-white focus:outline-none focus:border-indigo-500 appearance-none pr-8 transition-colors duration-200`}
         required={required}

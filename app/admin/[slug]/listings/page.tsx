@@ -2,7 +2,7 @@
 
 import React from "react";
 import ListingsClient from "./ListingsClient";
-import { MarketListingForm, StoreCategory } from "@/types/typings";
+import { MarketListingForm, IStoreCategory } from "@/types/typings";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -79,7 +79,7 @@ export default async function ClientInventoryPage({ params }: PageProps) {
   const companyId = params.slug;
 
   let productsData: MarketListingForm[] = [];
-  let categoriesData: StoreCategory[] = [];
+  let categoriesData: IStoreCategory[] = [];
 
   try {
     const res = await fetch(
@@ -110,7 +110,7 @@ export default async function ClientInventoryPage({ params }: PageProps) {
     );
     if (categoriesRes.ok) {
       const categoriesJson = (await categoriesRes.json()) as {
-        results: StoreCategory[];
+        results: IStoreCategory[];
       };
       categoriesData = categoriesJson.results;
     }
