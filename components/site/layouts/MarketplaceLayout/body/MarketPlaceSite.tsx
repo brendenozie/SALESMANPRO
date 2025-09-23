@@ -70,7 +70,7 @@ export default function MarketplaceSite({ storeData }: EcommerceSiteShoesProps) 
 
        <CategoryCarousel storeFormData={storeData}  />
 
-        <StorePageSection storeFormData={storeData}  />
+        <StorePageSection />
           
         <ReviewsSection />
 
