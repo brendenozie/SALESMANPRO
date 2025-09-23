@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import ClientLayout from '../../../components/ClientLayout';
-import UserNav from '../../../components/UserNav';
+import ClientLayout from '@/components/ClientLayout';
+import UserNav from '@/components/UserNav';
 
 const ProductRequestsPage = () => {
   const [requests, setRequests] = useState([]);

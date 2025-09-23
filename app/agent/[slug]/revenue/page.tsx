@@ -10,8 +10,8 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import UserLayout from "../../../../components/UserLayout";
-import UserNav from "../../../../components/AdminNav";
+import UserLayout from "@/components/UserLayout";
+import UserNav from "@/components/AdminNav";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 

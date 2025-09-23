@@ -10,9 +10,9 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import UserLayout from "../../../../components/UserLayout";
-import UserNav from "../../../../components/UserNav";
-import AdminLayout from "../../../../components/AdminLayout";
+import UserLayout from "@/components/UserLayout";
+import UserNav from "@/components/UserNav";
+import AdminLayout from "@/components/AdminLayout";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 

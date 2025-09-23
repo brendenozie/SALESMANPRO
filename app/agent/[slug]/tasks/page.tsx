@@ -1,15 +1,10 @@
-import AddExerciseSchedule from "../../../../components/AddExerciseSchedule";
-import UserLayout from "../../../../components/UserLayout";
-import UserNav from "../../../../components/UserNav";
-import { Suspense, useState } from "react";
+import UserLayout from "@/components/UserLayout";
+import UserNav from "@/components/UserNav";
+import { useState } from "react";
 import { GetServerSidePropsContext } from "next";
-import { IDailyPlan, IExercise } from "../../../../types/typings";
-import { Session } from "next-auth";
 import { getSession } from "next-auth/react";
 import Link from "next/link";
 // import dayjs from "dayjs";
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-
 
 
 type Task = {

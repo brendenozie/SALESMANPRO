@@ -6,6 +6,7 @@ export enum Role {
   admin = "admin",
   agent = "agent",
   client = "client",
+  student = "student"
 }
 
 // Extend User interface to include Consumer model fields

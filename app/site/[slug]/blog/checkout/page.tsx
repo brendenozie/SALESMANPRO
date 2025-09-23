@@ -6,8 +6,8 @@ import { motion } from 'framer-motion';
 import Section from '@/components/site/Section/Section';
 import NewsletterSection from '@/components/site/NewsletterSection/NewsletterSection';
 import { CreditCardIcon, MapPinIcon, CheckIcon } from '@heroicons/react/24/outline';
-import { useStore } from '../../../../contexts/StoreContext';
-import { useStateContext } from '../../../../contexts/ContextProvider';
+import { useStore } from '@/contexts/StoreContext';
+import { useStateContext } from '@/contexts/ContextProvider';
 
 export default function CheckoutPage() {
   const store  = useStore();

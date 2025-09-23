@@ -20,12 +20,12 @@ import {
   HomeModernIcon,
   ShoppingBagIcon
 } from '@heroicons/react/24/outline';
-import ProfileSettings from '../../../../../components/profileSettings';
-import ActivityOverview from '../../../../../components/activityOverview';
-import ShippingAddress from '../../../../../components/shippingAddress';
-import SecurityOverview from '../../../../../components/security';
-import CommunicationSupport from '../../../../../components/communicationSupport';
-import AchievementsBadges from '../../../../../components/AchievementsBadges';
+import ProfileSettings from '../@/components/profileSettings';
+import ActivityOverview from '../@/components/activityOverview';
+import ShippingAddress from '../@/components/shippingAddress';
+import SecurityOverview from '../@/components/security';
+import CommunicationSupport from '../@/components/communicationSupport';
+import AchievementsBadges from '../@/components/AchievementsBadges';
 import { useStateContext } from '@/contexts/ContextProvider.js';
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';

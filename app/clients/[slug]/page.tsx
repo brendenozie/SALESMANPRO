@@ -1,19 +1,14 @@
-import UserLayout from "../../../components/UserLayout";
-import UserNav from "../../../components/UserNav";
+import UserNav from "@/components/UserNav";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
 import { GetServerSidePropsContext } from "next";
 import { Session } from "next-auth";
 import { getSession } from "next-auth/react";
-import salesIcon from "../../assets/bmi.png";
-import targetIcon from "../../assets/hb.png";
-import clientsIcon from "../../assets/bmi.png";
-import productIcon from "../../assets/bmi.png";
-import agentIcon from "../../assets/bmi.png";
-import orderIcon from "../../assets/bmi.png";
-import communicationIcon from "../../assets/bmi.png";
-import ClientLayout from "../../../components/ClientLayout";
+import salesIcon from "@/assets/bmi.png";
+import targetIcon from "@/assets/hb.png";
+import productIcon from "@/assets/bmi.png";
+import communicationIcon from "@/assets/bmi.png";
+import ClientLayout from "@/components/ClientLayout";
 
 type LoaderProps = {
   src: string;

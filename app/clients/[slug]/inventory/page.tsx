@@ -1,8 +1,7 @@
-import AddProductModal from "../../../../components/AddProductModal";
-import ClientLayout from "../../../../components/ClientLayout";
-import ProductRequestModal from "../../../../components/ProductRequestModal";
-import AddToProductMarketModal from "../../../../components/AddToProductMarketModal";
-import UserNav from "../../../../components/UserNav";
+import ClientLayout from "@/components/ClientLayout";
+import ProductRequestModal from "@/components/ProductRequestModal";
+import AddToProductMarketModal from "@/components/AddToProductMarketModal";
+import UserNav from "@/components/UserNav";
 import { useState } from "react";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
@@ -94,13 +93,16 @@ const ClientInventoryPage = ({ productsData = [] }: Props) => {
               <AddToProductMarketModal
                 showRequestProductModal={showAddToMarketProductModal}
                 setShowRequestProductModal={setShowAddToMarketProductModal}
-                product={selectedProduct}
-                inventoryItemId={inventoryItemId}
-                agentInventoryItemId={salesAgentId}
-                quantity={selectedProduct && selectedProduct.quantityPurchased}
-                sellerId={"63f7c9e2d91b1b2a5e80b013"}
-                salesAgentId={salesAgentId}
-                sellerType={"CLIENT"}
+                companyId={""} 
+                categories={[]} 
+                locations={[]}                
+               // product={selectedProduct}
+                // inventoryItemId={inventoryItemId}
+                // agentInventoryItemId={salesAgentId}
+                // quantity={selectedProduct && selectedProduct.quantityPurchased}
+                // sellerId={"63f7c9e2d91b1b2a5e80b013"}
+                // salesAgentId={salesAgentId}
+                // sellerType={"CLIENT"}
               />
             )}
 

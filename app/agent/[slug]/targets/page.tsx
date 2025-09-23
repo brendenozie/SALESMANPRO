@@ -11,8 +11,8 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import UserLayout from "../../../../components/UserLayout";
-import UserNav from "../../../../components/UserNav";
+import UserLayout from "@/components/UserLayout";
+import UserNav from "@/components/UserNav";
 import {
   CheckCircleIcon,
   ExclamationCircleIcon,

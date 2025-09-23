@@ -3,7 +3,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { MagnifyingGlassIcon, ShoppingCartIcon, UserIcon } from '@heroicons/react/24/outline';
-import { useStore } from '../../../../contexts/StoreContext';
+import { useStore } from '@/contexts/StoreContext';
 
 const HERO_VIDEO = '/hero-loop.mp4';
 const PLACEHOLDER = 'https://via.placeholder.com';

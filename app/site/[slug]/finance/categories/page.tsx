@@ -5,7 +5,7 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import Section from '@/components/site/Section/Section';
-import { useStore } from '../../../../contexts/StoreContext';
+import { useStore } from '@/contexts/StoreContext';
 
 // Loader for next/image
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;

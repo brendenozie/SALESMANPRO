@@ -113,7 +113,7 @@ export default async function StoreLayout({
   };
 
   return (
-    <StoreContextProvider initialStore={store}>
+    <StoreContextProvider initialStore={store} children={undefined} userRole={''} userId={''}>
       <div className="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
         {/* <Header store={store} /> */}
         {children}

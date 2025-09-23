@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import UserNav from '../../../components/AdminNav';
-import ClientLayout from '../../../components/ClientLayout';
+import UserNav from '@/components/AdminNav';
+import ClientLayout from '@/components/ClientLayout';
 import { Line, Chart } from 'react-chartjs-2';
 import { Chart as ChartJS, LinearScale, CategoryScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
 

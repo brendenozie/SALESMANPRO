@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import UserNav from "../../../../components/UserNav";
-import AdminLayout from "../../../../components/UserLayout";
+import UserNav from "@/components/UserNav";
+import AdminLayout from "@/components/UserLayout";
 import { ArrowLeftIcon, ArrowRightIcon, Bars3CenterLeftIcon, MagnifyingGlassCircleIcon } from "@heroicons/react/24/outline";
 
 interface ProductRequest {

@@ -1,9 +1,9 @@
 
 // 4. Terms of Service (terms-of-service.tsx)
 import React from 'react';
-import Section from '../../../../components/site/Section/Section';
+import Section from '@/components/site/Section/Section';
 import { motion } from 'framer-motion';
-import { useStore } from '../../../../contexts/StoreContext';
+import { useStore } from '@/contexts/StoreContext';
 
 
 // Type definitions

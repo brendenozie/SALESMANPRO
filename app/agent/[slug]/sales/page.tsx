@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { Line } from "react-chartjs-2";
 import { Chart as ChartJS, LineElement, CategoryScale, LinearScale, PointElement } from "chart.js";
 import { format, parseISO } from "date-fns";
-import UserLayout from "../../../../components/UserLayout";
-import UserNav from "../../../../components/AdminNav";
+import UserLayout from "@/components/UserLayout";
+import UserNav from "@/components/AdminNav";
 
 ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement);
 

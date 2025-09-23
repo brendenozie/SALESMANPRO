@@ -9,11 +9,11 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import UserLayout from "../../../../components/UserLayout";
-import UserNav from "../../../../components/AdminNav";
-import AssignCustomerProductModal from "../../../../components/AssignCustomerProductModal";
-import ReturnCustomerProductModal from "../../../../components/ReturnCustomerProductModal";
-import AgentProductRequestModal from "../../../../components/AgentProductRequestModal";
+import UserLayout from "@/components/UserLayout";
+import UserNav from "@/components/AdminNav";
+import AssignCustomerProductModal from "@/components/AssignCustomerProductModal";
+import ReturnCustomerProductModal from "@/components/ReturnCustomerProductModal";
+import AgentProductRequestModal from "@/components/AgentProductRequestModal";
 import { motion } from "framer-motion";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);

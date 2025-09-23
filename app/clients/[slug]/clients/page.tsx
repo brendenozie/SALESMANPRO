@@ -1,6 +1,6 @@
-import AddExerciseSchedule from "../../../components/AddExerciseSchedule";
-import UserLayout from "../../../components/UserLayout";
-import UserNav from "../../../components/UserNav";
+import AddExerciseSchedule from "@/components/AddExerciseSchedule";
+import UserLayout from "@/components/UserLayout";
+import UserNav from "@/components/UserNav";
 import {Suspense} from "react";
 // import Chart from "react-apexcharts";
  
@@ -8,7 +8,7 @@ import {Suspense} from "react";
 import Link from "next/link";
 import { useState } from "react";
 import { GetServerSidePropsContext } from "next";
-import { IDailyPlan, IExercise } from "../../../types/typings";
+import { IDailyPlan, IExercise } from "@/types/typings";
 
 import { Session } from "next-auth";
 import { getSession } from "next-auth/react";

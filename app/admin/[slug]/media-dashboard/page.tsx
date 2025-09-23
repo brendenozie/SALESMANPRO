@@ -2,7 +2,7 @@
 "use client";
 
 import React from 'react';
-import AdminLayout from '../../../../components/AdminLayout'; // Adjust path as needed
+import AdminLayout from '@/components/AdminLayout'; // Adjust path as needed
 import { motion } from 'framer-motion';
 import { UsersIcon, FilmIcon, NewspaperIcon, ChartBarIcon } from '@heroicons/react/24/solid';
 

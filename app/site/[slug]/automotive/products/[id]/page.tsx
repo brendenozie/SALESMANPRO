@@ -6,10 +6,11 @@ import Image from 'next/image';
 import Section from '@/components/site/Section/Section';
 import ProductGrid from '@/components/site/productGrid/ProductGrid';
 import NewsletterSection from '@/components/site/NewsletterSection/NewsletterSection';
-import { StoreContextProvider, Store } from '@/contexts/StoreContext';
+import { StoreContextProvider, useStoreContext } from '@/contexts/StoreContext';
 import { StarIcon, PlusIcon, MinusIcon } from '@heroicons/react/24/solid';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useState } from 'react';
+import { StoreForm } from '@/types/typings';
 
 interface PageProps {
   params: { slug: string; productId: string };
@@ -19,12 +20,13 @@ export const dynamic = 'force-dynamic';
 
 export default async function ProductPage({ params }: PageProps) {
   const { slug, productId } = params;
+  const { storeFormData } = useStoreContext();
 
   // Fetch store data for context
   const rawStore = await prisma.company.findUnique({ where: { slug } });
   if (!rawStore) notFound();
 
-  const store: Store = {
+  const store: StoreForm = {
     id: rawStore.id,
     name: rawStore.name,
     slug: rawStore.slug,
@@ -40,13 +42,13 @@ export default async function ProductPage({ params }: PageProps) {
   };
 
   // Fetch product and related items
-  const product = await prisma.marketplaceListing.findFirst({
+  const product = await prisma.marketplaceListings.findFirst({
     where: { id: productId, company: { slug } },
     // include: { images: true },
   });
   if (!product) notFound();
 
-  const related = await prisma.marketplaceListing.findMany({
+  const related = await prisma.marketplaceListings.findMany({
     where: {
       companyId: product.companyId,
       productCategoryId: product.productCategoryId,
@@ -58,7 +60,7 @@ export default async function ProductPage({ params }: PageProps) {
 
   // Render inside context provider
   return (
-    <StoreContextProvider initialStore={store}>
+    <StoreContextProvider initialStore={store} children={undefined} userRole={''} userId={''}>
       <ProductDetail product={product} related={related} />
     </StoreContextProvider>
   );

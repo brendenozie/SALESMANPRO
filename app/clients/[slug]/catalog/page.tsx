@@ -1,6 +1,6 @@
-import UserNav from '../../../components/AdminNav';
-import ClientLayout from '../../../components/ClientLayout';
-import ProductRequestModal from '../../../components/ProductRequestModal';
+import UserNav from '@/components/AdminNav';
+import ClientLayout from '@/components/ClientLayout';
+import ProductRequestModal from '@/components/ProductRequestModal';
 import React, { useState } from 'react';
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
