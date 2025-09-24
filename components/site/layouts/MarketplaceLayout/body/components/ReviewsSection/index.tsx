@@ -3,10 +3,10 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-// Utility function for combining Tailwind classes
-const cn = (...classes) => {
-  return classes.filter(Boolean).join(' ');
-};
+// // Utility function for combining Tailwind classes
+// const cn = (...classes) => {
+//   return classes.filter(Boolean).join(' ');
+// };
 
 // Reusable Star SVG Component
 const StarIcon = ({ fill = false }) => (
@@ -26,7 +26,7 @@ const StarIcon = ({ fill = false }) => (
   </svg>
 );
 
-const ReviewProgress = ({ label, percentage }) => (
+const ReviewProgress = ({ label, percentage }:any) => (
   <div className="flex items-center gap-4">
     <div className="w-12 text-sm text-gray-500 dark:text-gray-400 font-medium">{label}</div>
     <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
@@ -41,7 +41,7 @@ const ReviewProgress = ({ label, percentage }) => (
   </div>
 );
 
-const ReviewCard = ({ user, date, rating, comment }) => (
+const ReviewCard = ({ user, date, rating, comment }:any) => (
   <motion.div
     className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700"
     initial={{ opacity: 0, y: 20 }}

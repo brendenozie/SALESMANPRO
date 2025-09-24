@@ -12,7 +12,7 @@ import {
 import Image from "next/image";
 
 // Mocking the image loader for demonstration purposes
-const customLoader = ({ src, width, quality }) => {
+const customLoader = ({ src, width, quality }:any) => {
   return `${src}?w=${width}&q=${quality || 75}`;
 };
 
@@ -234,7 +234,7 @@ export default function VirtualClassesSection({
               initial={{ scale: 0.7, y: 50 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.7, y: 50 }}
-              onClick={(e) => e.stopPropagation()}
+              onClick={(e : any) => e.stopPropagation()}
             >
               <button
                 className="absolute top-4 right-4 z-10 text-white/80 hover:text-white p-2 rounded-full bg-white/10 hover:bg-white/20"

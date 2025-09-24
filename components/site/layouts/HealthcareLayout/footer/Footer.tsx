@@ -35,7 +35,7 @@ export default function Footer() {
     contactPhone,
     socialLinks,
     faqs,
-  } = storeFormData;
+  } = storeFormData || {};
 
   const [email, setEmail] = useState('');
 
@@ -105,7 +105,7 @@ export default function Footer() {
             )}
           </ul>
 
-          {faqs.length > 0 && (
+          {faqs && faqs.length > 0 && (
             <>
               <h3 className="text-xl font-semibold text-white mt-8 mb-4">FAQs</h3>
               <ul className="space-y-2 text-sm">
@@ -140,7 +140,7 @@ export default function Footer() {
             </motion.button>
           </form>
 
-          {socialLinks.length > 0 && (
+          {socialLinks && socialLinks.length > 0 && (
             <>
               <h3 className="text-xl font-semibold text-white mt-8 mb-4">Follow Us</h3>
               <div className="flex space-x-4">
@@ -153,7 +153,7 @@ export default function Footer() {
                     rel="noopener noreferrer"
                     className="bg-gray-800 hover:bg-gray-700 p-2 rounded-full text-gray-400 hover:text-white transition"
                   >
-                    {getIcon(s.channel)}
+                    {getIcon(s.channel.toString())}
                   </motion.a>
                 ))}
               </div>

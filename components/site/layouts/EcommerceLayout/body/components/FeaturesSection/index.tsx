@@ -44,8 +44,8 @@ export default function FeaturesSection() {
 
     const { storeFormData } = useStoreContext();
     const { slug, marketplaceListings = [], themeSettings = {} } = storeFormData || {};
-    const primary = themeSettings.primaryColor || '#f97316';
-    const secondary = themeSettings.secondaryColor || '#3b82f6';
+    const primary = themeSettings?.primaryColor || '#f97316';
+    const secondary = themeSettings?.secondaryColor || '#3b82f6';
 
   return (
     <section className="py-10 bg-white">

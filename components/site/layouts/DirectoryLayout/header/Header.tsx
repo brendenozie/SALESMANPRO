@@ -24,7 +24,7 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const router = useRouter();
 
-  const { slug, name, logoUrl, contactEmail, contactPhone, socialLinks, themeSettings } = storeFormData;
+  const { slug, name, logoUrl, contactEmail, contactPhone, socialLinks, themeSettings } = storeFormData ||  {};
   // Use more vibrant defaults if themeSettings are not provided, to match the hero
   const primaryColor = themeSettings?.primaryColor || '#f97316'; // Orange 500-600
   const secondaryColor = themeSettings?.secondaryColor || '#14b8a6'; // Teal 500-600
@@ -54,7 +54,7 @@ export default function Header() {
           )}
         </div>
         <div className="flex space-x-4">
-          {socialLinks.map((s) => (
+          {socialLinks?.map((s) => (
             <a
               key={s.channel}
               href={s.url}
@@ -160,7 +160,7 @@ export default function Header() {
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="lg:hidden text-gray-600 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2"
-              style={{ focusRingColor: primaryColor }} // Dynamic ring color
+              // style={{ focusRingColor: primaryColor }} // Dynamic ring color
               aria-label="Toggle Mobile Menu"
             >
               {mobileMenuOpen ? (

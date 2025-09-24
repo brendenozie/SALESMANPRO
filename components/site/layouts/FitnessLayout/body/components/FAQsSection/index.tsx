@@ -110,8 +110,8 @@ const dummyFaqs: FAQ[] = [
 export default function FaqsSection({ faqs = dummyFaqs }: { faqs?: FAQ[] }) {
     const [openId, setOpenId] = useState<string | null>(null); // State to manage which FAQ is open
 
-    const toggleFaq = (id: string) => {
-        setOpenId(openId === id ? null : id);
+    const toggleFaq = (id: string | null | undefined) => {
+        setOpenId(openId === id ? null : id!);
     };
 
     return (
@@ -140,7 +140,7 @@ export default function FaqsSection({ faqs = dummyFaqs }: { faqs?: FAQ[] }) {
                             key={faq.id}
                             className="bg-white p-6 rounded-2xl shadow-xl border border-gray-100 cursor-pointer transition-all duration-300 hover:shadow-2xl" // Enhanced card styling
                             variants={faqItemVariants}
-                            onClick={() => toggleFaq(faq.id)} // Click handler on the div
+                            onClick={() => toggleFaq(faq?.id)} // Click handler on the div
                         >
                             <div className="flex justify-between items-center">
                                 <h3 className="text-xl md:text-2xl font-bold text-gray-800">{faq.question}</h3>

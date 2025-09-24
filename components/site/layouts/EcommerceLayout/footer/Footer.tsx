@@ -18,8 +18,8 @@ export default function Footer() {
     themeSettings = {},
   } = storeFormData || {};
 
-  const primary = themeSettings.primaryColor || '#10B981';
-  const secondary = themeSettings.secondaryColor || '#3B82F6';
+  const primary = themeSettings?.primaryColor || '#10B981';
+  const secondary = themeSettings?.secondaryColor || '#3B82F6';
 
   // Map common social channels to icons (placeholder icons here)
   const iconMapper: Record<string, React.ReactNode> = {
@@ -182,7 +182,7 @@ export default function Footer() {
           </h3>
           <div className="flex space-x-4">
             {socialLinks.map((s, idx) => {
-              const channel = s.channel.toLowerCase();
+              const channel = s.channel;//.toLowerCase();
               const icon = iconMapper[channel] || <FaceFrownIcon className="w-5 h-5" />;
               return (
                 <motion.a

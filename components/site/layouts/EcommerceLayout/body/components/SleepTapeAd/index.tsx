@@ -10,8 +10,8 @@ export default function SleepTapeAd() {
     bannerUrl,
   } = storeFormData || {};
 
-  const primary = themeSettings.primaryColor || '#f97316'; // fallback orange
-  const secondary = themeSettings.secondaryColor || '#3b82f6'; // fallback blue
+  const primary = themeSettings?.primaryColor || '#f97316'; // fallback orange
+  const secondary = themeSettings?.secondaryColor || '#3b82f6'; // fallback blue
 
   return (
     <section
@@ -42,7 +42,7 @@ export default function SleepTapeAd() {
         <div className="flex justify-center md:justify-end relative">
           <div className="relative">
             <img
-              src={bannerUrl}
+              src={bannerUrl || 'https://www.unsplash.com/'}
               alt="Blume Sleep Tape"
               className="w-72 md:w-80 lg:w-96 rounded-2xl shadow-2xl transform hover:scale-105 transition-transform duration-300"
             />

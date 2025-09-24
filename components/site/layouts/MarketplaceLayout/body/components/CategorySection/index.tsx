@@ -42,15 +42,15 @@ export default function CategoryCarousel({ storeFormData }: CategoryCarouselProp
     storeFormData?.StoreCategory?.length
       ? storeFormData.StoreCategory
       : [
-          { id: "1", displayName: "Bags", icon: "👜" },
-          { id: "2", displayName: "Sneakers", icon: "👟" },
-          { id: "3", displayName: "Watches", icon: "⌚" },
-          { id: "4", displayName: "Audio", icon: "🎧" },
-          { id: "5", displayName: "Tech", icon: "💻" },
-          { id: "6", displayName: "Sunglasses", icon: "🕶️" },
-          { id: "7", displayName: "Apparel", icon: "👕" },
-          { id: "8", displayName: "Books", icon: "📚" },
-          { id: "9", displayName: "Travel", icon: "✈️" },
+          { id: "1", displayName: "Bags", icon: "👜", categoryId : '', sortOrder: 0, visible: true, subcategories: [], allBrands:[] },
+          { id: "2", displayName: "Sneakers", icon: "👟", categoryId : '', sortOrder: 0, visible: true, subcategories: [], allBrands:[] },
+          { id: "3", displayName: "Watches", icon: "⌚", categoryId : '', sortOrder: 0, visible: true, subcategories: [], allBrands:[] },
+          { id: "4", displayName: "Audio", icon: "🎧", categoryId : '', sortOrder: 0, visible: true, subcategories: [], allBrands:[] },
+          { id: "5", displayName: "Tech", icon: "💻", categoryId : '', sortOrder: 0, visible: true, subcategories: [], allBrands:[] },
+          { id: "6", displayName: "Sunglasses", icon: "🕶️", categoryId : '', sortOrder: 0, visible: true, subcategories: [], allBrands:[] },
+          { id: "7", displayName: "Apparel", icon: "👕", categoryId : '', sortOrder: 0, visible: true, subcategories: [], allBrands:[] },
+          { id: "8", displayName: "Books", icon: "📚", categoryId : '', sortOrder: 0, visible: true, subcategories: [], allBrands:[] },
+          { id: "9", displayName: "Travel", icon: "✈️", categoryId : '', sortOrder: 0, visible: true, subcategories: [], allBrands:[] },
         ];
 
   return (

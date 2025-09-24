@@ -182,7 +182,7 @@ const TestimonialsSection = () => {
         .sort((a, b) => (a.order || 0) - (b.order || 0)) // Sort by order if available
         .map(t => ({
           id: t.id,
-          author: t.authorName,
+          authorName: t.authorName,
           quote: t.quote,
           rating: t.rating || 5, // Default to 5 if rating is not provided
           avatarUrl: t.avatarUrl || 'https://placehold.co/200x200/CCCCCC/333333?text=User', // Fallback image
@@ -265,7 +265,7 @@ const TestimonialsSection = () => {
                   <div className="flex items-center gap-4 mt-6"> {/* Increased gap */}
                     <Image
                       src={t.avatarUrl || 'https://placehold.co/200x200/CCCCCC/333333?text=User'} // Fallback image
-                      alt={t.authorName}
+                      alt={t.authorName || 'authorName'}
                       width={48} // Larger avatar
                       height={48}
                       loader={loader}
@@ -275,7 +275,7 @@ const TestimonialsSection = () => {
                     <div className="text-left">
                       <p className="text-md font-semibold text-gray-900 dark:text-white h-7 overflow-hidden">{t.quote}</p>
                       <p className="text-sm text-gray-500 dark:text-gray-400">{t.authorTitle}</p>
-                      {renderStars(t.rating)}
+                      {renderStars(t.rating || 4)}
                     </div>
                   </div>
                 </motion.div>
@@ -312,7 +312,7 @@ const TestimonialsSection = () => {
                 <div className="text-left">
                   <p className="text-md font-semibold text-gray-900 dark:text-white  h-7 overflow-hidden">{t.quote}</p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">{t.authorTitle}</p>
-                  {renderStars(t.rating)}
+                  {renderStars(t.rating || 4)}
                 </div>
               </div>
             </motion.div>

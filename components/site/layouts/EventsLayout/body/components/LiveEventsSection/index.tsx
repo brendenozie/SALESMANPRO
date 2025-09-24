@@ -4,7 +4,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { CalendarIcon, MapPinIcon } from "@heroicons/react/24/outline";
 import { ArrowRightIcon } from "@heroicons/react/24/solid";
-import { StoreForm } from "@/types/typings";
+import { IEvent, StoreForm } from "@/types/typings";
 import { useStoreContext } from "@/contexts/StoreContext";
 
 const cardVariants = {
@@ -17,16 +17,40 @@ const cardVariants = {
 };
 
 // Two sample events if none are provided
-const fallbackEvents: (Event & { image: string; subtitle?: string; location?: string })[] = [
+const fallbackEvents: IEvent[] = [
   {
     id: "sample1",
     title: "Sample Music Fest",
     description: "Experience live bands and DJs at our annual music festival.",
     startDateTime: new Date("2025-08-15T18:00:00Z"),
     endDateTime: null,
-    image: "/default-event-1.jpg",
-    subtitle: "Live music under the stars.",
+    imageUrl: "/default-event-1.jpg",
+    // subtitle: "Live music under the stars.",
     location: "Nairobi, Kenya",
+    summary: null,
+    onlineMeetingLink: null,
+    videoUrl: null,
+    projectId: null,
+    eventType: "GENERAL",
+    eventStatus: "SCHEDULED",
+    organizerId: "",
+    companyId: null,
+    audience: "ALL",
+    targetAcademicLevelIds: [],
+    targetCourseIds: [],
+    targetEducatorIds: [],
+    targetStudentIds: [],
+    targetDepartmentIds: [],
+    targetParentIds: [],
+    isRegistrationRequired: false,
+    maxCapacity: null,
+    isPaid: false,
+    price: null,
+    contactPerson: null,
+    contactEmail: null,
+    contactPhone: null,
+    createdAt: null,
+    updatedAt: null
   },
   {
     id: "sample2",
@@ -34,9 +58,33 @@ const fallbackEvents: (Event & { image: string; subtitle?: string; location?: st
     description: "Explore contemporary art from local and international artists.",
     startDateTime: new Date("2025-09-10T10:00:00Z"),
     endDateTime: null,
-    image: "/default-event-2.jpg",
-    subtitle: "Art, culture, and inspiration.",
+    imageUrl: "/default-event-2.jpg",
+    // subtitle: "Art, culture, and inspiration.",
     location: "Mombasa, Kenya",
+    summary: null,
+    onlineMeetingLink: null,
+    videoUrl: null,
+    projectId: null,
+    eventType: "GENERAL",
+    eventStatus: "SCHEDULED",
+    organizerId: "",
+    companyId: null,
+    audience: "ALL",
+    targetAcademicLevelIds: [],
+    targetCourseIds: [],
+    targetEducatorIds: [],
+    targetStudentIds: [],
+    targetDepartmentIds: [],
+    targetParentIds: [],
+    isRegistrationRequired: false,
+    maxCapacity: null,
+    isPaid: false,
+    price: null,
+    contactPerson: null,
+    contactEmail: null,
+    contactPhone: null,
+    createdAt: null,
+    updatedAt: null
   },
 ];
 
@@ -49,7 +97,7 @@ export default function LiveEventsSection() {
   // Derive upcoming events (with image & subtitle fields added if missing)
   const rawEvents = (store.events || []).map((e) => ({
     ...e,
-    title: e.title || e.name || "Upcoming Event",
+    title: e.title || "Upcoming Event",
     subtitle: e.description || "",
     image: (e as any).bannerUrl || store.bannerUrl || "/images/placeholder-event.jpg",
     location: (e as any).location || "",
@@ -101,7 +149,7 @@ export default function LiveEventsSection() {
                 className="bg-gray-800 rounded-2xl shadow-lg overflow-hidden border border-gray-700 hover:border-indigo-500 transition-all duration-300 relative group"
               >
                 <img
-                  src={event.image}
+                  src={event.imageUrl || 'https://www.unsplush.com/'}
                   alt={event.title}
                   className="h-52 w-full object-cover group-hover:scale-105 transition-transform duration-300"
                 />
@@ -122,7 +170,8 @@ export default function LiveEventsSection() {
                     </p>
                   )}
                   <p className="text-gray-300 mb-6 line-clamp-3">
-                    {event.subtitle}
+                    {/* {event.subtitle} */}
+                    {'Art, culture, and inspiration.'}
                   </p>
                   <a
                     href={`/${slug}/event/${event.id}`}

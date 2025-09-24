@@ -256,7 +256,7 @@ export default function NewArrivalsSection() {
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
-                onClick={(e) => e.stopPropagation()}
+                onClick={(e:any) => e.stopPropagation()}
                 className="bg-white dark:bg-gray-800 rounded-3xl max-w-lg w-full p-6 relative"
               >
                 <button

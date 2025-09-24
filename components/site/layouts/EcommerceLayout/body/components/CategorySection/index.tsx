@@ -45,7 +45,7 @@ export default function CategorySection({ storeFormData }: HeroSliderProps) {
                   {cat.icon.startsWith('http') ? (
                     <img
                       src={cat.icon}
-                      alt={cat.name || cat.displayName || cat.category?.name || ''}
+                      alt={cat.displayName || cat.category?.name || ''}
                       className="w-8 h-8 object-contain"
                     />
                   ) : (
@@ -55,7 +55,7 @@ export default function CategorySection({ storeFormData }: HeroSliderProps) {
               )}
 
               {/* Name */}
-              <h3 className="text-sm font-semibold text-gray-800">{ cat.name || cat.displayName || cat.category?.name || '' }</h3>
+              <h3 className="text-sm font-semibold text-gray-800">{ cat.displayName || cat.category?.name || '' }</h3>
               <p className="text-xs text-gray-500 mt-1">View</p>
             </motion.div>
           ))}

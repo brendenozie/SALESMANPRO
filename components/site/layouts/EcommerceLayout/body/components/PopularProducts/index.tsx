@@ -29,7 +29,7 @@ export default function PopularProducts() {
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {storeFormData && storeFormData.marketplaceListings?.length > 0 && storeFormData.marketplaceListings?.map((product) => (
-            <ProductCard key={product.id} product={product} primary={primary}/>
+            <ProductCard key={product.id} product={product} />
           ))}
         </div>
       </div>

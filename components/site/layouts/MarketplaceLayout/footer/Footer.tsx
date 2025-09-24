@@ -1,6 +1,4 @@
 import React from 'react';
-import {FaceSmileIcon } from '@heroicons/react/24/solid';
-import { motion } from 'framer-motion';
 
 // Type definitions
 interface Promo { id: string; title: string; subtitle: string; imageUrl: string; }

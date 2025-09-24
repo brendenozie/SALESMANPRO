@@ -42,7 +42,7 @@ export default function EcommerceSite({ storeData }: EcommerceSiteProps) {
       <CategorySection  storeFormData={storeData} />
       <PromoSection promotions={promotions} />
       <PopularProducts />
-      <MetricsSection products={products} customers={customers} awardsCount={awardsCount} support={support} />
+      <MetricsSection storeFormData={storeData} />
       <DailyBestSells />
       <SleepTapeAd />
       <Trending />

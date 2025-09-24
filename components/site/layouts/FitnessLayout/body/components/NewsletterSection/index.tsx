@@ -34,7 +34,7 @@ export default function NewsletterSection() {
     const [subscribed, setSubscribed] = useState(false);
     const [loading, setLoading] = useState(false);
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = async (e : any) => {
         e.preventDefault();
         setLoading(true);
 

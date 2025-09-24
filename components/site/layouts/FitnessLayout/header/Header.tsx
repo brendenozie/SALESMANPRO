@@ -3,16 +3,13 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from 'framer-motion';
 import { SunIcon, MoonIcon, Bars3CenterLeftIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { useStoreContext } from "@/contexts/StoreContext";
 
-// Note: In a single-file component, we will use a simple prop
-// or hardcoded data instead of a shared context for simplicity.
-interface HeaderProps {
-    storeName: string;
-}
 
-export default function Header({ storeName = "Fitness" }: HeaderProps) {
+export default function Header() {
     const [darkMode, setDarkMode] = useState(false);
     const [mobileOpen, setMobileOpen] = useState(false);
+    const { storeFormData } = useStoreContext();
 
     // Toggle dark mode on <html> element
     useEffect(() => {
@@ -42,7 +39,7 @@ export default function Header({ storeName = "Fitness" }: HeaderProps) {
             <nav className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between h-20 bg-white/50 backdrop-blur-md transition-colors duration-300 rounded-b-2xl shadow-sm">
                 {/* Logo / Site Name */}
                 <a href="#" className="text-gray-800 text-3xl font-extrabold tracking-tight">
-                    {storeName}
+                    {storeFormData?.name}
                 </a>
 
                 {/* Desktop Navigation */}

@@ -2,27 +2,30 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
+import { Testimonial } from '@/types/typings';
 
-// Main App component containing the "Testimonials" section
-export default function TestimonialsSection() {
-  const testimonials = [
+const sampletestimonials = [
     {
-      name: 'Johnathon',
-      text: 'The products exceeded my expectations! The quality is incredible and the style is unmatched. I will definitely be a returning customer.',
-      avatar: 'https://placehold.co/100x100/FFF?text=J',
+      authorName: 'Johnathon',
+      quote: 'The products exceeded my expectations! The quality is incredible and the style is unmatched. I will definitely be a returning customer.',
+      avatarUrl: 'https://placehold.co/100x100/FFF?text=J',
     },
     {
-      name: 'Alina',
-      text: 'I am so happy with my purchase. The shoes are comfortable and stylish, and the delivery was incredibly fast. Highly recommended!',
-      avatar: 'https://placehold.co/100x100/FFF?text=A',
+      authorName: 'Alina',
+      quote: 'I am so happy with my purchase. The shoes are comfortable and stylish, and the delivery was incredibly fast. Highly recommended!',
+      avatarUrl: 'https://placehold.co/100x100/FFF?text=A',
     },
     {
-      name: 'Mikey',
-      text: 'Fantastic experience from start to finish. The customer support was excellent, and the product arrived exactly as described. Love my new shoes!',
-      avatar: 'https://placehold.co/100x100/FFF?text=M',
+      authorName: 'Mikey',
+      quote: 'Fantastic experience from start to finish. The customer support was excellent, and the product arrived exactly as described. Love my new shoes!',
+      avatarUrl: 'https://placehold.co/100x100/FFF?text=M',
     },
   ];
+  
 
+// Main App component containing the "Testimonials" section
+export default function TestimonialsSection( { testimonials = sampletestimonials }: { testimonials?: Testimonial[] | null }) {
+   
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-zinc-900 font-sans p-8 flex items-center justify-center">
       <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center py-16">
@@ -36,7 +39,7 @@ export default function TestimonialsSection() {
           Testimonials
         </motion.h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
-          {testimonials.map((testimonial, index) => (
+          {testimonials?.map((testimonial, index) => (
             <motion.div
               key={index}
               initial={{ opacity: 0, y: 40 }}
@@ -47,16 +50,16 @@ export default function TestimonialsSection() {
             >
               <div className="w-24 h-24 mb-4">
                 <img
-                  src={testimonial.avatar || 'https://placehold.co/100x100/FFF?text=User'}
-                  alt={testimonial.name}
+                  src={testimonial.avatarUrl || 'https://placehold.co/100x100/FFF?text=User'}
+                  alt={testimonial.authorName || 'author' }
                   className="rounded-full w-full h-full object-cover border-4 border-red-500"
                 />
               </div>
               <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                {testimonial.name}
+                {testimonial.authorName}
               </h3>
               <p className="text-gray-600 dark:text-gray-400 text-sm italic">
-                "{testimonial.text}"
+                "{testimonial.quote}"
               </p>
             </motion.div>
           ))}

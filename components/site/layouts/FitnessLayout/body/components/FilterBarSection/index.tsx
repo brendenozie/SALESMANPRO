@@ -177,7 +177,7 @@ export default function FilterBar({ storeFormData = defaultStoreFormData, onSear
                                         style={{ transformOrigin: 'top center' }}
                                     >
                                         <div className="flex flex-col gap-2">
-                                            {category.options.map((option) => (
+                                            {category.options?.map((option : any) => (
                                                 <motion.button
                                                     key={option.id}
                                                     onClick={() => {

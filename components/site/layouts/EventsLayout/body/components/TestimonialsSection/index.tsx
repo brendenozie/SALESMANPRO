@@ -20,7 +20,7 @@ const testimonialCardVariants = {
 const fallbackTestimonials: Testimonial[] = [
   {
     id: "sample1",
-    author: "Jane Doe",
+    authorName: "Jane Doe",
     quote:
       "This platform made finding and booking events so effortless—I discovered amazing meetups I never knew existed!",
     // avatarUrl: null,
@@ -29,7 +29,7 @@ const fallbackTestimonials: Testimonial[] = [
   },
   {
     id: "sample2",
-    author: "John Smith",
+    authorName: "John Smith",
     quote:
       "As an organizer, the dashboard tools are intuitive and powerful. Our last event sold out in record time!",
     // avatarUrl: null,
@@ -98,7 +98,7 @@ export default function TestimonialsSection() {
                 “{t.quote}”
               </p>
               <footer className="font-semibold text-white text-right">
-                — {t.author}
+                — {t.authorName}
               </footer>
             </motion.div>
           ))}

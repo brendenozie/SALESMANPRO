@@ -22,7 +22,7 @@ export default function Footer() {
     contactPhone,
     socialLinks,
     themeSettings,
-  } = storeFormData;
+  } = storeFormData || {};
 
   const primary = themeSettings?.primaryColor || "#4F46E5"; // indigo-600
   const secondary = themeSettings?.secondaryColor || "#6366F1"; // indigo-500
@@ -44,7 +44,7 @@ export default function Footer() {
             Bringing you the hottest events—music, art, tech, and more. Discover, book, and enjoy.
           </p>
           <div className="flex space-x-4 mt-4">
-            {socialLinks.map((s) => (
+            {socialLinks?.map((s) => (
               <a
                 key={s.channel}
                 href={s.url}
@@ -55,7 +55,7 @@ export default function Footer() {
                 onMouseEnter={(e) => (e.currentTarget.style.color = secondary)}
                 onMouseLeave={(e) => (e.currentTarget.style.color = primary)}
               >
-                {s.channel.charAt(0).toUpperCase() + s.channel.slice(1)}
+                {s?.channel?.toString().charAt(0).toUpperCase() + s.channel.toString().slice(1)}
               </a>
             ))}
           </div>

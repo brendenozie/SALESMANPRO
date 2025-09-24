@@ -22,7 +22,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const primary = storeFormData?.themeSettings?.primaryColor || '#10B981';
   const secondary = storeFormData?.themeSettings?.secondaryColor || '#3B82F6';
 
-  const getQuantity = (id: string) => cart.find((item) => item.id === id)?.quantity || 0;
+  const getQuantity = (id: string) => cart.find((item : MarketListingForm) => item.id === id)?.quantity || 0;
   const quantity = getQuantity(product.id);
 
   const { name, images, finalPrice, sellingPrice } = product;

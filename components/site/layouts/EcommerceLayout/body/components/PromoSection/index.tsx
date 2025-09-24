@@ -3,7 +3,6 @@
 import { useStoreContext } from '@/contexts/StoreContext';
 import { IPromotion } from '@/types/typings';
 import React from 'react';
-import classNames from 'classnames';
 
 export interface PromotionsSectionProps {
   promotions: IPromotion[];
@@ -26,7 +25,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
         <div className="max-w-screen-xl mx-auto px-4">
           <div className="relative rounded-3xl overflow-hidden shadow-2xl">
             <img
-              src={promotion.bannerUrl}
+              src={promotion.bannerUrl || 'https://www.unsplash.com/'}
               alt={promotion.title}
               className="w-full h-96 md:h-[500px] object-cover"
             />
@@ -67,7 +66,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
             >
               <div className="relative h-64 overflow-hidden">
                 <img
-                  src={item.bannerUrl}
+                  src={item.bannerUrl  || 'https://www.unsplash.com/'}
                   alt={item.title}
                   className="w-full h-full object-cover"
                 />

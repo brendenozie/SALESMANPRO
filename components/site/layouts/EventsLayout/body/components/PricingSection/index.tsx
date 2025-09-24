@@ -21,7 +21,8 @@ const priceCardVariants = {
 const fallbackPlans: (Omit<PricingTier, "features"> & { features: string[]; highlighted?: boolean; buttonText: string; })[] = [
   {
     name: "Starter",
-    price: "Free",
+    price: 0,
+    // price: "Free",
     duration: undefined,
     description: "Perfect for new organizers testing the platform.",
     features: ["Host up to 1 event/month", "100 RSVPs", "Basic analytics", "Email support"],
@@ -30,7 +31,8 @@ const fallbackPlans: (Omit<PricingTier, "features"> & { features: string[]; high
   },
   {
     name: "Pro",
-    price: "$29/mo",
+    // price: "$29/mo",
+    price: 29,
     duration: undefined,
     description: "For active organizers hosting multiple events.",
     features: ["Unlimited events", "Up to 5,000 RSVPs/month", "Advanced analytics", "Priority support", "Custom branding"],
@@ -39,7 +41,8 @@ const fallbackPlans: (Omit<PricingTier, "features"> & { features: string[]; high
   },
   {
     name: "Enterprise",
-    price: "Custom",
+    // price: "Custom",
+    price: 0,
     duration: undefined,
     description: "Tailored solutions for agencies or enterprises.",
     features: ["Unlimited everything", "Dedicated account manager", "API access", "White-label solution"],
