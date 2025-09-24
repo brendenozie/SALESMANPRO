@@ -29,6 +29,7 @@ model Account {
   user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+  @@index([userId])
 }
 
 enum UserStatus {
@@ -97,6 +98,8 @@ model Notification {
   read      Boolean   @default(false)
   Company   Company?  @relation(fields: [companyId], references: [id])
   companyId String?   @db.ObjectId
+
+  @@index([companyId])
 }
 
 model CompanyCategory {
@@ -106,6 +109,8 @@ model CompanyCategory {
   image   String?
   status  String
   Company Company[]
+
+  @@index([status])
 }
 
 // Category model with self-relations for hierarchy (categories & subcategories)
@@ -120,8 +125,8 @@ model ProductCategory {
   seoTitle        String
   seoDescription  String
   metaKeywords    String[]
-  sortOrder       Int
-  visible         Boolean
+  sortOrder       Int       @default(0)
+  visible         Boolean   @default(false)
   createdAt       DateTime? @default(now())
   updatedAt       DateTime? @updatedAt
   createdBy       String
@@ -143,8 +148,8 @@ model ProductCategory {
 
   // Dynamic fields
   productCount   Int
-  isFeatured     Boolean
-  showInHomepage Boolean
+  isFeatured     Boolean @default(false)
+  showInHomepage Boolean @default(false)
 
   // Custom attributes
   attributes Json
@@ -155,6 +160,13 @@ model ProductCategory {
   Company             Company?              @relation(fields: [companyId], references: [id])
   companyId           String?               @db.ObjectId
   Podcast             Podcast[]
+  // @@index([slug])
+
+  @@index([companyId])
+  @@index([tags])
+  @@index([metaKeywords])
+  @@index([allBrands])
+  @@index([status])
 }
 
 /// Associates a Company with a ProductCategory,
@@ -184,6 +196,9 @@ model StoreCategory {
 
   @@unique([companyId, categoryId])
   @@index([companyId, sortOrder])
+  @@index([companyId])
+  @@index([categoryId])
+  @@index([allBrands])
 }
 
 model Company {
@@ -351,6 +366,9 @@ model Company {
   CoreValues   CoreValues[]
   Destination  Destination[]
   TourPackage  TourPackage[]
+  // @@index([slug])
+
+  @@index([userId])
 }
 
 enum CategoryStatus {
@@ -366,6 +384,8 @@ model CoreValues {
   title       String
   description String?
   icon        String?
+
+  @@index([companyId])
 }
 
 model SocialLink {
@@ -374,6 +394,8 @@ model SocialLink {
   companyId String        @db.ObjectId
   channel   SocialChannel
   url       String
+
+  @@index([companyId])
 }
 
 model Policy {
@@ -383,6 +405,8 @@ model Policy {
   type      PolicyType
   title     String?
   content   String
+
+  @@index([companyId])
 }
 
 model Banner {
@@ -405,6 +429,8 @@ model Banner {
   iconKey         String? // e.g. "laundry", "delivery"
   backgroundColor String?
   textColor       String?
+
+  @@index([companyId])
 }
 
 //this promotion on the other hand is a promotion table that highlights the promotions or offers a company offers something lika a banner
@@ -439,6 +465,8 @@ model Promotion {
 
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
+
+  @@index([companyId])
 }
 
 model AnalyticsConfig {
@@ -485,6 +513,8 @@ model PageSection {
   content   Json // e.g. { headline: "...", blocks: [ ... ] }
   createdAt DateTime?   @default(now())
   updatedAt DateTime?   @updatedAt
+
+  @@index([companyId])
 }
 
 enum SectionType {
@@ -525,6 +555,8 @@ model Locations {
   name      String
   Company   Company? @relation(fields: [companyId], references: [id])
   companyId String?  @db.ObjectId
+
+  @@index([companyId])
 }
 
 model AppPromo {
@@ -535,6 +567,8 @@ model AppPromo {
   subheading  String
   buttons     Json // e.g. [{ label: "Download", href: "...", icon: "apple" }]
   screenshots String[] // array of image URLs
+
+  @@index([companyId])
 }
 
 // Use your actual enum definitions if they exist in your schema.prisma
@@ -742,6 +776,12 @@ model Product {
   @@index([status])
   @@index([companyId]) // Good for fetching products by company
   @@index([productCategoryId]) // Good for filtering by category
+  @@index([propertyTypeId])
+  @@index([collectionId])
+  @@index([locationId])
+  @@index([tags])
+  @@index([images])
+  @@index([email])
 }
 
 model Payment {
@@ -754,6 +794,10 @@ model Payment {
   status        PaymentStatus
   transactionId String        @unique
   createdAt     DateTime?     @default(now())
+
+  @@index([userId])
+  @@index([orderId])
+  @@index([status])
 }
 
 enum AppointmentStatus {
@@ -786,6 +830,9 @@ model Appointment {
 
   @@index([userId])
   @@index([doctorId]) // Add index for efficient lookup by doctor
+  @@index([companyId])
+  @@index([patientId])
+  @@index([status])
 }
 
 model PropertyType {
@@ -850,10 +897,14 @@ model Blog {
 
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
+  // @@index([slug])
 
   @@index([authorId])
   @@index([photoAlbumId])
   @@index([videoAlbumId])
+  @@index([companyId])
+  @@index([tags])
+  @@index([status])
 }
 
 model SeoBlog {
@@ -865,6 +916,8 @@ model SeoBlog {
   blog        Blog     @relation(fields: [blogId], references: [id])
   Company     Company? @relation(fields: [companyId], references: [id])
   companyId   String?  @db.ObjectId
+
+  @@index([companyId])
 }
 
 model SEO {
@@ -921,6 +974,8 @@ model Task {
   @@index([assignedToId])
   @@index([createdById])
   @@index([companyId])
+  @@index([projectId])
+  @@index([status])
 }
 
 enum TaskStatus {
@@ -981,6 +1036,10 @@ model Client {
   FinanceAppointment     FinanceAppointment[]
   Invoice                Invoice[]
   Booking                Booking[]
+
+  @@index([companyId])
+  // @@index([userId])
+  @@index([salesAgentId])
 }
 
 enum DealStatus {
@@ -1042,6 +1101,7 @@ model ConversationParticipant {
   // Indexes for efficient querying
   @@index([userId])
   @@index([conversationId])
+  @@index([lastReadMessageId])
 }
 
 // Message Model
@@ -1242,6 +1302,14 @@ model User {
   Expert      Expert?
   Testimonial Testimonial[]
   Blog        Blog[]
+  // @@index([email])
+
+  @@index([companyId])
+  // @@index([settingsId])
+  @@index([educatorId])
+  @@index([parentId])
+  @@index([headTeacherId])
+  @@index([status])
 }
 
 enum Status {
@@ -1291,6 +1359,10 @@ model Return {
   @@index([inventoryItemId])
   @@index([clientId])
   @@index([returnedById])
+  @@index([inventoryId])
+  @@index([ReturnApprovedById])
+  @@index([receivedBySalesAgentId])
+  @@index([status])
 }
 
 enum ReturnStatus {
@@ -1311,6 +1383,10 @@ model ProductAssignment {
   quantityAssigned Int
   reason           String? // Optional reason for assignment
   createdAt        DateTime?     @default(now())
+
+  @@index([ApprovedById])
+  @@index([salesAgentId])
+  @@index([inventoryItemId])
 }
 
 model InventoryItem {
@@ -1328,6 +1404,9 @@ model InventoryItem {
   AgentInventory   AgentInventory[]
   Assignment       ProductAssignment[]
   ClientInventory  ClientInventory[]
+
+  @@index([productId])
+  @@index([companyId])
 }
 
 model InventoryLog {
@@ -1338,6 +1417,8 @@ model InventoryLog {
   action        String
   quantity      Int
   createdAt     DateTime?     @default(now())
+
+  @@index([inventoryId])
 }
 
 model AgentInventory {
@@ -1351,6 +1432,9 @@ model AgentInventory {
   updatedAt         DateTime?           @updatedAt
   AgentInventoryLog AgentInventoryLog[]
   ClientInventory   ClientInventory[]
+
+  @@index([salesAgentId])
+  @@index([inventoryItemId])
 }
 
 model CommissionRate {
@@ -1379,6 +1463,9 @@ model CommissionRate {
   @@unique([companyId, name])
   @@index([companyId])
   @@index([targetId])
+  // @@index([productId])
+  @@index([salesAgentId])
+  @@index([teamId])
 }
 
 model Commission {
@@ -1404,6 +1491,11 @@ model Commission {
 
   @@unique([salesAgentId, productId]) // Composite unique constraint
   @@index([salesAgentId, status])
+  @@index([salesAgentId])
+  @@index([productId])
+  @@index([companyId])
+  @@index([commissionRateId])
+  @@index([status])
 }
 
 enum CommissionType {
@@ -1424,6 +1516,8 @@ model CommissionLog {
   newStatus    CommissionStatus
   changedBy    String
   changedAt    DateTime         @default(now())
+
+  @@index([commissionId])
 }
 
 model Target {
@@ -1455,6 +1549,9 @@ model Target {
   companyId String?      @db.ObjectId
 
   @@index([agentId])
+  @@index([productId])
+  @@index([companyId])
+  @@index([status])
 }
 
 enum TargetType {
@@ -1681,6 +1778,12 @@ model marketplaceListings {
   @@index([productCategoryId])
   @@index([productId]) // Important for linking to the base product
   @@index([locationId]) // NEW: Add index for locationId for efficient queries
+  @@index([sellerId])
+  @@index([collectionId])
+  @@index([commissionRateId])
+  @@index([tags])
+  @@index([images])
+  @@index([email])
 }
 
 model ProductReview {
@@ -1696,6 +1799,9 @@ model ProductReview {
   ProductReviewResponse ProductReviewResponse[]
   ProductReviewLike     ProductReviewLike[]
   ProductReviewDislike  ProductReviewDislike[]
+
+  @@index([productId])
+  @@index([userId])
 }
 
 model ProductReviewLog {
@@ -1706,6 +1812,9 @@ model ProductReviewLog {
   user      User          @relation(fields: [userId], references: [id])
   action    String // e.g., "added", "edited", "deleted"
   createdAt DateTime?     @default(now())
+
+  @@index([reviewId])
+  @@index([userId])
 }
 
 model ProductReviewResponse {
@@ -1716,6 +1825,9 @@ model ProductReviewResponse {
   user      User          @relation(fields: [userId], references: [id])
   response  String
   createdAt DateTime?     @default(now())
+
+  @@index([reviewId])
+  @@index([userId])
 }
 
 model ProductReviewLike {
@@ -1725,6 +1837,9 @@ model ProductReviewLike {
   userId    String        @db.ObjectId
   user      User          @relation(fields: [userId], references: [id])
   createdAt DateTime?     @default(now())
+
+  @@index([reviewId])
+  @@index([userId])
 }
 
 model ProductReviewDislike {
@@ -1734,6 +1849,9 @@ model ProductReviewDislike {
   userId    String        @db.ObjectId
   user      User          @relation(fields: [userId], references: [id])
   createdAt DateTime?     @default(now())
+
+  @@index([reviewId])
+  @@index([userId])
 }
 
 model ClientInventory {
@@ -1754,6 +1872,10 @@ model ClientInventory {
   logs             ClientInventoryLog[]
 
   @@unique([clientId, inventoryItemId]) // Composite unique constraint
+  @@index([clientId])
+  @@index([inventoryItemId])
+  @@index([agentInventoryId])
+  @@index([salesAgentId])
 }
 
 model ClientInventoryLog {
@@ -1774,6 +1896,11 @@ model ClientInventoryLog {
   donorId           String?         @db.ObjectId
   logDate           DateTime
   item              String
+
+  @@index([clientInventoryId])
+  @@index([salesAgentId])
+  @@index([donorId])
+  @@index([status])
 }
 
 model AgentInventoryLog {
@@ -1787,6 +1914,9 @@ model AgentInventoryLog {
   quantity         Int
   damaged          Int            @default(0)
   createdAt        DateTime?      @default(now())
+
+  @@index([agentInventoryId])
+  @@index([clientId])
 }
 
 model SalesSummary {
@@ -1795,6 +1925,8 @@ model SalesSummary {
   totalCommission Float
   totalSales      Float
   updatedAt       DateTime? @updatedAt
+
+  @@index([salesAgentId])
 }
 
 model EventLog {
@@ -1831,6 +1963,8 @@ model Request {
 
   @@index([productId])
   @@index([requesterId])
+  @@index([RequestApprovedById])
+  @@index([status])
 }
 
 // Enum for requestedByType
@@ -1888,6 +2022,11 @@ model ConsumerInventoryLog {
   status            String //completed, pending
   damaged           Int               @default(0)
   createdAt         DateTime?         @default(now())
+
+  @@index([clientInventoryId])
+  @@index([consumerId])
+  @@index([status])
+  @@index([email])
 }
 
 model CustomerOrder {
@@ -1921,6 +2060,9 @@ model CustomerOrder {
   companyId             String?     @db.ObjectId
 
   @@index([consumerId])
+  @@index([companyId])
+  @@index([status])
+  @@index([email])
 }
 
 model OrderItem {
@@ -1952,6 +2094,8 @@ model OrderItem {
   @@index([productId])
   @@index([appointmentId])
   @@index([marketplaceListingId])
+  @@index([orderId])
+  @@index([status])
 }
 
 enum LocationStatus {
@@ -2027,6 +2171,13 @@ model Location {
   Property            Property[]
   Destination         Destination[]
   Booking             Booking[]
+
+  @@index([companyId])
+  @@index([parentId])
+  @@index([metaKeywords])
+  @@index([status])
+  // @@index([slug])
+  @@index([email])
 }
 
 /// Associates a Company with a specific Location,
@@ -2065,6 +2216,8 @@ model CompanyLocation {
   @@unique([companyId, locationId])
   // Speeds up queries for a company's locations, ordered.
   @@index([companyId, sortOrder])
+  @@index([companyId])
+  @@index([locationId])
 }
 
 enum OrderStatus {
@@ -2096,6 +2249,9 @@ model Banners {
   startDate    DateTime?
   endDate      DateTime?
   tags         String[]
+
+  @@index([tags])
+  @@index([status])
 }
 
 model Collection {
@@ -2110,6 +2266,9 @@ model Collection {
   order               Int                   @default(0)
   CollectionItem      CollectionItem[]
   marketplaceListings marketplaceListings[]
+  // @@index([slug])
+
+  @@index([companyId])
 }
 
 model CollectionItem {
@@ -2121,6 +2280,10 @@ model CollectionItem {
   sortOrder            Int                  @default(0)
   marketplaceListings  marketplaceListings? @relation(fields: [marketplaceListingId], references: [id])
   marketplaceListingId String?              @db.ObjectId
+
+  @@index([collectionId])
+  @@index([productId])
+  @@index([marketplaceListingId])
 }
 
 model Review {
@@ -2136,6 +2299,10 @@ model Review {
   createdAt            DateTime?            @default(now())
   marketplaceListings  marketplaceListings? @relation(fields: [marketplaceListingId], references: [id])
   marketplaceListingId String?              @db.ObjectId
+
+  @@index([productId])
+  @@index([userId])
+  @@index([marketplaceListingId])
 }
 
 model Question {
@@ -2149,6 +2316,10 @@ model Question {
   createdAt            DateTime?            @default(now())
   marketplaceListings  marketplaceListings? @relation(fields: [marketplaceListingId], references: [id])
   marketplaceListingId String?              @db.ObjectId
+
+  @@index([productId])
+  @@index([userId])
+  @@index([marketplaceListingId])
 }
 
 model RecentlyViewed {
@@ -2160,6 +2331,10 @@ model RecentlyViewed {
   viewedAt             DateTime             @default(now())
   marketplaceListings  marketplaceListings? @relation(fields: [marketplaceListingId], references: [id])
   marketplaceListingId String?              @db.ObjectId
+
+  @@index([userId])
+  @@index([productId])
+  @@index([marketplaceListingId])
 }
 
 model Wishlist {
@@ -2169,6 +2344,8 @@ model Wishlist {
   name         String
   // products Product[] @relation(references: [id], through: WishlistItem)
   WishlistItem WishlistItem[]
+
+  @@index([userId])
 }
 
 model WishlistItem {
@@ -2180,6 +2357,10 @@ model WishlistItem {
   addedAt              DateTime             @default(now())
   marketplaceListings  marketplaceListings? @relation(fields: [marketplaceListingId], references: [id])
   marketplaceListingId String?              @db.ObjectId
+
+  @@index([wishlistId])
+  @@index([productId])
+  @@index([marketplaceListingId])
 }
 
 // HeadTeacher Profile Model (one-to-one with User)
@@ -2201,6 +2382,9 @@ model HeadTeacher {
 
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
+
+  // @@index([userId])
+  @@index([companyId])
 }
 
 // Parent Profile Model (one-to-one with User, one-to-many with Student)
@@ -2223,6 +2407,9 @@ model Parent {
 
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
+
+  // @@index([userId])
+  @@index([companyId])
 }
 
 // Student Profile Model (one-to-one with User)
@@ -2276,6 +2463,11 @@ model Student {
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
 
+  // @@map("students")
+
+  // @@index([userId])
+  @@index([parentId])
+  @@index([companyId])
   @@map("students")
 }
 
@@ -2355,6 +2547,11 @@ model Educator {
   CourseEducatorAssignment CourseEducatorAssignment[]
   CourseAssignment         CourseAssignment[]
   Booking                  Booking[]
+
+  // @@index([userId])
+  @@index([companyId])
+  @@index([departmentId])
+  @@index([status])
 }
 
 // Academic Level Model
@@ -2383,6 +2580,7 @@ model AcademicLevel {
 
   @@unique([companyId, name]) // A company cannot have two academic levels with the same name
   @@index([companyId, sortOrder]) // For efficient querying and ordering
+  @@index([companyId])
 }
 
 // NEW JUNCTION MODEL: EducatorAcademicLevelAssignment
@@ -2410,6 +2608,7 @@ model EducatorAcademicLevelAssignment {
   @@unique([educatorId, academicLevelId])
   @@index([educatorId])
   @@index([academicLevelId])
+  @@index([companyId])
 }
 
 // Course Model Can also be known as Subject Model
@@ -2456,6 +2655,8 @@ model Course {
   CourseEducatorAssignment CourseEducatorAssignment[]
 
   @@index([companyId])
+  @@index([departmentId])
+  @@index([status])
 }
 
 enum CourseStatus {
@@ -2488,9 +2689,11 @@ model CourseEducatorAssignment {
   updatedAt DateTime? @updatedAt
 
   // Ensures that an educator can only be assigned to a specific academic level once
+  // Ensures that an educator can only be assigned to a specific academic level once
   @@unique([educatorId, courseId])
   @@index([educatorId])
   @@index([courseId])
+  @@index([companyId])
 }
 
 // NEW JUNCTION MODEL: CourseAcademicLevel
@@ -2515,6 +2718,7 @@ model CourseAcademicLevel {
   @@unique([courseId, academicLevelId])
   @@index([courseId])
   @@index([academicLevelId])
+  @@index([companyId])
 }
 
 // Course Enrollment Model (No changes needed, it's well-structured)
@@ -2547,6 +2751,8 @@ model CourseEnrollment {
   // or a more specific unique constraint if a 'termId' is added to this model.
   @@index([studentId])
   @@index([courseId])
+  @@index([companyId])
+  @@index([status])
 }
 
 // Add this enum definition to your schema.txt
@@ -2607,6 +2813,10 @@ model CourseAssignment {
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
   Grade     Grade[]
+
+  @@index([courseId])
+  @@index([companyId])
+  @@index([status])
 }
 
 // Submission Model (Student's assignment submission)
@@ -2643,6 +2853,8 @@ model AssignmentSubmission {
   @@index([studentId])
   @@index([courseId])
   @@index([reviewedById])
+  @@index([assignmentId])
+  @@index([companyId])
 }
 
 // Announcement Model
@@ -2694,6 +2906,7 @@ model Announcement {
   @@index([expiresAt])
   @@index([type])
   @@index([audience]) // New index for filtering by audience
+  @@index([status]) // New index for filtering by audience
 }
 
 // Enum for Announcement Status
@@ -2795,6 +3008,8 @@ model Event {
   @@index([eventStatus])
   @@index([eventType])
   @@index([audience])
+  @@index([projectId])
+  @@index([isPaid])
 }
 
 // Enum for Event Type
@@ -2855,6 +3070,9 @@ model EventRegistration {
   @@unique([eventId, userId]) // A user can only register for an event once
   @@index([eventId])
   @@index([userId])
+  @@index([studentId])
+  @@index([companyId])
+  @@index([status])
 }
 
 enum RegistrationStatus {
@@ -2896,6 +3114,7 @@ model ClassSchedule {
   @@index([courseId]) // For efficient lookup of schedules by course
   @@index([companyId]) // For efficient lookup of all schedules for a company
   @@index([dayOfWeek])
+  @@index([educatorId])
 }
 
 // Enum for Attendance Status
@@ -2941,6 +3160,10 @@ model AttendanceRecord {
   @@index([classScheduleId])
   @@index([academicLevelId]) // NEW INDEX
   @@index([courseId]) // NEW INDEX
+  @@index([studentId])
+  @@index([recordedById])
+  @@index([companyId])
+  @@index([status]) // NEW INDEX
 }
 
 // Exam Model
@@ -3095,6 +3318,8 @@ model CourseMaterial {
 
   @@index([courseId, type])
   @@index([uploadedById])
+  @@index([courseId])
+  @@index([educatorId])
 }
 
 // Discussion Topic Model
@@ -3144,6 +3369,7 @@ model DiscussionPost {
   @@index([topicId])
   @@index([parentId])
   @@index([createdById])
+  @@index([companyId])
 }
 
 model DiscussionComment {
@@ -3172,6 +3398,8 @@ model DiscussionComment {
   @@index([postId])
   // @@index([commentId])
   @@index([createdById])
+  @@index([discussionCommentId])
+  @@index([companyId])
 }
 
 // Department Model
@@ -3195,6 +3423,7 @@ model Department {
 
   @@unique([companyId, name])
   @@index([name])
+  @@index([companyId])
 }
 
 // Grade Model
@@ -3238,6 +3467,7 @@ model Grade {
   @@index([recordedById])
   @@index([companyId])
   @@index([academicLevelAtTimeOfGradingId]) // Add index for efficient querying by academic level
+  @@index([courseAssignmentId]) // Add index for efficient querying by academic level
 }
 
 enum GradeStatus {
@@ -3260,6 +3490,7 @@ model UserActivity {
 
   @@index([userId])
   @@index([activityType])
+  @@index([marketplaceListingId])
 }
 
 model ProductMetrics {
@@ -3278,6 +3509,7 @@ model ProductMetrics {
   @@index([productId])
   @@index([metricType])
   @@index([date])
+  @@index([marketplaceListingId])
 }
 
 // New model for managing Projects
@@ -3300,6 +3532,8 @@ model Project {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([status])
 }
 
 // Enum for Project Status
@@ -3324,6 +3558,8 @@ model ProjectMember {
   createdAt DateTime @default(now())
 
   @@unique([projectId, userId]) // Ensures a user can only have one role per project
+  @@index([projectId])
+  @@index([userId])
 }
 
 // New model for managing Donation Campaigns
@@ -3341,6 +3577,8 @@ model Campaign {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([status])
 }
 
 // Enum for Campaign Status
@@ -3377,6 +3615,13 @@ model Donation {
   createdAt DateTime @default(now())
   User      User?    @relation(fields: [userId], references: [id])
   userId    String?  @db.ObjectId
+
+  @@index([donorId])
+  @@index([projectId])
+  @@index([campaignId])
+  // @@index([transactionId])
+  @@index([userId])
+  @@index([status])
 }
 
 // Enum for Donation Status
@@ -3421,6 +3666,11 @@ model Property {
   // Timestamps
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([categoryId])
+  @@index([locationId])
+  @@index([agentId])
+  @@index([status])
 }
 
 // Enum for Property Status
@@ -3447,6 +3697,8 @@ model PropertyCategory {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([parentCategoryId])
 }
 
 // Educator Profile Model (one-to-one with User)
@@ -3477,6 +3729,10 @@ model Doctor {
   Diagnosis   Diagnosis[]
 
   StaffProfile StaffProfile[]
+
+  @@index([companyId])
+  @@index([userId])
+  @@index([status])
 }
 
 // NEW: DoctorStatus Enum
@@ -3506,6 +3762,10 @@ model Writer {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // @@index([userId])
+  @@index([companyId])
+  @@index([status])
 }
 
 // Podcast Model
@@ -3548,6 +3808,12 @@ model Podcast {
   productCategory   ProductCategory? @relation(fields: [productCategoryId], references: [id])
 
   tags Tag[]
+  // @@index([tags])
+
+  @@index([creatorId])
+  // @@index([podcastId])
+  @@index([companyId])
+  @@index([productCategoryId])
 }
 
 // Tag Model
@@ -3560,6 +3826,9 @@ model Tag {
 
   Podcast   Podcast? @relation(fields: [podcastId], references: [id])
   podcastId String?  @db.ObjectId
+  // @@index([slug])
+
+  @@index([podcastId])
 }
 
 // StudentFeeRecord Model
@@ -3638,6 +3907,8 @@ model StudentFeeRecord {
 
   // Ensure uniqueness: A student should have only one fee record for a given academic year and term.
   @@unique([studentId, academicYear, term])
+  @@index([studentId])
+  @@index([amountPaid])
   @@map("studentFeeRecords") // MongoDB collection name for student fee records
 }
 
@@ -3658,6 +3929,8 @@ model Donor {
 
   ClientInventoryLog ClientInventoryLog[] // If Donor also logs inventory
   Donation           Donation[] // Donations made specifically through this Donor profile
+
+  // @@index([userId])
 }
 
 model Inquiry {
@@ -3683,6 +3956,10 @@ model Inquiry {
 
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
+
+  @@index([companyId])
+  @@index([propertyId])
+  @@index([status])
 }
 
 // --- NEW: Inquiry Status Enum ---
@@ -3715,6 +3992,12 @@ model Showing {
   // If you have a dedicated 'Client' model:
   // client        Client?      @relation(fields: [clientId], references: [id])
   agent   User?    @relation("AgentShowings", fields: [agentId], references: [id]) // Relation to User model for agents
+
+  @@index([companyId])
+  @@index([propertyId])
+  @@index([clientId])
+  @@index([agentId])
+  @@index([status])
 }
 
 // --- NEW: Showing Status Enum ---
@@ -3751,6 +4034,13 @@ model OfferContract {
   agent                 User?                @relation("AgentOffers", fields: [agentId], references: [id])
   marketplaceListings   marketplaceListings? @relation(fields: [marketplaceListingsId], references: [id])
   marketplaceListingsId String?              @db.ObjectId
+
+  @@index([companyId])
+  @@index([propertyId])
+  @@index([clientId])
+  @@index([agentId])
+  @@index([marketplaceListingsId])
+  @@index([status])
 }
 
 // --- NEW: Offer Status Enum ---
@@ -3796,6 +4086,8 @@ model StaffProfile {
   @@index([companyId])
   @@index([jobTitle])
   @@index([department])
+  // @@index([userId])
+  @@index([doctorId])
 }
 
 // NEW: Service Model
@@ -3820,6 +4112,7 @@ model Service {
   @@unique([companyId, name]) // A company cannot have two services with the same name
   @@index([companyId])
   @@index([name])
+  @@index([status])
 }
 
 // NEW: ServiceStatus Enum
@@ -3863,6 +4156,9 @@ model Prescription {
   @@index([doctorId])
   @@index([patientId])
   @@index([companyId])
+  @@index([userId])
+  // @@index([PAID])
+  @@index([status])
 }
 
 // NEW: InvoiceStatus Enum
@@ -3919,6 +4215,7 @@ model Plan {
   updatedAt DateTime @updatedAt
 
   @@index([companyId])
+  @@index([status])
 }
 
 // Represents a customer's subscription to a specific plan.
@@ -3951,6 +4248,8 @@ model Subscription {
   @@unique([userId, planId])
   @@index([userId])
   @@index([planId])
+  @@index([companyId])
+  @@index([status])
 }
 
 // A Patient is a specialized type of User
@@ -3971,6 +4270,8 @@ model Patient {
 
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
+
+  // @@index([userId])
 }
 
 // A medical diagnosis for a patient
@@ -3988,6 +4289,7 @@ model Diagnosis {
 
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
+  // @@index([PAID])
 
   @@index([doctorId])
   @@index([patientId])
@@ -4023,6 +4325,7 @@ model PatientInvoices {
 
   @@index([patientId])
   @@index([companyId])
+  @@index([status])
 }
 
 // Enum for Transaction types
@@ -4064,6 +4367,7 @@ model BillingTransaction {
   @@index([userId])
   @@index([companyId])
   @@index([invoiceId])
+  @@index([status])
 }
 
 // --- New Schema for Video Management ---
@@ -4094,6 +4398,7 @@ model VideoAlbum {
 
   @@index([companyId])
   @@index([userId])
+  @@index([tags])
 }
 
 // Refactored Video model
@@ -4120,7 +4425,11 @@ model Video {
   userId    String?  @db.ObjectId
 
   // Add index for faster lookups
+  // Add index for faster lookups
   @@index([albumId])
+  @@index([companyId])
+  @@index([userId])
+  @@index([status])
 }
 
 // Enum for the video's lifecycle status
@@ -4185,6 +4494,9 @@ model Content {
   @@index([authorId])
   @@index([photoAlbumId])
   @@index([videoAlbumId])
+  @@index([companyId])
+  @@index([tags])
+  @@index([status])
 }
 
 // New model to serve as a container for a group of photos
@@ -4210,6 +4522,7 @@ model PhotoAlbum {
 
   @@index([companyId])
   @@index([userId])
+  @@index([tags])
 }
 
 // Refactored Photo model
@@ -4229,6 +4542,8 @@ model Photo {
   userId    String?  @db.ObjectId
 
   @@index([albumId])
+  @@index([companyId])
+  @@index([userId])
 }
 
 // Model for managing sponsors and partners
@@ -4246,6 +4561,9 @@ model Sponsor {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+  @@index([status])
 }
 
 // Enum for the sponsorship status
@@ -4300,6 +4618,9 @@ model Case {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([assignedToUserId])
+  @@index([status])
 }
 
 model Document {
@@ -4315,6 +4636,8 @@ model Document {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([companyId])
 }
 
 // Appointment model: Represents a scheduled meeting between a client and an expert
@@ -4333,6 +4656,10 @@ model FinanceAppointment {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([clientId])
+  @@index([expertId])
+  @@index([status])
 }
 
 // Invoice model: Represents a financial invoice for a client
@@ -4352,6 +4679,9 @@ model Invoice {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([clientId])
+  @@index([status])
 }
 
 enum Expertise {
@@ -4402,6 +4732,10 @@ model Expert {
 
   FinanceAppointment FinanceAppointment[] @relation("Expert")
   cases              Case[]               @relation("AssignedTo") // A user can be assigned to many cases
+
+  // @@index([userId])
+  @@index([companyId])
+  @@index([status])
 }
 
 model Package {
@@ -4418,6 +4752,8 @@ model Package {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([status])
 }
 
 enum PackageStatus {
@@ -4450,6 +4786,9 @@ model Testimonial {
   avatarUrl String?
   rating    Int? // 1–5 stars
   order     Int     @default(0)
+
+  @@index([companyId])
+  @@index([status])
 }
 
 // FAQ model: Represents a Frequently Asked Question
@@ -4465,6 +4804,8 @@ model FAQ {
 
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
+
+  @@index([companyId])
 }
 
 // Settings model: For user-specific preferences
@@ -4477,6 +4818,8 @@ model Settings {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // @@index([userId])
 }
 
 // schema.prisma
@@ -4508,6 +4851,12 @@ model Destination {
   TourPackage   TourPackage? @relation(fields: [tourPackageId], references: [id])
   tourPackageId String?      @db.ObjectId
   Booking       Booking[]
+  // @@index([slug])
+
+  @@index([companyId])
+  @@index([locationId])
+  @@index([tourPackageId])
+  @@index([images])
 }
 
 // Package model: Represents a travel package or tour.
@@ -4534,6 +4883,11 @@ model TourPackage {
   Location   Location? @relation(fields: [locationId], references: [id])
   locationId String?   @db.ObjectId
   Booking    Booking[]
+  // @@index([slug])
+
+  @@index([locationId])
+  @@index([images])
+  @@index([status])
 }
 
 // Add this enum definition to your schema.prisma file
@@ -4571,6 +4925,7 @@ model PromotionDiscount {
   // @@index([code])
   @@index([startDate])
   @@index([endDate])
+  @@index([status])
 }
 
 // Add these enum definitions to your schema.prisma file if they don't exist
@@ -4703,4 +5058,6 @@ model CompanySettings {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // @@index([companyId])
 }
