@@ -134,7 +134,7 @@ const getContinentAndCountry = (locationId: string | null, allLocations: Locatio
 
   let continent: string | null = null;
   let country: string | null = null;
-  let currentLocation = locationMap.get(locationId);
+  let currentLocation: Location | null | undefined  = locationMap.get(locationId);
 
   while (currentLocation) {
     // A location with no parent is a top-level entity, which we assume is a continent.

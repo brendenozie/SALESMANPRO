@@ -822,7 +822,7 @@ const AdminPOSClient: React.FC<AdminPOSClientProps> = () => {
                     >
                         <motion.div
                             className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-2xl p-8 relative max-h-[95vh] flex flex-col"
-                            variants={modalVariants}
+                            // variants={modalVariants}
                             initial="hidden"
                             animate="visible"
                             exit="exit"

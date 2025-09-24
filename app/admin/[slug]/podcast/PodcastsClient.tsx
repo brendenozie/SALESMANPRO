@@ -2,7 +2,7 @@
 
 import AddToPodcastModal from "@/components/AddToPodcastModal";
 import PodcastDeleteModal from "@/components/PodcastDeleteModal";
-import { StoreCategory } from "@/types/typings";
+import { IStoreCategory } from "@/types/typings";
 import React, { useState } from "react";
 
 // Define the Category type to match the API and Prisma schema
@@ -38,7 +38,7 @@ type Podcast = {
 interface ClientProps {
   companyId: string;
   podcastsData: Podcast[];
-  categoriesData: StoreCategory[]; // Using the corrected Category type
+  categoriesData: IStoreCategory[]; // Using the corrected Category type
 }
 
 export default function PodcastsClient({

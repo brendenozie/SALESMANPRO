@@ -327,29 +327,56 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
   }, [subtotal, totalDiscountAmount, totalTax]);
 
   // --- Cart Actions ---
+  // const handleAddToCart = useCallback((product: MarketListingForm) => {
+  //   setCart(prevCart => {
+  //     const existingItem = prevCart.find(item => item.id === product.id);
+  //     if (existingItem) {
+  //       const newQuantity = existingItem.quantity + 1;
+  //       // if (newQuantity > product.stock) {
+  //       //   alert(`Cannot add more than available stock (${product.stock}) for ${product.name}`);
+  //       //   return prevCart;
+  //       // }
+  //       return prevCart.map(item =>
+  //         item.id === product.id
+  //           ? { ...item, quantity: newQuantity, subtotal: (product.finalPrice ?? 0) * newQuantity }
+  //           : item
+  //       );
+  //     } else {
+  //       // if (1 > product.stock) {
+  //       //   alert(`Cannot add ${product.name} as it's out of stock.`);
+  //       //   return prevCart;
+  //       // }
+  //       return [...prevCart, { ...product, quantity: 1, subtotal: product.finalPrice }];
+  //     }
+  //   });
+  // }, []);
   const handleAddToCart = useCallback((product: MarketListingForm) => {
     setCart(prevCart => {
       const existingItem = prevCart.find(item => item.id === product.id);
       if (existingItem) {
         const newQuantity = existingItem.quantity + 1;
-        // if (newQuantity > product.stock) {
-        //   alert(`Cannot add more than available stock (${product.stock}) for ${product.name}`);
-        //   return prevCart;
-        // }
         return prevCart.map(item =>
           item.id === product.id
-            ? { ...item, quantity: newQuantity, subtotal: (product.finalPrice ?? 0) * newQuantity }
+            ? {
+                ...item,
+                quantity: newQuantity,
+                subtotal: (product.finalPrice ?? 0) * newQuantity, // ✅ always number
+              }
             : item
         );
       } else {
-        // if (1 > product.stock) {
-        //   alert(`Cannot add ${product.name} as it's out of stock.`);
-        //   return prevCart;
-        // }
-        return [...prevCart, { ...product, quantity: 1, subtotal: product.finalPrice }];
+        return [
+          ...prevCart,
+          {
+            ...product,
+            quantity: 1,
+            subtotal: product.finalPrice ?? 0, // ✅ always number
+          },
+        ];
       }
     });
   }, []);
+
 
   const handleQuantityChange = useCallback((itemId: string, delta: number) => {
     setCart(prevCart => {

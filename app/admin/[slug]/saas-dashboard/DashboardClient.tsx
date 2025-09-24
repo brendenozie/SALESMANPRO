@@ -2,7 +2,7 @@
 "use client";
 
 import React from "react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   UsersIcon,
   CreditCardIcon,
@@ -12,6 +12,8 @@ import {
   ClockIcon,
   SparklesIcon,
   StarIcon,
+  LifebuoyIcon,
+  ClipboardDocumentListIcon,
 } from "@heroicons/react/24/outline";
 import { format } from "date-fns";
 import { DashboardStats, RecentActivity, LatestReview } from "./page"; // Import types

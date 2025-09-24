@@ -297,8 +297,8 @@ const ServiceListingForm: React.FC<ServiceListingFormProps> = ({
         if (!MarketListingForm.productCategoryId.trim()) newErrors.productCategoryId = 'Category is required.';
 
         // Pricing Tab
-        if (MarketListingForm.sellingPrice <= 0) newErrors.sellingPrice = 'Selling Price must be positive.';
-        if (MarketListingForm.buyingPrice <= 0) newErrors.buyingPrice = 'Buying Price must be positive.';
+        // if (MarketListingForm.sellingPrice <= 0) newErrors.sellingPrice = 'Selling Price must be positive.';
+        // if (MarketListingForm.buyingPrice <= 0) newErrors.buyingPrice = 'Buying Price must be positive.';
 
         MarketListingForm.pricingTiers?.forEach((tier, index) => {
             if (!tier.name.trim()) newErrors[`pricingTiers[${index}].name`] = 'Tier name is required.';
@@ -306,8 +306,8 @@ const ServiceListingForm: React.FC<ServiceListingFormProps> = ({
         });
 
         // Service Specifics Tab
-        if (MarketListingForm.hourlyRate !== undefined && MarketListingForm.hourlyRate < 0) newErrors.hourlyRate = 'Hourly Rate cannot be negative.';
-        if (MarketListingForm.minimumHours !== undefined && MarketListingForm.minimumHours < 0) newErrors.minimumHours = 'Minimum Hours cannot be negative.';
+        // if (MarketListingForm.hourlyRate !== undefined && MarketListingForm.hourlyRate < 0) newErrors.hourlyRate = 'Hourly Rate cannot be negative.';
+        // if (MarketListingForm.minimumHours !== undefined && MarketListingForm.minimumHours < 0) newErrors.minimumHours = 'Minimum Hours cannot be negative.';
         // Add validation for amenities and requiredClientInfo if they are mandatory arrays
         // if (MarketListingForm.amenities.length === 0) newErrors.amenities = 'At least one amenity is required.';
         // if (MarketListingForm.requiredClientInfo.length === 0) newErrors.requiredClientInfo = 'At least one required client info is needed.';
@@ -341,9 +341,9 @@ const ServiceListingForm: React.FC<ServiceListingFormProps> = ({
         // Advanced Options Tab
         // if (!MarketListingForm.tags || MarketListingForm.tags.length === 0) newErrors.tags = 'At least one tag is required.';
         // if (!MarketListingForm.status) newErrors.status = 'Status is required.';
-        if (MarketListingForm.providerRating !== undefined && (MarketListingForm.providerRating < 1 || MarketListingForm.providerRating > 5)) {
-            newErrors.providerRating = 'Rating must be between 1 and 5.';
-        }
+        // if (MarketListingForm.providerRating !== undefined && (MarketListingForm.providerRating < 1 || MarketListingForm.providerRating > 5)) {
+        //     newErrors.providerRating = 'Rating must be between 1 and 5.';
+        // }
 
         setErrors(newErrors);
         return newErrors; // Return the errors object

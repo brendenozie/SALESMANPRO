@@ -267,7 +267,7 @@ export default function AdminPromotionsPage() {
 
       {/* Confirmation Modal for Deletion */}
       <ConfirmationModal
-        // isOpen={isConfirmModalOpen}
+        isOpen={isConfirmModalOpen}
         onClose={() => setIsConfirmModalOpen(false)}
         onConfirm={confirmDeletePromotion}
         title="Confirm Deletion"

@@ -364,7 +364,7 @@ export default function ClientsPage({ params }: ClientsPageProps) {
 
       {/* Confirmation Modal for Deletion */}
       <ConfirmationModal
-        // isOpen={isConfirmModalOpen}
+        isOpen={isConfirmModalOpen}
         onClose={() => setIsConfirmModalOpen(false)}
         onConfirm={confirmDeleteClient}
         title="Confirm Deletion"

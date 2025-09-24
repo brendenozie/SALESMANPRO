@@ -289,7 +289,7 @@ export default function AdminVirtualToursPage() {
 
       {/* Confirmation Modal for Deletion */}
       <ConfirmationModal
-        // isOpen={isConfirmModalOpen}
+        isOpen={isConfirmModalOpen}
         onClose={() => setIsConfirmModalOpen(false)}
         onConfirm={confirmDeleteTour}
         title="Confirm Deletion"

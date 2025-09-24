@@ -1,6 +1,6 @@
 import React from "react";
 import PodcastsClient from "./PodcastsClient"; // Assuming PodcastsClient is in the same directory
-import { StoreCategory } from "@/types/typings";
+import { IStoreCategory } from "@/types/typings";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -65,7 +65,7 @@ export default async function PodcastsAdminPage({ params }: PageProps) {
   const companyId = params.slug; // Using companyId as the slug for now, adjust as needed
 
   let podcastsData: Podcast[] = [];
-  let categoriesData: StoreCategory[] = [];
+  let categoriesData: IStoreCategory[] = [];
 
   try {
     // Fetch podcasts

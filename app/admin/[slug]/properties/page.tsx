@@ -26,7 +26,7 @@ import AddToProductMarketModal from "@/components/AddToProductMarketModal";
 // If you have a dedicated delete modal component, uncomment and use it
 // import { PropertyDeleteConfirmModal } from './PropertyDeleteConfirmModal';
 
-import { StoreCategory, Location, MarketListingForm } from '@/types/typings';
+import { IStoreCategory, ILocation, MarketListingForm } from '@/types/typings';
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
@@ -46,8 +46,8 @@ export default function PropertyManagementPage({ params }: PropertyManagementPag
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const [categories, setCategories] = useState<StoreCategory[] | undefined>();
-  const [locations, setLocations] = useState<Location[] | undefined>();
+  const [categories, setCategories] = useState<IStoreCategory[] | undefined>();
+  const [locations, setLocations] = useState<ILocation[] | undefined>();
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedProperty, setSelectedProperty] = useState<MarketListingForm | null>(null);
@@ -243,14 +243,14 @@ export default function PropertyManagementPage({ params }: PropertyManagementPag
   const getStatusBadgeClass = (status: MarketListingForm['status']) => {
     switch (status) {
       case 'Available': return 'bg-green-100 text-green-800 ring-green-600/20';
-      case 'Under Offer': return 'bg-yellow-100 text-yellow-800 ring-yellow-600/20';
+      case 'Under_Offer': return 'bg-yellow-100 text-yellow-800 ring-yellow-600/20';
       case 'Sold': return 'bg-red-100 text-red-800 ring-red-600/20';
       case 'Draft': return 'bg-gray-100 text-gray-800 ring-gray-600/20';
       default: return 'bg-gray-100 text-gray-800 ring-gray-600/20';
     }
   };
 
-  const getProductTypeIcon = (productTypeId: MarketListingForm['productTypeId']) => {
+  const getProductTypeIcon = (productTypeId: MarketListingForm['category']) => {
     switch (productTypeId) {
       case 'property': return <HomeModernIcon className="h-4 w-4 mr-1 text-indigo-500" />;
       case 'vehicle': return <TruckIcon className="h-4 w-4 mr-1 text-emerald-500" />;
@@ -413,7 +413,7 @@ export default function PropertyManagementPage({ params }: PropertyManagementPag
                           <div>
                             <div className="text-lg font-semibold text-gray-800 leading-snug">{property.name}</div>
                             <div className="text-xs text-gray-500 flex items-center mt-1">
-                              <MapPinIcon className="h-3.5 w-3.5 mr-1.5 text-gray-400" /> {property.locationName}, {property.selectedLocationDetails?.city || 'N/A'}
+                              <MapPinIcon className="h-3.5 w-3.5 mr-1.5 text-gray-400" /> {property.locationName || 'N/A'}
                             </div>
                           </div>
                         </div>
@@ -421,9 +421,9 @@ export default function PropertyManagementPage({ params }: PropertyManagementPag
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                         <div className="space-y-1">
                           <div className="flex items-center text-gray-700 font-medium">
-                            {getProductTypeIcon(property.productTypeId)} {property.type}
+                            {getProductTypeIcon(property.category)} {property.type}
                           </div>
-                          {property.productTypeId === 'property' && (
+                          {property.category === 'property' && (
                             <>
                               <div className="flex items-center text-gray-500">
                                 <HomeModernIcon className="h-4 w-4 mr-1 text-gray-400" /> {property.bedrooms?.length ? `${property.bedrooms.length} Beds` : 'N/A Beds'}
@@ -436,7 +436,7 @@ export default function PropertyManagementPage({ params }: PropertyManagementPag
                               </div>
                             </>
                           )}
-                          {property.productTypeId === 'vehicle' && (
+                          {property.category === 'vehicle' && (
                             <>
                               <div className="flex items-center text-gray-500">
                                 <TruckIcon className="h-4 w-4 mr-1 text-gray-400" /> Make: {property.make ?? 'N/A'}
@@ -449,7 +449,7 @@ export default function PropertyManagementPage({ params }: PropertyManagementPag
                               </div>
                             </>
                           )}
-                          {property.productTypeId === 'book' && (
+                          {property.category === 'book' && (
                             <>
                               <div className="flex items-center text-gray-500">
                                 <BookOpenIcon className="h-4 w-4 mr-1 text-gray-400" /> Author: {property.author ?? 'N/A'}
@@ -465,7 +465,7 @@ export default function PropertyManagementPage({ params }: PropertyManagementPag
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-xl font-extrabold text-teal-700">
-                        {formatPrice(property.finalPrice)}
+                        {formatPrice(property.finalPrice || 0)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-3.5 py-1.5 inline-flex text-xs leading-5 font-bold rounded-full shadow-sm ring-1 ring-inset ${getStatusBadgeClass(property.status)}`}>

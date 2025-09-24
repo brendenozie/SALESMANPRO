@@ -41,11 +41,7 @@ const ServiceMediaTab: React.FC<ServiceMediaTabProps> = ({
                     type="text"
                     name="images[0]" // Assuming first image is main
                     value={MarketListingForm.images[0] || ''}
-                    onChange={(e) => {
-                        const newImages = [...MarketListingForm.images];
-                        newImages[0] = e.target.value;
-                        handleChange({ target: { name: 'images', value: newImages } } as React.ChangeEvent<HTMLInputElement>);
-                    }}
+                    
                     className={`mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-600 p-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2`}
                     style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
                     placeholder="e.g., [https://example.com/main-service.jpg](https://example.com/main-service.jpg)"
@@ -62,11 +58,19 @@ const ServiceMediaTab: React.FC<ServiceMediaTabProps> = ({
                 <textarea
                     name="additionalImages" // Placeholder name, actual logic needed
                     value={MarketListingForm.images.slice(1).join(', ') || ''}
+                    // onChange={(e) => {
+                    //     const mainImage = MarketListingForm.images[0] || '';
+                    //     const additionalImages = e.target.value.split(',').map(item => item.trim()).filter(item => item !== '');
+                    //     handleChange({ target: { name: 'images', value: [mainImage, ...additionalImages] } } as React.ChangeEvent<HTMLTextAreaElement>);
+                    // }}
                     onChange={(e) => {
-                        const mainImage = MarketListingForm.images[0] || '';
-                        const additionalImages = e.target.value.split(',').map(item => item.trim()).filter(item => item !== '');
-                        handleChange({ target: { name: 'images', value: [mainImage, ...additionalImages] } } as React.ChangeEvent<HTMLTextAreaElement>);
-                    }}
+                            const newImages = [...MarketListingForm.images];
+                            newImages[0] = e.target.value;
+                            handleChange({
+                                target: { name: "images", value: newImages },
+                            } as unknown as React.ChangeEvent<HTMLInputElement>); 
+                        }
+                    }
                     rows={3}
                     className={`mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-600 p-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2`}
                     style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}

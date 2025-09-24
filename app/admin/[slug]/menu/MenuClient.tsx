@@ -14,15 +14,14 @@ import {
 } from "chart.js";
 import toast, { Toaster } from 'react-hot-toast';
 import {
-  MagnifyingGlassCircleIcon, PlusIcon, PencilIcon, TrashIcon, CheckCircleIcon, XCircleIcon, TagIcon, PhoneXMarkIcon, ListBulletIcon, CurrencyDollarIcon, InformationCircleIcon,
-  HandRaisedIcon, ShoppingBagIcon, BuildingLibraryIcon, CalendarIcon, PercentBadgeIcon, EyeIcon, EyeSlashIcon,
+  MagnifyingGlassCircleIcon, PlusIcon, PencilIcon, TrashIcon, CheckCircleIcon, TagIcon, ListBulletIcon, CurrencyDollarIcon, InformationCircleIcon,
+  PercentBadgeIcon, 
   CircleStackIcon,
   AdjustmentsVerticalIcon
 } from '@heroicons/react/24/outline'; // Icons from Heroicons
 import { CheckIcon } from "@heroicons/react/20/solid";
 import { ArchiveBoxIcon } from "@heroicons/react/24/solid";
 import { MarketListingForm, IStoreCategory } from "@/types/typings";
-import MarketLForm from "./MarketLForm";
 import AddToProductMarketModal from "@/components/AddToProductMarketModal";
 
 // Register Chart.js components

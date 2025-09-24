@@ -198,7 +198,8 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({ isOpe
       <p className="text-gray-300 mb-6 text-lg">
         Are you sure you want to delete this {isAlbum ? 'album' : 'video'}{isAlbum ? ' and all its contents' : ''}? This action cannot be undone.
         <br />
-        <strong className="text-white mt-2 block">"{item?.title || 'Selected video'}"</strong>
+        <strong className="text-white mt-2 block">"{'Selected video'}"</strong>
+        {/* item?.title ||  */}
       </p>
       <div className="flex justify-end space-x-4">
         <button
