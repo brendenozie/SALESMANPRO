@@ -1,4 +1,4 @@
-import { IExerciseCategory } from "../types/typings";
+// import { IExerciseCategory } from "../types/typings";
 import React from "react";
 import { GetServerSidePropsContext } from "next";
 import { Session } from "next-auth";
@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { useRouter } from "next/router";
 
 type Props = {
-    exercisesCategory: IExerciseCategory;
+    exercisesCategory: any;
   };
 
 const Card = (props: Props ) => {

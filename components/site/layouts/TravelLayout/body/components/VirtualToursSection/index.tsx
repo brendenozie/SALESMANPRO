@@ -16,7 +16,7 @@ import {
 // --- Shared Utilities (from previous sections for consistency) ---
 
 // Mocking the image loader for demonstration purposes
-const customLoader = ({ src, width, quality }) => {
+const customLoader = ({ src, width, quality }:any) => {
   return `${src}?w=${width}&q=${quality || 75}`;
 };
 
@@ -121,7 +121,7 @@ const virtualTours = [
 
 
 // VirtualTourModal.jsx
-function VirtualTourModal({ videoUrl, onClose }) {
+function VirtualTourModal({ videoUrl, onClose }:any) {
   useEffect(() => {
     // Disable scrolling on the body when the modal is open
     document.body.style.overflow = 'hidden';
@@ -144,7 +144,7 @@ function VirtualTourModal({ videoUrl, onClose }) {
         exit={{ scale: 0.8, y: 50 }}
         transition={{ type: "spring", stiffness: 200, damping: 25 }}
         className="relative w-full max-w-4xl aspect-video bg-gray-900 rounded-2xl shadow-2xl overflow-hidden"
-        onClick={(e) => e.stopPropagation()} // Prevent modal close when clicking video
+        onClick={(e:any) => e.stopPropagation()} // Prevent modal close when clicking video
       >
         <button
           onClick={onClose}
@@ -167,7 +167,7 @@ function VirtualTourModal({ videoUrl, onClose }) {
 }
 
 // VirtualTourCard.jsx
-function VirtualTourCard({ tour, onOpen }) {
+function VirtualTourCard({ tour, onOpen }:any) {
   return (
     <motion.div
       whileHover={{ scale: 1.03, boxShadow: "0px 15px 30px rgba(0,0,0,0.2)" }}
@@ -221,7 +221,7 @@ function VirtualTourCard({ tour, onOpen }) {
 export default function VirtualTours() {
   const [modalVideoUrl, setModalVideoUrl] = useState(null);
 
-  const openModal = (url) => {
+  const openModal = (url:any) => {
     setModalVideoUrl(url);
   };
 

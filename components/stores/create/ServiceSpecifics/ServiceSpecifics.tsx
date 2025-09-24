@@ -110,7 +110,7 @@ export const ServiceSpecifics: React.FC<ServiceSpecificsProps> = ({ formData, up
                 label="Hourly Rate ($) (if applicable)"
                 placeholder="0.00"
                 step={0.01}
-                value={formData.hourlyRate}
+                value={formData.hourlyRate || 0}
                 onChange={(val) => updateField('hourlyRate', val)} // Updated
               />
 
@@ -118,21 +118,21 @@ export const ServiceSpecifics: React.FC<ServiceSpecificsProps> = ({ formData, up
                 label="Minimum Hours (for hourly services)"
                 placeholder="1"
                 step={1}
-                value={formData.minimumHours}
+                value={formData.minimumHours || 1}
                 onChange={(val) => updateField('minimumHours', val)} // Updated
               />
 
               <FormTextField
                 label="Minimum Notice Period (e.g., 24 hours, 3 days)"
                 placeholder="24 hours"
-                value={formData.minNoticePeriod}
+                value={formData.minNoticePeriod || ''}
                 onChange={(val) => updateField('minNoticePeriod', val)} // Updated
               />
 
               <FormTextField
                 label="Max Booking Lead Time (e.g., 3 months, 1 year)"
                 placeholder="3 months"
-                value={formData.maxBookingAhead}
+                value={formData.maxBookingAhead || ''}
                 onChange={(val) => updateField('maxBookingAhead', val)} // Updated
               />
 
@@ -140,7 +140,7 @@ export const ServiceSpecifics: React.FC<ServiceSpecificsProps> = ({ formData, up
                 label="Total Service Capacity (overall limit)"
                 placeholder="100"
                 step={1}
-                value={formData.totalCapacity}
+                value={formData.totalCapacity || 0}
                 onChange={(val) => updateField('totalCapacity', val)} // Updated
               />
 
@@ -163,14 +163,14 @@ export const ServiceSpecifics: React.FC<ServiceSpecificsProps> = ({ formData, up
               <FormTextField
                 label="Fulfillment Status (e.g., PENDING_CONFIRMATION, CONFIRMED)"
                 placeholder="e.g., PENDING_CONFIRMATION"
-                value={formData.fulfillmentStatus}
+                value={formData.fulfillmentStatus || ''}
                 onChange={(val) => updateField('fulfillmentStatus', val)} // Updated
               />
 
               <FormNumberField
                 label="Provider Rating (Read-only, calculated automatically)"
                 placeholder="N/A"
-                value={formData.providerRating}
+                value={formData.providerRating || 1}
                 readOnly
               />
             </div>

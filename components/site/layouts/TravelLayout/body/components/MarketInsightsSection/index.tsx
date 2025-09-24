@@ -13,7 +13,7 @@ import {
 } from "@heroicons/react/24/solid";
 
 // --- Shared Utilities ---
-const customLoader = ({ src, width, quality }) =>
+const customLoader = ({ src, width, quality }:any) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
 const blurSvg = `data:image/svg+xml;base64,${btoa(`
@@ -76,8 +76,9 @@ const fallbackPosts = [
 ];
 
 // --- Modal ---
-function VirtualTourModal({ videoUrl, onClose }) {
-  useEffect(() => {
+function VirtualTourModal({ videoUrl, onClose }:any) {
+  useEffect(
+    () => {
     document.body.style.overflow = "hidden";
     return () => (document.body.style.overflow = "unset");
   }, []);
@@ -96,7 +97,7 @@ function VirtualTourModal({ videoUrl, onClose }) {
         exit={{ scale: 0.8, y: 50 }}
         transition={{ type: "spring", stiffness: 200, damping: 25 }}
         className="relative w-full max-w-4xl aspect-video bg-gray-900 rounded-2xl shadow-2xl overflow-hidden"
-        onClick={(e) => e.stopPropagation()}
+        onClick={(e:any) => e.stopPropagation()}
       >
         <button
           onClick={onClose}
@@ -118,7 +119,7 @@ function VirtualTourModal({ videoUrl, onClose }) {
 }
 
 // --- Tour Card ---
-function VirtualTourCard({ tour, onOpen }) {
+function VirtualTourCard({ tour, onOpen }:any) {
   return (
     <motion.div
       whileHover={{ scale: 1.03, boxShadow: "0px 15px 30px rgba(0,0,0,0.2)" }}
@@ -157,10 +158,10 @@ export default function MarketInsights({
   virtualTours,
   regionCosts,
   blogPosts,
-}) {
+}:any) {
   const [modalVideoUrl, setModalVideoUrl] = useState(null);
 
-  const openModal = (url) => setModalVideoUrl(url);
+  const openModal = (url:any) => setModalVideoUrl(url);
   const closeModal = () => setModalVideoUrl(null);
 
   const toursToShow =
@@ -198,7 +199,7 @@ export default function MarketInsights({
               Virtual Tours
             </h3>
             <div className="flex space-x-6 overflow-x-auto pb-4 hide-scrollbar">
-              {toursToShow.map((tour) => (
+              {toursToShow.map((tour:any) => (
                 <motion.div key={tour.id} variants={itemVariants}>
                   <VirtualTourCard tour={tour} onOpen={openModal} />
                 </motion.div>
@@ -222,7 +223,7 @@ export default function MarketInsights({
                 Average Travel Costs
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {costsToShow.map((rc) => (
+                {costsToShow.map((rc:any) => (
                   <motion.div
                     key={rc.id}
                     className="flex items-center bg-gray-50 rounded-2xl p-4 shadow-sm border border-gray-100"
@@ -247,7 +248,7 @@ export default function MarketInsights({
                 Latest Travel Tips
               </h3>
               <ul className="space-y-4">
-                {postsToShow.map((bp) => (
+                {postsToShow.map((bp:any) => (
                   <motion.li key={bp.id} className="flex items-start">
                     <NewspaperIcon className="h-6 w-6 text-indigo-500 mr-3 flex-shrink-0 mt-1" />
                     <div>

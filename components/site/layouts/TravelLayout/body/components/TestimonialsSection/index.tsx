@@ -12,7 +12,7 @@ import {
 import { Testimonial } from "@/types/typings";
 
 // Mock loader for demonstration
-const customLoader = ({ src, width, quality }) =>
+const customLoader = ({ src, width, quality }:any) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
 const blurSvg = `data:image/svg+xml;base64,${btoa(`

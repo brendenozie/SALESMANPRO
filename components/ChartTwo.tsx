@@ -82,7 +82,7 @@ const options: ApexOptions = {
     fontWeight: 500,
     fontSize: "14px",
     markers: {
-      radius: 12,
+      size: 12,
     },
     itemMargin: {
       horizontal: 10,

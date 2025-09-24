@@ -10,7 +10,7 @@ const options: ApexOptions = {
     type: "donut",
     animations: {
       enabled: true,
-      easing: "easeinout",
+      // easing: "easeinout",
       speed: 800,
     },
   },

@@ -44,7 +44,7 @@ export default function NewsletterSignup() {
   const [subscribed, setSubscribed] = useState(false);
   const [error, setError] = useState("");
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e:any) => {
     e.preventDefault();
     setError(""); // Clear previous errors
     setSubscribed(false); // Reset subscribed state

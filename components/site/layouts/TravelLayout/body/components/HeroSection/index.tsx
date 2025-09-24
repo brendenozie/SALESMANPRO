@@ -55,27 +55,27 @@ const curatedCategoriesFallback: Partial<IStoreCategory>[] = [
     displayName: "Adventure",
     visible: true,
     subcategories: [
-      { id: "hiking", displayName: "Hiking & Trekking" },
-      { id: "rafting", displayName: "River Rafting" },
+      { id: "hiking", name: "Hiking & Trekking", slug:'' },
+      { id: "rafting", name: "River Rafting", slug:'' },
     ],
   },
   {
     id: "family",
     displayName: "Family",
     visible: true,
-    subcategories: [{ id: "parks", displayName: "Theme Parks" }],
+    subcategories: [{ id: "parks", name: "Theme Parks", slug:'' }],
   },
   {
     id: "luxury",
     displayName: "Luxury",
     visible: true,
-    subcategories: [{ id: "resorts", displayName: "Luxury Resorts" }],
+    subcategories: [{ id: "resorts", name: "Luxury Resorts", slug:'' }],
   },
   {
     id: "romantic",
     displayName: "Romantic",
     visible: true,
-    subcategories: [{ id: "honeymoon", displayName: "Honeymoon Packages" }],
+    subcategories: [{ id: "honeymoon", name: "Honeymoon Packages", slug:'' }],
   },
 ];
 
@@ -349,7 +349,7 @@ export default function HeroSection({
               animate={{ y: 0, opacity: 1, scale: 1 }}
               exit={{ y: 50, opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.3, ease: "easeOut" }}
-              onClick={(e) => e.stopPropagation()}
+              onClick={(e : any) => e.stopPropagation()}
             >
               <button
                 onClick={() => setIsSearchModalOpen(false)}

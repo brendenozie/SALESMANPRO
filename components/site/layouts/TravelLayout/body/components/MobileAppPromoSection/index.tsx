@@ -13,7 +13,7 @@ import {
 // --- Shared Utilities (from previous sections for consistency) ---
 
 // Mocking the image loader for demonstration purposes
-const customLoader = ({ src, width, quality }) => {
+const customLoader = ({ src, width, quality }:any) => {
   return `${src}?w=${width}&q=${quality || 75}`;
 };
 
