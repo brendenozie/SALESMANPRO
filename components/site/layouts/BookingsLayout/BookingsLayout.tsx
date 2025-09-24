@@ -10,7 +10,7 @@ interface BookingsLayoutProps {
   children: ReactNode;
 }
 
-export default function BookingsLayout({ params, children }: BookingsLayoutProps) {
+export default function BookingsHeaderLayout({ params, children }: BookingsLayoutProps) {
   const { storeFormData } = params;
 
   return (
