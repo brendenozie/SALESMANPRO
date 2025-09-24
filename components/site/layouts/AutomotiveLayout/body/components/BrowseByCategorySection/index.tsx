@@ -50,7 +50,7 @@ export default function AutomotiveSubcategoriesSection({ store }: AutomotiveSubc
   const allSubcategories: ISubcategory[] = [];
   
   // Aggregate all subcategories from all parent categories
-  (store?.storeFormData?.StoreCategory ?? []).forEach(parentCat => {
+  (store?.StoreCategory ?? []).forEach(parentCat => {
     if (Array.isArray(parentCat.subcategories)) {
       allSubcategories.push(...parentCat.subcategories);
     }

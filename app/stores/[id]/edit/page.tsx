@@ -168,7 +168,7 @@ export default async function EditStorePage({
       themePrimary: p.themePrimary ?? undefined,
       themeSecondary: p.themeSecondary ?? undefined,
     })),
-    projects: [],    
+    projects: [],
     blogs: store.blogs,
     pageSections: store.PageSection,
     appPromos: store.appPromos.map((p) => ({
@@ -178,9 +178,9 @@ export default async function EditStorePage({
     events: store.events,
     courses: store.courses,
 
-    salesAgents: [],//store.salesAgents,
-    Writer: [],//store.Writer.map((w) => w.user),
-    Doctor: [],//store.Doctor.map((d) => d.User).filter((user): user is User => !!user),
+    salesAgents: [], //store.salesAgents,
+    Writer: [], //store.Writer.map((w) => w.user),
+    Doctor: [], //store.Doctor.map((d) => d.User).filter((user): user is User => !!user),
 
     Podcast: store.Podcast,
     services: store.services,
@@ -212,6 +212,11 @@ export default async function EditStorePage({
       ...cv,
       icon: cv.icon ?? "",
     })),
+    Expert: [],
+    Educator: [],
+    packages: [],
+    destinations: [],
+    tourPackages: []
   };
 
   return (

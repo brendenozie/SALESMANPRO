@@ -106,7 +106,7 @@ export default function Testimonials() {
           className="mt-16"
         >
           <Link
-            href="/reviews"
+            to={"/reviews"}
             className="inline-flex items-center px-8 py-4 border border-transparent text-xl font-bold rounded-full shadow-lg text-blue-600 bg-white hover:bg-gray-50 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
             Read All Reviews

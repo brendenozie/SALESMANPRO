@@ -28,7 +28,7 @@ export default function FilterBarSection({
 }: FilterBarSectionProps) {
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
-  const categories = store?.storeFormData?.StoreCategory ?? [];
+  const categories = store?.StoreCategory ?? [];
 
   const filterBarVariants = {
     hidden: { opacity: 0, y: -20 },

@@ -141,7 +141,7 @@ export default  function AppPromoSection() {
                 alt={`App screenshot ${idx + 1}`}
                 layout="fill"
                 objectFit="cover"
-                loader={loader}
+                loader={customLoader}
               />
             </div>
           ))}

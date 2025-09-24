@@ -119,7 +119,7 @@ export default function TestimonialsCarouselSection({ testimonials }: Props) {
               drag="x"
               dragConstraints={{ left: 0, right: 0 }}
               dragElastic={1}
-              onDragEnd={(e, { offset, velocity }) => {
+              onDragEnd={(e: any, { offset, velocity }:any) => {
                 const swipePower = Math.abs(offset.x) * velocity.x;
                 if (swipePower < -10000) {
                   paginate(1);

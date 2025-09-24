@@ -40,7 +40,7 @@ const Lightbox: React.FC<LightboxProps> = ({ videoId, isOpen, onClose }) => {
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.9, y: 20 }}
         className="relative bg-gray-900 rounded-lg shadow-2xl max-w-4xl w-full aspect-video flex items-center justify-center"
-        onClick={(e) => e.stopPropagation()}
+        onClick={(e:any) => e.stopPropagation()}
       >
         <button
           onClick={onClose}
@@ -96,7 +96,7 @@ export default function VideoShowcase({ blogs }: VideoShowcaseProps) {
               whileHover={{ y: -8, boxShadow: "0 15px 30px rgba(0,0,0,0.15)" }}
               transition={{ type: "spring", stiffness: 300, damping: 20 }}
               className="relative cursor-pointer rounded-xl overflow-hidden shadow-xl group"
-              onClick={() => blog.videoId && setIsOpen(blog.id)}
+              onClick={() => blog.coverImage && setIsOpen(blog.id)}
             >
               <div className="relative w-full aspect-video overflow-hidden">
                 <Image
@@ -106,7 +106,7 @@ export default function VideoShowcase({ blogs }: VideoShowcaseProps) {
                   fill
                   className="group-hover:scale-110 transition-transform duration-500 ease-in-out brightness-90 group-hover:brightness-70 object-cover"
                 />
-                {blog.videoId && (
+                {blog.coverImage && (
                   <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <PlayCircleIcon className="w-16 h-16 text-white transform group-hover:scale-110 transition-transform duration-300" />
                   </div>
@@ -133,11 +133,11 @@ export default function VideoShowcase({ blogs }: VideoShowcaseProps) {
         {/* Lightbox Modals */}
         <AnimatePresence>
           {blogs
-            .filter((b) => b.videoId)
+            .filter((b) => b.videoAlbumId)
             .map((blog) => (
               <Lightbox
                 key={blog.id}
-                videoId={blog.videoId!}
+                videoId={blog.videoAlbumId!}
                 isOpen={isOpen === blog.id}
                 onClose={() => setIsOpen(null)}
               />
