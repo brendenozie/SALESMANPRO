@@ -22,6 +22,7 @@ import {
 import {
   IEvent
 } from '@/types/typings';
+import { EventStatus } from '@prisma/client';
 
 // --- Shared Constants (Create a separate file, e.g., constants/event.ts) ---
 export const VALID_EVENT_TYPES = [
@@ -100,8 +101,8 @@ type Agent = {
 
 // --- Event Form Component ---
 interface EventFormProps {
-  event?: IEvent | null;
-  onSave: (eventData: Partial<IEvent>) => void;
+  event?: Partial<IEvent | null>;
+  onSave: (eventData: IEvent) => void;
   onClose: () => void;
   isSaving: boolean;
   apiError: string | null;
@@ -120,14 +121,14 @@ export default function EventForm({ event, onSave, onClose, isSaving, apiError, 
     title: '',
     summary: '',
     description: '',
-    startDateTime: '',
-    endDateTime: '',
+    startDateTime: new Date(), // defaults to "now"
+    endDateTime: new Date(), 
     location: '',
     onlineMeetingLink: '',
     imageUrl: '',
     videoUrl: '',
     eventType: 'GENERAL',
-    eventStatus: 'DRAFT',
+    eventStatus: 'DRAFT' as EventStatus,
     audience: 'ALL',
     targetAcademicLevelIds: [],
     targetCourseIds: [],
@@ -152,8 +153,10 @@ export default function EventForm({ event, onSave, onClose, isSaving, apiError, 
     if (event) {
       setFormData({
         ...event,
-        startDateTime: formatDateForInput(event.startDateTime),
-        endDateTime: formatDateForInput(event.endDateTime),
+        // startDateTime: formatDateForInput(event.startDateTime),
+        // endDateTime: formatDateForInput(event.endDateTime),
+        startDateTime: event.startDateTime ? new Date(event.startDateTime) : undefined,
+        endDateTime: event.endDateTime ? new Date(event.endDateTime) : null,
       });
     } else {
       // Reset form if no event is passed (e.g., for creating a new event)
@@ -161,14 +164,16 @@ export default function EventForm({ event, onSave, onClose, isSaving, apiError, 
         title: '',
         summary: '',
         description: '',
-        startDateTime: '',
-        endDateTime: '',
+        // startDateTime: '',
+        // endDateTime: '',
+        startDateTime: new Date(), // defaults to "now"
+        endDateTime: new Date(),
         location: '',
         onlineMeetingLink: '',
         imageUrl: '',
         videoUrl: '',
         eventType: 'GENERAL',
-        eventStatus: 'DRAFT',
+        eventStatus: 'DRAFT' as EventStatus,
         audience: 'ALL',
         targetAcademicLevelIds: [],
         targetCourseIds: [],
@@ -196,9 +201,9 @@ export default function EventForm({ event, onSave, onClose, isSaving, apiError, 
     setFormData(prev => {
       const updatedData = { ...prev };
       if (type === 'checkbox') {
-        updatedData[name as keyof Partial<IEvent>] = checked as any;
+        updatedData[name as keyof IEvent] = checked as any;
       } else {
-        updatedData[name as keyof Partial<IEvent>] = value as any;
+        updatedData[name as keyof IEvent] = value as any;
       }
 
       // Clear specific validation error when user starts typing/changing

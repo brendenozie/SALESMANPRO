@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 // Remove the `isOpen` prop from the interface
 interface ConfirmationModalProps {
+  isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
   title: string;
@@ -14,6 +15,7 @@ interface ConfirmationModalProps {
 }
 
 const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
+  isOpen,
   onClose,
   onConfirm,
   title,
