@@ -77,11 +77,19 @@ const fallbackPosts = [
 
 // --- Modal ---
 function VirtualTourModal({ videoUrl, onClose }:any) {
-  useEffect(
-    () => {
+  // useEffect(
+  //   () => {
+  //   document.body.style.overflow = "hidden";
+  //   return () => (document.body.style.overflow = "unset");
+  // }, []);
+
+  useEffect(() => {
     document.body.style.overflow = "hidden";
-    return () => (document.body.style.overflow = "unset");
+    return () => {
+      document.body.style.overflow = "unset";
+    };
   }, []);
+
 
   return (
     <motion.div
@@ -164,12 +172,9 @@ export default function MarketInsights({
   const openModal = (url:any) => setModalVideoUrl(url);
   const closeModal = () => setModalVideoUrl(null);
 
-  const toursToShow =
-    virtualTours && virtualTours.length > 0 ? virtualTours : fallbackTours;
-  const costsToShow =
-    regionCosts && regionCosts.length > 0 ? regionCosts : fallbackCosts;
-  const postsToShow =
-    blogPosts && blogPosts.length > 0 ? blogPosts : fallbackPosts;
+  const toursToShow = virtualTours && virtualTours.length > 0 ? virtualTours : fallbackTours;
+  const costsToShow = regionCosts && regionCosts.length > 0 ? regionCosts : fallbackCosts;
+  const postsToShow = blogPosts && blogPosts.length > 0 ? blogPosts : fallbackPosts;
 
   return (
     <section id="about" className="py-16 px-4 bg-gray-50 overflow-hidden">

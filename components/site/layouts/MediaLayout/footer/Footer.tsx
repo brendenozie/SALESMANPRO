@@ -148,7 +148,7 @@ const Footer: React.FC = () => {
                 className="text-gray-400 hover:text-white transition-colors"
                 aria-label={s.channel}
               >
-                {renderSocialIcon(s.channel)}
+                {renderSocialIcon(s.channel.toString())}
               </motion.a>
             ))}
           </div>

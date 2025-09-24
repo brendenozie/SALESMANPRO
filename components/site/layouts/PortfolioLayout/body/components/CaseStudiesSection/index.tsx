@@ -11,6 +11,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { useStoreContext } from '@/contexts/StoreContext';
 import Image from 'next/image';
+import { ICoreValue } from '@/types/typings';
 
 // --- Start of Self-Contained Mock Data and Component Logic ---
 
@@ -40,7 +41,7 @@ interface StoreData {
   name: string;
   slug: string;
   metrics?: Metric[];
-  caseStudies?: CaseStudy[];
+  CoreValue?: ICoreValue[];
 }
 
 // Fallback data for a standalone preview. This mimics the data that would
@@ -57,7 +58,7 @@ const storeData: StoreData = {
     { label: 'Projects Completed', value: '300+', icon: BriefcaseIcon },
     { label: 'Avg. Client ROI', value: '3.5x', icon: ChartBarIcon },
   ],
-  caseStudies: [
+  CoreValue: [
     {
       imageUrl: 'https://images.unsplash.com/photo-1549880461-1250325d97ae?q=80&w=2667&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
       title: 'Strategic Growth Initiative',
@@ -129,21 +130,21 @@ const imageLoader = ({ src, width, quality }: { src: string; width: number; qual
 };
 
 export default function CaseStudiesSection() {
-  const { storeFormData } = useStoreContext() as { storeFormData: StoreData };
+  const { storeFormData } = useStoreContext(); //as { storeFormData: StoreData };
 
   const {
     themeSettings = {},
     metrics = [],
     name,
-    caseStudies = [],
+    Promotion
   } = storeFormData || storeData;
 
-  const primaryColor = themeSettings.primaryColor || '#00A880';
-  const secondaryColor = themeSettings.secondaryColor || '#10B981';
+  const primaryColor = themeSettings?.primaryColor || '#00A880';
+  const secondaryColor = themeSettings?.secondaryColor || '#10B981';
   const accentBg = `${primaryColor}20`;
 
   const caseStudiesToRender = caseStudies.length > 0 ? caseStudies : storeData.caseStudies;
-  const metricsData = metrics.length > 0 ? metrics : storeData.metrics;
+  const metricsData = metrics && metrics.length > 0 ? metrics : storeData.metrics;
 
   return (
     <AnimatePresence>

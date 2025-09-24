@@ -19,11 +19,11 @@ export default function Footer() {
   const [newsletterEmail, setNewsletterEmail] = useState("");
 
   const navLinks = [
-    { label: "Home", href: `/${storeFormData.slug}` },
-    { label: "Destinations", href: `/${storeFormData.slug}/destinations` },
-    { label: "Tours", href: `/${storeFormData.slug}/tours` },
-    { label: "About", href: `/${storeFormData.slug}/about` },
-    { label: "Contact", href: `/${storeFormData.slug}/contact` },
+    { label: "Home", href: `/${storeFormData?.slug}` },
+    { label: "Destinations", href: `/${storeFormData?.slug}/destinations` },
+    { label: "Tours", href: `/${storeFormData?.slug}/tours` },
+    { label: "About", href: `/${storeFormData?.slug}/about` },
+    { label: "Contact", href: `/${storeFormData?.slug}/contact` },
   ];
 
   const handleSubscribe = (e: React.FormEvent) => {
@@ -38,11 +38,11 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-12 pb-12">
         {/* About & Logo */}
         <div className="space-y-4">
-          <Link href={`/${storeFormData.slug}`}>
-            {storeFormData.logoUrl ? (
+          <Link href={`/${storeFormData?.slug}`}>
+            {storeFormData?.logoUrl ? (
               <Image
-                src={storeFormData.logoUrl}
-                alt={storeFormData.name}
+                src={storeFormData?.logoUrl}
+                alt={storeFormData?.name}
                 width={140}
                 height={48}
                 loader={loader}
@@ -50,41 +50,41 @@ export default function Footer() {
               />
             ) : (
               <span className="text-2xl font-bold text-white cursor-pointer">
-                {storeFormData.name}
+                {storeFormData?.name}
               </span>
             )}
           </Link>
           <p className="text-sm">
-            {storeFormData.description ||
+            {storeFormData?.description ||
               "Explore unique travel experiences, curated itineraries, and expert guidance."}
           </p>
           <div className="space-y-2 text-sm">
-            {storeFormData.contactEmail && (
+            {storeFormData?.contactEmail && (
               <div className="flex items-center space-x-2">
                 <EnvelopeIcon className="w-5 h-5 text-green-400" />
                 <a
-                  href={`mailto:${storeFormData.contactEmail}`}
+                  href={`mailto:${storeFormData?.contactEmail}`}
                   className="hover:text-white transition"
                 >
-                  {storeFormData.contactEmail}
+                  {storeFormData?.contactEmail}
                 </a>
               </div>
             )}
-            {storeFormData.contactPhone && (
+            {storeFormData?.contactPhone && (
               <div className="flex items-center space-x-2">
                 <PhoneIcon className="w-5 h-5 text-green-400" />
                 <a
-                  href={`tel:${storeFormData.contactPhone}`}
+                  href={`tel:${storeFormData?.contactPhone}`}
                   className="hover:text-white transition"
                 >
-                  {storeFormData.contactPhone}
+                  {storeFormData?.contactPhone}
                 </a>
               </div>
             )}
-            {storeFormData.address && (
+            {storeFormData?.address && (
               <div className="flex items-start space-x-2">
                 <MapPinIcon className="w-5 h-5 text-green-400 mt-0.5" />
-                <span>{storeFormData.address}</span>
+                <span>{storeFormData?.address}</span>
               </div>
             )}
           </div>
@@ -138,7 +138,7 @@ export default function Footer() {
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
           {/* Social Links */}
           <div className="flex space-x-4">
-            {storeFormData.socialLinks?.map((s) => (
+            {storeFormData?.socialLinks?.map((s) => (
               <a
                 key={s.channel}
                 href={s.url}
@@ -153,7 +153,7 @@ export default function Footer() {
 
           {/* Copyright */}
           <p className="text-sm text-gray-500">
-            &copy; {new Date().getFullYear()} {storeFormData.name}. All rights reserved.
+            &copy; {new Date().getFullYear()} {storeFormData?.name}. All rights reserved.
           </p>
         </div>
       </div>

@@ -23,8 +23,8 @@ export default function Section({
 }: SectionProps) {
   const { storeFormData } = useStoreContext();
   const { themeSettings = {} } = storeFormData || {};
-  const primary = themeSettings.primaryColor || '#10B981';
-  const secondary = themeSettings.secondaryColor || '#3B82F6';
+  const primary = themeSettings?.primaryColor || '#10B981';
+  const secondary = themeSettings?.secondaryColor || '#3B82F6';
 
   const bgClass = clsx({
     'bg-gray-50': background === 'light',

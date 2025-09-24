@@ -144,7 +144,7 @@ export default function DiscoveryCallSection() {
                   <span style={{ color: accentColor }}>
                     {lastWord.replace(/[?!.,]$/, '')}
                   </span>
-                  {lastWord.match(/[?!.,]$/) && lastWord.match(/[?!.,]$/)[0]}
+                  {lastWord.match(/[?!.,]$/) && lastWord.match(/[?!.,]$/)?.[0]}
                 </>
               );
             }

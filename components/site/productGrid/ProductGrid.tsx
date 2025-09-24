@@ -16,7 +16,7 @@ export default function ProductGrid({ title }: any) {
     <Section background="none">
       <div className="max-w-7xl py-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
         {marketplaceListings.map((product: any, idx: number) => {
-          return <ProductCard key={product.id} product={product} primary={primary}/>
+          return <ProductCard key={product.id} product={product} />
         })}
       </div>
     </Section>

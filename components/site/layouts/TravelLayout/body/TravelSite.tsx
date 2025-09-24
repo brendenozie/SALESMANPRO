@@ -1,18 +1,9 @@
 "use client";
 
-import React, { useState, useEffect, useRef, ReactNode } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import Image from "next/image";
-import Link from "next/link";
+import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import {
-  CalendarDaysIcon,
-  ChevronDownIcon,
-  UserGroupIcon,
-} from "@heroicons/react/24/outline";
-
 import { useStoreContext } from "@/contexts/StoreContext";
-import { StoreForm } from "../../../../../types/typings";
 import Testimonials from "./components/TestimonialsSection";
 import Hero from "./components/HeroSection";
 import FilterBar from "./components/FilterBarSection";
@@ -334,14 +325,14 @@ export default function TravelSite() {
   }, [storeFormData]);
 
   // State for the search form is now managed here
-  const [filters, setFilters] = useState<SearchFilters>({
+  const [filters, setFilters] = useState<any>({
     destination: "",
     tripType: "Adventure Travel", // Set a default type
     date: "",
     guests: 2,
   });
   
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = (e: any) => {
     e.preventDefault();
     console.log("Searching with filters:", filters);
     // Add your search/navigation logic here
@@ -386,9 +377,9 @@ export default function TravelSite() {
 
         {/* Market Insights */}
         <MarketInsights
-          virtualTours={storeFormData?.virtualTours}
+          virtualTours={[]}//storeFormData?.virtualTours
           blogPosts={storeFormData?.blogs}
-          regionCosts={storeFormData?.RegionCosts}
+          regionCosts={[]}//storeFormData?.RegionCosts
         />
 
         {/* Virtual Tours */}

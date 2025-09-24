@@ -36,12 +36,12 @@ export default function CtaSection({
     themeSettings = {},
     name,
     slug,
-  } = storeFormData;
+  } = storeFormData || {};
 
   // Theme colors
-  const primaryColor = themeSettings.primaryColor || '#10b981'; // fallback green
+  const primaryColor = themeSettings?.primaryColor || '#10b981'; // fallback green
   const buttonBg = primaryColor;
-  const buttonHoverBg = themeSettings.secondaryColor || '#047857'; // fallback darker shade or secondary
+  const buttonHoverBg = themeSettings?.secondaryColor || '#047857'; // fallback darker shade or secondary
   const overlayColor = 'rgba(0, 0, 0, 0.4)';
 
   // Pull from storeFormData.ctaSection if available, else props, else defaults
@@ -61,7 +61,7 @@ export default function CtaSection({
   // If the href is missing but contactEmail exists, use mailto
   if (
     (!buttonHref || buttonHref === '#') &&
-    storeFormData.contactEmail
+    storeFormData?.contactEmail
   ) {
     buttonHref = `mailto:${storeFormData.contactEmail}`;
   }
@@ -70,9 +70,9 @@ export default function CtaSection({
   const imageUrl =
     ctaSection.imageUrl ||
     propImageUrl ||
-    storeFormData.bannerUrl ||
-    storeFormData.heroSlides?.[0]?.imageUrl ||
-    storeFormData.logoUrl ||
+    storeFormData?.bannerUrl ||
+    storeFormData?.heroSlides?.[0]?.imageUrl ||
+    storeFormData?.logoUrl ||
     '/placeholder-cta.jpg';
 
   return (

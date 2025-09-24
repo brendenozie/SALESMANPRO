@@ -22,7 +22,6 @@ export default function SaaSLayout({ params, children }: SaaSLayoutProps) {
       <Header/>
       {/* Main Content Area */}
       <section className="container">{children}</section>
-
       <Footer/>
     </>
   );

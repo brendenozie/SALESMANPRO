@@ -76,7 +76,7 @@ interface TestimonialCardProps {
 const TestimonialCard: React.FC<TestimonialCardProps> = ({ testimonial, primaryColor }) => {
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     e.currentTarget.onerror = null; // Prevents infinite loop if placeholder also fails
-    const initials = testimonial.authorName.split(' ').map(n => n[0]).join('');
+    const initials = testimonial.authorName?.toString().split(' ').map(n => n[0]).join('');
     e.currentTarget.src = `https://placehold.co/60x60/${primaryColor.replace('#', '')}/FFFFFF?text=${initials}`;
   };
 
@@ -90,7 +90,7 @@ const TestimonialCard: React.FC<TestimonialCardProps> = ({ testimonial, primaryC
         <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-gray-200 dark:border-gray-700 mr-4 flex-shrink-0">
           <Image
             src={testimonial.avatarUrl || `https://placehold.co/60x60/${primaryColor.replace('#', '')}/FFFFFF?text=${testimonial.authorName?.split(' ').map(n => n[0]).join('')}`} // Fallback with initials
-            alt={testimonial.authorName}
+            alt={testimonial.authorName || 'authorName'}
             fill
             className="object-cover"
             loader={loader}

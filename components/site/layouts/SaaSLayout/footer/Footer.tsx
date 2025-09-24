@@ -26,42 +26,42 @@ const loader = ({
 export default function SaasFooter() {
   const { storeFormData } = useStoreContext();
 
-  const primary = storeFormData.themeSettings?.primaryColor || "#4F46E5";
-  const secondary = storeFormData.themeSettings?.secondaryColor || "#3B82F6";
+  const primary = storeFormData?.themeSettings?.primaryColor || "#4F46E5";
+  const secondary = storeFormData?.themeSettings?.secondaryColor || "#3B82F6";
 
   const footerLinks = [
     {
       title: "Product",
       links: [
-        { label: "Features", href: `/${storeFormData.slug}#features` },
-        { label: "Pricing", href: `/${storeFormData.slug}#pricing` },
-        { label: "Docs", href: `/${storeFormData.slug}/docs` },
-        { label: "API", href: `/${storeFormData.slug}/api` },
+        { label: "Features", href: `/${storeFormData?.slug}#features` },
+        { label: "Pricing", href: `/${storeFormData?.slug}#pricing` },
+        { label: "Docs", href: `/${storeFormData?.slug}/docs` },
+        { label: "API", href: `/${storeFormData?.slug}/api` },
       ],
     },
     {
       title: "Company",
       links: [
-        { label: "About Us", href: `/${storeFormData.slug}/about` },
-        { label: "Careers", href: `/${storeFormData.slug}/careers` },
-        { label: "Blog", href: `/${storeFormData.slug}/blog` },
-        { label: "Contact", href: `/${storeFormData.slug}/contact` },
+        { label: "About Us", href: `/${storeFormData?.slug}/about` },
+        { label: "Careers", href: `/${storeFormData?.slug}/careers` },
+        { label: "Blog", href: `/${storeFormData?.slug}/blog` },
+        { label: "Contact", href: `/${storeFormData?.slug}/contact` },
       ],
     },
     {
       title: "Legal",
       links: [
-        { label: "Privacy Policy", href: `/${storeFormData.slug}/privacy` },
-        { label: "Terms of Service", href: `/${storeFormData.slug}/terms` },
-        { label: "Security", href: `/${storeFormData.slug}/security` },
+        { label: "Privacy Policy", href: `/${storeFormData?.slug}/privacy` },
+        { label: "Terms of Service", href: `/${storeFormData?.slug}/terms` },
+        { label: "Security", href: `/${storeFormData?.slug}/security` },
       ],
     },
     {
       title: "Support",
       links: [
-        { label: "Help Center", href: `/${storeFormData.slug}/support` },
-        { label: "API Status", href: `/${storeFormData.slug}/status` },
-        { label: "Community", href: `/${storeFormData.slug}/community` },
+        { label: "Help Center", href: `/${storeFormData?.slug}/support` },
+        { label: "API Status", href: `/${storeFormData?.slug}/status` },
+        { label: "Community", href: `/${storeFormData?.slug}/community` },
       ],
     },
   ];
@@ -72,11 +72,11 @@ export default function SaasFooter() {
       <div className="max-w-7xl mx-auto px-6 py-16 grid grid-cols-1 md:grid-cols-3 gap-12">
         {/* Brand & Contact */}
         <div className="space-y-6">
-          <Link href={`/${storeFormData.slug}`} className="flex items-center space-x-2 cursor-pointer">
-            {storeFormData.logoUrl ? (
+          <Link href={`/${storeFormData?.slug}`} className="flex items-center space-x-2 cursor-pointer">
+            {storeFormData?.logoUrl ? (
               <Image
-                src={storeFormData.logoUrl}
-                alt={storeFormData.name}
+                src={storeFormData?.logoUrl}
+                alt={storeFormData?.name}
                 width={48}
                 height={48}
                 loader={loader}
@@ -91,42 +91,42 @@ export default function SaasFooter() {
                   color: "transparent",
                 }}
               >
-                {storeFormData.name}
+                {storeFormData?.name}
               </span>
             )}
           </Link>
           <p className="text-sm leading-relaxed">
-            {storeFormData.description ||
+            {storeFormData?.description ||
               "Building tools to help your business grow effortlessly."}
           </p>
           <ul className="space-y-4">
-            {storeFormData.contactEmail && (
+            {storeFormData?.contactEmail && (
               <li className="flex items-center space-x-2">
                 <MegaphoneIcon      className="h-5 w-5 text-indigo-400" />
                 <a
-                  href={`mailto:${storeFormData.contactEmail}`}
+                  href={`mailto:${storeFormData?.contactEmail}`}
                   className="hover:text-white transition-colors text-sm truncate"
                 >
-                  {storeFormData.contactEmail}
+                  {storeFormData?.contactEmail}
                 </a>
               </li>
             )}
-            {storeFormData.contactPhone && (
+            {storeFormData?.contactPhone && (
               <li className="flex items-center space-x-2">
                 <PhoneIcon className="h-5 w-5 text-indigo-400" />
                 <a
-                  href={`tel:${storeFormData.contactPhone}`}
+                  href={`tel:${storeFormData?.contactPhone}`}
                   className="hover:text-white transition-colors text-sm"
                 >
-                  {storeFormData.contactPhone}
+                  {storeFormData?.contactPhone}
                 </a>
               </li>
             )}
-            {storeFormData.address && (
+            {storeFormData?.address && (
               <li className="flex items-start space-x-2">
                 <MapPinIcon className="h-5 w-5 mt-0.5 text-indigo-400" />
                 <span className="text-sm leading-snug">
-                  {storeFormData.address}
+                  {storeFormData?.address}
                 </span>
               </li>
             )}
@@ -202,7 +202,7 @@ export default function SaasFooter() {
 
           {/* Social Icons */}
           <div className="flex space-x-4">
-            {storeFormData.socialLinks.map((s) => (
+            {storeFormData?.socialLinks.map((s) => (
               <motion.a
                 key={s.channel}
                 href={s.url}
@@ -211,12 +211,12 @@ export default function SaasFooter() {
                 whileHover={{ scale: 1.1 }}
                 className="bg-gray-800 p-2 rounded-full"
                 style={{ color: primary }}
-                onMouseEnter={(e) =>
+                onMouseEnter={(e : any) =>
                   (e.currentTarget.style.color = secondary)
                 }
-                onMouseLeave={(e) => (e.currentTarget.style.color = primary)}
+                onMouseLeave={(e : any) => (e.currentTarget.style.color = primary)}
               >
-                {s.channel === "twitter" && (
+                {s.channel.toString().toLowerCase() === "twitter" && (
                   <Image
                     src="/icons/twitter.svg"
                     alt="Twitter"
@@ -224,7 +224,7 @@ export default function SaasFooter() {
                     height={20}
                   />
                 )}
-                {s.channel === "linkedin" && (
+                {s.channel.toString().toLowerCase() === "linkedin" && (
                   <Image
                     src="/icons/linkedin.svg"
                     alt="LinkedIn"
@@ -232,7 +232,7 @@ export default function SaasFooter() {
                     height={20}
                   />
                 )}
-                {s.channel === "github" && (
+                {s.channel.toString().toLowerCase() === "github" && (
                   <Image
                     src="/icons/github.svg"
                     alt="GitHub"
@@ -249,7 +249,7 @@ export default function SaasFooter() {
 
       {/* Copyright */}
       <div className="bg-gray-800 text-gray-500 text-center py-4 text-sm">
-        &copy; {new Date().getFullYear()} {storeFormData.name}. All rights reserved.
+        &copy; {new Date().getFullYear()} {storeFormData?.name}. All rights reserved.
       </div>
     </footer>
   );

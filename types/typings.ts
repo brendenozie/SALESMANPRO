@@ -16,7 +16,9 @@ import {
   CompanySettings,
   ListingStatus,
   Prisma,
-  Project
+  Project,
+  ExpertStatus,
+  Expertise
 } from "@prisma/client";
 import "next-auth";
 import { ChangeEvent } from "react";
@@ -237,6 +239,8 @@ export interface Stat {
 
 export interface PricingTier {
   name: string;
+  frequency?: string;
+  badge?: string;
   description?: string;
   price: number;
   duration?: string;
@@ -602,6 +606,25 @@ export interface AcademicLevelOption {
 //## LOCATION INTERFACES
 //################################################################################
 
+export interface Expert {
+  id: string;
+  userId: string;
+  user: User; // always included if you query with include
+  companyId: string;
+  specialty: string;
+  experienceYears?: number;
+  travelsCompleted?: number;
+  photoUrl?: string;
+  bio?: string;
+  contactEmail?: string;
+  contactPhone?: string;
+  status: ExpertStatus;
+  expertise: Expertise[];
+  image?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface ILocation extends Location {
   children?: ILocation[];
 }
@@ -711,7 +734,7 @@ export interface StoreForm {
   CompanyLocation: ICompanyLocation[];
   marketplaceListings: MarketListingForm[];
   Writer: User[];
-  Expert: User[];
+  Expert: Expert[];
   salesAgents: {
     id: string;
     userId: string;

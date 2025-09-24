@@ -20,7 +20,7 @@ export default function Footer() {
     socialLinks,
     StoreCategory,
     themeSettings,
-  } = storeFormData;
+  } = storeFormData || {};
 
   // Use nonprofit’s primary color (or fallback green)
   const primary = themeSettings?.primaryColor || "#10B981";
@@ -38,7 +38,7 @@ export default function Footer() {
             <p className="text-sm text-gray-300">{description}</p>
           )}
           <div className="flex space-x-4 mt-4">
-            {socialLinks.map((s:any) => (
+            {socialLinks?.map((s:any) => (
               <a
                 key={s.channel}
                 href={s.url}
@@ -102,7 +102,7 @@ export default function Footer() {
         <div>
           <h3 className="text-lg font-semibold mb-4 text-white">Programs</h3>
           <ul className="space-y-2 max-h-48 overflow-auto">
-            {StoreCategory.map((cat : any) => (
+            {StoreCategory?.map((cat : any) => (
               <li key={cat.id}>
                 <Link
                   href={`/${slug}/category/${cat.id}`}

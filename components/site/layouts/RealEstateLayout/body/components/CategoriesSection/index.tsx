@@ -101,7 +101,7 @@ type CategoriesSectionProps = {
 };
 
 export default function CategoriesSection({ store }: CategoriesSectionProps) {
-  const rawCategories = (store?.storeFormData?.StoreCategory ?? [])
+  const rawCategories = (store?.StoreCategory ?? [])
     .slice()
     .filter((c) => c.visible ?? true)
     .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
@@ -112,11 +112,11 @@ export default function CategoriesSection({ store }: CategoriesSectionProps) {
 
   const subcategoriesToDisplay: ISubcategory[] = [];
   if (isFewParentCategories) {
-    categoriesToShow.forEach(parentCat => {
+    categoriesToShow.forEach((parentCat:any) => {
       if (Array.isArray(parentCat.subcategories)) {
         subcategoriesToDisplay.push(...parentCat.subcategories
-          .filter(sub => sub.visible ?? true)
-          .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+          .filter((sub:any) => sub.visible ?? true)
+          .sort((a:any, b:any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
         );
       }
     });
@@ -167,7 +167,7 @@ export default function CategoriesSection({ store }: CategoriesSectionProps) {
             {limitedSubcategories.map((subcat) => {
               const imageUrl = `/images/subcategory-${subcat.slug}.jpg`;
               return (
-                <Link key={subcat.id} href={`/${store?.storeFormData?.slug}/subcategory/${subcat.slug}`} passHref>
+                <Link key={subcat.id} href={`/${store?.slug}/subcategory/${subcat.slug}`} passHref>
                   <motion.a
                     className="block relative rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 group
                                    focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-500 focus-visible:ring-offset-4 focus-visible:ring-offset-white dark:focus-visible:ring-offset-gray-900"
@@ -214,7 +214,7 @@ export default function CategoriesSection({ store }: CategoriesSectionProps) {
               const catSlug = cat.categoryId ?? (cat.displayName ?? "").toLowerCase().replace(/\s+/g, '-');
               const imageUrl = cat.category?.image ?? "/images/category-placeholder.jpg";
               return (
-                <Link key={cat.id} href={`/${store?.storeFormData?.slug}/category/${catSlug}`} passHref>
+                <Link key={cat.id} href={`/${store?.slug}/category/${catSlug}`} passHref>
                   <motion.a
                     className="block relative rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 group
                                    focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-500 focus-visible:ring-offset-4 focus-visible:ring-offset-white dark:focus-visible:ring-offset-gray-900"
@@ -259,7 +259,7 @@ export default function CategoriesSection({ store }: CategoriesSectionProps) {
           viewport={{ once: true, amount: 0.5 }}
           transition={{ delay: 0.3, duration: 0.7 }}
         >
-          <Link href={`/${store?.storeFormData?.slug}/categories`} passHref>
+          <Link href={`/${store?.slug}/categories`} passHref>
             <motion.a
               className="inline-flex items-center justify-center px-8 py-4 border border-transparent text-base font-medium rounded-full shadow-lg
                          text-white bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700

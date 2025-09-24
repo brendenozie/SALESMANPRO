@@ -1,11 +1,11 @@
 "use client";
 
-import { ServiceItem } from "@/app/admin/[slug]/services/AdminServicesClient";
+// import { ServiceItem } from "@/app/admin/[slug]/services/AdminServicesClient";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 interface BookingFormProps {
-  service: ServiceItem;
+  service: any;
 }
 
 export default function BookingFormModal({ service }: BookingFormProps) {

@@ -26,7 +26,7 @@ export default function Footer() {
     address,
     socialLinks,
     themeSettings,
-  } = storeFormData;
+  } = storeFormData || {};
 
   const primaryColor = themeSettings?.primaryColor || "#FF5722"; // Deep Orange
   const secondaryColor = themeSettings?.secondaryColor || "#3F51B5"; // Indigo
@@ -85,12 +85,12 @@ export default function Footer() {
                   rel="noopener noreferrer"
                   className="text-gray-400 hover:text-white transition-colors duration-300 transform hover:scale-125"
                   style={{ color: primaryColor }}
-                  onMouseEnter={(e) => (e.currentTarget.style.color = secondaryColor)}
-                  onMouseLeave={(e) => (e.currentTarget.style.color = primaryColor)}
+                  onMouseEnter={(e : any) => (e.currentTarget.style.color = secondaryColor)}
+                  onMouseLeave={(e : any) => (e.currentTarget.style.color = primaryColor)}
                   whileHover={{ scale: 1.25 }}
                 >
                   {/* Placeholder for actual social icons. Replace with FaFacebook, etc. if using react-icons */}
-                  <span className="text-xl capitalize">{s.channel.charAt(0).toUpperCase() + s.channel.slice(1)}</span>
+                  <span className="text-xl capitalize">{s.channel.toString().charAt(0).toUpperCase() + s.channel.toString().slice(1)}</span>
                   {/* Example if using react-icons/fa:
                   {s.channel === 'facebook' && <FaFacebook className="h-6 w-6" />}
                   {s.channel === 'instagram' && <FaInstagram className="h-6 w-6" />}

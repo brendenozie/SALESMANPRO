@@ -32,7 +32,7 @@ export default function Header() {
   const [scrolled, setScrolled] = useState(false);
 
   const { name, slug, logoUrl, contactEmail, contactPhone, socialLinks, themeSettings } =
-    storeFormData;
+    storeFormData || {};
 
   const primaryColor = themeSettings?.primaryColor || "#FF5722"; // Deep Orange
   const secondaryColor = themeSettings?.secondaryColor || "#3F51B5"; // Indigo
@@ -128,7 +128,7 @@ export default function Header() {
                 <ShoppingCartIcon className="h-6 w-6" />
                 {cart.length > 0 && (
                   <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
-                    {cart.reduce((sum, item) => sum + item.quantity, 0)}
+                    {cart.reduce((sum : any, item : any) => sum + item.quantity, 0)}
                   </span>
                 )}
               </motion.button>
@@ -147,7 +147,7 @@ export default function Header() {
                       <p className="text-sm text-gray-500">Your cart is empty.</p>
                     ) : (
                       <div className="space-y-4">
-                        {cart.map((item) => (
+                        {cart.map((item : any) => (
                           <div key={item.id} className="flex items-center justify-between">
                             <div className="flex items-center space-x-3">
                               {item.images?.[0] && (

@@ -38,34 +38,105 @@ const fallbackEvents: IEvent[] = [
     id: 'fb-event-1',
     title: 'Annual Charity Run',
     description: 'Join us for our annual charity run to support children\'s education programs and community development initiatives.',
-    eventDate: '2025-08-10T08:00:00Z',
-    eventTime: '8:00 AM',
+    startDateTime: new Date(), //'2025-08-10T08:00:00Z',
+    endDateTime: new Date(),
+    // eventTime: '8:00 AM',
     location: 'Central Park, NYC',
     imageUrl: 'https://images.unsplash.com/photo-1532629391091-c247900b1713?q=80&w=2670&auto=format&fit=crop',
-    link: '#',
-    order: 1,
+    summary: null,
+    onlineMeetingLink: null,
+    videoUrl: null,
+    projectId: null,
+    eventType: 'GENERAL',
+    eventStatus: 'SCHEDULED',
+    organizerId: '',
+    companyId: null,
+    audience: 'ALL',
+    targetAcademicLevelIds: [],
+    targetCourseIds: [],
+    targetEducatorIds: [],
+    targetStudentIds: [],
+    targetDepartmentIds: [],
+    targetParentIds: [],
+    isRegistrationRequired: false,
+    maxCapacity: null,
+    isPaid: false,
+    price: null,
+    contactPerson: null,
+    contactEmail: null,
+    contactPhone: null,
+    createdAt: null,
+    updatedAt: null
   },
   {
     id: 'fb-event-2',
     title: 'Volunteer Appreciation Picnic',
     description: 'A day to celebrate and thank our incredible volunteers for their dedication and hard work throughout the year.',
-    eventDate: '2025-09-01T12:00:00Z',
-    eventTime: '12:00 PM',
+    // startDateTime: '2025-09-01T12:00:00Z',
+    // eventTime: '12:00 PM',
+    startDateTime: new Date(), //'2025-08-10T08:00:00Z',
+    endDateTime: new Date(),
     location: 'Community Gardens, CA',
     imageUrl: 'https://images.unsplash.com/photo-1518621736915-f3b160292723?q=80&w=2670&auto=format&fit=crop',
-    link: '#',
-    order: 2,
+    summary: null,
+    onlineMeetingLink: null,
+    videoUrl: null,
+    projectId: null,
+    eventType: 'GENERAL',
+    eventStatus: 'SCHEDULED',
+    organizerId: '',
+    companyId: null,
+    audience: 'ALL',
+    targetAcademicLevelIds: [],
+    targetCourseIds: [],
+    targetEducatorIds: [],
+    targetStudentIds: [],
+    targetDepartmentIds: [],
+    targetParentIds: [],
+    isRegistrationRequired: false,
+    maxCapacity: null,
+    isPaid: false,
+    price: null,
+    contactPerson: null,
+    contactEmail: null,
+    contactPhone: null,
+    createdAt: null,
+    updatedAt: null
   },
   {
     id: 'fb-event-3',
     title: 'Winter Coat Drive',
     description: 'Help us collect warm coats for children and families in need this winter season to ensure everyone stays warm.',
-    eventDate: '2025-10-20T09:00:00Z',
-    eventTime: '9:00 AM - 4:00 PM',
+    // eventDate: '2025-10-20T09:00:00Z',
+    // eventTime: '9:00 AM - 4:00 PM',
+    startDateTime: new Date(), //'2025-08-10T08:00:00Z',
+    endDateTime: new Date(),
     location: 'Headquarters Lobby',
     imageUrl: 'https://images.unsplash.com/photo-1549429168-f9d936162391?q=80&w=2670&auto=format&fit=crop',
-    link: '#',
-    order: 3,
+    summary: null,
+    onlineMeetingLink: null,
+    videoUrl: null,
+    projectId: null,
+    eventType: 'GENERAL',
+    eventStatus: 'SCHEDULED',
+    organizerId: '',
+    companyId: null,
+    audience: 'ALL',
+    targetAcademicLevelIds: [],
+    targetCourseIds: [],
+    targetEducatorIds: [],
+    targetStudentIds: [],
+    targetDepartmentIds: [],
+    targetParentIds: [],
+    isRegistrationRequired: false,
+    maxCapacity: null,
+    isPaid: false,
+    price: null,
+    contactPerson: null,
+    contactEmail: null,
+    contactPhone: null,
+    createdAt: null,
+    updatedAt: null
   },
 ];
 
@@ -116,7 +187,7 @@ export default function EventsSection() {
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
         >
           {eventsToRender.slice(0, 3).map((evt) => {
-            const formattedDate = formatEventDate(evt.eventDate);
+            const formattedDate = formatEventDate(evt.startDateTime.toLocaleDateString());
             return (
               <motion.div
                 key={evt.id}
@@ -148,7 +219,7 @@ export default function EventsSection() {
                   <ul className="text-sm text-gray-500 space-y-2">
                     <li className="flex items-center">
                       <ClockIcon className="w-5 h-5 mr-2" style={{ color: primaryColor }} />
-                      <span>{evt.eventTime}</span>
+                      <span>{evt.startDateTime.getTime()}</span>
                     </li>
                     {evt.location && (
                       <li className="flex items-center">
@@ -157,7 +228,7 @@ export default function EventsSection() {
                       </li>
                     )}
                   </ul>
-                  <Link href={evt.link} onClick={(e) => { e.preventDefault(); mockRouterPush(evt.link); }} className="mt-6 block w-full text-center px-6 py-3 rounded-full font-semibold text-white shadow-lg transition-transform duration-300 transform group-hover:scale-105" style={{ backgroundColor: primaryColor }}>
+                  <Link href={evt.id} onClick={(e) => { e.preventDefault(); mockRouterPush(evt.id); }} className="mt-6 block w-full text-center px-6 py-3 rounded-full font-semibold text-white shadow-lg transition-transform duration-300 transform group-hover:scale-105" style={{ backgroundColor: primaryColor }}>
                     Learn More
                   </Link>
                 </div>

@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 
 // Mocking the image loader since Next.js Image is not available
 // This loader is not directly used in this section but kept for consistency if needed elsewhere.
-const customLoader = ({ src, width, quality }) => {
+const customLoader = ({ src, width, quality }:any) => {
   return `${src}?w=${width}&q=${quality || 75}`;
 };
 

@@ -1,13 +1,8 @@
 // File: components/site/layouts/ServicesLayout/ServiceSite.tsx
 
-import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import Image from "next/image";
-import Link from "next/link";
-import { motion } from "framer-motion";
+import React, {  } from "react";
 
 import { useStoreContext } from "@/contexts/StoreContext";
-import bannerFallback from "../../../../../assets/homebanner.png";
 import HeroSection from "../components/HeroSection";
 import AboutSection from "../components/aboutUs";
 import ExcellenceSection from "../components/ExcellenceSection";
@@ -18,7 +13,6 @@ import FAQSection from "../components/FAQSection";
 import CleaningTipsSection from "../components/CleaningTipsSection";
 import GetStartedSection from "../components/GetStartedSection";
 import BookingFormSection from "../components/BookingFormSection";
-
 
 const loader = ({
   src,

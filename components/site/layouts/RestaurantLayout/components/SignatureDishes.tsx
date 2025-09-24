@@ -221,7 +221,7 @@ export default function SignatureDishes() {
                         className="text-xl md:text-2xl font-extrabold"
                         style={{ color: primaryColor }}
                       >
-                        ${dish?.finalPrice?.toFixed(2) || dish?.price?.toFixed(2)}
+                        ${dish?.finalPrice?.toFixed(2) || dish?.sellingPrice?.toFixed(2)}
                       </span>
                     </div>
                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 flex-1 line-clamp-3">
@@ -234,14 +234,14 @@ export default function SignatureDishes() {
                         <StarIcon
                           key={i}
                           className={`h-5 w-5 ${
-                            i < Math.floor(dish.rating || 0)
+                            i < Math.floor(0) //dish.rating ||
                               ? "text-yellow-400"
                               : "text-gray-300 dark:text-gray-600"
                           }`}
                         />
                       ))}
                       <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">
-                        ({(dish.rating || 0).toFixed(1)})
+                        ({( 0).toFixed(1)})//dish.rating ||
                       </span>
                     </div>
 

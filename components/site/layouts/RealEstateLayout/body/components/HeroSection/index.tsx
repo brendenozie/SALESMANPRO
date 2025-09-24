@@ -171,7 +171,7 @@ export default function HeroSection({
   const [isSubcategoryDropdownOpen, setIsSubcategoryDropdownOpen] = useState<boolean>(false);
   const [isLocationInputFocused, setIsLocationInputFocused] = useState<boolean>(false);
 
-  const categories = (store?.storeFormData?.StoreCategory ?? [])
+  const categories = (store?.StoreCategory ?? [])
     .filter((c) => c.visible ?? true)
     .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
 

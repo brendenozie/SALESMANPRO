@@ -21,7 +21,7 @@ export default function Footer() {
     contactPhone,
     socialLinks,
     themeSettings,
-  } = storeFormData;
+  } = storeFormData || {};
 
   const primary = themeSettings?.primaryColor || "#10B981"; // emerald-500
   const secondary = themeSettings?.secondaryColor || "#F59E0B"; // amber-500
@@ -43,7 +43,7 @@ export default function Footer() {
             Delivering exceptional properties and personalized service to help you find your dream home.
           </p>
           <div className="flex space-x-4 mt-4">
-            {socialLinks.map((s) => (
+            {socialLinks?.map((s) => (
               <a
                 key={s.channel}
                 href={s.url}
@@ -54,7 +54,7 @@ export default function Footer() {
                 onMouseEnter={(e) => (e.currentTarget.style.color = secondary)}
                 onMouseLeave={(e) => (e.currentTarget.style.color = primary)}
               >
-                {s.channel.charAt(0).toUpperCase() + s.channel.slice(1)}
+                {s.channel.toString().charAt(0).toUpperCase() + s.channel.toString().slice(1)}
               </a>
             ))}
           </div>
