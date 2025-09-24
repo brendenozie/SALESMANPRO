@@ -17,19 +17,22 @@ import SleepTapeAd from './components/SleepTapeAd';
 import Trending from './components/Trending';
 import AllProducts from './components/AllProducts';
 import { StoreForm } from '@/types/typings';
+import { useStoreContext } from '@/contexts/StoreContext';
 
-type EcommerceSiteProps = {
-  storeData: StoreForm;
-};
+// type EcommerceSiteProps = {
+//   storeData: StoreForm;
+// };
 
-export default function EcommerceSite({ storeData }: EcommerceSiteProps) {
+export default function EcommerceSite() {
+  const { storeFormData } = useStoreContext();
+
   const {
     StoreCategory = [],
     marketplaceListings = [],
     testimonials = [],
     awards = [],
     promotions = [],
-  } = storeData || {};
+  } = storeFormData || {};
 
   const products = marketplaceListings.length;
   const customers = 0; // Or from your `storeData`
@@ -38,11 +41,11 @@ export default function EcommerceSite({ storeData }: EcommerceSiteProps) {
 
   return (
     <>
-      <HeroSlider storeFormData={storeData} />
-      <CategorySection  storeFormData={storeData} />
+      <HeroSlider storeFormData={storeFormData} />
+      <CategorySection  storeFormData={storeFormData} />
       <PromoSection promotions={promotions} />
       <PopularProducts />
-      <MetricsSection storeFormData={storeData} />
+      <MetricsSection storeFormData={storeFormData} />
       <DailyBestSells />
       <SleepTapeAd />
       <Trending />

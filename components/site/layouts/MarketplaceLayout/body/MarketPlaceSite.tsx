@@ -9,6 +9,7 @@ import CategoryCarousel from "./components/CategorySection";
 import StorePageSection from "./components/StorePageSection";
 import { StoreForm } from "@/types/typings";
 import ReviewsSection from "./components/ReviewsSection";
+import { useStoreContext } from "@/contexts/StoreContext";
 
 // Sample store data
 const store = {
@@ -43,12 +44,12 @@ const store = {
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
-type EcommerceSiteShoesProps = {
-  storeData: StoreForm;
-};
 
-export default function MarketplaceSite({ storeData }: EcommerceSiteShoesProps) {
 
+export default function MarketplaceSite() {
+
+  const { storeFormData } = useStoreContext();
+  
   const router = useRouter();
   const [categories, setCategories] = useState<any[]>([]);
   const [featured, setFeatured] = useState<any[]>([]);
@@ -66,9 +67,9 @@ export default function MarketplaceSite({ storeData }: EcommerceSiteShoesProps) 
   return (
     <div>
       
-       <HeroBanner storeFormData={storeData} />
+       <HeroBanner storeFormData={storeFormData} />
 
-       <CategoryCarousel storeFormData={storeData}  />
+       <CategoryCarousel storeFormData={storeFormData}  />
 
         <StorePageSection />
           

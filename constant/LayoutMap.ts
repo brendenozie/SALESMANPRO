@@ -1,7 +1,7 @@
 // constants/layoutMap.ts
 // import EcommerceHeaderLayout from '@/components/site/layouts/EcommerceHeaderLayout';
 // import ServicesHeaderLayout from '@/components/site/layouts/ServicesHeaderLayout';
-import BookingsHeaderLayout from '@/components/site/layouts/BookingsLayout';
+import BookingsHeaderLayout from '@/components/site/layouts/BookingsLayout/header/Header';
 // import PortfolioHeaderLayout from '@/components/site/layouts/PortfolioHeaderLayout';
 import BlogHeaderLayout from '@/components/site/layouts/BlogLayout';
 // import DirectoryHeaderLayout from '@/components/site/layouts/DirectoryHeaderLayout';
