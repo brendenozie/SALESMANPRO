@@ -1,7 +1,7 @@
 // components/AddToPodcastModal.tsx
 "use client";
 
-import { StoreCategory } from "@/types/typings";
+import { IStoreCategory } from "@/types/typings";
 import React, { useState, useEffect } from "react";
 
 // Assuming StoreCategory is defined elsewhere and has categoryId and displayName
@@ -42,7 +42,7 @@ interface AddToPodcastModalProps {
   setShowModal: (show: boolean) => void;
   podcastToEdit: Podcast | null; // Null for adding, Podcast object for editing
   companyId: string;
-  categories: StoreCategory[]; // To populate the category dropdown/multiselect
+  categories: IStoreCategory[]; // To populate the category dropdown/multiselect
   onSuccess?: () => void; // Callback to refresh data after success
 }
 
@@ -432,7 +432,7 @@ export default function AddToPodcastModal({
               className="mt-1 block w-full border border-gray-300 rounded-xl shadow-sm p-3 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-gray-800 h-36 custom-select"
             >
               {categories.map((cat) => (
-                <option key={cat.categoryId} value={cat.categoryId}>
+                <option key={cat.categoryId} value={cat.categoryId || ''}>
                   {cat.displayName}
                 </option>
               ))}

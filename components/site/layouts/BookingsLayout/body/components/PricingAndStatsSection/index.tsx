@@ -80,7 +80,7 @@ export default function PricingAndStatsSection() {
     const combinedStats = useMemo(() => {
         // Here we'd ideally merge `stats` and `metrics` from the actual data.
         // For this example, we'll just use the `stats` array.
-        return stats.filter(s => s.value !== undefined);
+        return stats?.filter(s => s.value !== undefined);
     }, [stats]);
 
     return (
@@ -109,7 +109,7 @@ export default function PricingAndStatsSection() {
                     </motion.p>
 
                     <div className="mt-16 grid grid-cols-2 lg:grid-cols-4 gap-8">
-                        {combinedStats.map((item, i) => (
+                        {combinedStats?.map((item, i) => (
                             <motion.div
                                 key={item.label}
                                 className="bg-white rounded-3xl p-8 shadow-lg border border-gray-200 flex flex-col items-center justify-center transition-all duration-300 transform hover:-translate-y-2 hover:shadow-2xl"
@@ -129,7 +129,7 @@ export default function PricingAndStatsSection() {
                                     />
                                 )}
                                 <h5 className="text-5xl lg:text-6xl font-extrabold text-emerald-600 leading-tight">
-                                    <CountUp end={parseFloat(item.value)} />
+                                    <CountUp end={parseFloat((isNaN(item.value) ? 0 : item.value))} />
                                     {String(item.value).includes('+') && '+'}
                                 </h5>
                                 <p className="mt-2 text-lg font-medium text-gray-700">{item.label}</p>

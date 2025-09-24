@@ -211,7 +211,7 @@ export default function BannerLogoAccordion({
               <textarea
                 rows={2}
                 placeholder="Description"
-                value={cv.description}
+                value={cv.description || ''}
                 onChange={(e) =>
                   handleUpdateCoreValue(i, "description", e.target.value)
                 }
@@ -220,7 +220,7 @@ export default function BannerLogoAccordion({
               <input
                 type="text"
                 placeholder="Icon name (e.g. StarIcon)"
-                value={cv.icon}
+                value={cv.icon || ''}
                 onChange={(e) =>
                   handleUpdateCoreValue(i, "icon", e.target.value)
                 }

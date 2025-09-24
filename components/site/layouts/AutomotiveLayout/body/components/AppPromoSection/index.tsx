@@ -11,12 +11,20 @@ import {
 } from "@heroicons/react/24/outline";
 import Link from "next/link"; // For the CTA link
 
+import clsx from "clsx";
 import Image from "next/image"; // For optimized images
 
 // Mocking the image loader for demonstration purposes
 const customLoader = ({ src, width, quality }: any) => {
   return `${src}?w=${width}&q=${quality || 75}`;
 };
+
+// Default fallback screenshots
+const screenshots = [
+  "https://via.placeholder.com/300x600.png?text=Screenshot+1",
+  "https://via.placeholder.com/300x600.png?text=Screenshot+2",
+  "https://via.placeholder.com/300x600.png?text=Screenshot+3",
+];
 
 // Animation variants for staggered reveal (reused for consistency)
 const containerVariants = {

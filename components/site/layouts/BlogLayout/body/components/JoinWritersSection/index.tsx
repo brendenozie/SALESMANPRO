@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 
 // SVG Icons for the feature cards
-const Icon = ({ pathData, className }) => (
+const Icon = ({ pathData, className }:any) => (
   <svg className={className} fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
     <path d={pathData} />
   </svg>

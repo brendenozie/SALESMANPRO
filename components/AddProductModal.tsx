@@ -186,128 +186,136 @@ function useProductForm(
   const getInitial = useCallback((): ProductForm => {
     const p = product || {}; // Ensure p is an object even if product is null
     return {
-        id: p.id || '',
-        companyId, // Directly use companyId passed as prop
-        name: p.name || '',
-        description: p.description || '',
-        longDescription: p.longDescription || '', // New
-        tags: p.tags || [],
-        category: p.category || null,
-        subCategory: p.subCategory || null,
-        subCategoryName: p.subCategoryName || '',
-        brand: p.brand || null,
+  id: p.id || '',
+  companyId, // Directly use companyId passed as prop
+  name: p.name || '',
+  description: p.description || '',
+  longDescription: p.longDescription || '', // New
+  tags: p.tags || [],
+  category: p.category || null,
+  subCategory: p.subCategory || null,
+  subCategoryName: p.subCategoryName || '',
+  brand: p.brand || null,
 
-        model: p.model || '',
-        color: p.color || [],
-        size: p.size || [],
-        weight: p.weight || '',
-        condition: p.condition || '',
-        dimensions: p.dimensions || '', // Corrected to dimensions
-        material: p.material || [], // Default to empty array for string | string[]
+  model: p.model || '',
+  color: p.color || [],
+  size: p.size || [],
+  weight: p.weight || [],
+  condition: p.condition || '',
+  dimensions: p.dimensions || '', // Corrected to dimensions
+  material: p.material || [], // Default to empty array for string | string[]
 
-        images: p.images || [],
-        video: p.video || null,
-        digitalUrl: p.digitalUrl || '',
-        autoDeliver: !!p.autoDeliver,
+  images: p.images || [],
+  video: p.video || null,
+  digitalUrl: p.digitalUrl || '',
+  autoDeliver: !!p.autoDeliver,
 
-        isAvailable: p.isAvailable ?? false,
-        isOnOffer: p.isOnOffer ?? false,
-        isFlashDeal: p.isFlashDeal ?? false,
-        isNewArrival: p.isNewArrival ?? false,
-        isDiscounted: p.isDiscounted ?? false,
-        isFeatured: p.isFeatured ?? false,
+  isAvailable: p.isAvailable ?? false,
+  isOnOffer: p.isOnOffer ?? false,
+  isFlashDeal: p.isFlashDeal ?? false,
+  isNewArrival: p.isNewArrival ?? false,
+  isDiscounted: p.isDiscounted ?? false,
+  isFeatured: p.isFeatured ?? false,
 
-        quantity: p.quantity ?? 1, // Default quantity to 1
-        costPrice: p.costPrice ?? 0,
-        sellingPrice: p.sellingPrice ?? 0,
-        discount: p.discount ?? 0,
-        finalPrice: p.finalPrice ?? 0,
-        profitMargin: p.profitMargin ?? 0,
-        pricingTiers: p.pricingTiers || [], // New: Initialized
+  quantity: p.quantity ?? 1, // Default quantity to 1
+  costPrice: p.costPrice ?? 0,
+  sellingPrice: p.sellingPrice ?? 0,
+  discount: p.discount ?? 0,
+  finalPrice: p.finalPrice ?? 0,
+  profitMargin: p.profitMargin ?? 0,
+  pricingTiers: p.pricingTiers || [], // New: Initialized
 
-        startDealDate: p.startDealDate || null,
-        endDealDate: p.endDealDate || null,
+  startDealDate: p.startDealDate || null,
+  endDealDate: p.endDealDate || null,
 
-        make: p.make || '',
-        trim: p.trim || '',
-        type: p.type || '',
-        mileage: p.mileage || '',
-        engineType: p.engineType || '',
-        engineSize: p.engineSize ?? 0, // New: Initialized as number
-        transmission: p.transmission || '',
-        drivetrain: p.drivetrain || '',
-        vin: p.vin || '',
-        logbookStatus: p.logbookStatus || 'Available',
-        serviceHistory: p.serviceHistory || 'Full',
-        negotiable: p.negotiable ?? false,
-        financingAvailable: p.financingAvailable ?? false,
-        tradeIn: p.tradeIn ?? false,
-        features: p.features || [],
+  make: p.make || '',
+  trim: p.trim || '',
+  type: p.type || '',
+  mileage: p.mileage || '',
+  engineType: p.engineType || '',
+  engineSize: p.engineSize ?? 0, // New: Initialized as number
+  transmission: p.transmission || '',
+  drivetrain: p.drivetrain || '',
+  vin: p.vin || '',
+  logbookStatus: p.logbookStatus || 'Available',
+  serviceHistory: p.serviceHistory || 'Full',
+  negotiable: p.negotiable ?? false,
+  financingAvailable: p.financingAvailable ?? false,
+  tradeIn: p.tradeIn ?? false,
+  features: p.features || [],
 
-        // New vehicle-related fields
-        horsepower: p.horsepower ?? 0, // New: Initialized as number
-        torque: p.torque ?? 0, // New: Initialized as number
-        fuelType: p.fuelType || '', // New
-        fuelEconomy: p.fuelEconomy || '', // New
+  // New vehicle-related fields
+  horsepower: p.horsepower ?? 0, // New: Initialized as number
+  torque: p.torque ?? 0, // New: Initialized as number
+  fuelType: p.fuelType || '', // New
+  fuelEconomy: p.fuelEconomy || '', // New
 
+  // New ownership-related fields
+  previousOwners: p.previousOwners ?? 0, // New: Initialized as number
+  tireCondition: p.tireCondition || '', // New
+  accidentalHistory: p.accidentalHistory ?? false, // New: Initialized as boolean
 
-        // New ownership-related fields
-        previousOwners: p.previousOwners ?? 0, // New: Initialized as number
-        tireCondition: p.tireCondition || '', // New
-        accidentalHistory: p.accidentalHistory ?? false, // New: Initialized as boolean
+  author: p.author || '',
+  publisher: p.publisher || '',
+  isbn: p.isbn || '',
 
-        author: p.author || '',
-        publisher: p.publisher || '',
-        isbn: p.isbn || '',
+  fabricComposition: p.fabricComposition || '',
+  careInstructions: p.careInstructions || '',
 
-        fabricComposition: p.fabricComposition || '',
-        careInstructions: p.careInstructions || '',
+  energyRating: p.energyRating || '',
+  warrantyPeriod: p.warrantyPeriod || '',
+  // dimensions handled above, so no duplicate here
+  ingredients: p.ingredients || '',
+  usageInstructions: p.usageInstructions || '',
+  expirationDate: p.expirationDate || null,
 
-        energyRating: p.energyRating || '',
-        warrantyPeriod: p.warrantyPeriod || '',
-        // dimensions handled above, so no duplicate here
-        ingredients: p.ingredients || '',
-        usageInstructions: p.usageInstructions || '',
-        expirationDate: p.expirationDate || null,
+  option: p.option || [],
+  amenities: p.amenities || [],
 
-        option: p.option || [],
-        amenities: p.amenities || [],
+  bedrooms: p.bedrooms ?? [], // Initialized as number
+  studios: p.studios ?? [], // Initialized as number
+  bathrooms: p.bathrooms ?? "", // Initialized as number
+  area: p.area || '',
 
-        bedrooms: p.bedrooms ?? [], // Initialized as number
-        studios: p.studios ?? [], // Initialized as number
-        bathrooms: p.bathrooms ?? "", // Initialized as number
-        area: p.area || '',
+  propertyTypeId: p.propertyTypeId || '',
+  serviceSchedule: p.serviceSchedule || '',
 
-        propertyTypeId: p.propertyTypeId || '',
-        serviceSchedule: p.serviceSchedule || '',
+  year: p.year ?? new Date().getFullYear(), // Initialized as number, default to current year
+  availabilityStart: p.availabilityStart || '',
+  availabilityEnd: p.availabilityEnd || '',
 
-        year: p.year ?? new Date().getFullYear(), // Initialized as number, default to current year
-        availabilityStart: p.availabilityStart || '',
-        availabilityEnd: p.availabilityEnd || '',
+  location: p.location || {}, // Default to empty object
+  locationName: p.locationName || '',
+  latitude: p.latitude ?? null,
+  longitude: p.longitude ?? null,
+  contact: p.contact || '',
+  contactName: p.contactName || '',
+  email: p.email || '',
 
-        location: p.location || {}, // Default to empty object
-        locationName: p.locationName || '',
-        latitude: p.latitude ?? null,
-        longitude: p.longitude ?? null,
-        contact: p.contact || '',
-        contactName: p.contactName || '',
-        email: p.email || '',
+  status: p.status || 'ACTIVE',
+  collectionId: p.collectionId || '',
 
-        status: p.status || 'ACTIVE',
-        collectionId: p.collectionId || '',
+  // Optional fields, ensure they are correctly initialized as undefined or null if not present
+  hourlyRate: p.hourlyRate,
+  minimumHours: p.minimumHours,
+  minNoticePeriod: p.minNoticePeriod,
+  maxBookingAhead: p.maxBookingAhead,
+  totalCapacity: p.totalCapacity,
+  deliveryMethod: p.deliveryMethod,
+  fulfillmentStatus: p.fulfillmentStatus,
+  providerRating: p.providerRating,
+  bookingSlots: p.bookingSlots,
+  applianceDimensions: null,
 
-        // Optional fields, ensure they are correctly initialized as undefined or null if not present
-        hourlyRate: p.hourlyRate,
-        minimumHours: p.minimumHours,
-        minNoticePeriod: p.minNoticePeriod,
-        maxBookingAhead: p.maxBookingAhead,
-        totalCapacity: p.totalCapacity,
-        deliveryMethod: p.deliveryMethod,
-        fulfillmentStatus: p.fulfillmentStatus,
-        providerRating: p.providerRating,
-        bookingSlots: p.bookingSlots,
-        applianceDimensions: null
-      };
+  requiredClientInfo: [],
+
+  delivery: false,
+  paymentOption: '',
+
+  createdAt: new Date(), 
+  updatedAt: new Date(), 
+  
+};
   }, [product, companyId]); // Depend on product and companyId
 
   const [formData, setFormData] = useState<ProductForm>(getInitial);
@@ -403,7 +411,7 @@ export default function AddProductModal({
   );
 
   const handleCategoryChange = useCallback(
-    (cat: StoreCategory | null) => updateField('category', cat),
+    (cat: IStoreCategory | null) => updateField('category', cat),
     [updateField]
   );
   const handleSubCategoryChange = useCallback(

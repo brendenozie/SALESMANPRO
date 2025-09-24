@@ -5,7 +5,7 @@ import { EnvelopeIcon } from '@heroicons/react/24/solid';
 const App = () => {
   const [email, setEmail] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e:any) => {
     e.preventDefault();
     // In a real application, you would handle the form submission here.
     console.log('Subscribed with email:', email);

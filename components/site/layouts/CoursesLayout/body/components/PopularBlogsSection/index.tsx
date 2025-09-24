@@ -149,7 +149,7 @@ export default function LatestEventsSection() {
 
   // Determine which events to render: dynamic or fallback
   const eventsToRender = Array.isArray(storeFormData?.events) && storeFormData.events.length > 0
-    ? storeFormData.events.sort((a, b) => (a.order || 0) - (b.order || 0)) // Sort by order
+    ? storeFormData.events//.sort((a, b) => (a.order || 0) - (b.order || 0)) // Sort by order
     : fallbackEvents;
 
   const mainEvent = eventsToRender[0]; // Assuming the first event is the main one
@@ -252,7 +252,7 @@ export default function LatestEventsSection() {
             >
               <div className="relative w-full h-72 sm:h-80 overflow-hidden">
                 <Image
-                  src={mainEvent.imageUrl}
+                  src={mainEvent.imageUrl || 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'}
                   alt={mainEvent.title}
                   fill
                   className="object-cover transition-transform duration-500 group-hover:scale-105"

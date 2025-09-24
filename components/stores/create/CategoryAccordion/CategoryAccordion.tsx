@@ -69,7 +69,7 @@ export default function CategoryTree({
 
     const allFilteredIds = useMemo(() => {
         return new Set(filteredData.flatMap(cat => [
-            ...cat.subcategories.map(c => c.id),
+            ...cat.subcategories?.map(c => c.id) || [],
             ...(cat.allBrands || [])
         ]));
     }, [filteredData]);

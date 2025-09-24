@@ -138,7 +138,7 @@ const HeroSection = () => {
           className="absolute inset-0"
         >
           <img
-            src={currentSlide.imageUrl}
+            src={currentSlide.imageUrl || 'https://placehold.co/1200x800/1E90FF/FFFFFF?text=AI+Future' }
             alt={currentSlide.headline || 'Hero Image'}
             className="w-full h-full object-cover"
             onError={handleImageError}

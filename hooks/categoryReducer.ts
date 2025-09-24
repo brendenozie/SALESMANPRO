@@ -44,7 +44,7 @@ export function categoryReducer(state: SelectedState, action: CategoryAction): S
         // Parent doesn't exist, so add it fully selected
         newState[parent.id] = {
           ...createEmptyParent(parent),
-          subcategories: [...parent.subcategories],
+          subcategories: [...parent.subcategories || []],
           allBrands: [...(parent.allBrands || [])],
         };
       }
@@ -151,13 +151,13 @@ export function categoryReducer(state: SelectedState, action: CategoryAction): S
         // Build the new selections for the current context
         const newContextSelections: SelectedState = {};
         for (const parent of availableForContext) {
-            const matchedSubs = parent.subcategories.filter(sub => ids.has(sub.id));
+            const matchedSubs = parent.subcategories?.filter(sub => ids.has(sub.id));
             const matchedBrands = (parent.allBrands || []).filter(brand => ids.has(brand));
 
-            if (matchedSubs.length > 0 || matchedBrands.length > 0) {
+            if (matchedSubs && matchedSubs?.length > 0 || matchedBrands.length > 0) {
                 newContextSelections[parent.id] = {
                     ...createEmptyParent(parent),
-                    subcategories: matchedSubs,
+                    subcategories: matchedSubs || [],
                     allBrands: matchedBrands,
                 };
             }

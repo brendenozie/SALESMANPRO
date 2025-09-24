@@ -5,12 +5,12 @@ import { useStoreContext } from '@/contexts/StoreContext';
 // Mocking the context hook to make the component runnable.
 // In your actual application, you would use your real StoreContext.
 // const useStoreContext = () => ({
-//   storeFormData: {
-//     slug: 'my-blog',
-//     name: 'GLOBAL INSIGHTS',
-//     logoUrl: 'https://placehold.co/40x40/EF4444/FFFFFF?text=GI', // Using a placeholder that matches the new theme
-//     themeSettings: { primaryColor: '#EF4444', secondaryColor: '#EC4899' }, // Red and Pink to match the Hero
-//   },
+  // storeFormData: {
+  //   slug: 'my-blog',
+  //   name: 'GLOBAL INSIGHTS',
+  //   logoUrl: 'https://placehold.co/40x40/EF4444/FFFFFF?text=GI', // Using a placeholder that matches the new theme
+  //   themeSettings: { primaryColor: '#EF4444', secondaryColor: '#EC4899' }, // Red and Pink to match the Hero
+  // },
 // });
 
 // A simple utility to mimic a Next.js `Image` loader and router push
@@ -23,7 +23,12 @@ const Link = ({ href, children, ...props }: React.AnchorHTMLAttributes<HTMLAncho
 // A single-file version of the header component
 const Header = () => {
   const { storeFormData } = useStoreContext() || {};
-  const { slug, name, logoUrl, themeSettings } = storeFormData || {};
+  const { slug, name, logoUrl, themeSettings } = storeFormData || {
+    slug: 'my-blog',
+    name: 'GLOBAL INSIGHTS',
+    logoUrl: 'https://placehold.co/40x40/EF4444/FFFFFF?text=GI', // Using a placeholder that matches the new theme
+    themeSettings: { primaryColor: '#EF4444', secondaryColor: '#EC4899' }, // Red and Pink to match the Hero
+  };
   
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);

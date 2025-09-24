@@ -8,8 +8,8 @@ import {
   ChevronDownIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
-import { ProductForm } from '@/components/AddProductModal';
-// import { ProductForm } from '@/types/typings'; // Assuming ProductForm is the comprehensive type for your main form data
+// import { ProductForm } from '@/components/AddProductModal';
+import { ProductForm } from '@/types/typings'; // Assuming ProductForm is the comprehensive type for your main form data
 
 interface BookingSlotType {
   date: string;

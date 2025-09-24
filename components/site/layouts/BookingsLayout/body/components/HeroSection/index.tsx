@@ -13,9 +13,8 @@ import { StarIcon, MagnifyingGlassIcon } from "@heroicons/react/24/solid";
 
 // We'll assume these types and contexts exist for a complete example
 import { useStoreContext } from "@/contexts/StoreContext";
-import { MarketplaceListingForm } from "@/types/typings";
 
-const loader = ({ src, width, quality }) => `${src}?w=${width}&q=${quality || 75}`;
+const loader = ({ src, width, quality }:any) => `${src}?w=${width}&q=${quality || 75}`;
 
 // Simplified hero text for a cleaner look
 const heroText = "Your Next Service, Just a Click Away.";
@@ -68,7 +67,7 @@ export default function Hero() {
   }, [searchTerm, marketplaceListings]);
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
+    const handleClickOutside = (event:any) => {
       if (
         dropdownRef.current &&
         !dropdownRef.current.contains(event.target) &&

@@ -6,12 +6,12 @@ import Link from 'next/link';
 // Assuming you have react-icons installed, uncomment these if you prefer them over custom SVGs:
 // import { FaFacebookF, FaTwitter, FaInstagram, FaWhatsapp } from 'react-icons/fa';
 import { useStoreContext } from '@/contexts/StoreContext';
-import {
-  FacebookIcon, // Placeholder/Custom SVG for social icons
-  InstagramIcon,
-  TwitterIcon,
-  WhatsappIcon,
-} from './SocialIcons'; // Assuming you'll create a SocialIcons.js file or similar for these SVGs
+// import {
+//   FacebookIcon, // Placeholder/Custom SVG for social icons
+//   InstagramIcon,
+//   TwitterIcon,
+//   WhatsappIcon,
+// } from './SocialIcons'; // Assuming you'll create a SocialIcons.js file or similar for these SVGs
 
 export default function SiteFooter() {
   const year = new Date().getFullYear();

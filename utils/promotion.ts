@@ -13,4 +13,6 @@ export const createEmptyPromotion = (): IPromotion => ({
   endsAt: null,
   createdAt: new Date(),
   updatedAt: new Date(),
+  perks: [],
+  trustLogos: []
 });

@@ -13,7 +13,12 @@ import { useStoreContext } from '@/contexts/StoreContext';
 
 export default function Footer() {
   const { storeFormData } = useStoreContext();
-  const { name, slug, description, socialLinks } = storeFormData;
+  const { name, slug, description, socialLinks } = storeFormData || {
+    slug: 'my-blog',
+    name: 'GLOBAL INSIGHTS',
+    description: '',
+    socialLinks:[]
+  };
   const [email, setEmail] = useState('');
 
   const navItems = [
