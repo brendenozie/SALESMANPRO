@@ -1,6 +1,7 @@
 // app/api/teacher/courses/[courseId]/grades-data/route.ts
 import { NextResponse } from 'next/server';
 import prisma from "@/server/db/prismadb"; // Adjust path as per your project structure
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 // Define GradeStatus enum for validation (must match your Prisma schema enum)
 export enum GradeStatus {
@@ -39,6 +40,10 @@ interface StructuredGrades {
 }
 
 export async function GET(request: Request, { params }: { params: { courseId: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { courseId } = params;
   const { searchParams } = new URL(request.url);
   const educatorUserId = searchParams.get('educatorId'); // The educator viewing/managing grades
@@ -256,6 +261,10 @@ export async function GET(request: Request, { params }: { params: { courseId: st
 
 
 export async function POST(request: Request) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const {
     studentId,
     courseId,

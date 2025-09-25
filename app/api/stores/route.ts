@@ -3,11 +3,17 @@ import prisma from "@/server/db/prismadb";
 import { getAuthSession } from "@/lib/auth"; // Your session utility
 import { companySchema } from "@/lib/validations/company"; // Your Zod schema
 import { Prisma } from "@prisma/client";
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 export const dynamic = "force-dynamic";
 
 // GET all companies for the authenticated user
 export async function GET(req: Request) {
+  
+     const auth = await verifyAuth(req);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
   const session = await getAuthSession();
 
   if (!session?.user?.id) {
@@ -28,6 +34,11 @@ export async function GET(req: Request) {
 
 // POST a new company
 export async function POST(req: Request) {
+  
+     const auth = await verifyAuth(req);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
   const session = await getAuthSession();
 
   if (!session?.user?.id) {
@@ -98,7 +109,7 @@ export async function POST(req: Request) {
                 visible: sc.visible,
                 subcategories: sc.subcategories,
                 allBrands: sc.allBrands,
-                category: { connect: { id: sc.id } } // Connect to an existing ProductCategory
+                category: { connect: { id: sc.categoryId } } // Connect to an existing ProductCategory
             }))
         } : undefined,
       },

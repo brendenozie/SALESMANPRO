@@ -7,6 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import prisma from "@/server/db/prismadb";  // Adjust path if your prisma.ts is elsewhere
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 /**
  * GET /api/courses/[id]
@@ -14,6 +15,11 @@ import prisma from "@/server/db/prismadb";  // Adjust path if your prisma.ts is 
  */
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
+    
     const { id } = params; // Get the course ID from the URL parameters
 
     const course = await prisma.course.findUnique({
@@ -56,6 +62,11 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
  */
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
+    
     const { id } = params;
     const body = await request.json();
     // Destructure academicLevelIds separately, as it requires special handling for many-to-many
@@ -162,6 +173,11 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
  */
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
+    
     const { id } = params;
 
     // Explicitly delete related CourseAcademicLevel entries.

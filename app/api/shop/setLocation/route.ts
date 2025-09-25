@@ -1,8 +1,14 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { rateLimit } from "../../../../lib/rate-limit";
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 export async function POST(req: Request) {
+  
+     const auth = await verifyAuth(req);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
   const ip = req.headers.get("x-forwarded-for") || "local";
 
   if (!rateLimit(ip)) {

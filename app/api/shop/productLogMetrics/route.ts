@@ -1,9 +1,15 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import { request } from "http";
 
 // POST /api/product-metrics
 export async function POST(req: Request) {
   try {
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const { productId, action } = await req.json();
     if (!productId || !action) {
       return NextResponse.json(

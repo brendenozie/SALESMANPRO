@@ -1,10 +1,16 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import type { OrderStatus } from "@prisma/client";
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import { request } from "http";
 
 // GET /api/orders?consumerId=&status=&search=&page=&limit=&agentId=
 export async function GET(req: Request) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
     const { searchParams } = new URL(req.url);
     const consumerId = searchParams.get("consumerId");
     const statusParam = searchParams.get("status") || "all";

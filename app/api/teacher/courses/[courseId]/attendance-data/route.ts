@@ -1,6 +1,7 @@
 // app/api/teacher/courses/[courseId]/attendance-data/route.ts
 import { NextResponse } from 'next/server';
 import prisma from "@/server/db/prismadb"; // Adjust path as per your project structure
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 // Define AttendanceStatus to match your Prisma schema
 export type AttendanceStatus = 'PRESENT' | 'ABSENT' | 'TARDY' | 'EXCUSED';
@@ -29,6 +30,10 @@ export interface AttendancePageDataAPI {
 
 
 export async function GET(request: Request, { params }: { params: { courseId: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { courseId } = params;
   const { searchParams } = new URL(request.url);
   const educatorUserId = searchParams.get('educatorId'); // The educator's User.id
@@ -181,6 +186,10 @@ export async function GET(request: Request, { params }: { params: { courseId: st
 }
 
 export async function POST(request: Request) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { courseId, academicLevelId, attendanceDate, educatorId, companyId, attendance } = await request.json();
 
   // --- Authentication & Authorization (Placeholder) ---

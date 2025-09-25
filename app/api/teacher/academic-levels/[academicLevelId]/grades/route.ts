@@ -1,8 +1,13 @@
 // app/api/teacher/academic-levels/[academicLevelId]/grades/route.ts
 import { NextResponse } from 'next/server';
 import prisma from "@/server/db/prismadb"; // Adjust path as per your project structure
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 export async function GET(request: Request, { params }: { params: { academicLevelId: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { academicLevelId } = params; // This is the academic level for which we want historical grades
   const { searchParams } = new URL(request.url);
   const teacherId = searchParams.get('teacherId'); // Used for company context and authorization
@@ -98,8 +103,8 @@ export async function GET(request: Request, { params }: { params: { academicLeve
       gradeValue: grade.gradeValue,
       gradeStatus: grade.gradeStatus,
       comments: grade.comments,
-      createdAt: grade.createdAt.toISOString(),
-      updatedAt: grade.updatedAt.toISOString(),
+      createdAt: grade.createdAt?.toISOString(),
+      updatedAt: grade.updatedAt?.toISOString(),
       studentId: grade.student.id,
       studentName: grade.student.user?.name || 'N/A',
       studentEmail: grade.student.user?.email || 'N/A',

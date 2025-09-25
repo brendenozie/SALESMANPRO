@@ -1,8 +1,13 @@
 // app/api/teacher/courses/[courseId]/events/route.ts
 import { NextResponse } from 'next/server';
 import prisma from "@/server/db/prismadb"; // Adjust path as per your project structure
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 export async function GET(request: Request, { params }: { params: { courseId: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { courseId } = params;
   const { searchParams } = new URL(request.url);
   const educatorId = searchParams.get('educatorId'); // The educator viewing/managing events
@@ -167,6 +172,10 @@ enum EventAudience {
 }
 
 export async function POST(request: Request) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const {
     id, // Optional, for updating existing event
     title,
@@ -325,6 +334,10 @@ export async function POST(request: Request) {
 // import prisma from "@/server/db/prismadb"; // Adjust path as per your project structure
 
 export async function DELETE(request: Request, { params }: { params: { eventId: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { eventId } = params;
   const { searchParams } = new URL(request.url);
   const educatorId = searchParams.get('educatorId'); // The educator performing the deletion

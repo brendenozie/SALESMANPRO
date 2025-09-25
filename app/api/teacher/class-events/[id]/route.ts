@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 // Define valid Enum values (must match your Prisma enums)
 const VALID_EVENT_TYPES = ["GENERAL", "ACADEMIC", "SPORTS", "CULTURAL", "MEETING", "WORKSHOP", "ORIENTATION", "FUNDRAISER", "OTHER"];
@@ -9,6 +10,10 @@ const VALID_EVENT_AUDIENCES = ["ALL", "ACADEMIC_LEVEL", "COURSE", "EDUCATOR", "S
 // GET /api/events/[id]
 // Fetches a single Event by its ID.
 export async function GET(request: Request, { params }: { params: { id: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { id } = params;
 
   try {
@@ -82,6 +87,10 @@ export async function GET(request: Request, { params }: { params: { id: string }
 // PATCH /api/events/[id]
 // Updates an existing Event by ID.
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { id } = params;
 
   try {
@@ -283,6 +292,10 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 // DELETE /api/events/[id]
 // Deletes an Event by ID.
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { id } = params;
 
   try {

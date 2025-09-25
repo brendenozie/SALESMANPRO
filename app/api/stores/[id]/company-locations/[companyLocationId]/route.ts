@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { getAuthSession } from "@/lib/auth";
 import { Prisma } from "@prisma/client";
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import { request } from "http";
 
 // app/api/stores/[storeId]/company-locations/[companyLocationId]/route.ts
 // import { NextRequest, NextResponse } from "next/server";
@@ -14,6 +16,11 @@ export async function PUT(
   { params }: { params: { storeId: string; companyLocationId: string } }
 ) {
   try {
+    
+       const auth = await verifyAuth(req);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
+    
     const session = await getAuthSession();
 
     // 1. Authenticate the user
@@ -88,6 +95,11 @@ export async function DELETE(
   { params }: { params: { storeId: string; companyLocationId: string } }
 ) {
   try {
+    
+       const auth = await verifyAuth(req);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
+    
     const session = await getAuthSession();
 
     // 1. Authenticate the user

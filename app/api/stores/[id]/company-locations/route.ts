@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { getAuthSession } from "@/lib/auth";
 import { Prisma } from "@prisma/client";
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 // export const dynamic = "force-dynamic";
 
@@ -16,6 +17,10 @@ export async function GET(
   { params }: { params: { storeId: string } }
 ) {
   try {
+     const auth = await verifyAuth(req);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const session = await getAuthSession();
 
     // 1. Authenticate the user
@@ -96,6 +101,10 @@ export async function POST(
   { params }: { params: { storeId: string } }
 ) {
   try {
+   const auth = await verifyAuth(req);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+
     const session = await getAuthSession();
 
     // 1. Authenticate the user

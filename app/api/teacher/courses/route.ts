@@ -5,8 +5,15 @@
 
 import { NextResponse } from 'next/server';
 import prisma from "@/server/db/prismadb"; // Adjust path as per your project structure
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+import { type } from 'os';
+import { title } from 'process';
 
 export async function GET(request: Request) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { searchParams } = new URL(request.url);
   
   const teacherUserId = searchParams.get('teacherUserId'); // This is the User.id for the Educator

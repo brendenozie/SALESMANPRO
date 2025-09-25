@@ -1,6 +1,7 @@
 // app/api/patient/profile/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 // Helper function to format patient data
 async function formatPatientProfile(user: any) {
@@ -19,6 +20,10 @@ async function formatPatientProfile(user: any) {
 }
 
 export async function GET(request: Request) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { searchParams } = new URL(request.url);
   const patientId = searchParams.get("patientId"); // This is the User.id for the patient
 

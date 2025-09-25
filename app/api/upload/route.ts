@@ -3,6 +3,7 @@
 import { NextResponse } from "next/server";
 import AWS from "aws-sdk";
 import { v4 as uuidv4 } from "uuid";
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 // Tell Next.js to run this route in a Node.js runtime
 export const runtime = "nodejs";
@@ -29,6 +30,11 @@ const s3 = new AWS.S3({
  */
 export async function POST(request: Request) {
   try {
+
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
+    
     // 1️⃣ Use the Web-Request formData() API to retrieve fields + file blob
     const formData = await request.formData();
     const typeField = formData.get("type");

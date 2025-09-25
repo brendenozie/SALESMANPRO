@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import { getAuthSession } from '@/lib/auth';
 import prisma from "@/server/db/prismadb";  // Adjust path if your prisma.ts is elsewhere
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 /**
 //  * GET /api/courses
@@ -23,6 +24,11 @@ import prisma from "@/server/db/prismadb";  // Adjust path if your prisma.ts is 
 //  */
 export async function GET(request: NextRequest) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
+    
     const { searchParams } = new URL(request.url);
     // const companyId = searchParams.get('companyId');
     // const academicLevelId = searchParams.get('academicLevelId');
@@ -154,6 +160,11 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
+    
     const body = await request.json();
     const { title, description, imageUrl, credits, code, companyId, academicLevelIds } = body;
 

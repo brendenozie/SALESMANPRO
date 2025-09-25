@@ -1,8 +1,14 @@
 // app/api/teacher/academic-levels/[academicLevelId]/exams/route.ts
 import { NextResponse } from 'next/server';
 import prisma from "@/server/db/prismadb"; // Adjust path as per your project structure
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 export async function GET(request: Request, { params }: { params: { academicLevelId: string } }) {
+  
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { academicLevelId } = params;
   const { searchParams } = new URL(request.url);
   const teacherId = searchParams.get('teacherId'); // Used for company context and authorization

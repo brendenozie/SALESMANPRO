@@ -1,10 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 const prisma = new PrismaClient();
 
 export async function GET(request: NextRequest) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
+    
     const { searchParams } = new URL(request.url);
     const studentId = searchParams.get('studentId');
     const courseId = searchParams.get('courseId');

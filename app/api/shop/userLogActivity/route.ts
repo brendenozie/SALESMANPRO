@@ -1,22 +1,28 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
 
-import { requireAuth } from "@/lib/auth";
+// import { requireAuth } from "@/lib/auth";
 import { rateLimit } from "@/lib/rate-limit";
+import { formatResponse, verifyAuth } from "@/lib/verifyAuth";
 
 // Optional: Define allowed action types
 const VALID_ACTIONS = ["view", "purchase", "favorite"];
 
 export async function POST(req: Request) {
   try {
+    
+       const auth = await verifyAuth(req);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
+    
     const ip = req.headers.get("x-forwarded-for") || "local";
     
       if (!rateLimit(ip)) {
         return NextResponse.json({ message: "Too many requests" }, { status: 429 });
       }
     
-      const authResult = await requireAuth(req);
-      if (authResult instanceof Response) return authResult;
+      // const authResult = await requireAuth(req);
+      // if (authResult instanceof Response) return authResult;
     
 
     const body = await req.json();

@@ -1,11 +1,18 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import { request } from "http";
+import { NextApiRequest, NextApiResponse } from "next";
 
 
 
 // POST /api/post
 
 export default async function GET( req : Request ) {
+
+   const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
 
   if (req.method === 'POST') {
     await RegisterUser(req, res);

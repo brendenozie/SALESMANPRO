@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { z } from "zod";
 import nodemailer from "nodemailer";
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import { request } from "http";
 
 // Zod schema
 const orderSchema = z.object({
@@ -52,6 +54,10 @@ function generateTrackingNumber() {
 
 // POST /api/orders
 export async function POST(req: Request) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   
     const body = await req.json();
     const parsed = orderSchema.safeParse(body);
@@ -130,6 +136,10 @@ export async function GET(req: Request) {
 // PUT /api/orders
 export async function PUT(req: Request) {
   
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const body = await req.json();
     const { id, status, deliveryStatus } = body;
     if (!id || !status || !deliveryStatus) {
@@ -151,6 +161,10 @@ export async function PUT(req: Request) {
 // DELETE /api/orders
 // DELETE /api/orders (soft delete)
 export async function DELETE(req: Request) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   
     const { id } = await req.json();
     if (!id) {

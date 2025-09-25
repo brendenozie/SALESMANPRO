@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 // Define valid Enum values (must match your Prisma enums)
 const VALID_EVENT_TYPES = ["GENERAL", "ACADEMIC", "SPORTS", "CULTURAL", "MEETING", "WORKSHOP", "ORIENTATION", "FUNDRAISER", "OTHER"];
@@ -14,6 +15,10 @@ const VALID_EVENT_AUDIENCES = ["ALL", "ACADEMIC_LEVEL", "COURSE", "EDUCATOR", "S
 // const VALID_EVENT_AUDIENCES = ['ALL', 'STUDENTS', 'EDUCATORS', 'PARENTS', 'STAFF', 'ACADEMIC_LEVEL', 'COURSE', 'DEPARTMENT']; // Example values
 
 export async function GET(request: Request) {
+   const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+
   try {
     const { searchParams } = new URL(request.url);
     const companyId = searchParams.get('companyId');
@@ -181,6 +186,10 @@ export async function GET(request: Request) {
 // Creates a new Event.
 export async function POST(request: Request) {
   try {
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const body = await request.json();
     const {
       // companyId,

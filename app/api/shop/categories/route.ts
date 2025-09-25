@@ -1,9 +1,14 @@
 // app/api/shop/categories/route.ts
 import { NextResponse } from 'next/server'
 import prisma from '@/server/db/prismadb'
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 export async function GET(request: Request) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get('page') ?? '1', 10)
     const limit = parseInt(searchParams.get('limit') ?? '12', 10)

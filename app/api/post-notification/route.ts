@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import { request } from "http";
 
 
 // POST /api/post
@@ -7,6 +9,10 @@ import prisma from "@/server/db/prismadb"; // Adjust path as needed
 // Optional fields in body: content
 export default async function GET( req : Request ) {
   if (req.method === 'POST') {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
     const { title, message, } = req.body;
 
     try {

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { getAuthSession } from "@/lib/auth";
 import { companySchema } from "@/lib/validations/company";
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 export const dynamic = "force-dynamic";
 
@@ -10,6 +11,10 @@ export async function GET(
   req: Request,
   { params }: { params: { id: string } }
 ) {
+   const auth = await verifyAuth(req);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+
   const session = await getAuthSession();
   if (!session?.user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -56,6 +61,10 @@ export async function PUT(
   req: Request,
   { params }: { params: { id: string } }
 ) {
+   const auth = await verifyAuth(req);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+
     // Destructure the id from params immediately
   const { id } = params;
 
@@ -231,6 +240,10 @@ export async function DELETE(
   req: Request,
   { params }: { params: { companyId: string } }
 ) {
+   const auth = await verifyAuth(req);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+
     const session = await getAuthSession();
     if (!session?.user?.id) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

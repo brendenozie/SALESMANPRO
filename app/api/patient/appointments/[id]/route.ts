@@ -2,8 +2,13 @@
 // app/api/patient/appointments/[id]/route.ts (for updating/canceling appointment by patient)
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { id } = params; // Appointment ID
   const { searchParams } = new URL(request.url);
   const patientId = searchParams.get("patientId"); // Patient making the update

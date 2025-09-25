@@ -1,10 +1,16 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import type { Prisma } from "@prisma/client";
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import { request } from "http";
 
 // GET /api/marketplace-listings?agentId=&search=&brand=&category=&subCategory=&minPrice=&maxPrice=&availability=&sort=&page=&limit=
 export async function GET(req: Request) {
   try {
+     const auth = await verifyAuth(req);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const { searchParams } = new URL(req.url);
     const agentId = searchParams.get("agentId");
     const search = searchParams.get("search") || undefined;

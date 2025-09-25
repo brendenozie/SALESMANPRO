@@ -1,6 +1,7 @@
 // app/api/academic-levels/[academicLevelId]/attendance/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 // Define types for API request/response
 export type AttendanceStatus = 'PRESENT' | 'ABSENT' | 'TARDY' | 'EXCUSED'; // Matches Prisma Enum
@@ -43,6 +44,11 @@ interface StudentAttendanceRecordPayload {
 // Query Params: date (required, YYYY-MM-DD), educatorId (required - Educator's User.id)
 export async function GET(request: Request, { params }: { params: { academicLevelId: string } }) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
+    
     const { academicLevelId } = params;
     const { searchParams } = new URL(request.url);
     const dateStr = searchParams.get('date'); //YYYY-MM-DD
@@ -178,6 +184,11 @@ export async function POST(
   { params }: { params: { academicLevelId: string } }
 ) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
+    
     const { academicLevelId } = params;
     const { date: dateStr, educatorId, attendanceRecords } =
       await request.json() as {
