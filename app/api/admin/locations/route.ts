@@ -10,10 +10,17 @@ import { getAuthSession } from "@/lib/auth"; // Adjust path as per your project 
 // import { Prisma } from "@prisma/client"; // Import Prisma for types
 
 import prisma from "@/server/db/prismadb";
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import { request } from "http";
 
 // GET: Retrieve all Location records
 export async function GET(req: NextRequest) {
   try {
+    
+       const auth = await verifyAuth(req);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
+    
     const session = await getAuthSession();
 
     // Authenticate the user (assuming only admins can manage global locations)
@@ -67,6 +74,11 @@ export async function GET(req: NextRequest) {
 // POST: Create a new Location record
 export async function POST(req: NextRequest) {
   try {
+    
+       const auth = await verifyAuth(req);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
+    
     const session = await getAuthSession();
 
     // Authenticate and authorize (e.g., check for admin role)

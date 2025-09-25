@@ -1,12 +1,17 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
 import { NextApiRequest, NextApiResponse } from "next";
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 
 export default async function handle(
   req: Request,
   res: NextApiResponse
 ) {
+   const auth = await verifyAuth(req);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+
   let { page, } = req.query;
   const { searchParams } = new URL(req.url);
 

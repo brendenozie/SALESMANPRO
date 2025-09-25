@@ -1,6 +1,7 @@
 // app/api/admin/[adminSlug]/billing/invoices/[id]/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 
 // Helper function to format invoice data for the frontend
@@ -28,6 +29,11 @@ async function formatInvoiceData(invoice: any) {
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   const { id } = params;
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
 
   try {
     const invoice = await prisma.patientInvoices.findUnique({
@@ -50,7 +56,11 @@ export async function GET(request: Request, { params }: { params: { id: string }
 }
 
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
-  const { id } = params;
+  
+   const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+const { id } = params;
   const body = await request.json();
   const { patientId, amount, invoiceDate, dueDate, items, notes, status } = body;
 
@@ -81,7 +91,11 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 }
 
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
-  const { id } = params;
+  
+   const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+const { id } = params;
 
   try {
     await prisma.patientInvoices.delete({

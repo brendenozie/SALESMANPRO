@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 // Helper to validate day of week
 const VALID_DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
@@ -8,6 +9,11 @@ const VALID_DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Frida
 // Fetches all class schedules, optionally filtered by companyId, courseId, educatorId, or dayOfWeek.
 export async function GET(request: Request) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
+    
     const { searchParams } = new URL(request.url);
     const companyId = searchParams.get('companyId');
     const courseId = searchParams.get('courseId');
@@ -113,6 +119,11 @@ export async function GET(request: Request) {
 // Creates a new ClassSchedule.
 export async function POST(request: Request) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
+    
     const body = await request.json();
     const { courseId, educatorId, dayOfWeek, startTime, endTime, topic, meetingLink, companyId } = body;
 

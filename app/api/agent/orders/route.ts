@@ -1,8 +1,14 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import { NextApiRequest, NextApiResponse } from "next";
 
 
 const getOrders = async (req: NextApiRequest, res: NextApiResponse) => {
+  
+     const auth = await verifyAuth(req);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { page = 1, limit = 10, status = 'all', search = '', agentId } = req.query;
 
   const currentPage = parseInt(page as string, 10) || 1;

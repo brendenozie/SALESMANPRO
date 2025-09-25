@@ -1,6 +1,7 @@
 // app/api/admin/[adminSlug]/programs/route.js
 import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb'; // Adjust this path if your prisma client is elsewhere
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 // IMPORTANT: Ensure your Course model in schema.prisma has these fields:
 // model Course {
@@ -22,6 +23,10 @@ import prisma from '@/server/db/prismadb'; // Adjust this path if your prisma cl
 // GET /api/admin/[adminSlug]/programs
 // Fetches all programs/classes for a specific company.
 export async function GET(request: Request, { params }: { params: { id: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   // const { id } = params; // Get the adminSlug from the dynamic route segment
 // const { id } = request.query;
  const { searchParams } = new URL(request.url);
@@ -95,6 +100,10 @@ export async function GET(request: Request, { params }: { params: { id: string }
 // POST /api/admin/[adminSlug]/programs
 // Creates a new program/class for a specific company.
 export async function POST(request: Request, { params }: { params: { id: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   // const { id } = params; // Get the adminSlug from the dynamic route segment
   
  const { searchParams } = new URL(request.url);

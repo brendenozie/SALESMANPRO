@@ -1,6 +1,7 @@
 // app/api/conversations/[conversationId]/messages/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 // Define valid Enum values for MessageType (from your Prisma schema)
 const VALID_MESSAGE_TYPES = ["TEXT", "IMAGE", "FILE", "AUDIO", "VIDEO", "SYSTEM_NOTIFICATION", "OTHER"];
@@ -9,6 +10,10 @@ const VALID_MESSAGE_TYPES = ["TEXT", "IMAGE", "FILE", "AUDIO", "VIDEO", "SYSTEM_
 // Fetches messages for a specific conversation and marks them as read for the requesting user.
 // Query Params: userId (required for read status update), limit (optional), cursor (optional for pagination)
 export async function GET(request: Request, { params }: { params: { conversationId: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { conversationId } = params;
   const { searchParams } = new URL(request.url);
   const userId = searchParams.get('userId');
@@ -107,6 +112,10 @@ export async function GET(request: Request, { params }: { params: { conversation
 // Sends a new message to a conversation.
 // Body: { senderId: string, content: string, messageType?: string, attachmentUrls?: string[] }
 export async function POST(request: Request, { params }: { params: { conversationId: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { conversationId } = params;
   try {
     const body = await request.json();

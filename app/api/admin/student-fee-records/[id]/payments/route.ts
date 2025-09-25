@@ -1,6 +1,7 @@
 // app/api/admin/student-fee-records/[id]/payments/route.ts
 import { NextResponse } from 'next/server';
 import { addPaymentToStudentFeeRecord } from '@/lib/data';
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 interface Context {
   params: { id: string }; // This `id` is the studentFeeRecordId
@@ -9,6 +10,10 @@ interface Context {
 // Handles POST requests for adding payments to a student fee record
 export async function POST(request: Request, context: Context) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
     const { id } = context.params;
     const { amount, date, method, receiptNumber } = await request.json();
 

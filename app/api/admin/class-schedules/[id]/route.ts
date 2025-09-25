@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 // Helper to validate day of week
 const VALID_DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
@@ -11,7 +12,12 @@ const VALID_DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Frida
 // GET /api/class-schedules/[id]
 // Fetches a single class schedule by ID.
 export async function GET(request: Request, { params }: { params: { id: string } }) {
-  const { id } = params;
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
+    const { id } = params;
 
   try {
     const schedule = await prisma.classSchedule.findUnique({
@@ -81,7 +87,11 @@ export async function GET(request: Request, { params }: { params: { id: string }
 // PATCH /api/class-schedules/[id]
 // Updates an existing ClassSchedule.
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
-  const { id } = params;
+  
+   const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+const { id } = params;
 
   try {
     const body = await request.json();
@@ -218,7 +228,11 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 // DELETE /api/class-schedules/[id]
 // Deletes a class schedule by ID.
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
-  const { id } = params;
+  
+   const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+const { id } = params;
 
   try {
     const existingSchedule = await prisma.classSchedule.findUnique({

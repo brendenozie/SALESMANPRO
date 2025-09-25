@@ -1,10 +1,16 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb';
 import { VideoStatus } from '@prisma/client';
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+import { request } from 'http';
 
 // GET /api/videos/:id
 export async function GET(_: Request, { params }: { params: { id: string } }) {
   try {
+     const auth = await verifyAuth(_);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const video = await prisma.video.findUnique({
       where: { id: params.id },
     });
@@ -23,6 +29,10 @@ export async function GET(_: Request, { params }: { params: { id: string } }) {
 // PUT /api/videos/:id
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const body = await request.json();
     const {
       title,
@@ -84,6 +94,10 @@ export async function PUT(request: Request, { params }: { params: { id: string }
  * @returns {Response} A 204 No Content response.
  */
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { id } = params;
   try {
     await prisma.video.delete({

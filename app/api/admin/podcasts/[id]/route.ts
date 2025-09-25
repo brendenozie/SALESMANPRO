@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import prisma from "@/server/db/prismadb"; 
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 // Define the type for route parameters
 interface PodcastRouteParams {
@@ -12,6 +13,10 @@ interface PodcastRouteParams {
 // Updates an existing podcast
 export async function PUT(request: NextRequest, { params }: PodcastRouteParams) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
     const { id } = params; // Get the podcast ID from the URL
     const body = await request.json();
 
@@ -77,6 +82,10 @@ export async function PUT(request: NextRequest, { params }: PodcastRouteParams) 
 // Deletes a podcast
 export async function DELETE(request: NextRequest, { params }: PodcastRouteParams) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
     const { id } = params; // Get the podcast ID from the URL
 
     await prisma.podcast.delete({

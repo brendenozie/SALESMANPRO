@@ -1,10 +1,15 @@
 // app/api/donors/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 // GET all Donor profiles
 export async function GET(request: Request) {
   try {
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const donors = await prisma.donor.findMany({
       include: {
         user: {
@@ -42,6 +47,10 @@ export async function GET(request: Request) {
 // POST a new Donor profile
 export async function POST(request: Request) {
   try {
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const body = await request.json();
     const { userId, phoneNumber, companyId } = body;
 

@@ -1,9 +1,15 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import { formatResponse, verifyAuth } from "@/lib/verifyAuth";
 
 // GET /api/academic-levels/[id]
 // Fetches a single AcademicLevel by its ID.
 export async function GET(request: Request, { params }: { params: { id: string } }) {
+  
+  const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+
   const { id } = params;
 
   try {
@@ -25,6 +31,11 @@ export async function GET(request: Request, { params }: { params: { id: string }
 // PATCH /api/academic-levels/[id]
 // Updates an existing AcademicLevel by ID.
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+
+   const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+
   const { id } = params;
 
   try {
@@ -36,7 +47,7 @@ export async function PATCH(request: Request, { params }: { params: { id: string
       where: { id },
     });
 
-    if (!existingAcademicLevel) {
+    if (!existingAcademicLevel || !existingAcademicLevel.companyId) {
       return NextResponse.json({ message: "Academic level not found" }, { status: 404 });
     }
 

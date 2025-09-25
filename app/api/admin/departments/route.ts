@@ -1,10 +1,15 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; 
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 // GET /api/departments
 // Fetches all departments with aggregated counts of educators and courses.
 export async function GET(request: Request) {
   try {
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const { searchParams } = new URL(request.url);
     const companyId = searchParams.get('companyId');
 
@@ -70,6 +75,10 @@ export async function GET(request: Request) {
 // POST /api/departments
 // Creates a new department.
 export async function POST(request: Request) {
+   const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+
   if (request.method !== "POST") {
     return NextResponse.json({ message: "Method not allowed" }, { status: 405 });
   }

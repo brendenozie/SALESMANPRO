@@ -1,8 +1,14 @@
 // app/api/admin/inventory/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb';
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 export async function GET(req: Request) {
+
+     const auth = await verifyAuth(req);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
   const url = new URL(req.url);
   const companyId = url.searchParams.get('companyId');
   const limit     = Math.max(1, parseInt(url.searchParams.get('limit') || '50', 10));

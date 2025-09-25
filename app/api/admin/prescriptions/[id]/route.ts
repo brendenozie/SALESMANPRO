@@ -1,6 +1,7 @@
 // app/api/admin/[adminSlug]/prescriptions/[id]/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 // Helper function to format prescription data for the frontend
 async function formatPrescriptionData(prescription: any) {
@@ -29,6 +30,10 @@ async function formatPrescriptionData(prescription: any) {
 // This file handles GET, PUT, DELETE for a specific prescription by ID
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { id } = params;
 
   try {
@@ -53,6 +58,10 @@ export async function GET(request: Request, { params }: { params: { id: string }
 }
 
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { id } = params;
   const body = await request.json();
   const { medication, dosage, instructions, issuedDate, expiryDate, notes, status, patientId, doctorId } = body;
@@ -87,6 +96,10 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 }
 
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { id } = params;
 
   try {

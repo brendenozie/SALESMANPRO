@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import bcrypt from 'bcryptjs';
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 // app/api/admin/agents/[id]/route.ts
 
@@ -31,6 +32,11 @@ const authorizeAdmin = async (req: Request) => {
 
 // --- PUT: Update an existing agent ---
 export async function PUT(req: Request, { params }: { params: { id: string } }) {
+  
+     const auth = await verifyAuth(req);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
   const authResult = await authorizeAdmin(req);
   if (!authResult.authorized) {
     return NextResponse.json({ message: authResult.message }, { status: authResult.status });
@@ -117,6 +123,11 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
 
 // --- DELETE: Delete an agent ---
 export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+  
+     const auth = await verifyAuth(req);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
   const authResult = await authorizeAdmin(req);
   if (!authResult.authorized) {
     return NextResponse.json({ message: authResult.message }, { status: authResult.status });

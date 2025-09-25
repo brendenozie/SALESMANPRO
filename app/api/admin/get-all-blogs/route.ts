@@ -2,9 +2,16 @@
 
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";  // adjust path if needed
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 export async function GET(req: Request) {
+  
+     const auth = await verifyAuth(req);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
   const { searchParams } = new URL(req.url);
+
 
   // pagination & filtering params
   const companyId = searchParams.get("companyId");

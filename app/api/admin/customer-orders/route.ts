@@ -1,11 +1,17 @@
 // app/api/customer-orders/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb'; // Adjust path if needed
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 // GET /api/customer-orders
 // Fetches all customer orders, optionally filtered by companyId and delivery status
 export async function GET(request: Request) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
+    
     const { searchParams } = new URL(request.url);
     const companyId = searchParams.get('companyId');
     const deliveryFilter = searchParams.get('delivery'); // "true" or "false"

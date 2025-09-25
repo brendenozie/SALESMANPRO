@@ -1,5 +1,6 @@
 import { NextResponse, NextRequest } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 // app/api/admin/reports/orders-by-status/route.ts
 // import { NextRequest, NextResponse } from 'next/server';
 // import prisma from '@/lib/prisma'; // Adjust path as needed
@@ -15,6 +16,11 @@ export async function GET(req: NextRequest) {
   // --- END PLACEHOLDER ---
 
   try {
+    
+       const auth = await verifyAuth(req);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
+    
     const { searchParams } = req.nextUrl;
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');

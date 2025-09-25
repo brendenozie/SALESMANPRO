@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path if needed
 import { OrderStatus } from "@prisma/client";
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import { request } from "http";
 
 export async function PUT(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  
+     const auth = await verifyAuth(req);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
   const orderItemId = params.id;
 
   const { searchParams } = new URL(req.url);

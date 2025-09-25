@@ -1,6 +1,7 @@
 // app/api/video-albums/[id]/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb';
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 /**
  * @route GET /api/video-albums/:id
@@ -8,6 +9,10 @@ import prisma from '@/server/db/prismadb';
  * @returns {Response} A JSON response containing the specified video album.
  */
 export async function GET(request: Request, { params }: { params: { id: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { id } = params;
   try {
     const videoAlbum = await prisma.videoAlbum.findUnique({
@@ -34,6 +39,10 @@ export async function GET(request: Request, { params }: { params: { id: string }
  * @returns {Response} A JSON response containing the updated video album.
  */
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { id } = params;
   try {
     const body = await request.json();
@@ -68,6 +77,10 @@ export async function PUT(request: Request, { params }: { params: { id: string }
  * @returns {Response} A 204 No Content response.
  */
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { id } = params;
   try {
     await prisma.$transaction([

@@ -1,9 +1,14 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 // GET /api/departments/[id]
 // Fetches a single department by ID.
 export async function GET(request: Request, { params }: { params: { id: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { id } = params;
 
   try {
@@ -60,7 +65,11 @@ export async function GET(request: Request, { params }: { params: { id: string }
 // PUT /api/departments/[id]
 // Updates an existing department by ID.
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
-  const { id } = params;
+  
+   const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+const { id } = params;
 
   if (request.method !== "PUT") {
     return NextResponse.json({ message: "Method not allowed" }, { status: 405 });
@@ -110,7 +119,11 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 // DELETE /api/departments/[id]
 // Deletes a department by ID.
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
-  const { id } = params;
+  
+   const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+const { id } = params;
 
   if (request.method !== "DELETE") {
     return NextResponse.json({ message: "Method not allowed" }, { status: 405 });

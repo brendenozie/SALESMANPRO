@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb';
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 // Define the ProjectStatus type if not already defined globally or in a shared types file
 export type ProjectStatus = 'PLANNING' | 'ONGOING' | 'COMPLETED' | 'ARCHIVED' | 'CANCELLED';
@@ -22,6 +23,10 @@ interface ProjectCreateData {
  */
 export async function GET(request: Request) {
   try {
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const projects = await prisma.project.findMany({
       include: {
         tasks: true,
@@ -48,6 +53,10 @@ export async function GET(request: Request) {
  */
 export async function POST(request: Request) {
   try {
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const { name, description, startDate, endDate, status, budget, companyId }: ProjectCreateData = await request.json();
 
     // Basic validation: ensure 'name' is provided

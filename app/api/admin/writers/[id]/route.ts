@@ -2,11 +2,16 @@
 import { NextResponse } from 'next/server';
 import prisma from "@/server/db/prismadb";
 import { Prisma } from '@prisma/client';
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 
 // GET /api/admin/writers/[id] - Get a single writer by ID
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const { id } = params;
 
     const writer = await prisma.writer.findUnique({
@@ -31,6 +36,10 @@ export async function GET(request: Request, { params }: { params: { id: string }
 // PUT /api/admin/writers/[id] - Update a writer by ID
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const { id } = params;
     const body = await request.json();
     const { 
@@ -106,6 +115,10 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 // DELETE /api/admin/writers/[id] - Delete a writer by ID
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const { id } = params;
 
     // First, find the writer to get the userId for potential user deletion

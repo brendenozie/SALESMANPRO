@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 // Helper type for subcategories as they are stored in JSON
 type SubcategoryJson = {
@@ -13,6 +14,10 @@ type SubcategoryJson = {
 // PATCH /api/store-categories/[id]/subcategories/[subId]
 // Updates an existing subcategory within a specific StoreCategory's 'items' JSON array.
 export async function PATCH(request: Request, { params }: { params: { id: string; subId: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { id, subId } = params; // StoreCategory ID and Subcategory ID
 
   try {
@@ -69,6 +74,10 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 // DELETE /api/store-categories/[id]/subcategories/[subId]
 // Deletes a subcategory from a specific StoreCategory's 'items' JSON array.
 export async function DELETE(request: Request, { params }: { params: { id: string; subId: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { id, subId } = params; // StoreCategory ID and Subcategory ID
 
   try {

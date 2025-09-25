@@ -1,4 +1,5 @@
 // import { NextResponse } from 'next/server';
+import { formatResponse, verifyAuth } from '@/lib/verifyAuth';
 import prisma from '@/server/db/prismadb';
 import { PlanStatus, SubscriptionStatus, BillingCycle } from '@prisma/client'; // Import the new enums
 
@@ -13,6 +14,10 @@ import { NextRequest, NextResponse } from "next/server";
 // This API route handles fetching paginated and filtered invoices for a company.
 export async function GET(req: NextRequest, { params }: { params: { slug: string } }) {
   try {
+    
+    const auth = await verifyAuth(req);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
     const companyId = params.slug;
     const { searchParams } = new URL(req.url);
     const page = parseInt(searchParams.get("page") || "1");

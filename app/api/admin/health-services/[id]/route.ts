@@ -1,6 +1,7 @@
 // app/api/admin/[adminSlug]/services/[id]/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 // Helper function to format service data for the frontend
 async function formatServiceData(service: any) {
@@ -19,6 +20,10 @@ async function formatServiceData(service: any) {
 // This file handles GET, PUT, DELETE for a specific service by ID
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { id } = params;
 
   try {
@@ -39,6 +44,10 @@ export async function GET(request: Request, { params }: { params: { id: string }
 }
 
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { id } = params;
   const body = await request.json();
   const { name, description, price, duration, status } = body;
@@ -69,6 +78,10 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 }
 
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { id } = params;
 
   try {

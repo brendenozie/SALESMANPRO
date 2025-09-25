@@ -1,9 +1,14 @@
 // app/api/donors/[id]/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 // GET a single Donor profile by ID
 export async function GET(request: Request, { params }: { params: { id: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { id } = params; // The ID from the URL segment [id]
 
   try {
@@ -41,6 +46,10 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
 // PUT (Update) an existing Donor profile by ID
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { id } = params;
   try {
     const body = await request.json();
@@ -70,6 +79,10 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 
 // DELETE a Donor profile by ID
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { id } = params;
 
   try {

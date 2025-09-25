@@ -1,10 +1,16 @@
 // app/api/admin/[adminSlug]/communications/[commId]/route.js
 import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb'; // Adjust this path
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 // PUT /api/admin/[adminSlug]/communications/[commId]
 // Updates an existing communication.
 export async function PUT(request, { params }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
   const { adminSlug, commId } = params;
 
   try {
@@ -86,6 +92,11 @@ export async function PUT(request, { params }) {
 // DELETE /api/admin/[adminSlug]/communications/[commId]
 // Deletes a specific communication.
 export async function DELETE(request, { params }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
   const { adminSlug, commId } = params;
 
   try {

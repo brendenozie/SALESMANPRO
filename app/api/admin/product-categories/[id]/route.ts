@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 // GET a single category by ID
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const category = await prisma.productCategory.findUnique({
       where: { id: params.id }
     });
@@ -21,6 +26,10 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 // PUT: Update category by ID
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
   try {
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const data = await request.json();
     const { id, ...rest }  = data;
     const category = await prisma.productCategory.update({
@@ -37,6 +46,10 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 // DELETE: Remove category by ID
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
   try {
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const deleted = await prisma.productCategory.delete({
       where: { id: params.id },
     });

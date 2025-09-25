@@ -1,10 +1,15 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 // GET /api/course-assignments
 // Fetches all course assignments, optionally filtered by courseId or companyId.
 export async function GET(request: Request) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
     const { searchParams } = new URL(request.url);
     const courseId = searchParams.get('courseId');
     const companyId = searchParams.get('companyId');
@@ -86,6 +91,10 @@ export async function GET(request: Request) {
 // Creates a new CourseAssignment.
 export async function POST(request: Request) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
     const body = await request.json();
     const { courseId, title, description, dueDate, maxGrade } = body;
 

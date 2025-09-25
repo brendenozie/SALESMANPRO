@@ -1,6 +1,7 @@
 // app/api/admin/staff/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Assuming this path correctly points to your Prisma client initialization
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 // Helper function to format staff data for the frontend
 async function formatStaffData(staffMember: any) {
@@ -25,6 +26,10 @@ async function formatStaffData(staffMember: any) {
 }
 
 export async function GET(request: Request) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
   const searchTerm = searchParams.get("searchTerm") || "";
@@ -83,7 +88,11 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const body = await request.json();
+  
+   const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+const body = await request.json();
   const { name, email, phone, profilePicture, jobTitle, department, employmentStatus, startDate, companyId } = body;
 
   if (!name || !email || !jobTitle || !department || !companyId) {

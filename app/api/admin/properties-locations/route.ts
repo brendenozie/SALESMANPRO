@@ -1,11 +1,18 @@
 // app/api/locations/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma'; // Adjust path if necessary
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+import { request } from 'http';
 
 // GET /api/locations
 // Fetches all locations
 export async function GET() {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
+    
     const locations = await prisma.location.findMany({
       include: {
         _count: {
@@ -38,6 +45,11 @@ export async function GET() {
 // Creates a new location
 export async function POST(request: Request) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
+    
     const body = await request.json();
     const { name, description, latitude, longitude, parentLocationId } = body;
 

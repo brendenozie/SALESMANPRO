@@ -3,11 +3,16 @@ import { NextRequest, NextResponse } from 'next/server';
 
 import prisma from "@/server/db/prismadb"; 
 import { v4 as uuidv4 } from 'uuid'; // For generating unique IDs if needed (e.g., for podcastId)
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 // GET /api/admin/podcasts
 // Fetches all podcasts, optionally filtered by companyId (creatorId)
 export async function GET(request: NextRequest) {
   try {
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const companyId = request.nextUrl.searchParams.get('companyId');
 
     const whereClause: { creatorId?: string } = {};
@@ -55,6 +60,10 @@ export async function GET(request: NextRequest) {
 // Creates a new podcast
 export async function POST(request: NextRequest) {
   try {
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const body = await request.json();
     const {
       title,

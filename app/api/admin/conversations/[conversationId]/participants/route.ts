@@ -1,11 +1,16 @@
 // app/api/conversations/[conversationId]/participants/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 // PATCH /api/conversations/[conversationId]/participants
 // Updates a specific participant's status (e.g., isArchived, isDeleted) within a conversation.
 // Body: { userId: string, isArchived?: boolean, isDeleted?: boolean, unreadCount?: number }
 export async function PATCH(request: Request, { params }: { params: { conversationId: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { conversationId } = params;
   try {
     const body = await request.json();
@@ -74,6 +79,10 @@ export async function PATCH(request: Request, { params }: { params: { conversati
 // Adds one or more new participants to an existing conversation.
 // Body: { newParticipantIds: string[] }
 export async function POST(request: Request, { params }: { params: { conversationId: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { conversationId } = params;
   try {
     const body = await request.json();
@@ -158,6 +167,10 @@ export async function POST(request: Request, { params }: { params: { conversatio
 // Removes a participant from a conversation (soft delete for their view).
 // Query Params: userId (required)
 export async function DELETE(request: Request, { params }: { params: { conversationId: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { conversationId } = params;
   const { searchParams } = new URL(request.url);
   const userId = searchParams.get('userId');

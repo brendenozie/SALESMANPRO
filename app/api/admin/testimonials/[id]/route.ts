@@ -2,11 +2,17 @@
 // pages/api/testimonials/[id].ts
 import { NextApiRequest, NextApiResponse } from 'next';
 import { PrismaClient } from '@prisma/client';
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+import { request } from 'http';
 
 const prisma = new PrismaClient();
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { id } = req.query;
+
+   const auth = await verifyAuth(req);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
 
   if (req.method === 'GET') {
     try {

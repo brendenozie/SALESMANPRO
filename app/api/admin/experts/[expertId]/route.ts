@@ -1,10 +1,15 @@
 // app/api/admin/[adminSlug]/experts/[expertId]/route.js
 import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb'; // Adjust this path
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 // PUT /api/admin/[adminSlug]/experts/[expertId]
 // Updates an existing expert's details.
 export async function PUT(request, { params }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { adminSlug, expertId } = params;
 
   try {
@@ -115,6 +120,10 @@ export async function PUT(request, { params }) {
 // DELETE /api/admin/[adminSlug]/experts/[expertId]
 // Deletes a specific expert profile.
 export async function DELETE(request, { params }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { adminSlug, expertId } = params;
 
   try {

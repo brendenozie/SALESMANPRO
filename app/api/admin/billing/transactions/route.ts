@@ -1,7 +1,9 @@
 // import { NextResponse } from 'next/server';
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 import prisma from '@/server/db/prismadb';
 // app/api/admin/[slug]/billing/transactions/route.ts
 import { TransactionStatus, TransactionType } from "@prisma/client";
+import { request } from 'http';
 import { NextRequest, NextResponse } from "next/server";
 
 // Initialize Prisma Client
@@ -10,6 +12,11 @@ import { NextRequest, NextResponse } from "next/server";
 // This API route handles fetching paginated and filtered billing transactions for a company.
 export async function GET(req: NextRequest, { params }: { params: { slug: string } }) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
+    
     const companyId = params.slug;
     const { searchParams } = new URL(req.url);
     const page = parseInt(searchParams.get("page") || "1");

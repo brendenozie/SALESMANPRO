@@ -6,6 +6,11 @@ import prisma from '@/server/db/prismadb'; // Adjust path if needed
 // Updates a specific product (dish)
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
+    
     const { id } = params;
     const body = await request.json();
     const {
@@ -74,6 +79,10 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 // Deletes a specific product (dish)
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const { id } = params;
 
     await prisma.product.delete({

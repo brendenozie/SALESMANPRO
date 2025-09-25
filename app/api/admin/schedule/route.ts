@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 // app/api/admin/[adminSlug]/schedule/route.ts
 
@@ -10,6 +11,10 @@ export async function GET(
   { params }: { params: { adminSlug: string } }
 ) {
   try {
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const isAdmin = true; // Placeholder for real authentication
     if (!isAdmin) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

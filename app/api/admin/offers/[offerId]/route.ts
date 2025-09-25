@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 // GET a single Offer by ID
 export async function GET(
@@ -7,6 +8,11 @@ export async function GET(
   { params }: { params: { offerId: string } }
 ) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
+    
     const { offerId } = params;
 
     const offer = await prisma.offerContract.findUnique({
@@ -64,6 +70,11 @@ export async function PATCH(
   request: Request,
   { params }: { params: { offerId: string } }
 ) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
   try {
     const { offerId } = params;
     const body = await request.json();
@@ -145,6 +156,11 @@ export async function DELETE(
   { params }: { params: { offerId: string } }
 ) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
+    
     const { offerId } = params;
 
     await prisma.offerContract.delete({

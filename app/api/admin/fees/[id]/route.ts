@@ -1,6 +1,7 @@
 // app/api/admin/fees/[id]/payments/route.ts
 import { NextResponse } from 'next/server';
 import { addPaymentToRecord } from '@/lib/data'; // Adjust path as needed
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 interface Context {
   params: { id: string }; // `id` is the feeRecordId
@@ -9,6 +10,11 @@ interface Context {
 // Handles POST requests for adding payments to a fee record
 export async function POST(request: Request, context: Context) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
+    
     const { id } = context.params;
     const { amount, date, method, receiptNumber } = await request.json();
 

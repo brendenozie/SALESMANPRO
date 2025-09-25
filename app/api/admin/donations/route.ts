@@ -1,9 +1,14 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Ensure this path is correct based on your project structure
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 // GET all donations
 export async function GET(request: Request) {
   try {
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const donations = await prisma.donation.findMany({
       include: {
         donor: true, // Include donor (User) details
@@ -27,6 +32,10 @@ export async function GET(request: Request) {
 // POST a new donation
 export async function POST(request: Request) {
   try {
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const body = await request.json();
     const { donorId, amount, currency, paymentMethod, notes, status, projectId, campaignId, transactionId } = body;
 

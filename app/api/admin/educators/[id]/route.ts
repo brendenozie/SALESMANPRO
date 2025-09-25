@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 
 
@@ -7,6 +8,10 @@ import prisma from "@/server/db/prismadb"; // Adjust path as needed
 // Fetches a single educator by ID, including associated User data, department,
 // academic level assignments, and dynamically calculated counts.
 export async function GET(request: Request, { params }: { params: { id: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { id } = params;
 
   try {
@@ -112,6 +117,10 @@ export async function GET(request: Request, { params }: { params: { id: string }
 // Updates an existing Educator profile by ID, including user data, department,
 // and academic level assignments.
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { id } = params;
 
   try {
@@ -305,6 +314,10 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 // DELETE /api/educators/[id]
 // Deletes an Educator profile by ID.
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { id } = params;
 
   try {

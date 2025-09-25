@@ -1,6 +1,8 @@
 // app/api/admin/[adminSlug]/staff/[id]/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import { request } from "http";
 
 
 // GET a single store with category tree and counts
@@ -9,6 +11,10 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
+    
+       const auth = await verifyAuth(req);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
     const storeId = params.id;
 
     const store = await prisma.company.findUnique({

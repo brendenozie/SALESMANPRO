@@ -2,10 +2,17 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { getSession } from "next-auth/react";
 
 import prisma, { client } from "@/server/db/prismadb";
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import { request } from "http";
+import { NextResponse } from "next/server";
 
 // POST /api/post
 
 export default async function GET( req : Request ) {
+  
+     const auth = await verifyAuth(req);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   if (req.method === 'POST') {
         const { userId, subscriptionPlanId, amount, status, currency, startingAt, endingAt } = req.body;
 

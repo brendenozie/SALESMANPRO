@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { v4 as uuidv4 } from 'uuid'; // For generating unique IDs for subcategories
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 // Helper type for subcategories as they are stored in JSON
 type SubcategoryJson = {
@@ -14,6 +15,10 @@ type SubcategoryJson = {
 // POST /api/store-categories/[id]/subcategories
 // Adds a new subcategory to a specific StoreCategory's 'items' JSON array.
 export async function POST(request: Request, { params }: { params: { id: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { id } = params; // StoreCategory ID
 
   try {

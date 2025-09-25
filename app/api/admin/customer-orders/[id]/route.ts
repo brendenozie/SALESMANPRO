@@ -1,11 +1,16 @@
 // app/api/customer-orders/[id]/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb'; // Adjust path if needed
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 // PUT /api/customer-orders/:id
 // Updates a specific customer order (e.g., status, delivery details)
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const { id } = params;
     const body = await request.json();
     const { status, deliveryStatus, deliveryPersonName, deliveryPersonContact } = body;

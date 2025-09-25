@@ -1,10 +1,15 @@
 // app/api/admin/[adminSlug]/virtual-tours/[tourId]/route.js
 import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb'; // Adjust this path
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 // PUT /api/admin/[adminSlug]/virtual-tours/[tourId]
 // Updates an existing virtual tour.
 export async function PUT(request, { params }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { adminSlug, tourId } = params;
 
   try {
@@ -78,6 +83,10 @@ export async function PUT(request, { params }) {
 // DELETE /api/admin/[adminSlug]/virtual-tours/[tourId]
 // Deletes a specific virtual tour.
 export async function DELETE(request, { params }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { adminSlug, tourId } = params;
 
   try {

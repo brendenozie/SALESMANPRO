@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb';
 import { Plan, UserStatus, ROLE } from '@prisma/client';
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 // PUT /api/users/[id]
 // Handles updating an existing user.
@@ -9,6 +10,10 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const { id } = params; // Get the user ID from the URL params
     const { companyId, ...userData } = await request.json();
 
@@ -62,6 +67,10 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const { id } = params; // Get the user ID from the URL params
 
     // Check if the user ID is valid

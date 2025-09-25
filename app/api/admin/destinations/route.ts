@@ -2,6 +2,8 @@
 
 import { NextResponse, NextRequest } from 'next/server';
 import prisma from "@/server/db/prismadb"; 
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+import { request } from 'http';
 
 // app/api/destinations/route.ts
 
@@ -16,6 +18,10 @@ import prisma from "@/server/db/prismadb";
 // =======================================================================
 export async function GET(request: Request) {
   try {
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const { searchParams } = new URL(request.url);
     const companyId = searchParams.get('companyId');
     // Use Prisma to find all destinations and include the related 'location' model
@@ -40,6 +46,10 @@ export async function GET(request: Request) {
 // =======================================================================
 export async function POST(req: NextRequest) {
   try {
+     const auth = await verifyAuth(req);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     // Parse the JSON body from the request
     const body = await req.json();
     const {

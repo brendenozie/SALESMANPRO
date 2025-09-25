@@ -3,6 +3,10 @@ import prisma from "@/server/db/prismadb"; // Adjust path as needed
 
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   if (req.method === "GET") {
     try {
       const agents = await prisma.salesAgent.findMany({

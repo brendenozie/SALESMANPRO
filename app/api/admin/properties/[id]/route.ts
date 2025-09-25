@@ -1,11 +1,16 @@
 // app/api/properties/[id]/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma'; // Adjust path if necessary
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 // GET /api/properties/:id
 // Fetches a single property by ID
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const { id } = params;
     const property = await prisma.property.findUnique({
       where: { id },
@@ -33,6 +38,10 @@ export async function GET(request: Request, { params }: { params: { id: string }
 // Updates an existing property
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
+   const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+
     const { id } = params;
     const body = await request.json();
     const {
@@ -96,6 +105,10 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 // Deletes a property
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
+   const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+
     const { id } = params;
     await prisma.property.delete({
       where: { id },

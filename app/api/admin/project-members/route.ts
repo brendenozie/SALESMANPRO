@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb';
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 // Define the expected shape for project member creation
 interface ProjectMemberCreateData {
@@ -16,6 +17,10 @@ interface ProjectMemberCreateData {
  */
 export async function GET(request: Request) {
   try {
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const { searchParams } = new URL(request.url);
     const projectId = searchParams.get('projectId');
 
@@ -41,6 +46,10 @@ export async function GET(request: Request) {
  */
 export async function POST(request: Request) {
   try {
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const { projectId, userId, role }: ProjectMemberCreateData = await request.json();
 
     if (!projectId || !userId || !role) {

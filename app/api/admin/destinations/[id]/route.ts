@@ -2,6 +2,8 @@
 
 import { NextResponse, NextRequest } from 'next/server';
 import prisma from "@/server/db/prismadb"; 
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+import { request } from 'http';
 
 
 
@@ -22,6 +24,10 @@ interface Params {
 // GET: Fetch a single destination by ID
 // =======================================================================
 export async function GET(req: NextRequest, { params }: Params) {
+   const auth = await verifyAuth(req);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+
   const { id } = params;
 
   try {
@@ -48,6 +54,10 @@ export async function GET(req: NextRequest, { params }: Params) {
 // PATCH: Update an existing destination by ID
 // =======================================================================
 export async function PATCH(req: NextRequest, { params }: Params) {
+   const auth = await verifyAuth(req);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+
   const { id } = params;
 
   try {
@@ -74,6 +84,10 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 // DELETE: Delete a destination by ID
 // =======================================================================
 export async function DELETE(req: NextRequest, { params }: Params) {
+   const auth = await verifyAuth(req);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+
   const { id } = params;
 
   try {

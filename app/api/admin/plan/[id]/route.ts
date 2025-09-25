@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb';
 import { PlanStatus, SubscriptionStatus, BillingCycle } from '@prisma/client'; // Import the new enums
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 // =================================================================================================
 // PLAN-SPECIFIC API ROUTES
@@ -11,6 +12,10 @@ import { PlanStatus, SubscriptionStatus, BillingCycle } from '@prisma/client'; /
 // Handles updating a specific plan.
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
     const { id } = params;
     const {
       name,
@@ -49,6 +54,10 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 // Handles deleting a specific plan.
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
     const { id } = params;
 
     // Check if there are any active subscriptions for this plan

@@ -1,11 +1,16 @@
 // app/api/product-categories/[id]/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb'; // Adjust path if needed
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 // PUT /api/product-categories/:id
 // Updates a specific product category
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const { id } = params;
     const body = await request.json();
     const { name, slug, description, image, sortOrder, visible } = body;
@@ -41,6 +46,10 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 // Deletes a specific product category
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const { id } = params;
 
     await prisma.productCategory.delete({

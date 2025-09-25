@@ -1,6 +1,7 @@
 // app/api/admin/clients/[id]/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 interface Params {
   params: { id: string };
@@ -41,6 +42,10 @@ async function formatPatientData(consumer: any) {
 // This file handles GET, PUT, DELETE for a specific patient by ID
 
 export async function GET(request: Request, { params }: { params: { id: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { id } = params; // This is the Consumer ID
 
   try {
@@ -74,6 +79,10 @@ export async function GET(request: Request, { params }: { params: { id: string }
 }
 
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { id } = params; // This is the Consumer ID
   const body = await request.json();
   const { name, email, phone, dob, gender, profilePicture } = body;
@@ -131,6 +140,10 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 }
 
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { id } = params; // This is the Consumer ID
 
   try {

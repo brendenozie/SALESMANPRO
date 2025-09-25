@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 // Define the CourseMaterialType enum for validation
 enum CourseMaterialType {
@@ -15,6 +16,10 @@ enum CourseMaterialType {
 // Fetches all course materials, optionally filtered by courseId.
 export async function GET(request: Request) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
     const { searchParams } = new URL(request.url);
     const courseId = searchParams.get('courseId');
     const companyId = searchParams.get('companyId'); // Also allow filtering by company (indirectly via course)
@@ -81,6 +86,10 @@ export async function GET(request: Request) {
 // Creates a new CourseMaterial entry.
 export async function POST(request: Request) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
     const body = await request.json();
     const { courseId, title, description, fileUrl, linkUrl, type, uploadedById } = body;
 

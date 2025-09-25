@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; 
 import { getAuthSession } from "@/lib/auth";
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 
 // If you are putting this in a separate file, make sure to initialize prisma as shown above
@@ -13,6 +14,11 @@ import { getAuthSession } from "@/lib/auth";
  */
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
+    
     const { id } = params;
 
     const location = await prisma.location.findUnique({
@@ -41,6 +47,11 @@ export async function GET(request: Request, { params }: { params: { id: string }
  */
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
+    
     const { id } = params;
     const body = await request.json();
 
@@ -77,6 +88,11 @@ export async function PATCH(request: Request, { params }: { params: { id: string
  */
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
+    
     const { id } = params;
 
     // Optional: Check for children before deleting if onDelete: NoAction is strict

@@ -1,8 +1,13 @@
 // app/api/marketplace-list/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 export async function GET(req: Request) {
+   const auth = await verifyAuth(req);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+
   const { searchParams } = new URL(req.url);
 
   const companyId = searchParams.get("companyId");

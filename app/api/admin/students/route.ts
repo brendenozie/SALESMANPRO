@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
 import { EnrollmentStatus, StudentLevelStatus, ROLE } from "@prisma/client"; // Import StudentLevelStatus and ROLE
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 // Helper function to generate a unique 6-digit login code (admission number)
 async function generateUniqueLoginCode(): Promise<string> {
@@ -26,6 +27,10 @@ async function generateUniqueLoginCode(): Promise<string> {
 // and linked academic level(s) via the StudentAcademicLevel junction, and their specific StudentLevelStatus.
 export async function GET(request: Request) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
     
     const { searchParams } = new URL(request.url);
     const companyId = searchParams.get('companyId');
@@ -145,6 +150,10 @@ export async function GET(request: Request) {
 // POST /api/admin/students
 export async function POST(request: Request) {
   try {
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const body = await request.json();
     const { email, name, companyId, phone,firstName, lastName, admissionNumber, bio, address, profilePicture, parentId, academicLevelId, levelStatus } = body;
 

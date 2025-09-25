@@ -2,8 +2,13 @@
 // app/api/doctor/patients/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 export async function GET(request: Request) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { searchParams } = new URL(request.url);
   const doctorId = searchParams.get("doctorId");
   const searchTerm = searchParams.get("searchTerm") || "";

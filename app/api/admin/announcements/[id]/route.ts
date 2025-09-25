@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 // Define valid Enum values (must match your Prisma enums)
 const VALID_ANNOUNCEMENT_STATUSES = ["PENDING", "PUBLISHED", "ARCHIVED"];
@@ -10,6 +11,10 @@ const VALID_ANNOUNCEMENT_AUDIENCES = ["ALL", "ACADEMIC_LEVEL", "COURSE", "EDUCAT
 // GET /api/announcements/[id]
 // Fetches a single Announcement by its ID.
 export async function GET(request: Request, { params }: { params: { id: string } }) {
+  
+  const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { id } = params;
 
   try {
@@ -71,6 +76,10 @@ export async function GET(request: Request, { params }: { params: { id: string }
 // PATCH /api/announcements/[id]
 // Updates an existing Announcement by ID.
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+  
+  const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
   const { id } = params;
 
   try {
@@ -221,6 +230,10 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 // DELETE /api/announcements/[id]
 // Deletes an Announcement by ID.
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+  
+  const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
   const { id } = params;
 
   try {

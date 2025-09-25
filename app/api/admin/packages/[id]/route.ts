@@ -3,11 +3,16 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { PrismaClient } from '@prisma/client';
 import { NextResponse } from 'next/server';
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 const prisma = new PrismaClient();
 
 // export async function GET(req: Request, res: NextApiResponse) {
 export async function GET(request: Request, { params }: { params: { id: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { id } = params;
   // const { id } = req.query;
 
@@ -29,6 +34,10 @@ export async function GET(request: Request, { params }: { params: { id: string }
   } 
 }
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
     const { id } = params;
   
     try {

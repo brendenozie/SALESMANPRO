@@ -1,6 +1,7 @@
 // app/api/admin/[adminSlug]/bookings/[bookingId]/route.js
 import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb'; // Adjust this path
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 // Helper function to format dates and times for frontend (duplicate for self-containment)
 const formatDate = (date) => date ? new Date(date).toISOString().split('T')[0] : 'N/A';
@@ -9,6 +10,11 @@ const formatTime = (date) => date ? new Date(date).toLocaleTimeString('en-US', {
 // PUT /api/admin/[adminSlug]/bookings/[bookingId]
 // Updates an existing booking.
 export async function PUT(request, { params }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
   const { adminSlug, bookingId } = params;
 
   try {
@@ -108,6 +114,11 @@ export async function PUT(request, { params }) {
 // DELETE /api/admin/[adminSlug]/bookings/[bookingId]
 // Deletes a specific booking.
 export async function DELETE(request, { params }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
   const { adminSlug, bookingId } = params;
 
   try {

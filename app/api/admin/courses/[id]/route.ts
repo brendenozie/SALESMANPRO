@@ -1,9 +1,14 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 // GET /api/courses/[id]
 // Fetches a single course by ID, including related data and calculated counts.
 export async function GET(request: Request, { params }: { params: { id: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { id } = params;
 
   try {
@@ -101,6 +106,10 @@ export async function GET(request: Request, { params }: { params: { id: string }
 // PATCH /api/courses/[id]
 // Updates an existing Course, including its academic level and educator assignments.
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { id } = params;
 
   try {
@@ -306,6 +315,10 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 // DELETE /api/courses/[id]
 // Deletes a Course by ID.
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { id } = params;
 
   try {

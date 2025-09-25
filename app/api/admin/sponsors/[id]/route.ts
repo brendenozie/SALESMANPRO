@@ -1,6 +1,7 @@
 // app/api/sponsors/[id]/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb';
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 /**
  * @route GET /api/sponsors/:id
@@ -8,6 +9,10 @@ import prisma from '@/server/db/prismadb';
  * @returns {Response} A JSON response containing the sponsor.
  */
 export async function GET(request: Request, { params }: { params: { id: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { id } = params;
   try {
     const sponsor = await prisma.sponsor.findUnique({
@@ -31,6 +36,10 @@ export async function GET(request: Request, { params }: { params: { id: string }
  * @returns {Response} A JSON response with the updated sponsor.
  */
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { id } = params;
   try {
     const body = await request.json();
@@ -66,6 +75,10 @@ export async function PUT(request: Request, { params }: { params: { id: string }
  * @returns {Response} A 204 No Content response.
  */
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { id } = params;
   try {
     await prisma.sponsor.delete({ where: { id } });

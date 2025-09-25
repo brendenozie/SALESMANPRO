@@ -1,11 +1,16 @@
 // app/api/conversations/[conversationId]/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 // PATCH /api/conversations/[conversationId]
 // Updates a conversation's general properties (e.g., title).
 // Body: { title?: string }
 export async function PATCH(request: Request, { params }: { params: { conversationId: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { conversationId } = params;
   try {
     const body = await request.json();
@@ -60,6 +65,10 @@ export async function PATCH(request: Request, { params }: { params: { conversati
 // DELETE /api/conversations/[conversationId]
 // Deletes a conversation and all its associated messages and participant entries.
 export async function DELETE(request: Request, { params }: { params: { conversationId: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { conversationId } = params;
   try {
     const existingConversation = await prisma.conversation.findUnique({

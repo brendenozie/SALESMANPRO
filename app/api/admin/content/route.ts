@@ -1,6 +1,8 @@
 // app/api/photos/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb';
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+import { request } from 'http';
 
 // GET /api/photos - Fetch all photos
 // app/api/content/route.ts
@@ -12,6 +14,10 @@ import prisma from '@/server/db/prismadb';
  */
 export async function GET() {
   try {
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const content = await prisma.content.findMany({
       include: {
         photoAlbum: {
@@ -41,6 +47,10 @@ export async function GET() {
  */
 export async function POST(request: Request) {
   try {
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const body = await request.json();
     const { title, type, publishDate, authorId, photoAlbumId, videoAlbumId, status } = body;
 

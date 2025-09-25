@@ -1,6 +1,7 @@
 // app/api/admin/[adminSlug]/promotions/route.js
 import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb'; // Adjust this path
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 // Helper to format discount for frontend
 const formatDiscount = (value, type) => {
@@ -15,6 +16,10 @@ const formatDiscount = (value, type) => {
 // GET /api/admin/[adminSlug]/promotions
 // Fetches all promotions for a specific company.
 export async function GET(request: Request) {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
     
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');
@@ -63,6 +68,10 @@ export async function GET(request: Request) {
 // POST /api/admin/[adminSlug]/promotions
 // Creates a new promotion.
 export async function POST(request: Request) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   
   
   const { searchParams } = new URL(request.url);

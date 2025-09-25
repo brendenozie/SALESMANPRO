@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from "@/server/db/prismadb";
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 // A robust slugify function to create a URL-friendly string from a name.
 const slugify = (text: string) => {
@@ -20,6 +21,11 @@ const slugify = (text: string) => {
 // =======================================================================
 export async function GET(request: Request) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
+    
     const tourPackages = await prisma.tourPackage.findMany({
       // The `include` statement has been updated to reflect the `destinations` array
       // on the TourPackage model.
@@ -46,6 +52,11 @@ export async function GET(request: Request) {
 // =======================================================================
 export async function POST(request: Request) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
+    
     const body = await request.json();
     const {
       name,

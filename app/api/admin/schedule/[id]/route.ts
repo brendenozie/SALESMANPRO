@@ -1,10 +1,16 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 // GET /api/subjects/[id]
 // Fetches a single subject by ID.
 export async function GET(request: Request, { params }: { params: { id: string } }) {
-  const { id } = params;
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
+    const { id } = params;
 
   try {
     const subject = await prisma.subject.findUnique({
@@ -43,6 +49,10 @@ export async function GET(request: Request, { params }: { params: { id: string }
 // PUT /api/subjects/[id]
 // Updates an existing subject by ID.
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { id } = params;
 
   if (request.method !== "PUT") {
@@ -85,6 +95,10 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 // DELETE /api/subjects/[id]
 // Deletes a subject by ID.
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { id } = params;
 
   if (request.method !== "DELETE") {

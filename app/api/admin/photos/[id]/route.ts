@@ -1,9 +1,14 @@
 // app/api/photos/[id]/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb';
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 // GET /api/photos/:id - Fetch a single photo by ID
 export async function GET(request: Request, { params }: { params: { id: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { id } = params;
   try {
     const photo = await prisma.photo.findUnique({
@@ -23,6 +28,10 @@ export async function GET(request: Request, { params }: { params: { id: string }
 
 // PUT /api/photos/:id - Update an existing photo by ID
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { id } = params;
   try {
     const body = await request.json();
@@ -77,6 +86,10 @@ export async function PUT(request: Request, { params }: { params: { id: string }
  * @returns {Response} A 204 No Content response.
  */
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { id } = params;
   try {
     await prisma.photo.delete({

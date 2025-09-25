@@ -1,6 +1,8 @@
 // app/api/admin/[adminSlug]/locations/route.js
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb'; // Adjust this path
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+import { request } from 'http';
 
 // A robust slugify function to create a URL-friendly string from a name.
 const slugify = (text : string) => {
@@ -84,6 +86,11 @@ const slugify = (text : string) => {
 
 export async function GET(req: Request) {
   try {
+    
+       const auth = await verifyAuth(req);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
+    
     const { searchParams } = new URL(req.url);
     const companyId = searchParams.get("companyId");
 

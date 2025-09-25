@@ -1,6 +1,7 @@
 // app/api/admin/fee-items/[id]/route.ts
 import { NextResponse } from 'next/server';
 import { getFeeItemById, updateFeeItem, deleteFeeItem, FeeItem } from '@/lib/data';
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 interface Context {
   params: { id: string };
@@ -9,6 +10,10 @@ interface Context {
 // Handles GET requests for a single fee item
 export async function GET(request: Request, context: Context) {
   try {
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const { id } = context.params;
     const feeItem = await getFeeItemById(id);
     if (feeItem) {
@@ -25,6 +30,10 @@ export async function GET(request: Request, context: Context) {
 // Handles PUT requests for updating a fee item
 export async function PUT(request: Request, context: Context) {
   try {
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const { id } = context.params;
     const updatedData: Partial<Omit<FeeItem, 'id'>> = await request.json();
 
@@ -47,6 +56,10 @@ export async function PUT(request: Request, context: Context) {
 // Handles DELETE requests for deleting a fee item
 export async function DELETE(request: Request, context: Context) {
   try {
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const { id } = context.params;
     const success = await deleteFeeItem(id);
     if (success) {

@@ -1,10 +1,16 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import { NextApiRequest, NextApiResponse } from "next";
 
 
 // pages/api/returnProductToAgent.ts
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+ 
+    const auth = await verifyAuth(req);
+   if (!auth.success) return formatResponse(false, null, auth.error, 401);
+ 
  
   const { agentId, clientId, inventoryItemId, quantity } = req.body;
 

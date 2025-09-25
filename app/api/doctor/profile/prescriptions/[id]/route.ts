@@ -1,8 +1,13 @@
 // app/api/doctor/prescriptions/[id]/route.ts (for updating prescription status/notes by doctor)
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { id } = params; // Prescription ID
   const { searchParams } = new URL(request.url);
   const doctorId = searchParams.get("doctorId"); // Doctor making the update

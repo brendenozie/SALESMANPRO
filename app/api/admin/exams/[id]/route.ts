@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 // Define valid ExamTypes (must match your Prisma enum)
 const VALID_EXAM_TYPES = ["QUIZ", "UNIT_TEST", "MIDTERM", "FINAL", "ASSIGNMENT_BASED", "PRACTICE", "OTHER"];
@@ -21,6 +22,10 @@ const formatISOToHHMM = (isoString: Date | null | undefined): string | null => {
 // GET /api/exams/[id]
 // Fetches a single Exam by its ID.
 export async function GET(request: Request, { params }: { params: { id: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { id } = params;
 
   try {
@@ -104,6 +109,10 @@ export async function GET(request: Request, { params }: { params: { id: string }
 // PATCH /api/exams/[id]
 // Updates an existing Exam by ID.
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { id } = params;
 
   try {
@@ -271,6 +280,10 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 // DELETE /api/exams/[id]
 // Deletes an Exam by ID.
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { id } = params;
 
   try {

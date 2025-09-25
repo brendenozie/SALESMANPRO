@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb';
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 // Define the Project type based on your Prisma schema for better type safety
 // This should ideally be imported from a shared types file if available
@@ -28,6 +29,11 @@ export async function GET(
   context: { params: { id: string } }
 ) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
+    
     const { id } = context.params; // Get the dynamic 'id' from the URL
 
     if (!id) {
@@ -72,6 +78,11 @@ export async function PUT(
   context: { params: { id: string } }
 ) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
+    
     const { id } = context.params; // Get the dynamic 'id'
     const { name, description, startDate, endDate, status, budget, companyId }: ProjectUpdateData = await request.json();
 
@@ -125,6 +136,10 @@ export async function DELETE(
   context: { params: { id: string } }
 ) {
   try {
+   const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+
     const { id } = context.params; // Get the dynamic 'id'
 
     if (!id) {

@@ -1,10 +1,15 @@
 // app/api/admin/[adminSlug]/virtual-tours/route.js
 import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb'; // Adjust this path
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 // GET /api/admin/[adminSlug]/virtual-tours
 // Fetches all virtual tours for a specific company.
 export async function GET(request: Request) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');
@@ -52,6 +57,10 @@ export async function GET(request: Request) {
 // POST /api/admin/[adminSlug]/virtual-tours
 // Creates a new virtual tour.
 export async function POST(request: Request) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');

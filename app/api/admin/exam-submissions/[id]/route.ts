@@ -1,11 +1,16 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 // PATCH /api/exam-submissions/[id]
 // (Assuming this already exists from previous steps for updating score/feedback)
 // If not, you'd add it here. For context, here's a basic PATCH:
 
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { id } = params;
   try {
     const body = await request.json();
@@ -66,6 +71,10 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 // (Assuming this already exists from previous steps)
 
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { id } = params;
   try {
     const deletedSubmission = await prisma.examSubmission.delete({

@@ -2,10 +2,15 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb'; // Adjust this path
 import bcrypt from 'bcryptjs';
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 // GET /api/admin/[adminSlug]/experts
 // Fetches all experts for a specific company.
 export async function GET(request: Request) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');
 
@@ -67,6 +72,10 @@ export async function GET(request: Request) {
 // POST /api/admin/[adminSlug]/experts
 // Creates a new expert (including a new user with EXPERT role).
 export async function POST(request: Request) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');
 

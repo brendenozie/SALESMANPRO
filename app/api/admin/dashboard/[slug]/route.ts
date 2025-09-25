@@ -5,6 +5,10 @@ import prisma from "@/server/db/prismadb"; // Adjust path as needed
 export async function GET( req : Request,
   { params }: { params: { slug: string } }
  ) {
+    const auth = await verifyAuth(request);
+   if (!auth.success) return formatResponse(false, null, auth.error, 401);
+ 
+ 
 
   if (req.method !== "GET") {
     return NextResponse.json({ message: "Method not allowed" });

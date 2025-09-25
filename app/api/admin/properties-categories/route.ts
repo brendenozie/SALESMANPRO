@@ -1,11 +1,18 @@
 // app/api/categories/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma'; // Adjust path if necessary
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+import { request } from 'http';
 
 // GET /api/categories
 // Fetches all categories
 export async function GET() {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
+    
     const categories = await prisma.category.findMany({
       include: {
         _count: {
@@ -38,6 +45,11 @@ export async function GET() {
 // Creates a new category
 export async function POST(request: Request) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
+    
     const body = await request.json();
     const { name, description, parentCategoryId } = body;
 

@@ -1,6 +1,7 @@
 // app/api/admin/[adminSlug]/travel-bookings/route.js
 import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb'; // Adjust this path
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 // Helper function to format dates for frontend display
 const formatDate = (date) => date ? new Date(date).toISOString().split('T')[0] : 'N/A';
@@ -8,6 +9,10 @@ const formatDate = (date) => date ? new Date(date).toISOString().split('T')[0] :
 // GET /api/admin/[adminSlug]/travel-bookings
 // Fetches all travel bookings for a specific company.
 export async function GET(request: Request) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');
@@ -72,6 +77,10 @@ export async function GET(request: Request) {
 // POST /api/admin/[adminSlug]/travel-bookings
 // Creates a new travel booking.
 export async function POST(request: Request) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');

@@ -1,6 +1,7 @@
 // app/api/admin/student-fee-records/[id]/route.ts
 import { NextResponse } from 'next/server';
 import { getStudentFeeRecordById, updateStudentFeeRecord, deleteStudentFeeRecord, StudentFeeRecord } from '@/lib/data';
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 interface Context {
   params: { id: string };
@@ -9,6 +10,10 @@ interface Context {
 // Handles GET requests for a single student fee record
 export async function GET(request: Request, context: Context) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
     const { id } = context.params;
     const record = await getStudentFeeRecordById(id);
     if (record) {
@@ -25,6 +30,10 @@ export async function GET(request: Request, context: Context) {
 // Handles PUT requests for updating a student fee record (e.g., dueDate, invoiceNumber)
 export async function PUT(request: Request, context: Context) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
     const { id } = context.params;
     // Only allow specific fields to be updated directly
     const body: Partial<Pick<StudentFeeRecord, 'dueDate' | 'invoiceNumber'>> = await request.json();
@@ -48,6 +57,10 @@ export async function PUT(request: Request, context: Context) {
 // Handles DELETE requests for deleting a student fee record
 export async function DELETE(request: Request, context: Context) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
     const { id } = context.params;
     const success = await deleteStudentFeeRecord(id);
     if (success) {

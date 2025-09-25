@@ -2,10 +2,15 @@
 import { NextResponse } from 'next/server';
 import prisma from "@/server/db/prismadb";
 import { Prisma } from '@prisma/client';
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 // GET /api/admin/writers - Get all writers
 export async function GET(request: Request) {
   try {
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const { searchParams } = new URL(request.url);
     const companyId = searchParams.get('companyId');
 
@@ -27,6 +32,10 @@ export async function GET(request: Request) {
 // POST /api/admin/writers - Create a new writer
 export async function POST(request: Request) {
   try {
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const body = await request.json();
     const { 
       name, 

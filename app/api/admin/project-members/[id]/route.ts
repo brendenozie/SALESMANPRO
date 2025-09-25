@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb';
+import { formatResponse, verifyAuth } from '@/lib/verifyAuth';
 
 // Define the expected shape for updating a project member
 interface ProjectMemberUpdateData {
@@ -22,6 +23,11 @@ export async function GET(
   context: { params: { id: string } }
 ) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
+    
     const { id } = context.params;
 
     if (!id) {
@@ -60,6 +66,10 @@ export async function PUT(
   context: { params: { id: string } }
 ) {
   try {
+   const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+
     const { id } = context.params;
     const { role }: ProjectMemberUpdateData = await request.json(); // Destructure only updatable fields
 
@@ -103,6 +113,10 @@ export async function DELETE(
   context: { params: { id: string } }
 ) {
   try {
+   const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+
     const { id } = context.params;
 
     if (!id) {

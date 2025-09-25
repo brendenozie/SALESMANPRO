@@ -1,11 +1,17 @@
 // app/api/locations/[id]/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma'; // Adjust path if necessary
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 // GET /api/locations/:id
 // Fetches a single location by ID
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
+    
     const { id } = params;
     const location = await prisma.location.findUnique({
       where: { id },
@@ -40,6 +46,11 @@ export async function GET(request: Request, { params }: { params: { id: string }
 // Updates an existing location
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
+    
+   const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+
     const { id } = params;
     const body = await request.json();
     const { name, description, latitude, longitude, parentLocationId } = body;
@@ -72,6 +83,11 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 // Deletes a location
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
+    
+   const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+
     const { id } = params;
 
     // Optional: Check if location has associated properties before deleting

@@ -1,11 +1,17 @@
 // app/api/admin/[adminSlug]/attendees/[registrationId]/status/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 export async function PUT(
   request: Request,
   { params }: { params: { adminSlug: string; registrationId: string } }
 ) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
   const { adminSlug, registrationId } = params;
   const body = await request.json();
   const { status, notes } = body;

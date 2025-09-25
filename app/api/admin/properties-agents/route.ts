@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import bcrypt from 'bcryptjs';
 import { AgentProfile } from "@/app/admin/[slug]/agents/AgentsClient";
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import { request } from "http";
 
 // Define the ROLE enum if not already globally available
 enum ROLE {
@@ -26,6 +28,11 @@ const authorizeAdmin = async (req: Request) => {
 
 // --- GET: Fetch all agents ---
 export async function GET(req: Request) {
+  
+     const auth = await verifyAuth(req);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
   const authResult = await authorizeAdmin(req);
   if (!authResult.authorized) {
     return NextResponse.json({ message: authResult.message }, { status: authResult.status });
@@ -71,6 +78,11 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  
+     const auth = await verifyAuth(req);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
   const authResult = await authorizeAdmin(req);
   if (!authResult.authorized) {
     return NextResponse.json({ message: authResult.message }, { status: authResult.status });

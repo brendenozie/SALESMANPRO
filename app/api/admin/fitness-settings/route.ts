@@ -1,11 +1,16 @@
 // app/api/admin/[adminSlug]/settings/route.js
 import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb'; // Adjust this path
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 // GET /api/admin/[adminSlug]/settings
 // Fetches general settings for a specific company.
 export async function GET(request, { params }) {
   const { adminSlug } = params;
+
+   const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
 
   try {
     const company = await prisma.company.findUnique({
@@ -53,6 +58,11 @@ export async function GET(request, { params }) {
 // PUT /api/admin/[adminSlug]/settings
 // Updates general settings for a specific company.
 export async function PUT(request, { params }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
   const { adminSlug } = params;
 
   try {

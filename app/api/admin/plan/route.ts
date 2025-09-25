@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb';
 import { PlanStatus, SubscriptionStatus, BillingCycle } from '@prisma/client'; // Import the new enums
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 // =================================================================================================
 // PLANS API ROUTES
@@ -11,6 +12,10 @@ import { PlanStatus, SubscriptionStatus, BillingCycle } from '@prisma/client'; /
 // Fetches all plans with support for pagination and filtering by companyId.
 export async function GET(request: Request) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
     const { searchParams } = new URL(request.url);
 
     // Pagination parameters
@@ -57,6 +62,10 @@ export async function GET(request: Request) {
 // Handles creating a new plan.
 export async function POST(request: Request) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
     const {
       companyId,
       name,

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 // Define the CourseMaterialType enum for validation
 enum CourseMaterialType {
@@ -14,6 +15,10 @@ enum CourseMaterialType {
 // GET /api/course-materials/[id]
 // Fetches a single CourseMaterial by its ID.
 export async function GET(request: Request, { params }: { params: { id: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { id } = params;
 
   try {
@@ -60,6 +65,10 @@ export async function GET(request: Request, { params }: { params: { id: string }
 // PATCH /api/course-materials/[id]
 // Updates an existing CourseMaterial by ID.
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { id } = params;
 
   try {
@@ -147,6 +156,10 @@ export async function PATCH(request: Request, { params }: { params: { id: string
 // DELETE /api/course-materials/[id]
 // Deletes a CourseMaterial by ID.
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { id } = params;
 
   try {

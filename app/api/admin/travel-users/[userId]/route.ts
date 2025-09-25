@@ -1,10 +1,16 @@
 // app/api/admin/[adminSlug]/users/[userId]/route.js
 import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb'; // Adjust this path if your prisma client is elsewhere
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 // DELETE /api/admin/[adminSlug]/users/[userId]
 // Deletes a specific user by ID.
 export async function DELETE(request: Request, { params }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
   const { adminSlug, userId } = params;
 
   try {

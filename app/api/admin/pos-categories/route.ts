@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
 import { v4 as uuidv4 } from 'uuid'; // For generating unique IDs for subcategories
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 // Helper type for subcategories as they are stored in JSON
 type SubcategoryJson = {
@@ -15,6 +16,10 @@ type SubcategoryJson = {
 // Fetches all StoreCategory entries, optionally filtered by companyId.
 export async function GET(request: Request) {
   try {
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const { searchParams } = new URL(request.url);
     const companyId = searchParams.get('companyId');
 

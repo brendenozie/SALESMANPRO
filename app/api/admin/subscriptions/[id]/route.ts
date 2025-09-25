@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb';
 import { PlanStatus, SubscriptionStatus, BillingCycle } from '@prisma/client'; // Import the new enums
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 
 // =================================================================================================
@@ -12,6 +13,10 @@ import { PlanStatus, SubscriptionStatus, BillingCycle } from '@prisma/client'; /
 // Handles updating a specific subscription.
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
     const { id } = params;
     const {
       planId,
@@ -48,6 +53,10 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 // Handles deleting a specific subscription.
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
     const { id } = params;
 
     await prisma.subscription.delete({

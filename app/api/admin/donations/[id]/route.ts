@@ -1,12 +1,17 @@
 // pages/api/donations/[id].js
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; 
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 
 // You can optionally add other HTTP methods like PUT for updates or DELETE
 // For example, if you had an ID in the path: app/api/donations/[id]/route.ts
 
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { id } = params;
   try {
     const body = await request.json();
@@ -32,6 +37,10 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 }
 
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { id } = params;
   try {
     await prisma.donation.delete({

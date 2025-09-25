@@ -1,11 +1,16 @@
 // app/api/admin/[adminSlug]/trainers/[trainerId]/route.js
 import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb'; // Adjust this path
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 // PUT /api/admin/[adminSlug]/trainers/[trainerId]
 // Updates an existing trainer's details.
 export async function PUT(request, { params }) {
   const { adminSlug, trainerId } = params;
+
+   const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
 
   try {
     const body = await request.json();
@@ -107,6 +112,10 @@ export async function PUT(request, { params }) {
 // Deletes a specific trainer profile.
 export async function DELETE(request, { params }) {
   const { adminSlug, trainerId } = params;
+
+   const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
 
   try {
     const company = await prisma.company.findUnique({

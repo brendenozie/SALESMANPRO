@@ -1,10 +1,15 @@
 // app/api/admin/fees/route.ts
 import { NextResponse } from 'next/server';
 import { getFeeRecords, addFeeRecord, StudentFeeRecord } from '@/lib/data'; // Adjust path as needed
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 // Handles GET requests for all fee records
 export async function GET(request: Request) {
   try {
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const { searchParams } = new URL(request.url);
     const schoolId = searchParams.get('schoolId');
 
@@ -23,6 +28,10 @@ export async function GET(request: Request) {
 // Handles POST requests for adding new fee records
 export async function POST(request: Request) {
   try {
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const body = await request.json();
     const { studentName, studentClass, term, academicYear, totalFeesDue, amountPaid, dueDate, schoolId } = body;
 

@@ -1,11 +1,19 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import { request } from "http";
+import { NextApiRequest, NextApiResponse } from "next";
+import { getSession } from "next-auth/react";
 
 
 export default async function handle(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+   const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+
   const session = await getSession({ req })
   // if (!session.isAdmin) {
   //   return res.status(401).end()

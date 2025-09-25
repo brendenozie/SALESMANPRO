@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 // Define valid Enum values (must match your Prisma enums)
 const VALID_REGISTRATION_STATUSES = ["REGISTERED", "ATTENDED", "CANCELLED", "WAITLISTED"];
@@ -9,6 +10,10 @@ const VALID_REGISTRATION_STATUSES = ["REGISTERED", "ATTENDED", "CANCELLED", "WAI
 // Requires at least one filter (eventId or userId) for broad queries, plus implicit company context.
 export async function GET(request: Request) {
   try {
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const { searchParams } = new URL(request.url);
     const eventId = searchParams.get('eventId');
     const userId = searchParams.get('userId'); // The user who performed the registration
@@ -105,6 +110,10 @@ export async function GET(request: Request) {
 // Creates a new Event Registration.
 export async function POST(request: Request) {
   try {
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const body = await request.json();
     const {
       eventId,

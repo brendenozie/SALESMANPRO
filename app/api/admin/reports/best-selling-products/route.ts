@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 // app/api/admin/reports/best-selling-products/route.ts
 // import { NextRequest, NextResponse } from 'next/server';
 // import prisma from '@/lib/prisma'; // Adjust path as needed
@@ -8,6 +9,10 @@ export async function GET(req: NextRequest) {
   // --- AUTHENTICATION & AUTHORIZATION PLACEHOLDER ---
   // Only ADMINs or authorized personnel should access reports.
   // --- END PLACEHOLDER ---
+
+   const auth = await verifyAuth(req);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
 
   try {
     const { searchParams } = req.nextUrl;

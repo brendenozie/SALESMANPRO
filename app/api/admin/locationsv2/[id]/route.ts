@@ -1,6 +1,7 @@
 // app/api/admin/[adminSlug]/locations/[locationId]/route.js
 import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb'; // Adjust this path
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 // A robust slugify function (duplicate for self-containment)
 const slugify = (text) => {
@@ -18,6 +19,11 @@ const slugify = (text) => {
 // PUT /api/admin/[adminSlug]/locations/[locationId]
 // Updates an existing location.
 export async function PUT(request, { params }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
   const { adminSlug, locationId } = params;
 
   try {
@@ -126,6 +132,11 @@ export async function PUT(request, { params }) {
 // DELETE /api/admin/[adminSlug]/locations/[locationId]
 // Deletes a specific location.
 export async function DELETE(request, { params }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
   const { adminSlug, locationId } = params;
 
   try {

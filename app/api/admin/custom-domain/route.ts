@@ -3,8 +3,14 @@ import prisma from "@/server/db/prismadb"; // Adjust path as needed
 import type { NextRequest } from 'next/server';
 import { resolveCname, resolveTxt } from 'dns/promises';
 import { getSession } from 'next-auth/react';
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import { request } from "http";
 
 export async function POST(req: NextRequest) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { domain } = await req.json();
 
   // 1) Auth: make sure the user is logged in
@@ -74,6 +80,10 @@ export async function POST(req: NextRequest) {
 
 
 export async function POST(req: NextRequest) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { domain } = await req.json()
   const session = await getSession({ req })
 

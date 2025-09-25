@@ -6,6 +6,11 @@ export async function GET(
   request: Request,
   { params }: { params: { adminSlug: string } }
 ) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
   const { adminSlug } = params;
   const { searchParams } = new URL(request.url);
 
@@ -108,6 +113,11 @@ export async function POST(
   request: Request,
   { params }: { params: { adminSlug: string } }
 ) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
   const { adminSlug } = params;
   const body = await request.json();
 

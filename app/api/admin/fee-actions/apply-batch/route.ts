@@ -1,10 +1,15 @@
 // app/api/admin/fee-actions/apply-batch/route.ts
 import { NextResponse } from 'next/server';
 import { applyFeeItemsToStudentsInBatch, BatchApplyFeeParams } from '@/lib/data';
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 // Handles POST requests for applying fees in batch
 export async function POST(request: Request) {
   try {
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const body: BatchApplyFeeParams = await request.json();
     const { academicYear, term, targetType, targetValue } = body;
 

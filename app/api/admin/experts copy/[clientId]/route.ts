@@ -1,12 +1,18 @@
 // app/api/admin/clients/[id]/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import { request } from "http";
 
 interface Params {
   params: { id: string };
 }
 
 export async function GET(_req: Request, { params }: Params) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const clientId = params.id;
   if (!clientId) {
     return NextResponse.json({ error: "Missing client id" }, { status: 400 });
@@ -40,6 +46,10 @@ export async function GET(_req: Request, { params }: Params) {
 }
 
 export async function PATCH(request: Request, { params }: Params) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const clientId = params.id;
   if (!clientId) {
     return NextResponse.json({ error: "Missing client id" }, { status: 400 });
@@ -83,6 +93,10 @@ export async function PATCH(request: Request, { params }: Params) {
 }
 
 export async function DELETE(_req: Request, { params }: Params) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const clientId = params.id;
   if (!clientId) {
     return NextResponse.json({ error: "Missing client id" }, { status: 400 });

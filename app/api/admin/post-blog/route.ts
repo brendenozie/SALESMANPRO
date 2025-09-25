@@ -1,6 +1,8 @@
 // app/api/blogs/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import { request } from "http";
 
 const parseJsonSafely = (data: any, fallback: any = null) => {
   try {
@@ -12,6 +14,10 @@ const parseJsonSafely = (data: any, fallback: any = null) => {
 
 export async function POST(req: Request) {
   try {
+     const auth = await verifyAuth(req);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const {
       id,
       companyId,

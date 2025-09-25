@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 // GET a single Showing by ID
 export async function GET(
@@ -7,6 +8,10 @@ export async function GET(
   { params }: { params: { showingId: string } }
 ) {
   try {
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const { showingId } = params;
 
     const showing = await prisma.showing.findUnique({
@@ -42,6 +47,10 @@ export async function PATCH(
   { params }: { params: { showingId: string } }
 ) {
   try {
+   const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+
     const { showingId } = params;
     const body = await request.json();
     const {
@@ -108,6 +117,10 @@ export async function DELETE(
   { params }: { params: { showingId: string } }
 ) {
   try {
+   const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+
     const { showingId } = params;
 
     await prisma.showing.delete({

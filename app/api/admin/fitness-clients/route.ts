@@ -2,11 +2,17 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb'; // Adjust this path
 import bcrypt from 'bcryptjs';
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 // GET /api/admin/[adminSlug]/clients
 // Fetches all clients for a specific company.
 export async function GET(request: Request) {
 
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');
 
@@ -63,6 +69,10 @@ export async function GET(request: Request) {
 // POST /api/admin/[adminSlug]/clients
 // Creates a new client (including a new user with CLIENT role).
 export async function POST(request: Request) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');

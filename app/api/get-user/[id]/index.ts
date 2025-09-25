@@ -3,11 +3,18 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import { getSession } from 'next-auth/react'
 
 import prisma, { client } from "@/server/db/prismadb";
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+import { request } from 'http';
+import { NextResponse } from 'next/server';
 
 export default async function handle(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+   const auth = await verifyAuth(req);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+
   const session = await getSession({ req })
   // if (!session.isAdmin) {
   //   return res.status(401).end()

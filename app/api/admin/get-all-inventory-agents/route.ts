@@ -1,9 +1,15 @@
 // app/api/admin/get-all-agents/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; 
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 export async function GET(req: Request) {
   try {
+
+       const auth = await verifyAuth(req);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
+    
     // Fetch all agents and their AgentInventory entries (with product details)
     const agents = await prisma.salesAgent.findMany({
       include: {

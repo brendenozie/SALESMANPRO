@@ -2,6 +2,7 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { PrismaClient } from '@prisma/client';
 import { NextResponse } from 'next/server';
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 const prisma = new PrismaClient();
 
@@ -9,6 +10,10 @@ const prisma = new PrismaClient();
 // GET /api/admin/[slug]/experts
 // Fetches all experts for a specific company.
 export async function GET(request: Request, res: NextApiResponse) {
+
+   const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
 
     const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');
@@ -39,6 +44,10 @@ export async function GET(request: Request, res: NextApiResponse) {
 // POST /api/admin/[slug]/experts
 // Creates a new expert (including a new user with EXPERT role).
 export async function POST(request: Request, res: NextApiResponse) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');

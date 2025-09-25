@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb'; // Adjust this path
 import bcrypt from 'bcryptjs';
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 // Helper function to generate a unique 6-digit login code
 async function generateUniqueLoginCode(): Promise<string> {
@@ -25,6 +26,10 @@ async function generateUniqueLoginCode(): Promise<string> {
 // GET /api/admin/[adminSlug]/trainers
 // Fetches all trainers (Educators) for a specific company.
 export async function GET(request: Request) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { searchParams } = new URL(request.url);
   // Pagination parameters
     const page = parseInt(searchParams.get('page') || '1', 10);
@@ -87,6 +92,10 @@ export async function GET(request: Request) {
 // POST /api/admin/[adminSlug]/trainers
 // Creates a new trainer (including a new user with EDUCATOR role).
 export async function POST(request: Request) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { searchParams } = new URL(request.url);
   // Pagination parameters
     const page = parseInt(searchParams.get('page') || '1', 10);

@@ -1,6 +1,8 @@
 // app/api/admin/post-market-list/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import { request } from "http";
 
 const parseJsonSafely = (data: any, fallback: any = null) => {
   try {
@@ -30,6 +32,10 @@ const parseNumber = (val: any, fallback: number | null = null): number | null =>
 
 export async function POST(req: Request) {
   try {
+     const auth = await verifyAuth(req);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const body = await req.json();
     const {
       id,

@@ -10,6 +10,10 @@ const VALID_MESSAGE_TYPES = ["TEXT", "IMAGE", "FILE", "AUDIO", "VIDEO", "SYSTEM_
 // Query Params: userId (required), companyId (required), includeArchived (optional, "true" or "false")
 export async function GET(request: Request) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
     const companyId = searchParams.get('companyId');
@@ -103,6 +107,10 @@ export async function GET(request: Request) {
 // Body: { companyId: string, participantIds: string[], title?: string }
 export async function POST(request: Request) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
     const body = await request.json();
     const { companyId, participantIds, title = null } = body;
 

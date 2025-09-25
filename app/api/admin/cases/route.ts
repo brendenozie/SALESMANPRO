@@ -5,11 +5,17 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { PrismaClient } from '@prisma/client';
 import { NextResponse } from 'next/server';
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 const prisma = new PrismaClient();
 
 export async function GET(request: Request) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
+    
       const cases = await prisma.case.findMany({
         include: {
           client: {
@@ -35,6 +41,11 @@ export async function GET(request: Request) {
 // POST a new campaign
 export async function POST(request: Request) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
+    
 
       const body = await request.json();
       const { title, description, clientId, assignedToUserId, caseType, status,companyId } = body;

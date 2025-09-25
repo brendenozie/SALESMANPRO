@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 const prisma = new PrismaClient();
 
@@ -11,6 +12,11 @@ export async function PUT(
   { params }: { params: { agentId: string } }
 ) {
   try {
+    
+    const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
+    
     const { agentId } = params;
     const body = await request.json();
     const { name, email, phoneNumber } = body;

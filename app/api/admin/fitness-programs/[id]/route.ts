@@ -1,6 +1,7 @@
 // app/api/tour-packages/[id]/route.ts
 import { NextResponse } from 'next/server';
 import prisma from "@/server/db/prismadb"; // Make sure this path is correct
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 
 // A robust slugify function to create a URL-friendly string from a name.
@@ -20,6 +21,11 @@ const slugify = (text: string) => {
 // Fetches a single tour package by its ID.
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
+    
     const { id } = params;
 
     const tourPackage = await prisma.tourPackage.findUnique({
@@ -53,6 +59,11 @@ export async function GET(request: Request, { params }: { params: { id: string }
 // =======================================================================
 export async function PUT(request: Request) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
+    
     const { pathname } = new URL(request.url);
     const id = pathname.split('/').pop();
 
@@ -120,6 +131,11 @@ export async function PUT(request: Request) {
 // =======================================================================
 export async function DELETE(request: Request) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
+    
     const { pathname } = new URL(request.url);
     const id = pathname.split('/').pop();
 

@@ -1,6 +1,7 @@
 // app/api/admin/[adminSlug]/promotions/[promotionId]/route.js
 import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb'; // Adjust this path
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 // Helper to format discount for frontend (duplicate for self-containment)
 const formatDiscount = (value, type) => {
@@ -15,6 +16,11 @@ const formatDiscount = (value, type) => {
 // PUT /api/admin/[adminSlug]/promotions/[promotionId]
 // Updates an existing promotion.
 export async function PUT(request, { params }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
   const { adminSlug, promotionId } = params;
 
   try {
@@ -105,6 +111,11 @@ export async function PUT(request, { params }) {
 // DELETE /api/admin/[adminSlug]/promotions/[promotionId]
 // Deletes a specific promotion.
 export async function DELETE(request, { params }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
   const { adminSlug, promotionId } = params;
 
   try {

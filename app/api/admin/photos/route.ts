@@ -1,10 +1,15 @@
 // app/api/photos/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb';
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 // GET /api/photos - Fetch all photos
 export async function GET(request: Request) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
     const { searchParams } = new URL(request.url);
     const companyId = searchParams.get('companyId');
 
@@ -23,6 +28,10 @@ export async function GET(request: Request) {
 // POST /api/photos - Create a new photo
 export async function POST(request: Request) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
     const body = await request.json();
     const {
       title,

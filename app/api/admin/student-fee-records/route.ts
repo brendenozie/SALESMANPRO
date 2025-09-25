@@ -1,10 +1,16 @@
 // app/api/admin/student-fee-records/route.ts
 import { NextResponse } from 'next/server';
 import { getStudentFeeRecords, createStudentFeeRecord, StudentFeeRecord } from '../../../../lib/data';
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+import { request } from 'http';
 
 // Handles GET requests for all student fee records
 export async function GET() {
   try {
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const records = await getStudentFeeRecords();
     return NextResponse.json(records);
   } catch (error: any) {
@@ -16,6 +22,10 @@ export async function GET() {
 // Handles POST requests for creating a new student fee record (by applying fee items)
 export async function POST(request: Request) {
   try {
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const body: { studentId: string; academicYear: string; term: string; } = await request.json();
     const { studentId, academicYear, term } = body;
 

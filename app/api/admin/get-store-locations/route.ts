@@ -1,12 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
 import { getAuthSession } from "@/lib/auth"; // Adjust path as per your project structure
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 export async function GET(
   req: NextRequest,
   { params }: { params: { id: string } } // `id` will be the companyId (storeId)
 ) {
   try {
+
+       const auth = await verifyAuth(req);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
+    
     const session = await getAuthSession();
 
     // 1. Authenticate the user

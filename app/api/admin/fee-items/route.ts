@@ -1,10 +1,16 @@
 // app/api/admin/fee-items/route.ts
 import { NextResponse } from 'next/server';
 import { getFeeItems, createFeeItem, FeeItem } from '../../../../lib/data';
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+import { request } from 'http';
 
 // Handles GET requests for all fee items
 export async function GET() {
   try {
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const feeItems = await getFeeItems();
     return NextResponse.json(feeItems);
   } catch (error: any) {
@@ -16,6 +22,10 @@ export async function GET() {
 // Handles POST requests for creating a new fee item
 export async function POST(request: Request) {
   try {
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const body: Omit<FeeItem, 'id'> = await request.json();
     const { name, description, defaultAmount, applicableTo, applicableValue, academicYear, term, isMandatory } = body;
 

@@ -1,6 +1,7 @@
 // app/api/admin/fees/[id]/payments/route.ts
 import { NextResponse } from 'next/server';
 import prisma from "@/server/db/prismadb"; 
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 
 // app/api/company-locations/[id]/route.ts
@@ -20,6 +21,11 @@ import prisma from "@/server/db/prismadb";
  */
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
+    
     const { id } = params;
 
     const companyLocation = await prisma.companyLocation.findUnique({
@@ -47,6 +53,11 @@ export async function GET(request: Request, { params }: { params: { id: string }
  */
 export async function PATCH(request: Request, { params }: { params: { id: string } }) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
+    
     const { id } = params;
     const body = await request.json();
 
@@ -92,6 +103,11 @@ export async function PATCH(request: Request, { params }: { params: { id: string
  */
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
+    
     const { id } = params;
 
     await prisma.companyLocation.delete({

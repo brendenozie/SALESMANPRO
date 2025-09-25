@@ -1,6 +1,7 @@
 // app/api/admin/[adminSlug]/reports/route.js
 import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb'; // Adjust this path
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 // Helper to get date ranges
 const getDateRange = (period) => {
@@ -28,6 +29,11 @@ const getDateRange = (period) => {
 // GET /api/admin/[adminSlug]/reports
 // Fetches aggregated report data for a specific company and period.
 export async function GET(request, { params }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
   const { adminSlug } = params;
   const { searchParams } = new URL(request.url);
   const period = searchParams.get('period') || 'last30days'; // Default to last 30 days

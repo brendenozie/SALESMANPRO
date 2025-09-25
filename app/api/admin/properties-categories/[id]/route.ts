@@ -1,11 +1,17 @@
 // app/api/categories/[id]/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma'; // Adjust path if necessary
+import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
 // GET /api/categories/:id
 // Fetches a single category by ID
 export async function GET(request: Request, { params }: { params: { id: string } }) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
+    
     const { id } = params;
     const category = await prisma.category.findUnique({
       where: { id },
@@ -40,6 +46,11 @@ export async function GET(request: Request, { params }: { params: { id: string }
 // Updates an existing category
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
+    
     const { id } = params;
     const body = await request.json();
     const { name, description, parentCategoryId } = body;
@@ -70,6 +81,11 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 // Deletes a category
 export async function DELETE(request: Request, { params }: { params: { id: string } }) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
+    
     const { id } = params;
 
     // Optional: Check if category has associated properties before deleting

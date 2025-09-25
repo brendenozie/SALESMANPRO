@@ -1,11 +1,16 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
 import { EnrollmentStatus, StudentLevelStatus, ROLE } from "@prisma/client"; // Import StudentLevelStatus and ROLE
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 
 // GET /api/students/[id]
 // Fetches a single student by ID, including associated User data, academic levels, and calculated counts.
 export async function GET(request: Request, { params }: { params: { id: string } }) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   const { id } = params;
 
   try {
@@ -109,6 +114,10 @@ export async function GET(request: Request, { params }: { params: { id: string }
 // PATCH /api/admin/students/[id]
 export async function PATCH(request: Request) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
     const { pathname } = new URL(request.url);
     const studentId = pathname.split('/').pop();
 
@@ -559,6 +568,10 @@ export async function PATCH(request: Request) {
 // (No changes needed for DELETE related to levelStatus)
 export async function DELETE(request: Request) {
   try {
+    
+       const auth = await verifyAuth(request);
+      if (!auth.success) return formatResponse(false, null, auth.error, 401);
+    
     const { pathname } = new URL(request.url);
     const studentId = pathname.split('/').pop();
 

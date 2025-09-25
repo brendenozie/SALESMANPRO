@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
 
 // Helper function to generate a unique 6-digit login code for parents
 async function generateUniqueLoginCode(): Promise<string> {
@@ -24,6 +25,10 @@ async function generateUniqueLoginCode(): Promise<string> {
 // Fetches all parent profiles, including their associated User data.
 export async function GET(request: Request) {
   try {
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+  
     const { searchParams } = new URL(request.url);
     const companyId = searchParams.get('companyId');
 
@@ -86,6 +91,10 @@ export async function GET(request: Request) {
 // POST /api/parents
 // Creates a new Parent profile, linking to an existing User or creating a new basic User.
 export async function POST(request: Request) {
+  
+     const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
   if (request.method !== "POST") {
     return NextResponse.json({ message: "Method not allowed" }, { status: 405 });
   }
