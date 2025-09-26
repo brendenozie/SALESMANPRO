@@ -1,18 +1,20 @@
-// app/api/admin/[adminSlug]/orders/route.ts
 import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-export async function GET(
-  request: Request,
-  { params }: { params: { adminSlug: string } }
-) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
-  const { adminSlug } = params;
+// --- Type Definitions for the Handlers ---
+type RouteParams = {
+  adminSlug: string;
+};
+
+type HandlerContext = {
+  params: RouteParams;
+  user?: any; // Replace with your actual User type if defined
+};
+
+// --- Core Logic for GET request ---
+async function handleGet(request: Request, context: HandlerContext): Promise<NextResponse> {
+  const { adminSlug } = context.params;
   const { searchParams } = new URL(request.url);
 
   const statusFilter = searchParams.get("status");
@@ -32,104 +34,103 @@ export async function GET(
     return NextResponse.json({ message: "Invalid sortOrder parameter" }, { status: 400 });
   }
 
-  try {
-    const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
-      select: { id: true }
-    });
+  const company = await prisma.company.findUnique({
+    where: { slug: adminSlug },
+    select: { id: true }
+  });
 
-    if (!company) {
-      return NextResponse.json({ message: "Company not found" }, { status: 404 });
-    }
-
-    const whereClause: any = {
-      companyId: company.id,
-    };
-
-    if (statusFilter) {
-      whereClause.status = statusFilter;
-    }
-
-    if (searchKeyword) {
-      whereClause.OR = [
-        { id: { contains: searchKeyword, mode: 'insensitive' } },
-        { name: { contains: searchKeyword, mode: 'insensitive' } }, // customerName
-        { email: { contains: searchKeyword, mode: 'insensitive' } }, // customerEmail
-      ];
-    }
-
-    const [orders, totalItems] = await prisma.$transaction([
-      prisma.customerOrder.findMany({
-        where: whereClause,
-        orderBy: { [sortBy]: sortOrder },
-        skip: (page - 1) * limit,
-        take: limit,
-        select: {
-          id: true,
-          name: true, // Customer Name
-          email: true, // Customer Email
-          totalPrice: true,
-          createdAt: true,
-          status: true,
-          paymentOption: true,
-          _count: {
-            select: { items: true },
-          },
-        },
-      }),
-      prisma.customerOrder.count({ where: whereClause }),
-    ]);
-
-    const formattedOrders = orders.map(order => ({
-      id: order.id,
-      customerName: order.name || 'N/A',
-      customerEmail: order.email || 'N/A',
-      totalPrice: order.totalPrice,
-      createdAt: order.createdAt,
-      status: order.status,
-      paymentMethod: order.paymentOption || 'N/A',
-      itemCount: order._count.items,
-    }));
-
-    // Handle CSV export if requested
-    if (searchParams.get("export") === "csv") {
-      const headers = ['Order ID', 'Customer Name', 'Customer Email', 'Total Price', 'Date', 'Status', 'Payment Method', 'Item Count'];
-      const rows = formattedOrders.map(order => [
-        order.id,
-        order.customerName,
-        order.customerEmail,
-        order.totalPrice.toFixed(2),
-        order.createdAt.toISOString(),
-        order.status,
-        order.paymentMethod,
-        order.itemCount
-      ]);
-      const csvContent = [
-        headers.join(','),
-        ...rows.map(row => row.join(','))
-      ].join('\n');
-
-      return new NextResponse(csvContent, {
-        status: 200,
-        headers: {
-          'Content-Type': 'text/csv',
-          'Content-Disposition': 'attachment; filename="orders.csv"',
-        },
-      });
-    }
-
-    return NextResponse.json({
-      orders: formattedOrders,
-      totalItems,
-      totalPages: Math.ceil(totalItems / limit),
-      currentPage: page,
-    }, { status: 200 });
-
-  } catch (error) {
-    console.error("Error fetching orders:", error);
-    return NextResponse.json(
-      { message: "Internal server error", error: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
-    );
+  if (!company) {
+    return NextResponse.json({ message: "Company not found" }, { status: 404 });
   }
+
+  const whereClause: any = {
+    companyId: company.id,
+  };
+
+  if (statusFilter) {
+    whereClause.status = statusFilter;
+  }
+
+  if (searchKeyword) {
+    whereClause.OR = [
+      { id: { contains: searchKeyword, mode: 'insensitive' } },
+      { name: { contains: searchKeyword, mode: 'insensitive' } },
+      { email: { contains: searchKeyword, mode: 'insensitive' } },
+    ];
+  }
+
+  const [orders, totalItems] = await prisma.$transaction([
+    prisma.customerOrder.findMany({
+      where: whereClause,
+      orderBy: { [sortBy]: sortOrder },
+      skip: (page - 1) * limit,
+      take: limit,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        totalPrice: true,
+        createdAt: true,
+        status: true,
+        paymentOption: true,
+        _count: {
+          select: { items: true },
+        },
+      },
+    }),
+    prisma.customerOrder.count({ where: whereClause }),
+  ]);
+
+  const formattedOrders = orders.map(order => ({
+    id: order.id,
+    customerName: order.name || 'N/A',
+    customerEmail: order.email || 'N/A',
+    totalPrice: order.totalPrice,
+    createdAt: order.createdAt,
+    status: order.status,
+    paymentMethod: order.paymentOption || 'N/A',
+    itemCount: order._count.items,
+  }));
+
+  // Handle CSV export if requested
+  if (searchParams.get("export") === "csv") {
+    const headers = ['Order ID', 'Customer Name', 'Customer Email', 'Total Price', 'Date', 'Status', 'Payment Method', 'Item Count'];
+    const rows = formattedOrders.map(order => [
+      order.id,
+      order.customerName,
+      order.customerEmail,
+      order.totalPrice.toFixed(2),
+      order.createdAt?.toISOString(),
+      order.status,
+      order.paymentMethod,
+      order.itemCount
+    ]);
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.join(','))
+    ].join('\n');
+
+    return new NextResponse(csvContent, {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/csv',
+        'Content-Disposition': 'attachment; filename="orders.csv"',
+      },
+    });
+  }
+
+  return NextResponse.json({
+    orders: formattedOrders,
+    totalItems,
+    totalPages: Math.ceil(totalItems / limit),
+    currentPage: page,
+  }, { status: 200 });
 }
+
+// --- Exported Route Handler (Wrapped) ---
+
+/**
+ * GET /api/admin/[adminSlug]/orders
+ * Fetches a paginated and filterable list of orders.
+ */
+export const GET = withApiHandler(handleGet);

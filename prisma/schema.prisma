@@ -2058,6 +2058,7 @@ model CustomerOrder {
   Payment               Payment[]
   Company               Company?    @relation(fields: [companyId], references: [id])
   companyId             String?     @db.ObjectId
+  notes                 String?
 
   @@index([consumerId])
   @@index([companyId])

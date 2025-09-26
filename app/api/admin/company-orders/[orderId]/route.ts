@@ -1,84 +1,80 @@
-// app/api/admin/[adminSlug]/orders/[orderId]/route.ts
 import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-export async function GET(
-  request: Request,
-  { params }: { params: { adminSlug: string; orderId: string } }
-) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
-  const { adminSlug, orderId } = params;
+// --- Type Definitions for the Handlers ---
 
-  try {
-    const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
-      select: { id: true }
-    });
+type RouteParams = {
+  adminSlug: string;
+  orderId: string;
+};
 
-    if (!company) {
-      return NextResponse.json({ message: "Company not found" }, { status: 404 });
-    }
+type HandlerContext = {
+  params: RouteParams;
+  user?: any; // Replace with your actual User type if defined
+};
 
-    const order = await prisma.customerOrder.findUnique({
-      where: { id: orderId, companyId: company.id },
-      include: {
-        items: {
-          include: {
-            marketplaceListing: {
-              select: { name: true, sellingPrice: true } // Assuming ticket type name and price
-            }
-          }
-        },
-        Payment: { select: { transactionId: true, status: true }, take: 1 } // Get first payment
-      },
-    });
+// --- Core Logic for GET request ---
 
-    if (!order) {
-      return NextResponse.json({ message: "Order not found" }, { status: 404 });
-    }
+async function handleGet(request: Request, context: HandlerContext): Promise<NextResponse> {
+  const { adminSlug, orderId } = context.params;
 
-    const formattedOrder = {
-      id: order.id,
-      consumerId: order.consumerId,
-      customerName: order.name || 'N/A',
-      customerEmail: order.email || 'N/A',
-      phone: order.phone || 'N/A',
-      totalPrice: order.totalPrice,
-      createdAt: order.createdAt,
-      status: order.status,
-      orderSource: order.orderSource,
-      paymentMethod: order.paymentOption || 'N/A',
-      paymentTransactionId: order.Payment[0]?.transactionId || null,
-      items: order.items.map(item => ({
-        orderItemId: item.id,
-        ticketProductId: item.marketplaceListingId,
-        ticketType: item.marketplaceListing?.name || 'N/A',
-        eventName: "Associated Event Name (Needs lookup)", // Needs lookup based on ticket product
-        quantity: item.quantity,
-        price: item.price,
-      })),
-    };
+  const company = await prisma.company.findUnique({
+    where: { slug: adminSlug },
+    select: { id: true }
+  });
 
-    return NextResponse.json(formattedOrder, { status: 200 });
-  } catch (error) {
-    console.error("Error fetching order details:", error);
-    return NextResponse.json(
-      { message: "Internal server error", error: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
-    );
+  if (!company) {
+    return NextResponse.json({ message: "Company not found" }, { status: 404 });
   }
+
+  const order = await prisma.customerOrder.findUnique({
+    where: { id: orderId, companyId: company.id },
+    include: {
+      items: {
+        include: {
+          marketplaceListing: {
+            select: { name: true, sellingPrice: true }
+          }
+        }
+      },
+      Payment: { select: { transactionId: true, status: true }, take: 1 }
+    },
+  });
+
+  if (!order) {
+    return NextResponse.json({ message: "Order not found" }, { status: 404 });
+  }
+
+  const formattedOrder = {
+    id: order.id,
+    consumerId: order.consumerId,
+    customerName: order.name || 'N/A',
+    customerEmail: order.email || 'N/A',
+    phone: order.phone || 'N/A',
+    totalPrice: order.totalPrice,
+    createdAt: order.createdAt,
+    status: order.status,
+    orderSource: order.orderSource,
+    paymentMethod: order.paymentOption || 'N/A',
+    paymentTransactionId: order.Payment[0]?.transactionId || null,
+    items: order.items.map(item => ({
+      orderItemId: item.id,
+      ticketProductId: item.marketplaceListingId,
+      ticketType: item.marketplaceListing?.name || 'N/A',
+      eventName: "Associated Event Name (Needs lookup)",
+      quantity: item.quantity,
+      price: item.price,
+    })),
+  };
+
+  return NextResponse.json(formattedOrder, { status: 200 });
 }
 
-export async function PUT(
-  request: Request,
-  { params }: { params: { adminSlug: string; orderId: string } }
-) {
-  const { adminSlug, orderId } = params;
+// --- Core Logic for PUT request ---
+
+async function handlePut(request: Request, context: HandlerContext): Promise<NextResponse> {
+  const { adminSlug, orderId } = context.params;
   const body = await request.json();
   const { status, notes } = body;
 
@@ -86,68 +82,64 @@ export async function PUT(
     return NextResponse.json({ message: "Status is required" }, { status: 400 });
   }
 
-  // Validate status against your enum
   const validStatuses = ["PENDING", "COMPLETED", "CANCELLED", "SHIPPED", "OUT_FOR_DELIVERY", "REFUNDED"];
   if (!validStatuses.includes(status)) {
     return NextResponse.json({ message: "Invalid status provided" }, { status: 400 });
   }
 
-  try {
-    const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
-      select: { id: true }
-    });
+  const company = await prisma.company.findUnique({
+    where: { slug: adminSlug },
+    select: { id: true }
+  });
 
-    if (!company) {
-      return NextResponse.json({ message: "Company not found" }, { status: 404 });
-    }
-
-    const updatedOrder = await prisma.customerOrder.update({
-      where: { id: orderId, companyId: company.id },
-      data: {
-        status: status,
-        // You might have a 'notes' field on CustomerOrder
-        // notes: notes,
-      },
-    });
-
-    // If status is REFUNDED or CANCELLED, you might need to:
-    // 1. Create a refund record in your Payment model or a new Refund model.
-    // 2. Revert inventory quantities for associated OrderItems.
-    if (status === "REFUNDED" || status === "CANCELLED") {
-      // Example: Reverting inventory (simplified)
-      const orderItems = await prisma.orderItem.findMany({
-        where: { orderId: orderId },
-        select: { marketplaceListingId: true, quantity: true }
-      });
-
-      await prisma.$transaction(
-        orderItems.map(item =>
-          prisma.marketplaceListings.update({
-            where: { id: item.marketplaceListingId },
-            data: { quantity: { increment: item.quantity } },
-          })
-        )
-      );
-      // You'd also update the Payment status to REFUNDED
-      await prisma.payment.updateMany({
-        where: { orderId: orderId },
-        data: { status: "REFUNDED" }
-      });
-    }
-
-    return NextResponse.json(
-      { message: "Order status updated", order: updatedOrder },
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error("Error updating order status:", error);
-    if (error instanceof Error && error.message.includes("RecordNotFound")) {
-      return NextResponse.json({ message: "Order not found" }, { status: 404 });
-    }
-    return NextResponse.json(
-      { message: "Internal server error", error: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
-    );
+  if (!company) {
+    return NextResponse.json({ message: "Company not found" }, { status: 404 });
   }
+
+  const updatedOrder = await prisma.customerOrder.update({
+    where: { id: orderId, companyId: company.id },
+    data: {
+      status: status,
+    },
+  });
+
+  if (status === "REFUNDED" || status === "CANCELLED") {
+    const orderItems = await prisma.orderItem.findMany({
+      where: { orderId: orderId },
+      select: { marketplaceListingId: true, quantity: true }
+    });
+
+    await prisma.$transaction(
+      orderItems.map(item =>
+        prisma.marketplaceListings.update({
+          where: { id: item.marketplaceListingId || '' },
+          data: { quantity: { increment: item.quantity } },
+        })
+      )
+    );
+
+    await prisma.payment.updateMany({
+      where: { orderId: orderId },
+      data: { status: "REFUNDED" }
+    });
+  }
+
+  return NextResponse.json(
+    { message: "Order status updated", order: updatedOrder },
+    { status: 200 }
+  );
 }
+
+// --- Exported Route Handlers (Wrapped) ---
+
+/**
+ * GET /api/admin/[adminSlug]/orders/[orderId]
+ * Fetches a single order's details.
+ */
+export const GET = withApiHandler(handleGet);
+
+/**
+ * PUT /api/admin/[adminSlug]/orders/[orderId]
+ * Updates an order's status and handles related business logic like refunds.
+ */
+export const PUT = withApiHandler(handlePut);

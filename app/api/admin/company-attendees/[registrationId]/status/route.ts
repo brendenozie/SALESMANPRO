@@ -1,21 +1,28 @@
-// app/api/admin/[adminSlug]/attendees/[registrationId]/status/route.ts
 import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-export async function PUT(
-  request: Request,
-  { params }: { params: { adminSlug: string; registrationId: string } }
-) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
-  const { adminSlug, registrationId } = params;
+// --- Type Definitions for the Handler ---
+
+type RouteParams = {
+  adminSlug: string;
+  registrationId: string;
+};
+
+type HandlerContext = {
+  params: RouteParams;
+  user?: any; // Replace 'any' with your actual User type if defined
+};
+
+// --- Core Logic for PUT request ---
+// This function contains only the business logic, with no
+// manual auth check or top-level try/catch block.
+async function handlePut(request: Request, context: HandlerContext): Promise<NextResponse> {
+  const { adminSlug, registrationId } = context.params;
   const body = await request.json();
   const { status, notes } = body;
 
+  // Business logic validation remains inside the handler
   if (!status) {
     return NextResponse.json({ message: "Status is required" }, { status: 400 });
   }
@@ -26,22 +33,24 @@ export async function PUT(
     return NextResponse.json({ message: "Invalid status provided" }, { status: 400 });
   }
 
+  // The wrapper's try/catch will handle the update logic's errors
+  const company = await prisma.company.findUnique({
+    where: { slug: adminSlug },
+    select: { id: true }
+  });
+
+  if (!company) {
+    return NextResponse.json({ message: "Company not found" }, { status: 404 });
+  }
+
+  // We wrap the Prisma update in its own try/catch to handle the specific
+  // case of RecordNotFound and return a custom message.
   try {
-    const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
-      select: { id: true }
-    });
-
-    if (!company) {
-      return NextResponse.json({ message: "Company not found" }, { status: 404 });
-    }
-
     const updatedRegistration = await prisma.eventRegistration.update({
       where: { id: registrationId, companyId: company.id },
       data: {
         status: status,
-        // You might have a 'notes' field on EventRegistration or an associated log model
-        // notes: notes,
+        // notes: notes, // Uncomment if you have a notes field
       },
       include: {
         user: { select: { name: true, email: true } },
@@ -62,13 +71,19 @@ export async function PUT(
       { status: 200 }
     );
   } catch (error) {
-    console.error("Error updating attendee status:", error);
+    // Check for the specific Prisma "RecordNotFound" error
     if (error instanceof Error && error.message.includes("RecordNotFound")) {
       return NextResponse.json({ message: "Attendee registration not found" }, { status: 404 });
     }
-    return NextResponse.json(
-      { message: "Internal server error", error: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
-    );
+    // For any other error, re-throw it so the withApiHandler wrapper can handle it generically
+    throw error;
   }
 }
+
+// --- Exported Route Handler (Wrapped) ---
+
+/**
+ * PUT /api/admin/[adminSlug]/attendees/[registrationId]/status
+ * Updates the registration status of a single attendee.
+ */
+export const PUT = withApiHandler(handlePut);

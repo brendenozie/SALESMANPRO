@@ -1,133 +1,150 @@
-// app/api/admin/[adminSlug]/communications/[commId]/route.js
+// app/api/admin/[adminSlug]/communications/[commId]/route.ts
+
 import { NextResponse } from 'next/server';
-import prisma from '@/server/db/prismadb'; // Adjust this path
-import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+import prisma from '@/server/db/prismadb';
+import { withApiHandler } from '@/lib/hooks/withApiHandler'; 
+// Assuming the path to your wrapper is correct
 
-// PUT /api/admin/[adminSlug]/communications/[commId]
-// Updates an existing communication.
-export async function PUT(request, { params }) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
-  const { adminSlug, commId } = params;
+// 1. Define Context and Body Types (Best Practice for Type Safety)
+// You should define these types in a central place if they are reused.
+// For now, we'll define them here for clarity.
 
-  try {
-    const body = await request.json();
-    const {
-      subject,
-      content,
-      communicationType,
-      status,
-      recipients,
-      scheduledDate, // Can be used for updating scheduled date or setting sent date
-    } = body;
+type RouteParams = {
+  adminSlug: string;
+  commId: string;
+};
 
-    const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
-      select: { id: true },
-    });
+// This matches the context type expected by withApiHandler
+type HandlerContext = {
+  params: RouteParams;
+  user?: any; // Replace 'any' with your actual User type if defined
+};
 
-    if (!company) {
-      return NextResponse.json({ message: 'Company not found.' }, { status: 404 });
-    }
+type CommunicationBody = {
+  subject: string;
+  content: string;
+  communicationType: string;
+  status: 'DRAFT' | 'SCHEDULED' | 'SENT'; // Use actual string literals or enum
+  recipients: string[]; // Adjust type based on what 'recipients' holds
+  scheduledDate?: string | Date;
+};
 
-    const existingCommunication = await prisma.communication.findUnique({
-      where: { id: commId },
-      select: { companyId: true },
-    });
+// --- Handler Functions (Core Logic) ---
 
-    if (!existingCommunication || existingCommunication.companyId !== company.id) {
-      return NextResponse.json({ message: 'Communication not found or does not belong to this company.' }, { status: 404 });
-    }
+/**
+ * Core logic for the PUT request.
+ */
+async function handlePut(request: Request, context: HandlerContext): Promise<Response> {
+  const { adminSlug, commId } = context.params;
 
-    // Dynamic update for sentDate/scheduledDate based on new status
-    let updateData = {
-      subject: subject,
-      content: content,
-      communicationType: communicationType,
-      status: status,
-      recipients: recipients,
-      sentDate: null, // Reset by default
-      scheduledDate: null, // Reset by default
-    };
+  const body: CommunicationBody = await request.json();
+  const {
+    subject,
+    content,
+    communicationType,
+    status,
+    recipients,
+    scheduledDate,
+  } = body;
 
-    if (status === 'SENT') {
-      updateData.sentDate = scheduledDate ? new Date(scheduledDate) : new Date(); // Use provided date or current time
-    } else if (status === 'SCHEDULED') {
-      if (!scheduledDate) {
-        return NextResponse.json({ message: 'Scheduled date is required for scheduled communications.' }, { status: 400 });
-      }
-      updateData.scheduledDate = new Date(scheduledDate);
-    }
+  const company = await prisma.company.findUnique({
+    where: { slug: adminSlug },
+    select: { id: true },
+  });
 
-    const updatedCommunication = await prisma.communication.update({
-      where: { id: commId },
-      data: updateData,
-    });
-
-    // Format the updated communication data for frontend display
-    const formattedUpdatedCommunication = {
-      id: updatedCommunication.id,
-      subject: updatedCommunication.subject,
-      content: updatedCommunication.content,
-      communicationType: updatedCommunication.communicationType,
-      status: updatedCommunication.status,
-      recipients: updatedCommunication.recipients,
-      sentDate: updatedCommunication.sentDate ? updatedCommunication.sentDate.toISOString().split('T')[0] : null,
-      scheduledDate: updatedCommunication.scheduledDate ? updatedCommunication.scheduledDate.toISOString().slice(0, 16) : null,
-    };
-
-    return NextResponse.json(formattedUpdatedCommunication);
-  } catch (error) {
-    console.error(`Error updating communication ${commId}:`, error);
-    if (error.code === 'P2025') { // Record not found
-      return NextResponse.json({ message: 'Communication not found.' }, { status: 404 });
-    }
-    return NextResponse.json({ message: 'Failed to update communication', error: error.message }, { status: 500 });
+  if (!company) {
+    return NextResponse.json({ message: 'Company not found.' }, { status: 404 });
   }
+
+  const existingCommunication = await prisma.communication.findUnique({
+    where: { id: commId },
+    select: { companyId: true },
+  });
+
+  if (!existingCommunication || existingCommunication.companyId !== company.id) {
+    return NextResponse.json({ message: 'Communication not found or does not belong to this company.' }, { status: 404 });
+  }
+
+  let updateData: any = { // Use 'any' or a derived type for Prisma update data
+    subject,
+    content,
+    communicationType,
+    status,
+    recipients,
+    sentDate: null,
+    scheduledDate: null,
+  };
+
+  if (status === 'SENT') {
+    updateData.sentDate = scheduledDate ? new Date(scheduledDate) : new Date();
+  } else if (status === 'SCHEDULED') {
+    if (!scheduledDate) {
+      return NextResponse.json({ message: 'Scheduled date is required for scheduled communications.' }, { status: 400 });
+    }
+    updateData.scheduledDate = new Date(scheduledDate);
+  }
+
+  const updatedCommunication = await prisma.communication.update({
+    where: { id: commId },
+    data: updateData,
+  });
+
+  // Formatting response structure
+  const formattedUpdatedCommunication = {
+    id: updatedCommunication.id,
+    subject: updatedCommunication.subject,
+    content: updatedCommunication.content,
+    communicationType: updatedCommunication.communicationType,
+    status: updatedCommunication.status,
+    recipients: updatedCommunication.recipients,
+    sentDate: updatedCommunication.sentDate ? updatedCommunication.sentDate.toISOString().split('T')[0] : null,
+    scheduledDate: updatedCommunication.scheduledDate ? updatedCommunication.scheduledDate.toISOString().slice(0, 16) : null,
+  };
+
+  return NextResponse.json(formattedUpdatedCommunication);
 }
 
-// DELETE /api/admin/[adminSlug]/communications/[commId]
-// Deletes a specific communication.
-export async function DELETE(request, { params }) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
-  const { adminSlug, commId } = params;
+/**
+ * Core logic for the DELETE request.
+ */
+async function handleDelete(request: Request, context: HandlerContext): Promise<Response> {
+  const { adminSlug, commId } = context.params;
 
-  try {
-    const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
-      select: { id: true },
-    });
+  const company = await prisma.company.findUnique({
+    where: { slug: adminSlug },
+    select: { id: true },
+  });
 
-    if (!company) {
-      return NextResponse.json({ message: 'Company not found.' }, { status: 404 });
-    }
-
-    const communicationToDelete = await prisma.communication.findUnique({
-      where: { id: commId },
-      select: { companyId: true },
-    });
-
-    if (!communicationToDelete || communicationToDelete.companyId !== company.id) {
-      return NextResponse.json({ message: 'Communication not found or does not belong to this company.' }, { status: 404 });
-    }
-
-    await prisma.communication.delete({
-      where: { id: commId },
-    });
-
-    return NextResponse.json({ message: 'Communication deleted successfully.' }, { status: 200 });
-  } catch (error) {
-    console.error(`Error deleting communication ${commId}:`, error);
-    if (error.code === 'P2025') {
-      return NextResponse.json({ message: 'Communication not found.' }, { status: 404 });
-    }
-    return NextResponse.json({ message: 'Failed to delete communication', error: error.message }, { status: 500 });
+  if (!company) {
+    return NextResponse.json({ message: 'Company not found.' }, { status: 404 });
   }
+
+  const communicationToDelete = await prisma.communication.findUnique({
+    where: { id: commId },
+    select: { companyId: true },
+  });
+
+  if (!communicationToDelete || communicationToDelete.companyId !== company.id) {
+    return NextResponse.json({ message: 'Communication not found or does not belong to this company.' }, { status: 404 });
+  }
+
+  await prisma.communication.delete({
+    where: { id: commId },
+  });
+
+  return NextResponse.json({ message: 'Communication deleted successfully.' }, { status: 200 });
 }
+
+// --- Exported Route Handlers (Wrapped) ---
+
+/**
+ * PUT /api/admin/[adminSlug]/communications/[commId]
+ * Wrapped to include Auth, Rate Limiting, and Error Handling.
+ */
+export const PUT = withApiHandler(handlePut); // Uses defaults (requireAuth: true, requireRateLimit: true)
+
+/**
+ * DELETE /api/admin/[adminSlug]/communications/[commId]
+ * Wrapped to include Auth, Rate Limiting, and Error Handling.
+ */
+export const DELETE = withApiHandler(handleDelete); // Uses defaults

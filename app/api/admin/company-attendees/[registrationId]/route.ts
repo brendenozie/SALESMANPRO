@@ -1,57 +1,67 @@
-// app/api/admin/[adminSlug]/attendees/[registrationId]/route.ts
 import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-export async function GET(
-  request: Request,
-  { params }: { params: { adminSlug: string; registrationId: string } }
-) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
-  const { adminSlug, registrationId } = params;
+// --- Type Definitions for the Handler ---
 
-  try {
-    const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
-      select: { id: true }
-    });
+type RouteParams = {
+  adminSlug: string;
+  registrationId: string;
+};
 
-    if (!company) {
-      return NextResponse.json({ message: "Company not found" }, { status: 404 });
-    }
+type HandlerContext = {
+  params: RouteParams;
+  user?: any; // Replace 'any' with your actual User type if defined
+};
 
-    const registration = await prisma.eventRegistration.findUnique({
-      where: { id: registrationId, companyId: company.id },
-      include: {
-        user: { select: { id: true, name: true, email: true } },
-        event: { select: { title: true } },
-      },
-    });
+// --- Core Logic for GET request ---
+// This function contains only the business logic.
+// The wrapper handles authentication and the try/catch block.
+async function handleGet(request: Request, context: HandlerContext): Promise<NextResponse> {
+  const { adminSlug, registrationId } = context.params;
 
-    if (!registration) {
-      return NextResponse.json({ message: "Attendee registration not found" }, { status: 404 });
-    }
+  const company = await prisma.company.findUnique({
+    where: { slug: adminSlug },
+    select: { id: true }
+  });
 
-    return NextResponse.json({
-      id: registration.id,
-      eventId: registration.eventId,
-      userId: registration.userId,
-      name: registration.user?.name || 'N/A',
-      email: registration.user?.email || 'N/A',
-      eventTitle: registration.event?.title || 'N/A',
-      ticketType: "General Admission", // Mocking, needs actual lookup
-      registeredAt: registration.registeredAt,
-      status: registration.status,
-    }, { status: 200 });
-  } catch (error) {
-    console.error("Error fetching attendee registration:", error);
-    return NextResponse.json(
-      { message: "Internal server error", error: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
-    );
+  if (!company) {
+    return NextResponse.json({ message: "Company not found" }, { status: 404 });
   }
+
+  const registration = await prisma.eventRegistration.findUnique({
+    where: { id: registrationId, companyId: company.id },
+    include: {
+      user: { select: { id: true, name: true, email: true } },
+      event: { select: { title: true } },
+    },
+  });
+
+  if (!registration) {
+    return NextResponse.json({ message: "Attendee registration not found" }, { status: 404 });
+  }
+
+  // If a ticketType field exists on your model, you would fetch it here.
+  // This line remains as a placeholder for that future logic.
+  const ticketType = "General Admission"; 
+
+  return NextResponse.json({
+    id: registration.id,
+    eventId: registration.eventId,
+    userId: registration.userId,
+    name: registration.user?.name || 'N/A',
+    email: registration.user?.email || 'N/A',
+    eventTitle: registration.event?.title || 'N/A',
+    ticketType,
+    registeredAt: registration.registeredAt,
+    status: registration.status,
+  }, { status: 200 });
 }
+
+// --- Exported Route Handler (Wrapped) ---
+
+/**
+ * GET /api/admin/[adminSlug]/attendees/[registrationId]
+ * Fetches a single attendee's registration details.
+ */
+export const GET = withApiHandler(handleGet);

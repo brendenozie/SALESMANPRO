@@ -1,61 +1,50 @@
-// app/api/admin/[adminSlug]/events/[eventId]/route.ts
 import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-export async function GET(
-  request: Request,
-  { params }: { params: { adminSlug: string; eventId: string } }
-) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
-  const { adminSlug, eventId } = params;
+// --- Type Definitions for the Handlers ---
 
-  try {
-    const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
-      select: { id: true }
-    });
+type RouteParams = {
+  adminSlug: string;
+  eventId: string;
+};
 
-    if (!company) {
-      return NextResponse.json({ message: "Company not found" }, { status: 404 });
-    }
+type HandlerContext = {
+  params: RouteParams;
+  user?: any; // Replace with your actual User type if defined
+};
 
-    const event = await prisma.event.findUnique({
-      where: { id: eventId, companyId: company.id },
-      // Select all fields relevant for detailed view
-    });
+// --- Core Logic for GET request ---
 
-    if (!event) {
-      return NextResponse.json({ message: "Event not found" }, { status: 404 });
-    }
+async function handleGet(request: Request, context: HandlerContext): Promise<NextResponse> {
+  const { adminSlug, eventId } = context.params;
 
-    return NextResponse.json(event, { status: 200 });
-  } catch (error) {
-    console.error("Error fetching event:", error);
-    return NextResponse.json(
-      { message: "Internal server error", error: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
-    );
+  const company = await prisma.company.findUnique({
+    where: { slug: adminSlug },
+    select: { id: true }
+  });
+
+  if (!company) {
+    return NextResponse.json({ message: "Company not found" }, { status: 404 });
   }
+
+  const event = await prisma.event.findUnique({
+    where: { id: eventId, companyId: company.id },
+  });
+
+  if (!event) {
+    return NextResponse.json({ message: "Event not found" }, { status: 404 });
+  }
+
+  return NextResponse.json(event, { status: 200 });
 }
 
-export async function PUT(
-  request: Request,
-  { params }: { params: { adminSlug: string; eventId: string } }
-) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
-  const { adminSlug, eventId } = params;
+// --- Core Logic for PUT request ---
+
+async function handlePut(request: Request, context: HandlerContext): Promise<NextResponse> {
+  const { adminSlug, eventId } = context.params;
   const body = await request.json();
 
-  // Extract fields to update. Only include fields that are allowed to be updated.
   const {
     title, summary, description, startDateTime, endDateTime,
     location, onlineMeetingLink, imageUrl, videoUrl, eventType,
@@ -65,16 +54,16 @@ export async function PUT(
     targetStudentIds, targetDepartmentIds, targetParentIds
   } = body;
 
+  const company = await prisma.company.findUnique({
+    where: { slug: adminSlug },
+    select: { id: true }
+  });
+
+  if (!company) {
+    return NextResponse.json({ message: "Company not found" }, { status: 404 });
+  }
+
   try {
-    const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
-      select: { id: true }
-    });
-
-    if (!company) {
-      return NextResponse.json({ message: "Company not found" }, { status: 404 });
-    }
-
     const updatedEvent = await prisma.event.update({
       where: { id: eventId, companyId: company.id },
       data: {
@@ -111,52 +100,57 @@ export async function PUT(
       { status: 200 }
     );
   } catch (error) {
-    console.error("Error updating event:", error);
     if (error instanceof Error && error.message.includes("RecordNotFound")) {
       return NextResponse.json({ message: "Event not found" }, { status: 404 });
     }
-    return NextResponse.json(
-      { message: "Internal server error", error: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
-    );
+    throw error;
   }
 }
 
-export async function DELETE(
-  request: Request,
-  { params }: { params: { adminSlug: string; eventId: string } }
-) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
-  const { adminSlug, eventId } = params;
+// --- Core Logic for DELETE request ---
+
+async function handleDelete(request: Request, context: HandlerContext): Promise<NextResponse> {
+  const { adminSlug, eventId } = context.params;
+
+  const company = await prisma.company.findUnique({
+    where: { slug: adminSlug },
+    select: { id: true }
+  });
+
+  if (!company) {
+    return NextResponse.json({ message: "Company not found" }, { status: 404 });
+  }
 
   try {
-    const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
-      select: { id: true }
-    });
-
-    if (!company) {
-      return NextResponse.json({ message: "Company not found" }, { status: 404 });
-    }
-
-    // Perform the delete operation
     await prisma.event.delete({
       where: { id: eventId, companyId: company.id },
     });
 
-    return new NextResponse(null, { status: 204 }); // No content on successful deletion
+    return new NextResponse(null, { status: 204 });
   } catch (error) {
-    console.error("Error deleting event:", error);
     if (error instanceof Error && error.message.includes("RecordNotFound")) {
       return NextResponse.json({ message: "Event not found" }, { status: 404 });
     }
-    return NextResponse.json(
-      { message: "Internal server error", error: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
-    );
+    throw error;
   }
 }
+
+// --- Exported Route Handlers (Wrapped) ---
+
+/**
+ * GET /api/admin/[adminSlug]/events/[eventId]
+ * Fetches a single event's details.
+ */
+export const GET = withApiHandler(handleGet);
+
+/**
+ * PUT /api/admin/[adminSlug]/events/[eventId]
+ * Updates an existing event.
+ */
+export const PUT = withApiHandler(handlePut);
+
+/**
+ * DELETE /api/admin/[adminSlug]/events/[eventId]
+ * Deletes an event.
+ */
+export const DELETE = withApiHandler(handleDelete);

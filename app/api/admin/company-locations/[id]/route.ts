@@ -1,71 +1,45 @@
-// app/api/admin/fees/[id]/payments/route.ts
 import { NextResponse } from 'next/server';
 import prisma from "@/server/db/prismadb"; 
-import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+import { withApiHandler } from '@/lib/hooks/withApiHandler';
 
+// --- Type Definitions for the Handlers ---
+type RouteParams = {
+  id: string;
+};
 
-// app/api/company-locations/[id]/route.ts
-// This file will handle:
-// - GET /api/company-locations/:id (Get single CompanyLocation by ID)
-// - PATCH /api/company-locations/:id (Update CompanyLocation by ID)
-// - DELETE /api/company-locations/:id (Delete CompanyLocation by ID)
+type HandlerContext = {
+  params: RouteParams;
+  user?: any; // Replace with your actual User type if defined
+};
 
-// Re-use the Prisma Client instance from the other route file or ensure it's initialized here
-// (In a real app, you'd have a `lib/prisma.ts` and import `prisma` from there)
-// If you are putting this in a separate file, make sure to initialize prisma as shown above
-// let prisma: PrismaClient; // ... (Prisma initialization code from above)
+// --- Core Logic for GET request ---
+async function handleGet(request: Request, context: HandlerContext): Promise<NextResponse> {
+  const { id } = context.params;
 
-/**
- * GET /api/company-locations/:id
- * Retrieves a single CompanyLocation record by its ID.
- */
-export async function GET(request: Request, { params }: { params: { id: string } }) {
-  try {
-    
-       const auth = await verifyAuth(request);
-      if (!auth.success) return formatResponse(false, null, auth.error, 401);
-    
-    
-    const { id } = params;
+  const companyLocation = await prisma.companyLocation.findUnique({
+    where: { id },
+    include: {
+      location: true,
+    },
+  });
 
-    const companyLocation = await prisma.companyLocation.findUnique({
-      where: { id },
-      include: {
-        location: true, // Always include the base location details
-      },
-    });
-
-    if (!companyLocation) {
-      return NextResponse.json({ message: 'Company location association not found.' }, { status: 404 });
-    }
-
-    return NextResponse.json(companyLocation, { status: 200 });
-  } catch (error) {
-    console.error('Error fetching company location by ID:', error);
-    return NextResponse.json({ message: 'Failed to fetch company location.', error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
+  if (!companyLocation) {
+    return NextResponse.json({ message: 'Company location association not found.' }, { status: 404 });
   }
+
+  return NextResponse.json(companyLocation, { status: 200 });
 }
 
-/**
- * PATCH /api/company-locations/:id
- * Updates one or more fields of an existing CompanyLocation record (primarily override fields).
- * Expected body: { displayName?, addressLine1Override?, ..., sortOrder?, visible? }
- */
-export async function PATCH(request: Request, { params }: { params: { id: string } }) {
+// --- Core Logic for PATCH request ---
+async function handlePatch(request: Request, context: HandlerContext): Promise<NextResponse> {
+  const { id } = context.params;
+  const body = await request.json();
+
+  if (body.id || body.companyId || body.locationId) {
+    return NextResponse.json({ message: 'Cannot update ID, companyId, or locationId via PATCH.' }, { status: 400 });
+  }
+
   try {
-    
-       const auth = await verifyAuth(request);
-      if (!auth.success) return formatResponse(false, null, auth.error, 401);
-    
-    
-    const { id } = params;
-    const body = await request.json();
-
-    // Prevent updating the ID, companyId, or locationId via PATCH
-    if (body.id || body.companyId || body.locationId) {
-      return NextResponse.json({ message: 'Cannot update ID, companyId, or locationId via PATCH.' }, { status: 400 });
-    }
-
     const updatedCompanyLocation = await prisma.companyLocation.update({
       where: { id },
       data: {
@@ -80,46 +54,56 @@ export async function PATCH(request: Request, { params }: { params: { id: string
         longitudeOverride: body.longitudeOverride ? parseFloat(body.longitudeOverride) : null,
         sortOrder: body.sortOrder,
         visible: body.visible,
-        updatedAt: new Date(), // Prisma automatically handles @updatedAt, but explicit can be fine
+        updatedAt: new Date(),
       },
       include: {
-        location: true, // Include related Location data in response
+        location: true,
       },
     });
 
     return NextResponse.json(updatedCompanyLocation, { status: 200 });
   } catch (error) {
-    console.error('Error updating company location:', error);
     if (error instanceof Error && error.message.includes('RecordNotFound')) {
       return NextResponse.json({ message: 'Company location association not found.' }, { status: 404 });
     }
-    return NextResponse.json({ message: 'Failed to update company location.', error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
+    throw error;
   }
 }
 
-/**
- * DELETE /api/company-locations/:id
- * Deletes a CompanyLocation association.
- */
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
-  try {
-    
-       const auth = await verifyAuth(request);
-      if (!auth.success) return formatResponse(false, null, auth.error, 401);
-    
-    
-    const { id } = params;
+// --- Core Logic for DELETE request ---
+async function handleDelete(request: Request, context: HandlerContext): Promise<NextResponse> {
+  const { id } = context.params;
 
+  try {
     await prisma.companyLocation.delete({
       where: { id },
     });
 
     return new NextResponse(null, { status: 204 });
   } catch (error) {
-    console.error('Error deleting company location:', error);
     if (error instanceof Error && error.message.includes('RecordNotFound')) {
       return NextResponse.json({ message: 'Company location association not found.' }, { status: 404 });
     }
-    return NextResponse.json({ message: 'Failed to delete company location.', error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
+    throw error;
   }
 }
+
+// --- Exported Route Handlers (Wrapped) ---
+
+/**
+ * GET /api/company-locations/:id
+ * Retrieves a single CompanyLocation record by its ID.
+ */
+export const GET = withApiHandler(handleGet);
+
+/**
+ * PATCH /api/company-locations/:id
+ * Updates one or more fields of an existing CompanyLocation record.
+ */
+export const PATCH = withApiHandler(handlePatch);
+
+/**
+ * DELETE /api/company-locations/:id
+ * Deletes a CompanyLocation association.
+ */
+export const DELETE = withApiHandler(handleDelete);
