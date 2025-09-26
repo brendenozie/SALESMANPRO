@@ -1,160 +1,111 @@
-import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+// app/api/departments/[id]/route.ts
+import { z } from "zod";
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
 
-// GET /api/departments/[id]
-// Fetches a single department by ID.
-export async function GET(request: Request, { params }: { params: { id: string } }) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
+// --- Validation Schemas ---
+const updateDepartmentSchema = z.object({
+  name: z.string().min(1, "Name is required").optional(),
+  description: z.string().optional(),
+  headId: z.string().uuid().optional(),
+});
+
+// --- GET /api/departments/[id] ---
+// Fetch a single department
+async function getDepartment(request: Request, { params }: { params: { id: string } }) {
+  const { id } = params;
+
+  const department = await prisma.department.findUnique({
+    where: { id },
+    include: {
+      _count: {
+        select: { educators: true, courses: true },
+      },
+      head: {
+        select: {
+          id: true,
+          user: {
+            select: { id: true, name: true, email: true },
+          },
+        },
+      },
+    },
+  });
+
+  if (!department) {
+    return formatResponse(false, null, "Department not found", 404);
+  }
+
+  // --- Final Response ---
+    return formatResponse(true, 
+      {data: {
+        id: department.id,
+        name: department.name,
+        description: department.description,
+        head: department.head,
+        educatorCount: department._count.educators,
+        courseCount: department._count.courses,
+        createdAt: department.createdAt,
+        updatedAt: department.updatedAt,
+      }
+    },null,200
+    );
+ 
+}
+
+// --- PUT /api/departments/[id] ---
+// Update department
+async function updateDepartment(request: Request, { params }: { params: { id: string } }) {
+  const { id } = params;
+  const body = await request.json();
+
+  const parsed = updateDepartmentSchema.safeParse(body);
+  if (!parsed.success) {
+    return formatResponse(false, null, parsed.error.format(), 400);
+  }
+
+  // Ensure department exists
+  const existing = await prisma.department.findUnique({ where: { id } });
+  if (!existing) {
+    return formatResponse(false, null, "Department not found", 404);
+  }
+
+  try {
+    const updatedDepartment = await prisma.department.update({
+      where: { id },
+      data: parsed.data,
+    });
+
+    return formatResponse(true, {data: updatedDepartment  },null,200 );
+    
+  } catch (error: any) {
+    if (error.code === "P2002" && error.meta?.target?.includes("name")) {
+      return formatResponse(false, null, "A department with this name already exists.", 400);
+    }
+    throw error;
+  }
+}
+
+// --- DELETE /api/departments/[id] ---
+// Delete department
+async function deleteDepartment(request: Request, { params }: { params: { id: string } }) {
   const { id } = params;
 
   try {
-    const department = await prisma.department.findUnique({
-      where: { id },
-      include: {
-        _count: {
-          select: {
-            educators: true,
-            courses: true,
-          },
-        },
-        head: {
-          select: {
-            id: true,
-          },
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-              },
-            },
-          },
-        },
-      },
-    });
-
-    if (!department) {
-      return NextResponse.json({ message: "Department not found" }, { status: 404 });
+    const deleted = await prisma.department.delete({ where: { id } });
+    return formatResponse(true, {data: { deletedDepartmentId: deleted.id, message: "Department deleted successfully" }  },null,200 );
+    
+    
+  } catch (error: any) {
+    if (error.code === "P2003") {
+      return formatResponse(false, null, "Cannot delete department: It is linked to existing educators or courses. Please reassign them first.", 400);
     }
-
-    // Transform the data
-    const response = {
-      id: department.id,
-      name: department.name,
-      description: department.description,
-      head: department.head,
-      educatorCount: department._count.educators,
-      courseCount: department._count.courses,
-      createdAt: department.createdAt,
-      updatedAt: department.updatedAt,
-    };
-
-    return NextResponse.json(response, { status: 200 });
-  } catch (error) {
-    console.error(`Error fetching department with ID ${id}:`, error);
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    return NextResponse.json({ message: "Failed to fetch department", error: errorMessage }, { status: 500 });
+    throw error;
   }
 }
 
-// PUT /api/departments/[id]
-// Updates an existing department by ID.
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
-  
-   const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
-
-const { id } = params;
-
-  if (request.method !== "PUT") {
-    return NextResponse.json({ message: "Method not allowed" }, { status: 405 });
-  }
-
-  try {
-    const body = await request.json();
-    const { name, description, headId } = body;
-
-    // Check if department exists
-    const existingDepartment = await prisma.department.findUnique({
-      where: { id },
-    });
-
-    if (!existingDepartment) {
-      return NextResponse.json({ message: "Department not found" }, { status: 404 });
-    }
-
-    const updatedDepartment = await prisma.department.update({
-      where: { id },
-      data: {
-        name,
-        description,
-        headId,
-      },
-    });
-
-    return NextResponse.json(updatedDepartment, { status: 200 });
-  } catch (error) {
-    console.error(`Error updating department with ID ${id}:`, error);
-    // Handle unique constraint error for department name
-    if (
-      typeof error === "object" &&
-      error !== null &&
-      "code" in error &&
-      (error as any).code === 'P2002' &&
-      "meta" in error &&
-      (error as any).meta?.target?.includes('name')
-    ) {
-      return NextResponse.json({ message: "A department with this name already exists." }, { status: 409 });
-    }
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    return NextResponse.json({ message: "Failed to update department", error: errorMessage }, { status: 500 });
-  }
-}
-
-// DELETE /api/departments/[id]
-// Deletes a department by ID.
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
-  
-   const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
-
-const { id } = params;
-
-  if (request.method !== "DELETE") {
-    return NextResponse.json({ message: "Method not allowed" }, { status: 405 });
-  }
-
-  try {
-    // Before deleting a department, consider if it has related educators or courses.
-    // Prisma's default behavior might prevent deletion if there are related records
-    // and the foreign key is not set to CASCADE DELETE.
-    // You might need to handle these relations (e.g., nullify departmentId on educators/courses)
-    // or return an error if related records exist.
-    // For simplicity, this example assumes CASCADE DELETE is handled in Prisma or
-    // you want to prevent deletion if relations exist.
-
-    const deletedDepartment = await prisma.department.delete({
-      where: { id },
-    });
-
-    return NextResponse.json({ message: "Department deleted successfully", deletedDepartmentId: deletedDepartment.id }, { status: 200 });
-  } catch (error) {
-    console.error(`Error deleting department with ID ${id}:`, error);
-    // Handle specific error if department is linked to other records (e.g., P2003 Foreign key constraint failed)
-    if (
-      typeof error === "object" &&
-      error !== null &&
-      "code" in error &&
-      (error as any).code === 'P2003'
-    ) {
-      return NextResponse.json({ message: "Cannot delete department: It is linked to existing educators or courses. Please reassign them first." }, { status: 409 });
-    }
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    return NextResponse.json({ message: "Failed to delete department", error: errorMessage }, { status: 500 });
-  }
-}
+// Export handlers with standardized wrapper
+export const GET = withApiHandler(getDepartment);
+export const PUT = withApiHandler(updateDepartment);
+export const DELETE = withApiHandler(deleteDepartment);

@@ -1,33 +1,51 @@
-// app/api/admin/fee-actions/apply-batch/route.ts
-import { NextResponse } from 'next/server';
+
+
+import { withApiHandler } from '@/lib/hooks/withApiHandler'; // New import
+import { formatResponse } from '@/lib/formatResponse'; // New import
 import { applyFeeItemsToStudentsInBatch, BatchApplyFeeParams } from '@/lib/data';
-import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+import { verifyAuth } from '@/lib/verifyAuth';
 
-// Handles POST requests for applying fees in batch
-export async function POST(request: Request) {
-  try {
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
-    const body: BatchApplyFeeParams = await request.json();
-    const { academicYear, term, targetType, targetValue } = body;
+// =======================================================================
+// POST /api/admin/fee-actions/apply-batch
+// Handles POST requests for applying fees to students in a batch based on criteria.
+// =======================================================================
+async function applyBatchFees(request: Request) {
+  const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
-    // Basic validation
-    if (!academicYear || !term || !targetType) {
-      return NextResponse.json({ error: 'Missing required fields: academicYear, term, targetType.' }, { status: 400 });
-    }
+  const body: BatchApplyFeeParams = await request.json();
+  const { academicYear, term, targetType, targetValue } = body;
 
-    // Additional validation for targetValue based on targetType
-    if ((targetType === "CLASS" || targetType === "ACADEMIC_LEVEL") && !targetValue) {
-      return NextResponse.json({ error: 'targetValue is required for CLASS or ACADEMIC_LEVEL target types.' }, { status: 400 });
-    }
-
-    const result = await applyFeeItemsToStudentsInBatch(body);
-
-    return NextResponse.json({ message: 'Batch fee application initiated.', result }, { status: 200 });
-  } catch (error: any) {
-    console.error('Error applying fees in batch:', error);
-    return NextResponse.json({ error: 'Failed to apply fees in batch', details: error.message }, { status: 500 });
+  // Basic validation
+  if (!academicYear || !term || !targetType) {
+    return formatResponse(
+      false,
+      null,
+      'Missing required fields: academicYear, term, targetType.',
+      400
+    );
   }
+
+  // Additional validation for targetValue based on targetType
+  if ((targetType === "CLASS" || targetType === "ACADEMIC_LEVEL") && !targetValue) {
+    return formatResponse(
+      false,
+      null,
+      'targetValue is required for CLASS or ACADEMIC_LEVEL target types.',
+      400
+    );
+  }
+
+  // Apply the fees using the centralized data function
+  const result = await applyFeeItemsToStudentsInBatch(body);
+
+  return formatResponse(
+    true,
+    { message: 'Batch fee application initiated.', result },
+    null,
+    200
+  );
 }
+
+// Export the refactored handler wrapped in withApiHandler
+export const POST = withApiHandler(applyBatchFees);

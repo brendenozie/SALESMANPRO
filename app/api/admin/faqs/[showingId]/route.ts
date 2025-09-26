@@ -1,59 +1,88 @@
 
-// pages/api/faqs/[id].ts
-import { NextApiRequest, NextApiResponse } from 'next';
-import { PrismaClient } from '@prisma/client';
-import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
-import { request } from 'http';
 
+import { PrismaClient } from '@prisma/client';
+import { withApiHandler } from "@/lib/hooks/withApiHandler"; // New import
+import { formatResponse } from "@/lib/formatResponse"; // New import
+import { verifyAuth } from '@/lib/verifyAuth';
+
+// Initialize Prisma Client (Note: In a typical setup, this should be a singleton import)
 const prisma = new PrismaClient();
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  const { id } = req.query;
-
-  if (req.method === 'GET') {
-    try {
-      const faq = await prisma.fAQ.findUnique({
-        where: { id: String(id) },
-      });
-      if (!faq) {
-        return res.status(404).json({ error: 'FAQ not found' });
-      }
-      res.status(200).json(faq);
-    } catch (error) {
-      console.error('Failed to fetch FAQ:', error);
-      res.status(500).json({ error: 'Failed to fetch FAQ' });
-    }
-  } else if (req.method === 'PUT') {
-    try {
-      const { question, answer } = req.body;
-      const updatedFaq = await prisma.fAQ.update({
-        where: { id: String(id) },
-        data: {
-          question,
-          answer,
-        },
-      });
-      res.status(200).json(updatedFaq);
-    } catch (error) {
-      console.error('Failed to update FAQ:', error);
-      res.status(500).json({ error: 'Failed to update FAQ' });
-    }
-  } else if (req.method === 'DELETE') {
-    try {
-      await prisma.fAQ.delete({
-        where: { id: String(id) },
-      });
-      res.status(200).json({ message: 'FAQ deleted successfully' });
-    } catch (error) {
-      console.error('Failed to delete FAQ:', error);
-      res.status(500).json({ error: 'Failed to delete FAQ' });
-    }
-  } else {
-    res.setHeader('Allow', ['GET', 'PUT', 'DELETE']);
-    res.status(405).end(`Method ${req.method} Not Allowed`);
-  }
+interface Params {
+  params: { id: string };
 }
+
+// =======================================================================
+// GET /api/faqs/[id]
+// Fetches a specific FAQ by ID.
+// =======================================================================
+async function getFaq(req: Request, { params }: Params) {
+  const auth = await verifyAuth(req);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+  const faqId = params.id;
+  if (!faqId) {
+    return formatResponse(false, null, "Missing FAQ ID.", 400);
+  }
+
+  const faq = await prisma.fAQ.findUnique({
+    where: { id: faqId },
+  });
+
+  if (!faq) {
+    return formatResponse(false, null, 'FAQ not found.', 404);
+  }
+
+  return formatResponse(true, { data: faq }, null, 200);
+}
+
+// =======================================================================
+// PUT /api/faqs/[id]
+// Updates an existing FAQ.
+// =======================================================================
+async function updateFaq(req: Request, { params }: Params) {
+  const auth = await verifyAuth(req);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+  const faqId = params.id;
+  if (!faqId) {
+    return formatResponse(false, null, "Missing FAQ ID.", 400);
+  }
+
+  const { question, answer } = await req.json();
+
+  const updatedFaq = await prisma.fAQ.update({
+    where: { id: faqId },
+    data: {
+      question,
+      answer,
+    },
+  });
+
+  return formatResponse(true, { data: updatedFaq }, null, 200);
+}
+
+// =======================================================================
+// DELETE /api/faqs/[id]
+// Deletes a specific FAQ.
+// =======================================================================
+async function deleteFaq(req: Request, { params }: Params) {
+  const auth = await verifyAuth(req);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+  const faqId = params.id;
+  if (!faqId) {
+    return formatResponse(false, null, "Missing FAQ ID.", 400);
+  }
+
+  await prisma.fAQ.delete({
+    where: { id: faqId },
+  });
+
+  return formatResponse(true, { message: 'FAQ deleted successfully' }, null, 200);
+}
+
+// Export the wrapped handlers
+export const GET = withApiHandler(getFaq);
+export const PUT = withApiHandler(updateFaq);
+export const DELETE = withApiHandler(deleteFaq);

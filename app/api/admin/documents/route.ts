@@ -1,60 +1,59 @@
-// app/api/admin/fees/route.ts
-
-// Handles GET requests for all fee records
-// pages/api/cases/index.ts
-// pages/api/documents/index.ts
-import { NextApiRequest, NextApiResponse } from 'next';
+import { NextResponse, NextRequest } from 'next/server';
 import { PrismaClient } from '@prisma/client';
-import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
-import { request } from 'http';
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
+import { verifyAuth } from '@/lib/verifyAuth';
 
 const prisma = new PrismaClient();
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  
-     const auth = await verifyAuth(req);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  if (req.method === 'GET') {
-    try {
-      const documents = await prisma.document.findMany({
-        include: {
-          uploader: {
-            select: { name: true, email: true }, // Only include necessary user info
-          },
-          company: {
-            select: { name: true }, // Only include company name
-          },
-        },
-      });
-      res.status(200).json(documents);
-    } catch (error) {
-      console.error('Failed to fetch documents:', error);
-      res.status(500).json({ error: 'Failed to fetch documents' });
-    }
-  } else if (req.method === 'POST') {
-    try {
-      // In a real application, you would handle file uploads here.
-      // This is a placeholder for creating a new document in the database.
-      // We will assume the frontend sends the necessary metadata.
-      const { name, fileUrl, mimeType, fileSize, uploaderId, companyId } = req.body;
-      const newDocument = await prisma.document.create({
-        data: {
-          name,
-          fileUrl,
-          mimeType,
-          fileSize,
-          uploaderId,
-          companyId,
-        },
-      });
-      res.status(201).json(newDocument);
-    } catch (error) {
-      console.error('Failed to create document:', error);
-      res.status(500).json({ error: 'Failed to create document' });
-    }
-  } else {
-    res.setHeader('Allow', ['GET', 'POST']);
-    res.status(405).end(`Method ${req.method} Not Allowed`);
-  }
+// =======================================================================
+// GET: Fetch all documents
+// =======================================================================
+async function getDocuments(request: Request) {
+  const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+  const documents = await prisma.document.findMany({
+    include: {
+      uploader: {
+        select: { name: true, email: true },
+      },
+      company: {
+        select: { name: true },
+      },
+    },
+  });
+
+  return formatResponse(true, { data: documents }, null, 200);
 }
+
+// =======================================================================
+// POST: Create a new document
+// =======================================================================
+async function createDocument(request: Request) {
+  const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+  const { name, fileUrl, mimeType, fileSize, uploaderId, companyId } = await request.json();
+
+  if (!name || !fileUrl || !mimeType || !fileSize || !uploaderId || !companyId) {
+    return formatResponse(false, null, 'Missing required fields', 400);
+  }
+
+  const newDocument = await prisma.document.create({
+    data: {
+      name,
+      fileUrl,
+      mimeType,
+      fileSize,
+      uploaderId,
+      companyId,
+    },
+  });
+
+  return formatResponse(true, { data: newDocument }, null, 201);
+}
+
+// Export handlers with standardized wrapper
+export const GET = withApiHandler(getDocuments);
+export const POST = withApiHandler(createDocument);

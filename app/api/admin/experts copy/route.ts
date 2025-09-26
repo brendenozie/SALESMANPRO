@@ -1,125 +1,122 @@
-// app/api/admin/[adminSlug]/experts/route.js
-import { NextResponse } from 'next/server';
-import prisma from '@/server/db/prismadb'; // Adjust this path
+
+
+import prisma from '@/server/db/prismadb';
 import bcrypt from 'bcryptjs';
-import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+import { withApiHandler } from '@/lib/hooks/withApiHandler'; // New import
+import { formatResponse } from '@/lib/formatResponse'; // New import
+import { verifyAuth } from '@/lib/verifyAuth';
 
-// GET /api/admin/[adminSlug]/experts
-// Fetches all experts for a specific company.
-export async function GET(request, { params }) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  const { adminSlug } = params;
-
-  try {
-    const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
-      select: { id: true },
-    });
-
-    if (!company) {
-      return NextResponse.json({ message: 'Company not found for the given slug.' }, { status: 404 });
-    }
-
-    const experts = await prisma.expert.findMany({
-      where: {
-        companyId: company.id,
-      },
-      include: {
-        user: { // Include the related User model to get name, email, phone
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            phone: true,
-          },
-        },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
-
-    // Map Prisma Expert model to a frontend-friendly interface
-    const formattedExperts = experts.map(expert => ({
-      id: expert.id,
-      userId: expert.userId, // Keep userId for potential future use (e.g., linking to user profile)
-      name: expert.user?.name || 'N/A',
-      email: expert.user?.email || 'N/A',
-      phone: expert.user?.phone || 'N/A',
-      specialty: expert.specialty,
-      experienceYears: expert.experienceYears,
-      travelsCompleted: expert.travelsCompleted,
-      photoUrl: expert.photoUrl || 'https://placehold.co/128x128/E0E7FF/4338CA?text=No+Photo',
-      bio: expert.bio || '',
-      contactEmail: expert.contactEmail || '',
-      contactPhone: expert.contactPhone || '',
-      status: expert.status,
-    }));
-
-    return NextResponse.json(formattedExperts);
-  } catch (error) {
-    console.error('Error fetching experts:', error);
-    return NextResponse.json({ message: 'Failed to fetch experts', error: error.message }, { status: 500 });
-  }
+// Define the interface for the parameters object passed to the handler
+interface Params {
+  params: { adminSlug: string };
 }
 
-// POST /api/admin/[adminSlug]/experts
-// Creates a new expert (including a new user with EXPERT role).
-export async function POST(request, { params }) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
+// Helper function to format the expert data for response
+function formatExpertData(expert: any) {
+  return {
+    id: expert.id,
+    userId: expert.userId,
+    name: expert.user?.name || 'N/A',
+    email: expert.user?.email || 'N/A',
+    phone: expert.user?.phone || 'N/A',
+    specialty: expert.specialty,
+    experienceYears: expert.experienceYears,
+    travelsCompleted: expert.travelsCompleted,
+    photoUrl: expert.photoUrl || 'https://placehold.co/128x128/E0E7FF/4338CA?text=No+Photo',
+    bio: expert.bio || '',
+    contactEmail: expert.contactEmail || '',
+    contactPhone: expert.contactPhone || '',
+    status: expert.status,
+    // Note: Assuming 'expertise' field might exist if previously added
+    expertise: expert.expertise || [], 
+  };
+}
+
+// =======================================================================
+// GET /api/admin/[adminSlug]/experts
+// Fetches all experts for a specific company identified by adminSlug.
+// =======================================================================
+async function getExperts(request: Request, { params }: Params) {
+  const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
   const { adminSlug } = params;
 
+  // 1. Find the company ID based on the adminSlug
+  const company = await prisma.company.findUnique({
+    where: { slug: adminSlug },
+    select: { id: true },
+  });
+
+  if (!company) {
+    return formatResponse(false, null, 'Company not found for the given slug.', 404);
+  }
+
+  const experts = await prisma.expert.findMany({
+    where: {
+      companyId: company.id,
+    },
+    include: {
+      user: {
+        select: { id: true, name: true, email: true, phone: true },
+      },
+    },
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
+
+  // Map Prisma Expert model to a frontend-friendly interface
+  const formattedExperts = experts.map(formatExpertData);
+
+  return formatResponse(true, { data: formattedExperts }, null, 200);
+}
+
+// =======================================================================
+// POST /api/admin/[adminSlug]/experts
+// Creates a new expert (including a new user with EXPERT role).
+// =======================================================================
+async function createExpert(request: Request, { params }: Params) {
+  const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+  const { adminSlug } = params;
+  const body = await request.json();
+  const {
+    name, email, password, phone, specialty, experienceYears, travelsCompleted,
+    photoUrl, bio, contactEmail, contactPhone, status, expertise, // Include expertise for POST body
+  } = body;
+
+  // 1. Find the company ID based on the adminSlug
+  const company = await prisma.company.findUnique({
+    where: { slug: adminSlug },
+    select: { id: true },
+  });
+
+  if (!company) {
+    return formatResponse(false, null, 'Company not found for the given slug.', 404);
+  }
+
+  const companyId = company.id;
+
+  // 2. Basic validation
+  if (!name || !email || !password || !specialty || experienceYears === undefined || travelsCompleted === undefined) {
+    return formatResponse(false, null, 'Missing required fields for expert creation.', 400);
+  }
+  if (password.length < 8) {
+    return formatResponse(false, null, 'Password must be at least 8 characters long.', 400);
+  }
+
+  // 3. Check if a user with this email already exists
+  const existingUser = await prisma.user.findUnique({
+    where: { email: email },
+  });
+  if (existingUser) {
+    return formatResponse(false, null, 'A user with this email already exists.', 409);
+  }
+
+  // Use a local try/catch for specific Prisma error codes, allowing withApiHandler to handle generic errors
   try {
-    const body = await request.json();
-    const {
-      name,
-      email,
-      password,
-      phone,
-      specialty,
-      experienceYears,
-      travelsCompleted,
-      photoUrl,
-      bio,
-      contactEmail,
-      contactPhone,
-      status,
-    } = body;
-
-    // 1. Find the company ID based on the adminSlug
-    const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
-      select: { id: true },
-    });
-
-    if (!company) {
-      return NextResponse.json({ message: 'Company not found for the given slug.' }, { status: 404 });
-    }
-
-    const companyId = company.id;
-
-    // 2. Basic validation
-    if (!name || !email || !password || !specialty || experienceYears === undefined || travelsCompleted === undefined) {
-      return NextResponse.json({ message: 'Missing required fields for expert creation.' }, { status: 400 });
-    }
-    if (password.length < 8) {
-      return NextResponse.json({ message: 'Password must be at least 8 characters long.' }, { status: 400 });
-    }
-
-    // 3. Check if a user with this email already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email: email },
-    });
-    if (existingUser) {
-      return NextResponse.json({ message: 'A user with this email already exists.' }, { status: 409 });
-    }
-
     // 4. Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -132,8 +129,8 @@ export async function POST(request, { params }) {
           email: email,
           password: hashedPassword,
           phone: phone || null,
-          role: 'EXPERT', // Assign the EXPERT role
-          status: 'ACTIVE', // Default status for new users
+          role: 'EXPERT',
+          status: 'ACTIVE',
           company: {
             connect: { id: companyId },
           },
@@ -152,16 +149,12 @@ export async function POST(request, { params }) {
           bio: bio || null,
           contactEmail: contactEmail || null,
           contactPhone: contactPhone || null,
-          status: status || 'ACTIVE', // Default status for new expert profile
+          status: status || 'ACTIVE',
+          expertise: expertise || [], // Saving the new field
         },
         include: {
           user: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              phone: true,
-            },
+            select: { id: true, name: true, email: true, phone: true },
           },
         },
       });
@@ -169,28 +162,18 @@ export async function POST(request, { params }) {
     });
 
     // 7. Format the new expert data for frontend display
-    const formattedNewExpert = {
-      id: newExpertData.id,
-      userId: newExpertData.userId,
-      name: newExpertData.user?.name || 'N/A',
-      email: newExpertData.user?.email || 'N/A',
-      phone: newExpertData.user?.phone || 'N/A',
-      specialty: newExpertData.specialty,
-      experienceYears: newExpertData.experienceYears,
-      travelsCompleted: newExpertData.travelsCompleted,
-      photoUrl: newExpertData.photoUrl || 'https://placehold.co/128x128/E0E7FF/4338CA?text=No+Photo',
-      bio: newExpertData.bio || '',
-      contactEmail: newExpertData.contactEmail || '',
-      contactPhone: newExpertData.contactPhone || '',
-      status: newExpertData.status,
-    };
+    const formattedNewExpert = formatExpertData(newExpertData);
 
-    return NextResponse.json(formattedNewExpert, { status: 201 });
-  } catch (error) {
-    console.error('Error creating expert:', error);
-    if (error.code === 'P2002') { // Unique constraint violation (e.g., email already exists)
-      return NextResponse.json({ message: 'An expert with this email already exists.', error: error.message }, { status: 409 });
+    return formatResponse(true, { data: formattedNewExpert }, null, 201);
+  } catch (error: any) {
+    if (error.code === 'P2002') { // Unique constraint violation
+      return formatResponse(false, null, 'An expert with this email already exists.', 409);
     }
-    return NextResponse.json({ message: 'Failed to create expert', error: error.message }, { status: 500 });
+    // Re-throw to be caught by withApiHandler for generic 500 handling
+    throw error;
   }
 }
+
+// Export the refactored handlers wrapped in withApiHandler
+export const GET = withApiHandler(getExperts);
+export const POST = withApiHandler(createExpert);

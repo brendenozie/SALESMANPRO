@@ -1,120 +1,78 @@
-import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; 
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import { z } from "zod";
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
 
-// GET /api/departments
-// Fetches all departments with aggregated counts of educators and courses.
-export async function GET(request: Request) {
-  try {
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
-    const { searchParams } = new URL(request.url);
-    const companyId = searchParams.get('companyId');
+// --- Validation Schemas ---
+const createDepartmentSchema = z.object({
+  name: z.string().min(1, "Department name is required"),
+  description: z.string().optional(),
+  headId: z.string().uuid().optional(),
+  companyId: z.string().uuid({ message: "Valid companyId is required" }),
+});
 
-    console.log("Fetching departments for companyId:", companyId);
+// --- GET /api/departments ---
+// Fetch all departments by companyId
+async function getDepartments(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const companyId = searchParams.get("companyId");
 
-    if (companyId) {
-
-      const departments = await prisma.department.findMany({
-        where: { companyId: companyId },
-        include: {
-          _count: {
-            select: {
-              educators: true,
-              courses: true,
-            },
-          },
-          head: {
-            include: {
-              user: {
-                select: {
-                  id: true,
-                  name: true,
-                  email: true,
-                },
-              },
-            },
-          },
-        },
-        orderBy: {
-          name: 'asc',
-        },
-      });
-      
-
-      // Transform the data to include counts directly in the main object
-      const response = departments.map(department => ({
-        id: department.id,
-        name: department.name,
-        description: department.description,
-        head: department.head?.user || null,
-        companyId: department.companyId,
-        educatorCount: department._count.educators,
-        courseCount: department._count.courses,
-        createdAt: department.createdAt,
-        updatedAt: department.updatedAt,
-      }));
-      
-
-      return NextResponse.json(response, { status: 200 });
-     } else {
-      // For a multi-tenant app, it's safer to require companyId or courseId for a global view.
-      // If neither is provided, we might return an error or all assignments (less secure).
-      // For now, let's require companyId for the global view.
-      return NextResponse.json({ message: "companyId is required." }, { status: 400 });
-    }
-  } catch (error) {
-    // console.error("Error fetching departments:", error);
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    return NextResponse.json({ message: "Failed to fetch departments", error: errorMessage }, { status: 500 });
+  if (!companyId) {
+    return formatResponse(false, null, "companyId is required", 400);
   }
+
+  const departments = await prisma.department.findMany({
+    where: { companyId },
+    include: {
+      _count: { select: { educators: true, courses: true } },
+      head: {
+        include: {
+          user: { select: { id: true, name: true, email: true } },
+        },
+      },
+    },
+    orderBy: { name: "asc" },
+  });
+
+  const response = departments.map((d) => ({
+    id: d.id,
+    name: d.name,
+    description: d.description,
+    head: d.head?.user || null,
+    companyId: d.companyId,
+    educatorCount: d._count.educators,
+    courseCount: d._count.courses,
+    createdAt: d.createdAt,
+    updatedAt: d.updatedAt,
+  }));
+
+  return formatResponse(true, { data: response }, null, 200);
 }
 
-// POST /api/departments
-// Creates a new department.
-export async function POST(request: Request) {
-   const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+// --- POST /api/departments ---
+// Create a new department
+async function createDepartment(request: Request) {
+  const body = await request.json();
 
-
-  if (request.method !== "POST") {
-    return NextResponse.json({ message: "Method not allowed" }, { status: 405 });
+  const parsed = createDepartmentSchema.safeParse(body);
+  if (!parsed.success) {
+    return formatResponse(false, null, parsed.error.format(), 400);
   }
 
   try {
-    const body = await request.json();
-    const { name, description, headId, companyId } = body;
-
-    // Basic validation (add more robust validation as needed)
-    if (!name) {
-      return NextResponse.json({ message: "Department name is required." }, { status: 400 });
-    }
-
     const newDepartment = await prisma.department.create({
-      data: {
-        name,
-        description,
-        headId: headId || null, // This will link to an existing User's ID
-        companyId: companyId || null,
-      },
+      data: parsed.data,
     });
 
-    return NextResponse.json(newDepartment, { status: 201 });
-  } catch (error) {
-    // console.error("Error creating department:", error);
-    // Handle unique constraint error for department name
-    if (
-      typeof error === "object" &&
-      error !== null &&
-      "code" in error &&
-      (error as any).code === 'P2002' &&
-      "meta" in error &&
-      (error as any).meta?.target?.includes('name')
-    ) {
-      return NextResponse.json({ message: "A department with this name already exists." }, { status: 409 });
+    return formatResponse(true, { data: newDepartment }, null, 201);
+  } catch (error: any) {
+    if (error.code === "P2002" && error.meta?.target?.includes("name")) {
+      return formatResponse(false, null, "A department with this name already exists.", 409);
     }
-    return NextResponse.json({ message: "Failed to create department", error: (error as any).message }, { status: 500 });
+    throw error;
   }
 }
+
+// Export handlers with standardized wrapper
+export const GET = withApiHandler(getDepartments);
+export const POST = withApiHandler(createDepartment);

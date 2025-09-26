@@ -1,150 +1,133 @@
-import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
 
+export const GET = withApiHandler(
+  async (_request, { params }) => {
+    const { slug } = params;
 
-export async function GET( req : Request,
-  { params }: { params: { slug: string } }
- ) {
-    const auth = await verifyAuth(request);
-   if (!auth.success) return formatResponse(false, null, auth.error, 401);
- 
- 
-
-  if (req.method !== "GET") {
-    return NextResponse.json({ message: "Method not allowed" });
-  }
-
-  // params.slug is the value from the URL
-  const { slug } = params;
-
-  try {
-    // Calculate new clients (clients added today)
-    const newClients = await prisma.client.count({
-      where: { 
-        createdAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) },
-        companyId: slug
-      },
-    });
-
-    // Calculate low-stock inventory items
-    const lowStock = await prisma.inventoryItem.count({
-      where: { 
-        quantity: { lte: 5 },
-        companyId: slug
-       }, // Assuming low stock is <= 5
-    });
-
-    // Find the top agent by sales
-    const topAgent = await prisma.salesAgent.findMany({
-      where:{
-        companyId:slug
-      },
-      include: {
-        AgentInventory: {
-          include: { AgentInventoryLog: true },
+    try {
+      // --- New clients today
+      const newClients = await prisma.client.count({
+        where: {
+          createdAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) },
+          companyId: slug,
         },
-      },
-    });
+      });
 
-    const agentSalesData = topAgent.map((agent) => {
-      const totalSales = agent.AgentInventory.reduce((sum, inventory) => {
-        return (
-          sum +
-          inventory.AgentInventoryLog.reduce(
-            (logSum, log) => logSum + log.totalPrice,
-            0
-          )
+      // --- Low stock items
+      const lowStock = await prisma.inventoryItem.count({
+        where: {
+          quantity: { lte: 5 },
+          companyId: slug,
+        },
+      });
+
+      // --- Top agent by sales
+      const agents = await prisma.salesAgent.findMany({
+        where: { companyId: slug },
+        include: {
+          AgentInventory: {
+            include: { AgentInventoryLog: true },
+          },
+          user : true
+        },
+      });
+
+      const agentSalesData = agents.map((agent) => {
+        const totalSales = agent.AgentInventory.reduce(
+          (sum, inventory) =>
+            sum +
+            inventory.AgentInventoryLog.reduce(
+              (logSum, log) => logSum + log.totalPrice,
+              0
+            ),
+          0
         );
-      }, 0);
+        return { name: agent.user.name, totalSales };
+      });
 
-      return { name: agent.name, totalSales };
-    });
+      const topAgentData =
+        agentSalesData.sort((a, b) => b.totalSales - a.totalSales)[0] || {
+          name: "",
+          totalSales: 0,
+        };
 
-    const topAgentData = agentSalesData.sort((a, b) => b.totalSales - a.totalSales)[0] || { name: "", totalSales: 0 };
-
-    // Count communications today
-    const communicationsToday = await prisma.conversation.count({
-      where: { createdAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) },
-      companyId: slug
-     },
-    });
-
-    // Count pending orders
-    const pendingOrders = await prisma.customerOrder.count({
-      where: { status: "PENDING" },
-    });
-
-    // Count pending requests
-    const pendingRequests = await prisma.request.count({
-      where: { status: "PENDING",
-        companyId: slug },
-    });
-
-    // Sales and commission data
-    const todaySales = await prisma.agentInventoryLog.aggregate({
-      where: { createdAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) } },
-      _sum: { totalPrice: true },
-    });
-
-    const commissionEarned = await prisma.commission.aggregate({
-      where: { createdAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) } },
-      _sum: { commissionEarned: true },
-    });
-
-    // Example monthly target (assume 50,000)
-    const monthlyTarget = 50000;
-    const monthlySales = await prisma.agentInventoryLog.aggregate({
-      where: {
-        createdAt: {
-          gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+      // --- Communications today
+      const communicationsToday = await prisma.conversation.count({
+        where: {
+          createdAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) },
+          companyId: slug,
         },
-      },
-      _sum: { totalPrice: true },
-    });
+      });
 
-    const monthlyTargetProgress = ((monthlySales._sum.totalPrice || 0) / monthlyTarget) * 100;
+      // --- Pending orders
+      const pendingOrders = await prisma.customerOrder.count({
+        where: { status: "PENDING", companyId: slug },
+      });
 
-    // Leads converted and demos conducted
-    // const leadsConverted = await prisma.lead.count({
-    //   where: { status: "CONVERTED" },
-    // });
+      // --- Pending requests
+      const pendingRequests = await prisma.request.count({
+        where: { status: "PENDING", companyId: slug },
+      });
 
-    // const demosConducted = await prisma.demo.count({
-    //   where: { date: { gte: new Date(new Date().setHours(0, 0, 0, 0)) } },
-    // });
+      // --- Sales + commission today
+      const todaySales = await prisma.agentInventoryLog.aggregate({
+        where: { createdAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) } },
+        _sum: { totalPrice: true },
+      });
 
-    // Task data
-    const tasks = await prisma.task.findMany({
-      where: { status: "PENDING" },
-      orderBy: { dueDate: "asc" },
-    });
+      const commissionEarned = await prisma.commission.aggregate({
+        where: { createdAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) } },
+        _sum: { commissionEarned: true },
+      });
 
-    // Build the response
-    const response = {
-      clientData: { newClients },
-      inventoryData: { lowStock },
-      agentData: {
-        topAgent: topAgentData.name,
-        topAgentSales: topAgentData.totalSales,
-      },
-      communicationData: { today: communicationsToday },
-      orderData: { pendingOrders },
-      requestData: { pendingRequests },
-      salesData: {
-        todaySales: todaySales._sum.totalPrice || 0,
-        monthlyTargetProgress: monthlyTargetProgress || 0,
-        leadsConverted:2,
-        demosConducted:5,
-        commissionEarned: commissionEarned._sum.commissionEarned || 0,
-      },
-      taskData: { tasks },
-    };
+      // --- Monthly target progress
+      const monthlyTarget = 50000;
+      const monthlySales = await prisma.agentInventoryLog.aggregate({
+        where: {
+          createdAt: {
+            gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+          },
+        },
+        _sum: { totalPrice: true },
+      });
 
-    console.log(response);
-    
-    return NextResponse.json(response,{status : 200});
-  } catch (error) {
-    console.error("Error fetching dashboard data:", error);
-    return NextResponse.json({ error: "Internal server error" }, {status : 500});
-  }
-}
+      const monthlyTargetProgress =
+        ((monthlySales._sum.totalPrice || 0) / monthlyTarget) * 100;
+
+      // --- Pending tasks
+      const tasks = await prisma.task.findMany({
+        where: { status: "PENDING", companyId: slug },
+        orderBy: { dueDate: "asc" },
+      });
+
+      // --- Final response
+      const response = {
+        clientData: { newClients },
+        inventoryData: { lowStock },
+        agentData: {
+          topAgent: topAgentData.name,
+          topAgentSales: topAgentData.totalSales,
+        },
+        communicationData: { today: communicationsToday },
+        orderData: { pendingOrders },
+        requestData: { pendingRequests },
+        salesData: {
+          todaySales: todaySales._sum.totalPrice || 0,
+          monthlyTargetProgress: monthlyTargetProgress || 0,
+          leadsConverted: 2, // placeholder
+          demosConducted: 5, // placeholder
+          commissionEarned: commissionEarned._sum.commissionEarned || 0,
+        },
+        taskData: { tasks },
+      };
+
+      return formatResponse(true, response);
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+      throw error; // handled by withApiHandler -> handlePrismaError
+    }
+  },
+  { requireAuth: true }
+);

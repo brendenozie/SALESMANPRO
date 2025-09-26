@@ -1,55 +1,70 @@
-
-// pages/api/documents/[id].ts
-import { NextApiRequest, NextApiResponse } from 'next';
+import { NextResponse, NextRequest } from 'next/server';
 import { PrismaClient } from '@prisma/client';
-import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
-import { request } from 'http';
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
+import { verifyAuth } from '@/lib/verifyAuth';
 
 const prisma = new PrismaClient();
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  const { id } = req.query;
-
-  if (req.method === 'GET') {
-    try {
-      const document = await prisma.document.findUnique({
-        where: { id: String(id) },
-      });
-      if (!document) {
-        return res.status(404).json({ error: 'Document not found' });
-      }
-      res.status(200).json(document);
-    } catch (error) {
-      console.error('Failed to fetch document:', error);
-      res.status(500).json({ error: 'Failed to fetch document' });
-    }
-  } else if (req.method === 'PUT') {
-    try {
-      const updatedDocument = await prisma.document.update({
-        where: { id: String(id) },
-        data: req.body,
-      });
-      res.status(200).json(updatedDocument);
-    } catch (error) {
-      console.error('Failed to update document:', error);
-      res.status(500).json({ error: 'Failed to update document' });
-    }
-  } else if (req.method === 'DELETE') {
-    try {
-      await prisma.document.delete({
-        where: { id: String(id) },
-      });
-      res.status(200).json({ message: 'Document deleted successfully' });
-    } catch (error) {
-      console.error('Failed to delete document:', error);
-      res.status(500).json({ error: 'Failed to delete document' });
-    }
-  } else {
-    res.setHeader('Allow', ['GET', 'PUT', 'DELETE']);
-    res.status(405).end(`Method ${req.method} Not Allowed`);
-  }
+// Define the type for the dynamic segment 'id' from the URL
+interface Params {
+  params: { id: string };
 }
+
+// =======================================================================
+// GET: Fetch a single document by ID
+// =======================================================================
+async function getDocument(request: Request, { params }: Params) {
+  const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+  const { id } = params;
+  const document = await prisma.document.findUnique({
+    where: { id },
+  });
+
+  if (!document) {
+    return formatResponse(false, null, 'Document not found', 404);
+  }
+
+  return formatResponse(true, { data: document }, null, 200);
+}
+
+// =======================================================================
+// PUT: Update an existing document by ID
+// =======================================================================
+async function updateDocument(request: Request, { params }: Params) {
+  const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+  const { id } = params;
+  const body = await request.json();
+
+  const updatedDocument = await prisma.document.update({
+    where: { id },
+    data: body,
+  });
+
+  return formatResponse(true, { data: updatedDocument }, null, 200);
+}
+
+// =======================================================================
+// DELETE: Delete a document by ID
+// =======================================================================
+async function deleteDocument(request: Request, { params }: Params) {
+  const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+  const { id } = params;
+
+  await prisma.document.delete({
+    where: { id },
+  });
+
+  return formatResponse(true, { message: 'Document deleted successfully' }, null, 200);
+}
+
+// Export handlers with standardized wrapper
+export const GET = withApiHandler(getDocument);
+export const PUT = withApiHandler(updateDocument);
+export const DELETE = withApiHandler(deleteDocument);

@@ -1,129 +1,137 @@
-import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+
+
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler"; // New import
+import { formatResponse } from "@/lib/formatResponse"; // New import
+import { verifyAuth } from "@/lib/verifyAuth"; // Existing import
 
 // Define valid QuestionTypes (must match your Prisma enum)
 const VALID_QUESTION_TYPES = ["MULTIPLE_CHOICE", "TRUE_FALSE", "SHORT_ANSWER", "ESSAY", "FILL_IN_THE_BLANK", "MATCHING", "NUMERIC"];
 
-// GET /api/exam-questions/[id]
-// Fetches a single ExamQuestion by its ID.
-export async function GET(request: Request, { params }: { params: { id: string } }) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  const { id } = params;
-
-  try {
-    const question = await prisma.examQuestion.findUnique({
-      where: { id },
-      include: {
-        exam: {
-          select: {
-            id: true,
-            title: true,
-            courseId: true,
-            course: { select: { title: true } },
-          },
-        },
-      },
-    });
-
-    if (!question) {
-      return NextResponse.json({ message: "Exam question not found" }, { status: 404 });
-    }
-
-    // Transform response
-    const responseData = {
-      id: question.id,
-      examId: question.examId,
-      examTitle: question.exam?.title || 'N/A',
-      examCourseTitle: question.exam?.course?.title || 'N/A',
-      questionText: question.questionText,
-      imageUrl: question.imageUrl,
-      videoUrl: question.videoUrl,
-      questionType: question.questionType,
-      options: question.options,
-      correctAnswer: question.correctAnswer,
-      points: question.points,
-      order: question.order,
-      createdAt: question.createdAt,
-      updatedAt: question.updatedAt,
-    };
-
-    return NextResponse.json(responseData, { status: 200 });
-  } catch (error: any) {
-    console.error(`Error fetching exam question with ID ${id}:`, error);
-    return NextResponse.json({ message: "Failed to fetch exam question", error: error.message }, { status: 500 });
-  }
+// Define the type for the dynamic segment 'id' from the URL
+interface Params {
+  params: { id: string };
 }
 
-// PATCH /api/exam-questions/[id]
-// Updates an existing ExamQuestion by ID.
-export async function PATCH(request: Request, { params }: { params: { id: string } }) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
+// Helper to transform the Prisma question object into the desired API structure
+function transformQuestionResponse(question: any) {
+  return {
+    id: question.id,
+    examId: question.examId,
+    examTitle: question.exam?.title || 'N/A',
+    examCourseTitle: question.exam?.course?.title || 'N/A',
+    questionText: question.questionText,
+    imageUrl: question.imageUrl,
+    videoUrl: question.videoUrl,
+    questionType: question.questionType,
+    options: question.options,
+    correctAnswer: question.correctAnswer,
+    points: question.points,
+    order: question.order,
+    createdAt: question.createdAt,
+    updatedAt: question.updatedAt,
+  };
+}
+
+// =======================================================================
+// GET /api/exam-questions/[id]
+// Fetches a single ExamQuestion by its ID.
+// =======================================================================
+async function getQuestion(request: Request, { params }: Params) {
+  const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
   const { id } = params;
 
+  const question = await prisma.examQuestion.findUnique({
+    where: { id },
+    include: {
+      exam: {
+        select: {
+          id: true,
+          title: true,
+          courseId: true,
+          course: { select: { title: true } },
+        },
+      },
+    },
+  });
+
+  if (!question) {
+    return formatResponse(false, null, "Exam question not found", 404);
+  }
+
+  const responseData = transformQuestionResponse(question);
+  return formatResponse(true, { data: responseData }, null, 200);
+}
+
+// =======================================================================
+// PATCH /api/exam-questions/[id]
+// Updates an existing ExamQuestion by ID.
+// =======================================================================
+async function updateQuestion(request: Request, { params }: Params) {
+  const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+  const { id } = params;
+  const body = await request.json();
+  const {
+    examId, // Typically not changed
+    questionText,
+    imageUrl,
+    videoUrl,
+    questionType,
+    options,
+    correctAnswer,
+    points,
+    order,
+    ...rest
+  } = body;
+
+  if (Object.keys(rest).length > 0) {
+    console.warn("Unexpected fields in PATCH request for exam question:", rest);
+  }
+
+  const existingQuestion = await prisma.examQuestion.findUnique({
+    where: { id },
+  });
+
+  if (!existingQuestion) {
+    return formatResponse(false, null, "Exam question not found", 404);
+  }
+
+  const updateData: any = {};
+
+  if (questionText !== undefined) updateData.questionText = questionText;
+  if (imageUrl !== undefined) updateData.imageUrl = imageUrl;
+  if (videoUrl !== undefined) updateData.videoUrl = videoUrl;
+  if (points !== undefined) updateData.points = points;
+  if (order !== undefined) updateData.order = order;
+
+  // Validate and update questionType
+  const finalQuestionType = questionType || existingQuestion.questionType;
+  if (questionType !== undefined) {
+    if (!VALID_QUESTION_TYPES.includes(questionType)) {
+      return formatResponse(false, null, `Invalid question type: ${questionType}. Must be one of ${VALID_QUESTION_TYPES.join(', ')}.`, 400);
+    }
+    updateData.questionType = questionType;
+  }
+
+  // Validate and update options
+  if (options !== undefined) {
+    if (!Array.isArray(options)) {
+      return formatResponse(false, null, "Options must be an array.", 400);
+    }
+    // Check for options if the question type is MC (or is being set to MC)
+    if (finalQuestionType === 'MULTIPLE_CHOICE' && options.length === 0) {
+      return formatResponse(false, null, "Options array cannot be empty for MULTIPLE_CHOICE questions.", 400);
+    }
+    updateData.options = options;
+  }
+
+  if (correctAnswer !== undefined) updateData.correctAnswer = correctAnswer;
+
   try {
-    const body = await request.json();
-    const {
-      examId, // Typically not changed for a question
-      questionText,
-      imageUrl,
-      videoUrl,
-      questionType,
-      options,
-      correctAnswer,
-      points,
-      order,
-      ...rest
-    } = body;
-
-    if (Object.keys(rest).length > 0) {
-      console.warn("Unexpected fields in PATCH request for exam question:", rest);
-    }
-
-    const existingQuestion = await prisma.examQuestion.findUnique({
-      where: { id },
-    });
-
-    if (!existingQuestion) {
-      return NextResponse.json({ message: "Exam question not found" }, { status: 404 });
-    }
-
-    const updateData: any = {};
-
-    if (questionText !== undefined) updateData.questionText = questionText;
-    if (imageUrl !== undefined) updateData.imageUrl = imageUrl;
-    if (videoUrl !== undefined) updateData.videoUrl = videoUrl;
-    if (points !== undefined) updateData.points = points;
-    if (order !== undefined) updateData.order = order;
-
-    // Validate and update questionType
-    if (questionType !== undefined) {
-      if (!VALID_QUESTION_TYPES.includes(questionType)) {
-        return NextResponse.json({ message: `Invalid question type: ${questionType}. Must be one of ${VALID_QUESTION_TYPES.join(', ')}.` }, { status: 400 });
-      }
-      updateData.questionType = questionType;
-    }
-
-    // Validate and update options
-    if (options !== undefined) {
-      if (!Array.isArray(options)) {
-        return NextResponse.json({ message: "Options must be an array." }, { status: 400 });
-      }
-      if (updateData.questionType === 'MULTIPLE_CHOICE' && options.length === 0) {
-         return NextResponse.json({ message: "Options array cannot be empty for MULTIPLE_CHOICE questions." }, { status: 400 });
-      }
-      updateData.options = options;
-    }
-
-    if (correctAnswer !== undefined) updateData.correctAnswer = correctAnswer;
-
-
     const updatedQuestion = await prisma.examQuestion.update({
       where: { id },
       data: updateData,
@@ -132,56 +140,51 @@ export async function PATCH(request: Request, { params }: { params: { id: string
       },
     });
 
-    // Transform response
-    const responseData = {
-      id: updatedQuestion.id,
-      examId: updatedQuestion.examId,
-      examTitle: updatedQuestion.exam?.title || 'N/A',
-      examCourseTitle: updatedQuestion.exam?.course?.title || 'N/A',
-      questionText: updatedQuestion.questionText,
-      imageUrl: updatedQuestion.imageUrl,
-      videoUrl: updatedQuestion.videoUrl,
-      questionType: updatedQuestion.questionType,
-      options: updatedQuestion.options,
-      correctAnswer: updatedQuestion.correctAnswer,
-      points: updatedQuestion.points,
-      order: updatedQuestion.order,
-      createdAt: updatedQuestion.createdAt,
-      updatedAt: updatedQuestion.updatedAt,
-    };
-
-    return NextResponse.json(responseData, { status: 200 });
+    const responseData = transformQuestionResponse(updatedQuestion);
+    return formatResponse(true, { data: responseData }, null, 200);
   } catch (error: any) {
-    console.error(`Error updating exam question with ID ${id}:`, error);
-    return NextResponse.json({ message: "Failed to update exam question", error: error.message }, { status: 500 });
+    if (error.code === 'P2025') { // Record not found
+      return formatResponse(false, null, "Exam question not found.", 404);
+    }
+    // Let withApiHandler handle other errors (500)
+    throw error;
   }
 }
 
+// =======================================================================
 // DELETE /api/exam-questions/[id]
 // Deletes an ExamQuestion by ID.
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
+// =======================================================================
+async function deleteQuestion(request: Request, { params }: Params) {
+  const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
   const { id } = params;
 
+  const existingQuestion = await prisma.examQuestion.findUnique({
+    where: { id },
+  });
+
+  if (!existingQuestion) {
+    return formatResponse(false, null, "Exam question not found", 404);
+  }
+
   try {
-    const existingQuestion = await prisma.examQuestion.findUnique({
-      where: { id },
-    });
-
-    if (!existingQuestion) {
-      return NextResponse.json({ message: "Exam question not found" }, { status: 404 });
-    }
-
     const deletedQuestion = await prisma.examQuestion.delete({
       where: { id },
     });
 
-    return NextResponse.json({ message: "Exam question deleted successfully", deletedId: deletedQuestion.id }, { status: 200 });
+    return formatResponse(true, { message: "Exam question deleted successfully", deletedId: deletedQuestion.id }, null, 200);
   } catch (error: any) {
-    console.error(`Error deleting exam question with ID ${id}:`, error);
-    return NextResponse.json({ message: "Failed to delete exam question", error: error.message }, { status: 500 });
+    if (error.code === 'P2003') { // Foreign key constraint failed
+      return formatResponse(false, null, "Cannot delete question: It is associated with other records (e.g., student submissions).", 409);
+    }
+    // Let withApiHandler handle other errors (500)
+    throw error;
   }
 }
+
+// Export the handlers wrapped in the `withApiHandler` utility.
+export const GET = withApiHandler(getQuestion);
+export const PATCH = withApiHandler(updateQuestion);
+export const DELETE = withApiHandler(deleteQuestion);

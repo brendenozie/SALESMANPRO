@@ -1,48 +1,62 @@
-// app/api/admin/fee-items/route.ts
-import { NextResponse } from 'next/server';
-import { getFeeItems, createFeeItem, FeeItem } from '../../../../lib/data';
-import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
-import { request } from 'http';
 
+
+import { withApiHandler } from '@/lib/hooks/withApiHandler';
+import { formatResponse } from '@/lib/formatResponse';
+import { getFeeItems, createFeeItem, FeeItem } from '../../../../lib/data'; // Adjust path for data
+import { verifyAuth } from '@/lib/verifyAuth';
+
+// =======================================================================
+// GET /api/admin/fee-items
 // Handles GET requests for all fee items
-export async function GET() {
-  try {
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
-    const feeItems = await getFeeItems();
-    return NextResponse.json(feeItems);
-  } catch (error: any) {
-    console.error('Error fetching fee items:', error);
-    return NextResponse.json({ error: 'Failed to fetch fee items', details: error.message }, { status: 500 });
-  }
+// =======================================================================
+async function handleGetFeeItems(request: Request) {
+  // 1. Authentication Check
+  const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+  // 2. Business Logic
+  const feeItems = await getFeeItems();
+
+  // 3. Success Response
+  return formatResponse(true, feeItems, null, 200);
 }
 
+// =======================================================================
+// POST /api/admin/fee-items
 // Handles POST requests for creating a new fee item
-export async function POST(request: Request) {
+// =======================================================================
+async function handlePostFeeItem(request: Request) {
+  // 1. Authentication Check
+  const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+  // 2. Parse Body and Validation
+  const body: Omit<FeeItem, 'id'> = await request.json();
+  const { name, description, defaultAmount, applicableTo, applicableValue, academicYear, term, isMandatory } = body;
+
+  if (!name || defaultAmount === undefined || !applicableTo) {
+    return formatResponse(false, null, 'Missing required fee item fields.', 400);
+  }
+
+  // 3. Business Logic
   try {
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
-    const body: Omit<FeeItem, 'id'> = await request.json();
-    const { name, description, defaultAmount, applicableTo, applicableValue, academicYear, term, isMandatory } = body;
-
-    // Basic validation
-    if (!name || defaultAmount === undefined || !applicableTo) {
-      return NextResponse.json({ error: 'Missing required fee item fields.' }, { status: 400 });
-    }
-
     const newFeeItem = await createFeeItem({
       name, description, defaultAmount, applicableTo, applicableValue, academicYear, term, isMandatory
     });
-    return NextResponse.json(newFeeItem, { status: 201 });
+
+    // 4. Success Response
+    return formatResponse(true, newFeeItem, null, 201);
+
   } catch (error: any) {
-    console.error('Error creating fee item:', error);
+    // Handle specific unique constraint violation error (e.g., from Prisma P2002)
     if (error.code === 'P2002' && error.meta?.target?.includes('name')) {
-      return NextResponse.json({ error: 'Fee item with this name already exists.' }, { status: 409 });
+      return formatResponse(false, null, 'Fee item with this name already exists.', 409);
     }
-    return NextResponse.json({ error: 'Failed to create fee item', details: error.message }, { status: 500 });
+    // Re-throw to be caught by withApiHandler's generic catch block (results in a 500 error)
+    throw error;
   }
 }
+
+// Export the refactored handlers wrapped in withApiHandler
+export const GET = withApiHandler(handleGetFeeItems);
+export const POST = withApiHandler(handlePostFeeItem);

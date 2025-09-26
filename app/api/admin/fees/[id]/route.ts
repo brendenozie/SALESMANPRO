@@ -1,37 +1,47 @@
-// app/api/admin/fees/[id]/payments/route.ts
-import { NextResponse } from 'next/server';
+
+
+import { withApiHandler } from '@/lib/hooks/withApiHandler';
+import { formatResponse } from '@/lib/formatResponse';
 import { addPaymentToRecord } from '@/lib/data'; // Adjust path as needed
-import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+import { verifyAuth } from '@/lib/verifyAuth';
 
 interface Context {
   params: { id: string }; // `id` is the feeRecordId
 }
 
+// =======================================================================
+// POST /api/admin/fees/[id]/payments
 // Handles POST requests for adding payments to a fee record
-export async function POST(request: Request, context: Context) {
-  try {
-    
-       const auth = await verifyAuth(request);
-      if (!auth.success) return formatResponse(false, null, auth.error, 401);
-    
-    
-    const { id } = context.params;
-    const { amount, date, method, receiptNumber } = await request.json();
+// =======================================================================
+async function handlePostPayment(request: Request, context: Context) {
+  // 1. Authentication Check (Handled by withApiHandler)
+  const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
-    // Basic validation for payment data
-    if (amount === undefined || typeof amount !== 'number' || amount <= 0 || !date || !method) {
-      return NextResponse.json({ error: 'Missing or invalid payment details (amount, date, method are required).' }, { status: 400 });
-    }
+  const { id } = context.params;
+  const { amount, date, method, receiptNumber } = await request.json();
 
-    const updatedRecord = addPaymentToRecord(id, { amount, date, method, receiptNumber });
+  // 2. Basic validation for payment data
+  if (amount === undefined || typeof amount !== 'number' || amount <= 0 || !date || !method) {
+    return formatResponse(
+      false,
+      null,
+      'Missing or invalid payment details (amount, date, method are required).',
+      400
+    );
+  }
 
-    if (updatedRecord) {
-      return NextResponse.json(updatedRecord);
-    } else {
-      return NextResponse.json({ error: 'Fee record not found or failed to add payment.' }, { status: 404 });
-    }
-  } catch (error: any) {
-    console.error('Error adding payment to fee record:', error);
-    return NextResponse.json({ error: 'Failed to add payment', details: error.message }, { status: 500 });
+  // 3. Business Logic
+  const updatedRecord = addPaymentToRecord(id, { amount, date, method, receiptNumber });
+
+  if (updatedRecord) {
+    // 4. Success Response
+    return formatResponse(true, updatedRecord, null, 200);
+  } else {
+    // 404 if the record ID didn't match anything
+    return formatResponse(false, null, 'Fee record not found or failed to add payment.', 404);
   }
 }
+
+// Export the refactored handler wrapped in withApiHandler
+export const POST = withApiHandler(handlePostPayment);

@@ -1,134 +1,60 @@
-import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-import type { NextRequest } from 'next/server';
-import { resolveCname, resolveTxt } from 'dns/promises';
-import { getSession } from 'next-auth/react';
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
-import { request } from "http";
+// app/api/custom-domain/route.ts
+import { NextRequest } from "next/server";
+import prisma from "@/server/db/prismadb";
+import { resolveCname, resolveTxt } from "dns/promises";
+import { verifyAuth } from "@/lib/verifyAuth";
+import { formatResponse } from "@/lib/formatResponse";
 
 export async function POST(req: NextRequest) {
+  // 1) Verify authentication
+  const auth = await verifyAuth(req);
   
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
+  if (!auth.success) {
+    return formatResponse(false, null, auth.error, 401);
+  }
+
   const { domain } = await req.json();
 
-  // 1) Auth: make sure the user is logged in
-  const session = await getSession({ req });
-
-  if (!session?.user?.email) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  // 2) Input validation
+  if (typeof domain !== "string" || !domain.includes(".")) {
+    return formatResponse(false, null, "Invalid domain format", 400);
   }
 
-  // 2) Simple input check
-  if (typeof domain !== 'string' || !domain.includes('.')) {
-    return NextResponse.json({ error: 'Invalid domain format.' }, { status: 400 });
-  }
-
-  // 3) DNS lookup: require a CNAME pointing to your host, e.g. app.example.com
-  const expectedHost = 'app.your-production-domain.com';
-
-  let records: string[];
+  // 3) DNS lookup: check for CNAME or TXT record
+  const expectedTarget = "app.your-production-domain.com";
+  let records: string[] = [];
 
   try {
-
     records = await resolveCname(domain);
-
-  } catch (err) {
-    // fallback: maybe they used a TXT record instead?
+  } catch {
     try {
       const txt = await resolveTxt(domain);
       records = txt.flat();
     } catch {
-      return NextResponse.json(
-        { error: `No CNAME or TXT record found for ${domain}` },
-        { status: 400 }
-      );
+      return formatResponse(false, null, `No CNAME or TXT record found for ${domain}`, 400);
     }
   }
 
-  if (!records.includes(expectedHost)) {
-    return NextResponse.json(
-      { error: `DNS record must point to ${expectedHost}. Found: ${records.join(', ')}` },
-      { status: 400 }
+  if (!records.includes(expectedTarget)) {
+    return formatResponse(
+      false,
+      null,
+      `DNS must point to ${expectedTarget}. Found: ${records.join(", ")}`,
+      400
     );
   }
 
-  // 4) Persist the custom domain in your database
+  const userId = await auth.user || '';
+
+  // 4) Persist on the company record (assuming auth.userId maps to Company.userId)
   const company = await prisma.company.updateMany({
-    where: { userId: session.user.id },
-    data:  { domain },
-  })
+    where: { userId: userId },
+    data: { domain },
+  });
+
   if (company.count === 0) {
-    return NextResponse.json({ error: 'Company not found' }, { status: 404 })
+    return formatResponse(false, null, "Company not found", 404);
   }
 
-  return NextResponse.json({ message: `${domain} connected!` })
-  
-  // await prisma.customDomain.create({
-  //   data: {
-  //     domain,
-  //     userEmail: session.user.email,
-  //     // or link to storeId, etc.
-  //   },
-  // });
-
-  return NextResponse.json({ message: `${domain} connected successfully!` });
-}
-
-// app/api/custom-domain/route.ts
-
-
-export async function POST(req: NextRequest) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  const { domain } = await req.json()
-  const session = await getSession({ req })
-
-  if (!session?.user?.email) {
-    return NextResponse.json({ error: 'Not logged in' }, { status: 401 })
-  }
-
-  // Basic format check
-  if (typeof domain !== 'string' || !domain.includes('.')) {
-    return NextResponse.json({ error: 'Invalid domain format' }, { status: 400 })
-  }
-
-  // 1) DNS check
-  const expectedTarget = 'app.your-production-domain.com'
-  let records: string[] = []
-  try {
-    records = await resolveCname(domain)
-  } catch {
-    // fallback to TXT
-    try {
-      const txt = await resolveTxt(domain)
-      records = txt.flat()
-    } catch {
-      return NextResponse.json(
-        { error: `No CNAME or TXT record found for ${domain}` },
-        { status: 400 }
-      )
-    }
-  }
-  if (!records.includes(expectedTarget)) {
-    return NextResponse.json(
-      { error: `DNS must point to ${expectedTarget}. Found: ${records.join(', ')}` },
-      { status: 400 }
-    )
-  }
-
-  // 2) Persist on the Company record
-  //    Assume you have a one‑to‑one link Company ↔ User via userId
-  const company = await prisma.company.updateMany({
-    where: { userId: session.user.id },
-    data:  { domain },
-  })
-  if (company.count === 0) {
-    return NextResponse.json({ error: 'Company not found' }, { status: 404 })
-  }
-
-  return NextResponse.json({ message: `${domain} connected!` })
+  return formatResponse(true, { domain }, `${domain} connected successfully!`);
 }

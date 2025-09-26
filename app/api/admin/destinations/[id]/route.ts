@@ -1,19 +1,9 @@
-// pages/api/campaigns/[id].js
+import { NextRequest } from 'next/server';
+import prisma from "@/server/db/prismadb";
+import { verifyAuth } from '@/lib/verifyAuth';
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
 
-import { NextResponse, NextRequest } from 'next/server';
-import prisma from "@/server/db/prismadb"; 
-import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
-import { request } from 'http';
-
-
-
-// app/api/destinations/[id]/route.ts
-
-
-/**
- * API Route for handling a single destination by ID.
- * Path: /api/destinations/[id]
- */
 
 // Define the type for the dynamic segment 'id' from the URL
 interface Params {
@@ -23,84 +13,58 @@ interface Params {
 // =======================================================================
 // GET: Fetch a single destination by ID
 // =======================================================================
-export async function GET(req: NextRequest, { params }: Params) {
-   const auth = await verifyAuth(req);
+async function getDestination(req: Request, { params }: Params) {
+  const auth = await verifyAuth(req);
   if (!auth.success) return formatResponse(false, null, auth.error, 401);
-
 
   const { id } = params;
 
-  try {
-    // Find the destination by its unique ID
-    const destination = await prisma.destination.findUnique({
-      where: { id },
-    });
+  const destination = await prisma.destination.findUnique({
+    where: { id },
+  });
 
-    // If destination is not found, return a 404 Not Found error
-    if (!destination) {
-      return NextResponse.json({ message: 'Destination not found' }, { status: 404 });
-    }
-
-    // Respond with the found destination and a 200 OK status
-    return NextResponse.json(destination, { status: 200 });
-  } catch (error) {
-    console.error(`Error fetching destination with ID ${id}:`, error);
-    // Return a 500 error for any failures
-    return NextResponse.json({ message: 'Failed to fetch destination' }, { status: 500 });
+  if (!destination) {
+    return formatResponse(false, null, 'Destination not found', 404);
   }
+
+  return formatResponse(true, { data: destination }, null, 200);
 }
 
 // =======================================================================
 // PATCH: Update an existing destination by ID
 // =======================================================================
-export async function PATCH(req: NextRequest, { params }: Params) {
-   const auth = await verifyAuth(req);
+async function updateDestination(req: Request, { params }: Params) {
+  const auth = await verifyAuth(req);
   if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
-
   const { id } = params;
+  const body = await req.json();
 
-  try {
-    // Parse the JSON body from the request
-    const body = await req.json();
+  const updatedDestination = await prisma.destination.update({
+    where: { id },
+    data: body,
+  });
 
-    // Use Prisma to update the destination. 'data' will only contain
-    // the fields provided in the request body.
-    const updatedDestination = await prisma.destination.update({
-      where: { id },
-      data: body,
-    });
-
-    // Respond with the updated destination and a 200 OK status
-    return NextResponse.json(updatedDestination, { status: 200 });
-  } catch (error) {
-    console.error(`Error updating destination with ID ${id}:`, error);
-    // Respond with a 500 error if the update fails
-    return NextResponse.json({ message: 'Failed to update destination' }, { status: 500 });
-  }
+  return formatResponse(true, { data: updatedDestination }, null, 200);
 }
 
 // =======================================================================
 // DELETE: Delete a destination by ID
 // =======================================================================
-export async function DELETE(req: NextRequest, { params }: Params) {
-   const auth = await verifyAuth(req);
+async function deleteDestination(req: Request, { params }: Params) {
+  const auth = await verifyAuth(req);
   if (!auth.success) return formatResponse(false, null, auth.error, 401);
-
 
   const { id } = params;
 
-  try {
-    // Use Prisma to delete the destination by its unique ID
-    await prisma.destination.delete({
-      where: { id },
-    });
+  await prisma.destination.delete({
+    where: { id },
+  });
 
-    // Respond with a 204 No Content status on successful deletion
-    return new NextResponse(null, { status: 204 });
-  } catch (error) {
-    console.error(`Error deleting destination with ID ${id}:`, error);
-    // Respond with a 500 error if the deletion fails
-    return NextResponse.json({ message: 'Failed to delete destination' }, { status: 500 });
-  }
+  return formatResponse(true, { message: "Destination deleted successfully" }, null, 200);
 }
+
+// Export handlers with standardized wrapper
+export const GET = withApiHandler(getDestination);
+export const PATCH = withApiHandler(updateDestination);
+export const DELETE = withApiHandler(deleteDestination);

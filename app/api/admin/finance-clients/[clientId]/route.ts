@@ -1,96 +1,104 @@
-// pages/api/clients/[id].ts
-import { NextApiRequest, NextApiResponse } from 'next';
+// app/api/clients/[id]/route.ts
 import { PrismaClient } from '@prisma/client';
-import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
-import { request } from 'http';
+
+// Incorporate the new imports
+import { withApiHandler } from '@/lib/hooks/withApiHandler';
+import { formatResponse } from '@/lib/formatResponse'; 
 
 const prisma = new PrismaClient();
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { id } = req.query;
+// Helper to extract ID and ensure it's a string, as required by Prisma where clause
+const getClientId = (req: Request, context: { params: { id: string } }) => {
+    return context.params.id;
+};
 
-   const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+// --- GET Handler Logic ---
+const getClientLogic = async (req: Request, context: { params: { id: string } }) => {
+    const clientId = getClientId(req, context);
 
-
-  if (req.method === 'GET') {
-    try {
-      const client = await prisma.client.findUnique({
-        where: { id: String(id) },
+    const client = await prisma.client.findUnique({
+        where: { id: clientId },
         include: {
-          user: true,
+            user: true,
         },
-      });
-      if (!client) {
-        return res.status(404).json({ error: 'Client not found' });
-      }
-      res.status(200).json(client);
-    } catch (error) {
-      console.error('Failed to fetch client:', error);
-      res.status(500).json({ error: 'Failed to fetch client' });
+    });
+
+    if (!client) {
+        // Use formatResponse for business-logic failure (404)
+        return formatResponse(false, null, 'Client not found', 404);
     }
-  } else if (req.method === 'PUT') {
-    try {
-      const { name, email, phone, status, ...clientData } = req.body;
+    
+    // Use formatResponse for success
+    return formatResponse(true, client, 'Client retrieved successfully', 200);
+};
 
-      // Find the existing client to get the userId
-      const existingClient = await prisma.client.findUnique({
-        where: { id: String(id) },
-      });
+// Export the wrapped GET function
+export const GET = withApiHandler(getClientLogic);
 
-      if (!existingClient) {
-        return res.status(404).json({ error: 'Client not found' });
-      }
 
-      // Update the related User model fields
-      await prisma.user.update({
+// --- PUT Handler Logic ---
+const putClientLogic = async (req: Request, context: { params: { id: string } }) => {
+    const clientId = getClientId(req, context);
+    const body = await req.json();
+    const { name, email, phone, status, ...clientData } = body;
+
+    const existingClient = await prisma.client.findUnique({
+        where: { id: clientId },
+    });
+
+    if (!existingClient) {
+        return formatResponse(false, null, 'Client not found', 404);
+    }
+
+    // Update the related User model fields
+    await prisma.user.update({
         where: { id: existingClient.userId },
         data: {
-          name,
-          email,
-          phone,
-          status,
+            name,
+            email,
+            phone,
+            status,
         },
-      });
+    });
 
-      // Update the Client-specific fields
-      const updatedClient = await prisma.client.update({
-        where: { id: String(id) },
+    // Update the Client-specific fields
+    const updatedClient = await prisma.client.update({
+        where: { id: clientId },
         data: clientData,
         include: {
-          user: true,
+            user: true,
         },
-      });
-      res.status(200).json(updatedClient);
-    } catch (error) {
-      console.error('Failed to update client:', error);
-      res.status(500).json({ error: 'Failed to update client' });
+    });
+
+    return formatResponse(true, updatedClient, 'Client updated successfully', 200);
+};
+
+// Export the wrapped PUT function
+export const PUT = withApiHandler(putClientLogic);
+
+
+// --- DELETE Handler Logic ---
+const deleteClientLogic = async (req: Request, context: { params: { id: string } }) => {
+    const clientId = getClientId(req, context);
+
+    const existingClient = await prisma.client.findUnique({
+        where: { id: clientId },
+    });
+
+    if (!existingClient) {
+        return formatResponse(false, null, 'Client not found', 404);
     }
-  } else if (req.method === 'DELETE') {
-    try {
-      const existingClient = await prisma.client.findUnique({
-        where: { id: String(id) },
-      });
 
-      if (!existingClient) {
-        return res.status(404).json({ error: 'Client not found' });
-      }
-
-      // Delete the Client and its associated User record
-      await prisma.client.delete({
-        where: { id: String(id) },
-      });
-      await prisma.user.delete({
+    // Delete the Client and its associated User record
+    await prisma.client.delete({
+        where: { id: clientId },
+    });
+    await prisma.user.delete({
         where: { id: existingClient.userId },
-      });
+    });
 
-      res.status(200).json({ message: 'Client and user deleted successfully' });
-    } catch (error) {
-      console.error('Failed to delete client:', error);
-      res.status(500).json({ error: 'Failed to delete client' });
-    }
-  } else {
-    res.setHeader('Allow', ['GET', 'PUT', 'DELETE']);
-    res.status(405).end(`Method ${req.method} Not Allowed`);
-  }
-}
+    return formatResponse(true, null, 'Client and user deleted successfully', 200);
+};
+
+// Export the wrapped DELETE function
+export const DELETE = withApiHandler(deleteClientLogic);

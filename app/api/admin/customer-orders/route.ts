@@ -1,40 +1,60 @@
-// app/api/customer-orders/route.ts
-import { NextResponse } from 'next/server';
-import prisma from '@/server/db/prismadb'; // Adjust path if needed
-import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+import prisma from '@/server/db/prismadb';
+import { withApiHandler } from '@/lib/hooks/withApiHandler';
+import { formatResponse } from '@/lib/formatResponse';
+import { z } from 'zod';
 
-// GET /api/customer-orders
-// Fetches all customer orders, optionally filtered by companyId and delivery status
-export async function GET(request: Request) {
-  try {
-    
-       const auth = await verifyAuth(request);
-      if (!auth.success) return formatResponse(false, null, auth.error, 401);
-    
-    
-    const { searchParams } = new URL(request.url);
-    const companyId = searchParams.get('companyId');
-    const deliveryFilter = searchParams.get('delivery'); // "true" or "false"
+// --- Validation schema for creating an order
+const createOrderSchema = z.object({
+  companyId: z.string(),
+  customerId: z.string(),
+  delivery: z.boolean().default(false),
+  items: z.array(
+    z.object({
+      marketplaceListingId: z.string(),
+      quantity: z.number().positive(),
+      price: z.number().nonnegative(),
+    })
+  ),
+});
 
-    const whereClause: any = {};
-    if (companyId) {
-      whereClause.companyId = companyId;
-    }
-    if (deliveryFilter === 'true') {
-      whereClause.delivery = true;
-    } else if (deliveryFilter === 'false') {
-      whereClause.delivery = false;
-    }
+// --- GET /api/customer-orders
+// Fetches paginated customer orders, optionally filtered by companyId and delivery status
+export const GET = withApiHandler(async (request) => {
+  const { searchParams } = new URL(request.url);
 
-    const orders = await prisma.customerOrder.findMany({
+  // --- Filters
+  const companyId = searchParams.get('companyId');
+  const deliveryFilter = searchParams.get('delivery'); // "true" or "false"
+
+  const whereClause: any = {};
+  if (companyId) {
+    whereClause.companyId = companyId;
+  }
+  if (deliveryFilter === 'true') {
+    whereClause.delivery = true;
+  } else if (deliveryFilter === 'false') {
+    whereClause.delivery = false;
+  }
+
+  // --- Pagination
+  const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
+  const limit = Math.min(
+    100, // hard cap
+    Math.max(1, parseInt(searchParams.get('limit') || '10', 10))
+  );
+  const skip = (page - 1) * limit;
+
+  const [totalCount, orders] = await Promise.all([
+    prisma.customerOrder.count({ where: whereClause }),
+    prisma.customerOrder.findMany({
       where: whereClause,
       include: {
         items: {
           include: {
-            marketplaceListing: { // This refers to Product in your context
+            marketplaceListing: {
               select: {
                 name: true,
-                images: true, // Assuming images is Json[]
+                images: true,
                 finalPrice: true,
               },
             },
@@ -42,24 +62,71 @@ export async function GET(request: Request) {
         },
       },
       orderBy: { createdAt: 'desc' },
-    });
+      skip,
+      take: limit,
+    }),
+  ]);
 
-    // Format order items for client-side consumption
-    const formattedOrders = orders.map(order => ({
-      ...order,
-      items: order.items.map(item => ({
-        ...item,
-        marketplaceListing: {
-          ...item.marketplaceListing,
-          images: item.marketplaceListing.images as unknown as { url: string }[], // Cast Json to expected type
-        },
-      })),
-    }));
+  const formattedOrders = orders.map((order) => ({
+    ...order,
+    items: order.items.map((item) => ({
+      ...item,
+      marketplaceListing: {
+        ...item.marketplaceListing,
+        images: (item.marketplaceListing?.images ?? []) as { url: string }[],
+      },
+    })),
+  }));
 
+  const meta = {
+    page,
+    limit,
+    totalCount,
+    totalPages: Math.ceil(totalCount / limit),
+  };
 
-    return NextResponse.json(formattedOrders, { status: 200 });
-  } catch (error) {
-    console.error('Error fetching customer orders:', error);
-    return NextResponse.json({ message: 'Failed to fetch customer orders', error: (error as Error).message }, { status: 500 });
+  return formatResponse(true, { data: formattedOrders, meta });
+});
+
+// --- POST /api/customer-orders
+// Creates a new customer order
+export const POST = withApiHandler(async (request) => {
+  const body = await request.json();
+  const parsed = createOrderSchema.safeParse(body);
+  if (!parsed.success) {
+    return formatResponse(false, null, parsed.error.errors, 400);
   }
-}
+
+  const { companyId, customerId, delivery, items } = parsed.data;
+
+  const newOrder = await prisma.customerOrder.create({
+    data: {
+      companyId,
+      customerId,
+      delivery,
+      items: {
+        create: items.map((item) => ({
+          marketplaceListingId: item.marketplaceListingId,
+          quantity: item.quantity,
+          price: item.price,
+        })),
+      },
+    },
+    include: {
+      items: {
+        include: {
+          marketplaceListing: {
+            select: {
+              name: true,
+              images: true,
+              finalPrice: true,
+            },
+          },
+        },
+      },
+      customer: { select: { id: true, name: true, email: true } },
+    },
+  });
+
+  return formatResponse(true, newOrder, 'Customer order created successfully');
+});
