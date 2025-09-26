@@ -1,44 +1,35 @@
-// /lib/hooks/withAuthAndRateLimit.ts
-import { verifyAuth } from "@/lib/verifyAuth";
-import { enforceRateLimit } from "@/lib/hooks/enforceRateLimit";
+// /lib/hooks/withErrorHandler.ts
 import { handlePrismaError } from "@/lib/hooks/handlePrismaError";
-import { formatResponse } from "../formatResponse";
 
 /**
- * Wraps API handlers with auth + rate limiting + error handling.
- *
- * @param handler - Your route's business logic
- * @param options - Optional config (requireAuth, requireRateLimit)
+ * Base error-handling wrapper for API handlers.
+ * Ensures Prisma and unexpected errors are handled consistently.
  */
-export function withAuthAndRateLimit<T = any>(
-  handler: (request: Request, context: { params: any; user?: any }) => Promise<Response>,
-  options: { requireAuth?: boolean; requireRateLimit?: boolean } = {
-    requireAuth: true,
-    requireRateLimit: true,
-  }
+export function withErrorHandler<T = any>(
+  handler: (request: Request, context: { params: any; user?: any }) => Promise<Response>
 ) {
   return async (request: Request, context: { params: any; user?: any }) => {
     try {
-      // --- Auth check
-      if (options.requireAuth) {
-        const auth = await verifyAuth(request);
-        if (!auth.success) {
-          return formatResponse(false, null, auth.error, 401);
-        }
-        // attach user to context
-        context = { ...context, user: auth.user };
-      }
-
-      // --- Rate limit check
-      if (options.requireRateLimit) {
-        const limitResponse = enforceRateLimit(request);
-        if (limitResponse) return limitResponse;
-      }
-
-      // --- Execute handler
       return await handler(request, context);
     } catch (error: unknown) {
       return handlePrismaError(error);
     }
   };
 }
+
+
+// app/api/public/academic-levels/[id]/route.ts
+// import prisma from "@/server/db/prismadb";
+// import { formatResponse } from "@/lib/verifyAuth";
+// import { withErrorHandler } from "@/lib/hooks/withErrorHandler";
+
+// export const GET = withErrorHandler(async (request, { params }) => {
+//   const { id } = params;
+
+//   const academicLevel = await prisma.academicLevel.findUnique({ where: { id } });
+//   if (!academicLevel) {
+//     return formatResponse(false, null, "Academic level not found", 404);
+//   }
+
+//   return formatResponse(true, academicLevel, "Fetched successfully", 200);
+// });
