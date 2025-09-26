@@ -1,60 +1,85 @@
 
-// pages/api/faqs/[id].ts
-import { NextApiRequest, NextApiResponse } from 'next';
-import { PrismaClient } from '@prisma/client';
-import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
-import { request } from 'http';
 
-const prisma = new PrismaClient();
+import prisma from '@/server/db/prismadb'; // Adjust this path
+// New Imports
+import { withApiHandler } from '@/lib/hooks/withApiHandler';
+import { formatResponse } from '@/lib/formatResponse';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { id } = req.query;
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
+// Define the type for the dynamic route context
+type RouteContext = {
+    params: {
+        id: string; // The ID of the FAQ item
+    };
+};
 
-  if (req.method === 'GET') {
-    try {
-      const faq = await prisma.fAQ.findUnique({
-        where: { id: String(id) },
-      });
-      if (!faq) {
-        return res.status(404).json({ error: 'FAQ not found' });
-      }
-      res.status(200).json(faq);
-    } catch (error) {
-      console.error('Failed to fetch FAQ:', error);
-      res.status(500).json({ error: 'Failed to fetch FAQ' });
+// =======================================================================
+// --- GET Handler Logic (Fetch a single FAQ by ID) ---
+// =======================================================================
+const getFaqLogic = async (request: Request, { params }: RouteContext) => {
+    const { id } = params;
+
+    const faq = await prisma.fAQ.findUnique({
+        where: { id },
+    });
+
+    if (!faq) {
+        // Use formatResponse for 404
+        return formatResponse(false, null, 'FAQ not found', 404);
     }
-  } else if (req.method === 'PUT') {
+
+    // Return 200 success response
+    return formatResponse(true, faq, 'FAQ fetched successfully', 200);
+};
+
+// =======================================================================
+// --- PUT Handler Logic (Updates an existing FAQ) ---
+// =======================================================================
+const putFaqLogic = async (request: Request, { params }: RouteContext) => {
+    const { id } = params;
+    const { question, answer } = await request.json();
+
     try {
-      const { question, answer } = req.body;
-      const updatedFaq = await prisma.fAQ.update({
-        where: { id: String(id) },
-        data: {
-          question,
-          answer,
-        },
-      });
-      res.status(200).json(updatedFaq);
-    } catch (error) {
-      console.error('Failed to update FAQ:', error);
-      res.status(500).json({ error: 'Failed to update FAQ' });
+        const updatedFaq = await prisma.fAQ.update({
+            where: { id },
+            data: { question, answer },
+        });
+
+        // Return 200 success response
+        return formatResponse(true, updatedFaq, 'FAQ updated successfully', 200);
+    } catch (error: any) {
+        if (error.code === 'P2025') { // Prisma error code for record not found
+            return formatResponse(false, null, 'FAQ not found for update.', 404);
+        }
+        // Re-throw other errors for withApiHandler to catch as a 500
+        throw error;
     }
-  } else if (req.method === 'DELETE') {
+};
+
+// =======================================================================
+// --- DELETE Handler Logic (Deletes an FAQ) ---
+// =======================================================================
+const deleteFaqLogic = async (request: Request, { params }: RouteContext) => {
+    const { id } = params;
+
     try {
-      await prisma.fAQ.delete({
-        where: { id: String(id) },
-      });
-      res.status(200).json({ message: 'FAQ deleted successfully' });
-    } catch (error) {
-      console.error('Failed to delete FAQ:', error);
-      res.status(500).json({ error: 'Failed to delete FAQ' });
+        await prisma.fAQ.delete({
+            where: { id },
+        });
+
+        // Return 200 success response
+        return formatResponse(true, null, 'FAQ deleted successfully', 200);
+    } catch (error: any) {
+        if (error.code === 'P2025') { // Prisma error code for record not found
+            return formatResponse(false, null, 'FAQ not found for deletion.', 404);
+        }
+        // Re-throw other errors for withApiHandler to catch as a 500
+        throw error;
     }
-  } else {
-    res.setHeader('Allow', ['GET', 'PUT', 'DELETE']);
-    res.status(405).end(`Method ${req.method} Not Allowed`);
-  }
-}
+};
+
+
+// Export the handlers wrapped with withApiHandler
+// Authentication and generic error handling are now centralized.
+export const GET = withApiHandler(getFaqLogic);
+export const PUT = withApiHandler(putFaqLogic);
+export const DELETE = withApiHandler(deleteFaqLogic);

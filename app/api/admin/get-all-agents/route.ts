@@ -1,25 +1,34 @@
-import { NextRequest, NextResponse } from 'next/server';
+
+
 import prisma from "@/server/db/prismadb"; 
-import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
-import { request } from 'http';
+// New Imports
+import { withApiHandler } from '@/lib/hooks/withApiHandler';
+import { formatResponse } from '@/lib/formatResponse';
 
-export async function GET(req: NextRequest) {
+// Define the logic for fetching sales agents
+const getAgentsLogic = async (req: Request) => {
+    // 1. Get companyId from search parameters
+    const { searchParams } = new URL(req.url);
+    const companyId = searchParams.get('companyId');
 
-     const auth = await verifyAuth(req);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
-  const companyId = req.nextUrl.searchParams.get('companyId');
-  if (!companyId) return NextResponse.json({ error: 'Missing companyId' }, { status: 400 });
+    if (!companyId) {
+        // Use formatResponse to return a 400 error
+        return formatResponse(false, null, 'Missing companyId query parameter', 400);
+    }
 
-  try {
+    // 2. Fetch the agents
     const agents = await prisma.salesAgent.findMany({
-      where: { companyId },
-      select: { id: true, name: true }
+        where: { companyId },
+        select: { id: true, 
+            // name: true 
+
+        }
     });
-    return NextResponse.json(agents);
-  } catch (error) {
-    console.error('Error fetching agents:', error);
-    return NextResponse.json({ error: 'Failed to fetch agents' }, { status: 500 });
-  }
-}
+
+    // 3. Return the successful response
+    return formatResponse(true, agents, 'Sales agents fetched successfully', 200);
+};
+
+// Export the wrapped GET function
+// Authentication and generic error handling are now centralized by withApiHandler.
+export const GET = withApiHandler(getAgentsLogic);

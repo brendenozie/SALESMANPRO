@@ -1,136 +1,143 @@
-// app/api/admin/[adminSlug]/settings/route.js
-import { NextResponse } from 'next/server';
+
+
 import prisma from '@/server/db/prismadb'; // Adjust this path
-import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+// New Imports
+import { withApiHandler } from '@/lib/hooks/withApiHandler';
+import { formatResponse } from '@/lib/formatResponse';
 
-// GET /api/admin/[adminSlug]/settings
-// Fetches general settings for a specific company.
-export async function GET(request, { params }) {
-  const { adminSlug } = params;
+// Define the type for the dynamic route context
+type RouteContext = {
+    params: {
+        adminSlug: string; // The company slug
+    };
+};
 
-   const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+// =======================================================================
+// Helper to initialize default settings
+// =======================================================================
+const initializeSettings = async (companyId: string, companySlug: string, companyName: string) => {
+    return prisma.companySettings.create({
+        data: {
+            companyId: companyId,
+            companyName: companyName,
+            contactEmail: `info@${companySlug}.com`,
+            contactPhone: '',
+            address: '',
+            city: '',
+            state: '',
+            zipCode: '',
+            country: '',
+            logoUrl: '',
+            currency: 'USD',
+            timezone: 'America/New_York',
+            emailNotifications: true,
+            smsNotifications: false,
+        },
+    });
+};
 
+// =======================================================================
+// --- GET Handler Logic (Fetches general settings) ---
+// =======================================================================
+const getSettingsLogic = async (request: Request, { params }: RouteContext) => {
+    const { adminSlug } = params;
 
-  try {
+    // 1. Find the company ID based on the adminSlug
     const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
-      select: { id: true },
+        where: { slug: adminSlug },
+        select: { id: true, name: true, slug: true },
     });
 
     if (!company) {
-      return NextResponse.json({ message: 'Company not found for the given slug.' }, { status: 404 });
+        return formatResponse(false, null, 'Company not found for the given slug.', 404);
     }
 
+    // 2. Fetch existing settings
     let settings = await prisma.companySettings.findUnique({
-      where: { companyId: company.id },
+        where: { companyId: company.id },
     });
 
-    // If settings don't exist, create default ones
+    // 3. If settings don't exist, create default ones
     if (!settings) {
-      settings = await prisma.companySettings.create({
-        data: {
-          companyId: company.id,
-          companyName: company.name, // Initialize with company name
-          contactEmail: `info@${company.slug}.com`, // Default email
-          contactPhone: '',
-          address: '',
-          city: '',
-          state: '',
-          zipCode: '',
-          country: '',
-          logoUrl: '',
-          currency: 'USD',
-          timezone: 'America/New_York',
-          emailNotifications: true,
-          smsNotifications: false,
-        },
-      });
+        settings = await initializeSettings(company.id, company.slug, company.name);
     }
 
-    return NextResponse.json(settings);
-  } catch (error) {
-    console.error('Error fetching settings:', error);
-    return NextResponse.json({ message: 'Failed to fetch settings', error: error.message }, { status: 500 });
-  }
-}
+    return formatResponse(true, settings, 'Settings fetched successfully', 200);
+};
 
-// PUT /api/admin/[adminSlug]/settings
-// Updates general settings for a specific company.
-export async function PUT(request, { params }) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
-  const { adminSlug } = params;
-
-  try {
+// =======================================================================
+// --- PUT Handler Logic (Updates general settings) ---
+// =======================================================================
+const putSettingsLogic = async (request: Request, { params }: RouteContext) => {
+    const { adminSlug } = params;
     const body = await request.json();
+
+    // 1. Find the company ID based on the adminSlug
+    const company = await prisma.company.findUnique({
+        where: { slug: adminSlug },
+        select: { id: true, name: true, slug: true },
+    });
+
+    if (!company) {
+        return formatResponse(false, null, 'Company not found for the given slug.', 404);
+    }
+
     const {
-      companyName,
-      contactEmail,
-      contactPhone,
-      address,
-      city,
-      state,
-      zipCode,
-      country,
-      logoUrl,
-      currency,
-      timezone,
-      emailNotifications,
-      smsNotifications,
+        companyName,
+        contactEmail,
+        contactPhone,
+        address,
+        city,
+        state,
+        zipCode,
+        country,
+        logoUrl,
+        currency,
+        timezone,
+        emailNotifications,
+        smsNotifications,
     } = body;
 
-    const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
-      select: { id: true },
-    });
-
-    if (!company) {
-      return NextResponse.json({ message: 'Company not found for the given slug.' }, { status: 404 });
-    }
-
-    // Upsert: update if exists, create if not
+    // 2. Upsert: update if exists, create if not
     const updatedSettings = await prisma.companySettings.upsert({
-      where: { companyId: company.id },
-      update: {
-        companyName: companyName,
-        contactEmail: contactEmail,
-        contactPhone: contactPhone,
-        address: address,
-        city: city,
-        state: state,
-        zipCode: zipCode,
-        country: country,
-        logoUrl: logoUrl,
-        currency: currency,
-        timezone: timezone,
-        emailNotifications: emailNotifications,
-        smsNotifications: smsNotifications,
-      },
-      create: { // Should ideally not be hit if GET creates defaults, but good for robustness
-        companyId: company.id,
-        companyName: companyName,
-        contactEmail: contactEmail,
-        contactPhone: contactPhone,
-        address: address,
-        city: city,
-        state: state,
-        zipCode: zipCode,
-        country: country,
-        logoUrl: logoUrl,
-        currency: currency,
-        timezone: timezone,
-        emailNotifications: emailNotifications,
-        smsNotifications: smsNotifications,
-      },
+        where: { companyId: company.id },
+        update: {
+            companyName: companyName,
+            contactEmail: contactEmail,
+            contactPhone: contactPhone,
+            address: address,
+            city: city,
+            state: state,
+            zipCode: zipCode,
+            country: country,
+            logoUrl: logoUrl,
+            currency: currency,
+            timezone: timezone,
+            emailNotifications: emailNotifications,
+            smsNotifications: smsNotifications,
+        },
+        create: { // Used if no setting exists and PUT is the first call (robustness)
+            companyId: company.id,
+            companyName: companyName || company.name, // Use existing company name if not provided
+            contactEmail: contactEmail || `info@${company.slug}.com`,
+            contactPhone: contactPhone,
+            address: address,
+            city: city,
+            state: state,
+            zipCode: zipCode,
+            country: country,
+            logoUrl: logoUrl,
+            currency: currency || 'USD',
+            timezone: timezone || 'America/New_York',
+            emailNotifications: emailNotifications ?? true,
+            smsNotifications: smsNotifications ?? false,
+        },
     });
 
-    return NextResponse.json(updatedSettings);
-  } catch (error) {
-    console.error('Error updating settings:', error);
-    return NextResponse.json({ message: 'Failed to update settings', error: error.message }, { status: 500 });
-  }
-}
+    return formatResponse(true, updatedSettings, 'Settings updated successfully', 200);
+};
+
+// Export the handlers wrapped with withApiHandler
+// Authentication and general error handling are now centralized.
+export const GET = withApiHandler(getSettingsLogic);
+export const PUT = withApiHandler(putSettingsLogic);

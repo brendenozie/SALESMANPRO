@@ -1,77 +1,51 @@
-// app/api/properties/[id]/route.ts
-import { NextResponse } from 'next/server';
-import prisma from '@/lib/prisma'; // Adjust path if necessary
-import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
 
-// GET /api/properties/:id
-// Fetches a single property by ID
-export async function GET(request: Request, { params }: { params: { id: string } }) {
-  try {
-    
-       const auth = await verifyAuth(request);
-      if (!auth.success) return formatResponse(false, null, auth.error, 401);
-    
-    
+
+
+import prisma from '@/server/db/prismadb';
+
+// New Imports
+import { withApiHandler } from '@/lib/hooks/withApiHandler';
+import { formatResponse } from '@/lib/formatResponse';
+
+// Type definition for the context object containing dynamic route parameters
+type RouteContext = {
+    params: {
+        id: string; // The ID of the property
+    };
+};
+
+// --- GET Handler Logic (Fetch a single property by ID) ---
+const getPropertyLogic = async (request: Request, { params }: RouteContext) => {
     const { id } = params;
+
     const property = await prisma.property.findUnique({
-      where: { id },
-      include: {
-        category: true,
-        location: true,
-        agent: {
-          select: { id: true, name: true, email: true }
+        where: { id },
+        include: {
+            category: true,
+            location: true,
+            agent: {
+                select: { id: true, name: true, email: true }
+            },
         },
-      },
     });
 
     if (!property) {
-      return NextResponse.json({ message: 'Property not found' }, { status: 404 });
+        // Return 404 response
+        return formatResponse(false, null, 'Property not found', 404);
     }
 
-    return NextResponse.json(property);
-  } catch (error: any) {
-    console.error('Error fetching property:', error);
-    return NextResponse.json({ message: 'Failed to fetch property', error: error.message }, { status: 500 });
-  }
-}
+    // Return 200 success response
+    return formatResponse(true, property, 'Property retrieved successfully', 200);
+};
 
-// PUT /api/properties/:id
-// Updates an existing property
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
-  try {
-    
-       const auth = await verifyAuth(request);
-      if (!auth.success) return formatResponse(false, null, auth.error, 401);
-    
-    
+// =======================================================================
+// --- PUT Handler Logic (Updates an existing property) ---
+// =======================================================================
+const putPropertyLogic = async (request: Request, { params }: RouteContext) => {
     const { id } = params;
     const body = await request.json();
+
     const {
-      title,
-      description,
-      price,
-      currency,
-      type,
-      status,
-      categoryId,
-      locationId,
-      agentId,
-      bedrooms,
-      bathrooms,
-      areaSqFt,
-      plotSizeAcres,
-      yearBuilt,
-      address,
-      photos,
-      features,
-    } = body;
-
-    // Optional: Validate incoming data more rigorously here
-    // e.g., if (!title || !price ...)
-
-    const updatedProperty = await prisma.property.update({
-      where: { id },
-      data: {
         title,
         description,
         price,
@@ -89,39 +63,67 @@ export async function PUT(request: Request, { params }: { params: { id: string }
         address,
         photos,
         features,
-      },
-    });
+    } = body;
 
-    return NextResponse.json(updatedProperty);
-  } catch (error: any) {
-    console.error('Error updating property:', error);
-    // Handle specific errors like NotFoundError if ID doesn't exist
-    if (error.code === 'P2025') { // Prisma error code for record not found
-      return NextResponse.json({ message: 'Property not found for update' }, { status: 404 });
+    try {
+        const updatedProperty = await prisma.property.update({
+            where: { id },
+            data: {
+                title,
+                description,
+                price,
+                currency,
+                type,
+                status,
+                categoryId,
+                locationId,
+                agentId,
+                bedrooms,
+                bathrooms,
+                areaSqFt,
+                plotSizeAcres,
+                yearBuilt,
+                address,
+                photos,
+                features,
+            },
+        });
+
+        // Return 200 success response
+        return formatResponse(true, updatedProperty, 'Property updated successfully', 200);
+    } catch (error: any) {
+        if (error.code === 'P2025') { // Prisma error code for record not found
+            return formatResponse(false, null, 'Property not found for update.', 404);
+        }
+        // Re-throw other errors for withApiHandler to catch as a 500
+        throw error;
     }
-    return NextResponse.json({ message: 'Failed to update property', error: error.message }, { status: 500 });
-  }
-}
+};
 
-// DELETE /api/properties/:id
-// Deletes a property
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
-  try {
-    
-       const auth = await verifyAuth(request);
-      if (!auth.success) return formatResponse(false, null, auth.error, 401);
-    
-    
+// =======================================================================
+// --- DELETE Handler Logic (Deletes a property) ---
+// =======================================================================
+const deletePropertyLogic = async (request: Request, { params }: RouteContext) => {
     const { id } = params;
-    await prisma.property.delete({
-      where: { id },
-    });
-    return NextResponse.json({ message: 'Property deleted successfully' }, { status: 200 });
-  } catch (error: any) {
-    console.error('Error deleting property:', error);
-    if (error.code === 'P2025') { // Prisma error code for record not found
-      return NextResponse.json({ message: 'Property not found for deletion' }, { status: 404 });
+
+    try {
+        await prisma.property.delete({
+            where: { id },
+        });
+        // Return 200 success response
+        return formatResponse(true, null, 'Property deleted successfully', 200);
+    } catch (error: any) {
+        if (error.code === 'P2025') { // Prisma error code for record not found
+            return formatResponse(false, null, 'Property not found for deletion.', 404);
+        }
+        // Re-throw other errors for withApiHandler to catch as a 500
+        throw error;
     }
-    return NextResponse.json({ message: 'Failed to delete property', error: error.message }, { status: 500 });
-  }
-}
+};
+
+
+// Export the handlers wrapped with withApiHandler
+// Authentication is handled automatically by withApiHandler
+export const GET = withApiHandler(getPropertyLogic);
+export const PUT = withApiHandler(putPropertyLogic);
+export const DELETE = withApiHandler(deletePropertyLogic);

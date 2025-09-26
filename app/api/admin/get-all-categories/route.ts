@@ -1,61 +1,69 @@
-import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
-import { request } from "http";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
 
+/**
+ * Core handler logic to fetch product categories with pagination.
+ * This function is wrapped by `withApiHandler`, which is assumed to handle:
+ * 1. Authentication/Authorization check (returning 401 if failed).
+ * 2. Automatic try/catch wrapping (returning a 500 on internal errors).
+ * 3. Converting the successful returned object into a 200 OK JSON response.
+ *
+ * For immediate validation errors, we use `formatResponse` which is assumed
+ * to return a complete NextResponse object with the appropriate status (e.g., 400).
+ */
+async function fetchCategories(req: Request) {
+  // NOTE: Authentication and `try/catch` are handled by `withApiHandler`.
 
-export async function GET( req : Request ) {
-
-   const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
-
-
-  // let { page, } = req.query;
   const { searchParams } = new URL(req.url);
 
-  const agentId = searchParams.get("agentId");
-  const limit = parseInt(searchParams.get("limit") || "10", 10);
-  const offset = parseInt(searchParams.get("offset") || "0", 10);
+  // Pagination params
+  // Using a default of 20, which aligns with the original intent of 20 per page.
+  const limit = parseInt(searchParams.get("limit") || "20", 10);
   const page = parseInt(searchParams.get("page") || "1", 10);
 
-  if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
-    return NextResponse.json(
-      { message: "Invalid pagination parameters." },
-      { status: 400 }
-    );
+  // Calculate skip for pagination: page 1 skips 0, page 2 skips 20 (if limit is 20)
+  const skip = (page - 1) * limit;
+
+  // --- Validation ---
+  if (isNaN(limit) || limit <= 0 || isNaN(page) || page <= 0) {
+    // Return a standardized 400 response via formatResponse
+    return formatResponse(false, null, "'limit' and 'page' must be positive integers.", 400);
   }
 
+  // --- Data Fetching ---
+  const [totalCount, results] = await prisma.$transaction([
+    // 1. Get total count
+    prisma.productCategory.count(),
 
-    if (req.method === "GET") {
-  
-      let currentPage = page as unknown as number;
-      let skip = currentPage >0  ? currentPage *20 : 0;
-      
-      const results = await prisma.$transaction([
-        prisma.productCategory.count(
-        //   {
-        //   skip : skip,
-        //   take: 20,
-        // }
-      ),
-        prisma.productCategory.findMany(
-        //   {
-        //   skip : skip,
-        //   take: 20,
-        // }
-      ),
-      ]);
-  
-      return NextResponse.json({InfoResponse:{count: results[0] ?? 0,
-                    next: currentPage * 20 > results[0] ? currentPage : 0 ,
-                    pages: results[0]/20 > 0 ? results[0]/20 : 1 ,
-                    prev: currentPage-1 > 0 ? currentPage-1 : 0},
-                results: results[1]
-              });
+    // 2. Get paginated results
+    prisma.productCategory.findMany({
+      skip: skip,
+      take: limit,
+      orderBy: { name: "asc" } // Adding a consistent order by field
+    }),
+  ]);
 
-    } else {
-      throw new Error(
-        `The HTTP ${req.method} method is not supported at this route.`
-      );
-    }
+  // Calculate pagination metadata
+  const totalPages = Math.ceil(totalCount / limit);
+  // Using 0 to denote no next/previous page, consistent with original logic structure
+  const nextPage = page < totalPages ? page + 1 : 0;
+  const prevPage = page > 1 ? page - 1 : 0;
+
+  // --- Success Response ---
+  // Return the raw data structure. `withApiHandler` will wrap this in a 200 OK NextResponse.
+  return formatResponse(true, {
+    InfoResponse: {
+      count: totalCount,
+      next: nextPage,
+      pages: totalPages,
+      prev: prevPage
+    },
+    results: results,
+  }, 'Sales agents fetched successfully', 200);
+
+              
 }
+
+// Wrap the core logic with the API handler for robust behavior.
+export const GET = withApiHandler(fetchCategories);
