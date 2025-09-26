@@ -1,27 +1,21 @@
 // app/api/admin/[adminSlug]/tickets/[ticketProductId]/route.ts
 import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
 
-export async function GET(
-  request: Request,
-  { params }: { params: { adminSlug: string; ticketProductId: string } }
-) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
-  const { adminSlug, ticketProductId } = params;
+// GET /api/admin/[adminSlug]/tickets/[ticketProductId]
+export const GET = withApiHandler(
+  async (request, { params }) => {
+    const { adminSlug, ticketProductId } = params;
 
-  try {
     const company = await prisma.company.findUnique({
       where: { slug: adminSlug },
-      select: { id: true }
+      select: { id: true },
     });
 
     if (!company) {
-      return NextResponse.json({ message: "Company not found" }, { status: 404 });
+      return formatResponse(false, null, "Company not found", 404);
     }
 
     const ticketProduct = await prisma.marketplaceListings.findUnique({
@@ -40,56 +34,42 @@ export async function GET(
     });
 
     if (!ticketProduct) {
-      return NextResponse.json({ message: "Ticket type not found" }, { status: 404 });
+      return formatResponse(false, null, "Ticket type not found", 404);
     }
 
-    // You might need to fetch the associated event name here if tickets are directly linked to events
-    const eventName = "Associated Event Name (Needs lookup)"; // Placeholder
+    const eventName = "Associated Event Name (Needs lookup)"; // TODO: fetch actual event
 
-    return NextResponse.json({
+    return formatResponse(true, {
       id: ticketProduct.id,
-      eventName: eventName,
+      eventName,
       type: ticketProduct.name,
       description: ticketProduct.description,
       price: ticketProduct.sellingPrice,
       quantity: ticketProduct.quantity,
-      sold: Math.floor(ticketProduct.quantity * 0.6), // Mocking sold
-      remaining: ticketProduct.quantity - Math.floor(ticketProduct.quantity * 0.6), // Mocking remaining
+      sold: Math.floor(ticketProduct.quantity * 0.6), // mock
+      remaining: ticketProduct.quantity - Math.floor(ticketProduct.quantity * 0.6), // mock
       isAvailable: ticketProduct.isAvailable,
       createdAt: ticketProduct.createdAt,
       updatedAt: ticketProduct.updatedAt,
-    }, { status: 200 });
-  } catch (error) {
-    console.error("Error fetching ticket type:", error);
-    return NextResponse.json(
-      { message: "Internal server error", error: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
-    );
+    });
   }
-}
+);
 
-export async function PUT(
-  request: Request,
-  { params }: { params: { adminSlug: string; ticketProductId: string } }
-) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
-  const { adminSlug, ticketProductId } = params;
-  const body = await request.json();
+// PUT /api/admin/[adminSlug]/tickets/[ticketProductId]
+export const PUT = withApiHandler(
+  async (request, { params }) => {
+    const { adminSlug, ticketProductId } = params;
+    const body = await request.json();
 
-  const { type, description, price, quantity, isAvailable } = body;
+    const { type, description, price, quantity, isAvailable } = body;
 
-  try {
     const company = await prisma.company.findUnique({
       where: { slug: adminSlug },
-      select: { id: true }
+      select: { id: true },
     });
 
     if (!company) {
-      return NextResponse.json({ message: "Company not found" }, { status: 404 });
+      return formatResponse(false, null, "Company not found", 404);
     }
 
     const updatedTicketProduct = await prisma.marketplaceListings.update({
@@ -104,57 +84,28 @@ export async function PUT(
       },
     });
 
-    return NextResponse.json(
-      { message: "Ticket type updated successfully", ticket: updatedTicketProduct },
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error("Error updating ticket type:", error);
-    if (error instanceof Error && error.message.includes("RecordNotFound")) {
-      return NextResponse.json({ message: "Ticket type not found" }, { status: 404 });
-    }
-    return NextResponse.json(
-      { message: "Internal server error", error: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
-    );
+    return formatResponse(true, updatedTicketProduct, "Ticket type updated successfully");
   }
-}
+);
 
-export async function DELETE(
-  request: Request,
-  { params }: { params: { adminSlug: string; ticketProductId: string } }
-) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
-  const { adminSlug, ticketProductId } = params;
+// DELETE /api/admin/[adminSlug]/tickets/[ticketProductId]
+export const DELETE = withApiHandler(
+  async (request, { params }) => {
+    const { adminSlug, ticketProductId } = params;
 
-  try {
     const company = await prisma.company.findUnique({
       where: { slug: adminSlug },
-      select: { id: true }
+      select: { id: true },
     });
 
     if (!company) {
-      return NextResponse.json({ message: "Company not found" }, { status: 404 });
+      return formatResponse(false, null, "Company not found", 404);
     }
 
-    // Delete the marketplaceListing (ticket type)
     await prisma.marketplaceListings.delete({
       where: { id: ticketProductId, companyId: company.id },
     });
 
     return new NextResponse(null, { status: 204 });
-  } catch (error) {
-    console.error("Error deleting ticket type:", error);
-    if (error instanceof Error && error.message.includes("RecordNotFound")) {
-      return NextResponse.json({ message: "Ticket type not found" }, { status: 404 });
-    }
-    return NextResponse.json(
-      { message: "Internal server error", error: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
-    );
   }
-}
+);

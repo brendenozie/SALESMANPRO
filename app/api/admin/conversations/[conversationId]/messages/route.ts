@@ -1,203 +1,184 @@
 // app/api/conversations/[conversationId]/messages/route.ts
-import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
 
 // Define valid Enum values for MessageType (from your Prisma schema)
-const VALID_MESSAGE_TYPES = ["TEXT", "IMAGE", "FILE", "AUDIO", "VIDEO", "SYSTEM_NOTIFICATION", "OTHER"];
+const VALID_MESSAGE_TYPES = [
+  "TEXT",
+  "IMAGE",
+  "FILE",
+  "AUDIO",
+  "VIDEO",
+  "SYSTEM_NOTIFICATION",
+  "OTHER",
+];
 
-// GET /api/conversations/[conversationId]/messages
-// Fetches messages for a specific conversation and marks them as read for the requesting user.
-// Query Params: userId (required for read status update), limit (optional), cursor (optional for pagination)
-export async function GET(request: Request, { params }: { params: { conversationId: string } }) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
+/**
+ * @route GET /api/conversations/[conversationId]/messages
+ * Fetches messages for a specific conversation and marks them as read.
+ * Query Params: userId (required), limit (optional), cursor (optional)
+ */
+export const GET = withApiHandler(async (request, { params }) => {
   const { conversationId } = params;
   const { searchParams } = new URL(request.url);
-  const userId = searchParams.get('userId');
-  const limit = parseInt(searchParams.get('limit') || '50');
-  const cursor = searchParams.get('cursor'); // Message ID for pagination
+
+  const userId = searchParams.get("userId");
+  const limit = parseInt(searchParams.get("limit") || "50", 10);
+  const cursor = searchParams.get("cursor");
 
   if (!userId) {
-    return NextResponse.json({ message: "User ID is required to fetch messages and update read status." }, { status: 400 });
+    return formatResponse(false, null, "User ID is required", 400);
   }
 
-  try {
-    // 1. Verify user is a participant of the conversation
-    const participant = await prisma.conversationParticipant.findUnique({
-      where: {
-        conversationId_userId: {
-          conversationId: conversationId,
-          userId: userId,
-        },
+  // 1. Verify user is a participant of the conversation
+  const participant = await prisma.conversationParticipant.findUnique({
+    where: {
+      conversationId_userId: {
+        conversationId,
+        userId,
       },
-    });
+    },
+  });
 
-    if (!participant) {
-      return NextResponse.json({ message: "User is not a participant of this conversation." }, { status: 403 });
-    }
-
-    // 2. Fetch messages
-    const messages = await prisma.message.findMany({
-      where: {
-        conversationId: conversationId,
-      },
-      include: {
-        sender: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-      },
-      orderBy: {
-        createdAt: 'desc', // Fetch most recent first
-      },
-      take: limit,
-      ...(cursor && {
-        skip: 1, // Skip the cursor itself
-        cursor: {
-          id: cursor,
-        },
-      }),
-    });
-
-    // Reverse messages to display in chronological order (oldest first) for UI
-    const orderedMessages = messages.reverse();
-
-    // 3. Update lastReadMessageId and unreadCount for the requesting user
-    if (orderedMessages.length > 0) {
-      const lastMessageId = orderedMessages[orderedMessages.length - 1].id; // The latest message fetched
-      
-      // Only update if the new lastMessageId is different or more recent than current lastReadMessageId
-      // and if the user has unread messages
-      if (participant.lastReadMessageId !== lastMessageId || participant.unreadCount > 0) {
-        await prisma.conversationParticipant.update({
-          where: { id: participant.id },
-          data: {
-            lastReadMessageId: lastMessageId,
-            unreadCount: 0, // Mark all as read for this user
-          },
-        });
-      }
-    }
-
-    const response = orderedMessages.map(msg => ({
-      id: msg.id,
-      conversationId: msg.conversationId,
-      senderId: msg.senderId,
-      senderName: msg.sender?.name || 'Unknown',
-      senderEmail: msg.sender?.email || 'N/A',
-      content: msg.content,
-      messageType: msg.messageType,
-      attachmentUrls: msg.attachmentUrls,
-      createdAt: msg.createdAt.toISOString(),
-    }));
-
-    // For pagination, return the ID of the last message as nextCursor
-    const nextCursor = orderedMessages.length === limit ? orderedMessages[0].id : null;
-
-
-    return NextResponse.json({ messages: response, nextCursor }, { status: 200 });
-  } catch (error: any) {
-    console.error(`Error fetching messages for conversation ${conversationId}:`, error);
-    return NextResponse.json({ message: "Failed to fetch messages", error: error.message }, { status: 500 });
+  if (!participant) {
+    return formatResponse(false, null, "User is not a participant", 403);
   }
-}
 
-// POST /api/conversations/[conversationId]/messages
-// Sends a new message to a conversation.
-// Body: { senderId: string, content: string, messageType?: string, attachmentUrls?: string[] }
-export async function POST(request: Request, { params }: { params: { conversationId: string } }) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
+  // 2. Fetch messages
+  const messages = await prisma.message.findMany({
+    where: { conversationId },
+    include: {
+      sender: { select: { id: true, name: true, email: true } },
+    },
+    orderBy: { createdAt: "desc" },
+    take: limit,
+    ...(cursor && {
+      skip: 1,
+      cursor: { id: cursor },
+    }),
+  });
+
+  // Reverse messages for chronological order
+  const orderedMessages = messages.reverse();
+
+  // 3. Update lastReadMessageId and unreadCount
+  if (orderedMessages.length > 0) {
+    const lastMessageId = orderedMessages[orderedMessages.length - 1].id;
+    if (
+      participant.lastReadMessageId !== lastMessageId ||
+      participant.unreadCount > 0
+    ) {
+      await prisma.conversationParticipant.update({
+        where: { id: participant.id },
+        data: { lastReadMessageId: lastMessageId, unreadCount: 0 },
+      });
+    }
+  }
+
+  const response = orderedMessages.map((msg) => ({
+    id: msg.id,
+    conversationId: msg.conversationId,
+    senderId: msg.senderId,
+    senderName: msg.sender?.name || "Unknown",
+    senderEmail: msg.sender?.email || "N/A",
+    content: msg.content,
+    messageType: msg.messageType,
+    attachmentUrls: msg.attachmentUrls,
+    createdAt: msg.createdAt?.toISOString(),
+  }));
+
+  const nextCursor = orderedMessages.length === limit ? orderedMessages[0].id : null;
+
+  return formatResponse(true, { messages: response, nextCursor }, null, 200);
+});
+
+/**
+ * @route POST /api/conversations/[conversationId]/messages
+ * Sends a new message to a conversation.
+ */
+export const POST = withApiHandler(async (request, { params }) => {
   const { conversationId } = params;
-  try {
-    const body = await request.json();
-    const { senderId, content, messageType = "TEXT", attachmentUrls = [] } = body;
+  const body = await request.json();
 
-    if (!senderId || !content) {
-      return NextResponse.json({ message: "Sender ID and content are required to send a message." }, { status: 400 });
-    }
+  const {
+    senderId,
+    content,
+    messageType = "TEXT",
+    attachmentUrls = [],
+  } = body;
 
-    if (!VALID_MESSAGE_TYPES.includes(messageType)) {
-      return NextResponse.json({ message: `Invalid message type: ${messageType}. Must be one of ${VALID_MESSAGE_TYPES.join(', ')}.` }, { status: 400 });
-    }
-
-    // 1. Verify sender is a participant of the conversation
-    const senderParticipant = await prisma.conversationParticipant.findUnique({
-      where: {
-        conversationId_userId: {
-          conversationId: conversationId,
-          userId: senderId,
-        },
-      },
-    });
-
-    if (!senderParticipant) {
-      return NextResponse.json({ message: "Sender is not a participant of this conversation." }, { status: 403 });
-    }
-
-    // 2. Create the new message
-    const newMessage = await prisma.message.create({
-      data: {
-        conversationId: conversationId,
-        senderId: senderId,
-        content: content,
-        messageType: messageType,
-        attachmentUrls: attachmentUrls,
-      },
-      include: {
-        sender: {
-          select: { id: true, name: true, email: true },
-        },
-      },
-    });
-
-    // 3. Update conversation's lastMessageAt
-    await prisma.conversation.update({
-      where: { id: conversationId },
-      data: {
-        lastMessageAt: newMessage.createdAt,
-        updatedAt: new Date(), // Also update the conversation's updatedAt
-      },
-    });
-
-    // 4. Increment unreadCount for all other participants
-    await prisma.conversationParticipant.updateMany({
-      where: {
-        conversationId: conversationId,
-        userId: { not: senderId }, // Exclude the sender
-        isDeleted: false, // Only increment for active participants
-        isArchived: false, // Only increment for non-archived participants (optional, depending on desired behavior)
-      },
-      data: {
-        unreadCount: {
-          increment: 1,
-        },
-      },
-    });
-
-    const responseData = {
-      id: newMessage.id,
-      conversationId: newMessage.conversationId,
-      senderId: newMessage.senderId,
-      senderName: newMessage.sender?.name || 'Unknown',
-      senderEmail: newMessage.sender?.email || 'N/A',
-      content: newMessage.content,
-      messageType: newMessage.messageType,
-      attachmentUrls: newMessage.attachmentUrls,
-      createdAt: newMessage.createdAt.toISOString(),
-    };
-
-    return NextResponse.json(responseData, { status: 201 });
-  } catch (error: any) {
-    console.error(`Error sending message to conversation ${conversationId}:`, error);
-    return NextResponse.json({ message: "Failed to send message", error: error.message }, { status: 500 });
+  if (!senderId || !content) {
+    return formatResponse(false, null, "Sender ID and content are required", 400);
   }
-}
+
+  if (!VALID_MESSAGE_TYPES.includes(messageType)) {
+    return formatResponse(
+      false,
+      null,
+      `Invalid message type: ${messageType}. Must be one of ${VALID_MESSAGE_TYPES.join(
+        ", "
+      )}`,
+      400
+    );
+  }
+
+  // 1. Verify sender is a participant
+  const senderParticipant = await prisma.conversationParticipant.findUnique({
+    where: {
+      conversationId_userId: {
+        conversationId,
+        userId: senderId,
+      },
+    },
+  });
+
+  if (!senderParticipant) {
+    return formatResponse(false, null, "Sender is not a participant", 403);
+  }
+
+  // 2. Create message
+  const newMessage = await prisma.message.create({
+    data: {
+      conversationId,
+      senderId,
+      content,
+      messageType,
+      attachmentUrls,
+    },
+    include: {
+      sender: { select: { id: true, name: true, email: true } },
+    },
+  });
+
+  // 3. Update conversation metadata
+  await prisma.conversation.update({
+    where: { id: conversationId },
+    data: { lastMessageAt: newMessage.createdAt, updatedAt: new Date() },
+  });
+
+  // 4. Increment unreadCount for other participants
+  await prisma.conversationParticipant.updateMany({
+    where: {
+      conversationId,
+      userId: { not: senderId },
+      isDeleted: false,
+      isArchived: false,
+    },
+    data: { unreadCount: { increment: 1 } },
+  });
+
+  const responseData = {
+    id: newMessage.id,
+    conversationId: newMessage.conversationId,
+    senderId: newMessage.senderId,
+    senderName: newMessage.sender?.name || "Unknown",
+    senderEmail: newMessage.sender?.email || "N/A",
+    content: newMessage.content,
+    messageType: newMessage.messageType,
+    attachmentUrls: newMessage.attachmentUrls,
+    createdAt: newMessage.createdAt?.toISOString(),
+  };
+
+  return formatResponse(true, responseData, null, 201);
+});

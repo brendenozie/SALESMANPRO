@@ -1,66 +1,48 @@
-import nodemailer from 'nodemailer';
-import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
-import { request } from 'http';
+// app/api/contact/route.ts
+import nodemailer from "nodemailer";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
+
+// POST /api/contact
+export const POST = withApiHandler(
+  async (request) => {
+    const { name, email, message } = await request.json();
+
+    if (!name || !email || !message) {
+      return formatResponse(false, null, "All fields are required", 400);
+    }
+
+    try {
+      const transporter = nodemailer.createTransport({
+        host: process.env.EMAIL_HOST || "smtp.hostinger.com",
+        port: parseInt(process.env.EMAIL_PORT || "465"),
+        secure: true,
+        auth: {
+          user: process.env.EMAIL_USER, // e.g. "sales@jasirihomes.com"
+          pass: process.env.EMAIL_PASS, // use env var, never hardcode
+        },
+      });
+
+      await transporter.sendMail({
+        from: `"Contact Form" <${process.env.EMAIL_USER}>`,
+        to: process.env.EMAIL_RECEIVER || process.env.EMAIL_USER,
+        subject: "New Contact Form Submission",
+        replyTo: email,
+        html: `
+          <p><strong>Name:</strong> ${name}</p>
+          <p><strong>Email:</strong> ${email}</p>
+          <p><strong>Message:</strong><br>${message}</p>
+        `,
+      });
+
+      return formatResponse(true, null, "Message sent successfully!");
+    } catch (error) {
+      console.error("Email send error:", error);
+      return formatResponse(false, null, "Something went wrong.", 500);
+    }
+  },
+  { requireAuth: false, requireRateLimit: true } // contact form usually public but rate-limited
+);
 
 
-export default async function GET( req : Request ) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
-  if (req.method !== 'POST') {
-    return NextResponse.json({ message: 'Method Not Allowed' });
-  }
-
-  const { name, email, message } = req.body;
-
-  if (!name || !email || !message) {
-    return NextResponse.json({ message: 'All fields are required' });
-  }
-
-  try {
-    // Transporter settings for your Hostinger email
-    const transporter = nodemailer.createTransport({
-      host: "smtp.hostinger.com",
-      port: 465,
-      secure: true,
-      auth: {
-        user: "sales@jasirihomes.com", // Your email
-        pass: "YOUR_EMAIL_PASSWORD",   // Replace with your actual password or App Password
-      },
-    });
-
-    // Email details
-    // await transporter.sendMail({
-    //   from: `"${name}" <${email}>`,
-    //   to: "sales@jasirihomes.com",
-    //   subject: "New Contact Form Submission",
-    //   html: `
-    //     <p><strong>Name:</strong> ${name}</p>
-    //     <p><strong>Email:</strong> ${email}</p>
-    //     <p><strong>Message:</strong><br>${message}</p>
-    //   `,
-    // });
-
-    await transporter.sendMail({
-  from: `"Jasiri Homes Contact Form" <${process.env.EMAIL_SERVER}>`, // Always use your authenticated email
-  to: `${process.env.EMAIL_SERVER}`,
-  subject: "New Contact Form Submission",
-  replyTo: email, // Allows you to reply directly to the user's email
-  html: `
-    <p><strong>Name:</strong> ${name}</p>
-    <p><strong>Email:</strong> ${email}</p>
-    <p><strong>Message:</strong><br>${message}</p>
-  `,
-});
-
-
-    return NextResponse.json({ message: "Message sent successfully!" });
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json({ message: "Something went wrong." });
-  }
-}
+// add a spam-prevention check here (e.g., simple honeypot field or reCAPTCHA validation) to protect the form from abuse?

@@ -1,91 +1,76 @@
-// app/api/photos/route.ts
-import { NextResponse } from 'next/server';
-import prisma from '@/server/db/prismadb';
-import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
-import { request } from 'http';
-
-// GET /api/photos - Fetch all photos
 // app/api/content/route.ts
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
+import { NextResponse } from "next/server";
 
 /**
  * @route GET /api/content
  * @description Fetches all content, including related photo and video albums.
- * @returns {Response} A JSON response containing an array of content items.
  */
-export async function GET() {
-  try {
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
-    const content = await prisma.content.findMany({
-      include: {
-        photoAlbum: {
-          include: {
-            photos: true,
-          },
-        },
-        videoAlbum: {
-          include: {
-            videos: true,
-          },
-        },
+
+// --- Type Definitions for the Handlers ---
+
+type RouteParams = {
+  adminSlug: string;
+  orderId: string;
+};
+
+type HandlerContext = {
+  params: RouteParams;
+  user?: any; // Replace with your actual User type if defined
+};
+
+export const GET = withApiHandler(async (request: Request, context: HandlerContext) => {
+  const content = await prisma.content.findMany({
+    include: {
+      photoAlbum: {
+        include: { photos: true },
       },
-      orderBy: { createdAt: 'desc' },
-    });
-    return NextResponse.json(content, { status: 200 });
-  } catch (error) {
-    console.error('Error fetching content:', error);
-    return NextResponse.json({ error: 'Failed to fetch content' }, { status: 500 });
-  }
-}
+      videoAlbum: {
+        include: { videos: true },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return formatResponse(true, content, null, 200);
+});
 
 /**
  * @route POST /api/content
  * @description Creates a new content item.
- * @returns {Response} A JSON response with the created content item.
  */
-export async function POST(request: Request) {
-  try {
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
-    const body = await request.json();
-    const { title, type, publishDate, authorId, photoAlbumId, videoAlbumId, status } = body;
+export const POST = withApiHandler(async (request: Request, context: HandlerContext) => {
+  const body = await request.json();
+  const { title, type, publishDate, authorId, photoAlbumId, videoAlbumId, status } = body;
 
-    // Basic validation
-    if (!title || !type) {
-      return NextResponse.json({ error: 'Title and type are required' }, { status: 400 });
-    }
-
-    // Ensure only one album ID is provided if the type is for an album
-    if (type === 'PhotoAlbum' && !photoAlbumId) {
-      return NextResponse.json({ error: 'photoAlbumId is required for type "PhotoAlbum"' }, { status: 400 });
-    }
-    if (type === 'VideoAlbum' && !videoAlbumId) {
-      return NextResponse.json({ error: 'videoAlbumId is required for type "VideoAlbum"' }, { status: 400 });
-    }
-
-    const newContent = await prisma.content.create({
-      data: {
-        title,
-        type,
-        status,
-        publishDate,
-        authorId,
-        photoAlbumId,
-        videoAlbumId,
-      },
-      include: {
-        photoAlbum: true,
-        videoAlbum: true,
-      },
-    });
-
-    return NextResponse.json(newContent, { status: 201 });
-  } catch (error) {
-    console.error('Error creating content:', error);
-    return NextResponse.json({ error: 'Failed to create content' }, { status: 500 });
+  // Validation
+  if (!title || !type) {
+    return formatResponse(false, null, "Title and type are required", 400);
   }
-}
+  if (type === "PhotoAlbum" && !photoAlbumId) {
+    return formatResponse(false, null, 'photoAlbumId is required for type "PhotoAlbum"', 400);
+  }
+  if (type === "VideoAlbum" && !videoAlbumId) {
+    return formatResponse(false, null, 'videoAlbumId is required for type "VideoAlbum"', 400);
+  }
+
+  const newContent = await prisma.content.create({
+    data: {
+      title,
+      type,
+      status,
+      publishDate,
+      authorId: authorId ?? context.user?.id, // fallback to auth user if available
+      photoAlbumId,
+      videoAlbumId,
+    },
+    include: {
+      photoAlbum: true,
+      videoAlbum: true,
+    },
+  });
+
+  return formatResponse(true, newContent, null, 201);
+});
