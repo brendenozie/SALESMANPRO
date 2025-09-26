@@ -1,22 +1,17 @@
 // app/api/admin/clients/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-export async function GET(request: Request) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
+async function listClients(request: Request) {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId") || "";
+
   if (!companyId) {
     return NextResponse.json({ error: "Missing companyId" }, { status: 400 });
   }
 
   try {
-    // 1) Fetch clients + user info
     const clients = await prisma.client.findMany({
       where: { companyId },
       include: {
@@ -24,7 +19,6 @@ export async function GET(request: Request) {
       },
     });
 
-    // 2) For each client, load their orders and compute stats
     const enriched = await Promise.all(
       clients.map(async (c) => {
         const orders = await prisma.customerOrder.findMany({
@@ -61,12 +55,7 @@ export async function GET(request: Request) {
   }
 }
 
-export async function POST(request: Request) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
+async function createClient(request: Request) {
   const body = await request.json();
   const { name, email, phoneNumber, companyId } = body;
 
@@ -78,17 +67,14 @@ export async function POST(request: Request) {
   }
 
   try {
-    // 1) Create User
     const user = await prisma.user.create({
       data: { name, email, phone: phoneNumber },
     });
 
-    // 2) Create Client profile
     const client = await prisma.client.create({
       data: { companyId, userId: user.id },
     });
 
-    // No orders yet, so stats are zero/null
     return NextResponse.json(
       {
         id: client.id,
@@ -106,3 +92,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
+
+export const GET = withApiHandler(listClients, { requireAuth: true });
+export const POST = withApiHandler(createClient, { requireAuth: true });

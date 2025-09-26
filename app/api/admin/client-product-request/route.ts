@@ -1,21 +1,9 @@
+// app/api/requests/route.ts
 import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
-import { request } from "http";
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-
-export default async function GET( req : Request ) {
-
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
-
-  if (req.method !== "GET") {
-    return NextResponse.json({ message: "Method not allowed. Use GET." });
-  }
-
+async function getRequests(req: Request) {
   const { searchParams } = new URL(req.url);
 
   const agentId = searchParams.get("agentId");
@@ -29,35 +17,17 @@ export default async function GET( req : Request ) {
     );
   }
 
-  // limit and offset are already parsed as numbers above
-  const parsedLimit = limit;
-  const parsedOffset = offset;
-
-  if (isNaN(parsedLimit) || isNaN(parsedOffset) || parsedLimit <= 0 || parsedOffset < 0) {
-    return NextResponse.json({ message: "Invalid pagination parameters." });
-  }
-
-  // Validate agentId
-  // if (!agentId || typeof agentId !== "string") {
-  //   return NextResponse.json({ message: "Invalid or missing clientId." });
-  // }
-
   try {
-
-    // Fetch product requests with pagination
     const productRequests = await prisma.request.findMany({
-      where: {  requestedByType : "CLIENT",
-        // requestedById: agentId 
-      },
+      where: { requestedByType: "CLIENT" },
       include: {
         product: true,
-        salesAgent: true,
+        user: true,
       },
-      take: parsedLimit,
-      skip: parsedOffset,
+      take: limit,
+      skip: offset,
     });
 
-    // Format the response
     const formattedRequests = productRequests.map((request) => ({
       requestId: request.id,
       productId: request.productId,
@@ -69,19 +39,20 @@ export default async function GET( req : Request ) {
       requestedAt: request.createdAt.toISOString(),
     }));
 
-    console.log(formattedRequests);
-
-    // Respond with structured data
     return NextResponse.json({
       agentId,
       requests: formattedRequests,
     });
   } catch (error: any) {
     console.error("Error fetching product requests:", error);
-
-    return NextResponse.json({
-      message: "An error occurred while fetching product requests.",
-      error: error.message || "Unknown error",
-    });
+    return NextResponse.json(
+      {
+        message: "An error occurred while fetching product requests.",
+        error: error.message || "Unknown error",
+      },
+      { status: 500 }
+    );
   }
 }
+
+export const GET = withApiHandler(getRequests, { requireAuth: true });

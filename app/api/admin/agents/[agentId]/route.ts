@@ -1,103 +1,68 @@
-import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+// app/api/sales-agents/[agentId]/route.ts
+import prisma from "@/server/db/prismadb";
+import { withAuthAndRateLimit } from "@/lib/hooks/withAuthAndRateLimit";
+import { formatResponse } from "@/lib/formatResponse";
 
-const prisma = new PrismaClient();
+// PUT /api/sales-agents/[agentId]
+// Updates a sales agent (and their related user record).
+export const PUT = withAuthAndRateLimit(async (request, { params }) => {
+  const { agentId } = params;
+  if (!agentId) {
+    return formatResponse(false, null, "Agent ID is required", 400);
+  }
 
-/**
- * PUT handler to update an existing Sales Agent's details.
- */
-export async function PUT(
-  request: Request,
-  { params }: { params: { agentId: string } }
-) {
-  try {
-    
-    const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-    
-    
-    const { agentId } = params;
-    const body = await request.json();
-    const { name, email, phoneNumber } = body;
+  const body = await request.json();
+  const { name, email, phoneNumber } = body;
 
-    if (!agentId) {
-      return new NextResponse("Agent ID is required", { status: 400 });
-    }
+  // Fetch agent to get userId
+  const existingAgent = await prisma.salesAgent.findUnique({
+    where: { id: agentId },
+  });
 
-    // Fetch the agent to get the related userId
-    const existingAgent = await prisma.salesAgent.findUnique({
-      where: { id: agentId },
-    });
+  if (!existingAgent) {
+    return formatResponse(false, null, "Agent not found", 404);
+  }
 
-    if (!existingAgent) {
-      return new NextResponse("Agent not found", { status: 404 });
-    }
-
-    // Update the SalesAgent profile and the related User record
-    const updatedAgent = await prisma.salesAgent.update({
-      where: { id: agentId },
-      data: {
-        phoneNumber,
-        user: {
-          update: {
-            where: { id: existingAgent.userId },
-            data: {
-              name,
-              email,
-            },
-          },
+  // Update agent + related user
+  const updatedAgent = await prisma.salesAgent.update({
+    where: { id: agentId },
+    data: {
+      phoneNumber,
+      user: {
+        update: {
+          id: existingAgent.userId,
+          name,
+          email,
         },
       },
-      include: {
-        user: true, // Include user details in the response
-      },
-    });
+    },
+    include: { user: true },
+  });
 
-    return NextResponse.json(updatedAgent);
-  } catch (error) {
-    console.error("[AGENT_PUT] Error updating agent:", error);
-    return new NextResponse("Internal Server Error", { status: 500 });
+  return formatResponse(true, updatedAgent, "Agent updated successfully", 200);
+});
+
+// DELETE /api/sales-agents/[agentId]
+// Deletes a sales agent and their related user.
+export const DELETE = withAuthAndRateLimit(async (_request, { params }) => {
+  const { agentId } = params;
+  if (!agentId) {
+    return formatResponse(false, null, "Agent ID is required", 400);
   }
-}
 
-/**
- * DELETE handler to remove a Sales Agent.
- * This also removes the associated User record.
- */
-export async function DELETE(
-  request: Request,
-  { params }: { params: { agentId: string } }
-) {
-  try {
-    const { agentId } = params;
+  const agentToDelete = await prisma.salesAgent.findUnique({
+    where: { id: agentId },
+  });
 
-    if (!agentId) {
-      return new NextResponse("Agent ID is required", { status: 400 });
-    }
-
-    // Find the agent to get the userId for deletion
-    const agentToDelete = await prisma.salesAgent.findUnique({
-      where: { id: agentId },
-    });
-
-    if (!agentToDelete) {
-      return new NextResponse("Agent not found", { status: 404 });
-    }
-
-    // Use a transaction to delete the SalesAgent and the associated User
-    await prisma.$transaction([
-      prisma.salesAgent.delete({
-        where: { id: agentId },
-      }),
-      prisma.user.delete({
-        where: { id: agentToDelete.userId },
-      }),
-    ]);
-
-    return new NextResponse(null, { status: 204 }); // 204 No Content for successful deletion
-  } catch (error) {
-    console.error("[AGENT_DELETE] Error deleting agent:", error);
-    return new NextResponse("Internal Server Error", { status: 500 });
+  if (!agentToDelete) {
+    return formatResponse(false, null, "Agent not found", 404);
   }
-}
+
+  // Delete agent + user in a transaction
+  await prisma.$transaction([
+    prisma.salesAgent.delete({ where: { id: agentId } }),
+    prisma.user.delete({ where: { id: agentToDelete.userId } }),
+  ]);
+
+  return formatResponse(true, { deletedId: agentId }, "Agent deleted successfully", 200);
+});

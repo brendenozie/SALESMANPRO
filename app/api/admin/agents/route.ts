@@ -1,154 +1,108 @@
-import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-import { formatResponse, verifyAuth } from "@/lib/verifyAuth";
-// import { NextResponse } from "next/server";
-// import { PrismaClient } from "@prisma/client";
-// import bcrypt from "bcrypt";
+// app/api/sales-agents/route.ts
+import prisma from "@/server/db/prismadb";
+import { withAuthAndRateLimit } from "@/lib/hooks/withAuthAndRateLimit";
+import { formatResponse } from "@/lib/formatResponse";
+import bcrypt from "bcryptjs/umd/types";
 
-// const prisma = new PrismaClient();
-
-/**
- * GET handler to fetch all sales agents for a given company.
- * Aggregates sales, commissions, and recent activity data.
- */
-export async function GET(request: Request) {
-  
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
-    
+// GET /api/sales-agents
+// Fetch all sales agents for a company, including sales/commission aggregates
+export const GET = withAuthAndRateLimit(async (request, { context }) => {
   const { searchParams } = new URL(request.url);
-  const companyId = searchParams.get("companyId");
+  const companyId = searchParams.get("companyId") || context.user?.companyId;
 
   if (!companyId) {
-    return NextResponse.json(
-      { error: "Company ID is required" },
-      { status: 400 }
+    return formatResponse(false, null, "Company ID is required", 400);
+  }
+
+  const salesAgents = await prisma.salesAgent.findMany({
+    where: { companyId },
+    include: {
+      user: true,
+      transactions: { orderBy: { date: "desc" } },
+      commissions: { orderBy: { createdAt: "desc" } },
+    },
+  });
+
+  const formattedAgents = salesAgents.map((agent) => {
+    const totalSales = agent.transactions.reduce(
+      (sum, txn) => sum + txn.amount,
+      0
     );
+    const totalCommissions = agent.commissions.reduce(
+      (sum, comm) => sum + comm.commissionEarned,
+      0
+    );
+
+    const recentTransaction = agent.transactions[0] || null;
+    const recentCommission = agent.commissions[0] || null;
+
+    return {
+      id: agent.id,
+      name: agent.user?.name ?? "N/A",
+      email: agent.user?.email ?? "N/A",
+      phoneNumber: agent.phoneNumber ?? "",
+      totalSales,
+      totalCommissions,
+      recentTransaction: {
+        amount: recentTransaction?.amount ?? 0,
+        date: recentTransaction?.date?.toISOString() ?? null,
+      },
+      recentCommission: {
+        amount: recentCommission?.commissionEarned ?? 0,
+        date: recentCommission?.createdAt?.toISOString() ?? null,
+        status: recentCommission?.status ?? "N/A",
+      },
+    };
+  });
+
+  return formatResponse(true, formattedAgents, "Fetched agents successfully", 200);
+});
+
+// POST /api/sales-agents
+// Creates a new sales agent (User + SalesAgent profile)
+export const POST = withAuthAndRateLimit(async (request) => {
+  const body = await request.json();
+  const { name, email, phoneNumber, password, companyId } = body;
+
+  if (!name || !email || !phoneNumber || !companyId) {
+    return formatResponse(false, null, "Missing required fields", 400);
   }
 
-  try {
-    const salesAgents = await prisma.salesAgent.findMany({
-      where: {
-        companyId: companyId,
-      },
-      include: {
-        user: true, // Include the related User model to get name and email
-        transactions: {
-          orderBy: {
-            date: "desc",
-          },
-        },
-        commissions: {
-          orderBy: {
-            createdAt: "desc",
-          },
-        },
-      },
-    });
-
-    // Map the data to the format expected by the frontend 'Agent' type
-    const formattedAgents = salesAgents.map((agent) => {
-      const totalSales = agent.transactions.reduce(
-        (sum, txn) => sum + txn.amount,
-        0
-      );
-      const totalCommissions = agent.commissions.reduce(
-        (sum, comm) => sum + comm.commissionEarned,
-        0
-      );
-
-      const recentTransaction = agent.transactions[0] || null;
-      const recentCommission = agent.commissions[0] || null;
-
-      return {
-        id: agent.id,
-        name: agent.user?.name ?? "N/A",
-        email: agent.user?.email ?? "N/A",
-        phoneNumber: agent.phoneNumber ?? "",
-        totalSales,
-        totalCommissions,
-        recentTransaction: {
-          amount: recentTransaction?.amount ?? 0,
-          date: recentTransaction?.date?.toISOString() ?? null,
-        },
-        recentCommission: {
-          amount: recentCommission?.commissionEarned ?? 0,
-          date: recentCommission?.createdAt?.toISOString() ?? null,
-          status: recentCommission?.status ?? "N/A",
-        },
-      };
-    });
-
-    return NextResponse.json(formattedAgents);
-  } catch (error) {
-    console.error("[AGENTS_GET] Error fetching agents:", error);
-    return new NextResponse("Internal Server Error", { status: 500 });
+  const existingUser = await prisma.user.findUnique({ where: { email } });
+  if (existingUser) {
+    return formatResponse(false, null, "User with this email already exists", 409);
   }
-}
 
-/**
- * POST handler to create a new Sales Agent.
- * This involves creating a User first, then the associated SalesAgent profile.
- */
-export async function POST(request: Request) {
-  try {
-    const body = await request.json();
-    const { name, email, phoneNumber, password, companyId } = body;
+  // Generate unique loginCode
+  let loginCode: string;
+  do {
+    loginCode = Math.floor(100000 + Math.random() * 900000).toString();
+  } while (await prisma.salesAgent.findUnique({ where: { loginCode } }));
 
-    if (!name || !email || !phoneNumber || !companyId) {
-      return new NextResponse("Missing required fields", { status: 400 });
-    }
+  // ⚠️ TODO: hash password with bcrypt in production
+  const newpassword = password || "defaultPassword123";
 
-    // Check if a user with this email already exists
-    const existingUser = await prisma.user.findUnique({ where: { email } });
-    if (existingUser) {
-      return new NextResponse("User with this email already exists", {
-        status: 409,
-      });
-    }
+  // Hash the password (use bcrypt in production)
+  
+  const saltRounds = 10;
+  const hashedPassword = await bcrypt.hash(newpassword, saltRounds);
 
-   
-    let loginCode: string;
-    let isUnique = false;
-    do {
-      // Generate a random 6-digit code
-      loginCode = Math.floor(100000 + Math.random() * 900000).toString();
-      // Check if the code already exists
-      const existingAgentWithCode = await prisma.salesAgent.findUnique({
-        where: { loginCode },
-      });
-      if (!existingAgentWithCode) {
-        isUnique = true;
-      }
-    } while (!isUnique);
-    
-
-    // Hash the password - using a default if none is provided
-    const hashedPassword = password || "defaultPassword123";//await bcrypt.hash(password || "defaultPassword123", 12);
-
-    // Create the User and SalesAgent in a single transaction
-    const newAgent = await prisma.user.create({
-      data: {
-        name,
-        email,
-        password: hashedPassword,
-        role: "AGENT", // Set the role to AGENT
-        salesAgentProfile: {
-          create: {
-            companyId: companyId,
-            phoneNumber: phoneNumber,
-            loginCode: loginCode,
-          },
+  const newAgent = await prisma.user.create({
+    data: {
+      name,
+      email,
+      password: hashedPassword,
+      role: "AGENT",
+      salesAgentProfile: {
+        create: {
+          companyId,
+          phoneNumber,
+          loginCode,
         },
       },
-      include: {
-        salesAgentProfile: true, // Include the profile in the response
-      },
-    });
+    },
+    include: { salesAgentProfile: true },
+  });
 
-    return NextResponse.json(newAgent, { status: 201 });
-  } catch (error) {
-    console.error("[AGENTS_POST] Error creating agent:", error);
-    return new NextResponse("Internal Server Error", { status: 500 });
-  }
-}
+  return formatResponse(true, newAgent, "Agent created successfully", 201);
+});

@@ -1,225 +1,236 @@
-import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+// app/api/announcements/route.ts
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
 
 // Define valid Enum values (must match your Prisma enums)
 const VALID_ANNOUNCEMENT_STATUSES = ["PENDING", "PUBLISHED", "ARCHIVED"];
-const VALID_ANNOUNCEMENT_TYPES = ["GENERAL", "ACADEMIC", "EVENT", "HOLIDAY", "ALERT", "NEWS", "POLICY_UPDATE", "FEEDBACK", "SURVEY", "OTHER"];
-const VALID_ANNOUNCEMENT_AUDIENCES = ["ALL", "ACADEMIC_LEVEL", "COURSE", "EDUCATOR", "STUDENT", "DEPARTMENT", "STAFF", "PARENT"];
+const VALID_ANNOUNCEMENT_TYPES = [
+  "GENERAL",
+  "ACADEMIC",
+  "EVENT",
+  "HOLIDAY",
+  "ALERT",
+  "NEWS",
+  "POLICY_UPDATE",
+  "FEEDBACK",
+  "SURVEY",
+  "OTHER",
+];
+const VALID_ANNOUNCEMENT_AUDIENCES = [
+  "ALL",
+  "ACADEMIC_LEVEL",
+  "COURSE",
+  "EDUCATOR",
+  "STUDENT",
+  "DEPARTMENT",
+  "STAFF",
+  "PARENT",
+];
 
-// GET /api/announcements
-// Fetches announcements, filtered by companyId (required) and various optional criteria.
-export async function GET(request: Request) {
-  try {
-    
-    const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-        
-    const { searchParams } = new URL(request.url);
-    const companyId = searchParams.get('companyId');
-    const status = searchParams.get('status'); // Filter by AnnouncementStatus
-    const type = searchParams.get('type');     // Filter by AnnouncementType
-    const audience = searchParams.get('audience'); // Filter by AnnouncementAudience
-    const authorId = searchParams.get('authorId'); // Filter by author
-    const publishedAfter = searchParams.get('publishedAfter'); // ISO date string
-    const publishedBefore = searchParams.get('publishedBefore'); // ISO date string
-    const expiresAfter = searchParams.get('expiresAfter'); // ISO date string (e.g., for active announcements)
-    const expiresBefore = searchParams.get('expiresBefore'); // ISO date string
+/**
+ * GET /api/announcements
+ * Fetches announcements filtered by companyId and optional criteria
+ */
+export const GET = withApiHandler(async (request) => {
+  const { searchParams } = new URL(request.url);
+  const companyId = searchParams.get("companyId");
+  const status = searchParams.get("status");
+  const type = searchParams.get("type");
+  const audience = searchParams.get("audience");
+  const authorId = searchParams.get("authorId");
+  const publishedAfter = searchParams.get("publishedAfter");
+  const publishedBefore = searchParams.get("publishedBefore");
+  const expiresAfter = searchParams.get("expiresAfter");
+  const expiresBefore = searchParams.get("expiresBefore");
 
-    const whereClause: any = {};
-
-    if (!companyId) {
-      return NextResponse.json({ message: "Company ID is required to fetch announcements." }, { status: 400 });
-    }
-    whereClause.companyId = companyId;
-
-    if (status) {
-      if (!VALID_ANNOUNCEMENT_STATUSES.includes(status.toUpperCase())) {
-        return NextResponse.json({ message: `Invalid announcement status: ${status}. Must be one of ${VALID_ANNOUNCEMENT_STATUSES.join(', ')}.` }, { status: 400 });
-      }
-      whereClause.status = status.toUpperCase();
-    }
-    if (type) {
-      if (!VALID_ANNOUNCEMENT_TYPES.includes(type.toUpperCase())) {
-        return NextResponse.json({ message: `Invalid announcement type: ${type}. Must be one of ${VALID_ANNOUNCEMENT_TYPES.join(', ')}.` }, { status: 400 });
-      }
-      whereClause.type = type.toUpperCase();
-    }
-    if (audience) {
-      if (!VALID_ANNOUNCEMENT_AUDIENCES.includes(audience.toUpperCase())) {
-        return NextResponse.json({ message: `Invalid announcement audience: ${audience}. Must be one of ${VALID_ANNOUNCEMENT_AUDIENCES.join(', ')}.` }, { status: 400 });
-      }
-      whereClause.audience = audience.toUpperCase();
-    }
-    if (authorId) {
-      whereClause.authorId = authorId;
-    }
-
-    // Date range filtering for publishedAt
-    if (publishedAfter || publishedBefore) {
-      whereClause.publishedAt = {};
-      if (publishedAfter) {
-        const date = new Date(publishedAfter);
-        if (isNaN(date.getTime())) return NextResponse.json({ message: "Invalid publishedAfter date format." }, { status: 400 });
-        whereClause.publishedAt.gte = date;
-      }
-      if (publishedBefore) {
-        const date = new Date(publishedBefore);
-        if (isNaN(date.getTime())) return NextResponse.json({ message: "Invalid publishedBefore date format." }, { status: 400 });
-        whereClause.publishedAt.lte = date;
-      }
-    }
-
-    // Date range filtering for expiresAt
-    if (expiresAfter || expiresBefore) {
-      whereClause.expiresAt = {};
-      if (expiresAfter) {
-        const date = new Date(expiresAfter);
-        if (isNaN(date.getTime())) return NextResponse.json({ message: "Invalid expiresAfter date format." }, { status: 400 });
-        whereClause.expiresAt.gte = date;
-      }
-      if (expiresBefore) {
-        const date = new Date(expiresBefore);
-        if (isNaN(date.getTime())) return NextResponse.json({ message: "Invalid expiresBefore date format." }, { status: 400 });
-        whereClause.expiresAt.lte = date;
-      }
-    }
-
-    const announcements = await prisma.announcement.findMany({
-      where: whereClause,
-      include: {
-        author: { // Include author details
-          select: {
-            id: true,
-             name: true,
-              email: true 
-          },
-        },
-        company: { // Include company details (optional, but good for context)
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-      },
-      orderBy: {
-        publishedAt: 'desc', // Order by most recent publication date
-      },
-    });
-
-    // Transform the data to flatten relations and ensure correct types
-    const response = announcements.map((announcement) => ({
-      id: announcement.id,
-      title: announcement.title,
-      summary: announcement.summary,
-      content: announcement.content,
-      publishedAt: announcement.publishedAt.toISOString(),
-      expiresAt: announcement.expiresAt?.toISOString() || null,
-      authorId: announcement.authorId,
-      authorName: announcement.author?.name || 'N/A',
-      authorEmail: announcement.author?.email || 'N/A',
-      companyId: announcement.companyId,
-      companyName: announcement.company?.name || 'N/A',
-      status: announcement.status,
-      type: announcement.type,
-      audience: announcement.audience,
-      targetAcademicLevelIds: announcement.targetAcademicLevelIds,
-      targetCourseIds: announcement.targetCourseIds,
-      targetEducatorIds: announcement.targetEducatorIds,
-      targetStudentIds: announcement.targetStudentIds,
-      targetDepartmentIds: announcement.targetDepartmentIds,
-      targetParentIds: announcement.targetParentIds,
-      createdAt: announcement.createdAt.toISOString(),
-      updatedAt: announcement.updatedAt.toISOString(),
-    }));
-
-    return NextResponse.json(response, { status: 200 });
-  } catch (error: any) {
-    console.error("Error fetching announcements:", error);
-    return NextResponse.json({ message: "Failed to fetch announcements", error: error.message }, { status: 500 });
+  if (!companyId) {
+    return formatResponse(false, null, "Company ID is required", 400);
   }
-}
 
-// POST /api/announcements
-// Creates a new Announcement.
-export async function POST(request: Request) {
-  try {
-    
-    const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-    
-    
-    const body = await request.json();
-    const {
-      companyId,
-      title,
-      summary,
-      content,
-      publishedAt, // ISO date string
-      expiresAt,   // ISO date string (optional)
-      authorId,
-      status,      // AnnouncementStatus enum string
-      type,        // AnnouncementType enum string
-      audience,    // AnnouncementAudience enum string
-      targetAcademicLevelIds = [],
-      targetCourseIds = [],
-      targetEducatorIds = [],
-      targetStudentIds = [],
-      targetDepartmentIds = [],
-      targetParentIds = [],
-    } = body;
+  const whereClause: any = { companyId };
 
-    // Basic validation
-    if (!companyId || !title || !publishedAt || !authorId || !status || !type || !audience) {
-      return NextResponse.json({ message: "Company ID, Title, Published At, Author ID, Status, Type, and Audience are required to create an announcement." }, { status: 400 });
+  if (status) {
+    if (!VALID_ANNOUNCEMENT_STATUSES.includes(status.toUpperCase())) {
+      return formatResponse(
+        false,
+        null,
+        `Invalid status: ${status}. Must be one of ${VALID_ANNOUNCEMENT_STATUSES.join(", ")}.`,
+        400
+      );
     }
+    whereClause.status = status.toUpperCase();
+  }
 
-    // Validate Enums
-    if (!VALID_ANNOUNCEMENT_STATUSES.includes(status)) {
-      return NextResponse.json({ message: `Invalid status: ${status}. Must be one of ${VALID_ANNOUNCEMENT_STATUSES.join(', ')}.` }, { status: 400 });
+  if (type) {
+    if (!VALID_ANNOUNCEMENT_TYPES.includes(type.toUpperCase())) {
+      return formatResponse(
+        false,
+        null,
+        `Invalid type: ${type}. Must be one of ${VALID_ANNOUNCEMENT_TYPES.join(", ")}.`,
+        400
+      );
     }
-    if (!VALID_ANNOUNCEMENT_TYPES.includes(type)) {
-      return NextResponse.json({ message: `Invalid type: ${type}. Must be one of ${VALID_ANNOUNCEMENT_TYPES.join(', ')}.` }, { status: 400 });
-    }
-    if (!VALID_ANNOUNCEMENT_AUDIENCES.includes(audience)) {
-      return NextResponse.json({ message: `Invalid audience: ${audience}. Must be one of ${VALID_ANNOUNCEMENT_AUDIENCES.join(', ')}.` }, { status: 400 });
-    }
+    whereClause.type = type.toUpperCase();
+  }
 
-    // Validate authorId exists
-    const existingAuthor = await prisma.user.findUnique({
-      where: { id: authorId },
-    });
-    if (!existingAuthor) {
-      return NextResponse.json({ message: "Provided authorId does not exist." }, { status: 400 });
+  if (audience) {
+    if (!VALID_ANNOUNCEMENT_AUDIENCES.includes(audience.toUpperCase())) {
+      return formatResponse(
+        false,
+        null,
+        `Invalid audience: ${audience}. Must be one of ${VALID_ANNOUNCEMENT_AUDIENCES.join(", ")}.`,
+        400
+      );
     }
+    whereClause.audience = audience.toUpperCase();
+  }
 
-    // Validate companyId exists
-    const existingCompany = await prisma.company.findUnique({
-      where: { id: companyId },
-    });
-    if (!existingCompany) {
-      return NextResponse.json({ message: "Provided companyId does not exist." }, { status: 400 });
+  if (authorId) {
+    whereClause.authorId = authorId;
+  }
+
+  if (publishedAfter || publishedBefore) {
+    whereClause.publishedAt = {};
+    if (publishedAfter) {
+      const date = new Date(publishedAfter);
+      if (isNaN(date.getTime()))
+        return formatResponse(false, null, "Invalid publishedAfter date", 400);
+      whereClause.publishedAt.gte = date;
     }
-
-    // Parse date fields
-    const parsedPublishedAt = new Date(publishedAt);
-    if (isNaN(parsedPublishedAt.getTime())) {
-      return NextResponse.json({ message: "Invalid publishedAt date format." }, { status: 400 });
+    if (publishedBefore) {
+      const date = new Date(publishedBefore);
+      if (isNaN(date.getTime()))
+        return formatResponse(false, null, "Invalid publishedBefore date", 400);
+      whereClause.publishedAt.lte = date;
     }
+  }
 
-    let parsedExpiresAt: Date | undefined = undefined;
-    if (expiresAt) {
-      parsedExpiresAt = new Date(expiresAt);
-      if (isNaN(parsedExpiresAt.getTime())) {
-        return NextResponse.json({ message: "Invalid expiresAt date format." }, { status: 400 });
-      }
-      if (parsedExpiresAt <= parsedPublishedAt) {
-        return NextResponse.json({ message: "Expiry date must be after publish date." }, { status: 400 });
-      }
+  if (expiresAfter || expiresBefore) {
+    whereClause.expiresAt = {};
+    if (expiresAfter) {
+      const date = new Date(expiresAfter);
+      if (isNaN(date.getTime()))
+        return formatResponse(false, null, "Invalid expiresAfter date", 400);
+      whereClause.expiresAt.gte = date;
     }
+    if (expiresBefore) {
+      const date = new Date(expiresBefore);
+      if (isNaN(date.getTime()))
+        return formatResponse(false, null, "Invalid expiresBefore date", 400);
+      whereClause.expiresAt.lte = date;
+    }
+  }
 
-    // Ensure audience-specific target IDs are arrays
-    const data: any = {
+  const announcements = await prisma.announcement.findMany({
+    where: whereClause,
+    include: {
+      author: { select: { id: true, name: true, email: true } },
+      company: { select: { id: true, name: true } },
+    },
+    orderBy: { publishedAt: "desc" },
+  });
+
+  const response = announcements.map((a) => ({
+    id: a.id,
+    title: a.title,
+    summary: a.summary,
+    content: a.content,
+    publishedAt: a.publishedAt.toISOString(),
+    expiresAt: a.expiresAt?.toISOString() || null,
+    authorId: a.authorId,
+    authorName: a.author?.name || "N/A",
+    authorEmail: a.author?.email || "N/A",
+    companyId: a.companyId,
+    companyName: a.company?.name || "N/A",
+    status: a.status,
+    type: a.type,
+    audience: a.audience,
+    targetAcademicLevelIds: a.targetAcademicLevelIds,
+    targetCourseIds: a.targetCourseIds,
+    targetEducatorIds: a.targetEducatorIds,
+    targetStudentIds: a.targetStudentIds,
+    targetDepartmentIds: a.targetDepartmentIds,
+    targetParentIds: a.targetParentIds,
+    createdAt: a.createdAt?.toISOString(),
+    updatedAt: a.updatedAt?.toISOString(),
+  }));
+
+  return formatResponse(true, response, "Fetched announcements", 200);
+});
+
+/**
+ * POST /api/announcements
+ * Creates a new announcement
+ */
+export const POST = withApiHandler(async (request) => {
+  const body = await request.json();
+  const {
+    companyId,
+    title,
+    summary,
+    content,
+    publishedAt,
+    expiresAt,
+    authorId,
+    status,
+    type,
+    audience,
+    targetAcademicLevelIds = [],
+    targetCourseIds = [],
+    targetEducatorIds = [],
+    targetStudentIds = [],
+    targetDepartmentIds = [],
+    targetParentIds = [],
+  } = body;
+
+  if (!companyId || !title || !publishedAt || !authorId || !status || !type || !audience) {
+    return formatResponse(
+      false,
+      null,
+      "Company ID, Title, Published At, Author ID, Status, Type, and Audience are required",
+      400
+    );
+  }
+
+  if (!VALID_ANNOUNCEMENT_STATUSES.includes(status)) {
+    return formatResponse(false, null, `Invalid status: ${status}`, 400);
+  }
+  if (!VALID_ANNOUNCEMENT_TYPES.includes(type)) {
+    return formatResponse(false, null, `Invalid type: ${type}`, 400);
+  }
+  if (!VALID_ANNOUNCEMENT_AUDIENCES.includes(audience)) {
+    return formatResponse(false, null, `Invalid audience: ${audience}`, 400);
+  }
+
+  const existingAuthor = await prisma.user.findUnique({ where: { id: authorId } });
+  if (!existingAuthor) {
+    return formatResponse(false, null, "Invalid authorId", 400);
+  }
+
+  const existingCompany = await prisma.company.findUnique({ where: { id: companyId } });
+  if (!existingCompany) {
+    return formatResponse(false, null, "Invalid companyId", 400);
+  }
+
+  const parsedPublishedAt = new Date(publishedAt);
+  if (isNaN(parsedPublishedAt.getTime())) {
+    return formatResponse(false, null, "Invalid publishedAt date", 400);
+  }
+
+  let parsedExpiresAt: Date | undefined;
+  if (expiresAt) {
+    parsedExpiresAt = new Date(expiresAt);
+    if (isNaN(parsedExpiresAt.getTime())) {
+      return formatResponse(false, null, "Invalid expiresAt date", 400);
+    }
+    if (parsedExpiresAt <= parsedPublishedAt) {
+      return formatResponse(false, null, "Expiry must be after publish date", 400);
+    }
+  }
+
+  const newAnnouncement = await prisma.announcement.create({
+    data: {
       companyId,
       title,
       summary,
@@ -236,45 +247,37 @@ export async function POST(request: Request) {
       targetStudentIds: Array.isArray(targetStudentIds) ? targetStudentIds : [],
       targetDepartmentIds: Array.isArray(targetDepartmentIds) ? targetDepartmentIds : [],
       targetParentIds: Array.isArray(targetParentIds) ? targetParentIds : [],
-    };
+    },
+    include: {
+      author: { select: { id: true, name: true, email: true } },
+      company: { select: { id: true, name: true } },
+    },
+  });
 
-    const newAnnouncement = await prisma.announcement.create({
-      data,
-      include: {
-        author: { select: { id: true, name: true, email: true  } },
-        company: { select: { id: true, name: true } },
-      },
-    });
+  const responseData = {
+    id: newAnnouncement.id,
+    title: newAnnouncement.title,
+    summary: newAnnouncement.summary,
+    content: newAnnouncement.content,
+    publishedAt: newAnnouncement.publishedAt.toISOString(),
+    expiresAt: newAnnouncement.expiresAt?.toISOString() || null,
+    authorId: newAnnouncement.authorId,
+    authorName: newAnnouncement.author?.name || "N/A",
+    authorEmail: newAnnouncement.author?.email || "N/A",
+    companyId: newAnnouncement.companyId,
+    companyName: newAnnouncement.company?.name || "N/A",
+    status: newAnnouncement.status,
+    type: newAnnouncement.type,
+    audience: newAnnouncement.audience,
+    targetAcademicLevelIds: newAnnouncement.targetAcademicLevelIds,
+    targetCourseIds: newAnnouncement.targetCourseIds,
+    targetEducatorIds: newAnnouncement.targetEducatorIds,
+    targetStudentIds: newAnnouncement.targetStudentIds,
+    targetDepartmentIds: newAnnouncement.targetDepartmentIds,
+    targetParentIds: newAnnouncement.targetParentIds,
+    createdAt: newAnnouncement.createdAt?.toISOString(),
+    updatedAt: newAnnouncement.updatedAt?.toISOString(),
+  };
 
-    // Transform response
-    const responseData = {
-      id: newAnnouncement.id,
-      title: newAnnouncement.title,
-      summary: newAnnouncement.summary,
-      content: newAnnouncement.content,
-      publishedAt: newAnnouncement.publishedAt.toISOString(),
-      expiresAt: newAnnouncement.expiresAt?.toISOString() || null,
-      authorId: newAnnouncement.authorId,
-      authorName: newAnnouncement.author?.name || 'N/A',
-      authorEmail: newAnnouncement.author?.email || 'N/A',
-      companyId: newAnnouncement.companyId,
-      companyName: newAnnouncement.company?.name || 'N/A',
-      status: newAnnouncement.status,
-      type: newAnnouncement.type,
-      audience: newAnnouncement.audience,
-      targetAcademicLevelIds: newAnnouncement.targetAcademicLevelIds,
-      targetCourseIds: newAnnouncement.targetCourseIds,
-      targetEducatorIds: newAnnouncement.targetEducatorIds,
-      targetStudentIds: newAnnouncement.targetStudentIds,
-      targetDepartmentIds: newAnnouncement.targetDepartmentIds,
-      targetParentIds: newAnnouncement.targetParentIds,
-      createdAt: newAnnouncement.createdAt.toISOString(),
-      updatedAt: newAnnouncement.updatedAt.toISOString(),
-    };
-
-    return NextResponse.json(responseData, { status: 201 });
-  } catch (error: any) {
-    console.error("Error creating announcement:", error);
-    return NextResponse.json({ message: "Failed to create announcement", error: error.message }, { status: 500 });
-  }
-}
+  return formatResponse(true, responseData, "Announcement created", 201);
+});

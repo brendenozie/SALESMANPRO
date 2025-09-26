@@ -1,72 +1,51 @@
+import { NextResponse } from "next/server";
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-// pages/api/cases/[id].ts
-import { NextApiRequest, NextApiResponse } from 'next';
-import { PrismaClient } from '@prisma/client';
-import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
-import { request } from 'http';
+// GET: Fetch a single case
+const getCase = async (_req: Request, context: { params: { id: string } , user?: any} ) => {
 
-const prisma = new PrismaClient();
+  const singleCase = await prisma.case.findUnique({
+    where: { id: context.params.id },
+    include: {
+      client: { include: { user: true } },
+      assignedTo: true,
+    },
+  });
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  
-     const auth = await verifyAuth(req);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
-  const { id } = req.query;
-
-  if (req.method === 'GET') {
-    try {
-      const singleCase = await prisma.case.findUnique({
-        where: { id: String(id) },
-        include: {
-          client: {
-            include: {
-              user: true,
-            },
-          },
-          assignedTo: true,
-        },
-      });
-      if (!singleCase) {
-        return res.status(404).json({ error: 'Case not found' });
-      }
-      res.status(200).json(singleCase);
-    } catch (error) {
-      console.error('Failed to fetch case:', error);
-      res.status(500).json({ error: 'Failed to fetch case' });
-    }
-  } else if (req.method === 'PUT') {
-    try {
-      const updatedCase = await prisma.case.update({
-        where: { id: String(id) },
-        data: req.body,
-        include: {
-          client: {
-            include: {
-              user: true,
-            },
-          },
-          assignedTo: true,
-        },
-      });
-      res.status(200).json(updatedCase);
-    } catch (error) {
-      console.error('Failed to update case:', error);
-      res.status(500).json({ error: 'Failed to update case' });
-    }
-  } else if (req.method === 'DELETE') {
-    try {
-      await prisma.case.delete({
-        where: { id: String(id) },
-      });
-      res.status(200).json({ message: 'Case deleted successfully' });
-    } catch (error) {
-      console.error('Failed to delete case:', error);
-      res.status(500).json({ error: 'Failed to delete case' });
-    }
-  } else {
-    res.setHeader('Allow', ['GET', 'PUT', 'DELETE']);
-    res.status(405).end(`Method ${req.method} Not Allowed`);
+  if (!singleCase) {
+    return NextResponse.json({ error: "Case not found" }, { status: 404 });
   }
-}
+
+  return NextResponse.json(singleCase, { status: 200 });
+};
+
+// PUT: Update a case
+const updateCase = async (req: Request,  context: { params: { id: string } , user?: any} ) => {
+  const body = await req.json();
+
+  const updatedCase = await prisma.case.update({
+    where: { id: context.params.id },
+    data: body,
+    include: {
+      client: { include: { user: true } },
+      assignedTo: true,
+    },
+  });
+
+  return NextResponse.json(updatedCase, { status: 200 });
+};
+
+// DELETE: Remove a case
+const deleteCase = async (_req: Request, context: { params: { id: string } , user?: any}) => {
+  await prisma.case.delete({
+    where: { id: context.params.id },
+  });
+
+  return NextResponse.json({ message: "Case deleted successfully" }, { status: 200 });
+};
+
+// ✅ Export App Router handlers with wrappers
+export const GET = withApiHandler(getCase, { requireAuth: true, requireRateLimit: true });
+export const PUT = withApiHandler(updateCase, { requireAuth: true, requireRateLimit: true });
+export const DELETE = withApiHandler(deleteCase, { requireAuth: true, requireRateLimit: true });
