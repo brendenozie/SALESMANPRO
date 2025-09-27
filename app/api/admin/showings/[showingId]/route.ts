@@ -1,58 +1,39 @@
-import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
+// app/api/showings/[showingId]/route.ts
+import prisma from "@/server/db/prismadb";
+import { NextRequest } from "next/server";
 import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-// GET a single Showing by ID
-export async function GET(
-  request: Request,
-  { params }: { params: { showingId: string } }
-) {
+// GET /api/showings/[showingId]
+async function getShowing(req: NextRequest, { params }: { params: { showingId: string } }) {
+  const auth = await verifyAuth(req);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+  const { showingId } = params;
+
   try {
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
-    const { showingId } = params;
-
     const showing = await prisma.showing.findUnique({
-      where: {
-        id: showingId,
-      },
-      // Include related data if needed
-      // include: {
-      //   company: true,
-      //   agent: true,
-      //   property: true,
-      //   client: true,
-      // },
+      where: { id: showingId },
+      // include related data if needed
     });
 
-    if (!showing) {
-      return NextResponse.json({ message: 'Showing not found.' }, { status: 404 });
-    }
-
-    return NextResponse.json(showing, { status: 200 });
+    if (!showing) return formatResponse(false, null, "Showing not found", 404);
+    return formatResponse(true, showing, "Showing fetched successfully", 200);
   } catch (error: any) {
-    console.error(`Error fetching showing with ID ${params.showingId}:`, error);
-    return NextResponse.json(
-      { message: 'Failed to fetch showing', error: error.message },
-      { status: 500 }
-    );
+    console.error(`Error fetching showing with ID ${showingId}:`, error);
+    return formatResponse(false, null, "Failed to fetch showing", 500);
   }
 }
 
-// PATCH (Update) a Showing by ID
-export async function PATCH(
-  request: Request,
-  { params }: { params: { showingId: string } }
-) {
-  try {
-   const auth = await verifyAuth(request);
+// PATCH /api/showings/[showingId]
+async function updateShowing(req: NextRequest, { params }: { params: { showingId: string } }) {
+  const auth = await verifyAuth(req);
   if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
+  const { showingId } = params;
 
-    const { showingId } = params;
-    const body = await request.json();
+  try {
+    const body = await req.json();
     const {
       propertyId,
       propertyName,
@@ -74,70 +55,58 @@ export async function PATCH(
     if (agentName) updateData.agentName = agentName;
     if (dateTime) {
       if (isNaN(new Date(dateTime).getTime())) {
-        return NextResponse.json({ message: 'Invalid dateTime format. Must be a valid date string.' }, { status: 400 });
+        return formatResponse(false, null, "Invalid dateTime format. Must be a valid date string.", 400);
       }
       updateData.dateTime = new Date(dateTime);
     }
     if (status) {
-      const validStatuses = ['Scheduled', 'Completed', 'Canceled'];
+      const validStatuses = ["Scheduled", "Completed", "Canceled"];
       if (!validStatuses.includes(status)) {
-        return NextResponse.json({ message: `Invalid status. Must be one of: ${validStatuses.join(', ')}` }, { status: 400 });
+        return formatResponse(false, null, `Invalid status. Must be one of: ${validStatuses.join(", ")}`, 400);
       }
       updateData.status = status;
     }
-    if (notes !== undefined) updateData.notes = notes; // Allow notes to be cleared by sending null/empty string
+    if (notes !== undefined) updateData.notes = notes;
 
     if (Object.keys(updateData).length === 0) {
-      return NextResponse.json({ message: 'No fields provided for update.' }, { status: 400 });
+      return formatResponse(false, null, "No fields provided for update", 400);
     }
 
     const updatedShowing = await prisma.showing.update({
-      where: {
-        id: showingId,
-      },
+      where: { id: showingId },
       data: updateData,
     });
 
-    return NextResponse.json(updatedShowing, { status: 200 });
+    return formatResponse(true, updatedShowing, "Showing updated successfully", 200);
   } catch (error: any) {
-    console.error(`Error updating showing with ID ${params.showingId}:`, error);
-    if (error.code === 'P2025') { // Prisma error for record not found
-      return NextResponse.json({ message: 'Showing not found or referenced data invalid.' }, { status: 404 });
+    console.error(`Error updating showing with ID ${showingId}:`, error);
+    if (error.code === "P2025") {
+      return formatResponse(false, null, "Showing not found or referenced data invalid", 404);
     }
-    return NextResponse.json(
-      { message: 'Failed to update showing', error: error.message },
-      { status: 500 }
-    );
+    return formatResponse(false, null, "Failed to update showing", 500);
   }
 }
 
-// DELETE a Showing by ID
-export async function DELETE(
-  request: Request,
-  { params }: { params: { showingId: string } }
-) {
-  try {
-   const auth = await verifyAuth(request);
+// DELETE /api/showings/[showingId]
+async function deleteShowing(req: NextRequest, { params }: { params: { showingId: string } }) {
+  const auth = await verifyAuth(req);
   if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
+  const { showingId } = params;
 
-    const { showingId } = params;
-
-    await prisma.showing.delete({
-      where: {
-        id: showingId,
-      },
-    });
-
-    return NextResponse.json({ message: 'Showing deleted successfully.' }, { status: 200 });
+  try {
+    await prisma.showing.delete({ where: { id: showingId } });
+    return formatResponse(true, null, "Showing deleted successfully", 200);
   } catch (error: any) {
-    console.error(`Error deleting showing with ID ${params.showingId}:`, error);
-    if (error.code === 'P2025') { // Prisma error for record not found
-      return NextResponse.json({ message: 'Showing not found.' }, { status: 404 });
+    console.error(`Error deleting showing with ID ${showingId}:`, error);
+    if (error.code === "P2025") {
+      return formatResponse(false, null, "Showing not found", 404);
     }
-    return NextResponse.json(
-      { message: 'Failed to delete showing', error: error.message },
-      { status: 500 }
-    );
+    return formatResponse(false, null, "Failed to delete showing", 500);
   }
 }
+
+// Export handlers wrapped with withApiHandler
+export const GET = withApiHandler(getShowing);
+export const PATCH = withApiHandler(updateShowing);
+export const DELETE = withApiHandler(deleteShowing);

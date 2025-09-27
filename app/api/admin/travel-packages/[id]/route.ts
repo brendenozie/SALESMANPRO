@@ -1,76 +1,59 @@
 // app/api/tour-packages/[id]/route.ts
-import { NextResponse } from 'next/server';
-import prisma from "@/server/db/prismadb"; // Make sure this path is correct
-import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+import prisma from "@/server/db/prismadb";
+import { NextResponse } from "next/server";
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-
-// A robust slugify function to create a URL-friendly string from a name.
-const slugify = (text: string) => {
-  return text
+// Slugify function
+const slugify = (text: string) =>
+  text
     .toString()
-    .normalize('NFD') // Normalize characters
-    .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .trim()
-    .replace(/\s+/g, '-')      // Replace spaces with -
-    .replace(/[^\w-]+/g, '')   // Remove all non-word chars
-    .replace(/--+/g, '-');     // Replace multiple - with single -
-};
+    .replace(/\s+/g, "-")
+    .replace(/[^\w-]+/g, "")
+    .replace(/--+/g, "-");
 
 // GET /api/tour-packages/[id]
-// Fetches a single tour package by its ID.
-export async function GET(request: Request, { params }: { params: { id: string } }) {
-  try {
-    
-       const auth = await verifyAuth(request);
-      if (!auth.success) return formatResponse(false, null, auth.error, 401);
-    
-    
-    const { id } = params;
+async function handleGET(request: Request, { params }: { params: { id: string } }) {
+  const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
+  const { id } = params;
+  if (!id) return formatResponse(false, null, "Tour package ID is required", 400);
+
+  try {
     const tourPackage = await prisma.tourPackage.findUnique({
       where: { id },
-      include: {
-        destination: true,
-      },
+      include: { destination: true },
     });
 
-    if (!tourPackage) {
-      return NextResponse.json({ message: 'Tour package not found' }, { status: 404 });
-    }
+    if (!tourPackage) return formatResponse(false, null, "Tour package not found", 404);
 
-    // Transform data to match a flattened format, if needed by the frontend.
     const transformedPackage = {
       ...tourPackage,
-      destination: tourPackage.destination.name,
+      destination: tourPackage.destination?.name || "N/A",
     };
 
-    return NextResponse.json(transformedPackage);
+    return formatResponse(true, transformedPackage);
   } catch (error: any) {
-    console.error('Error fetching tour package:', error);
-    return NextResponse.json({ message: 'Failed to fetch tour package', error: error.message }, { status: 500 });
+    console.error("Error fetching tour package:", error);
+    return formatResponse(false, null, error.message || "Failed to fetch tour package", 500);
   }
 }
 
-
-// =======================================================================
 // PUT /api/tour-packages/[id]
-// Updates an existing tour package and its destination associations.
-// =======================================================================
-export async function PUT(request: Request) {
+async function handlePUT(request: Request) {
+  const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+  const { pathname } = new URL(request.url);
+  const id = pathname.split("/").pop();
+  if (!id) return formatResponse(false, null, "Tour package ID is required", 400);
+
   try {
-    
-       const auth = await verifyAuth(request);
-      if (!auth.success) return formatResponse(false, null, auth.error, 401);
-    
-    
-    const { pathname } = new URL(request.url);
-    const id = pathname.split('/').pop();
-
-    if (!id) {
-      return NextResponse.json({ message: 'Missing tour package ID' }, { status: 400 });
-    }
-
     const body = await request.json();
     const {
       name,
@@ -84,23 +67,23 @@ export async function PUT(request: Request) {
       destinationIds,
     } = body;
 
-    const updatedTourPackage = await prisma.$transaction(async (prisma) => {
-      // 1. First, unlink all destinations currently associated with this package.
-      await prisma.destination.updateMany({
+    const updatedPackage = await prisma.$transaction(async (tx) => {
+      // Unlink current destinations
+      await tx.destination.updateMany({
         where: { tourPackageId: id },
         data: { tourPackageId: null },
       });
 
-      // 2. Then, link the new set of destinations.
-      if (destinationIds && destinationIds.length > 0) {
-        await prisma.destination.updateMany({
+      // Link new destinations
+      if (destinationIds?.length) {
+        await tx.destination.updateMany({
           where: { id: { in: destinationIds } },
           data: { tourPackageId: id },
         });
       }
 
-      // 3. Update the tour package itself with the new data.
-      const updatedPackage = await prisma.tourPackage.update({
+      // Update tour package
+      return tx.tourPackage.update({
         where: { id },
         data: {
           name,
@@ -114,50 +97,43 @@ export async function PUT(request: Request) {
           images: images || [],
         },
       });
-
-      return updatedPackage;
     });
 
-    return NextResponse.json(updatedTourPackage, { status: 200 });
+    return formatResponse(true, updatedPackage, "Tour package updated successfully");
   } catch (error: any) {
-    console.error('Error updating tour package:', error);
-    return NextResponse.json({ message: 'Failed to update tour package', error: error.message }, { status: 500 });
+    console.error("Error updating tour package:", error);
+    return formatResponse(false, null, error.message || "Failed to update tour package", 500);
   }
 }
 
-// =======================================================================
 // DELETE /api/tour-packages/[id]
-// Deletes a tour package and unlinks its associated destinations.
-// =======================================================================
-export async function DELETE(request: Request) {
+async function handleDELETE(request: Request) {
+  const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+  const { pathname } = new URL(request.url);
+  const id = pathname.split("/").pop();
+  if (!id) return formatResponse(false, null, "Tour package ID is required", 400);
+
   try {
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
-    const { pathname } = new URL(request.url);
-    const id = pathname.split('/').pop();
-
-    if (!id) {
-      return NextResponse.json({ message: 'Missing tour package ID' }, { status: 400 });
-    }
-
-    await prisma.$transaction(async (prisma) => {
-      // 1. Unlink all destinations first.
-      await prisma.destination.updateMany({
+    await prisma.$transaction(async (tx) => {
+      // Unlink destinations
+      await tx.destination.updateMany({
         where: { tourPackageId: id },
         data: { tourPackageId: null },
       });
-
-      // 2. Delete the tour package itself.
-      await prisma.tourPackage.delete({
-        where: { id },
-      });
+      // Delete tour package
+      await tx.tourPackage.delete({ where: { id } });
     });
 
-    return NextResponse.json({ message: 'Tour package deleted successfully' }, { status: 200 });
+    return formatResponse(true, null, "Tour package deleted successfully");
   } catch (error: any) {
-    console.error('Error deleting tour package:', error);
-    return NextResponse.json({ message: 'Failed to delete tour package', error: error.message }, { status: 500 });
+    console.error("Error deleting tour package:", error);
+    return formatResponse(false, null, error.message || "Failed to delete tour package", 500);
   }
 }
+
+// Export API handlers
+export const GET = withApiHandler(handleGET);
+export const PUT = withApiHandler(handlePUT);
+export const DELETE = withApiHandler(handleDELETE);

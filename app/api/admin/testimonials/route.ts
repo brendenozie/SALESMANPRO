@@ -1,111 +1,54 @@
-// pages/api/testimonials/index.ts
-import { NextApiRequest, NextApiResponse } from 'next';
-import { PrismaClient } from '@prisma/client';
-import { NextResponse } from 'next/server';
+// app/api/testimonials/route.ts
+import prisma from '@/server/db/prismadb';
 import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+import { withApiHandler } from '@/lib/hooks/withApiHandler';
 
-const prisma = new PrismaClient();
-
-
-// GET /api/admin/[slug]/experts
-// Fetches all experts for a specific company.
-export async function GET(request: Request, res: NextApiResponse) {
-
-   const auth = await verifyAuth(request);
+// GET /api/testimonials
+async function handleGET(request: Request) {
+  const auth = await verifyAuth(request);
   if (!auth.success) return formatResponse(false, null, auth.error, 401);
-
-
-    const { searchParams } = new URL(request.url);
-  const companyId = searchParams.get('companyId');
-  const status = searchParams.get('status');
 
   try {
-   // Find all clients and include their associated user data
-    //  const { status } = req.query;
-      let testimonials;
+    const { searchParams } = new URL(request.url);
+    const companyId = searchParams.get('companyId');
+    const status = searchParams.get('status');
 
-      if (status) {
-        testimonials = await prisma.testimonial.findMany({
-          where: { 
-            status: String(status), 
-            companyId 
-          },
-          // include: {
-          //   author: { select: { name: true, image: true } }
-          // },
-          orderBy: {
-            createdAt: 'desc'
-          }
-        });
-      } else {
-        testimonials = await prisma.testimonial.findMany({
-          where: { 
-            companyId 
-          },
-          // include: {
-          //   author: { select: { name: true, image: true } }
-          // },
-          orderBy: {
-            createdAt: 'desc'
-          }
-        });
-      }
-      // res.status(200).json(testimonials);
-      
-      return NextResponse.json({testimonials},{ status: 200 });
-    } catch (error) {
-      console.error('Failed to fetch clients:', error);
-      // res.status(500).json({ error: 'Failed to fetch clients' });
-      return NextResponse.json(
-            { message: "Internal server error", error: error instanceof Error ? error.message : String(error) },
-            { status: 500 }
-          );
-    }
+    const where: any = {};
+    if (companyId) where.companyId = companyId;
+    if (status) where.status = String(status);
+
+    const testimonials = await prisma.testimonial.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return formatResponse(true, { testimonials });
+  } catch (error: any) {
+    console.error('Failed to fetch testimonials:', error);
+    return formatResponse(false, null, 'Failed to fetch testimonials', 500);
+  }
 }
 
-// POST /api/admin/[slug]/experts
-// Creates a new expert (including a new user with EXPERT role).
-export async function POST(request: Request, res: NextApiResponse) {
-  
-  // const { searchParams } = new URL(request.url);
-  // const companyId = searchParams.get('companyId');
-
-
-   const auth = await verifyAuth(request);
+// POST /api/testimonials
+async function handlePOST(request: Request) {
+  const auth = await verifyAuth(request);
   if (!auth.success) return formatResponse(false, null, auth.error, 401);
-
 
   try {
     const body = await request.json();
-    
     const { quote, authorId, authorName, authorTitle, status, companyId } = body;
 
     const newTestimonial = await prisma.testimonial.create({
-      data: {
-        quote,
-        authorId,
-        authorName,
-        authorTitle,
-        status,
-        companyId
-      },
+      data: { quote, authorId, authorName, authorTitle, status, companyId },
     });
-    // res.status(201).json(newTestimonial);
 
-      // res.status(201).json({ ...newClient, user: newUser });
-      return NextResponse.json(
-            // { message: "Internal server error", error: error instanceof Error ? error.message : String(error) },
-            { newTestimonial },
-            { status: 200 }
-          );
-    
-    } catch (error) {
-      console.error('Failed to create client:', error);
-      // res.status(500).json({ error: 'Failed to create client' });
-      return NextResponse.json(
-            { message: "Internal server error", error: error instanceof Error ? error.message : String(error) },
-            { status: 500 }
-          );
-    }
+    return formatResponse(true, { newTestimonial });
+  } catch (error: any) {
+    console.error('Failed to create testimonial:', error);
+    return formatResponse(false, null, 'Failed to create testimonial', 500);
   }
+}
 
+// Export handlers wrapped in withApiHandler
+export const GET = withApiHandler(handleGET);
+export const POST = withApiHandler(handlePOST);

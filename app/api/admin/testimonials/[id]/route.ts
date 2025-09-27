@@ -1,62 +1,74 @@
-
-// pages/api/testimonials/[id].ts
-import { NextApiRequest, NextApiResponse } from 'next';
-import { PrismaClient } from '@prisma/client';
+// app/api/testimonials/[id]/route.ts
+import prisma from '@/server/db/prismadb';
 import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
-import { request } from 'http';
+import { withApiHandler } from '@/lib/hooks/withApiHandler';
 
-const prisma = new PrismaClient();
-
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { id } = req.query;
-
-   const auth = await verifyAuth(req);
+// GET /api/testimonials/[id]
+async function handleGET(request: Request, { params }: { params: { id: string } }) {
+  const auth = await verifyAuth(request);
   if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
+  const { id } = params;
 
-  if (req.method === 'GET') {
-    try {
-      const testimonial = await prisma.testimonial.findUnique({
-        where: { id: String(id) },
-        include: { author: { select: { name: true, image: true } } }
-      });
-      if (!testimonial) {
-        return res.status(404).json({ error: 'Testimonial not found' });
-      }
-      res.status(200).json(testimonial);
-    } catch (error) {
-      console.error('Failed to fetch testimonial:', error);
-      res.status(500).json({ error: 'Failed to fetch testimonial' });
+  try {
+    const testimonial = await prisma.testimonial.findUnique({
+      where: { id },
+      include: {
+        author: { select: { name: true, image: true } },
+      },
+    });
+
+    if (!testimonial) {
+      return formatResponse(false, null, 'Testimonial not found', 404);
     }
-  } else if (req.method === 'PUT') {
-    try {
-      const { quote, authorName, authorTitle, status } = req.body;
-      const updatedTestimonial = await prisma.testimonial.update({
-        where: { id: String(id) },
-        data: {
-          quote,
-          authorName,
-          authorTitle,
-          status,
-        },
-      });
-      res.status(200).json(updatedTestimonial);
-    } catch (error) {
-      console.error('Failed to update testimonial:', error);
-      res.status(500).json({ error: 'Failed to update testimonial' });
-    }
-  } else if (req.method === 'DELETE') {
-    try {
-      await prisma.testimonial.delete({
-        where: { id: String(id) },
-      });
-      res.status(200).json({ message: 'Testimonial deleted successfully' });
-    } catch (error) {
-      console.error('Failed to delete testimonial:', error);
-      res.status(500).json({ error: 'Failed to delete testimonial' });
-    }
-  } else {
-    res.setHeader('Allow', ['GET', 'PUT', 'DELETE']);
-    res.status(405).end(`Method ${req.method} Not Allowed`);
+
+    return formatResponse(true, testimonial);
+  } catch (error: any) {
+    console.error('Failed to fetch testimonial:', error);
+    return formatResponse(false, null, 'Failed to fetch testimonial', 500);
   }
 }
+
+// PUT /api/testimonials/[id]
+async function handlePUT(request: Request, { params }: { params: { id: string } }) {
+  const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+  const { id } = params;
+
+  try {
+    const body = await request.json();
+    const { quote, authorName, authorTitle, status } = body;
+
+    const updatedTestimonial = await prisma.testimonial.update({
+      where: { id },
+      data: { quote, authorName, authorTitle, status },
+    });
+
+    return formatResponse(true, updatedTestimonial);
+  } catch (error: any) {
+    console.error('Failed to update testimonial:', error);
+    return formatResponse(false, null, 'Failed to update testimonial', 500);
+  }
+}
+
+// DELETE /api/testimonials/[id]
+async function handleDELETE(request: Request, { params }: { params: { id: string } }) {
+  const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+  const { id } = params;
+
+  try {
+    await prisma.testimonial.delete({ where: { id } });
+    return formatResponse(true, { message: 'Testimonial deleted successfully' });
+  } catch (error: any) {
+    console.error('Failed to delete testimonial:', error);
+    return formatResponse(false, null, 'Failed to delete testimonial', 500);
+  }
+}
+
+// Export handlers wrapped in withApiHandler
+export const GET = withApiHandler(handleGET);
+export const PUT = withApiHandler(handlePUT);
+export const DELETE = withApiHandler(handleDELETE);

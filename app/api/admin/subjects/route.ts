@@ -1,81 +1,68 @@
-import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import prisma from "@/server/db/prismadb";
 import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
 // GET /api/subjects
-// Fetches all subjects with aggregated counts of courses offered under them.
-export async function GET(request: Request) {
+async function handleGET(request: Request) {
+  const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
   try {
-    
-       const auth = await verifyAuth(request);
-      if (!auth.success) return formatResponse(false, null, auth.error, 401);
-    
-    const subjects = await prisma.subjects.findMany({
+    const subjects = await prisma.subject.findMany({
       include: {
         _count: {
-          select: {
-            courses: true, // Count of courses under this subject
-          },
+          select: { courses: true }, // Count of courses under this subject
         },
       },
-      orderBy: {
-        name: 'asc', // Order subjects alphabetically by name
-      },
+      orderBy: { name: "asc" },
     });
 
-    // Transform the data to include counts directly in the main object
     const response = subjects.map(subject => ({
       id: subject.id,
       name: subject.name,
       description: subject.description,
-      type: subject.type, // Assuming 'type' is a string field like 'Core', 'Elective'
+      type: subject.type,
       coursesCount: subject._count.courses,
       createdAt: subject.createdAt,
       updatedAt: subject.updatedAt,
     }));
 
-    return NextResponse.json(response, { status: 200 });
-  } catch (error) {
+    return formatResponse(true, response);
+  } catch (error: any) {
     console.error("Error fetching subjects:", error);
-    return NextResponse.json({ message: "Failed to fetch subjects", error: error.message }, { status: 500 });
+    return formatResponse(false, null, error.message, 500);
   }
 }
 
 // POST /api/subjects
-// Creates a new subject.
-export async function POST(request: Request) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  if (request.method !== "POST") {
-    return NextResponse.json({ message: "Method not allowed" }, { status: 405 });
-  }
+async function handlePOST(request: Request) {
+  const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
   try {
     const body = await request.json();
     const { name, description, type } = body;
 
-    // Basic validation (add more robust validation as needed)
     if (!name) {
-      return NextResponse.json({ message: "Subject name is required." }, { status: 400 });
+      return formatResponse(false, null, "Subject name is required.", 400);
     }
 
     const newSubject = await prisma.subject.create({
-      data: {
-        name,
-        description,
-        type, // 'Core', 'Elective', 'Other' etc.
-      },
+      data: { name, description, type },
     });
 
-    return NextResponse.json(newSubject, { status: 201 });
-  } catch (error) {
+    return formatResponse(true, newSubject, "Subject created successfully.");
+  } catch (error: any) {
     console.error("Error creating subject:", error);
-    // Handle unique constraint error for subject name
-    if (error.code === 'P2002' && error.meta?.target?.includes('name')) {
-      return NextResponse.json({ message: "A subject with this name already exists." }, { status: 409 });
+
+    if (error.code === "P2002" && error.meta?.target?.includes("name")) {
+      return formatResponse(false, null, "A subject with this name already exists.", 409);
     }
-    return NextResponse.json({ message: "Failed to create subject", error: error.message }, { status: 500 });
+
+    return formatResponse(false, null, error.message, 500);
   }
 }
+
+// Export wrapped handlers
+export const GET = withApiHandler(handleGET);
+export const POST = withApiHandler(handlePOST);

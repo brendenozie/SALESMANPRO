@@ -1,51 +1,41 @@
 // app/api/sponsors/route.ts
-import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb';
+import { NextRequest } from 'next/server';
 import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+import { withApiHandler } from '@/lib/hooks/withApiHandler';
 
-/**
- * @route GET /api/sponsors
- * @description Fetches all sponsors.
- * @returns {Response} A JSON response containing an array of sponsors.
- */
-export async function GET(request: Request) {
+// GET all sponsors
+async function getSponsors(req: NextRequest) {
+  const auth = await verifyAuth(req);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
   try {
-     
-        const auth = await verifyAuth(request);
-       if (!auth.success) return formatResponse(false, null, auth.error, 401);
-     
-     const { searchParams } = new URL(request.url);
+    const { searchParams } = new URL(req.url);
     const companyId = searchParams.get('companyId');
 
     const sponsors = await prisma.sponsor.findMany({
-      where: {
-        companyId: companyId,
-      },
+      where: companyId ? { companyId } : undefined,
       orderBy: { createdAt: 'desc' },
     });
-    return NextResponse.json(sponsors, { status: 200 });
-  } catch (error) {
+
+    return formatResponse(true, sponsors, 'Sponsors fetched successfully', 200);
+  } catch (error: any) {
     console.error('Error fetching sponsors:', error);
-    return NextResponse.json({ error: 'Failed to fetch sponsors' }, { status: 500 });
+    return formatResponse(false, null, 'Failed to fetch sponsors', 500);
   }
 }
 
-/**
- * @route POST /api/sponsors
- * @description Creates a new sponsor.
- * @returns {Response} A JSON response with the created sponsor.
- */
-export async function POST(request: Request) {
+// POST a new sponsor
+async function createSponsor(req: NextRequest) {
+  const auth = await verifyAuth(req);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
   try {
-    
-       const auth = await verifyAuth(request);
-      if (!auth.success) return formatResponse(false, null, auth.error, 401);
-    
-    const body = await request.json();
+    const body = await req.json();
     const { companyName, contactName, contactEmail, contactPhone, websiteUrl, logoUrl, status, companyId } = body;
 
-    if (!companyName || !contactEmail || !websiteUrl || !companyId ) {
-      return NextResponse.json({ error: 'Company Name, Contact Email, and Website URL are required' }, { status: 400 });
+    if (!companyName || !contactEmail || !websiteUrl || !companyId) {
+      return formatResponse(false, null, 'Company Name, Contact Email, Website URL, and Company ID are required', 400);
     }
 
     const newSponsor = await prisma.sponsor.create({
@@ -57,13 +47,17 @@ export async function POST(request: Request) {
         websiteUrl,
         logoUrl,
         status,
-        companyId
+        companyId,
       },
     });
 
-    return NextResponse.json(newSponsor, { status: 201 });
-  } catch (error) {
+    return formatResponse(true, newSponsor, 'Sponsor created successfully', 201);
+  } catch (error: any) {
     console.error('Error creating sponsor:', error);
-    return NextResponse.json({ error: 'Failed to create sponsor' }, { status: 500 });
+    return formatResponse(false, null, 'Failed to create sponsor', 500);
   }
 }
+
+// Export wrapped handlers
+export const GET = withApiHandler(getSponsors);
+export const POST = withApiHandler(createSponsor);

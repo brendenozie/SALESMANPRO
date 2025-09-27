@@ -1,8 +1,12 @@
-import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-import { v4 as uuidv4 } from 'uuid'; // For generating unique IDs for subcategories
+// app/api/store-categories/route.ts
+import { NextRequest } from "next/server";
+import prisma from "@/server/db/prismadb";
+import { v4 as uuidv4 } from "uuid";
+import { verifyAuth } from "@/lib/verifyAuth";
+import { formatResponse } from "@/lib/formatResponse";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-// Helper type for subcategories as they are stored in JSON
+// Helper type for subcategories
 type SubcategoryJson = {
   id: string;
   name: string;
@@ -11,23 +15,21 @@ type SubcategoryJson = {
   visible: boolean;
 };
 
-// GET /api/store-categories
-// Fetches all StoreCategory entries, optionally filtered by companyId.
-export async function GET(request: Request) {
+// --- GET: Fetch all store categories ---
+async function getStoreCategories(req: NextRequest) {
+  const auth = await verifyAuth(req);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
   try {
-    
-       const auth = await verifyAuth(request);
-      if (!auth.success) return formatResponse(false, null, auth.error, 401);
-    
-    const { searchParams } = new URL(request.url);
-    const companyId = searchParams.get('companyId');
+    const { searchParams } = new URL(req.url);
+    const companyId = searchParams.get("companyId");
 
     const whereClause = companyId ? { companyId } : {};
 
     const storeCategories = await prisma.storeCategory.findMany({
       where: whereClause,
       include: {
-        category: { // Include the linked ProductCategory details
+        category: {
           select: {
             id: true,
             name: true,
@@ -35,66 +37,52 @@ export async function GET(request: Request) {
             icon: true,
             image: true,
             description: true,
-            // Add other fields from ProductCategory you might need
           },
         },
       },
-      orderBy: {
-        sortOrder: 'asc', // Order by the custom sortOrder
-      },
+      orderBy: { sortOrder: "asc" },
     });
 
-    // Transform the data to ensure 'items' is always an array and 'displayName' is present
-    const response = storeCategories.map(sc => ({
+    const response = storeCategories.map((sc) => ({
       id: sc.id,
       companyId: sc.companyId,
       categoryId: sc.categoryId,
-      displayName: sc.displayName || sc.category?.name || 'Unnamed Category', // Fallback to category name
-      icon: sc.icon || sc.category?.icon || '📦', // Fallback to category icon
+      displayName: sc.displayName || sc.category?.name || "Unnamed Category",
+      icon: sc.icon || sc.category?.icon || "📦",
       sortOrder: sc.sortOrder,
       visible: sc.visible,
-      items: (sc.items as SubcategoryJson[] | null) || [], // Ensure items is an array, cast from Json
-      allBrands: sc.allBrands, // Keep allBrands as is
-      // You can add more fields from sc.category here if needed on the client
+      items: (sc.items as SubcategoryJson[] | null) || [],
+      allBrands: sc.allBrands,
       categoryName: sc.category?.name,
       categorySlug: sc.category?.slug,
     }));
 
-    return NextResponse.json({ categories: response }, { status: 200 });
+    return formatResponse(true, response, "Store categories fetched successfully", 200);
   } catch (error: any) {
     console.error("Error fetching store categories:", error);
-    return NextResponse.json({ message: "Failed to fetch store categories", error: error.message }, { status: 500 });
+    return formatResponse(false, null, "Failed to fetch store categories", 500);
   }
 }
 
-// POST /api/store-categories
-// Creates a new StoreCategory entry.
-export async function POST(request: Request) {
+// --- POST: Create a new store category ---
+async function createStoreCategory(req: NextRequest) {
+  const auth = await verifyAuth(req);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
   try {
-    
-       const auth = await verifyAuth(request);
-      if (!auth.success) return formatResponse(false, null, auth.error, 401);
-    
-    const body = await request.json();
+    const body = await req.json();
     const { companyId, categoryId, displayName, icon, sortOrder, visible } = body;
 
-    // Basic validation
     if (!companyId || !categoryId || !displayName) {
-      return NextResponse.json({ message: "Company ID, Category ID, and Display Name are required." }, { status: 400 });
+      return formatResponse(false, null, "Company ID, Category ID, and Display Name are required", 400);
     }
 
-    // Check if a StoreCategory already exists for this companyId and categoryId pair
     const existingStoreCategory = await prisma.storeCategory.findUnique({
-      where: {
-        companyId_categoryId: { // Use the @@unique compound index
-          companyId: companyId,
-          categoryId: categoryId,
-        },
-      },
+      where: { companyId_categoryId: { companyId, categoryId } },
     });
 
     if (existingStoreCategory) {
-      return NextResponse.json({ message: "A store category for this company and product category already exists." }, { status: 409 });
+      return formatResponse(false, null, "A store category for this company and product category already exists", 409);
     }
 
     const newStoreCategory = await prisma.storeCategory.create({
@@ -103,32 +91,24 @@ export async function POST(request: Request) {
         categoryId,
         displayName,
         icon,
-        sortOrder: sortOrder !== undefined ? sortOrder : 0, // Default to 0 if not provided
-        visible: visible !== undefined ? visible : true, // Default to true if not provided
-        items: [], // Initialize with an empty array for subcategories
-        allBrands: [], // Initialize with an empty array for brands
+        sortOrder: sortOrder ?? 0,
+        visible: visible ?? true,
+        items: [],
+        allBrands: [],
       },
       include: {
-        category: { // Include the linked ProductCategory details for the response
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-            icon: true,
-            image: true,
-            description: true,
-          },
+        category: {
+          select: { id: true, name: true, slug: true, icon: true, image: true, description: true },
         },
       },
     });
 
-    // Transform the response to match client-side type
     const responseData = {
       id: newStoreCategory.id,
       companyId: newStoreCategory.companyId,
       categoryId: newStoreCategory.categoryId,
-      displayName: newStoreCategory.displayName || newStoreCategory.category?.name || 'Unnamed Category',
-      icon: newStoreCategory.icon || newStoreCategory.category?.icon || '📦',
+      displayName: newStoreCategory.displayName || newStoreCategory.category?.name || "Unnamed Category",
+      icon: newStoreCategory.icon || newStoreCategory.category?.icon || "📦",
       sortOrder: newStoreCategory.sortOrder,
       visible: newStoreCategory.visible,
       items: (newStoreCategory.items as SubcategoryJson[] | null) || [],
@@ -137,13 +117,16 @@ export async function POST(request: Request) {
       categorySlug: newStoreCategory.category?.slug,
     };
 
-    return NextResponse.json(responseData, { status: 201 });
+    return formatResponse(true, responseData, "Store category created successfully", 201);
   } catch (error: any) {
     console.error("Error creating store category:", error);
-    // Handle unique constraint error for display name if it were unique
-    if (error.code === 'P2002') { // Prisma unique constraint violation
-      return NextResponse.json({ message: "A category with similar properties might already exist." }, { status: 409 });
+    if (error.code === "P2002") {
+      return formatResponse(false, null, "A category with similar properties might already exist", 409);
     }
-    return NextResponse.json({ message: "Failed to create store category", error: error.message }, { status: 500 });
+    return formatResponse(false, null, "Failed to create store category", 500);
   }
 }
+
+// ✅ Export wrapped with withApiHandler
+export const GET = withApiHandler(getStoreCategories);
+export const POST = withApiHandler(createStoreCategory);

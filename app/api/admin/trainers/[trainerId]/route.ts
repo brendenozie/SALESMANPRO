@@ -1,153 +1,101 @@
-// app/api/admin/[adminSlug]/trainers/[trainerId]/route.js
-import { NextResponse } from 'next/server';
-import prisma from '@/server/db/prismadb'; // Adjust this path
+// app/api/admin/[adminSlug]/trainers/[trainerId]/route.ts
+import prisma from '@/server/db/prismadb';
 import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+import { withApiHandler } from '@/lib/hooks/withApiHandler';
 
 // PUT /api/admin/[adminSlug]/trainers/[trainerId]
-// Updates an existing trainer's details.
-export async function PUT(request, { params }) {
+// Updates an existing trainer
+async function handlePUT(request: Request, { params }: { params: { adminSlug: string; trainerId: string } }) {
   const { adminSlug, trainerId } = params;
 
-   const auth = await verifyAuth(request);
+  const auth = await verifyAuth(request);
   if (!auth.success) return formatResponse(false, null, auth.error, 401);
-
 
   try {
     const body = await request.json();
-    const {
-      name, // User's name
-      email, // User's email
-      phone, // User's phone
-      specialty,
-      bio,
-      certifications,
-      photoUrl,
-      status, // EducatorStatus
-    } = body;
+    const { name, email, phone, specialty, bio, certifications, photoUrl, status } = body;
 
-    // 1. Verify company and trainer existence
-    const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
-      select: { id: true },
-    });
-
-    if (!company) {
-      return NextResponse.json({ message: 'Company not found.' }, { status: 404 });
-    }
+    const company = await prisma.company.findUnique({ where: { slug: adminSlug }, select: { id: true } });
+    if (!company) return formatResponse(false, null, 'Company not found', 404);
 
     const existingTrainer = await prisma.educator.findUnique({
       where: { id: trainerId },
       include: { user: true },
     });
-
     if (!existingTrainer || existingTrainer.companyId !== company.id) {
-      return NextResponse.json({ message: 'Trainer not found or does not belong to this company.' }, { status: 404 });
+      return formatResponse(false, null, 'Trainer not found or does not belong to this company', 404);
     }
 
-    // Use a Prisma transaction for atomicity if updating both User and Educator
     const updatedTrainerData = await prisma.$transaction(async (tx) => {
-      // Update the associated User record
       const updatedUser = await tx.user.update({
         where: { id: existingTrainer.userId },
-        data: {
-          name: name,
-          email: email, // Email update might need re-verification in a real app
-          phone: phone || null,
-          // Do NOT update password here unless explicitly provided and hashed
-        },
+        data: { name, email, phone: phone || null },
       });
 
-      // Update the Educator profile
       const updatedEducator = await tx.educator.update({
         where: { id: trainerId },
         data: {
-          specialty: specialty,
+          specialty,
           bio: bio || null,
           certifications: certifications || [],
           photoUrl: photoUrl || null,
-          status: status,
+          status,
         },
-        include: {
-          user: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              phone: true,
-            },
-          },
-        },
+        include: { user: { select: { id: true, name: true, email: true, phone: true } } },
       });
+
       return updatedEducator;
     });
 
-    // Format the updated trainer data for frontend display
-    const formattedUpdatedTrainer = {
+    return formatResponse(true, {
       id: updatedTrainerData.id,
       userId: updatedTrainerData.userId,
-      name: updatedTrainerData.user?.name || 'N/A',
-      email: updatedTrainerData.user?.email || 'N/A',
-      phone: updatedTrainerData.user?.phone || 'N/A',
-      specialty: updatedTrainerData.specialty || 'General Fitness',
-      bio: updatedTrainerData.bio || 'No bio available.',
-      certifications: updatedTrainerData.certifications || [],
-      photoUrl: updatedTrainerData.photoUrl || 'https://placehold.co/128x128/E0E7FF/4338CA?text=No+Photo',
+      name: updatedTrainerData.user?.name ?? 'N/A',
+      email: updatedTrainerData.user?.email ?? 'N/A',
+      phone: updatedTrainerData.user?.phone ?? 'N/A',
+      specialty: updatedTrainerData.specialty ?? 'General Fitness',
+      bio: updatedTrainerData.bio ?? 'No bio available.',
+      certifications: updatedTrainerData.certifications ?? [],
+      photoUrl: updatedTrainerData.photoUrl ?? 'https://placehold.co/128x128/E0E7FF/4338CA?text=No+Photo',
       status: updatedTrainerData.status,
-    };
-
-    return NextResponse.json(formattedUpdatedTrainer);
-  } catch (error) {
+    });
+  } catch (error: any) {
     console.error(`Error updating trainer ${trainerId}:`, error);
-    if (error.code === 'P2025') { // Record not found
-      return NextResponse.json({ message: 'Trainer not found.' }, { status: 404 });
-    }
-    if (error.code === 'P2002') { // Unique constraint violation (e.g., email already exists)
-      return NextResponse.json({ message: 'Another user with this email already exists.', error: error.message }, { status: 409 });
-    }
-    return NextResponse.json({ message: 'Failed to update trainer', error: error.message }, { status: 500 });
+    if (error.code === 'P2025') return formatResponse(false, null, 'Trainer not found', 404);
+    if (error.code === 'P2002') return formatResponse(false, null, 'Another user with this email already exists', 409);
+    return formatResponse(false, null, 'Failed to update trainer', 500);
   }
 }
 
 // DELETE /api/admin/[adminSlug]/trainers/[trainerId]
-// Deletes a specific trainer profile.
-export async function DELETE(request, { params }) {
+// Deletes a specific trainer
+async function handleDELETE(request: Request, { params }: { params: { adminSlug: string; trainerId: string } }) {
   const { adminSlug, trainerId } = params;
 
-   const auth = await verifyAuth(request);
+  const auth = await verifyAuth(request);
   if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
-
   try {
-    const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
-      select: { id: true },
-    });
-
-    if (!company) {
-      return NextResponse.json({ message: 'Company not found.' }, { status: 404 });
-    }
+    const company = await prisma.company.findUnique({ where: { slug: adminSlug }, select: { id: true } });
+    if (!company) return formatResponse(false, null, 'Company not found', 404);
 
     const trainerToDelete = await prisma.educator.findUnique({
       where: { id: trainerId },
-      select: { companyId: true, userId: true },
+      select: { companyId: true },
     });
-
     if (!trainerToDelete || trainerToDelete.companyId !== company.id) {
-      return NextResponse.json({ message: 'Trainer not found or does not belong to this company.' }, { status: 404 });
+      return formatResponse(false, null, 'Trainer not found or does not belong to this company', 404);
     }
 
-    // Delete the Educator profile. Due to `onDelete: Cascade` on the `user` relation
-    // in the Educator model, deleting the Educator will also delete the associated User.
-    await prisma.educator.delete({
-      where: { id: trainerId },
-    });
-
-    return NextResponse.json({ message: 'Trainer deleted successfully.' }, { status: 200 });
-  } catch (error) {
+    await prisma.educator.delete({ where: { id: trainerId } });
+    return formatResponse(true, { message: 'Trainer deleted successfully.' });
+  } catch (error: any) {
     console.error(`Error deleting trainer ${trainerId}:`, error);
-    if (error.code === 'P2025') {
-      return NextResponse.json({ message: 'Trainer not found.' }, { status: 404 });
-    }
-    return NextResponse.json({ message: 'Failed to delete trainer', error: error.message }, { status: 500 });
+    if (error.code === 'P2025') return formatResponse(false, null, 'Trainer not found', 404);
+    return formatResponse(false, null, 'Failed to delete trainer', 500);
   }
 }
+
+// Export handlers wrapped with withApiHandler
+export const PUT = withApiHandler(handlePUT);
+export const DELETE = withApiHandler(handleDELETE);

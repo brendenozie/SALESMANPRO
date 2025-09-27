@@ -1,18 +1,23 @@
 // app/api/admin/staff/route.ts
-import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Assuming this path correctly points to your Prisma client initialization
+import prisma from "@/server/db/prismadb";
 import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { NextRequest } from "next/server";
 
 // Helper function to format staff data for the frontend
 async function formatStaffData(staffMember: any) {
   const userName = staffMember.user?.name || 'N/A';
   const userEmail = staffMember.user?.email || 'N/A';
   const userPhone = staffMember.user?.phone || 'N/A';
-  const userProfilePicture = staffMember.user?.profilePicture || `https://placehold.co/100x100/A7F3D0/0D9488?text=${userName ? userName.charAt(0) : '?'}${userName ? userName.charAt(1) : ''}`;
+  const userProfilePicture =
+    staffMember.user?.profilePicture ||
+    `https://placehold.co/100x100/A7F3D0/0D9488?text=${
+      userName ? userName.charAt(0) : '?'
+    }${userName ? userName.charAt(1) : ''}`;
 
   return {
-    id: staffMember.id, // StaffProfile model's ID
-    userId: staffMember.userId, // Corresponding User ID
+    id: staffMember.id,
+    userId: staffMember.userId,
     name: userName,
     email: userEmail,
     phone: userPhone,
@@ -20,144 +25,111 @@ async function formatStaffData(staffMember: any) {
     jobTitle: staffMember.jobTitle || 'N/A',
     department: staffMember.department || 'N/A',
     employmentStatus: staffMember.employmentStatus,
-    startDate: staffMember.startDate ? new Date(staffMember.startDate).toLocaleDateString() : 'N/A',
-    createdAt: staffMember.createdAt ? new Date(staffMember.createdAt).toLocaleDateString() : 'N/A',
+    startDate: staffMember.startDate
+      ? new Date(staffMember.startDate).toLocaleDateString()
+      : 'N/A',
+    createdAt: staffMember.createdAt
+      ? new Date(staffMember.createdAt).toLocaleDateString()
+      : 'N/A',
   };
 }
 
-export async function GET(request: Request) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  const { searchParams } = new URL(request.url);
+// GET /api/admin/staff
+async function getStaff(req: NextRequest) {
+  const auth = await verifyAuth(req);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+  const { searchParams } = new URL(req.url);
   const companyId = searchParams.get("companyId");
   const searchTerm = searchParams.get("searchTerm") || "";
-  const filterStatus = searchParams.get("filterStatus"); // 'ACTIVE', 'ON_LEAVE', 'TERMINATED', 'All'
+  const filterStatus = searchParams.get("filterStatus");
 
-  if (!companyId) {
-    return NextResponse.json({ error: "Missing companyId" }, { status: 400 });
-  }
+  if (!companyId) return formatResponse(false, null, "Missing companyId", 400);
 
   try {
-    const whereClause: any = {
-      companyId: companyId,
-    };
+    const whereClause: any = { companyId };
 
-    if (filterStatus && filterStatus !== 'All') {
+    if (filterStatus && filterStatus !== "All") {
       whereClause.employmentStatus = filterStatus;
     }
 
     let staffMembers = await prisma.staffProfile.findMany({
       where: whereClause,
       include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            phone: true,
-            profilePicture: true,
-          },
-        },
+        user: { select: { id: true, name: true, email: true, phone: true, profilePicture: true } },
       },
-      orderBy: { createdAt: 'asc' },
+      orderBy: { createdAt: "asc" },
     });
 
-    // Client-side filtering for search term across name, email, phone, jobTitle, and department
     if (searchTerm) {
       const lowerCaseSearchTerm = searchTerm.toLowerCase();
-      staffMembers = staffMembers.filter(member =>
-        member.user?.name?.toLowerCase().includes(lowerCaseSearchTerm) ||
-        member.user?.email?.toLowerCase().includes(lowerCaseSearchTerm) ||
-        member.user?.phone?.toLowerCase().includes(lowerCaseSearchTerm) ||
-        member.jobTitle?.toLowerCase().includes(lowerCaseSearchTerm) ||
-        member.department?.toLowerCase().includes(lowerCaseSearchTerm)
+      staffMembers = staffMembers.filter(
+        (member) =>
+          member.user?.name?.toLowerCase().includes(lowerCaseSearchTerm) ||
+          member.user?.email?.toLowerCase().includes(lowerCaseSearchTerm) ||
+          member.user?.phone?.toLowerCase().includes(lowerCaseSearchTerm) ||
+          member.jobTitle?.toLowerCase().includes(lowerCaseSearchTerm) ||
+          member.department?.toLowerCase().includes(lowerCaseSearchTerm)
       );
     }
 
     const enrichedStaff = await Promise.all(
-      staffMembers.map(async (staffMember) => formatStaffData(staffMember))
+      staffMembers.map((staffMember) => formatStaffData(staffMember))
     );
 
-    return NextResponse.json(enrichedStaff);
+    return formatResponse(true, enrichedStaff, "Staff fetched successfully");
   } catch (err: any) {
     console.error("GET /api/admin/staff error:", err);
-    return NextResponse.json({ error: err.message || "Internal server error" }, { status: 500 });
+    return formatResponse(false, null, err.message || "Internal server error", 500);
   }
 }
 
-export async function POST(request: Request) {
-  
-   const auth = await verifyAuth(request);
+// POST /api/admin/staff
+async function createStaff(req: NextRequest) {
+  const auth = await verifyAuth(req);
   if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
-const body = await request.json();
+  const body = await req.json();
   const { name, email, phone, profilePicture, jobTitle, department, employmentStatus, startDate, companyId } = body;
 
   if (!name || !email || !jobTitle || !department || !companyId) {
-    return NextResponse.json(
-      { error: "Missing required fields: name, email, jobTitle, department, companyId" },
-      { status: 400 }
-    );
+    return formatResponse(false, null, "Missing required fields: name, email, jobTitle, department, companyId", 400);
   }
 
   try {
-    // First, check if a User with this email already exists
-    let user = await prisma.user.findUnique({
-      where: { email: email },
-    });
+    let user = await prisma.user.findUnique({ where: { email } });
 
-    // If user does not exist, create a new User record
     if (!user) {
       user = await prisma.user.create({
-        data: {
-          name: name,
-          email: email,
-          phone: phone,
-          profilePicture: profilePicture,
-          role: 'STAFF', // Assign the new STAFF role
-        },
+        data: { name, email, phone, profilePicture, role: "STAFF" },
       });
-    } else {
-      // If user exists, update their role to STAFF if it's not already
-      if (user.role !== 'STAFF' && user.role !== 'ADMIN') { // Allow ADMIN to also be staff
-        user = await prisma.user.update({
-          where: { id: user.id },
-          data: { role: 'STAFF' },
-        });
-      }
+    } else if (user.role !== "STAFF" && user.role !== "ADMIN") {
+      user = await prisma.user.update({ where: { id: user.id }, data: { role: "STAFF" } });
     }
 
-    // Check if a StaffProfile already exists for this user
-    let staffProfile = await prisma.staffProfile.findUnique({
-      where: { userId: user.id },
-    });
+    const existingProfile = await prisma.staffProfile.findUnique({ where: { userId: user.id } });
+    if (existingProfile) return formatResponse(false, null, "Staff profile already exists for this user", 409);
 
-    if (staffProfile) {
-      return NextResponse.json({ error: "Staff profile already exists for this user" }, { status: 409 });
-    }
-
-    // Create the StaffProfile linked to the User
     const newStaff = await prisma.staffProfile.create({
       data: {
         userId: user.id,
-        companyId: companyId,
-        jobTitle: jobTitle,
-        department: department,
-        employmentStatus: employmentStatus,
+        companyId,
+        jobTitle,
+        department,
+        employmentStatus,
         startDate: startDate ? new Date(startDate) : undefined,
       },
-      include: {
-        user: { select: { name: true, email: true, phone: true, profilePicture: true } },
-      },
+      include: { user: { select: { name: true, email: true, phone: true, profilePicture: true } } },
     });
 
     const formattedNewStaff = await formatStaffData(newStaff);
-
-    return NextResponse.json(formattedNewStaff, { status: 201 });
+    return formatResponse(true, formattedNewStaff, "Staff created successfully", 201);
   } catch (err: any) {
     console.error("POST /api/admin/staff error:", err);
-    return NextResponse.json({ error: err.message || "Internal server error" }, { status: 500 });
+    return formatResponse(false, null, err.message || "Internal server error", 500);
   }
 }
+
+// Export wrapped handlers
+export const GET = withApiHandler(getStaff);
+export const POST = withApiHandler(createStaff);

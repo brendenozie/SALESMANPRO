@@ -1,49 +1,60 @@
-// pages/api/settings/company.ts
-import { NextApiRequest, NextApiResponse } from 'next';
-import { PrismaClient } from '@prisma/client';
-import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+// app/api/settings/company/route.ts
+import { NextRequest } from "next/server";
+import prisma from "@/server/db/prismadb"; // Use your Prisma instance
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-const prisma = new PrismaClient();
+// GET company settings
+async function getCompanySettings(req: NextRequest) {
+  const auth = await verifyAuth(req);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  
-     const auth = await verifyAuth(req);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  const { companyId } = req.query;
+  const url = new URL(req.url);
+  const companyId = url.searchParams.get("companyId");
 
-  if (!companyId) {
-    return res.status(400).json({ error: 'Company ID is required' });
-  }
+  if (!companyId) return formatResponse(false, null, "Company ID is required", 400);
 
-  if (req.method === 'GET') {
-    try {
-      const companySettings = await prisma.company.findUnique({
-        where: { id: String(companyId) },
-        select: { name: true, contactEmail: true, contactPhone: true, address: true, logoUrl: true },
-      });
-      if (!companySettings) {
-        return res.status(404).json({ error: 'Company not found' });
-      }
-      res.status(200).json(companySettings);
-    } catch (error) {
-      console.error('Failed to fetch company settings:', error);
-      res.status(500).json({ error: 'Failed to fetch company settings' });
-    }
-  } else if (req.method === 'PUT') {
-    try {
-      const { name, contactEmail, contactPhone, address } = req.body;
-      const updatedSettings = await prisma.company.update({
-        where: { id: String(companyId) },
-        data: { name, contactEmail, contactPhone, address },
-      });
-      res.status(200).json(updatedSettings);
-    } catch (error) {
-      console.error('Failed to update company settings:', error);
-      res.status(500).json({ error: 'Failed to update company settings' });
-    }
-  } else {
-    res.setHeader('Allow', ['GET', 'PUT']);
-    res.status(405).end(`Method ${req.method} Not Allowed`);
+  try {
+    const companySettings = await prisma.company.findUnique({
+      where: { id: companyId },
+      select: { name: true, contactEmail: true, contactPhone: true, address: true, logoUrl: true },
+    });
+
+    if (!companySettings) return formatResponse(false, null, "Company not found", 404);
+
+    return formatResponse(true, companySettings, "Company settings fetched successfully", 200);
+  } catch (error: any) {
+    console.error("Failed to fetch company settings:", error);
+    return formatResponse(false, null, "Failed to fetch company settings", 500);
   }
 }
+
+// PUT update company settings
+async function updateCompanySettings(req: NextRequest) {
+  const auth = await verifyAuth(req);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+  const url = new URL(req.url);
+  const companyId = url.searchParams.get("companyId");
+
+  if (!companyId) return formatResponse(false, null, "Company ID is required", 400);
+
+  try {
+    const body = await req.json();
+    const { name, contactEmail, contactPhone, address, logoUrl } = body;
+
+    const updatedSettings = await prisma.company.update({
+      where: { id: companyId },
+      data: { name, contactEmail, contactPhone, address, logoUrl },
+    });
+
+    return formatResponse(true, updatedSettings, "Company settings updated successfully", 200);
+  } catch (error: any) {
+    console.error("Failed to update company settings:", error);
+    return formatResponse(false, null, "Failed to update company settings", 500);
+  }
+}
+
+// Export handlers wrapped with withApiHandler
+export const GET = withApiHandler(getCompanySettings);
+export const PUT = withApiHandler(updateCompanySettings);

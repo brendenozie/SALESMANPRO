@@ -1,47 +1,54 @@
+// app/api/settings/notifications/[userId]/route.ts
+import { NextRequest } from "next/server";
+import prisma from "@/server/db/prismadb";
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-// pages/api/settings/notifications/[userId].ts
-import { NextApiRequest, NextApiResponse } from 'next';
-import { PrismaClient } from '@prisma/client';
-import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+// GET user notification settings
+async function getUserSettings(req: NextRequest, { params }: { params: { userId: string } }) {
+  const auth = await verifyAuth(req);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
-const prisma = new PrismaClient();
+  const { userId } = params;
+  if (!userId) return formatResponse(false, null, "User ID is required", 400);
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  
-     const auth = await verifyAuth(req);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  const { userId } = req.query;
+  try {
+    const userSettings = await prisma.settings.findUnique({
+      where: { userId },
+    });
 
-  if (!userId) {
-    return res.status(400).json({ error: 'User ID is required' });
-  }
-
-  if (req.method === 'GET') {
-    try {
-      const userSettings = await prisma.settings.findUnique({
-        where: { userId: String(userId) },
-      });
-      res.status(200).json(userSettings);
-    } catch (error) {
-      console.error('Failed to fetch user settings:', error);
-      res.status(500).json({ error: 'Failed to fetch user settings' });
-    }
-  } else if (req.method === 'PUT') {
-    try {
-      const { newClientNotify, invoicePaidNotify } = req.body;
-      const updatedSettings = await prisma.settings.upsert({
-        where: { userId: String(userId) },
-        update: { newClientNotify, invoicePaidNotify },
-        create: { userId: String(userId), newClientNotify, invoicePaidNotify },
-      });
-      res.status(200).json(updatedSettings);
-    } catch (error) {
-      console.error('Failed to update user settings:', error);
-      res.status(500).json({ error: 'Failed to update user settings' });
-    }
-  } else {
-    res.setHeader('Allow', ['GET', 'PUT']);
-    res.status(405).end(`Method ${req.method} Not Allowed`);
+    return formatResponse(true, userSettings, "User settings fetched successfully", 200);
+  } catch (error: any) {
+    console.error("Failed to fetch user settings:", error);
+    return formatResponse(false, null, "Failed to fetch user settings", 500);
   }
 }
+
+// PUT update or create user notification settings
+async function updateUserSettings(req: NextRequest, { params }: { params: { userId: string } }) {
+  const auth = await verifyAuth(req);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+  const { userId } = params;
+  if (!userId) return formatResponse(false, null, "User ID is required", 400);
+
+  try {
+    const body = await req.json();
+    const { newClientNotify, invoicePaidNotify } = body;
+
+    const updatedSettings = await prisma.settings.upsert({
+      where: { userId },
+      update: { newClientNotify, invoicePaidNotify },
+      create: { userId, newClientNotify, invoicePaidNotify },
+    });
+
+    return formatResponse(true, updatedSettings, "User settings updated successfully", 200);
+  } catch (error: any) {
+    console.error("Failed to update user settings:", error);
+    return formatResponse(false, null, "Failed to update user settings", 500);
+  }
+}
+
+// Export handlers wrapped with withApiHandler
+export const GET = withApiHandler(getUserSettings);
+export const PUT = withApiHandler(updateUserSettings);

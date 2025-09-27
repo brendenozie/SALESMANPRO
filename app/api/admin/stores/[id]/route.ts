@@ -1,20 +1,15 @@
 // app/api/admin/[adminSlug]/staff/[id]/route.ts
-import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import prisma from "@/server/db/prismadb";
 import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
-import { request } from "http";
-
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { NextRequest } from "next/server";
 
 // GET a single store with category tree and counts
-export async function GET(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
+async function getStore(req: NextRequest, { params }: { params: { id: string } }) {
+  const auth = await verifyAuth(req);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
   try {
-    
-       const auth = await verifyAuth(req);
-      if (!auth.success) return formatResponse(false, null, auth.error, 401);
-    
     const storeId = params.id;
 
     const store = await prisma.company.findUnique({
@@ -35,13 +30,10 @@ export async function GET(
                   select: { products: true, brands: true },
                 },
                 products: {
-                  take: 5, // Only fetch a preview list to save payload size
+                  take: 5, // Preview list to save payload size
                 },
               },
             },
-            // _count: {
-            //   select: { subcategories: true },
-            // },
           },
         },
         _count: {
@@ -54,15 +46,15 @@ export async function GET(
     });
 
     if (!store) {
-      return NextResponse.json({ error: "Store not found" }, { status: 404 });
+      return formatResponse(false, null, "Store not found", 404);
     }
 
-    return NextResponse.json(store);
-  } catch (error) {
+    return formatResponse(true, store, "Store fetched successfully");
+  } catch (error: any) {
     console.error("Error fetching store:", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
+    return formatResponse(false, null, error.message || "Internal Server Error", 500);
   }
 }
+
+// Export wrapped handler
+export const GET = withApiHandler(getStore);

@@ -1,54 +1,50 @@
-// app/api/admin/[adminSlug]/users/[userId]/route.js
-import { NextResponse } from 'next/server';
-import prisma from '@/server/db/prismadb'; // Adjust this path if your prisma client is elsewhere
-import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+// app/api/admin/[adminSlug]/users/[userId]/route.ts
+import prisma from "@/server/db/prismadb";
+import { NextResponse } from "next/server";
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
 // DELETE /api/admin/[adminSlug]/users/[userId]
-// Deletes a specific user by ID.
-export async function DELETE(request: Request, { params }) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
+// Deletes a specific user by ID
+async function handleDELETE(request: Request, { params }: { params: { adminSlug: string; userId: string } }) {
+  const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
   const { adminSlug, userId } = params;
 
   try {
-    // 1. Verify company and user existence (optional but good for security)
+    // 1. Verify company existence
     const company = await prisma.company.findUnique({
       where: { slug: adminSlug },
       select: { id: true },
     });
 
     if (!company) {
-      return NextResponse.json({ message: 'Company not found.' }, { status: 404 });
+      return formatResponse(false, null, "Company not found", 404);
     }
 
+    // 2. Verify user existence and ownership
     const userToDelete = await prisma.user.findUnique({
       where: { id: userId },
       select: { companyId: true },
     });
 
     if (!userToDelete || userToDelete.companyId !== company.id) {
-      return NextResponse.json({ message: 'User not found or does not belong to this company.' }, { status: 404 });
+      return formatResponse(false, null, "User not found or does not belong to this company", 404);
     }
 
-    // 2. Delete the user
-    // Prisma's onDelete: Cascade in your schema handles associated records (Account, Session, etc.)
-    // For other one-to-one profiles (Client, Consumer, etc.) linked to User,
-    // ensure their relations in schema.prisma have `onDelete: Cascade` if you want them
-    // to be automatically deleted when the User is deleted.
-    // Example: `user User @relation(fields: [userId], references: [id], onDelete: Cascade)`
-    await prisma.user.delete({
-      where: { id: userId },
-    });
+    // 3. Delete the user (cascade deletes handled in schema)
+    await prisma.user.delete({ where: { id: userId } });
 
-    return NextResponse.json({ message: 'User deleted successfully.' }, { status: 200 });
-  } catch (error) {
+    return formatResponse(true, null, "User deleted successfully");
+  } catch (error: any) {
     console.error(`Error deleting user ${userId}:`, error);
-    if (error.code === 'P2025') { // Prisma error code for record not found
-      return NextResponse.json({ message: 'User not found.' }, { status: 404 });
+    if (error.code === "P2025") {
+      return formatResponse(false, null, "User not found", 404);
     }
-    return NextResponse.json({ message: 'Failed to delete user', error: error.message }, { status: 500 });
+    return formatResponse(false, null, error.message || "Failed to delete user", 500);
   }
 }
+
+// Export the DELETE handler wrapped with withApiHandler
+export const DELETE = withApiHandler(handleDELETE);

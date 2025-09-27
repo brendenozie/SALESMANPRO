@@ -1,48 +1,34 @@
 // app/api/sponsors/[id]/route.ts
-import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb';
+import { NextRequest } from 'next/server';
 import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+import { withApiHandler } from '@/lib/hooks/withApiHandler';
 
-/**
- * @route GET /api/sponsors/:id
- * @description Fetches a single sponsor by ID.
- * @returns {Response} A JSON response containing the sponsor.
- */
-export async function GET(request: Request, { params }: { params: { id: string } }) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
+// GET a single sponsor by ID
+async function getSponsor(req: NextRequest, { params }: { params: { id: string } }) {
+  const auth = await verifyAuth(req);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
   const { id } = params;
   try {
-    const sponsor = await prisma.sponsor.findUnique({
-      where: { id },
-    });
+    const sponsor = await prisma.sponsor.findUnique({ where: { id } });
+    if (!sponsor) return formatResponse(false, null, 'Sponsor not found', 404);
 
-    if (!sponsor) {
-      return NextResponse.json({ error: 'Sponsor not found' }, { status: 404 });
-    }
-
-    return NextResponse.json(sponsor, { status: 200 });
-  } catch (error) {
+    return formatResponse(true, sponsor, 'Sponsor fetched successfully', 200);
+  } catch (error: any) {
     console.error(`Error fetching sponsor with ID ${id}:`, error);
-    return NextResponse.json({ error: 'Failed to fetch sponsor' }, { status: 500 });
+    return formatResponse(false, null, 'Failed to fetch sponsor', 500);
   }
 }
 
-/**
- * @route PUT /api/sponsors/:id
- * @description Updates an existing sponsor.
- * @returns {Response} A JSON response with the updated sponsor.
- */
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
+// PUT (update) a sponsor by ID
+async function updateSponsor(req: NextRequest, { params }: { params: { id: string } }) {
+  const auth = await verifyAuth(req);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
   const { id } = params;
   try {
-    const body = await request.json();
+    const body = await req.json();
     const { companyName, contactName, contactEmail, contactPhone, websiteUrl, logoUrl, status } = body;
 
     const updatedSponsor = await prisma.sponsor.update({
@@ -59,35 +45,29 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       },
     });
 
-    return NextResponse.json(updatedSponsor, { status: 200 });
-  } catch (error) {
-    // if (error.code === 'P2025') {
-    //   return NextResponse.json({ error: 'Sponsor not found' }, { status: 404 });
-    // }
+    return formatResponse(true, updatedSponsor, 'Sponsor updated successfully', 200);
+  } catch (error: any) {
     console.error(`Error updating sponsor with ID ${id}:`, error);
-    return NextResponse.json({ error: 'Failed to update sponsor' }, { status: 500 });
+    return formatResponse(false, null, 'Failed to update sponsor', 500);
   }
 }
 
-/**
- * @route DELETE /api/sponsors/:id
- * @description Deletes a sponsor.
- * @returns {Response} A 204 No Content response.
- */
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
+// DELETE a sponsor by ID
+async function deleteSponsor(req: NextRequest, { params }: { params: { id: string } }) {
+  const auth = await verifyAuth(req);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
   const { id } = params;
   try {
     await prisma.sponsor.delete({ where: { id } });
-    return new NextResponse(null, { status: 204 });
-  } catch (error) {
-    // if (error.code === 'P2025') {
-    //   return NextResponse.json({ error: 'Sponsor not found' }, { status: 404 });
-    // }
+    return formatResponse(true, null, 'Sponsor deleted successfully', 204);
+  } catch (error: any) {
     console.error(`Error deleting sponsor with ID ${id}:`, error);
-    return NextResponse.json({ error: 'Failed to delete sponsor' }, { status: 500 });
+    return formatResponse(false, null, 'Failed to delete sponsor', 500);
   }
 }
+
+// Export wrapped handlers
+export const GET = withApiHandler(getSponsor);
+export const PUT = withApiHandler(updateSponsor);
+export const DELETE = withApiHandler(deleteSponsor);

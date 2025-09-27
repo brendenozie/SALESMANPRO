@@ -1,85 +1,60 @@
-import { NextResponse } from 'next/server';
+// app/api/tour-packages/route.ts
 import prisma from "@/server/db/prismadb";
-import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+import { NextResponse } from "next/server";
+import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-// A robust slugify function to create a URL-friendly string from a name.
-const slugify = (text: string) => {
-  return text
+// Slugify function
+const slugify = (text: string) =>
+  text
     .toString()
-    .normalize('NFD') // Normalize characters
-    .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .trim()
-    .replace(/\s+/g, '-')      // Replace spaces with -
-    .replace(/[^\w-]+/g, '')   // Remove all non-word chars
-    .replace(/--+/g, '-');     // Replace multiple - with single -
-};
+    .replace(/\s+/g, "-")
+    .replace(/[^\w-]+/g, "")
+    .replace(/--+/g, "-");
 
 // =======================================================================
 // GET /api/tour-packages
-// Fetches all tour packages, including their destination details.
+// Fetch all tour packages with their destinations
 // =======================================================================
-export async function GET(request: Request) {
+async function handleGET(request: Request) {
+  const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
   try {
-    
-       const auth = await verifyAuth(request);
-      if (!auth.success) return formatResponse(false, null, auth.error, 401);
-    
-    
     const tourPackages = await prisma.tourPackage.findMany({
-      // The `include` statement has been updated to reflect the `destinations` array
-      // on the TourPackage model.
-      include: {
-        destinations: true,
-      },
-      orderBy: {
-        createdAt: 'desc', // Order by most recent packages first.
-      },
+      include: { destinations: true },
+      orderBy: { createdAt: "desc" },
     });
 
-    // The data is returned directly, as the nested `destinations` array is a
-    // more flexible format for the frontend to consume.
-    return NextResponse.json(tourPackages);
+    return formatResponse(true, tourPackages);
   } catch (error: any) {
-    console.error('Error fetching tour packages:', error);
-    return NextResponse.json({ message: 'Failed to fetch tour packages', error: error.message }, { status: 500 });
+    console.error("Error fetching tour packages:", error);
+    return formatResponse(false, null, error.message || "Failed to fetch tour packages", 500);
   }
 }
 
 // =======================================================================
 // POST /api/tour-packages
-// Creates a new travel tour package and associates it with destinations.
+// Create a new tour package and associate it with destinations
 // =======================================================================
-export async function POST(request: Request) {
-  try {
-    
-       const auth = await verifyAuth(request);
-      if (!auth.success) return formatResponse(false, null, auth.error, 401);
-    
-    
-    const body = await request.json();
-    const {
-      name,
-      description,
-      longDescription,
-      duration,
-      price,
-      status,
-      imageUrl,
-      images,
-      destinationIds, // Now an array of destination IDs
-    } = body;
+async function handlePOST(request: Request) {
+  const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
-    // Basic validation for required fields
+  try {
+    const body = await request.json();
+    const { name, description, longDescription, duration, price, status, imageUrl, images, destinationIds } = body;
+
     if (!name || !description || !duration || price === undefined || !imageUrl) {
-      return NextResponse.json({ message: 'Missing required fields' }, { status: 400 });
+      return formatResponse(false, null, "Missing required fields", 400);
     }
 
-    // Use a Prisma transaction to ensure atomicity. We create the package and
-    // then update the destinations to link them to the new package.
-    const newTourPackage = await prisma.$transaction(async (prisma) => {
-      // 1. Create the new TourPackage
-      const newPackage = await prisma.tourPackage.create({
+    const newTourPackage = await prisma.$transaction(async (tx) => {
+      const newPackage = await tx.tourPackage.create({
         data: {
           name,
           slug: slugify(name),
@@ -93,24 +68,23 @@ export async function POST(request: Request) {
         },
       });
 
-      // 2. Link the destinations by updating them
-      if (destinationIds && destinationIds.length > 0) {
-        await prisma.destination.updateMany({
-          where: {
-            id: { in: destinationIds },
-          },
-          data: {
-            tourPackageId: newPackage.id,
-          },
+      if (destinationIds?.length) {
+        await tx.destination.updateMany({
+          where: { id: { in: destinationIds } },
+          data: { tourPackageId: newPackage.id },
         });
       }
 
       return newPackage;
     });
 
-    return NextResponse.json(newTourPackage, { status: 201 });
+    return formatResponse(true, newTourPackage, "Tour package created successfully");
   } catch (error: any) {
-    console.error('Error creating tour package:', error);
-    return NextResponse.json({ message: 'Failed to create tour package', error: error.message }, { status: 500 });
+    console.error("Error creating tour package:", error);
+    return formatResponse(false, null, error.message || "Failed to create tour package", 500);
   }
 }
+
+// Export handlers wrapped with withApiHandler
+export const GET = withApiHandler(handleGET);
+export const POST = withApiHandler(handlePOST);

@@ -1,34 +1,27 @@
-import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+// app/api/subjects/[id]/route.ts
+import { NextRequest } from "next/server";
+import prisma from "@/server/db/prismadb";
+import { verifyAuth } from "@/lib/verifyAuth";
+import { formatResponse } from "@/lib/formatResponse";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-// GET /api/subjects/[id]
-// Fetches a single subject by ID.
-export async function GET(request: Request, { params }: { params: { id: string } }) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
-    const { id } = params;
+// --- GET: Fetch a single subject by ID ---
+async function getSubject(req: NextRequest, { params }: { params: { id: string } }) {
+  const auth = await verifyAuth(req);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+  const { id } = params;
 
   try {
     const subject = await prisma.subject.findUnique({
       where: { id },
       include: {
-        _count: {
-          select: {
-            courses: true,
-          },
-        },
+        _count: { select: { courses: true } },
       },
     });
 
-    if (!subject) {
-      return NextResponse.json({ message: "Subject not found" }, { status: 404 });
-    }
+    if (!subject) return formatResponse(false, null, "Subject not found", 404);
 
-    // Transform the data
     const response = {
       id: subject.id,
       name: subject.name,
@@ -39,89 +32,78 @@ export async function GET(request: Request, { params }: { params: { id: string }
       updatedAt: subject.updatedAt,
     };
 
-    return NextResponse.json(response, { status: 200 });
-  } catch (error) {
+    return formatResponse(true, response, "Subject fetched successfully", 200);
+  } catch (error: any) {
     console.error(`Error fetching subject with ID ${id}:`, error);
-    return NextResponse.json({ message: "Failed to fetch subject", error: error.message }, { status: 500 });
+    return formatResponse(false, null, "Failed to fetch subject", 500);
   }
 }
 
-// PUT /api/subjects/[id]
-// Updates an existing subject by ID.
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
+// --- PUT: Update a subject by ID ---
+async function updateSubject(req: NextRequest, { params }: { params: { id: string } }) {
+  const auth = await verifyAuth(req);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
   const { id } = params;
 
-  if (request.method !== "PUT") {
-    return NextResponse.json({ message: "Method not allowed" }, { status: 405 });
-  }
-
   try {
-    const body = await request.json();
+    const body = await req.json();
     const { name, description, type } = body;
 
-    // Check if subject exists
-    const existingSubject = await prisma.subject.findUnique({
-      where: { id },
-    });
-
-    if (!existingSubject) {
-      return NextResponse.json({ message: "Subject not found" }, { status: 404 });
-    }
+    const existingSubject = await prisma.subject.findUnique({ where: { id } });
+    if (!existingSubject) return formatResponse(false, null, "Subject not found", 404);
 
     const updatedSubject = await prisma.subject.update({
       where: { id },
-      data: {
-        name,
-        description,
-        type,
-      },
+      data: { name, description, type },
     });
 
-    return NextResponse.json(updatedSubject, { status: 200 });
-  } catch (error) {
+    return formatResponse(true, updatedSubject, "Subject updated successfully", 200);
+  } catch (error: any) {
     console.error(`Error updating subject with ID ${id}:`, error);
-    // Handle unique constraint error for subject name
-    if (error.code === 'P2002' && error.meta?.target?.includes('name')) {
-      return NextResponse.json({ message: "A subject with this name already exists." }, { status: 409 });
+
+    // Prisma unique constraint error
+    if (error.code === "P2002" && error.meta?.target?.includes("name")) {
+      return formatResponse(false, null, "A subject with this name already exists.", 409);
     }
-    return NextResponse.json({ message: "Failed to update subject", error: error.message }, { status: 500 });
+
+    return formatResponse(false, null, "Failed to update subject", 500);
   }
 }
 
-// DELETE /api/subjects/[id]
-// Deletes a subject by ID.
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
+// --- DELETE: Delete a subject by ID ---
+async function deleteSubject(req: NextRequest, { params }: { params: { id: string } }) {
+  const auth = await verifyAuth(req);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
   const { id } = params;
 
-  if (request.method !== "DELETE") {
-    return NextResponse.json({ message: "Method not allowed" }, { status: 405 });
-  }
-
   try {
-    // Before deleting a subject, consider if it has related courses.
-    // Prisma's default behavior might prevent deletion if there are related records
-    // and the foreign key is not set to CASCADE DELETE.
-    // You might need to handle these relations (e.g., nullify subjectId on courses if applicable)
-    // or return an error if related records exist.
-    const deletedSubject = await prisma.subject.delete({
-      where: { id },
-    });
+    const deletedSubject = await prisma.subject.delete({ where: { id } });
 
-    return NextResponse.json({ message: "Subject deleted successfully", deletedSubjectId: deletedSubject.id }, { status: 200 });
-  } catch (error) {
+    return formatResponse(
+      true,
+      { deletedSubjectId: deletedSubject.id },
+      "Subject deleted successfully",
+      200
+    );
+  } catch (error: any) {
     console.error(`Error deleting subject with ID ${id}:`, error);
-    // Handle specific error if subject is linked to other records (e.g., P2003 Foreign key constraint failed)
-    if (error.code === 'P2003') {
-      return NextResponse.json({ message: "Cannot delete subject: It is linked to existing courses. Please reassign them first." }, { status: 409 });
+
+    if (error.code === "P2003") {
+      return formatResponse(
+        false,
+        null,
+        "Cannot delete subject: It is linked to existing courses. Please reassign them first.",
+        409
+      );
     }
-    return NextResponse.json({ message: "Failed to delete subject", error: error.message }, { status: 500 });
+
+    return formatResponse(false, null, "Failed to delete subject", 500);
   }
 }
+
+// ✅ Export handlers wrapped with withApiHandler
+export const GET = withApiHandler(getSubject);
+export const PUT = withApiHandler(updateSubject);
+export const DELETE = withApiHandler(deleteSubject);

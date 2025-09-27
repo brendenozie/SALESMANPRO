@@ -1,18 +1,18 @@
-// app/api/admin/[adminSlug]/travel-bookings/[bookingId]/route.js
+// app/api/admin/[adminSlug]/travel-bookings/[bookingId]/route.ts
+import prisma from '@/server/db/prismadb';
 import { NextResponse } from 'next/server';
-import prisma from '@/server/db/prismadb'; // Adjust this path
 import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+import { withApiHandler } from '@/lib/hooks/withApiHandler';
 
-// Helper function to format dates for frontend display (duplicate for self-containment)
-const formatDate = (date) => date ? new Date(date).toISOString().split('T')[0] : 'N/A';
+// Helper function to format dates
+const formatDate = (date?: Date | string) =>
+  date ? new Date(date).toISOString().split('T')[0] : 'N/A';
 
 // PUT /api/admin/[adminSlug]/travel-bookings/[bookingId]
-// Updates an existing travel booking.
-export async function PUT(request, { params }) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
+async function handlePUT(request: Request, { params }: { params: { adminSlug: string; bookingId: string } }) {
+  const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
   const { adminSlug, bookingId } = params;
 
   try {
@@ -31,58 +31,39 @@ export async function PUT(request, { params }) {
       notes,
     } = body;
 
-    const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
-      select: { id: true },
-    });
+    const company = await prisma.company.findUnique({ where: { slug: adminSlug }, select: { id: true } });
+    if (!company) return formatResponse(false, null, 'Company not found', 404);
 
-    if (!company) {
-      return NextResponse.json({ message: 'Company not found.' }, { status: 404 });
-    }
+    const existingBooking = await prisma.booking.findUnique({ where: { id: bookingId }, select: { companyId: true } });
+    if (!existingBooking || existingBooking.companyId !== company.id)
+      return formatResponse(false, null, 'Booking not found or does not belong to this company', 404);
 
-    const existingBooking = await prisma.booking.findUnique({
-      where: { id: bookingId },
-      select: { companyId: true },
-    });
-
-    if (!existingBooking || existingBooking.companyId !== company.id) {
-      return NextResponse.json({ message: 'Booking not found or does not belong to this company.' }, { status: 404 });
-    }
-
-    if (new Date(startDate) > new Date(endDate)) {
-      return NextResponse.json({ message: 'Start date cannot be after end date.' }, { status: 400 });
-    }
+    if (new Date(startDate) > new Date(endDate))
+      return formatResponse(false, null, 'Start date cannot be after end date', 400);
 
     const updatedBooking = await prisma.booking.update({
       where: { id: bookingId },
       data: {
-        title: title,
+        title,
         description: description || null,
-        bookingType: bookingType,
+        bookingType,
         startDate: new Date(startDate),
         endDate: new Date(endDate),
         totalPrice: parseFloat(totalPrice),
-        status: status,
+        status,
         notes: notes || null,
-        clientId: clientId, // Ensure client is updated
-        tourPackageId: tourPackageId || null, // Ensure tour package is updated (or disconnected if null)
-        destinationId: destinationId || null, // Ensure destination is updated (or disconnected if null)
+        clientId,
+        tourPackageId: tourPackageId || null,
+        destinationId: destinationId || null,
       },
       include: {
-        client: {
-          select: { user: { select: { name: true, email: true } } },
-        },
-        tourPackage: {
-          select: { name: true },
-        },
-        destination: {
-          select: { name: true },
-        },
+        client: { select: { user: { select: { name: true; email: true } } } },
+        tourPackage: { select: { name: true } },
+        destination: { select: { name: true } },
       },
     });
 
-    // Format the updated booking data for frontend display
-    const formattedUpdatedBooking = {
+    const formatted = {
       id: updatedBooking.id,
       title: updatedBooking.title,
       description: updatedBooking.description || '',
@@ -101,54 +82,39 @@ export async function PUT(request, { params }) {
       destinationName: updatedBooking.destination?.name || 'N/A',
     };
 
-    return NextResponse.json(formattedUpdatedBooking);
-  } catch (error) {
+    return formatResponse(true, formatted);
+  } catch (error: any) {
     console.error(`Error updating travel booking ${bookingId}:`, error);
-    if (error.code === 'P2025') { // Record not found
-      return NextResponse.json({ message: 'Booking not found.' }, { status: 404 });
-    }
-    return NextResponse.json({ message: 'Failed to update travel booking', error: error.message }, { status: 500 });
+    if (error.code === 'P2025') return formatResponse(false, null, 'Booking not found', 404);
+    return formatResponse(false, null, error.message || 'Failed to update travel booking', 500);
   }
 }
 
 // DELETE /api/admin/[adminSlug]/travel-bookings/[bookingId]
-// Deletes a specific travel booking.
-export async function DELETE(request, { params }) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
+async function handleDELETE(request: Request, { params }: { params: { adminSlug: string; bookingId: string } }) {
+  const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
   const { adminSlug, bookingId } = params;
 
   try {
-    const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
-      select: { id: true },
-    });
+    const company = await prisma.company.findUnique({ where: { slug: adminSlug }, select: { id: true } });
+    if (!company) return formatResponse(false, null, 'Company not found', 404);
 
-    if (!company) {
-      return NextResponse.json({ message: 'Company not found.' }, { status: 404 });
-    }
+    const booking = await prisma.booking.findUnique({ where: { id: bookingId }, select: { companyId: true } });
+    if (!booking || booking.companyId !== company.id)
+      return formatResponse(false, null, 'Booking not found or does not belong to this company', 404);
 
-    const bookingToDelete = await prisma.booking.findUnique({
-      where: { id: bookingId },
-      select: { companyId: true },
-    });
+    await prisma.booking.delete({ where: { id: bookingId } });
 
-    if (!bookingToDelete || bookingToDelete.companyId !== company.id) {
-      return NextResponse.json({ message: 'Booking not found or does not belong to this company.' }, { status: 404 });
-    }
-
-    await prisma.booking.delete({
-      where: { id: bookingId },
-    });
-
-    return NextResponse.json({ message: 'Booking deleted successfully.' }, { status: 200 });
-  } catch (error) {
+    return formatResponse(true, { message: 'Booking deleted successfully.' });
+  } catch (error: any) {
     console.error(`Error deleting travel booking ${bookingId}:`, error);
-    if (error.code === 'P2025') {
-      return NextResponse.json({ message: 'Booking not found.' }, { status: 404 });
-    }
-    return NextResponse.json({ message: 'Failed to delete travel booking', error: error.message }, { status: 500 });
+    if (error.code === 'P2025') return formatResponse(false, null, 'Booking not found', 404);
+    return formatResponse(false, null, error.message || 'Failed to delete travel booking', 500);
   }
 }
+
+// Export with handlers wrapped
+export const PUT = withApiHandler(handlePUT);
+export const DELETE = withApiHandler(handleDELETE);

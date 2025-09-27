@@ -1,51 +1,55 @@
 // app/api/admin/student-fee-records/route.ts
-import { NextResponse } from 'next/server';
-import { getStudentFeeRecords, createStudentFeeRecord, StudentFeeRecord } from '../../../../lib/data';
+import { NextRequest } from 'next/server';
+import { getStudentFeeRecords, createStudentFeeRecord, StudentFeeRecord } from '@/lib/data';
 import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
-import { request } from 'http';
+import { withApiHandler } from '@/lib/hooks/withApiHandler';
 
-// Handles GET requests for all student fee records
-export async function GET() {
+// GET handler – fetch all student fee records
+async function getAllStudentFees(req: NextRequest) {
+  const auth = await verifyAuth(req);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
   try {
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
     const records = await getStudentFeeRecords();
-    return NextResponse.json(records);
+    return formatResponse(true, records, 'Fetched student fee records successfully.');
   } catch (error: any) {
     console.error('Error fetching student fee records:', error);
-    return NextResponse.json({ error: 'Failed to fetch student fee records', details: error.message }, { status: 500 });
+    return formatResponse(false, null, error.message || 'Failed to fetch student fee records', 500);
   }
 }
 
-// Handles POST requests for creating a new student fee record (by applying fee items)
-export async function POST(request: Request) {
+// POST handler – create a new student fee record
+async function createStudentFee(req: NextRequest) {
+  const auth = await verifyAuth(req);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
   try {
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
-    const body: { studentId: string; academicYear: string; term: string; } = await request.json();
+    const body: { studentId: string; academicYear: string; term: string } = await req.json();
     const { studentId, academicYear, term } = body;
 
-    // Basic validation
     if (!studentId || !academicYear || !term) {
-      return NextResponse.json({ error: 'Missing required fields: studentId, academicYear, term.' }, { status: 400 });
+      return formatResponse(false, null, 'Missing required fields: studentId, academicYear, term.', 400);
     }
 
     const newRecord = await createStudentFeeRecord(studentId, academicYear, term);
-    if (newRecord) {
-      return NextResponse.json(newRecord, { status: 201 });
-    } else {
-      return NextResponse.json({ error: 'Failed to create student fee record. Student not found or other issue.' }, { status: 404 });
+
+    if (!newRecord) {
+      return formatResponse(false, null, 'Failed to create student fee record. Student not found or other issue.', 404);
     }
+
+    return formatResponse(true, newRecord, 'Student fee record created successfully.', 201);
   } catch (error: any) {
     console.error('Error creating student fee record:', error);
-    // Handle unique constraint error (studentId, academicYear, term)
+
+    // Handle unique constraint violation for (studentId, academicYear, term)
     if (error.code === 'P2002' && error.meta?.target?.includes('studentId_academicYear_term')) {
-      return NextResponse.json({ error: 'A fee record for this student, academic year, and term already exists.' }, { status: 409 });
+      return formatResponse(false, null, 'A fee record for this student, academic year, and term already exists.', 409);
     }
-    return NextResponse.json({ error: 'Failed to create student fee record', details: error.message }, { status: 500 });
+
+    return formatResponse(false, null, error.message || 'Failed to create student fee record', 500);
   }
 }
+
+// Export handlers wrapped with withApiHandler
+export const GET = withApiHandler(getAllStudentFees);
+export const POST = withApiHandler(createStudentFee);

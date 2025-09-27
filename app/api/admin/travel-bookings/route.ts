@@ -1,54 +1,37 @@
-// app/api/admin/[adminSlug]/travel-bookings/route.js
+// app/api/admin/[adminSlug]/travel-bookings/route.ts
+import prisma from '@/server/db/prismadb';
 import { NextResponse } from 'next/server';
-import prisma from '@/server/db/prismadb'; // Adjust this path
 import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+import { withApiHandler } from '@/lib/hooks/withApiHandler';
 
-// Helper function to format dates for frontend display
-const formatDate = (date) => date ? new Date(date).toISOString().split('T')[0] : 'N/A';
+// Helper function to format dates
+const formatDate = (date?: Date | string) =>
+  date ? new Date(date).toISOString().split('T')[0] : 'N/A';
 
 // GET /api/admin/[adminSlug]/travel-bookings
-// Fetches all travel bookings for a specific company.
-export async function GET(request: Request) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
+async function handleGET(request: Request) {
+  const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');
+  if (!companyId) return formatResponse(false, null, 'Company ID is required', 400);
 
   try {
-    const company = await prisma.company.findUnique({
-      where: { id: companyId },
-      select: { id: true },
-    });
-
-    if (!company) {
-      return NextResponse.json({ message: 'Company not found for the given slug.' }, { status: 404 });
-    }
+    const company = await prisma.company.findUnique({ where: { id: companyId }, select: { id: true } });
+    if (!company) return formatResponse(false, null, 'Company not found', 404);
 
     const bookings = await prisma.booking.findMany({
-      where: {
-        companyId: company.id,
-      },
+      where: { companyId: company.id },
       include: {
-        client: {
-          select: { user: { select: { name: true, email: true } } },
-        },
-        tourPackage: {
-          select: { name: true },
-        },
-        destination: {
-          select: { name: true },
-        },
+        client: { select: { user: { select: { name: true; email: true } } } },
+        tourPackage: { select: { name: true } },
+        destination: { select: { name: true } },
       },
-      orderBy: {
-        startDate: 'desc',
-      },
+      orderBy: { startDate: 'desc' },
     });
 
-    // Map Prisma Booking model to a frontend-friendly interface
-    const formattedBookings = bookings.map(booking => ({
+    const formatted = bookings.map((booking) => ({
       id: booking.id,
       title: booking.title,
       description: booking.description || '',
@@ -67,23 +50,21 @@ export async function GET(request: Request) {
       destinationName: booking.destination?.name || 'N/A',
     }));
 
-    return NextResponse.json(formattedBookings);
-  } catch (error) {
+    return formatResponse(true, formatted);
+  } catch (error: any) {
     console.error('Error fetching travel bookings:', error);
-    return NextResponse.json({ message: 'Failed to fetch travel bookings', error: error.message }, { status: 500 });
+    return formatResponse(false, null, error.message || 'Failed to fetch travel bookings', 500);
   }
 }
 
 // POST /api/admin/[adminSlug]/travel-bookings
-// Creates a new travel booking.
-export async function POST(request: Request) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
+async function handlePOST(request: Request) {
+  const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');
+  if (!companyId) return formatResponse(false, null, 'Company ID is required', 400);
 
   try {
     const body = await request.json();
@@ -101,33 +82,24 @@ export async function POST(request: Request) {
       notes,
     } = body;
 
-    const company = await prisma.company.findUnique({
-      where: { id: companyId },
-      select: { id: true },
-    });
-
-    if (!company) {
-      return NextResponse.json({ message: 'Company not found for the given slug.' }, { status: 404 });
-    }
-
-    // const companyId = company.id;
+    const company = await prisma.company.findUnique({ where: { id: companyId }, select: { id: true } });
+    if (!company) return formatResponse(false, null, 'Company not found', 404);
 
     // Basic validation
-    if (!title || !bookingType || !startDate || !endDate || !totalPrice || !clientId) {
-      return NextResponse.json({ message: 'Title, booking type, start date, end date, total price, and client are required.' }, { status: 400 });
-    }
-    if (new Date(startDate) > new Date(endDate)) {
-      return NextResponse.json({ message: 'Start date cannot be after end date.' }, { status: 400 });
-    }
+    if (!title || !bookingType || !startDate || !endDate || !totalPrice || !clientId)
+      return formatResponse(false, null, 'Title, booking type, start date, end date, total price, and client are required', 400);
+
+    if (new Date(startDate) > new Date(endDate))
+      return formatResponse(false, null, 'Start date cannot be after end date', 400);
 
     const newBooking = await prisma.booking.create({
       data: {
-        title: title,
+        title,
         description: description || null,
-        bookingType: bookingType,
+        bookingType,
         startDate: new Date(startDate),
         endDate: new Date(endDate),
-        totalPrice: parseFloat(totalPrice), // Ensure price is a float
+        totalPrice: parseFloat(totalPrice),
         status: status || 'PENDING',
         notes: notes || null,
         company: { connect: { id: companyId } },
@@ -136,20 +108,13 @@ export async function POST(request: Request) {
         ...(destinationId && { destination: { connect: { id: destinationId } } }),
       },
       include: {
-        client: {
-          select: { user: { select: { name: true, email: true } } },
-        },
-        tourPackage: {
-          select: { name: true },
-        },
-        destination: {
-          select: { name: true },
-        },
+        client: { select: { user: { select: { name: true; email: true } } } },
+        tourPackage: { select: { name: true } },
+        destination: { select: { name: true } },
       },
     });
 
-    // Format the new booking data for frontend display
-    const formattedNewBooking = {
+    const formatted = {
       id: newBooking.id,
       title: newBooking.title,
       description: newBooking.description || '',
@@ -168,9 +133,13 @@ export async function POST(request: Request) {
       destinationName: newBooking.destination?.name || 'N/A',
     };
 
-    return NextResponse.json(formattedNewBooking, { status: 201 });
-  } catch (error) {
+    return formatResponse(true, formatted, 'Booking created successfully');
+  } catch (error: any) {
     console.error('Error creating travel booking:', error);
-    return NextResponse.json({ message: 'Failed to create travel booking', error: "error.message" }, { status: 500 });
+    return formatResponse(false, null, error.message || 'Failed to create travel booking', 500);
   }
 }
+
+// Export with handlers wrapped
+export const GET = withApiHandler(handleGET);
+export const POST = withApiHandler(handlePOST);
