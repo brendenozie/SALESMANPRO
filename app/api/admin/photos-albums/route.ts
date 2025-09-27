@@ -1,84 +1,71 @@
 // app/api/photo-albums/route.ts
-import { NextResponse } from 'next/server';
-import prisma from '@/server/db/prismadb';
-import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+import { NextResponse } from "next/server";
+import prisma from "@/server/db/prismadb";
+import { verifyAuth } from "@/lib/verifyAuth";
+import { formatResponse } from "@/lib/formatResponse";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
 /**
  * @route GET /api/photo-albums
  * @description Fetches all photo albums, optionally filtered by companyId.
- * @returns {Response} A JSON response containing an array of photo albums.
  */
-export async function GET(request: Request) {
-  try {
-    
-       const auth = await verifyAuth(request);
-      if (!auth.success) return formatResponse(false, null, auth.error, 401);
-    
-    const { searchParams } = new URL(request.url);
-    const companyId = searchParams.get('companyId');
+const getHandler = async (request: Request) => {
+  const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
-    const photoAlbums = await prisma.photoAlbum.findMany({
-      where: companyId ? { companyId } : {},
-      include: {
-        photos: true, // Include all photos associated with the album
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+  const { searchParams } = new URL(request.url);
+  const companyId = searchParams.get("companyId");
 
-    return NextResponse.json(photoAlbums, { status: 200 });
-  } catch (error) {
-    console.error('Error fetching photo albums:', error);
-    return NextResponse.json({ error: 'Failed to fetch photo albums' }, { status: 500 });
-  }
-}
+  const photoAlbums = await prisma.photoAlbum.findMany({
+    where: companyId ? { companyId } : {},
+    include: {
+      photos: true, // Include all photos associated with the album
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return NextResponse.json(photoAlbums, { status: 200 });
+};
 
 /**
  * @route POST /api/photo-albums
  * @description Creates a new photo album and its associated photos.
- * @returns {Response} A JSON response containing the newly created photo album.
  */
-export async function POST(request: Request) {
-  try {
-    
-       const auth = await verifyAuth(request);
-      if (!auth.success) return formatResponse(false, null, auth.error, 401);
-    
-    const body = await request.json();
-    const {
+const postHandler = async (request: Request) => {
+  const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+  const body = await request.json();
+  const { title, description, tags, photoUrls, companyId, userId } = body;
+
+  // Validate required fields
+  if (!title || !Array.isArray(photoUrls) || photoUrls.length === 0) {
+    return NextResponse.json(
+      { error: "Title and at least one image URL are required" },
+      { status: 400 }
+    );
+  }
+
+  const newPhotoAlbum = await prisma.photoAlbum.create({
+    data: {
       title,
       description,
-      tags,
-      photoUrls, // Expects an array of image URLs
+      tags: tags || [],
       companyId,
       userId,
-    } = body;
-
-    // Validate that required fields are present
-    if (!title || !photoUrls || !Array.isArray(photoUrls) || photoUrls.length === 0) {
-      return NextResponse.json({ error: 'Title and at least one image URL are required' }, { status: 400 });
-    }
-
-    const newPhotoAlbum = await prisma.photoAlbum.create({
-      data: {
-        title,
-        description,
-        tags: tags || [],
-        companyId,
-        userId,
-        photos: {
-          createMany: {
-            data: photoUrls.map((url) => ({ imageUrl: url })),
-          },
+      photos: {
+        createMany: {
+          data: photoUrls.map((url: string) => ({ imageUrl: url })),
         },
       },
-      include: {
-        photos: true,
-      },
-    });
+    },
+    include: {
+      photos: true,
+    },
+  });
 
-    return NextResponse.json(newPhotoAlbum, { status: 201 });
-  } catch (error) {
-    console.error('Error creating photo album:', error);
-    return NextResponse.json({ error: 'Failed to create photo album' }, { status: 500 });
-  }
-}
+  return NextResponse.json(newPhotoAlbum, { status: 201 });
+};
+
+export const GET = withApiHandler(getHandler);
+export const POST = withApiHandler(postHandler);

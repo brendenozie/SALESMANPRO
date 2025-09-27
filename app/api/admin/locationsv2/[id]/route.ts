@@ -1,10 +1,14 @@
-// app/api/admin/[adminSlug]/locations/[locationId]/route.js
 import { NextResponse } from 'next/server';
-import prisma from '@/server/db/prismadb'; // Adjust this path
-import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+import prisma from '@/server/db/prismadb';
+import { withApiHandler } from '@/lib/hooks/withApiHandler';
+import { formatResponse } from '@/lib/formatResponse';
+import { Prisma } from '@prisma/client';
 
-// A robust slugify function (duplicate for self-containment)
-const slugify = (text) => {
+// Define the expected structure for route parameters
+type RouteParams = { params: { adminSlug: string, locationId: string } };
+
+// A utility function to ensure slugs are correctly formatted (kept local for self-containment)
+const slugify = (text: string): string => {
   return text
     .toString()
     .normalize('NFD')
@@ -16,67 +20,65 @@ const slugify = (text) => {
     .replace(/--+/g, '-');
 };
 
-// PUT /api/admin/[adminSlug]/locations/[locationId]
-// Updates an existing location.
-export async function PUT(request, { params }) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
+// --- PUT Handler Core Logic ---
+/**
+ * Updates an existing location for a specific company.
+ */
+async function handlePutLocation(request: Request, { params }: RouteParams) {
   const { adminSlug, locationId } = params;
+  const body = await request.json();
+
+  const {
+    name,
+    address,
+    city,
+    state,
+    zipCode,
+    country,
+    description,
+    imageUrl,
+    phone,
+    email,
+    capacity,
+    openHours,
+    status,
+  } = body;
+
+  const company = await prisma.company.findUnique({
+    where: { slug: adminSlug },
+    select: { id: true },
+  });
+
+  if (!company) {
+    return formatResponse(false, null, 'Company not found.', 404);
+  }
+
+  const existingLocation = await prisma.location.findUnique({
+    where: { id: locationId },
+    select: { companyId: true, slug: true, name: true },
+  });
+
+  if (!existingLocation || existingLocation.companyId !== company.id) {
+    return formatResponse(false, null, 'Location not found or does not belong to this company.', 404);
+  }
+
+  let updatedSlug = existingLocation.slug;
+  // If name is changed, regenerate slug and check for uniqueness
+  if (name && name !== existingLocation.name) {
+    const newGeneratedSlug = slugify(name);
+    if (newGeneratedSlug !== existingLocation.slug) {
+      let uniqueSlug = newGeneratedSlug;
+      let suffix = 1;
+      // Check for slug conflicts globally (assuming Location slug is globally unique)
+      while (await prisma.location.findUnique({ where: { slug: uniqueSlug } })) {
+        uniqueSlug = `${newGeneratedSlug}-${suffix}`;
+        suffix++;
+      }
+      updatedSlug = uniqueSlug;
+    }
+  }
 
   try {
-    const body = await request.json();
-    const {
-      name,
-      address,
-      city,
-      state,
-      zipCode,
-      country,
-      description,
-      imageUrl,
-      phone,
-      email,
-      capacity,
-      openHours,
-      status,
-    } = body;
-
-    const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
-      select: { id: true },
-    });
-
-    if (!company) {
-      return NextResponse.json({ message: 'Company not found.' }, { status: 404 });
-    }
-
-    const existingLocation = await prisma.location.findUnique({
-      where: { id: locationId },
-      select: { companyId: true, slug: true, name: true }, // Select slug and name to check for uniqueness if name is updated
-    });
-
-    if (!existingLocation || existingLocation.companyId !== company.id) {
-      return NextResponse.json({ message: 'Location not found or does not belong to this company.' }, { status: 404 });
-    }
-
-    let updatedSlug = existingLocation.slug;
-    // If name is changed, regenerate slug and check for uniqueness
-    if (name && name !== existingLocation.name) {
-      const newGeneratedSlug = slugify(name);
-      if (newGeneratedSlug !== existingLocation.slug) { // Only check if slug actually changes
-        let uniqueSlug = newGeneratedSlug;
-        let suffix = 1;
-        while (await prisma.location.findUnique({ where: { slug: uniqueSlug } })) {
-          uniqueSlug = `${newGeneratedSlug}-${suffix}`;
-          suffix++;
-        }
-        updatedSlug = uniqueSlug;
-      }
-    }
-
     const updatedLocation = await prisma.location.update({
       where: { id: locationId },
       data: {
@@ -94,6 +96,7 @@ export async function PUT(request, { params }) {
         capacity: capacity ? parseInt(capacity) : null,
         openHours: openHours || null,
         status: status,
+        // updatedBy field would ideally be set here using the authenticated user ID
       },
     });
 
@@ -116,58 +119,63 @@ export async function PUT(request, { params }) {
       status: updatedLocation.status,
     };
 
-    return NextResponse.json(formattedUpdatedLocation);
+    // withApiHandler will wrap this in formatResponse(true, formattedUpdatedLocation, null, 200)
+    return formattedUpdatedLocation;
+
   } catch (error) {
-    console.error(`Error updating location ${locationId}:`, error);
-    if (error.code === 'P2025') { // Record not found
-      return NextResponse.json({ message: 'Location not found.' }, { status: 404 });
+    // Catch specific Prisma errors before generic catch by withApiHandler
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === 'P2002') { // Unique constraint violation (e.g., slug conflict if it wasn't caught above)
+        return formatResponse(false, null, 'A location with this slug already exists.', 409);
+      }
     }
-    if (error.code === 'P2002') { // Unique constraint violation (e.g., slug conflict)
-      return NextResponse.json({ message: 'A location with this slug already exists.', error: error.message }, { status: 409 });
-    }
-    return NextResponse.json({ message: 'Failed to update location', error: error.message }, { status: 500 });
+    // Re-throw other errors to be handled by withApiHandler
+    throw error;
   }
 }
 
-// DELETE /api/admin/[adminSlug]/locations/[locationId]
-// Deletes a specific location.
-export async function DELETE(request, { params }) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
+// --- DELETE Handler Core Logic ---
+/**
+ * Deletes a specific location for a specific company.
+ */
+async function handleDeleteLocation(request: Request, { params }: RouteParams) {
   const { adminSlug, locationId } = params;
 
+  const company = await prisma.company.findUnique({
+    where: { slug: adminSlug },
+    select: { id: true },
+  });
+
+  if (!company) {
+    return formatResponse(false, null, 'Company not found.', 404);
+  }
+
+  const locationToDelete = await prisma.location.findUnique({
+    where: { id: locationId },
+    select: { companyId: true },
+  });
+
+  if (!locationToDelete || locationToDelete.companyId !== company.id) {
+    return formatResponse(false, null, 'Location not found or does not belong to this company.', 404);
+  }
+
   try {
-    const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
-      select: { id: true },
-    });
-
-    if (!company) {
-      return NextResponse.json({ message: 'Company not found.' }, { status: 404 });
-    }
-
-    const locationToDelete = await prisma.location.findUnique({
-      where: { id: locationId },
-      select: { companyId: true },
-    });
-
-    if (!locationToDelete || locationToDelete.companyId !== company.id) {
-      return NextResponse.json({ message: 'Location not found or does not belong to this company.' }, { status: 404 });
-    }
-
     await prisma.location.delete({
       where: { id: locationId },
     });
 
-    return NextResponse.json({ message: 'Location deleted successfully.' }, { status: 200 });
+    // Return success response with status 200
+    return { message: 'Location deleted successfully.' };
+
   } catch (error) {
-    console.error(`Error deleting location ${locationId}:`, error);
-    if (error.code === 'P2025') {
-      return NextResponse.json({ message: 'Location not found.' }, { status: 404 });
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+      return formatResponse(false, null, 'Location not found.', 404);
     }
-    return NextResponse.json({ message: 'Failed to delete location', error: error.message }, { status: 500 });
+    // Re-throw other errors (e.g., Foreign Key Constraint failure)
+    throw error;
   }
 }
+
+// Export the wrapped handlers
+export const PUT = withApiHandler(handlePutLocation);
+export const DELETE = withApiHandler(handleDeleteLocation);

@@ -1,28 +1,22 @@
-import { NextRequest, NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
-import { request } from "http";
 // app/api/admin/reports/total-revenue/route.ts
-// import { NextRequest, NextResponse } from 'next/server';
-// import prisma from '@/lib/prisma'; // Adjust path as needed
+import { NextRequest } from "next/server";
+import prisma from "@/server/db/prismadb";
+import { verifyAuth } from "@/lib/verifyAuth";
+import { formatResponse } from "@/lib/formatResponse";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-export async function GET(req: NextRequest) {
-  // --- AUTHENTICATION & AUTHORIZATION PLACEHOLDER ---
-  // Only ADMINs or authorized personnel should access reports.
-  // --- END PLACEHOLDER ---
-
-   const auth = await verifyAuth(req);
+async function getTotalRevenue(req: NextRequest) {
+  const auth = await verifyAuth(req);
   if (!auth.success) return formatResponse(false, null, auth.error, 401);
-
 
   try {
     const { searchParams } = req.nextUrl;
-    const startDate = searchParams.get('startDate');
-    const endDate = searchParams.get('endDate');
-    const companyId = searchParams.get('companyId');
+    const startDate = searchParams.get("startDate");
+    const endDate = searchParams.get("endDate");
+    const companyId = searchParams.get("companyId");
 
     if (!startDate || !endDate) {
-      return NextResponse.json({ message: 'startDate and endDate are required.' }, { status: 400 });
+      return formatResponse(false, null, "startDate and endDate are required.", 400);
     }
 
     const startDateTime = new Date(startDate);
@@ -47,12 +41,13 @@ export async function GET(req: NextRequest) {
       where: whereClause,
     });
 
-    return NextResponse.json({ totalRevenue: totalRevenueResult._sum.totalPrice || 0 });
+    const totalRevenue = totalRevenueResult._sum.totalPrice || 0;
+
+    return formatResponse(true, { totalRevenue }, "Total revenue fetched successfully");
   } catch (error) {
-    console.error('Error fetching total revenue:', error);
-    return NextResponse.json(
-      { message: 'Failed to fetch total revenue', error: "error.message" },
-      { status: 500 }
-    );
+    console.error("Error fetching total revenue:", error);
+    return formatResponse(false, null, "Failed to fetch total revenue", 500);
   }
 }
+
+export const GET = withApiHandler(getTotalRevenue);

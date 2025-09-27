@@ -1,42 +1,72 @@
+// app/api/product-categories/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import { verifyAuth } from "@/lib/verifyAuth";
+import { formatResponse } from "@/lib/formatResponse";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
 // GET: List all categories for a company
-export async function GET(request: NextRequest) {
-  try {
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
-    const { searchParams } = new URL(request.url);
-    const companyId = searchParams.get("companyId");
+export const GET = withApiHandler(async (request: NextRequest) => {
+  const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
-    if (!companyId) {
-      return NextResponse.json({ message: "companyId is required" }, { status: 400 });
-    }
+  const { searchParams } = new URL(request.url);
+  const companyId = searchParams.get("companyId");
 
-    const categories = await prisma.productCategory.findMany({
-      where: { companyId },
-      orderBy: { sortOrder: "asc" }
-    });
-
-    return NextResponse.json(categories);
-  } catch (error) {
-    return NextResponse.json({ message: "Error fetching product categories", error }, { status: 500 });
+  if (!companyId) {
+    return NextResponse.json({ message: "companyId is required" }, { status: 400 });
   }
-}
+
+  const categories = await prisma.productCategory.findMany({
+    where: { companyId },
+    orderBy: { sortOrder: "asc" },
+  });
+
+  return NextResponse.json(categories);
+});
 
 // POST: Create a new product category
-export async function POST(request: NextRequest) {
-  try {
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
-    const data = await request.json();
+export const POST = withApiHandler(async (request: NextRequest) => {
+  const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
-    const {
+  const data = await request.json();
+
+  const {
+    name,
+    icon,
+    image,
+    slug,
+    description,
+    longDescription,
+    seoTitle,
+    seoDescription,
+    metaKeywords,
+    sortOrder,
+    visible,
+    createdBy,
+    updatedBy,
+    status,
+    allBrands,
+    tags,
+    subcategories,
+    imageAlt,
+    thumbnail,
+    bannerImage,
+    localization,
+    productCount,
+    isFeatured,
+    showInHomepage,
+    attributes,
+    companyId,
+  } = data;
+
+  if (!name || !slug) {
+    return NextResponse.json({ message: "Name and slug are required" }, { status: 400 });
+  }
+
+  const category = await prisma.productCategory.create({
+    data: {
       name,
       icon,
       image,
@@ -63,45 +93,8 @@ export async function POST(request: NextRequest) {
       showInHomepage,
       attributes,
       companyId,
-    } = data;
+    },
+  });
 
-    if (!name || !slug) {
-      return NextResponse.json({ message: "Name and slug are required" }, { status: 400 });
-    }
-
-    const category = await prisma.productCategory.create({
-      data: {
-        name,
-        icon,
-        image,
-        slug,
-        description,
-        longDescription,
-        seoTitle,
-        seoDescription,
-        metaKeywords,
-        sortOrder,
-        visible,
-        createdBy,
-        updatedBy,
-        status,
-        allBrands,
-        tags,
-        subcategories,
-        imageAlt,
-        thumbnail,
-        bannerImage,
-        localization,
-        productCount,
-        isFeatured,
-        showInHomepage,
-        attributes,
-        companyId,
-      },
-    });
-
-    return NextResponse.json(category, { status: 201 });
-  } catch (error) {
-    return NextResponse.json({ message: "Error creating category", error }, { status: 500 });
-  }
-}
+  return NextResponse.json(category, { status: 201 });
+});

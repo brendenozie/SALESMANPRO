@@ -1,61 +1,49 @@
-// pages/api/packages/index.ts
-import { NextApiRequest, NextApiResponse } from 'next';
-import { PrismaClient } from '@prisma/client';
-import { NextResponse } from 'next/server';
-import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+import { NextRequest, NextResponse } from 'next/server';
+import prisma from '@/server/db/prismadb'; // Assuming this is your standard Prisma client import
+import { withApiHandler } from '@/lib/hooks/withApiHandler';
+import { formatResponse } from '@/lib/formatResponse';
+import { Prisma } from '@prisma/client';
 
-const prisma = new PrismaClient();
+// Define the expected structure for route parameters (empty for a collection route)
+type RouteParams = { params: {} };
 
-// GET /api/admin/[slug]/experts
-// Fetches all experts for a specific company.
-export async function GET(request: Request, res: NextApiResponse) {
-
-   const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
-
-
-    const { searchParams } = new URL(request.url);
+// --- GET Handler Core Logic ---
+/**
+ * Fetches all packages, filtered by companyId.
+ */
+async function handleGetPackages(request: NextRequest, { params }: RouteParams) {
+  const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');
 
-  try {
-   // Find all clients and include their associated user data
-     
-      const packages = await prisma.package.findMany({
-        where:{companyId},
-        orderBy: {
-          createdAt: 'desc'
-        }
-      });
-      // res.status(200).json(packages);
-      
-      return NextResponse.json({packages},{ status: 200 });
-    } catch (error) {
-      console.error('Failed to fetch clients:', error);
-      // res.status(500).json({ error: 'Failed to fetch clients' });
-      return NextResponse.json(
-            { message: "Internal server error", error: error instanceof Error ? error.message : String(error) },
-            { status: 500 }
-          );
+  if (!companyId) {
+    return formatResponse(false, null, 'The companyId query parameter is required to fetch packages.', 400);
+  }
+
+  const packages = await prisma.package.findMany({
+    where: { companyId },
+    orderBy: {
+      createdAt: 'desc'
     }
+  });
+
+  // withApiHandler handles wrapping this result in a success formatResponse with status 200
+  return { packages };
 }
 
-// POST /api/admin/[slug]/experts
-// Creates a new expert (including a new user with EXPERT role).
-export async function POST(request: Request, res: NextApiResponse) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
-  // const { searchParams } = new URL(request.url);
-  // const companyId = searchParams.get('companyId');
+// --- POST Handler Core Logic ---
+/**
+ * Creates a new package.
+ */
+async function handlePostPackage(request: NextRequest, { params }: RouteParams) {
+  const body = await request.json();
 
+  const { title, price, frequency, features, status, isFeatured, companyId } = body;
+
+  if (!companyId || !title || price === undefined) {
+    return formatResponse(false, null, 'Missing required fields: companyId, title, and price.', 400);
+  }
 
   try {
-    const body = await request.json();
-        
-    const { title, price, frequency, features, status, isFeatured, companyId } = body;
-
     const newPackage = await prisma.package.create({
       data: {
         title,
@@ -64,26 +52,22 @@ export async function POST(request: Request, res: NextApiResponse) {
         features,
         status,
         isFeatured,
-        companyId
+        companyId,
       },
     });
 
-    // res.status(201).json(newPackage);
-
-      // res.status(201).json({ ...newClient, user: newUser });
-      return NextResponse.json(
-            // { message: "Internal server error", error: error instanceof Error ? error.message : String(error) },
-            { newPackage },
-            { status: 200 }
-          );
-    
-    } catch (error) {
-      console.error('Failed to create client:', error);
-      // res.status(500).json({ error: 'Failed to create client' });
-      return NextResponse.json(
-            { message: "Internal server error", error: error instanceof Error ? error.message : String(error) },
-            { status: 500 }
-          );
+    // Explicitly return success with status 201 (Created)
+    return formatResponse(true, newPackage, null, 201);
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003') {
+        // Foreign key constraint failure (e.g., invalid companyId)
+        return formatResponse(false, null, 'Invalid companyId provided.', 404);
     }
-    }
+    // Throw other errors for withApiHandler to catch as 500
+    throw error;
+  }
+}
 
+// Wrap the core logic with the API handler middleware.
+export const GET = withApiHandler(handleGetPackages);
+export const POST = withApiHandler(handlePostPackage);

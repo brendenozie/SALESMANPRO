@@ -1,58 +1,57 @@
-import { NextApiRequest, NextApiResponse } from "next";
-import { PrismaClient } from "@prisma/client";
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
-import { NextResponse } from "next/server";
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
+// Note: Removed NextApiRequest, NextApiResponse, and NextJs Response objects (NextResponse).
 
-const prisma = new PrismaClient();
-
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-
-     const auth = await verifyAuth(req);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+/**
+ * Core handler logic to fetch a single task by ID.
+ * This function assumes the App Router path is /api/tasks/[id].
+ * * This function assumes:
+ * 1. Authentication/Authorization is performed by `withApiHandler`.
+ * 2. Automatic try/catch wrapping (for 500 errors) is performed by `withApiHandler`.
+ */
+async function getTaskById(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
+  // NOTE: Manual authentication (verifyAuth) and try/catch are removed.
   
+  const amaId = params.id; // Renaming variable to be more domain-specific, matching your original code
+  const { searchParams } = new URL(req.url);
+
+  // --- Pagination Parameter Validation (Even though we only fetch one item) ---
+  const limit = parseInt(searchParams.get("limit") || "10", 10);
+  const offset = parseInt(searchParams.get("offset") || "0", 10);
   
-  if (req.method !== "GET") {
-    return NextResponse.json({ message: "Method not allowed" });
+  if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
+    return formatResponse(
+      false,
+      null,
+      "Invalid pagination parameters.",
+      400
+    );
+  }
+  
+  // --- Path Parameter Validation ---
+  if (!amaId) {
+    return formatResponse(false, null, 'Missing required route parameter: id (taskId)', 400);
   }
 
-  try {
-    // Define today's and tomorrow's UTC date boundaries
-    // const today = new Date();
-    // today.setUTCHours(0, 0, 0, 0); // Start of today
-    // const tomorrow = new Date(today);
-    // tomorrow.setUTCDate(today.getUTCDate() + 1); // Start of tomorrow
+  // --- Data Fetching ---
+  const task = await prisma.task.findFirst({
+    where: {
+      id: amaId,
+    },
+  });
 
-    // Fetch tasks due today
-    // Fetch tasks due today
-    const amaId = req.query.id as string
-    const { searchParams } = new URL(req.url);
-    
-      const agentId = searchParams.get("agentId");
-      const limit = parseInt(searchParams.get("limit") || "10", 10);
-      const offset = parseInt(searchParams.get("offset") || "0", 10);
-    
-      if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
-        return NextResponse.json(
-          { message: "Invalid pagination parameters." },
-          { status: 400 }
-        );
-      }
-    
-      
-    const tasks = await prisma.task.findFirst({
-      where: {
-        id: amaId,
-      },
-      // orderBy: { dueTime: "asc" }, // Order by time
-    });
-
-    // Respond with the tasks
-    res.status(200).json(tasks);
-
-    // Respond with the tasks
-    res.status(200).json(tasks);
-  } catch (error) {
-    console.error("Error fetching tasks:", error);
-    NextResponse.json({ message: "Internal server error" });
+  if (!task) {
+      return formatResponse(false, null, `Task with ID ${amaId} not found.`, 404);
   }
+
+  // --- Success Response ---
+  // formatResponse will return the 200 OK structure.
+  return formatResponse(true, task, 'Task fetched successfully', 200);
 }
+
+// Export the GET method wrapped with the API handler for robust behavior.
+export const GET = withApiHandler(getTaskById);

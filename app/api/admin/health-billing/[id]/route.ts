@@ -1,13 +1,17 @@
-// app/api/admin/[adminSlug]/billing/invoices/[id]/route.ts
-import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
 
-
-// Helper function to format invoice data for the frontend
+/**
+ * Helper function to format invoice data for the frontend.
+ * This is crucial for handling the stored JSON string 'items'.
+ */
 async function formatInvoiceData(invoice: any) {
   const patientName = invoice.patient?.name || 'N/A';
-  const itemsArray = Array.isArray(invoice.items) ? invoice.items : (typeof invoice.items === 'string' ? JSON.parse(invoice.items) : []);
+  // Safely parse the 'items' field, which is stored as a JSON string in Prisma.
+  const itemsArray = typeof invoice.items === 'string'
+    ? JSON.parse(invoice.items)
+    : (Array.isArray(invoice.items) ? invoice.items : []);
 
   return {
     id: invoice.id,
@@ -17,94 +21,101 @@ async function formatInvoiceData(invoice: any) {
     date: invoice.invoiceDate ? new Date(invoice.invoiceDate).toISOString().split('T')[0] : 'N/A',
     dueDate: invoice.dueDate ? new Date(invoice.dueDate).toISOString().split('T')[0] : 'N/A',
     status: invoice.status,
-    items: itemsArray, // Ensure this is an array of strings/objects
+    items: itemsArray, // Returns the parsed array
     notes: invoice.notes || 'N/A',
     createdAt: invoice.createdAt ? new Date(invoice.createdAt).toLocaleDateString() : 'N/A',
   };
 }
 
-
-// app/api/admin/billing/[id]/route.ts
-// This file handles GET, PUT, DELETE for a specific invoice by ID
-
-export async function GET(request: Request, { params }: { params: { id: string } }) {
+/**
+ * GET Handler: Retrieves a single invoice by ID.
+ */
+async function getInvoice(
+  request: Request,
+  { params }: { params: { adminSlug: string; id: string } }
+) {
   const { id } = params;
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
 
-  try {
-    const invoice = await prisma.patientInvoices.findUnique({
-      where: { id },
-      include: {
-        patient: { select: { name: true } },
-      },
-    });
+  // --- Data Fetching ---
+  const invoice = await prisma.patientInvoices.findUnique({
+    where: { id },
+    include: {
+      patient: { select: { name: true } },
+    },
+  });
 
-    if (!invoice) {
-      return NextResponse.json({ error: "Invoice not found" }, { status: 404 });
-    }
-
-    const formattedInvoice = await formatInvoiceData(invoice);
-    return NextResponse.json(formattedInvoice);
-  } catch (err: any) {
-    console.error(`GET /api/admin/billing/${id} error:`, err);
-    return NextResponse.json({ error: err.message || "Internal server error" }, { status: 500 });
+  if (!invoice) {
+    return formatResponse(false, null, "Invoice not found.", 404);
   }
+
+  // --- Success Response ---
+  const formattedInvoice = await formatInvoiceData(invoice);
+  return formatResponse(true, formattedInvoice, "Invoice retrieved successfully.", 200);
 }
 
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
-  
-   const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
-
-const { id } = params;
+/**
+ * PUT Handler: Updates an existing invoice.
+ */
+async function updateInvoice(
+  request: Request,
+  { params }: { params: { adminSlug: string; id: string } }
+) {
+  const { id } = params;
   const body = await request.json();
   const { patientId, amount, invoiceDate, dueDate, items, notes, status } = body;
 
-  try {
-    const updatedInvoice = await prisma.patientInvoices.update({
-      where: { id },
-      data: {
-        patientId: patientId, // Allow updating patient if needed
-        amount: amount ? parseFloat(amount) : undefined, // Ensure amount is a float if provided
-        invoiceDate: invoiceDate ? new Date(invoiceDate) : undefined,
-        dueDate: dueDate ? new Date(dueDate) : undefined,
-        items: items ? JSON.stringify(items) : undefined, // Store items as a JSON string
-        notes: notes,
-        status: status,
-      },
-      include: {
-        patient: { select: { name: true } },
-      },
-    });
+  // --- Update Data Preparation ---
+  const updateData: any = {
+    patientId: patientId,
+    amount: amount !== undefined ? parseFloat(amount) : undefined,
+    invoiceDate: invoiceDate ? new Date(invoiceDate) : undefined,
+    dueDate: dueDate ? new Date(dueDate) : undefined,
+    // CRITICAL: Stringify the items array for storage
+    items: items !== undefined ? JSON.stringify(items) : undefined,
+    notes: notes,
+    status: status,
+  };
 
-    const formattedUpdatedInvoice = await formatInvoiceData(updatedInvoice);
+  // --- Update Logic ---
+  const updatedInvoice = await prisma.patientInvoices.update({
+    where: { id },
+    data: updateData,
+    include: {
+      patient: { select: { name: true } },
+    },
+  });
 
-    return NextResponse.json(formattedUpdatedInvoice);
-  } catch (err: any) {
-    console.error(`PUT /api/admin/billing/${id} error:`, err);
-    return NextResponse.json({ error: err.message || "Internal server error" }, { status: 500 });
-  }
+  // --- Success Response ---
+  const formattedUpdatedInvoice = await formatInvoiceData(updatedInvoice);
+  return formatResponse(true, formattedUpdatedInvoice, "Invoice updated successfully.", 200);
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
-  
-   const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+/**
+ * DELETE Handler: Deletes an invoice.
+ */
+async function deleteInvoice(
+  request: Request,
+  { params }: { params: { adminSlug: string; id: string } }
+) {
+  const { id } = params;
 
-const { id } = params;
-
-  try {
-    await prisma.patientInvoices.delete({
-      where: { id },
-    });
-
-    return NextResponse.json({ message: "Invoice deleted successfully" }, { status: 200 });
-  } catch (err: any) {
-    console.error(`DELETE /api/admin/billing/${id} error:`, err);
-    return NextResponse.json({ error: err.message || "Internal server error" }, { status: 500 });
+  // --- Deletion Logic ---
+  // Check if the invoice exists before attempting delete
+  const existingInvoice = await prisma.patientInvoices.findUnique({ where: { id }, select: { id: true } });
+  if (!existingInvoice) {
+      return formatResponse(false, null, "Invoice not found.", 404);
   }
+
+  await prisma.patientInvoices.delete({
+    where: { id },
+  });
+
+  // --- Success Response ---
+  return formatResponse(true, { message: "Invoice deleted successfully" }, "Invoice deleted successfully.", 200);
 }
+
+
+// Wrap and export all handlers
+export const GET = withApiHandler(getInvoice);
+export const PUT = withApiHandler(updateInvoice);
+export const DELETE = withApiHandler(deleteInvoice);

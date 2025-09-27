@@ -1,116 +1,70 @@
 // app/api/locations/[id]/route.ts
-import { NextResponse } from 'next/server';
-import prisma from '@/lib/prisma'; // Adjust path if necessary
-import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+import { NextResponse } from "next/server";
+import prisma from "@/lib/prisma"; 
+import { verifyAuth } from "@/lib/verifyAuth";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
 
 // GET /api/locations/:id
-// Fetches a single location by ID
-export async function GET(request: Request, { params }: { params: { id: string } }) {
-  try {
-    
-       const auth = await verifyAuth(request);
-      if (!auth.success) return formatResponse(false, null, auth.error, 401);
-    
-    
-    const { id } = params;
-    const location = await prisma.location.findUnique({
-      where: { id },
-      include: {
-        _count: {
-          select: { properties: true },
-        },
-        parentLocation: {
-          select: { id: true, name: true }
-        }
-      },
-    });
+const getLocation = async (req: Request, { params }: { params: { id: string } }) => {
+  const auth = await verifyAuth(req);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
-    if (!location) {
-      return NextResponse.json({ message: 'Location not found' }, { status: 404 });
-    }
+  const { id } = params;
+  const location = await prisma.location.findUnique({
+    where: { id },
+    include: {
+      _count: { select: { properties: true } },
+      parentLocation: { select: { id: true, name: true } },
+    },
+  });
 
-    const formattedLocation = {
-      ...location,
-      propertyCount: location._count.properties,
-      _count: undefined,
-    };
-
-    return NextResponse.json(formattedLocation);
-  } catch (error: any) {
-    console.error('Error fetching location:', error);
-    return NextResponse.json({ message: 'Failed to fetch location', error: error.message }, { status: 500 });
+  if (!location) {
+    return formatResponse(false, null, "Location not found", 404);
   }
-}
+
+  const formattedLocation = {
+    ...location,
+    propertyCount: location._count.properties,
+    _count: undefined,
+  };
+
+  return formatResponse(true, formattedLocation, "Location fetched successfully", 200);
+};
 
 // PUT /api/locations/:id
-// Updates an existing location
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
-  try {
-    
-   const auth = await verifyAuth(request);
+const updateLocation = async (req: Request, { params }: { params: { id: string } }) => {
+  const auth = await verifyAuth(req);
   if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
+  const { id } = params;
+  const { name, description, latitude, longitude, parentLocationId } = await req.json();
 
-    const { id } = params;
-    const body = await request.json();
-    const { name, description, latitude, longitude, parentLocationId } = body;
+  const updatedLocation = await prisma.location.update({
+    where: { id },
+    data: { name, description, latitude, longitude, parentLocationId },
+  });
 
-    const updatedLocation = await prisma.location.update({
-      where: { id },
-      data: {
-        name,
-        description,
-        latitude,
-        longitude,
-        parentLocationId,
-      },
-    });
-
-    return NextResponse.json(updatedLocation);
-  } catch (error: any) {
-    console.error('Error updating location:', error);
-    if (error.code === 'P2025') {
-      return NextResponse.json({ message: 'Location not found for update' }, { status: 404 });
-    }
-    if (error.code === 'P2002') {
-      return NextResponse.json({ message: 'Location with this name already exists' }, { status: 409 });
-    }
-    return NextResponse.json({ message: 'Failed to update location', error: error.message }, { status: 500 });
-  }
-}
+  return formatResponse(true, updatedLocation, "Location updated successfully", 200);
+};
 
 // DELETE /api/locations/:id
-// Deletes a location
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
-  try {
-    
-   const auth = await verifyAuth(request);
+const deleteLocation = async (req: Request, { params }: { params: { id: string } }) => {
+  const auth = await verifyAuth(req);
   if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
+  const { id } = params;
 
-    const { id } = params;
-
-    // Optional: Check if location has associated properties before deleting
-    const propertiesCount = await prisma.property.count({
-      where: { locationId: id },
-    });
-
-    if (propertiesCount > 0) {
-      return NextResponse.json(
-        { message: `Cannot delete location. It is associated with ${propertiesCount} properties.` },
-        { status: 409 } // Conflict
-      );
-    }
-
-    await prisma.location.delete({
-      where: { id },
-    });
-    return NextResponse.json({ message: 'Location deleted successfully' }, { status: 200 });
-  } catch (error: any) {
-    console.error('Error deleting location:', error);
-    if (error.code === 'P2025') {
-      return NextResponse.json({ message: 'Location not found for deletion' }, { status: 404 });
-    }
-    return NextResponse.json({ message: 'Failed to delete location', error: error.message }, { status: 500 });
+  const propertiesCount = await prisma.property.count({ where: { locationId: id } });
+  if (propertiesCount > 0) {
+    return formatResponse(false, null, `Cannot delete location. It is associated with ${propertiesCount} properties.`, 409);
   }
-}
+
+  await prisma.location.delete({ where: { id } });
+  return formatResponse(true, null, "Location deleted successfully", 200);
+};
+
+// Wrap withApiHandler to unify error handling
+export const GET = withApiHandler(getLocation);
+export const PUT = withApiHandler(updateLocation);
+export const DELETE = withApiHandler(deleteLocation);

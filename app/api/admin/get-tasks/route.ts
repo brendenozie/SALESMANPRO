@@ -1,58 +1,72 @@
-import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
+// Note: Removed unused imports: NextResponse, verifyAuth
 
+const PAGE_SIZE = 20;
 
-export default async function GET( req : Request ) {
+/**
+ * Core handler logic to fetch paginated User data.
+ * This function assumes:
+ * 1. Authentication/Authorization is performed by `withApiHandler` (returns 401).
+ * 2. Automatic try/catch wrapping (returns 500) is performed by `withApiHandler`.
+ * 3. The final returned object is wrapped in a 200 OK NextResponse.
+ */
+async function fetchPaginatedUsers(req: Request) {
+  // NOTE: Authentication and method check are handled externally.
 
-   const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
-
-
-  // const { page } = req.query;
   const { searchParams } = new URL(req.url);
 
-  const agentId = searchParams.get("agentId");
-  const limit = parseInt(searchParams.get("limit") || "10", 10);
-  const offset = parseInt(searchParams.get("offset") || "0", 10);
+  // Pagination params
+  // The 'limit' and 'offset' parameters are ignored to enforce a consistent PAGE_SIZE,
+  // but we read 'page' to calculate the skip value.
   const page = parseInt(searchParams.get("page") || "0", 10);
-
-  if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
-    return NextResponse.json(
-      { message: "Invalid pagination parameters." },
-      { status: 400 }
+  
+  // You can still validate other parameters if necessary, but we focus on 'page' for skip calculation.
+  if (isNaN(page) || page < 0) {
+    return formatResponse(
+      false,
+      null,
+      "'page' must be a non-negative integer.",
+      400
     );
   }
 
-  if (req.method === "GET") {
+  // Calculate skip: page 0 skips 0, page 1 skips 20, etc.
+  const skip = page * PAGE_SIZE;
 
-    // const users = await prisma.user.findMany();
-    // res.json(users);
+  // --- Data Fetching ---
+  // Use transaction for atomic count and fetch operations.
+  const [totalCount, results] = await prisma.$transaction([
+    // 1. Get total count of all users (DO NOT use skip/take here)
+    prisma.user.count(),
 
+    // 2. Get paginated results
+    prisma.user.findMany({
+      skip: skip,
+      take: PAGE_SIZE,
+      orderBy: { createdAt: 'desc' } // Adding a consistent order by field is recommended
+    }),
+  ]);
 
-    let currentPage = page as unknown as number;
-    let skip = currentPage >0  ? currentPage *20 : 0;
-    
-    const results = await prisma.$transaction([
-      prisma.user.count({
-        skip : skip,
-        take: 20,
-      }),
-      prisma.user.findMany({
-        skip : skip,
-        take: 20,
-      }),
-    ]);
+  // --- Calculate Pagination Metadata ---
+  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+  // Using 0 to denote no next/previous page, consistent with original logic structure.
+  const nextPage = page + 1 < totalPages ? page + 1 : 0;
+  const prevPage = page > 0 ? page - 1 : 0;
 
-    NextResponse.json({InfoResponse:{count: results[0] ?? 0,
-                  next: currentPage * 20 > results[0] ? currentPage : 0 ,
-                  pages: results[0]/20 > 0 ? results[0]/20 : 1 ,
-                  prev: currentPage-1 > 0 ? currentPage-1 : 0},
-              results: results[1]
-            });
-  } else {
-    throw new Error(
-      `The HTTP ${req.method} method is not supported at this route.`
-    );
-  }
+  // --- Success Response ---
+  // Return the raw data structure. `withApiHandler` will wrap this in a 200 OK NextResponse.
+  return formatResponse(true, {
+    InfoResponse: {
+      count: totalCount,
+      next: nextPage,
+      pages: totalPages,
+      prev: prevPage,
+    },
+    results: results,
+  }, 'Paginated users fetched successfully', 200);
 }
+
+// Wrap the core logic with the API handler for robust behavior.
+export const GET = withApiHandler(fetchPaginatedUsers);

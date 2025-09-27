@@ -1,115 +1,110 @@
-// app/api/admin/[adminSlug]/pos/transactions/route.ts
-import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
 
-export async function POST(
-  request: Request,
-  { params }: { params: { adminSlug: string } }
-) {
-   const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+// Define the expected structure for route parameters (adminSlug)
+type POSTParams = { params: { adminSlug: string } };
 
-
+/**
+ * POST Handler: Processes a new Point of Sale transaction.
+ */
+async function handlePostTransaction(request: Request, { params }: POSTParams) {
   const { adminSlug } = params;
   const body = await request.json();
 
   const { patientId, items, paymentMethod, amountPaid, notes } = body;
 
-  if (!items || items.length === 0 || !paymentMethod || amountPaid === undefined) {
-    return NextResponse.json({ message: "Missing required fields: items, paymentMethod, amountPaid" }, { status: 400 });
+  if (!items || items.length === 0 || paymentMethod === undefined || amountPaid === undefined) {
+    return formatResponse(false, null, "Missing required fields: items, paymentMethod, amountPaid", 400);
   }
 
-  try {
-    const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
+  const company = await prisma.company.findUnique({
+    where: { slug: adminSlug },
+    select: { id: true }
+  });
+
+  if (!company) {
+    return formatResponse(false, null, "Company not found", 404);
+  }
+
+  const companyId = company.id;
+
+  // 1. Find or verify Consumer/Patient
+  let consumer = null;
+  if (patientId) {
+    consumer = await prisma.consumer.findUnique({
+      where: { userId: patientId }, // Assuming patientId is a userId
       select: { id: true }
     });
-
-    if (!company) {
-      return NextResponse.json({ message: "Company not found" }, { status: 404 });
+    if (!consumer) {
+      console.warn(`Patient with userId ${patientId} not found as a Consumer. Proceeding as a walk-in/unlinked customer.`);
     }
-
-    // Optional: Find the consumer if patientId is provided
-    let consumer = null;
-    if (patientId) {
-      consumer = await prisma.consumer.findUnique({
-        where: { userId: patientId }, // Assuming patientId is a userId
-        select: { id: true }
-      });
-      if (!consumer) {
-        // If patientId is provided but no consumer profile found, you might want to create one
-        // Or return an error if patient must exist as a consumer
-        console.warn(`Patient with userId ${patientId} not found as a Consumer. Creating order without direct consumer link.`);
-      }
-    }
-
-    // Create the CustomerOrder
-    const newOrder = await prisma.customerOrder.create({
-      data: {
-        companyId: company.id,
-        consumerId: consumer ? consumer.id : undefined, // Link to consumer if found
-        totalPrice: amountPaid,
-        orderSource: "IN_PERSON", // Mark as POS transaction
-        status: "COMPLETED", // Assuming POS transactions are immediately completed
-        paymentOption: paymentMethod,
-        // You might want to add more details like payment gateway transaction ID here
-        // For simplicity, we'll just use the amountPaid
-        items: {
-          create: items.map((item: any) => ({
-            marketplaceListingId: item.productId,
-            quantity: item.quantity,
-            price: item.unitPrice,
-            status: "COMPLETED", // Order item status
-          })),
-        },
-        // Optional: Add patient contact info if not linked to existing user
-        name: patientId ? undefined : (body.patientName || 'Walk-in Customer'),
-        email: patientId ? undefined : (body.patientEmail || 'N/A'),
-        phone: patientId ? undefined : (body.patientPhone || 'N/A'),
-      },
-    });
-
-    // Create a Payment record for the order
-    await prisma.payment.create({
-      data: {
-        userId: patientId || (await prisma.user.findFirst({ where: { role: "ADMIN" }, select: { id: true } }))?.id || 'some_default_admin_id', // Link to the user who processed it or a default admin
-        orderId: newOrder.id,
-        amount: amountPaid,
-        status: "COMPLETED",
-        transactionId: `POS-${newOrder.id}-${Date.now()}`, // Generate a unique transaction ID
-      },
-    });
-
-    // Update inventory for each item (decrement quantity)
-    for (const item of items) {
-      await prisma.marketplaceListings.update({
-        where: { id: item.productId },
-        data: {
-          quantity: {
-            decrement: item.quantity,
-          },
-        },
-      });
-      // You might also want to create an InventoryLog entry here
-    }
-
-    return NextResponse.json(
-      {
-        message: "POS transaction processed successfully",
-        orderId: newOrder.id,
-        totalAmount: newOrder.totalPrice,
-        status: newOrder.status,
-        timestamp: newOrder.createdAt,
-      },
-      { status: 201 }
-    );
-
-  } catch (error) {
-    console.error("Error processing POS transaction:", error);
-    return NextResponse.json(
-      { message: "Internal server error", error: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
-    );
   }
+
+  // 2. Create the CustomerOrder (Transaction)
+  const newOrder = await prisma.customerOrder.create({
+    data: {
+      companyId: companyId,
+      consumerId: consumer ? consumer.id : undefined, // Link to consumer if found
+      totalPrice: amountPaid,
+      orderSource: "IN_PERSON", // Mark as POS transaction
+      status: "COMPLETED", // Assuming POS transactions are immediately completed
+      paymentOption: paymentMethod,
+      name: patientId ? undefined : (body.patientName || 'Walk-in Customer'),
+      email: patientId ? undefined : (body.patientEmail || 'N/A'),
+      phone: patientId ? undefined : (body.patientPhone || 'N/A'),
+      notes: notes,
+      items: {
+        create: items.map((item: any) => ({
+          marketplaceListingId: item.productId,
+          quantity: item.quantity,
+          price: item.unitPrice,
+          status: "COMPLETED",
+          // The order item must link to an actual order item model, not just a service/product.
+          // Assuming 'price' here is the final amount paid for that item instance.
+        })),
+      },
+    },
+  });
+
+  // 3. Create a Payment record for the order
+  // NOTE: This links the payment to the order and the user who processed the order (auth.user.id)
+  const processorUserId = (request as any).auth?.user?.id || 'default_admin_id';
+  
+  await prisma.payment.create({
+    data: {
+      userId: processorUserId,
+      orderId: newOrder.id,
+      amount: amountPaid,
+      status: "COMPLETED",
+      transactionId: `POS-${newOrder.id}-${Date.now()}`,
+    },
+  });
+
+  // 4. Update inventory for each item (decrement quantity)
+  // NOTE: This should likely be a transaction or use a safer inventory logic in a real app
+  for (const item of items) {
+    await prisma.marketplaceListings.update({
+      where: { id: item.productId },
+      data: {
+        quantity: {
+          decrement: item.quantity,
+        },
+      },
+    });
+  }
+
+  // Return success response with status 201
+  const responseData = {
+    message: "POS transaction processed successfully",
+    orderId: newOrder.id,
+    totalAmount: newOrder.totalPrice,
+    status: newOrder.status,
+    timestamp: newOrder.createdAt,
+  };
+
+  return formatResponse(true, responseData, "Transaction successful", 201);
 }
+
+// Wrap the core logic with the API handler middleware
+export const POST = withApiHandler(handlePostTransaction);

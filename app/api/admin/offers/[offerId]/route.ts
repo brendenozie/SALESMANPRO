@@ -1,183 +1,175 @@
-import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import { NextResponse, NextRequest } from "next/server";
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
+import { Prisma } from "@prisma/client";
 
-// GET a single Offer by ID
-export async function GET(
-  request: Request,
-  { params }: { params: { offerId: string } }
-) {
-  try {
-    
-       const auth = await verifyAuth(request);
-      if (!auth.success) return formatResponse(false, null, auth.error, 401);
-    
-    
-    const { offerId } = params;
+// Define the expected structure for route parameters
+type RouteParams = { params: { offerId: string } };
 
-    const offer = await prisma.offerContract.findUnique({
-      where: {
-        id: offerId,
+const VALID_STATUSES = ['Pending', 'Accepted', 'Rejected', 'Closed'];
+
+// --- GET Handler Core Logic ---
+/**
+ * Fetches a single Offer by ID.
+ */
+async function handleGetOffer(request: Request, { params }: RouteParams) {
+  const { offerId } = params;
+
+  const offer = await prisma.offerContract.findUnique({
+    where: { id: offerId },
+    include: {
+      property: {
+        select: { name: true, id: true, images: true }
       },
-      include: { // Include relations for richer data if needed
-        property: {
-          select: { name: true, id: true, images: true }
-        },
-        client: {
-          select: { name: true, id: true, email: true }
-        },
-        agent: {
-          select: { name: true, id: true, email: true }
-        },
+      client: {
+        select: { name: true, id: true, email: true }
       },
-    });
+      agent: {
+        select: { name: true, id: true, email: true }
+      },
+    },
+  });
 
-    if (!offer) {
-      return NextResponse.json({ message: 'Offer not found.' }, { status: 404 });
-    }
-
-    // Format the response to match the frontend's expected OfferContract type
-    const formattedOffer = {
-      id: offer.id,
-      propertyId: offer.propertyId,
-      propertyName: offer.property?.name || offer.propertyName,
-      clientId: offer.clientId,
-      clientName: offer.client?.name || offer.clientName,
-      agentId: offer.agentId,
-      agentName: offer.agent?.name || offer.agentName,
-      offerAmount: offer.offerAmount,
-      status: offer.status,
-      offerDate: offer.offerDate.toISOString(),
-      closureDate: offer.closureDate?.toISOString() || undefined,
-      notes: offer.notes,
-      contractUrl: offer.contractUrl,
-      createdAt: offer.createdAt.toISOString(),
-      updatedAt: offer.updatedAt.toISOString(),
-    };
-
-    return NextResponse.json(formattedOffer, { status: 200 });
-  } catch (error: any) {
-    console.error(`Error fetching offer with ID ${params.offerId}:`, error);
-    return NextResponse.json(
-      { message: 'Failed to fetch offer', error: error.message },
-      { status: 500 }
-    );
+  if (!offer) {
+    // Manually format a 404 response
+    return formatResponse(false, null, 'Offer not found.', 404);
   }
+
+  // Format the response to match the frontend's expected type
+  const formattedOffer = {
+    id: offer.id,
+    propertyId: offer.propertyId,
+    propertyName: offer.property?.name || offer.propertyName,
+    clientId: offer.clientId,
+    clientName: offer.client?.name || offer.clientName,
+    agentId: offer.agentId,
+    agentName: offer.agent?.name || offer.agentName,
+    offerAmount: offer.offerAmount,
+    status: offer.status,
+    offerDate: offer.offerDate.toISOString(),
+    closureDate: offer.closureDate?.toISOString() || undefined,
+    notes: offer.notes,
+    contractUrl: offer.contractUrl,
+    createdAt: offer.createdAt.toISOString(),
+    updatedAt: offer.updatedAt.toISOString(),
+  };
+
+  // withApiHandler wraps this result in a success formatResponse with status 200
+  return formattedOffer;
 }
 
-// PATCH (Update) an Offer by ID
-export async function PATCH(
-  request: Request,
-  { params }: { params: { offerId: string } }
-) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
+// --- PATCH Handler Core Logic ---
+/**
+ * Updates an Offer by ID.
+ */
+async function handlePatchOffer(request: Request, { params }: RouteParams) {
+  const { offerId } = params;
+  const body = await request.json();
+  const {
+    propertyId,
+    propertyName,
+    clientId,
+    clientName,
+    agentId,
+    agentName,
+    offerAmount,
+    status,
+    offerDate,
+    closureDate,
+    notes,
+    contractUrl,
+  } = body;
+
+  const updateData: { [key: string]: any } = {};
+
+  // Build update data and validate inputs
+  if (propertyId !== undefined) updateData.propertyId = propertyId;
+  if (propertyName !== undefined) updateData.propertyName = propertyName;
+  if (clientId !== undefined) updateData.clientId = clientId;
+  if (clientName !== undefined) updateData.clientName = clientName;
+  if (agentId !== undefined) updateData.agentId = agentId;
+  if (agentName !== undefined) updateData.agentName = agentName;
+
+  if (offerAmount !== undefined) {
+    const amount = parseFloat(offerAmount);
+    if (isNaN(amount)) {
+      return formatResponse(false, null, 'Offer amount must be a valid number.', 400);
+    }
+    updateData.offerAmount = amount;
+  }
+
+  if (offerDate) {
+    const date = new Date(offerDate);
+    if (isNaN(date.getTime())) {
+      return formatResponse(false, null, 'Invalid offerDate format. Must be a valid date string.', 400);
+    }
+    updateData.offerDate = date;
+  }
+
+  // Allow setting to null/undefined
+  if (closureDate !== undefined) {
+    updateData.closureDate = closureDate ? new Date(closureDate) : null;
+  }
+
+  if (notes !== undefined) updateData.notes = notes;
+  if (contractUrl !== undefined) updateData.contractUrl = contractUrl;
+
+  if (status) {
+    if (!VALID_STATUSES.includes(status)) {
+      return formatResponse(
+        false,
+        null,
+        `Invalid status. Must be one of: ${VALID_STATUSES.join(', ')}`,
+        400
+      );
+    }
+    updateData.status = status;
+  }
+
+  if (Object.keys(updateData).length === 0) {
+    return formatResponse(false, null, 'No fields provided for update.', 400);
+  }
+
   try {
-    const { offerId } = params;
-    const body = await request.json();
-    const {
-      propertyId,
-      propertyName,
-      clientId,
-      clientName,
-      agentId,
-      agentName,
-      offerAmount,
-      status,
-      offerDate,
-      closureDate,
-      notes,
-      contractUrl,
-    } = body;
-
-    const updateData: { [key: string]: any } = {};
-    if (propertyId) updateData.propertyId = propertyId;
-    if (propertyName) updateData.propertyName = propertyName;
-    if (clientId) updateData.clientId = clientId;
-    if (clientName) updateData.clientName = clientName;
-    if (agentId) updateData.agentId = agentId;
-    if (agentName) updateData.agentName = agentName;
-    if (offerAmount !== undefined) {
-      if (isNaN(parseFloat(offerAmount))) {
-        return NextResponse.json({ message: 'Offer amount must be a valid number.' }, { status: 400 });
-      }
-      updateData.offerAmount = parseFloat(offerAmount);
-    }
-    if (offerDate) {
-      if (isNaN(new Date(offerDate).getTime())) {
-        return NextResponse.json({ message: 'Invalid offerDate format. Must be a valid date string.' }, { status: 400 });
-      }
-      updateData.offerDate = new Date(offerDate);
-    }
-    if (closureDate !== undefined) { // Allow setting to null
-      updateData.closureDate = closureDate ? new Date(closureDate) : null;
-    }
-    if (notes !== undefined) updateData.notes = notes; // Allow notes to be cleared
-    if (contractUrl !== undefined) updateData.contractUrl = contractUrl; // Allow URL to be cleared
-
-    if (status) {
-      const validStatuses = ['Pending', 'Accepted', 'Rejected', 'Closed'];
-      if (!validStatuses.includes(status)) {
-        return NextResponse.json({ message: `Invalid status. Must be one of: ${validStatuses.join(', ')}` }, { status: 400 });
-      }
-      updateData.status = status;
-    }
-
-    if (Object.keys(updateData).length === 0) {
-      return NextResponse.json({ message: 'No fields provided for update.' }, { status: 400 });
-    }
-
     const updatedOffer = await prisma.offerContract.update({
-      where: {
-        id: offerId,
-      },
+      where: { id: offerId },
       data: updateData,
     });
 
-    return NextResponse.json(updatedOffer, { status: 200 });
-  } catch (error: any) {
-    console.error(`Error updating offer with ID ${params.offerId}:`, error);
-    if (error.code === 'P2025') { // Prisma error for record not found
-      return NextResponse.json({ message: 'Offer not found or referenced data invalid.' }, { status: 404 });
+    return updatedOffer;
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+      // Record not found
+      return formatResponse(false, null, 'Offer not found or referenced data invalid.', 404);
     }
-    return NextResponse.json(
-      { message: 'Failed to update offer', error: error.message },
-      { status: 500 }
-    );
+    throw error; // Let withApiHandler catch other errors
   }
 }
 
-// DELETE an Offer by ID
-export async function DELETE(
-  request: Request,
-  { params }: { params: { offerId: string } }
-) {
-  try {
-    
-       const auth = await verifyAuth(request);
-      if (!auth.success) return formatResponse(false, null, auth.error, 401);
-    
-    
-    const { offerId } = params;
+// --- DELETE Handler Core Logic ---
+/**
+ * Deletes an Offer by ID.
+ */
+async function handleDeleteOffer(request: Request, { params }: RouteParams) {
+  const { offerId } = params;
 
+  try {
     await prisma.offerContract.delete({
-      where: {
-        id: offerId,
-      },
+      where: { id: offerId },
     });
 
-    return NextResponse.json({ message: 'Offer deleted successfully.' }, { status: 200 });
-  } catch (error: any) {
-    console.error(`Error deleting offer with ID ${params.offerId}:`, error);
-    if (error.code === 'P2025') { // Prisma error for record not found
-      return NextResponse.json({ message: 'Offer not found.' }, { status: 404 });
+    return { message: 'Offer deleted successfully.' };
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+      // Record not found
+      return formatResponse(false, null, 'Offer not found.', 404);
     }
-    return NextResponse.json(
-      { message: 'Failed to delete offer', error: error.message },
-      { status: 500 }
-    );
+    throw error; // Let withApiHandler catch other errors
   }
 }
+
+// Export the wrapped handlers. withApiHandler handles auth and try/catch.
+export const GET = withApiHandler(handleGetOffer);
+export const PATCH = withApiHandler(handlePatchOffer);
+export const DELETE = withApiHandler(handleDeleteOffer);

@@ -1,82 +1,88 @@
-// app/api/admin/[adminSlug]/inventory/items/[id]/restock/route.ts
-import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
 
-export async function POST(
+/**
+ * POST Handler: Handles the restock transaction for a specific inventory item.
+ */
+async function restockInventory(
   request: Request,
   { params }: { params: { adminSlug: string; id: string } }
 ) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
+  // NOTE: Authentication is handled by withApiHandler.
   const { adminSlug, id } = params;
   const body = await request.json();
 
-  const { quantityAdded, reason, userId } = body; // userId of the admin performing the restock
+  // We rely on withApiHandler to ensure the body is available
+  const { quantityAdded, reason, userId } = body;
 
-  if (quantityAdded === undefined || quantityAdded <= 0) {
-    return NextResponse.json({ message: "Quantity to add must be a positive number" }, { status: 400 });
+  // --- Input Validation ---
+  const parsedQuantity = parseInt(quantityAdded);
+
+  if (isNaN(parsedQuantity) || parsedQuantity <= 0) {
+    return formatResponse(
+      false,
+      null,
+      "Quantity to add must be a positive number.",
+      400
+    );
   }
 
-  try {
-    const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
-      select: { id: true }
-    });
+  // 1. Validate Company Existence
+  const company = await prisma.company.findUnique({
+    where: { slug: adminSlug },
+    select: { id: true }
+  });
 
-    if (!company) {
-      return NextResponse.json({ message: "Company not found" }, { status: 404 });
-    }
+  if (!company) {
+    return formatResponse(false, null, "Company not found.", 404);
+  }
 
-    const inventoryItem = await prisma.inventoryItem.findUnique({
-      where: {
-        id: id,
-        companyId: company.id, // Ensure item belongs to this company
-      },
-      select: { id: true, quantity: true },
-    });
+  // 2. Validate Inventory Item Existence and Ownership
+  const inventoryItem = await prisma.inventoryItem.findUnique({
+    where: {
+      id: id,
+      companyId: company.id, // Ensure item belongs to this company
+    },
+    select: { id: true, quantity: true },
+  });
 
-    if (!inventoryItem) {
-      return NextResponse.json({ message: "Inventory item not found or not associated with this company" }, { status: 404 });
-    }
+  if (!inventoryItem) {
+    return formatResponse(false, null, "Inventory item not found or not associated with this company.", 404);
+  }
 
+  // --- Transaction Logic ---
+  // Use a transaction to ensure both update and logging succeed or fail together
+  const [updatedItem, logEntry] = await prisma.$transaction([
     // Update the quantity of the inventory item
-    const updatedItem = await prisma.inventoryItem.update({
+    prisma.inventoryItem.update({
       where: { id: id },
       data: {
-        quantity: { increment: parseInt(quantityAdded) },
+        quantity: { increment: parsedQuantity },
         updatedAt: new Date(),
       },
-    });
+    }),
 
     // Create an InventoryLog entry for the restock
-    const logEntry = await prisma.inventoryLog.create({
+    prisma.inventoryLog.create({
       data: {
-        inventoryId: updatedItem.id,
+        inventoryId: id, // Use the item ID
         action: "RESTOCK",
-        quantity: parseInt(quantityAdded),
-        details: reason, // Store the reason in details
-        // userId: userId, // Link to the admin user who performed the restock
+        quantity: parsedQuantity,
+        details: reason || "Standard restock",
+        // Note: Assuming 'userId' is passed in the body for logging purposes
+        userId: userId, 
       },
-    });
+    }),
+  ]);
 
-    return NextResponse.json(
-      {
-        message: `Successfully restocked ${quantityAdded} units of ${updatedItem.id}.`,
-        newStock: updatedItem.quantity,
-        logId: logEntry.id,
-      },
-      { status: 200 }
-    );
-
-  } catch (error) {
-    console.error("Error restocking inventory item:", error);
-    return NextResponse.json(
-      { message: "Internal server error", error: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
-    );
-  }
+  // --- Success Response ---
+  return formatResponse(true, {
+    message: `Successfully restocked ${parsedQuantity} units.`,
+    newStock: updatedItem.quantity,
+    logId: logEntry.id,
+  }, `Inventory item restocked successfully. New quantity: ${updatedItem.quantity}`, 200);
 }
+
+// Wrap the core logic with the API handler middleware
+export const POST = withApiHandler(restockInventory);

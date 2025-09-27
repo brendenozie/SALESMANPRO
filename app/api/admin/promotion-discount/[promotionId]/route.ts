@@ -1,152 +1,139 @@
-// app/api/admin/[adminSlug]/promotions/[promotionId]/route.js
-import { NextResponse } from 'next/server';
-import prisma from '@/server/db/prismadb'; // Adjust this path
-import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+// app/api/admin/[adminSlug]/promotions/[promotionId]/route.ts
+import { NextResponse } from "next/server";
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
 
-// Helper to format discount for frontend (duplicate for self-containment)
-const formatDiscount = (value, type) => {
-  if (type === 'PERCENTAGE') {
+// Helper to format discount for frontend
+const formatDiscount = (value: number, type: string) => {
+  if (type === "PERCENTAGE") {
     return `${value}% Off`;
-  } else if (type === 'FIXED_AMOUNT') {
+  } else if (type === "FIXED_AMOUNT") {
     return `$${value} Off`;
   }
   return String(value);
 };
 
 // PUT /api/admin/[adminSlug]/promotions/[promotionId]
-// Updates an existing promotion.
-export async function PUT(request, { params }) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
+export const PUT = withApiHandler(async (request, { params }) => {
   const { adminSlug, promotionId } = params;
 
-  try {
-    const body = await request.json();
-    const {
+  const body = await request.json();
+  const {
+    name,
+    code,
+    discountValue,
+    discountType,
+    startDate,
+    endDate,
+    status,
+    description,
+    imageUrl,
+  } = body;
+
+  const company = await prisma.company.findUnique({
+    where: { slug: adminSlug },
+    select: { id: true },
+  });
+
+  if (!company) {
+    return formatResponse(false, null, "Company not found.", 404);
+  }
+
+  const existingPromotion = await prisma.promotion.findUnique({
+    where: { id: promotionId },
+    select: { companyId: true, code: true },
+  });
+
+  if (!existingPromotion || existingPromotion.companyId !== company.id) {
+    return formatResponse(
+      false,
+      null,
+      "Promotion not found or does not belong to this company.",
+      404
+    );
+  }
+
+  // Check for code conflict if updated
+  if (code && code !== existingPromotion.code) {
+    const conflictPromo = await prisma.promotion.findUnique({
+      where: { code },
+    });
+    if (conflictPromo) {
+      return formatResponse(
+        false,
+        null,
+        "Another promotion with this code already exists.",
+        409
+      );
+    }
+  }
+
+  const updatedPromotion = await prisma.promotion.update({
+    where: { id: promotionId },
+    data: {
       name,
       code,
-      discountValue,
+      discountValue: parseFloat(discountValue),
       discountType,
-      startDate,
-      endDate,
+      startDate: new Date(startDate),
+      endDate: new Date(endDate),
       status,
-      description,
-      imageUrl,
-    } = body;
+      description: description || null,
+      imageUrl: imageUrl || null,
+    },
+  });
 
-    const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
-      select: { id: true },
-    });
+  const formattedUpdatedPromotion = {
+    id: updatedPromotion.id,
+    name: updatedPromotion.name,
+    code: updatedPromotion.code,
+    discount: formatDiscount(
+      updatedPromotion.discountValue,
+      updatedPromotion.discountType
+    ),
+    discountValue: updatedPromotion.discountValue,
+    discountType: updatedPromotion.discountType,
+    startDate: updatedPromotion.startDate.toISOString().split("T")[0],
+    endDate: updatedPromotion.endDate.toISOString().split("T")[0],
+    status: updatedPromotion.status,
+    description: updatedPromotion.description || "",
+    imageUrl: updatedPromotion.imageUrl || "",
+  };
 
-    if (!company) {
-      return NextResponse.json({ message: 'Company not found.' }, { status: 404 });
-    }
-
-    const existingPromotion = await prisma.promotion.findUnique({
-      where: { id: promotionId },
-      select: { companyId: true, code: true }, // Select code to check for uniqueness if updated
-    });
-
-    if (!existingPromotion || existingPromotion.companyId !== company.id) {
-      return NextResponse.json({ message: 'Promotion not found or does not belong to this company.' }, { status: 404 });
-    }
-
-    // Check if the new code conflicts with another existing promotion (if code is changed)
-    if (code && code !== existingPromotion.code) {
-      const conflictPromo = await prisma.promotion.findUnique({
-        where: { code: code },
-      });
-      if (conflictPromo) {
-        return NextResponse.json({ message: 'Another promotion with this code already exists.' }, { status: 409 });
-      }
-    }
-
-    const updatedPromotion = await prisma.promotion.update({
-      where: { id: promotionId },
-      data: {
-        name: name,
-        code: code,
-        discountValue: parseFloat(discountValue),
-        discountType: discountType,
-        startDate: new Date(startDate),
-        endDate: new Date(endDate),
-        status: status,
-        description: description || null,
-        imageUrl: imageUrl || null,
-      },
-    });
-
-    // Format the updated promotion data for frontend display
-    const formattedUpdatedPromotion = {
-      id: updatedPromotion.id,
-      name: updatedPromotion.name,
-      code: updatedPromotion.code,
-      discount: formatDiscount(updatedPromotion.discountValue, updatedPromotion.discountType),
-      discountValue: updatedPromotion.discountValue,
-      discountType: updatedPromotion.discountType,
-      startDate: updatedPromotion.startDate.toISOString().split('T')[0],
-      endDate: updatedPromotion.endDate.toISOString().split('T')[0],
-      status: updatedPromotion.status,
-      description: updatedPromotion.description || '',
-      imageUrl: updatedPromotion.imageUrl || '',
-    };
-
-    return NextResponse.json(formattedUpdatedPromotion);
-  } catch (error) {
-    console.error(`Error updating promotion ${promotionId}:`, error);
-    if (error.code === 'P2025') { // Record not found
-      return NextResponse.json({ message: 'Promotion not found.' }, { status: 404 });
-    }
-    if (error.code === 'P2002') { // Unique constraint violation (should be handled by explicit check above)
-      return NextResponse.json({ message: 'A promotion with this code already exists.', error: error.message }, { status: 409 });
-    }
-    return NextResponse.json({ message: 'Failed to update promotion', error: error.message }, { status: 500 });
-  }
-}
+  return formatResponse(true, formattedUpdatedPromotion, "Promotion updated.");
+});
 
 // DELETE /api/admin/[adminSlug]/promotions/[promotionId]
-// Deletes a specific promotion.
-export async function DELETE(request, { params }) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
+export const DELETE = withApiHandler(async (_request, { params }) => {
   const { adminSlug, promotionId } = params;
 
-  try {
-    const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
-      select: { id: true },
-    });
+  const company = await prisma.company.findUnique({
+    where: { slug: adminSlug },
+    select: { id: true },
+  });
 
-    if (!company) {
-      return NextResponse.json({ message: 'Company not found.' }, { status: 404 });
-    }
-
-    const promoToDelete = await prisma.promotion.findUnique({
-      where: { id: promotionId },
-      select: { companyId: true },
-    });
-
-    if (!promoToDelete || promoToDelete.companyId !== company.id) {
-      return NextResponse.json({ message: 'Promotion not found or does not belong to this company.' }, { status: 404 });
-    }
-
-    await prisma.promotion.delete({
-      where: { id: promotionId },
-    });
-
-    return NextResponse.json({ message: 'Promotion deleted successfully.' }, { status: 200 });
-  } catch (error) {
-    console.error(`Error deleting promotion ${promotionId}:`, error);
-    if (error.code === 'P2025') {
-      return NextResponse.json({ message: 'Promotion not found.' }, { status: 404 });
-    }
-    return NextResponse.json({ message: 'Failed to delete promotion', error: error.message }, { status: 500 });
+  if (!company) {
+    return formatResponse(false, null, "Company not found.", 404);
   }
-}
+
+  const promoToDelete = await prisma.promotion.findUnique({
+    where: { id: promotionId },
+    select: { companyId: true },
+  });
+
+  if (!promoToDelete || promoToDelete.companyId !== company.id) {
+    return formatResponse(
+      false,
+      null,
+      "Promotion not found or does not belong to this company.",
+      404
+    );
+  }
+
+  await prisma.promotion.delete({
+    where: { id: promotionId },
+  });
+
+  return formatResponse(true, null, "Promotion deleted successfully.");
+});

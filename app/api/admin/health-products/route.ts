@@ -1,80 +1,74 @@
-// app/api/admin/[adminSlug]/pos/products/route.ts
-import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
+import { MarketplaceListings } from "@prisma/client"; // Assuming MarketplaceListings type is available
 
-export async function GET(
+/**
+ * GET Handler: Fetches a filtered list of active products available for POS use.
+ */
+async function getPosProducts(
   request: Request,
   { params }: { params: { adminSlug: string } }
 ) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
   const { adminSlug } = params;
   const { searchParams } = new URL(request.url);
 
   const categoryFilter = searchParams.get("category");
   const searchKeyword = searchParams.get("search");
 
-  try {
-    const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
-      select: { id: true }
-    });
+  // 1. Find Company
+  const company = await prisma.company.findUnique({
+    where: { slug: adminSlug },
+    select: { id: true }
+  });
 
-    if (!company) {
-      return NextResponse.json({ message: "Company not found" }, { status: 404 });
-    }
-
-    const whereClause: any = {
-      companyId: company.id,
-      // Only show active/available listings
-      status: "ACTIVE",
-      isAvailable: true,
-    };
-
-    if (categoryFilter && categoryFilter !== 'All') {
-      whereClause.category = categoryFilter; // Assuming 'category' field on marketplaceListings
-    }
-
-    if (searchKeyword) {
-      whereClause.OR = [
-        { name: { contains: searchKeyword, mode: 'insensitive' } },
-        { description: { contains: searchKeyword, mode: 'insensitive' } },
-      ];
-    }
-
-    const products = await prisma.marketplaceListings.findMany({
-      where: whereClause,
-      select: {
-        id: true,
-        name: true,
-        sellingPrice: true,
-        category: true, // Assuming category is denormalized or can be selected
-        quantity: true, // Current stock quantity
-      },
-      orderBy: { name: 'asc' },
-    });
-
-    // For POS, we might need to know exact stock from InventoryItem
-    // This is a simplified approach, a real POS would check InventoryItem quantity
-    const formattedProducts = products.map(product => ({
-      id: product.id,
-      name: product.name,
-      price: product.sellingPrice,
-      category: product.category || 'Uncategorized', // Fallback if category is null
-      stock: product.quantity, // Using marketplaceListing's quantity as stock for simplicity
-    }));
-
-    return NextResponse.json(formattedProducts, { status: 200 });
-
-  } catch (error) {
-    console.error("Error fetching POS products:", error);
-    return NextResponse.json(
-      { message: "Internal server error", error: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
-    );
+  if (!company) {
+    return formatResponse(false, null, "Company not found", 404);
   }
+
+  // 2. Build Where Clause
+  const whereClause: any = {
+    companyId: company.id,
+    // Only show listings that are active and marked as available
+    status: "ACTIVE",
+    isAvailable: true,
+  };
+
+  if (categoryFilter && categoryFilter !== 'All') {
+    whereClause.category = categoryFilter;
+  }
+
+  if (searchKeyword) {
+    whereClause.OR = [
+      { name: { contains: searchKeyword, mode: 'insensitive' } },
+      { description: { contains: searchKeyword, mode: 'insensitive' } },
+    ];
+  }
+
+  // 3. Fetch Products
+  const products = await prisma.marketplaceListings.findMany({
+    where: whereClause,
+    select: {
+      id: true,
+      name: true,
+      sellingPrice: true,
+      category: true,
+      quantity: true, // Used as current stock quantity
+    },
+    orderBy: { name: 'asc' },
+  });
+
+  // 4. Format Products
+  const formattedProducts = products.map((product: Partial<MarketplaceListings> & { id: string, name: string, sellingPrice: number, quantity: number | null }) => ({
+    id: product.id,
+    name: product.name,
+    price: product.sellingPrice,
+    category: product.category || 'Uncategorized',
+    stock: product.quantity || 0, // Ensure stock defaults to 0 if null
+  }));
+
+  return formatResponse(true, formattedProducts, "POS products fetched successfully", 200);
 }
+
+// Wrap the core logic with the API handler middleware
+export const GET = withApiHandler(getPosProducts);

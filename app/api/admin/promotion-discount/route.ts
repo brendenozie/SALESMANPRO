@@ -1,158 +1,136 @@
-// app/api/admin/[adminSlug]/promotions/route.js
-import { NextResponse } from 'next/server';
-import prisma from '@/server/db/prismadb'; // Adjust this path
-import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+// app/api/admin/[adminSlug]/promotions/route.ts
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
 
 // Helper to format discount for frontend
-const formatDiscount = (value, type) => {
-  if (type === 'PERCENTAGE') {
+const formatDiscount = (value: number, type: string) => {
+  if (type === "PERCENTAGE") {
     return `${value}% Off`;
-  } else if (type === 'FIXED_AMOUNT') {
+  } else if (type === "FIXED_AMOUNT") {
     return `$${value} Off`;
   }
   return String(value); // Fallback
 };
 
 // GET /api/admin/[adminSlug]/promotions
-// Fetches all promotions for a specific company.
-export async function GET(request: Request) {
-    
-       const auth = await verifyAuth(request);
-      if (!auth.success) return formatResponse(false, null, auth.error, 401);
-    
-    
+export const GET = withApiHandler(async (request: Request) => {
   const { searchParams } = new URL(request.url);
-  const companyId = searchParams.get('companyId');
+  const companyId = searchParams.get("companyId");
 
-  try {
-    const company = await prisma.company.findUnique({
-      where: { id: companyId },
-      select: { id: true },
-    });
-
-    if (!company) {
-      return NextResponse.json({ message: 'Company not found for the given slug.' }, { status: 404 });
-    }
-
-    const promotions = await prisma.promotionDiscount.findMany({
-      where: {
-        companyId: company.id,
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
-
-    // Map Prisma Promotion model to a frontend-friendly interface
-    const formattedPromotions = promotions.map(promo => ({
-      id: promo.id,
-      name: promo.name,
-      code: promo.code,
-      discount: formatDiscount(promo.discountValue, promo.discountType), // Formatted string
-      discountValue: promo.discountValue, // Raw value for editing
-      discountType: promo.discountType, // Type for editing
-      startDate: promo.startDate.toISOString().split('T')[0], // YYYY-MM-DD
-      endDate: promo.endDate.toISOString().split('T')[0], // YYYY-MM-DD
-      status: promo.status,
-      description: promo.description || '',
-      imageUrl: promo.imageUrl || '',
-    }));
-
-    return NextResponse.json(formattedPromotions);
-  } catch (error) {
-    console.error('Error fetching promotions:', error);
-    return NextResponse.json({ message: 'Failed to fetch promotions', error: "error.message" }, { status: 500 });
+  if (!companyId) {
+    return formatResponse(false, null, "companyId is required", 400);
   }
-}
+
+  const company = await prisma.company.findUnique({
+    where: { id: companyId },
+    select: { id: true },
+  });
+
+  if (!company) {
+    return formatResponse(false, null, "Company not found for the given slug.", 404);
+  }
+
+  const promotions = await prisma.promotionDiscount.findMany({
+    where: { companyId: company.id },
+    orderBy: { createdAt: "desc" },
+  });
+
+  const formattedPromotions = promotions.map((promo) => ({
+    id: promo.id,
+    name: promo.name,
+    code: promo.code,
+    discount: formatDiscount(promo.discountValue, promo.discountType),
+    discountValue: promo.discountValue,
+    discountType: promo.discountType,
+    startDate: promo.startDate.toISOString().split("T")[0],
+    endDate: promo.endDate.toISOString().split("T")[0],
+    status: promo.status,
+    description: promo.description || "",
+    imageUrl: promo.imageUrl || "",
+  }));
+
+  return formatResponse(true, formattedPromotions, "Promotions fetched successfully.");
+});
 
 // POST /api/admin/[adminSlug]/promotions
-// Creates a new promotion.
-export async function POST(request: Request) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
-  
+export const POST = withApiHandler(async (request: Request) => {
   const { searchParams } = new URL(request.url);
-  const companyId = searchParams.get('companyId');
+  const companyId = searchParams.get("companyId");
 
-  try {
-    const body = await request.json();
-    const {
+  if (!companyId) {
+    return formatResponse(false, null, "companyId is required", 400);
+  }
+
+  const body = await request.json();
+  const {
+    name,
+    code,
+    discountValue,
+    discountType,
+    startDate,
+    endDate,
+    status,
+    description,
+    imageUrl,
+  } = body;
+
+  if (
+    !name ||
+    !code ||
+    discountValue === undefined ||
+    !discountType ||
+    !startDate ||
+    !endDate ||
+    !status
+  ) {
+    return formatResponse(false, null, "Missing required fields for promotion creation.", 400);
+  }
+
+  const company = await prisma.company.findUnique({
+    where: { id: companyId },
+    select: { id: true },
+  });
+
+  if (!company) {
+    return formatResponse(false, null, "Company not found for the given slug.", 404);
+  }
+
+  const existingPromo = await prisma.promotionDiscount.findUnique({
+    where: { code },
+  });
+  if (existingPromo) {
+    return formatResponse(false, null, "A promotion with this code already exists.", 409);
+  }
+
+  const newPromotion = await prisma.promotionDiscount.create({
+    data: {
       name,
       code,
-      discountValue, // Now a number
-      discountType,  // Now an enum value
-      startDate,
-      endDate,
+      discountValue: parseFloat(discountValue),
+      discountType,
+      startDate: new Date(startDate),
+      endDate: new Date(endDate),
       status,
-      description,
-      imageUrl,
-    } = body;
+      description: description || null,
+      imageUrl: imageUrl || null,
+      company: { connect: { id: companyId } },
+    },
+  });
 
-    const company = await prisma.company.findUnique({
-      where: { id: companyId },
-      select: { id: true },
-    });
+  const formattedNewPromotion = {
+    id: newPromotion.id,
+    name: newPromotion.name,
+    code: newPromotion.code,
+    discount: formatDiscount(newPromotion.discountValue, newPromotion.discountType),
+    discountValue: newPromotion.discountValue,
+    discountType: newPromotion.discountType,
+    startDate: newPromotion.startDate.toISOString().split("T")[0],
+    endDate: newPromotion.endDate.toISOString().split("T")[0],
+    status: newPromotion.status,
+    description: newPromotion.description || "",
+    imageUrl: newPromotion.imageUrl || "",
+  };
 
-    if (!company) {
-      return NextResponse.json({ message: 'Company not found for the given slug.' }, { status: 404 });
-    }
-
-    // const companyId = company.id;
-
-    // Basic validation
-    if (!name || !code || discountValue === undefined || !discountType || !startDate || !endDate || !status) {
-      return NextResponse.json({ message: 'Missing required fields for promotion creation.' }, { status: 400 });
-    }
-
-    // Check for unique code
-    const existingPromo = await prisma.promotionDiscount.findUnique({
-      where: { code: code },
-    });
-    if (existingPromo) {
-      return NextResponse.json({ message: 'A promotion with this code already exists.' }, { status: 409 });
-    }
-
-    const newPromotion = await prisma.promotionDiscount.create({
-      data: {
-        name: name,
-        code: code,
-        discountValue: parseFloat(discountValue), // Ensure it's a float
-        discountType: discountType, // Directly use enum value
-        startDate: new Date(startDate),
-        endDate: new Date(endDate),
-        status: status, // Directly use enum value
-        description: description || null,
-        imageUrl: imageUrl || null,
-        company: {
-          connect: { id: companyId },
-        },
-      },
-    });
-
-    // Format the new promotion data for frontend display
-    const formattedNewPromotion = {
-      id: newPromotion.id,
-      name: newPromotion.name,
-      code: newPromotion.code,
-      discount: formatDiscount(newPromotion.discountValue, newPromotion.discountType),
-      discountValue: newPromotion.discountValue,
-      discountType: newPromotion.discountType,
-      startDate: newPromotion.startDate.toISOString().split('T')[0],
-      endDate: newPromotion.endDate.toISOString().split('T')[0],
-      status: newPromotion.status,
-      description: newPromotion.description || '',
-      imageUrl: newPromotion.imageUrl || '',
-    };
-
-    return NextResponse.json(formattedNewPromotion, { status: 201 });
-  } catch (error) {
-    console.error('Error creating promotion:', error);
-    // if (error.code === 'P2002') { // Unique constraint violation
-    //   return NextResponse.json({ message: 'A promotion with this code already exists.', error: error.message }, { status: 409 });
-    // }
-    return NextResponse.json({ message: 'Failed to create promotion', error: "error.message" }, { status: 500 });
-  }
-}
+  return formatResponse(true, formattedNewPromotion, "Promotion created successfully.", 201);
+});

@@ -1,126 +1,134 @@
-// app/api/admin/[adminSlug]/dashboard/summary/route.ts
-import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
 
-export async function GET(
+/**
+ * Core logic to fetch dashboard summary statistics for a given company.
+ */
+async function getDashboardSummary(
   request: Request,
   { params }: { params: { adminSlug: string } }
 ) {
-   const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
-
-
+  // NOTE: Authentication and try/catch are handled by withApiHandler.
   const { adminSlug } = params;
 
-  try {
-    const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
-      select: { id: true }
-    });
+  // 1. Find Company and Get Company ID
+  const company = await prisma.company.findUnique({
+    where: { slug: adminSlug },
+    select: { id: true }
+  });
 
-    if (!company) {
-      return NextResponse.json({ message: "Company not found" }, { status: 404 });
-    }
+  if (!company) {
+    return formatResponse(false, null, "Company not found.", 404);
+  }
 
-    const companyId = company.id;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Start of today
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1); // Start of tomorrow
+  const companyId = company.id;
 
-    // Fetch Dashboard Data
-    const totalPatients = await prisma.user.count({
+  // 2. Define Date Boundaries and User Filters
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Start of today (UTC or local, depending on environment)
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1); // Start of tomorrow
+
+  const rolesFilter = ["CLIENT", "CONSUMER", "STUDENT", "PARENT"];
+
+  // Pre-fetch all relevant patient/client User IDs for query filtering
+  const companyUsers = await prisma.user.findMany({
+    where: {
+      Company: { some: { id: companyId } },
+      role: { in: rolesFilter }
+    },
+    select: { id: true }
+  });
+  const companyUserIds = companyUsers.map(u => u.id);
+
+  // 3. Fetch Metrics in Parallel (Performance Optimization)
+  const [
+    totalPatients,
+    upcomingAppointments,
+    todayOrders,
+    activeDoctors
+  ] = await Promise.all([
+    // Total Patients (Users with specific roles tied to the company)
+    prisma.user.count({
+      where: { id: { in: companyUserIds } },
+    }),
+
+    // Upcoming Appointments (from today onwards, PENDING/CONFIRMED)
+    prisma.appointment.count({
       where: {
-        company: { id: companyId },
-        OR: [
-          { role: "CLIENT" },
-          { role: "CONSUMER" },
-          { role: "STUDENT" },
-          { role: "PARENT" },
-        ],
-      },
-    });
-
-    const upcomingAppointments = await prisma.appointment.count({
-      where: {
-        userId: { in: (await prisma.user.findMany({ where: { companyId: companyId, OR: [{ role: "CLIENT" }, { role: "CONSUMER" }, { role: "STUDENT" }, { role: "PARENT" }] }, select: { id: true } })).map(u => u.id) }, // Filter by users belonging to this company
-        date: {
-          gte: today,
-        },
+        userId: { in: companyUserIds },
+        date: { gte: today },
         status: { in: ["PENDING", "CONFIRMED"] },
       },
-    });
+    }),
 
-    const todayOrders = await prisma.customerOrder.findMany({
+    // Today's Orders (Revenue Calculation)
+    prisma.customerOrder.findMany({
       where: {
         companyId: companyId,
-        createdAt: {
-          gte: today,
-          lt: tomorrow,
-        },
-        status: { not: "CANCELLED" }, // Exclude cancelled orders
+        createdAt: { gte: today, lt: tomorrow },
+        status: { not: "CANCELLED" },
       },
       select: { totalPrice: true },
-    });
-    const todayRevenue = todayOrders.reduce((sum, order) => sum + order.totalPrice, 0);
+    }),
 
-    const activeDoctors = await prisma.educator.count({
-      where: {
-        companyId: companyId,
-        // Assuming 'status' field on Educator or derived from related models
-        // For now, just count all educators in the company
-      },
-    });
+    // Active Doctors/Educators (count all educators linked to the company)
+    prisma.educator.count({
+      where: { companyId: companyId },
+    }),
+  ]);
 
-    // Mock new prescriptions as there's no direct Prescription model
-    // In a real scenario, this would query a Prescription model.
-    const newPrescriptions = Math.floor(Math.random() * 20) + 15; // Mock data
+  const todayRevenue = todayOrders.reduce((sum, order) => sum + order.totalPrice, 0);
 
-    // Fetch Recent Activity (simplified for dashboard)
-    const recentAppointments = await prisma.appointment.findMany({
-      where: {
-        userId: { in: (await prisma.user.findMany({ where: { companyId: companyId, OR: [{ role: "CLIENT" }, { role: "CONSUMER" }, { role: "STUDENT" }, { role: "PARENT" }] }, select: { id: true } })).map(u => u.id) },
-        createdAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }, // Last 7 days
-      },
-      orderBy: { createdAt: 'desc' },
-      take: 3,
-      select: {
-        id: true,
-        date: true,
-        time: true, // Assuming time is part of date or separate field
-        status: true,
-        user: { select: { name: true } },
-      },
-    });
+  // Mock new prescriptions (as no model exists)
+  const newPrescriptions = Math.floor(Math.random() * 20) + 15;
 
-    const recentActivity = recentAppointments.map(appt => ({
-      type: 'appointment_booked',
-      details: `Appointment for ${appt.user?.name || 'N/A'} on ${new Date(appt.date).toLocaleDateString()} at ${appt.time || new Date(appt.date).toLocaleTimeString()}`,
-      timestamp: appt.date.toISOString(),
-    }));
+  // 4. Fetch Recent Activity
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
-    // Add mock recent patient registration
-    recentActivity.push({
-      type: 'patient_registered',
-      details: 'New patient registered: John Doe',
-      timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(), // 2 days ago
-    });
+  const recentAppointments = await prisma.appointment.findMany({
+    where: {
+      userId: { in: companyUserIds },
+      createdAt: { gte: sevenDaysAgo }, // Last 7 days
+    },
+    orderBy: { createdAt: 'desc' },
+    take: 3,
+    select: {
+      id: true,
+      date: true,
+      status: true,
+      user: { select: { name: true } },
+    },
+  });
 
-    return NextResponse.json({
-      totalPatients,
-      upcomingAppointments,
-      todayRevenue,
-      activeDoctors,
-      newPrescriptions,
-      recentActivity,
-    }, { status: 200 });
+  const recentActivity = recentAppointments.map(appt => ({
+    type: 'appointment_booked',
+    details: `Appointment for ${appt.user?.name || 'N/A'} on ${new Date(appt.date).toLocaleDateString()} at ${new Date(appt.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
+    timestamp: appt.date.toISOString(),
+  }));
 
-  } catch (error) {
-    console.error("Error fetching dashboard summary:", error);
-    return NextResponse.json(
-      { message: "Internal server error", error: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
-    );
-  }
+  // Add mock recent patient registration (for demonstration)
+  recentActivity.push({
+    type: 'patient_registered',
+    details: 'New patient registered: John Doe',
+    timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+  });
+
+  // Sort activity to ensure the mock item is in the correct order
+  recentActivity.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+
+  // 5. Success Response
+  return formatResponse(true, {
+    totalPatients,
+    upcomingAppointments,
+    todayRevenue,
+    activeDoctors,
+    newPrescriptions,
+    recentActivity,
+  }, 'Dashboard summary fetched successfully', 200);
 }
+
+// Wrap the core logic with the API handler middleware
+export const GET = withApiHandler(getDashboardSummary);

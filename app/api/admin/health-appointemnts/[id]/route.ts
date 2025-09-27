@@ -1,214 +1,174 @@
-// app/api/admin/[adminSlug]/appointments/[id]/route.ts
-import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
+// Note: verifyAuth and NextResponse are no longer needed here, as they are managed by the middleware utilities.
 
-export async function GET(
-  request: Request,
-  { params }: { params: { adminSlug: string; id: string } }
-) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
-  const { adminSlug, id } = params;
-
-  try {
+/**
+ * Helper function to handle the complex authorization required for all methods:
+ * 1. Find the Company by adminSlug.
+ * 2. Find all User IDs associated with that Company.
+ * 3. Validate that the Appointment ID is linked to one of those User IDs.
+ * @returns The Company object and the list of associated User IDs.
+ */
+async function authorizeAppointmentAccess(adminSlug: string, appointmentId: string) {
+    // 1. Find Company by slug
     const company = await prisma.company.findUnique({
       where: { slug: adminSlug },
       select: { id: true }
     });
 
     if (!company) {
-      return NextResponse.json({ message: "Company not found" }, { status: 404 });
+      // Use 403 Forbidden for authorization failure or 404 Not Found if you want to hide company existence
+      return formatResponse(false, null, "Company not found or access denied.", 403);
     }
 
-    // Get all user IDs associated with this company
+    // 2. Get all user IDs associated with this company
     const companyUserIds = (await prisma.user.findMany({
-      where: {
-        Company: { some: { id: company.id } }
-      },
+      where: { Company: { some: { id: company.id } } },
       select: { id: true }
     })).map(u => u.id);
 
-    const appointment = await prisma.appointment.findUnique({
-      where: {
-        id: id,
-        userId: { in: companyUserIds }, // Ensure appointment belongs to a user of this company
-      },
-      select: {
-        id: true,
-        date: true,
-        status: true,
-        createdAt: true,
-        updatedAt: true,
-        user: { select: { id: true, name: true, email: true, phone: true } },
-        OrderItem: {
-          select: {
-            marketplaceListing: { select: { id: true, name: true, sellingPrice: true } }
-          }
-        }
-        // Include doctor details if you add a doctor relation to Appointment
-      },
+    // 3. Check if the target appointment is associated with the company's users
+    const appointmentCheck = await prisma.appointment.findUnique({
+        where: { id: appointmentId, userId: { in: companyUserIds } },
+        select: { id: true }
     });
 
-    if (!appointment) {
-      return NextResponse.json({ message: "Appointment not found or not associated with this company" }, { status: 404 });
+    if (!appointmentCheck) {
+        return formatResponse(false, null, "Appointment not found or not associated with this company.", 404);
     }
 
-    const formattedAppointment = {
-      ...appointment,
-      patientName: appointment.user?.name || 'N/A',
-      patientEmail: appointment.user?.email || 'N/A',
-      patientPhone: appointment.user?.phone || 'N/A',
-      // Doctor name needs to be linked through the appointment or OrderItem if it's a service
-      doctorName: 'N/A', // Placeholder: Needs proper relation in schema
-      service: appointment.OrderItem[0]?.marketplaceListing?.name || 'N/A Service',
-      serviceId: appointment.OrderItem[0]?.marketplaceListing?.id || null,
-      servicePrice: appointment.OrderItem[0]?.marketplaceListing?.sellingPrice || 0,
-      date: new Date(appointment.date).toISOString().split('T')[0],
-      time: new Date(appointment.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    };
-
-    return NextResponse.json(formattedAppointment, { status: 200 });
-
-  } catch (error) {
-    console.error("Error fetching appointment details:", error);
-    return NextResponse.json(
-      { message: "Internal server error", error: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
-    );
-  }
+    return { company, companyUserIds };
 }
 
-export async function PUT(
+
+/**
+ * GET Handler: Fetches a single appointment with nested details.
+ */
+async function getAppointment(
+  request: Request,
+  { params }: { params: { adminSlug: string; id: string } }
+) {
+  const { adminSlug, id } = params;
+
+  // Perform Authorization Check (Business Logic)
+  const authCheck = await authorizeAppointmentAccess(adminSlug, id);
+  if (authCheck.success === false) return authCheck; // Returns 403/404 error response
+
+  // --- Data Fetching ---
+  const appointment = await prisma.appointment.findUnique({
+    where: { id: id },
+    select: {
+      id: true,
+      date: true,
+      status: true,
+      createdAt: true,
+      updatedAt: true,
+      user: { select: { id: true, name: true, email: true, phone: true } },
+      OrderItem: {
+        select: {
+          marketplaceListing: { select: { id: true, name: true, sellingPrice: true } }
+        }
+      }
+    },
+  });
+
+  if (!appointment) {
+      // Should ideally not happen due to the authCheck, but kept as a safeguard
+      return formatResponse(false, null, "Appointment not found.", 404);
+  }
+
+  // --- Data Formatting ---
+  const formattedAppointment = {
+    ...appointment,
+    patientName: appointment.user?.name || 'N/A',
+    patientEmail: appointment.user?.email || 'N/A',
+    patientPhone: appointment.user?.phone || 'N/A',
+    doctorName: 'N/A', // Placeholder
+    service: appointment.OrderItem[0]?.marketplaceListing?.name || 'N/A Service',
+    serviceId: appointment.OrderItem[0]?.marketplaceListing?.id || null,
+    servicePrice: appointment.OrderItem[0]?.marketplaceListing?.sellingPrice || 0,
+    date: new Date(appointment.date).toISOString().split('T')[0],
+    time: new Date(appointment.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+  };
+
+  // --- Success Response ---
+  return formatResponse(true, formattedAppointment, "Appointment details fetched successfully", 200);
+}
+
+
+/**
+ * PUT Handler: Updates an existing appointment.
+ */
+async function updateAppointment(
   request: Request,
   { params }: { params: { adminSlug: string; id: string } }
 ) {
   const { adminSlug, id } = params;
   const body = await request.json();
+  const { date, time, status } = body; // Simplified body destructuring
 
-  const { date, time, status, serviceId, notes } = body;
+  // Perform Authorization Check (Business Logic)
+  const authCheck = await authorizeAppointmentAccess(adminSlug, id);
+  if (authCheck.success === false) return authCheck; // Returns 403/404 error response
 
-  try {
-    const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
-      select: { id: true }
-    });
+  // --- Update Data Preparation ---
+  let updateData: any = { updatedAt: new Date() };
 
-    if (!company) {
-      return NextResponse.json({ message: "Company not found" }, { status: 404 });
-    }
-
-    // Get all user IDs associated with this company
-    const companyUserIds = (await prisma.user.findMany({
-      where: {
-        Company: { some: { id: company.id } }
-      },
-      select: { id: true }
-    })).map(u => u.id);
-
-    const appointmentToUpdate = await prisma.appointment.findUnique({
-        where: {
-            id: id,
-            userId: { in: companyUserIds },
-        },
-        select: { id: true }
-    });
-
-    if (!appointmentToUpdate) {
-        return NextResponse.json({ message: "Appointment not found or not associated with this company" }, { status: 404 });
-    }
-
-    let updateData: any = { updatedAt: new Date() };
-
-    if (date && time) {
-      updateData.date = new Date(`${date}T${time}`);
-    } else if (date) {
-      updateData.date = new Date(date);
-    }
-    if (status) {
-      updateData.status = status;
-    }
-    // If you have a notes field on Appointment model, add it here
-    // if (notes) { updateData.notes = notes; }
-
-    // If serviceId is updated, you might need to update the OrderItem linked to this appointment
-    // This is more complex and depends on whether an appointment can change its primary service
-    // For simplicity, this example only updates the appointment itself.
-
-    const updatedAppointment = await prisma.appointment.update({
-      where: { id: id },
-      data: updateData,
-    });
-
-    return NextResponse.json(
-      { message: "Appointment updated successfully", appointment: updatedAppointment },
-      { status: 200 }
-    );
-
-  } catch (error) {
-    console.error("Error updating appointment:", error);
-    return NextResponse.json(
-      { message: "Internal server error", error: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
-    );
+  if (date && time) {
+    // Combine date and time into a single Date object
+    updateData.date = new Date(`${date}T${time}`);
+  } else if (date) {
+    updateData.date = new Date(date);
   }
+
+  if (status) {
+    updateData.status = status;
+  }
+  // Add other fields from 'body' to updateData as needed (e.g., notes)
+
+  // --- Update Logic ---
+  const updatedAppointment = await prisma.appointment.update({
+    where: { id: id },
+    data: updateData,
+  });
+
+  // --- Success Response ---
+  return formatResponse(true, { message: "Appointment updated successfully", appointment: updatedAppointment }, "Appointment updated successfully", 200);
 }
 
-export async function DELETE(
+
+/**
+ * DELETE Handler: Deletes an appointment.
+ */
+async function deleteAppointment(
   request: Request,
   { params }: { params: { adminSlug: string; id: string } }
 ) {
   const { adminSlug, id } = params;
 
-  try {
-    const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
-      select: { id: true }
-    });
+  // Perform Authorization Check (Business Logic)
+  const authCheck = await authorizeAppointmentAccess(adminSlug, id);
+  if (authCheck.success === false) return authCheck; // Returns 403/404 error response
 
-    if (!company) {
-      return NextResponse.json({ message: "Company not found" }, { status: 404 });
-    }
+  // --- Delete Logic ---
+  // Delete associated OrderItems first if onDelete is not Cascade
+  await prisma.orderItem.deleteMany({
+    where: { appointmentId: id }
+  });
 
-    // Get all user IDs associated with this company
-    const companyUserIds = (await prisma.user.findMany({
-      where: {
-        Company: { some: { id: company.id } }
-      },
-      select: { id: true }
-    })).map(u => u.id);
+  // Delete the appointment
+  await prisma.appointment.delete({
+    where: { id: id },
+  });
 
-    const appointmentToDelete = await prisma.appointment.findUnique({
-        where: {
-            id: id,
-            userId: { in: companyUserIds },
-        },
-        select: { id: true }
-    });
-
-    if (!appointmentToDelete) {
-        return NextResponse.json({ message: "Appointment not found or not associated with this company" }, { status: 404 });
-    }
-
-    // Delete associated OrderItems first if onDelete is not Cascade
-    await prisma.orderItem.deleteMany({
-        where: { appointmentId: id }
-    });
-
-    await prisma.appointment.delete({
-      where: { id: id },
-    });
-
-    return NextResponse.json({ message: "Appointment deleted successfully" }, { status: 204 });
-
-  } catch (error) {
-    console.error("Error deleting appointment:", error);
-    return NextResponse.json(
-      { message: "Internal server error", error: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
-    );
-  }
+  // --- Success Response ---
+  // Use 200 OK or 204 No Content for successful deletion. Using 200 with a message.
+  return formatResponse(true, { message: "Appointment deleted successfully" }, "Appointment deleted successfully", 200);
 }
+
+
+// Wrap and export all handlers
+export const GET = withApiHandler(getAppointment);
+export const PUT = withApiHandler(updateAppointment);
+export const DELETE = withApiHandler(deleteAppointment);

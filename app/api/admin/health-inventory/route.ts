@@ -1,20 +1,18 @@
-// app/api/admin/[adminSlug]/services/route.ts
-import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
 
-export async function GET(
+/**
+ * GET Handler: Fetches a paginated and filtered list of services (MarketplaceListings).
+ */
+async function getServices(
   request: Request,
   { params }: { params: { adminSlug: string } }
 ) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
   const { adminSlug } = params;
   const { searchParams } = new URL(request.url);
 
+  // --- Parameter Parsing ---
   const searchKeyword = searchParams.get("search");
   const categoryFilter = searchParams.get("category");
   const page = parseInt(searchParams.get("page") || "1");
@@ -24,165 +22,155 @@ export async function GET(
 
   const validSortBy = ["name", "sellingPrice", "createdAt"];
   if (!validSortBy.includes(sortBy)) {
-    return NextResponse.json({ message: "Invalid sortBy parameter" }, { status: 400 });
+    return formatResponse(false, null, "Invalid sortBy parameter", 400);
   }
-
   const validSortOrder = ["asc", "desc"];
   if (!validSortOrder.includes(sortOrder)) {
-    return NextResponse.json({ message: "Invalid sortOrder parameter" }, { status: 400 });
+    return formatResponse(false, null, "Invalid sortOrder parameter", 400);
   }
 
-  try {
-    const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
-      select: { id: true }
-    });
+  // 1. Find Company
+  const company = await prisma.company.findUnique({
+    where: { slug: adminSlug },
+    select: { id: true }
+  });
 
-    if (!company) {
-      return NextResponse.json({ message: "Company not found" }, { status: 404 });
-    }
-
-    const whereClause: any = {
-      companyId: company.id,
-      // Filter for services (assuming services are marketplaceListings with specific characteristics)
-      // You might have a dedicated 'isService' flag or filter by category like 'Medical Services'
-      // For now, we'll assume all marketplaceListings are potential services if not filtered otherwise.
-      status: "ACTIVE", // Only active services
-    };
-
-    if (categoryFilter && categoryFilter !== 'All') {
-      whereClause.category = categoryFilter; // Assuming category is directly on marketplaceListings
-    }
-
-    if (searchKeyword) {
-      whereClause.OR = [
-        { name: { contains: searchKeyword, mode: 'insensitive' } },
-        { description: { contains: searchKeyword, mode: 'insensitive' } },
-      ];
-    }
-
-    const [services, totalItems] = await prisma.$transaction([
-      prisma.marketplaceListings.findMany({
-        where: whereClause,
-        orderBy: { [sortBy]: sortOrder },
-        skip: (page - 1) * limit,
-        take: limit,
-        select: {
-          id: true,
-          name: true,
-          description: true,
-          sellingPrice: true,
-          duration: true, // Assuming 'duration' field exists for services
-          createdAt: true,
-          status: true,
-          category: true,
-        },
-      }),
-      prisma.marketplaceListings.count({ where: whereClause }),
-    ]);
-
-    const formattedServices = services.map(service => ({
-      id: service.id,
-      name: service.name,
-      description: service.description,
-      price: service.sellingPrice,
-      duration: service.duration || 'N/A', // Assuming duration is a string field
-      status: service.status,
-      category: service.category || 'Uncategorized',
-    }));
-
-    return NextResponse.json({
-      services: formattedServices,
-      totalItems,
-      totalPages: Math.ceil(totalItems / limit),
-      currentPage: page,
-    }, { status: 200 });
-
-  } catch (error) {
-    console.error("Error fetching services:", error);
-    return NextResponse.json(
-      { message: "Internal server error", error: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
-    );
+  if (!company) {
+    return formatResponse(false, null, "Company not found", 404);
   }
+
+  // 2. Build Where Clause
+  const whereClause: any = {
+    companyId: company.id,
+    status: "ACTIVE", // Only fetch active services
+  };
+
+  if (categoryFilter && categoryFilter !== 'All') {
+    whereClause.category = categoryFilter;
+  }
+
+  if (searchKeyword) {
+    whereClause.OR = [
+      { name: { contains: searchKeyword, mode: 'insensitive' } },
+      { description: { contains: searchKeyword, mode: 'insensitive' } },
+    ];
+  }
+
+  // 3. Fetch Data in Transaction
+  const [services, totalItems] = await prisma.$transaction([
+    prisma.marketplaceListings.findMany({
+      where: whereClause,
+      orderBy: { [sortBy]: sortOrder },
+      skip: (page - 1) * limit,
+      take: limit,
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        sellingPrice: true,
+        duration: true,
+        createdAt: true,
+        status: true,
+        category: true,
+      },
+    }),
+    prisma.marketplaceListings.count({ where: whereClause }),
+  ]);
+
+  // 4. Format Response Data
+  const formattedServices = services.map(service => ({
+    id: service.id,
+    name: service.name,
+    description: service.description,
+    price: service.sellingPrice,
+    duration: service.duration || 'N/A',
+    status: service.status,
+    category: service.category || 'Uncategorized',
+  }));
+
+  return formatResponse(true, {
+    services: formattedServices,
+    totalItems,
+    totalPages: Math.ceil(totalItems / limit),
+    currentPage: page,
+  }, "Services list fetched successfully", 200);
 }
 
-export async function POST(
+/**
+ * POST Handler: Creates a new service (MarketplaceListing).
+ */
+async function createService(
   request: Request,
   { params }: { params: { adminSlug: string } }
 ) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
   const { adminSlug } = params;
   const body = await request.json();
 
   const { name, description, price, duration, categoryId, status = "ACTIVE", images = [] } = body;
 
+  // --- Input Validation ---
   if (!name || !description || price === undefined || !categoryId) {
-    return NextResponse.json({ message: "Missing required fields: name, description, price, categoryId" }, { status: 400 });
+    return formatResponse(
+      false,
+      null,
+      "Missing required fields: name, description, price, categoryId",
+      400
+    );
   }
 
-  try {
-    const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
-      select: { id: true }
-    });
+  // 1. Find Company
+  const company = await prisma.company.findUnique({
+    where: { slug: adminSlug },
+    select: { id: true }
+  });
 
-    if (!company) {
-      return NextResponse.json({ message: "Company not found" }, { status: 404 });
-    }
+  if (!company) {
+    return formatResponse(false, null, "Company not found", 404);
+  }
 
-    // Verify ProductCategory exists and belongs to the company
-    const productCategory = await prisma.productCategory.findUnique({
-      where: { id: categoryId, companyId: company.id },
-      select: { id: true, name: true }
-    });
-    if (!productCategory) {
-      return NextResponse.json({ message: "Service category not found or not associated with this company" }, { status: 404 });
-    }
+  // 2. Verify ProductCategory Existence and Ownership
+  const productCategory = await prisma.productCategory.findUnique({
+    where: { id: categoryId, companyId: company.id },
+    select: { id: true, name: true }
+  });
+  if (!productCategory) {
+    return formatResponse(false, null, "Service category not found or not associated with this company", 404);
+  }
 
-    // Create a new marketplaceListing for the service
-    const newService = await prisma.marketplaceListings.create({
+  // 3. Create Service and Update Category Count in a Transaction
+  const [newService] = await prisma.$transaction([
+    // Create a new marketplaceListing
+    prisma.marketplaceListings.create({
       data: {
         companyId: company.id,
         name,
         description,
         sellingPrice: parseFloat(price),
-        buyingPrice: parseFloat(price), // Assuming buying price is same as selling for simplicity
+        buyingPrice: parseFloat(price),
         quantity: 1, // Services usually have a quantity of 1 per booking
-        isAvailable: true, // New services are available by default
+        isAvailable: true,
         productCategoryId: productCategory.id,
-        category: productCategory.name, // Denormalize category name
+        category: productCategory.name,
         status,
-        duration, // Assuming 'duration' field exists on marketplaceListings
-        images: images, // Assuming images is an array of JSON objects or strings
+        duration,
+        images: images,
         finalPrice: parseFloat(price),
-        // Default values for other required marketplaceListings fields
         subCategory: {},
         tags: [],
         sellerType: "COMPANY",
       },
-    });
+    }),
 
     // Update productCount for the category
-    await prisma.productCategory.update({
+    prisma.productCategory.update({
       where: { id: productCategory.id },
       data: { productCount: { increment: 1 } },
-    });
+    }),
+  ]);
 
-    return NextResponse.json(
-      { message: "Service created successfully", service: newService },
-      { status: 201 }
-    );
-
-  } catch (error) {
-    console.error("Error creating service:", error);
-    return NextResponse.json(
-      { message: "Internal server error", error: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
-    );
-  }
+  return formatResponse(true, newService, "Service created successfully", 201);
 }
+
+// Wrap the core logic with the API handler middleware
+export const GET = withApiHandler(getServices);
+export const POST = withApiHandler(createService);

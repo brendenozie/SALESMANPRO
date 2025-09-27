@@ -1,61 +1,45 @@
-import { NextRequest, NextResponse } from "next/server";
+// app/api/product-categories/[id]/route.ts
 import prisma from "@/server/db/prismadb";
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
 
-// GET a single category by ID
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
-  try {
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
-    const category = await prisma.productCategory.findUnique({
-      where: { id: params.id }
-    });
+/**
+ * GET: Fetch a single category by ID
+ */
+export const GET = withApiHandler(async (_req, { params }: { params: { id: string } }) => {
+  const category = await prisma.productCategory.findUnique({
+    where: { id: params.id },
+  });
 
-    if (!category) {
-      return NextResponse.json({ message: "Category not found" }, { status: 404 });
-    }
-
-    return NextResponse.json(category);
-  } catch (error) {
-    return NextResponse.json({ message: "Error fetching category", error }, { status: 500 });
+  if (!category) {
+    return formatResponse(false, null, "Category not found", 404);
   }
-}
 
-// PUT: Update category by ID
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
-  try {
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
-    const data = await request.json();
-    const { id, ...rest }  = data;
-    const category = await prisma.productCategory.update({
-      where: { id: params.id },
-      data:rest,
-    });
+  return formatResponse(true, category, "Category fetched successfully");
+});
 
-    return NextResponse.json(category);
-  } catch (error) {
-    return NextResponse.json({ message: "Error updating category", error }, { status: 500 });
-  }
-}
+/**
+ * PUT: Update category by ID
+ */
+export const PUT = withApiHandler(async (req, { params }: { params: { id: string } }) => {
+  const data = await req.json();
+  const { id, ...rest } = data;
 
-// DELETE: Remove category by ID
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
-  try {
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
-    const deleted = await prisma.productCategory.delete({
-      where: { id: params.id },
-    });
+  const category = await prisma.productCategory.update({
+    where: { id: params.id },
+    data: rest,
+  });
 
-    return NextResponse.json({ message: "Category deleted", deleted });
-  } catch (error) {
-    return NextResponse.json({ message: "Error deleting category", error }, { status: 500 });
-  }
-}
+  return formatResponse(true, category, "Category updated successfully");
+});
+
+/**
+ * DELETE: Remove category by ID
+ */
+export const DELETE = withApiHandler(async (_req, { params }: { params: { id: string } }) => {
+  const deleted = await prisma.productCategory.delete({
+    where: { id: params.id },
+  });
+
+  return formatResponse(true, deleted, "Category deleted successfully");
+});

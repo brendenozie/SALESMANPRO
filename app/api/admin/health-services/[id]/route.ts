@@ -1,9 +1,12 @@
-// app/api/admin/[adminSlug]/services/[id]/route.ts
-import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
+
+// Type definition for route parameters
+type ServiceParams = { params: { adminSlug: string; id: string } };
 
 // Helper function to format service data for the frontend
+// NOTE: Assuming the 'service' object comes from prisma.service.findUnique
 async function formatServiceData(service: any) {
   return {
     id: service.id,
@@ -16,38 +19,33 @@ async function formatServiceData(service: any) {
   };
 }
 
-// app/api/admin/services/[id]/route.ts
-// This file handles GET, PUT, DELETE for a specific service by ID
-
-export async function GET(request: Request, { params }: { params: { id: string } }) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
+/**
+ * GET Handler: Fetches a single service by ID.
+ */
+async function handleGetService(request: Request, { params }: ServiceParams) {
   const { id } = params;
 
-  try {
-    const service = await prisma.service.findUnique({
-      where: { id },
-    });
+  // We can skip the try/catch and 401 check, as withApiHandler handles it.
 
-    if (!service) {
-      return NextResponse.json({ error: "Service not found" }, { status: 404 });
-    }
+  const service = await prisma.service.findUnique({
+    where: { id },
+  });
 
-    const formattedService = await formatServiceData(service);
-    return NextResponse.json(formattedService);
-  } catch (err: any) {
-    console.error(`GET /api/admin/services/${id} error:`, err);
-    return NextResponse.json({ error: err.message || "Internal server error" }, { status: 500 });
+  if (!service) {
+    // Explicitly return an error response for known business logic failures
+    return formatResponse(false, null, "Service not found", 404);
   }
+
+  const formattedService = await formatServiceData(service);
+  
+  // Return the data; withApiHandler will wrap it in success: true and status 200
+  return formattedService;
 }
 
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
+/**
+ * PUT Handler: Updates an existing service by ID.
+ */
+async function handleUpdateService(request: Request, { params }: ServiceParams) {
   const { id } = params;
   const body = await request.json();
   const { name, description, price, duration, status } = body;
@@ -58,40 +56,40 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       data: {
         name: name,
         description: description,
-        price: price ? parseFloat(price) : undefined, // Ensure price is a float if provided
+        price: price ? parseFloat(price) : undefined,
         duration: duration,
         status: status,
       },
     });
 
     const formattedUpdatedService = await formatServiceData(updatedService);
+    return formattedUpdatedService;
 
-    return NextResponse.json(formattedUpdatedService);
   } catch (err: any) {
-    console.error(`PUT /api/admin/services/${id} error:`, err);
-    // Handle unique constraint violation for companyId, name
+    // Handle unique constraint violation specifically (Prisma code P2002)
     if (err.code === 'P2002' && err.meta?.target?.includes('name')) {
-      return NextResponse.json({ error: "A service with this name already exists for this company." }, { status: 409 });
+      return formatResponse(false, null, "A service with this name already exists for this company.", 409);
     }
-    return NextResponse.json({ error: err.message || "Internal server error" }, { status: 500 });
+    // Re-throw generic errors to be caught by withApiHandler's centralized catch block
+    throw err;
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
+/**
+ * DELETE Handler: Deletes a service by ID.
+ */
+async function handleDeleteService(request: Request, { params }: ServiceParams) {
   const { id } = params;
 
-  try {
-    await prisma.service.delete({
-      where: { id },
-    });
+  await prisma.service.delete({
+    where: { id },
+  });
 
-    return NextResponse.json({ message: "Service deleted successfully" }, { status: 200 });
-  } catch (err: any) {
-    console.error(`DELETE /api/admin/services/${id} error:`, err);
-    return NextResponse.json({ error: err.message || "Internal server error" }, { status: 500 });
-  }
+  // Return a success message with 200/204 status
+  return formatResponse(true, null, "Service deleted successfully", 200);
 }
+
+// Wrap the core handlers with the middleware
+export const GET = withApiHandler(handleGetService);
+export const PUT = withApiHandler(handleUpdateService);
+export const DELETE = withApiHandler(handleDeleteService);

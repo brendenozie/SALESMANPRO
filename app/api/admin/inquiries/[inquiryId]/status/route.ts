@@ -1,30 +1,31 @@
-import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
+import { InquiryStatus } from "@prisma/client"; // Assuming you have InquiryStatus enum
 
-// PATCH (Update) an Inquiry's status
-export async function PATCH(
-  request: Request,
-  { params }: { params: { inquiryId: string } }
-) {
+// Define the expected structure for route parameters
+type PatchParams = { params: { inquiryId: string } };
+
+/**
+ * PATCH Handler: Updates an Inquiry's status.
+ */
+async function handlePatchInquiryStatus(request: Request, { params }: PatchParams) {
+  const { inquiryId } = params;
+  const body = await request.json();
+  const { status } = body;
+
+  if (!status) {
+    return formatResponse(false, null, 'Status is required in the request body.', 400);
+  }
+
+  // NOTE: Using the Prisma enum type for validation (safer than hardcoded array)
+  // Assuming InquiryStatus is imported and available from @prisma/client
+  const validStatuses: InquiryStatus[] = ['New', 'Read', 'Responded', 'Archived'] as InquiryStatus[];
+  if (!validStatuses.includes(status)) {
+    return formatResponse(false, null, `Invalid status. Must be one of: ${validStatuses.join(', ')}`, 400);
+  }
+
   try {
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
-    const { inquiryId } = params;
-    const body = await request.json();
-    const { status } = body;
-
-    if (!status) {
-      return NextResponse.json({ message: 'Status is required in the request body.' }, { status: 400 });
-    }
-
-    const validStatuses = ['New', 'Read', 'Responded', 'Archived'];
-    if (!validStatuses.includes(status)) {
-      return NextResponse.json({ message: `Invalid status. Must be one of: ${validStatuses.join(', ')}` }, { status: 400 });
-    }
-
     const updatedInquiry = await prisma.inquiry.update({
       where: {
         id: inquiryId,
@@ -34,15 +35,17 @@ export async function PATCH(
       },
     });
 
-    return NextResponse.json(updatedInquiry, { status: 200 });
+    // withApiHandler will wrap this result in formatResponse(true, ...) with status 200
+    return updatedInquiry;
   } catch (error: any) {
-    console.error(`Error updating inquiry status for ID ${params.inquiryId}:`, error);
-    if (error.code === 'P2025') { // Prisma error for record not found
-      return NextResponse.json({ message: 'Inquiry not found.' }, { status: 404 });
+    // Handle Prisma error for record not found
+    if (error.code === 'P2025') {
+      return formatResponse(false, null, 'Inquiry not found.', 404);
     }
-    return NextResponse.json(
-      { message: 'Failed to update inquiry status', error: error.message },
-      { status: 500 }
-    );
+    // Re-throw generic errors to be caught by withApiHandler's centralized catch block
+    throw error;
   }
 }
+
+// Wrap the core logic with the API handler middleware
+export const PATCH = withApiHandler(handlePatchInquiryStatus);

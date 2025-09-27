@@ -1,47 +1,46 @@
-// app/api/product-categories/route.ts
-import { NextResponse } from 'next/server';
-import prisma from '@/server/db/prismadb'; // Adjust path if needed
-import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+import { NextResponse, NextRequest } from 'next/server';
+import prisma from '@/server/db/prismadb';
+import { withApiHandler } from '@/lib/hooks/withApiHandler';
+import { formatResponse } from '@/lib/formatResponse';
+import { Prisma } from '@prisma/client';
 
-// GET /api/product-categories
-// Fetches all product categories, optionally filtered by companyId
-export async function GET(request: Request) {
-  try {
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
-    const { searchParams } = new URL(request.url);
-    const companyId = searchParams.get('companyId');
+// Define the expected structure for route parameters (empty for a collection route)
+type RouteParams = { params: {} };
 
-    const categories = await prisma.productCategory.findMany({
-      where: companyId ? { companyId } : {},
-      orderBy: { sortOrder: 'asc' },
-    });
 
-    return NextResponse.json(categories, { status: 200 });
-  } catch (error) {
-    console.error('Error fetching product categories:', error);
-    return NextResponse.json({ message: 'Failed to fetch product categories', error: (error as Error).message }, { status: 500 });
-  }
+// --- GET Handler Core Logic ---
+/**
+ * Fetches all product categories, optionally filtered by companyId.
+ */
+async function handleGetCategories(request: NextRequest, { params }: RouteParams) {
+  const { searchParams } = new URL(request.url);
+  const companyId = searchParams.get('companyId');
+
+  const categories = await prisma.productCategory.findMany({
+    // Only filter by companyId if it is provided
+    where: companyId ? { companyId } : {},
+    orderBy: { sortOrder: 'asc' },
+  });
+
+  // withApiHandler handles wrapping this result in a success formatResponse with status 200
+  return categories;
 }
 
-// POST /api/product-categories
-// Creates a new product category
-export async function POST(request: Request) {
+// --- POST Handler Core Logic ---
+/**
+ * Creates a new product category.
+ */
+async function handlePostCategory(request: Request, { params }: RouteParams) {
+  const body = await request.json();
+  const { name, slug, description, image, sortOrder, visible, companyId } = body;
+
+  // Basic validation check
+  if (!name || !slug || !companyId) {
+    // Manually returning a 400 error using formatResponse before Prisma operation starts
+    return formatResponse(false, null, 'Missing required fields: name, slug, companyId', 400);
+  }
+
   try {
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
-    const body = await request.json();
-    const { name, slug, description, image, sortOrder, visible, companyId } = body;
-
-    // Basic validation
-    if (!name || !slug || !companyId) {
-      return NextResponse.json({ message: 'Missing required fields: name, slug, companyId' }, { status: 400 });
-    }
-
     const newCategory = await prisma.productCategory.create({
       data: {
         name,
@@ -51,17 +50,18 @@ export async function POST(request: Request) {
         sortOrder: parseInt(sortOrder) || 0,
         visible: typeof visible === 'boolean' ? visible : true,
         company: { connect: { id: companyId } },
-        // Add other required fields with default or provided values
-        longDescription: '', // Default
+
+        // Default required fields based on inferred schema
+        longDescription: '',
         seoTitle: name,
         seoDescription: description || name,
         metaKeywords: [],
-        createdBy: 'admin', // Placeholder, ideally link to actual user
-        updatedBy: 'admin', // Placeholder
-        status: 'ACTIVE', // Default status
+        createdBy: 'admin',
+        updatedBy: 'admin',
+        status: 'ACTIVE',
         allBrands: [],
         tags: [],
-        subcategories: {}, // Empty JSON object
+        subcategories: {},
         imageAlt: name,
         productCount: 0,
         isFeatured: false,
@@ -71,13 +71,20 @@ export async function POST(request: Request) {
       },
     });
 
-    return NextResponse.json(newCategory, { status: 201 });
+    // Explicitly return success with status 201
+    return formatResponse(true, newCategory, null, 201);
   } catch (error) {
-    console.error('Error creating product category:', error);
-    // Handle unique constraint violation for slug
-    if ((error as any).code === 'P2002' && (error as any).meta?.target.includes('slug')) {
-      return NextResponse.json({ message: 'A category with this slug already exists.' }, { status: 409 });
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      // Handle unique constraint violation for slug (P2002)
+      if (error.code === 'P2002' && error.meta?.target) {
+        return formatResponse(false, null, 'A category with this slug already exists.', 409);
+      }
     }
-    return NextResponse.json({ message: 'Failed to create product category', error: (error as Error).message }, { status: 500 });
+    // Re-throw other errors to be handled by withApiHandler
+    throw error;
   }
 }
+
+// Wrap the core logic with the API handler middleware
+export const GET = withApiHandler(handleGetCategories);
+export const POST = withApiHandler(handlePostCategory);

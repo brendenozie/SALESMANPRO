@@ -1,167 +1,118 @@
-import { NextResponse } from 'next/server';
-import prisma from '@/server/db/prismadb';
-import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+// app/api/projects/[id]/route.ts
+import { NextRequest } from "next/server";
+import prisma from "@/server/db/prismadb";
+import { verifyAuth } from "@/lib/verifyAuth";
+import { formatResponse } from "@/lib/formatResponse";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-// Define the Project type based on your Prisma schema for better type safety
-// This should ideally be imported from a shared types file if available
-export type ProjectStatus = 'PLANNING' | 'ONGOING' | 'COMPLETED' | 'ARCHIVED' | 'CANCELLED';
+// Define the Project type based on your Prisma schema
+export type ProjectStatus = "PLANNING" | "ONGOING" | "COMPLETED" | "ARCHIVED" | "CANCELLED";
 
 interface ProjectUpdateData {
   name?: string;
   description?: string | null;
-  startDate?: string | null; // ISO string
-  endDate?: string | null;   // ISO string
+  startDate?: string | null;
+  endDate?: string | null;
   status?: ProjectStatus;
   budget?: number | null;
   companyId?: string | null;
 }
 
 /**
- * Handles GET requests to retrieve a single project by ID.
- * @param {Request} request The incoming Next.js request object.
- * @param {Object} context The context object containing dynamic route parameters.
- * @param {Object} context.params The route parameters.
- * @param {string} context.params.id The ID of the project.
- * @returns {NextResponse} The response containing the project or an error.
+ * GET /api/projects/:id - Retrieve a single project by ID
  */
-export async function GET(
-  request: Request,
-  context: { params: { id: string } }
-) {
-  try {
-    
-       const auth = await verifyAuth(request);
-      if (!auth.success) return formatResponse(false, null, auth.error, 401);
-    
-    
-    const { id } = context.params; // Get the dynamic 'id' from the URL
+export const GET = withApiHandler(async (request: NextRequest, { params }: { params: { id: string } }) => {
+  const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
-    if (!id) {
-      return NextResponse.json({ message: 'Project ID is required.' }, { status: 400 });
-    }
+  const { id } = params;
+  if (!id) return formatResponse(false, null, "Project ID is required.", 400);
 
-    const project = await prisma.project.findUnique({
-      where: { id },
-      include: {
-        tasks: true,
-        events: true,
-        donations: true,
-        members: {
-          include: {
-            user: true,
-          },
+  const project = await prisma.project.findUnique({
+    where: { id },
+    include: {
+      tasks: true,
+      events: true,
+      donations: true,
+      members: {
+        include: {
+          user: true,
         },
       },
-    });
+    },
+  });
 
-    if (!project) {
-      return NextResponse.json({ message: 'Project not found' }, { status: 404 });
-    }
+  if (!project) return formatResponse(false, null, "Project not found", 404);
 
-    return NextResponse.json(project, { status: 200 });
-  } catch (error) {
-    console.error('Error fetching project:', error);
-    return NextResponse.json({ message: 'Internal server error', error: (error as Error).message }, { status: 500 });
-  }
-}
+  return formatResponse(true, project, "Project fetched successfully", 200);
+});
 
 /**
- * Handles PUT requests to update an existing project by ID.
- * @param {Request} request The incoming Next.js request object.
- * @param {Object} context The context object containing dynamic route parameters.
- * @param {Object} context.params The route parameters.
- * @param {string} context.params.id The ID of the project to update.
- * @returns {NextResponse} The response containing the updated project or an error.
+ * PUT /api/projects/:id - Update a project by ID
  */
-export async function PUT(
-  request: Request,
-  context: { params: { id: string } }
-) {
+export const PUT = withApiHandler(async (request: NextRequest, { params }: { params: { id: string } }) => {
+  const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+  const { id } = params;
+  if (!id) return formatResponse(false, null, "Project ID is required for update.", 400);
+
+  const { name, description, startDate, endDate, status, budget, companyId }: ProjectUpdateData = await request.json();
+
+  const dataToUpdate: Record<string, any> = {};
+  if (name !== undefined) dataToUpdate.name = name;
+  if (description !== undefined) dataToUpdate.description = description;
+  if (startDate !== undefined) dataToUpdate.startDate = startDate ? new Date(startDate) : null;
+  if (endDate !== undefined) dataToUpdate.endDate = endDate ? new Date(endDate) : null;
+  if (status !== undefined) dataToUpdate.status = status;
+  if (budget !== undefined) dataToUpdate.budget = budget;
+  if (companyId !== undefined) dataToUpdate.companyId = companyId;
+
   try {
-    
-       const auth = await verifyAuth(request);
-      if (!auth.success) return formatResponse(false, null, auth.error, 401);
-    
-    
-    const { id } = context.params; // Get the dynamic 'id'
-    const { name, description, startDate, endDate, status, budget, companyId }: ProjectUpdateData = await request.json();
-
-    if (!id) {
-      return NextResponse.json({ message: 'Project ID is required for update.' }, { status: 400 });
-    }
-
-    // Prepare data for update, filtering out undefined values
-    const dataToUpdate: Record<string, any> = {};
-    if (name !== undefined) dataToUpdate.name = name;
-    if (description !== undefined) dataToUpdate.description = description;
-    if (startDate !== undefined) dataToUpdate.startDate = startDate ? new Date(startDate) : null;
-    if (endDate !== undefined) dataToUpdate.endDate = endDate ? new Date(endDate) : null;
-    if (status !== undefined) dataToUpdate.status = status;
-    if (budget !== undefined) dataToUpdate.budget = budget;
-    if (companyId !== undefined) dataToUpdate.companyId = companyId;
-
-    // Prisma automatically updates `updatedAt` if your schema uses `@updatedAt` on a DateTime field.
-    // If not, you might need to add `updatedAt: new Date()` explicitly here.
-    // dataToUpdate.updatedAt = new Date(); // Uncomment if you manage updatedAt manually
-
     const updatedProject = await prisma.project.update({
       where: { id },
       data: dataToUpdate,
     });
 
-    return NextResponse.json(updatedProject, { status: 200 });
+    return formatResponse(true, updatedProject, "Project updated successfully", 200);
   } catch (error: any) {
-    console.error('Error updating project:', error);
-    if (error.code === 'P2025') { // Prisma error code for record not found
-      return NextResponse.json({ message: 'Project not found', error: error.message }, { status: 404 });
+    if (error.code === "P2025") {
+      return formatResponse(false, null, "Project not found", 404);
     }
-    // Handle other potential Prisma errors like P2002 (Unique constraint violation)
-    if (error.code === 'P2002') {
-        return NextResponse.json({ message: 'A project with similar details already exists.', error: error.message }, { status: 409});
+    if (error.code === "P2002") {
+      return formatResponse(false, null, "A project with similar details already exists.", 409);
     }
-    return NextResponse.json({ message: 'Internal server error', error: error.message }, { status: 500 });
+    throw error; // handled by withApiHandler
   }
-}
+});
 
 /**
- * Handles DELETE requests to delete a project by ID.
- * @param {Request} request The incoming Next.js request object.
- * @param {Object} context The context object containing dynamic route parameters.
- * @param {Object} context.params The route parameters.
- * @param {string} context.params.id The ID of the project to delete.
- * @returns {NextResponse} The response indicating success or an error.
+ * DELETE /api/projects/:id - Delete a project by ID
  */
-export async function DELETE(
-  request: Request,
-  context: { params: { id: string } }
-) {
-  try {
-   const auth = await verifyAuth(request);
+export const DELETE = withApiHandler(async (request: NextRequest, { params }: { params: { id: string } }) => {
+  const auth = await verifyAuth(request);
   if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
+  const { id } = params;
+  if (!id) return formatResponse(false, null, "Project ID is required for deletion.", 400);
 
-    const { id } = context.params; // Get the dynamic 'id'
-
-    if (!id) {
-      return NextResponse.json({ message: 'Project ID is required for deletion.' }, { status: 400 });
-    }
-
+  try {
     await prisma.project.delete({
       where: { id },
     });
 
-    // 204 No Content response is standard for successful DELETE operations
-    return new NextResponse(null, { status: 204 });
+    return formatResponse(true, null, "Project deleted successfully", 200);
   } catch (error: any) {
-    console.error('Error deleting project:', error);
-    if (error.code === 'P2025') { // Prisma error code for record not found
-      return NextResponse.json({ message: 'Project not found', error: error.message }, { status: 404 });
+    if (error.code === "P2025") {
+      return formatResponse(false, null, "Project not found", 404);
     }
-    return NextResponse.json({ message: 'Internal server error', error: error.message }, { status: 500 });
+    throw error;
   }
-}
+});
 
-// Explicitly disallow other HTTP methods if they are not intended for this route
+/**
+ * Disallow unsupported methods
+ */
 export async function POST() {
-  return NextResponse.json({ message: 'Method Not Allowed' }, { status: 405 });
+  return formatResponse(false, null, "Method Not Allowed", 405);
 }

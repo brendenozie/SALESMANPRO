@@ -1,204 +1,173 @@
-// app/api/admin/[adminSlug]/inventory/items/[id]/route.ts
-import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
 
-export async function GET(
+/**
+ * Common validation step to verify company existence and item ownership.
+ */
+async function validateInventoryAccess(adminSlug: string, itemId: string) {
+  const company = await prisma.company.findUnique({
+    where: { slug: adminSlug },
+    select: { id: true }
+  });
+
+  if (!company) {
+    return { error: "Company not found", status: 404, companyId: null };
+  }
+  const companyId = company.id;
+
+  const item = await prisma.inventoryItem.findUnique({
+    where: { id: itemId, companyId: companyId },
+    select: { id: true, quantity: true } // Select minimal fields needed for validation/logging
+  });
+
+  if (!item) {
+    return { error: "Inventory item not found or not associated with this company", status: 404, companyId, item: null };
+  }
+
+  return { error: null, status: 200, companyId, item };
+}
+
+/**
+ * GET Handler: Fetches detailed information about a single inventory item.
+ */
+async function getInventoryItem(
   request: Request,
   { params }: { params: { adminSlug: string; id: string } }
 ) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
   const { adminSlug, id } = params;
+  const validation = await validateInventoryAccess(adminSlug, id);
 
-  try {
-    const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
-      select: { id: true }
-    });
+  if (validation.error) {
+    // If we couldn't find the company or the item, return the structured error.
+    return formatResponse(false, null, validation.error, validation.status);
+  }
+  // At this point, the item and company are validated.
 
-    if (!company) {
-      return NextResponse.json({ message: "Company not found" }, { status: 404 });
-    }
-
-    const inventoryItem = await prisma.inventoryItem.findUnique({
-      where: {
-        id: id,
-        companyId: company.id, // Ensure item belongs to this company
-      },
-      select: {
-        id: true,
-        quantity: true,
-        reorderThreshold: true,
-        createdAt: true,
-        updatedAt: true,
-        product: {
-          select: {
-            id: true,
-            name: true,
-            description: true,
-            productCategory: { select: { name: true } }
-          }
-        },
-        inventoryLogs: {
-          orderBy: { createdAt: 'desc' },
-          take: 5,
+  const inventoryItem = await prisma.inventoryItem.findUnique({
+    where: { id: id },
+    select: {
+      id: true,
+      quantity: true,
+      reorderThreshold: true,
+      createdAt: true,
+      updatedAt: true,
+      product: {
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          productCategory: { select: { name: true } }
         }
       },
-    });
+      inventoryLogs: {
+        orderBy: { createdAt: 'desc' },
+        take: 5, // Fetch recent logs
+      }
+    },
+  });
 
-    if (!inventoryItem) {
-      return NextResponse.json({ message: "Inventory item not found or not associated with this company" }, { status: 404 });
-    }
-
-    const formattedItem = {
-      ...inventoryItem,
-      name: inventoryItem.product?.name || 'N/A',
-      category: inventoryItem.product?.productCategory?.name || 'Uncategorized',
-      minStock: inventoryItem.reorderThreshold || 0,
-      lastUpdated: new Date(inventoryItem.updatedAt || '').toISOString().split('T')[0],
-      logs: inventoryItem.inventoryLogs.map(log => ({
-        ...log,
-        createdAt: new Date(log.createdAt || '').toLocaleString(),
-      })),
-    };
-
-    return NextResponse.json(formattedItem, { status: 200 });
-
-  } catch (error) {
-    console.error("Error fetching inventory item details:", error);
-    return NextResponse.json(
-      { message: "Internal server error", error: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
-    );
+  // Re-check for null if the select fields somehow caused an issue, though unlikely after validation
+  if (!inventoryItem) {
+     return formatResponse(false, null, "Inventory item not found.", 404);
   }
+
+  const formattedItem = {
+    ...inventoryItem,
+    name: inventoryItem.product?.name || 'N/A',
+    category: inventoryItem.product?.productCategory?.name || 'Uncategorized',
+    minStock: inventoryItem.reorderThreshold || 0,
+    lastUpdated: new Date(inventoryItem.updatedAt || '').toISOString().split('T')[0],
+    logs: inventoryItem.inventoryLogs.map(log => ({
+      ...log,
+      createdAt: new Date(log.createdAt || '').toLocaleString(),
+    })),
+  };
+
+  return formatResponse(true, formattedItem, "Inventory item details fetched successfully", 200);
 }
 
-export async function PUT(
+/**
+ * PUT Handler: Updates an inventory item's quantity or reorder threshold.
+ */
+async function updateInventoryItem(
   request: Request,
   { params }: { params: { adminSlug: string; id: string } }
 ) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
   const { adminSlug, id } = params;
   const body = await request.json();
+  const { quantity, reorderThreshold, userId } = body; // userId of the admin for logging
 
-  const { quantity, reorderThreshold } = body; // Allow updating quantity directly or reorder threshold
-
-  try {
-    const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
-      select: { id: true }
-    });
-
-    if (!company) {
-      return NextResponse.json({ message: "Company not found" }, { status: 404 });
-    }
-
-    const itemToUpdate = await prisma.inventoryItem.findUnique({
-        where: {
-            id: id,
-            companyId: company.id,
-        },
-        select: { id: true, quantity: true } // Select current quantity for logging delta
-    });
-
-    if (!itemToUpdate) {
-        return NextResponse.json({ message: "Inventory item not found or not associated with this company" }, { status: 404 });
-    }
-
-    let updateData: any = { updatedAt: new Date() };
-
-    if (quantity !== undefined) updateData.quantity = parseInt(quantity);
-    if (reorderThreshold !== undefined) updateData.reorderThreshold = parseInt(reorderThreshold);
-
-    const updatedItem = await prisma.inventoryItem.update({
-      where: { id: id },
-      data: updateData,
-    });
-
-    // Optionally create an InventoryLog for manual adjustments
-    if (quantity !== undefined && parseInt(quantity) !== itemToUpdate.quantity) {
-        await prisma.inventoryLog.create({
-            data: {
-                inventoryId: updatedItem.id,
-                action: "MANUAL_ADJUSTMENT",
-                quantity: parseInt(quantity) - itemToUpdate.quantity, // Log the delta
-                // Add userId if you have an admin user context
-            }
-        });
-    }
-
-
-    return NextResponse.json(
-      { message: "Inventory item updated successfully", item: updatedItem },
-      { status: 200 }
-    );
-
-  } catch (error) {
-    console.error("Error updating inventory item:", error);
-    return NextResponse.json(
-      { message: "Internal server error", error: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
-    );
+  const validation = await validateInventoryAccess(adminSlug, id);
+  if (validation.error) {
+    return formatResponse(false, null, validation.error, validation.status);
   }
+
+  const itemToUpdate = validation.item; // Contains { id: true, quantity: currentQuantity }
+
+  let updateData: any = { updatedAt: new Date() };
+
+  if (quantity !== undefined) updateData.quantity = parseInt(quantity);
+  if (reorderThreshold !== undefined) updateData.reorderThreshold = parseInt(reorderThreshold);
+
+  if (Object.keys(updateData).length === 1 && updateData.updatedAt) {
+      return formatResponse(false, null, "No valid fields provided for update.", 400);
+  }
+
+  const updatedItem = await prisma.inventoryItem.update({
+    where: { id: id },
+    data: updateData,
+  });
+
+  // Optional: Create an InventoryLog for manual adjustments to quantity
+  if (quantity !== undefined && parseInt(quantity) !== itemToUpdate!.quantity) {
+    const delta = parseInt(quantity) - itemToUpdate!.quantity;
+    await prisma.inventoryLog.create({
+      data: {
+        inventoryId: updatedItem.id,
+        action: "MANUAL_ADJUSTMENT",
+        quantity: delta, // Log the delta (positive for increase, negative for decrease)
+        userId: userId, // Link to the admin user
+        details: `Manual stock adjustment to ${updatedItem.quantity}`,
+      }
+    });
+  }
+
+  return formatResponse(true, updatedItem, "Inventory item updated successfully", 200);
 }
 
-export async function DELETE(
+/**
+ * DELETE Handler: Deletes an inventory item and its associated logs.
+ */
+async function deleteInventoryItem(
   request: Request,
   { params }: { params: { adminSlug: string; id: string } }
 ) {
-  
-   const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
-
-
   const { adminSlug, id } = params;
+  const validation = await validateInventoryAccess(adminSlug, id);
 
-  try {
-    const company = await prisma.company.findUnique({
-      where: { slug: adminSlug },
-      select: { id: true }
-    });
-
-    if (!company) {
-      return NextResponse.json({ message: "Company not found" }, { status: 404 });
-    }
-
-    const itemToDelete = await prisma.inventoryItem.findUnique({
-        where: {
-            id: id,
-            companyId: company.id,
-        },
-        select: { id: true }
-    });
-
-    if (!itemToDelete) {
-        return NextResponse.json({ message: "Inventory item not found or not associated with this company" }, { status: 404 });
-    }
-
-    // Delete associated logs first if onDelete is not Cascade
-    await prisma.inventoryLog.deleteMany({
-        where: { inventoryId: id }
-    });
-
-    await prisma.inventoryItem.delete({
-      where: { id: id },
-    });
-
-    return NextResponse.json({ message: "Inventory item deleted successfully" }, { status: 204 });
-
-  } catch (error) {
-    console.error("Error deleting inventory item:", error);
-    return NextResponse.json(
-      { message: "Internal server error", error: error instanceof Error ? error.message : String(error) },
-      { status: 500 }
-    );
+  if (validation.error) {
+    return formatResponse(false, null, validation.error, validation.status);
   }
+  // At this point, the item and company are validated.
+
+  // Use a transaction to ensure logs and item are removed atomically
+  await prisma.$transaction([
+    // Delete associated logs first
+    prisma.inventoryLog.deleteMany({
+      where: { inventoryId: id }
+    }),
+    // Then delete the item
+    prisma.inventoryItem.delete({
+      where: { id: id },
+    }),
+  ]);
+
+  // Successful deletion typically returns 204 No Content, but we use 200 with a message for consistency.
+  return formatResponse(true, null, "Inventory item deleted successfully", 200);
 }
+
+// Wrap and export all handlers
+export const GET = withApiHandler(getInventoryItem);
+export const PUT = withApiHandler(updateInventoryItem);
+export const DELETE = withApiHandler(deleteInventoryItem);

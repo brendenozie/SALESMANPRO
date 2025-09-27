@@ -1,105 +1,94 @@
 // app/api/admin/clients/[id]/route.ts
-import { NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import prisma from "@/server/db/prismadb";
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import { verifyAuth } from "@/lib/verifyAuth";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
 
-interface Params {
-  params: { id: string };
-}
-// Helper function to format patient data
+// --- Helper to format patient data ---
 async function formatPatientData(consumer: any) {
   const user = consumer.user;
   let lastVisitDate: string | null = null;
 
-  // Fetch the latest appointment for the user
-  if (user && user.id) {
+  if (user?.id) {
     const latestAppointment = await prisma.appointment.findFirst({
       where: { userId: user.id },
-      orderBy: { date: 'desc' },
+      orderBy: { date: "desc" },
       select: { date: true },
     });
-    if (latestAppointment && latestAppointment.date) {
+    if (latestAppointment?.date) {
       lastVisitDate = new Date(latestAppointment.date).toLocaleDateString();
     }
   }
 
-  // Note: dob and gender are assumed to be directly on the User model for simplicity.
-  // If not, you'd need to extend your User schema or store them elsewhere (e.g., on Consumer model, or a dedicated PatientProfile).
   return {
-    id: consumer.id, // Consumer's ID
-    name: user?.name || 'N/A',
-    email: user?.email || 'N/A',
-    phone: user?.phone || '',
-    profilePicture: user?.profilePicture || `https://placehold.co/100x100/A7F3D0/0D9488?text=${user?.name ? user.name.charAt(0) : '?'}${user?.name ? user.name.charAt(1) : ''}`,
-    dob: user?.dob ? new Date(user.dob).toISOString().split('T')[0] : 'N/A', // Assuming dob is a Date in User
-    gender: user?.gender || 'Other', // Assuming gender is a string in User
-    lastVisit: lastVisitDate || 'N/A',
-    createdAt: consumer.createdAt ? new Date(consumer.createdAt).toLocaleDateString() : 'N/A',
+    id: consumer.id,
+    name: user?.name || "N/A",
+    email: user?.email || "N/A",
+    phone: user?.phone || "",
+    profilePicture:
+      user?.profilePicture ||
+      `https://placehold.co/100x100/A7F3D0/0D9488?text=${
+        user?.name ? user.name.charAt(0) : "?"
+      }${user?.name ? user.name.charAt(1) : ""}`,
+    dob: user?.dateOfBirth
+      ? new Date(user.dateOfBirth).toISOString().split("T")[0]
+      : "N/A",
+    gender: user?.gender || "Other",
+    lastVisit: lastVisitDate || "N/A",
+    createdAt: consumer.createdAt
+      ? new Date(consumer.createdAt).toLocaleDateString()
+      : "N/A",
   };
 }
 
-// app/api/admin/patients/[id]/route.ts
-// This file handles GET, PUT, DELETE for a specific patient by ID
+// --- GET /api/admin/clients/[id] ---
+async function handleGetClient(request: NextRequest, { params }: { params: { id: string } }) {
+  const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
-export async function GET(request: Request, { params }: { params: { id: string } }) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  const { id } = params; // This is the Consumer ID
-
-  try {
-    const consumer = await prisma.consumer.findUnique({
-      where: { id },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            phone: true,
-            profilePicture: true,
-            dateOfBirth: true,
-            gender: true,
-          },
+  const { id } = params;
+  const consumer = await prisma.consumer.findUnique({
+    where: { id },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+          profilePicture: true,
+          dateOfBirth: true,
+          gender: true,
         },
       },
-    });
+    },
+  });
 
-    if (!consumer) {
-      return NextResponse.json({ error: "Patient not found" }, { status: 404 });
-    }
+  if (!consumer) return formatResponse(false, null, "Patient not found", 404);
 
-    const patient = await formatPatientData(consumer);
-    return NextResponse.json(patient);
-  } catch (err: any) {
-    console.error(`GET /api/admin/patients/${id} error:`, err);
-    return NextResponse.json({ error: err.message || "Internal server error" }, { status: 500 });
-  }
+  const patient = await formatPatientData(consumer);
+  return formatResponse(true, patient, "Patient fetched successfully", 200);
 }
 
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  const { id } = params; // This is the Consumer ID
+// --- PUT /api/admin/clients/[id] ---
+async function handlePutClient(request: NextRequest, { params }: { params: { id: string } }) {
+  const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+  const { id } = params;
   const body = await request.json();
   const { name, email, phone, dob, gender, profilePicture } = body;
 
+  const consumer = await prisma.consumer.findUnique({
+    where: { id },
+    select: { userId: true },
+  });
+
+  if (!consumer) return formatResponse(false, null, "Patient not found", 404);
+
   try {
-    // Find the consumer to get the associated userId
-    const consumer = await prisma.consumer.findUnique({
-      where: { id },
-      select: { userId: true },
-    });
-
-    if (!consumer) {
-      return NextResponse.json({ error: "Patient not found" }, { status: 404 });
-    }
-
-    // Update the associated User record
-    const updatedUser = await prisma.user.update({
+    await prisma.user.update({
       where: { id: consumer.userId },
       data: {
         name,
@@ -111,68 +100,41 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       },
     });
 
-    // If there are fields specific to the Consumer model that need updating, do it here.
-    // For now, assuming all updatable patient-related fields are on the User model.
-    // const updatedConsumer = await prisma.consumer.update({
-    //   where: { id },
-    //   data: {
-    //     // consumer-specific fields here if any
-    //   },
-    // });
-
-    // Re-fetch the consumer with updated user data to format the response
-    const updatedConsumerWithUser = await prisma.consumer.findUnique({
+    const updatedConsumer = await prisma.consumer.findUnique({
       where: { id },
       include: { user: true },
     });
 
-    const updatedPatient = await formatPatientData(updatedConsumerWithUser);
-
-    return NextResponse.json(updatedPatient);
+    const updatedPatient = await formatPatientData(updatedConsumer);
+    return formatResponse(true, updatedPatient, "Patient updated successfully", 200);
   } catch (err: any) {
-    console.error(`PUT /api/admin/patients/${id} error:`, err);
-    // Handle unique constraint violation for email
-    if (err.code === 'P2002' && err.meta?.target?.includes('email')) {
-      return NextResponse.json({ error: "Email already exists." }, { status: 409 });
+    if (err.code === "P2002" && err.meta?.target?.includes("email")) {
+      return formatResponse(false, null, "Email already exists.", 409);
     }
-    return NextResponse.json({ error: err.message || "Internal server error" }, { status: 500 });
+    throw err;
   }
 }
 
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  const { id } = params; // This is the Consumer ID
+// --- DELETE /api/admin/clients/[id] ---
+async function handleDeleteClient(request: NextRequest, { params }: { params: { id: string } }) {
+  const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
-  try {
-    // Find the consumer to get the associated userId
-    const consumer = await prisma.consumer.findUnique({
-      where: { id },
-      select: { userId: true },
-    });
+  const { id } = params;
+  const consumer = await prisma.consumer.findUnique({
+    where: { id },
+    select: { userId: true },
+  });
 
-    if (!consumer) {
-      return NextResponse.json({ error: "Patient not found" }, { status: 404 });
-    }
+  if (!consumer) return formatResponse(false, null, "Patient not found", 404);
 
-    // Delete the Consumer record
-    await prisma.consumer.delete({
-      where: { id },
-    });
+  await prisma.consumer.delete({ where: { id } });
+  await prisma.user.delete({ where: { id: consumer.userId } });
 
-    // Delete the associated User record.
-    // Ensure your Prisma schema has `onDelete: Cascade` on the User-Consumer relation
-    // if you want the User to be deleted automatically when the Consumer is deleted.
-    // Otherwise, you need to explicitly delete the User here.
-    await prisma.user.delete({
-      where: { id: consumer.userId },
-    });
-
-    return NextResponse.json({ message: "Patient deleted successfully" }, { status: 200 });
-  } catch (err: any) {
-    console.error(`DELETE /api/admin/patients/${id} error:`, err);
-    return NextResponse.json({ error: err.message || "Internal server error" }, { status: 500 });
-  }
+  return formatResponse(true, { deletedId: id }, "Patient deleted successfully", 200);
 }
+
+// --- Export with handler wrapper ---
+export const GET = withApiHandler(handleGetClient);
+export const PUT = withApiHandler(handlePutClient);
+export const DELETE = withApiHandler(handleDeleteClient);

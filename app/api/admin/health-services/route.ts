@@ -1,7 +1,10 @@
-// app/api/admin/services/route.ts
-import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Assuming this path correctly points to your Prisma client initialization
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
+import { ServiceStatus } from "@prisma/client"; // Assuming ServiceStatus is available
+
+// Type definition for route parameters
+type RouteParams = { params: {} }; // Since this is a root route, params are empty
 
 // Helper function to format service data for the frontend
 async function formatServiceData(service: any) {
@@ -16,67 +19,58 @@ async function formatServiceData(service: any) {
   };
 }
 
-export async function GET(request: Request) {
-   const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
-
-
+/**
+ * GET Handler: Fetches a list of services, supports searching and filtering.
+ */
+async function handleGetServices(request: Request, { params }: RouteParams) {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
   const searchTerm = searchParams.get("searchTerm") || "";
   const filterStatus = searchParams.get("filterStatus"); // 'ACTIVE', 'INACTIVE', 'ARCHIVED', 'All'
 
   if (!companyId) {
-    return NextResponse.json({ error: "Missing companyId" }, { status: 400 });
+    return formatResponse(false, null, "Missing companyId", 400);
   }
 
-  try {
-    const whereClause: any = {
-      companyId: companyId,
-    };
+  const whereClause: any = {
+    companyId: companyId,
+  };
 
-    if (filterStatus && filterStatus !== 'All') {
-      whereClause.status = filterStatus;
-    }
-
-    let services = await prisma.service.findMany({
-      where: whereClause,
-      orderBy: { name: 'asc' }, // Order by service name
-    });
-
-    // Client-side filtering for search term across name and description
-    if (searchTerm) {
-      const lowerCaseSearchTerm = searchTerm.toLowerCase();
-      services = services.filter(service =>
-        service.name.toLowerCase().includes(lowerCaseSearchTerm) ||
-        service.description?.toLowerCase().includes(lowerCaseSearchTerm)
-      );
-    }
-
-    const formattedServices = await Promise.all(
-      services.map(async (service) => formatServiceData(service))
-    );
-
-    return NextResponse.json(formattedServices);
-  } catch (err: any) {
-    console.error("GET /api/admin/services error:", err);
-    return NextResponse.json({ error: err.message || "Internal server error" }, { status: 500 });
+  if (filterStatus && filterStatus !== 'All') {
+    whereClause.status = filterStatus;
   }
+
+  // Use Prisma's OR filter for searching across name and description
+  if (searchTerm) {
+    const lowerCaseSearchTerm = searchTerm.toLowerCase();
+    whereClause.OR = [
+      { name: { contains: lowerCaseSearchTerm, mode: 'insensitive' } },
+      { description: { contains: lowerCaseSearchTerm, mode: 'insensitive' } },
+    ];
+  }
+
+  const services = await prisma.service.findMany({
+    where: whereClause,
+    orderBy: { name: 'asc' }, // Order by service name
+  });
+
+  const formattedServices = await Promise.all(
+    services.map(async (service) => formatServiceData(service))
+  );
+
+  // Return the data; withApiHandler will wrap it in success: true and status 200
+  return formattedServices;
 }
 
-export async function POST(request: Request) {
-   const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
-
-
+/**
+ * POST Handler: Creates a new service.
+ */
+async function handleCreateService(request: Request, { params }: RouteParams) {
   const body = await request.json();
   const { name, description, price, duration, status, companyId } = body;
 
-  if (!name || !price || !duration || !companyId) {
-    return NextResponse.json(
-      { error: "Missing required fields: name, price, duration, companyId" },
-      { status: 400 }
-    );
+  if (!name || price === undefined || !duration || !companyId) {
+    return formatResponse(false, null, "Missing required fields: name, price, duration, companyId", 400);
   }
 
   try {
@@ -85,21 +79,26 @@ export async function POST(request: Request) {
         companyId: companyId,
         name: name,
         description: description,
-        price: parseFloat(price), // Ensure price is a float
+        price: parseFloat(price),
         duration: duration,
-        status: status || 'ACTIVE', // Default to ACTIVE if not provided
+        status: (status || 'ACTIVE') as ServiceStatus,
       },
     });
 
     const formattedNewService = await formatServiceData(newService);
 
-    return NextResponse.json(formattedNewService, { status: 201 });
+    // Return the data; withApiHandler will use the provided status 201
+    return formatResponse(true, formattedNewService, "Service created successfully", 201);
   } catch (err: any) {
-    console.error("POST /api/admin/services error:", err);
-    // Handle unique constraint violation for companyId, name
+    // Handle unique constraint violation specifically (Prisma code P2002)
     if (err.code === 'P2002' && err.meta?.target?.includes('name')) {
-      return NextResponse.json({ error: "A service with this name already exists for this company." }, { status: 409 });
+      return formatResponse(false, null, "A service with this name already exists for this company.", 409);
     }
-    return NextResponse.json({ error: err.message || "Internal server error" }, { status: 500 });
+    // Re-throw generic errors to be caught by withApiHandler's centralized catch block
+    throw err;
   }
 }
+
+// Wrap the core handlers with the middleware
+export const GET = withApiHandler(handleGetServices);
+export const POST = withApiHandler(handleCreateService);

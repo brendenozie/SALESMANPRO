@@ -1,93 +1,89 @@
-// app/api/admin/reports/inventory/route.ts
-import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
 
-export async function GET(request: Request) {
-   const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
-
-
+/**
+ * GET Handler: Generates an inventory report with filtering by category and stock status.
+ *
+ * This handler assumes the InventoryItem model holds the definitive stock (quantity)
+ * and threshold (reorderThreshold) for reporting purposes.
+ */
+async function getInventoryReport(request: Request) {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
   const category = searchParams.get("category");
-  const stockStatus = searchParams.get("stockStatus"); // 'LOW', 'IN_STOCK', 'ALL'
+  const stockStatus = searchParams.get("stockStatus"); // 'LOW_STOCK', 'IN_STOCK', 'ALL'
 
   if (!companyId) {
-    return NextResponse.json({ error: "Missing companyId" }, { status: 400 });
+    return formatResponse(false, null, "Missing companyId", 400);
   }
 
-  try {
-    const whereClause: any = {
-      companyId: companyId,
+  // 1. Build Base Where Clause for Inventory Items
+  const whereClause: any = {
+    companyId: companyId,
+  };
+
+  if (category) {
+    // Filter by the product category name associated with the inventory item
+    whereClause.product = {
+      productCategory: {
+        name: category
+      }
     };
+  }
 
-    if (category) {
-      whereClause.category = category;
-    }
-
-    // Fetch products that are considered inventory items
-    let products = await prisma.product.findMany({
-      where: {
-        companyId: companyId,
-        // Assuming products that have 'quantity' and 'costPrice' are inventory items
-        // You might need a more explicit flag or a dedicated InventoryItem model
-        // based on your exact schema.
-        // For now, we'll filter by products that have a quantity
-        quantity: { gt: 0 }
-      },
-      select: {
-        id: true,
-        name: true,
-        category: true,
-        quantity: true, // Current stock
-        costPrice: true,
-        sellingPrice: true,
-        createdAt: true,
-        updatedAt: true,
-        // Assuming reorderThreshold might be part of Product or a related InventoryItem
-        // If reorderThreshold is in InventoryItem, you'd need to include it and join
-        // For simplicity, let's assume `minStock` from the original prompt is now `reorderThreshold` on Product
-        // If not, you'd need to adjust this to fetch from InventoryItem relation.
-        inventoryItems: {
-          select: {
-            id: true,
-            quantity: true, // InventoryItem's specific quantity
-            reorderThreshold: true,
-          }
+  // 2. Fetch Inventory Items
+  const inventoryItems = await prisma.inventoryItem.findMany({
+    where: whereClause,
+    select: {
+      id: true,
+      quantity: true,
+      reorderThreshold: true,
+      updatedAt: true,
+      product: {
+        select: {
+          id: true,
+          name: true,
+          costPrice: true,
+          sellingPrice: true,
+          productCategory: { select: { name: true } }
         }
-      },
-      orderBy: { name: 'asc' },
-    });
+      }
+    },
+    orderBy: { product: { name: 'asc' } },
+  });
 
-    const inventoryReport = products.map(product => {
-      // Prioritize InventoryItem's quantity and reorderThreshold if available
-      const currentStock = product.inventoryItems.length > 0 ? product.inventoryItems[0].quantity : product.quantity;
-      const minStock = product.inventoryItems.length > 0 ? product.inventoryItems[0].reorderThreshold : null; // Assuming reorderThreshold is on InventoryItem
+  // 3. Process and Filter Report Data in memory (after fetching relevant items)
+  const inventoryReport = inventoryItems
+    .map(item => {
+      const currentStock = item.quantity;
+      const minStock = item.reorderThreshold;
 
+      // Determine stock status
       const status = minStock !== null && currentStock <= minStock ? 'LOW_STOCK' : 'IN_STOCK';
 
       return {
-        id: product.id,
-        name: product.name,
-        category: product.category || 'N/A',
+        id: item.id,
+        name: item.product?.name || 'N/A Product',
+        category: item.product?.productCategory?.name || 'N/A',
         stock: currentStock,
         minStock: minStock,
         status: status,
-        costPrice: product.costPrice,
-        sellingPrice: product.sellingPrice,
-        lastUpdated: product.updatedAt ? new Date(product.updatedAt).toISOString().split('T')[0] : 'N/A',
+        costPrice: item.product?.costPrice || 0,
+        sellingPrice: item.product?.sellingPrice || 0,
+        lastUpdated: item.updatedAt ? new Date(item.updatedAt).toISOString().split('T')[0] : 'N/A',
       };
-    }).filter(item => {
+    })
+    // Apply client-side stock status filter
+    .filter(item => {
       if (stockStatus === 'LOW_STOCK') return item.status === 'LOW_STOCK';
       if (stockStatus === 'IN_STOCK') return item.status === 'IN_STOCK';
       return true; // 'ALL' or no filter
     });
 
-
-    return NextResponse.json(inventoryReport);
-  } catch (err: any) {
-    console.error("GET /api/admin/reports/inventory error:", err);
-    return NextResponse.json({ error: err.message || "Internal server error" }, { status: 500 });
-  }
+  // 4. Return formatted success response
+  return formatResponse(true, inventoryReport, "Inventory report generated successfully", 200);
 }
+
+// Wrap the core logic with the API handler middleware
+export const GET = withApiHandler(getInventoryReport);

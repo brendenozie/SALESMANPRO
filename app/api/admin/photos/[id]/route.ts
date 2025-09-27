@@ -1,107 +1,64 @@
 // app/api/photos/[id]/route.ts
-import { NextResponse } from 'next/server';
-import prisma from '@/server/db/prismadb';
-import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
 
 // GET /api/photos/:id - Fetch a single photo by ID
-export async function GET(request: Request, { params }: { params: { id: string } }) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  const { id } = params;
-  try {
-    const photo = await prisma.photo.findUnique({
-      where: { id },
-    });
+export const GET = withApiHandler(
+  async (request: Request, { params }: { params: { id: string } }) => {
+    const { id } = params;
 
+    const photo = await prisma.photo.findUnique({ where: { id } });
     if (!photo) {
-      return NextResponse.json({ error: 'Photo not found' }, { status: 404 });
+      return formatResponse(false, null, "Photo not found", 404);
     }
 
-    return NextResponse.json(photo, { status: 200 });
-  } catch (error) {
-    console.error(`Error fetching photo with ID ${id}:`, error);
-    return NextResponse.json({ error: 'Failed to fetch photo' }, { status: 500 });
+    return formatResponse(true, photo, null, 200);
   }
-}
+);
 
 // PUT /api/photos/:id - Update an existing photo by ID
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  const { id } = params;
-  try {
+export const PUT = withApiHandler(
+  async (request: Request, { params }: { params: { id: string } }) => {
+    const { id } = params;
     const body = await request.json();
     const { title, description, imageUrl, tags } = body;
 
-    const updatedPhoto = await prisma.photo.update({
-      where: { id },
-      data: {
-        title,
-        description,
-        imageUrl,
-        tags,
-        updatedAt: new Date(),
-      },
-    });
+    try {
+      const updatedPhoto = await prisma.photo.update({
+        where: { id },
+        data: {
+          title,
+          description,
+          imageUrl,
+          tags,
+          updatedAt: new Date(),
+        },
+      });
 
-    return NextResponse.json(updatedPhoto, { status: 200 });
-  } catch (error) {
-    // if (error.code === 'P2025') {
-    //   return NextResponse.json({ error: 'Photo not found' }, { status: 404 });
-    // }
-    console.error(`Error updating photo with ID ${id}:`, error);
-    return NextResponse.json({ error: 'Failed to update photo' }, { status: 500 });
+      return formatResponse(true, updatedPhoto, null, 200);
+    } catch (err: any) {
+      if (err.code === "P2025") {
+        return formatResponse(false, null, "Photo not found", 404);
+      }
+      throw err; // will be caught by withApiHandler
+    }
   }
-}
+);
 
 // DELETE /api/photos/:id - Delete a photo by ID
-// export async function DELETE(request: Request, { params }: { params: { id: string } }) {
-//   const { id } = params;
-//   try {
-//     await prisma.photo.delete({
-//       where: { id },
-//     });
+export const DELETE = withApiHandler(
+  async (request: Request, { params }: { params: { id: string } }) => {
+    const { id } = params;
 
-//     return new NextResponse(null, { status: 204 });
-//   } catch (error) {
-//     // if (error.code === 'P2025') {
-//     //   return NextResponse.json({ error: 'Photo not found' }, { status: 404 });
-//     // }
-//     console.error(`Error deleting photo with ID ${id}:`, error);
-//     return NextResponse.json({ error: 'Failed to delete photo' }, { status: 500 });
-//   }
-// }
-
-// app/api/photos/[id]/route.ts
-// import { NextResponse } from 'next/server';
-// import prisma from '@/server/db/prismadb';
-
-/**
- * @route DELETE /api/photos/:id
- * @description Deletes a single photo by its ID.
- * @returns {Response} A 204 No Content response.
- */
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  const { id } = params;
-  try {
-    await prisma.photo.delete({
-      where: { id },
-    });
-
-    return new NextResponse(null, { status: 204 });
-  } catch (error) {
-    if (error.code === 'P2025') {
-      return NextResponse.json({ error: 'Photo not found' }, { status: 404 });
+    try {
+      await prisma.photo.delete({ where: { id } });
+      return formatResponse(true, null, null, 204);
+    } catch (err: any) {
+      if (err.code === "P2025") {
+        return formatResponse(false, null, "Photo not found", 404);
+      }
+      throw err;
     }
-    console.error(`Error deleting photo with ID ${id}:`, error);
-    return NextResponse.json({ error: 'Failed to delete photo' }, { status: 500 });
   }
-}
+);
