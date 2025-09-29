@@ -1,81 +1,62 @@
 // app/api/teacher/courses-for-reports/route.ts
-import { NextResponse } from 'next/server';
-import prisma from "@/server/db/prismadb"; // Adjust path as per your project structure
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
+import { verifyAuth } from "@/lib/verifyAuth";
 
+export const GET = withApiHandler(async (request: Request) => {
+  const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
-export async function GET(request: Request) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
   const { searchParams } = new URL(request.url);
-  const educatorId = searchParams.get('educatorId');
+  const educatorId = searchParams.get("educatorId");
 
   if (!educatorId) {
-    return NextResponse.json({ message: 'Missing educatorId' }, { status: 400 });
-  }
-
-  const educator = await prisma.educator.findUnique({
-    where: { userId: educatorId }, // Find educator using their associated User.id
-    select: {
-      id: true,
-      companyId: true, // Select companyId from the educator
-      user: {
-        select: {
-          name: true,
-          email: true,
-          role: true,
-        },
-      },
-    },
-  });
-
-  if (!educator) {
-    return NextResponse.json({ message: 'Educator not found or not associated with this company' }, { status: 404 });
+    return formatResponse(false, null, "Missing educatorId", 400);
   }
 
   try {
+    const educator = await prisma.educator.findUnique({
+      where: { userId: educatorId },
+      select: {
+        id: true,
+        companyId: true,
+        user: { select: { name: true, email: true, role: true } },
+      },
+    });
+
+    if (!educator) {
+      return formatResponse(false, null, "Educator not found", 404);
+    }
+
     const courses = await prisma.course.findMany({
       where: {
-        CourseEducatorAssignment: {
-          some: {
-            educatorId: educator.id, // Filter by the specific educator's ID
-          },
-        },
+        CourseEducatorAssignment: { some: { educatorId: educator.id } },
       },
       select: {
         id: true,
         title: true,
         academicLevels: {
           select: {
-            academicLevel: {
-              select: {
-                name: true,
-              },
-            },
+            academicLevel: { select: { name: true } },
           },
         },
       },
-      orderBy: { title: 'asc' }, // Order the results by course title
+      orderBy: { title: "asc" },
     });
 
     const formattedCourses = courses.map(course => ({
       id: course.id,
       title: course.title,
-      // Safely access academic level name. If a course is linked to multiple
-      // academic levels, this will pick the name of the first one found.
-      academicLevelName: course.academicLevels[0]?.academicLevel?.name || 'N/A',
+      academicLevelName: course.academicLevels[0]?.academicLevel?.name || "N/A",
     }));
 
-    // Return an object containing both courses and the educator's companyId
-    return NextResponse.json({
+    return formatResponse(true, {
       courses: formattedCourses,
-      companyId: educator.companyId, // Include the companyId here
+      companyId: educator.companyId,
     });
-
-  } catch (error) {
-    console.error('Error fetching courses for reports:', error);
-    return NextResponse.json({ message: 'Failed to fetch courses' }, { status: 500 });
+  } catch (error: any) {
+    console.error("Error fetching courses for reports:", error);
+    return formatResponse(false, null, error.message || "Failed to fetch courses", 500);
   }
-}
+});

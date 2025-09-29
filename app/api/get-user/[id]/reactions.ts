@@ -1,46 +1,35 @@
-import { NextApiRequest, NextApiResponse } from 'next'
-
-import prisma, { client } from "@/server/db/prismadb";
+// app/api/ama/[id]/route.ts
+import { NextApiRequest, NextApiResponse } from "next";
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
-import { request } from 'http';
-import { NextResponse } from 'next/server';
+async function handler(req: NextApiRequest, res: NextApiResponse) {
+  const amaId = req.query.id as string;
 
-export default async function handle(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-   const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  if (req.method === "PUT") {
+    try {
+      // Example update (adjust to your actual data needs)
+      const ama = await prisma.booking.update({
+        where: { id: amaId },
+        data: {
+          reactions: { increment: 1 },
+        },
+      });
 
-
-  const amaId = req.query.id as string
-  const { searchParams } = new URL(req.url);
-  
-    const agentId = searchParams.get("agentId");
-    const limit = parseInt(searchParams.get("limit") || "10", 10);
-    const offset = parseInt(searchParams.get("offset") || "0", 10);
-  
-    if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
-      return NextResponse.json(
-        { message: "Invalid pagination parameters." },
-        { status: 400 }
-      );
+      return res
+        .status(200)
+        .json(formatResponse(true, ama, "AMA updated successfully"));
+    } catch (error: any) {
+      return res
+        .status(500)
+        .json(formatResponse(false, null, error.message || "Update failed"));
     }
-  
-  if (req.method === 'PUT') {
-    // const ama = await prisma.booking.update({
-    //   where: {
-    //     id: amaId,
-    //   },
-    //   data: {
-    //     reactions: {
-    //       increment: 1,
-    //     },
-    //   },
-    // })
-    res.json({ id: "ama?.id", reactions: "ama?.reactions", status: "ama?.status "})
-  } else {
-    return res.status(404).end()
   }
+
+  return res
+    .status(405)
+    .json(formatResponse(false, null, "Method not allowed", 405));
 }
+
+export default withApiHandler(handler);

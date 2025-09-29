@@ -1,109 +1,41 @@
 // app/api/class-teacher-academic-levels/route.ts
-import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-
+import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-// Define types for the API response structure
-export type ClassTeacherInfo = {
-  id: string; // Educator's userId
-  name: string;
-  email: string;
-  role: string;
-};
+async function getClassTeacherAcademicLevels(req: Request) {
+  const { searchParams } = new URL(req.url);
+  const teacherId = searchParams.get("teacherId"); // User.id linked to Educator
 
-export type StudentInAcademicLevel = {
-  studentId: string; // Student ID
-  name: string;
-  email: string;
-  parentEmail: string | null; // Assuming parent email can be fetched via student.user.parent
-};
+  if (!teacherId) {
+    return formatResponse(false, null, "Teacher User ID is required", 400);
+  }
 
-export type AssignedAcademicLevel = {
-  id: string; // AcademicLevel ID
-  name: string; // e.g., "Grade 7"
-  description: string | null;
-  roleInLevel: string | null; // From EducatorAcademicLevelAssignment
-  studentsCount: number; // Number of students primarily assigned to this AcademicLevel
-  students: StudentInAcademicLevel[]; // List of students in this AcademicLevel
-  // You could add mock/real data for events, announcements specific to this AcademicLevel here
-  academicLevelEvents: { id: string; name: string; date: string; time: string }[];
-  academicLevelAnnouncements: { id: string; text: string; type: 'info' | 'warning' }[];
-};
-
-export type ClassTeacherAcademicLevelsPageData = {
-  classTeacherInfo: ClassTeacherInfo;
-  themeSettings: {
-    primaryColor: string;
-    accentColor: string;
-  };
-  assignedAcademicLevels: AssignedAcademicLevel[];
-};
-
-// GET /api/class-teacher-academic-levels
-// Fetches academic levels assigned to a class teacher within a company.
-// Query Params: teacherId (required - User.id linked to Educator)
-export async function GET(request: Request) {
   try {
-    
-       const auth = await verifyAuth(request);
-      if (!auth.success) return formatResponse(false, null, auth.error, 401);
-    
-    
-    const { searchParams } = new URL(request.url);
-    
-    const teacherId = searchParams.get('teacherId'); // This is the User.id linked to Educator
-
-    if (!teacherId) {
-      return NextResponse.json({ message: "Teacher User ID is required." }, { status: 400 });
-    }
-
-    // 1. Fetch Educator Profile using teacherUserId
-    // Include the associated User details for the class teacher info
+    // 1. Fetch Educator profile
     const educator = await prisma.educator.findUnique({
-      where: {
-        userId: teacherId,
-      },
+      where: { userId: teacherId },
       include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            role: true,
-          },
-        },
+        user: { select: { id: true, name: true, email: true, role: true } },
       },
     });
 
     if (!educator) {
-      return NextResponse.json({ message: "Teacher not found." }, { status: 404 });
+      return formatResponse(false, null, "Teacher not found", 404);
     }
 
     // 2. Fetch AcademicLevel assignments for this Educator
-    // This now includes the new StudentAcademicLevel junction table to get student details
     const academicLevelAssignments = await prisma.educatorAcademicLevelAssignment.findMany({
-      where: {
-        educatorId: educator.id, // Link to Educator model's ID
-      },
+      where: { educatorId: educator.id },
       include: {
         academicLevel: {
           include: {
-            // Updated: Fetch students via the StudentAcademicLevel junction table
             StudentAcademicLevel: {
               include: {
-                student: { // Include the Student model
+                student: {
                   include: {
-                    user: { // Include the User model for student's name and email
-                      select: { id: true, name: true, email: true },
-                    },
-                    parent: { // Include the Parent model
-                      include: {
-                        user: { // Include the User model for parent's email
-                          select: { email: true },
-                        },
-                      },
-                    },
+                    user: { select: { id: true, name: true, email: true } },
+                    parent: { include: { user: { select: { email: true } } } },
                   },
                 },
               },
@@ -111,44 +43,37 @@ export async function GET(request: Request) {
           },
         },
       },
-      orderBy: {
-        academicLevel: {
-          sortOrder: 'asc', // Order by the defined sort order for academic levels
-        },
-      },
+      orderBy: { academicLevel: { sortOrder: "asc" } },
     });
 
-    const assignedAcademicLevels: AssignedAcademicLevel[] = academicLevelAssignments.map(assignment => {
+    const assignedAcademicLevels = academicLevelAssignments.map((assignment) => {
       const academicLevel = assignment.academicLevel;
 
-      // Map through the StudentAcademicLevel records to get the actual student data
-      const studentsInLevel: StudentInAcademicLevel[] = academicLevel.StudentAcademicLevel.map(studentAcademicLevel => {
-        const student = studentAcademicLevel.student;
+      const studentsInLevel = academicLevel.StudentAcademicLevel.map((sal) => {
+        const student = sal.student;
         return {
           studentId: student.id,
-          name: student.user?.name || 'N/A',
-          email: student.user?.email || 'N/A',
-          parentEmail: student.parent?.user?.email || null, // Access parent email via parent.user
+          name: student.user?.name || "N/A",
+          email: student.user?.email || "N/A",
+          parentEmail: student.parent?.user?.email || null,
         };
       });
 
-      // --- Mocking nested data for Academic Level specific events/announcements ---
-      // In a real application, these would be fetched from your database
+      // Mock events/announcements (replace with DB queries if needed)
       const mockAcademicLevelEvents = [
         { id: `ALE-${academicLevel.id}-001`, name: `Parent-Teacher Meeting for ${academicLevel.name}`, date: new Date('2025-08-01T15:00:00Z').toISOString(), time: '3:00 PM' },
         { id: `ALE-${academicLevel.id}-002`, name: `Field Trip to Museum for ${academicLevel.name}`, date: new Date('2025-09-10T09:00:00Z').toISOString(), time: '9:00 AM' },
       ];
       const mockAcademicLevelAnnouncements = [
-        { id: `ALA-${academicLevel.id}-001`, text: `Reminder: ${academicLevel.name} project deadline is next Friday.`, type: 'info' as 'info' },
-        { id: `ALA-${academicLevel.id}-002`, text: `Urgent: ${academicLevel.name} class photo rescheduled.`, type: 'warning' as 'warning' },
+        { id: `ALA-${academicLevel.id}-001`, text: `Reminder: ${academicLevel.name} project deadline is next Friday.`, type: 'info' as const },
+        { id: `ALA-${academicLevel.id}-002`, text: `Urgent: ${academicLevel.name} class photo rescheduled.`, type: 'warning' as const },
       ];
-      // --- End Mocking ---
 
       return {
         id: academicLevel.id,
         name: academicLevel.name,
         description: academicLevel.description,
-        roleInLevel: assignment.roleInLevel, // This field comes directly from the EducatorAcademicLevelAssignment
+        roleInLevel: assignment.roleInLevel,
         studentsCount: studentsInLevel.length,
         students: studentsInLevel,
         academicLevelEvents: mockAcademicLevelEvents,
@@ -156,24 +81,25 @@ export async function GET(request: Request) {
       };
     });
 
-    // Prepare the final response object
-    const classTeacherAcademicLevelsPageData: ClassTeacherAcademicLevelsPageData = {
+    const responseData = {
       classTeacherInfo: {
         id: educator.user.id,
-        name: educator.user.name || 'N/A',
-        email: educator.user.email || 'N/A',
-        role: educator.user.role || 'EDUCATOR', // Default to EDUCATOR if role is not explicitly set
+        name: educator.user.name || "N/A",
+        email: educator.user.email || "N/A",
+        role: educator.user.role || "EDUCATOR",
       },
       themeSettings: {
-        primaryColor: "#4A90E2", // Mocked theme settings
-        accentColor: "#F5A623", // Mocked theme settings
+        primaryColor: "#4A90E2",
+        accentColor: "#F5A623",
       },
-      assignedAcademicLevels: assignedAcademicLevels,
+      assignedAcademicLevels,
     };
 
-    return NextResponse.json(classTeacherAcademicLevelsPageData, { status: 200 });
+    return formatResponse(true, responseData, "Class teacher academic levels fetched successfully", 200);
   } catch (error: any) {
     console.error("Error fetching class teacher academic levels:", error);
-    return NextResponse.json({ message: "Failed to fetch assigned academic levels", error: error.message }, { status: 500 });
+    return formatResponse(false, null, error.message, 500);
   }
 }
+
+export const GET = withApiHandler(getClassTeacherAcademicLevels, { requireAuth: true });

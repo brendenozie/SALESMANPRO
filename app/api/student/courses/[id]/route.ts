@@ -1,119 +1,82 @@
 // app/api/courses/[id]/route.ts
-// This file handles API requests for:
-// - GET /api/courses/[id]: Fetches a single course by its ID.
-// - PUT /api/courses/[id]: Updates an existing course by its ID.
-// - DELETE /api/courses/[id]: Deletes a course by its ID.
+// Handles API requests for:
+// - GET /api/courses/[id]
+// - PUT /api/courses/[id]
+// - DELETE /api/courses/[id]
 
-import { NextRequest, NextResponse } from 'next/server';
-
-import prisma from "@/server/db/prismadb";  // Adjust path if your prisma.ts is elsewhere
-import { formatResponse } from "@/lib/formatResponse";
-
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse, verifyAuth } from "@/lib/formatResponse";
 
 /**
  * GET /api/courses/[id]
- * Fetches a single course by its ID.
+ * Fetch a single course by ID.
  */
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
-  try {
-    
-       const auth = await verifyAuth(request);
-      if (!auth.success) return formatResponse(false, null, auth.error, 401);
-    
-    
-    const { id } = params; // Get the course ID from the URL parameters
+const GET = async (request: Request, { params }: { params: { id: string } }) => {
+  const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
+  const { id } = params;
+
+  try {
     const course = await prisma.course.findUnique({
       where: { id },
       include: {
-        academicLevels: {
-          include: {
-            academicLevel: true, // Include details of associated academic levels
-          },
-        },
-        CourseMaterial: true, // Include course materials
+        academicLevels: { include: { academicLevel: true } },
+        CourseMaterial: true,
       },
     });
 
-    if (!course) {
-      return NextResponse.json({ error: 'Course not found' }, { status: 404 });
-    }
+    if (!course) return formatResponse(false, null, "Course not found", 404);
 
-    return NextResponse.json(course, { status: 200 });
+    return formatResponse(true, course);
   } catch (error) {
-    console.error('Error fetching course:', error);
-    return NextResponse.json({ error: 'Failed to fetch course' }, { status: 500 });
+    console.error("Error fetching course:", error);
+    return formatResponse(false, null, "Failed to fetch course", 500);
   }
-}
+};
 
 /**
  * PUT /api/courses/[id]
- * Updates an existing course by its ID.
- *
- * Request Body:
- * {
- * "title": "string" (optional),
- * "description": "string" (optional),
- * "imageUrl": "string" (optional),
- * "credits": number (optional),
- * "code": "string" (optional, must be unique if provided),
- * "academicLevelIds": ["string"] (array of academic level IDs, optional - replaces existing links)
- * // Other course fields can be updated as well
- * }
+ * Update an existing course by ID.
  */
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+const PUT = async (request: Request, { params }: { params: { id: string } }) => {
+  const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+  const { id } = params;
+
   try {
-    
-       const auth = await verifyAuth(request);
-      if (!auth.success) return formatResponse(false, null, auth.error, 401);
-    
-    
-    const { id } = params;
     const body = await request.json();
-    // Destructure academicLevelIds separately, as it requires special handling for many-to-many
     const { academicLevelIds, ...dataToUpdate } = body;
 
-    // First, update the direct fields of the course
-    const updatedCourse = await prisma.course.update({
+    // Update direct fields
+    await prisma.course.update({
       where: { id },
       data: dataToUpdate,
-      // We don't include relations here yet, as they might be modified separately
     });
 
-    // Handle academic level updates (many-to-many relationship with CourseAcademicLevel)
+    // Handle academic level relations
     if (academicLevelIds !== undefined) {
-      // Get current academic levels linked to this course
       const existingAcademicLevels = await prisma.courseAcademicLevel.findMany({
         where: { courseId: id },
-        select: { academicLevelId: true }, // Select only the IDs for comparison
+        select: { academicLevelId: true },
       });
 
-      const existingLevelIds = new Set(existingAcademicLevels.map(al => al.academicLevelId));
+      const existingLevelIds = new Set(existingAcademicLevels.map((al) => al.academicLevelId));
       const newLevelIds = new Set(academicLevelIds);
 
-      // Determine which academic levels to remove (present in DB but not in new request)
-      const levelsToRemove = Array.from(existingLevelIds).filter(
-        (levelId) => !newLevelIds.has(levelId)
-      );
-
+      // Remove old links
+      const levelsToRemove = [...existingLevelIds].filter((levelId) => !newLevelIds.has(levelId));
       if (levelsToRemove.length > 0) {
         await prisma.courseAcademicLevel.deleteMany({
-          where: {
-            courseId: id,
-            academicLevelId: {
-              in: levelsToRemove,
-            },
-          },
+          where: { courseId: id, academicLevelId: { in: levelsToRemove } },
         });
       }
 
-      // Determine which academic levels to add (present in new request but not in DB)
-      const levelsToAdd = Array.from(newLevelIds).filter(
-        (levelId: any) => !existingLevelIds.has(levelId)
-      );
-
+      // Add new links
+      const levelsToAdd = [...newLevelIds].filter((levelId) => !existingLevelIds.has(levelId));
       if (levelsToAdd.length > 0) {
-        // To create new CourseAcademicLevel entries, we need the companyId of the course
         const courseCompany = await prisma.course.findUnique({
           where: { id },
           select: { companyId: true },
@@ -121,85 +84,61 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
         if (courseCompany?.companyId) {
           await prisma.courseAcademicLevel.createMany({
-            data: levelsToAdd.map((levelId: any) => ({
+            data: levelsToAdd.map((levelId) => ({
               courseId: id,
               academicLevelId: levelId,
-              companyId: courseCompany.companyId, // Link junction table to company
-            })), // Prevents errors if a level somehow already exists due to race condition
+              companyId: courseCompany.companyId,
+            })),
           });
-        } else {
-          console.warn(`Company ID not found for course ${id}. Cannot link new academic levels to company.`);
         }
       }
     }
 
-    // Re-fetch the course to return the most up-to-date data, including all relations
+    // Re-fetch latest
     const finalCourse = await prisma.course.findUnique({
       where: { id },
       include: {
-        academicLevels: {
-          include: {
-            academicLevel: true,
-          },
-        },
+        academicLevels: { include: { academicLevel: true } },
         CourseMaterial: true,
       },
     });
 
-    return NextResponse.json(finalCourse, { status: 200 });
+    return formatResponse(true, finalCourse);
   } catch (error: any) {
-    console.error('Error updating course:', error);
-    // Handle unique constraint violation for 'code'
-    if (error.code === 'P2002' && error.meta?.target?.includes('code')) {
-      return NextResponse.json({ error: 'Course with this code already exists.' }, { status: 409 });
+    console.error("Error updating course:", error);
+    if (error.code === "P2002" && error.meta?.target?.includes("code")) {
+      return formatResponse(false, null, "Course with this code already exists", 409);
     }
-    return NextResponse.json({ error: 'Failed to update course', details: error.message }, { status: 500 });
+    return formatResponse(false, null, error.message || "Failed to update course", 500);
   }
-}
+};
 
 /**
  * DELETE /api/courses/[id]
- * Deletes a course by its ID.
- *
- * Note: Prisma's `onDelete: Cascade` in your schema will automatically handle
- * deletion of related `CourseAcademicLevel` and `CourseMaterial` entries
- * if they are configured to cascade. If not, explicit deletions are needed
- * before deleting the main course.
- *
- * Based on your schema:
- * - `CourseAcademicLevel` has `onDelete: Cascade` for `courseId`.
- * - `CourseMaterial` has `onDelete: Cascade` for `courseId`.
- * So, explicit deletion of these related records before deleting the course
- * is technically not strictly necessary due to cascading, but included for clarity/robustness.
+ * Delete a course by ID.
  */
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+const DELETE = async (request: Request, { params }: { params: { id: string } }) => {
+  const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+  const { id } = params;
+
   try {
-    
-       const auth = await verifyAuth(request);
-      if (!auth.success) return formatResponse(false, null, auth.error, 401);
-    
-    
-    const { id } = params;
+    await prisma.courseAcademicLevel.deleteMany({ where: { courseId: id } });
+    await prisma.courseMaterial.deleteMany({ where: { courseId: id } });
 
-    // Explicitly delete related CourseAcademicLevel entries.
-    // This is good practice even with cascade, or if cascade rules change.
-    await prisma.courseAcademicLevel.deleteMany({
-      where: { courseId: id },
-    });
+    const deletedCourse = await prisma.course.delete({ where: { id } });
 
-    // Explicitly delete related CourseMaterial entries.
-    await prisma.courseMaterial.deleteMany({
-      where: { courseId: id },
-    });
-
-    // Delete the course itself
-    const deletedCourse = await prisma.course.delete({
-      where: { id },
-    });
-
-    return NextResponse.json({ message: 'Course deleted successfully', course: deletedCourse }, { status: 200 });
+    return formatResponse(true, { message: "Course deleted successfully", course: deletedCourse });
   } catch (error) {
-    console.error('Error deleting course:', error);
-    return NextResponse.json({ error: 'Failed to delete course' }, { status: 500 });
+    console.error("Error deleting course:", error);
+    return formatResponse(false, null, "Failed to delete course", 500);
   }
-}
+};
+
+// Export withApiHandler wrappers
+export const GETHandler = withApiHandler(GET);
+export const PUTHandler = withApiHandler(PUT);
+export const DELETEHandler = withApiHandler(DELETE);
+
+export { GETHandler as GET, PUTHandler as PUT, DELETEHandler as DELETE };

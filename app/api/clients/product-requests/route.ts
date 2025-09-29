@@ -1,49 +1,41 @@
-import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-
+// app/api/client/[clientId]/requests/route.ts
+import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
+import { verifyAuth } from "@/lib/verifyAuth";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
+/**
+ * API route to fetch product requests made by a specific client.
+ * Supports pagination via 'limit' and 'offset'.
+ */
+async function GET(req: Request) {
+  // 1. Authentication Check
+  const auth = await verifyAuth(req);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
-export default async function GET( req : Request ) {
-  
-     const auth = await verifyAuth(req);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  if (req.method !== "GET") {
-    return NextResponse.json({ message: "Method not allowed. Use GET." });
-  }
-
-  const { clientId, limit = 10, offset = 0 } = req.query;
+  // 2. Extract and Validate Parameters
   const { searchParams } = new URL(req.url);
-  
-    const agentId = searchParams.get("agentId");
-    const limit = parseInt(searchParams.get("limit") || "10", 10);
-    const offset = parseInt(searchParams.get("offset") || "0", 10);
-  
-    if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
-      return NextResponse.json(
-        { message: "Invalid pagination parameters." },
-        { status: 400 }
-      );
-    }
-  
 
-// Validate limit and offset as integers
-const parsedLimit = parseInt(limit as string, 10);
-const parsedOffset = parseInt(offset as string, 10);
+  const clientId = searchParams.get("clientId");
+  const parsedLimit = parseInt(searchParams.get("limit") || "10", 10);
+  const parsedOffset = parseInt(searchParams.get("offset") || "0", 10);
 
-if (isNaN(parsedLimit) || isNaN(parsedOffset) || parsedLimit <= 0 || parsedOffset < 0) {
-  return NextResponse.json({ message: "Invalid pagination parameters." });
-}
+  if (isNaN(parsedLimit) || isNaN(parsedOffset) || parsedLimit <= 0 || parsedOffset < 0) {
+    return formatResponse(
+      false,
+      null,
+      "Invalid pagination parameters (limit or offset).",
+      400
+    );
+  }
 
   // Validate clientId
   if (!clientId || typeof clientId !== "string") {
-    return NextResponse.json({ message: "Invalid or missing clientId." });
+    return formatResponse(false, null, "Invalid or missing clientId.", 400);
   }
 
   try {
-
-    // Fetch product requests with pagination
+    // 3. Fetch product requests with pagination
     const productRequests = await prisma.request.findMany({
       where: { requestedById: clientId },
       include: {
@@ -52,9 +44,10 @@ if (isNaN(parsedLimit) || isNaN(parsedOffset) || parsedLimit <= 0 || parsedOffse
       },
       take: parsedLimit,
       skip: parsedOffset,
+      orderBy: { createdAt: "desc" },
     });
 
-    // Format the response
+    // 4. Format the response data
     const formattedRequests = productRequests.map((request) => ({
       requestId: request.id,
       productId: request.productId,
@@ -66,17 +59,31 @@ if (isNaN(parsedLimit) || isNaN(parsedOffset) || parsedLimit <= 0 || parsedOffse
       requestedAt: request.createdAt.toISOString(),
     }));
 
-    // Respond with structured data
-    return res.status(200).json({
-      clientId,
-      requests: formattedRequests,
-    });
+    // 5. Success Response
+    return formatResponse(
+      true,
+      {
+        clientId,
+        count: formattedRequests.length,
+        limit: parsedLimit,
+        offset: parsedOffset,
+        requests: formattedRequests,
+      },
+      "Client product requests fetched successfully.",
+      200
+    );
   } catch (error: any) {
-    console.error("Error fetching product requests:", error);
+    console.error("❌ Error fetching product requests:", error);
 
-    return NextResponse.json({
-      message: "An error occurred while fetching product requests.",
-      error: error.message || "Unknown error",
-    });
+    // 6. Error Response
+    return formatResponse(
+      false,
+      null,
+      error.message || "An error occurred while fetching product requests.",
+      500
+    );
   }
 }
+
+export const GETHandler = withApiHandler(GET);
+export { GETHandler as GET };

@@ -1,88 +1,58 @@
 // File: app/api/upload/route.ts
-
-import { NextResponse } from "next/server";
 import AWS from "aws-sdk";
 import { v4 as uuidv4 } from "uuid";
-
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
+import { verifyAuth } from "@/lib/verifyAuth";
 
 // Tell Next.js to run this route in a Node.js runtime
 export const runtime = "nodejs";
 
-// Disable Next.js’s default bodyParser so we can read multipart via formData()
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+// Disable Next.js’s default bodyParser to handle multipart via formData()
+export const config = { api: { bodyParser: false } };
 
-// Initialize AWS S3 client (AWS SDK v2—still supported but in maintenance mode)
+// Initialize AWS S3 client
 const s3 = new AWS.S3({
   accessKeyId: process.env.AACCESS_KEY_ID,
   secretAccessKey: process.env.ASECRET_ACCESS_KEY,
   region: process.env.AREGION,
 });
 
-/**
- * POST /api/upload (App-Router style)
- * Expects a multipart/form-data request with:
- *   • a field named “type” (“image”, “video”, or “file”)
- *   • a single file under the field name “file”
- */
-export async function POST(request: Request) {
+export const POST = withApiHandler(async (request: Request) => {
   try {
+    const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
-       const auth = await verifyAuth(request);
-      if (!auth.success) return formatResponse(false, null, auth.error, 401);
-    
-    
-    // 1️⃣ Use the Web-Request formData() API to retrieve fields + file blob
+    // 1️⃣ Parse formData
     const formData = await request.formData();
     const typeField = formData.get("type");
     const fileField = formData.get("file");
 
     // 2️⃣ Validate “type”
     if (typeof typeField !== "string" || !["image", "video", "file"].includes(typeField)) {
-      return NextResponse.json(
-        { error: 'Invalid or missing “type”. Must be "image", "video", or "file".' },
-        { status: 400 }
-      );
+      return formatResponse(false, null, 'Invalid or missing "type". Must be "image", "video", or "file".', 400);
     }
 
-    // 3️⃣ Ensure we have a file upload
+    // 3️⃣ Ensure a file is uploaded
     if (!(fileField instanceof File)) {
-      return NextResponse.json({ error: "No file uploaded under field “file”." }, { status: 400 });
+      return formatResponse(false, null, 'No file uploaded under field "file".', 400);
     }
 
-    // 4️⃣ Read the file’s ArrayBuffer → convert to Buffer for S3
+    // 4️⃣ Convert file to Buffer
     const arrayBuffer = await fileField.arrayBuffer();
     const fileBuffer = Buffer.from(arrayBuffer);
 
     // 5️⃣ Derive file extension & content type
-    //     (e.g. fileField.type === "image/png", so split "/" → ["image", "png"])
     const mimeParts = fileField.type.split("/");
-    const fileExtension = mimeParts[1] ?? ""; // e.g., "png", "pdf", "epub"
+    const fileExtension = mimeParts[1] ?? "";
 
-    // 6️⃣ Choose your S3 bucket & key prefix
+    // 6️⃣ Determine S3 key prefix
     const bucketName = process.env.AS3_BUCKET_NAME || "default-bucket-name";
+    const keyPrefix = typeField === "image" ? "images/"
+                    : typeField === "video" ? "videos/"
+                    : "files/";
 
-    let keyPrefix: string;
-    switch (typeField) {
-      case "image":
-        keyPrefix = "images/";
-        break;
-      case "video":
-        keyPrefix = "videos/";
-        break;
-      case "file":
-        keyPrefix = "files/";
-        break;
-      default:
-        // (This should never happen because we validated above.)
-        return NextResponse.json({ error: "Unsupported type." }, { status: 400 });
-    }
-
-    // 7️⃣ Build a unique filename (UUID + extension)
+    // 7️⃣ Build unique filename
     const fileKey = `${keyPrefix}${uuidv4()}.${fileExtension}`;
 
     // 8️⃣ Upload to S3
@@ -94,10 +64,11 @@ export async function POST(request: Request) {
     };
     const uploadResult = await s3.upload(uploadParams).promise();
 
-    // 9️⃣ Return the public URL
-    return NextResponse.json({ url: uploadResult.Location }, { status: 201 });
+    // 9️⃣ Return public URL
+    return formatResponse(true, { url: uploadResult.Location });
+
   } catch (err: any) {
     console.error("Upload error:", err);
-    return NextResponse.json({ error: `Upload failed: ${err.message}` }, { status: 500 });
+    return formatResponse(false, null, err.message || "Upload failed", 500);
   }
-}
+});

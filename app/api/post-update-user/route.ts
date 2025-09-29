@@ -1,38 +1,16 @@
-import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-
+// app/api/users/update/route.ts
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
-import { request } from "http";
 
-
-// POST /api/post
-
-export default async function GET( req : Request ) {
-  // const { id } = req.query;
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  const { searchParams } = new URL(req.url);
-  
-    const agentId = searchParams.get("agentId");
-    const limit = parseInt(searchParams.get("limit") || "10", 10);
-    const offset = parseInt(searchParams.get("offset") || "0", 10);
-  
-    if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
-      return NextResponse.json(
-        { message: "Invalid pagination parameters." },
-        { status: 400 }
-      );
-    }
-  
-
-  // Ensure it's a PUT request
-  if (req.method !== 'PUT') {
-    return NextResponse.json({ error: 'Method not allowed' });
-  }
-
+// PUT /api/users/update
+// Updates user details
+async function PUT(request: Request) {
   try {
+    const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+    const body = await request.json();
     const {
       id,
       name,
@@ -49,70 +27,47 @@ export default async function GET( req : Request ) {
       weightInKgGoal,
       physicalActivityLevel,
       bmiResult,
-      imgUri
-    } = req.body;
+      imgUri,
+    } = body;
 
-
-    // Create a data object with only the fields that are present
-    const dataToUpdate: any = {};
-    if (name && name !== undefined) dataToUpdate.name = name;
-    if (email && email !== undefined) dataToUpdate.email = email;
-    if (password && password !== undefined) dataToUpdate.hashedPassword = password;
-    if (role && role !== undefined) dataToUpdate.role = role;
-    if (gender && gender !== undefined) dataToUpdate.gender = gender;
-    if (exerciseGoal && exerciseGoal !== undefined) dataToUpdate.exerciseGoal = exerciseGoal;
-    if (focusArea && focusArea !== undefined) dataToUpdate.focusArea = focusArea;
-    if (currentHeightInCm && currentHeightInCm !== undefined) dataToUpdate.currentHeightInCm = Number(currentHeightInCm);
-    if (currentWeightInKg && currentWeightInKg !== undefined) dataToUpdate.currentWeightInKg = Number(currentWeightInKg);
-    if (birthYear && birthYear !== undefined) dataToUpdate.birthYear = Number(birthYear);
-    if (weeklyGoalInKM && weeklyGoalInKM !== undefined) dataToUpdate.weeklyGoalInKM = Number(weeklyGoalInKM);
-    if (weightInKgGoal && weightInKgGoal !== undefined) dataToUpdate.weightInKgGoal = Number(weightInKgGoal);
-    if (physicalActivityLevel && physicalActivityLevel !== undefined) dataToUpdate.physicalActivityLevel = physicalActivityLevel;
-    if (bmiResult && bmiResult !== undefined) dataToUpdate.bmiResult = Number(bmiResult);
-    if (imgUri && imgUri !== undefined) dataToUpdate.imgUri = imgUri;
-
-    // Check if there's anything to update
-    if (Object.keys(dataToUpdate).length === 0) {
-      return NextResponse.json({ error: 'No fields provided to update' });
+    if (!id) {
+      return formatResponse(false, null, "User ID is required", 400);
     }
 
-    // Update user in the database using Prisma
+    // Build only the fields provided
+    const dataToUpdate: any = {};
+    if (name) dataToUpdate.name = name;
+    if (email) dataToUpdate.email = email;
+    if (password) dataToUpdate.hashedPassword = password; // should be hashed before save
+    if (role) dataToUpdate.role = role;
+    if (gender) dataToUpdate.gender = gender;
+    if (exerciseGoal) dataToUpdate.exerciseGoal = exerciseGoal;
+    if (focusArea) dataToUpdate.focusArea = focusArea;
+    if (currentHeightInCm) dataToUpdate.currentHeightInCm = Number(currentHeightInCm);
+    if (currentWeightInKg) dataToUpdate.currentWeightInKg = Number(currentWeightInKg);
+    if (birthYear) dataToUpdate.birthYear = Number(birthYear);
+    if (weeklyGoalInKM) dataToUpdate.weeklyGoalInKM = Number(weeklyGoalInKM);
+    if (weightInKgGoal) dataToUpdate.weightInKgGoal = Number(weightInKgGoal);
+    if (physicalActivityLevel) dataToUpdate.physicalActivityLevel = physicalActivityLevel;
+    if (bmiResult) dataToUpdate.bmiResult = Number(bmiResult);
+    if (imgUri) dataToUpdate.imgUri = imgUri;
+
+    if (Object.keys(dataToUpdate).length === 0) {
+      return formatResponse(false, null, "No fields provided to update", 400);
+    }
+
     const updatedUser = await prisma.user.update({
-      where: {
-        id: String(id), // Assuming ID is an ObjectId string
-      },
+      where: { id: String(id) },
       data: dataToUpdate,
     });
 
-    // Update user in the database using Prisma
-    // const updatedUser = await prisma.user.update({
-    //   where: {
-    //     id: String(id), // Assuming ID is an ObjectId string
-    //   },
-    //   data: {
-    //     name,
-    //     email,
-    //     hashedPassword,
-    //     role,
-    //     gender,
-    //     exerciseGoal,
-    //     focusArea,
-    //     currentHeightInCm: Number(currentHeightInCm),
-    //     currentWeightInKg: Number(currentWeightInKg),
-    //     birthYear: Number(birthYear),
-    //     weeklyGoalInKM: Number(weeklyGoalInKM),
-    //     weightInKgGoal: Number(weightInKgGoal),
-    //     physicalActivityLevel,
-    //     bmiResult: Number(bmiResult),
-    //     imgUri,
-    //   },
-    // });
-
-    res.status(200).json(updatedUser);
-  } catch (error) {
-    console.error(error);
-    NextResponse.json({ error: 'Failed to update user' });
+    return formatResponse(true, updatedUser, "User updated successfully", 200);
+  } catch (err: any) {
+    console.error("PUT /api/users/update error:", err);
+    return formatResponse(false, null, err.message || "Failed to update user", 500);
   } finally {
     await prisma.$disconnect();
   }
 }
+
+export const PUTHandler = withApiHandler(PUT);

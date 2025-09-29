@@ -1,62 +1,38 @@
 // app/api/teacher/schedule/route.ts
-import { NextResponse } from 'next/server';
-import prisma from "@/server/db/prismadb"; // Adjust path as per your project structure
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
+import { verifyAuth } from "@/lib/verifyAuth";
 
+export const GET = withApiHandler(async (request: Request) => {
+  const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
-export async function GET(request: Request) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
   const { searchParams } = new URL(request.url);
-  // educatorId is expected to be the User.id associated with the Educator profile
-  const educatorUserId = searchParams.get('educatorId'); 
-  // const companyId = searchParams.get('companId');   // For multi-tenancy
+  const educatorUserId = searchParams.get("educatorId");
 
-  // --- Authentication & Authorization (Placeholder) ---
-  // In a real application, you would:
-  // 1. Get the authenticated user's session.
-  // 2. Verify the user is an 'EDUCATOR' and their ID matches 'educatorUserId'.
-  // 3. Ensure the 'educatorUserId' is authorized to view their schedule for this 'companyId'.
-  // const session = await auth();
-  // if (!session || session.user.id !== educatorUserId || session.user.role !== 'EDUCATOR') {
-  //   return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-  // }
-  // ----------------------------------------------------
-
-  // Ensure both educatorUserId and companyId are provided for proper filtering
   if (!educatorUserId) {
-    return NextResponse.json({ message: 'Missing educatorId or companyId' }, { status: 400 });
+    return formatResponse(false, null, "Missing educatorId", 400);
   }
 
   try {
-    // 1. Fetch Educator details using userId to get their actual Educator._id and role
+    // 1. Fetch Educator details
     const educator = await prisma.educator.findUnique({
       where: { userId: educatorUserId },
       select: {
-        id: true, // This is the Educator's _id, which will be used for relations
-        companyId:true,
-        user: {
-          select: {
-            name: true,
-            email: true,            
-            role: true, // Fetch the role from the Educator model
-          },
-        },
+        id: true,
+        companyId: true,
+        user: { select: { name: true, email: true, role: true } },
       },
     });
 
     if (!educator || !educator.user) {
-      return NextResponse.json({ message: 'Educator not found' }, { status: 404 });
+      return formatResponse(false, null, "Educator not found", 404);
     }
 
     // 2. Fetch ClassSchedule entries assigned to this educator
     const classSchedules = await prisma.classSchedule.findMany({
-      where: {
-        // companyId: companyId, // Filter by company for multi-tenancy
-        educatorId: educator.id, // Directly filter by the Educator's _id
-      },
+      where: { educatorId: educator.id },
       select: {
         id: true,
         dayOfWeek: true,
@@ -64,46 +40,40 @@ export async function GET(request: Request) {
         endTime: true,
         topic: true,
         meetingLink: true,
-        companyId: true,
-        course: { // Include course details
+        course: {
           select: {
             id: true,
-            title: true, // Use 'title' as per Course model
-            academicLevels: { // Access academic levels via CourseAcademicLevel
-              select: {
-                academicLevel: { // Select actual AcademicLevel details
-                  select: { name: true },
-                },
-              },
+            title: true,
+            academicLevels: {
+              select: { academicLevel: { select: { name: true } } },
             },
           },
         },
       },
       orderBy: [
-        { dayOfWeek: 'asc' }, // Order by day of week
-        { startTime: 'asc' }, // Then by start time
+        { dayOfWeek: "asc" },
+        { startTime: "asc" },
       ],
     });
 
     const formattedSchedules = classSchedules.map(schedule => ({
       id: schedule.id,
       day: schedule.dayOfWeek,
-      // Format time, ensure consistent timezone handling if this is for display
-      startTime: schedule.startTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
-      endTime: schedule.endTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
-      title: `${schedule.course?.title || 'N/A Course'} (${schedule.course?.academicLevels[0]?.academicLevel?.name || 'N/A Grade'})`,
+      startTime: schedule.startTime.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false }),
+      endTime: schedule.endTime.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false }),
+      title: `${schedule.course?.title || "N/A Course"} (${schedule.course?.academicLevels[0]?.academicLevel?.name || "N/A Grade"})`,
       topic: schedule.topic,
       meetingLink: schedule.meetingLink,
-      type: 'class', // Custom type for frontend display
+      type: "class",
     }));
 
-    // 3. Fetch Event entries where this educator is the organizer or a target
+    // 3. Fetch Events for this educator
     const events = await prisma.event.findMany({
       where: {
-        companyId: educator.companyId, // Filter by company for multi-tenancy
+        companyId: educator.companyId,
         OR: [
-          { organizerId: educator.id }, // Events organized by this educator's _id
-          { targetEducatorIds: { has: educator.id } }, // Events explicitly targeting this educator's _id
+          { organizerId: educator.id },
+          { targetEducatorIds: { has: educator.id } },
         ],
       },
       select: {
@@ -116,33 +86,32 @@ export async function GET(request: Request) {
         onlineMeetingLink: true,
         eventType: true,
       },
-      orderBy: { startDateTime: 'asc' },
+      orderBy: { startDateTime: "asc" },
     });
 
     const formattedEvents = events.map(event => ({
       id: event.id,
       title: event.title,
       summary: event.summary,
-      date: event.startDateTime.toISOString().split('T')[0], // YYYY-MM-DD
-      startTime: event.startDateTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
-      endTime: event.endDateTime?.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }) || '',
+      date: event.startDateTime.toISOString().split("T")[0],
+      startTime: event.startDateTime.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false }),
+      endTime: event.endDateTime?.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false }) || "",
       location: event.location,
       onlineMeetingLink: event.onlineMeetingLink,
-      type: event.eventType, // Use eventType as type for frontend display
+      type: event.eventType,
     }));
 
-    return NextResponse.json({
+    return formatResponse(true, {
       educator: {
         id: educator.id,
         name: educator.user.name || educator.user.email,
-        role: educator.user.role, // Use the actual role from Educator model
+        role: educator.user.role,
       },
       schedule: formattedSchedules,
       events: formattedEvents,
     });
-
-  } catch (error) {
-    console.error('Error fetching teacher schedule:', error);
-    return NextResponse.json({ message: 'Failed to fetch teacher schedule' }, { status: 500 });
+  } catch (error: any) {
+    console.error("Error fetching teacher schedule:", error);
+    return formatResponse(false, null, error.message || "Failed to fetch teacher schedule", 500);
   }
-}
+});

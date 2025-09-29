@@ -1,34 +1,19 @@
 // app/api/teacher/subjects/route.ts
-import { NextResponse } from 'next/server';
-import prisma from "@/server/db/prismadb"; // Adjust path as per your project structure
+import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-
-export async function GET(request: Request) {
-   
-
-
-
-  const { searchParams } = new URL(request.url);
-  const academicLevelId = searchParams.get('academicLevelId');
-  const teacherId = searchParams.get('teacherId'); // Used to derive companyId
-
-  // --- Authentication & Authorization (Placeholder) ---
-  // In a real application, you would:
-  // 1. Get the authenticated user's session.
-  // 2. Verify the user is an 'EDUCATOR' and their ID matches 'teacherId'.
-  // 3. Ensure the 'teacherId' is authorized to access data for 'academicLevelId'.
-  // const session = await auth();
-  // if (!session || session.user.id !== teacherId || session.user.role !== 'EDUCATOR') {
-  //   return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-  // }
-  // ----------------------------------------------------
-
-  if (!academicLevelId || !teacherId) {
-    return NextResponse.json({ message: 'Missing academicLevelId or teacherId' }, { status: 400 });
-  }
-
+// GET /api/teacher/subjects?academicLevelId=...&teacherId=...
+async function getSubjects(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const academicLevelId = searchParams.get('academicLevelId');
+    const teacherId = searchParams.get('teacherId');
+
+    if (!academicLevelId || !teacherId) {
+      return formatResponse(false, null, 'Missing academicLevelId or teacherId', 400);
+    }
+
     // Derive companyId from the educator (teacherId)
     const educator = await prisma.educator.findUnique({
       where: { userId: teacherId },
@@ -36,38 +21,36 @@ export async function GET(request: Request) {
     });
 
     if (!educator || !educator.companyId) {
-      return NextResponse.json({ message: 'Educator not found or not associated with a company' }, { status: 404 });
+      return formatResponse(false, null, 'Educator not found or not associated with a company', 404);
     }
     const companyId = educator.companyId;
 
     // Fetch courses (subjects) linked to the academic level via CourseAcademicLevel
     const courses = await prisma.course.findMany({
       where: {
-        companyId: companyId, // Ensure multi-tenancy
-        academicLevels: { // Relate to CourseAcademicLevel
-          some: {
-            academicLevelId: academicLevelId,
-          },
+        companyId,
+        academicLevels: {
+          some: { academicLevelId },
         },
       },
       select: {
         id: true,
         title: true,
       },
-      orderBy: {
-        title: 'asc',
-      },
+      orderBy: { title: 'asc' },
     });
 
-    // Map to the CourseOption type expected by the frontend
     const courseOptions = courses.map(course => ({
       id: course.id,
       title: course.title,
     }));
 
-    return NextResponse.json(courseOptions);
-  } catch (error) {
+    return formatResponse(true, courseOptions, 'Subjects fetched successfully', 200);
+  } catch (error: any) {
     console.error('Error fetching courses for academic level:', error);
-    return NextResponse.json({ message: 'Failed to fetch courses' }, { status: 500 });
+    return formatResponse(false, null, error.message || 'Failed to fetch subjects', 500);
   }
 }
+
+// Export GET handler wrapped with withApiHandler
+export const GET = withApiHandler(getSubjects, { requireAuth: true });

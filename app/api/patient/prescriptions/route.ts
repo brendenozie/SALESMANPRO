@@ -1,69 +1,76 @@
 // app/api/patient/prescriptions/route.ts
-import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
-export async function GET(request: Request) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
+async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const patientId = searchParams.get("patientId"); // This is the User.id for the patient
+  const patientId = searchParams.get("patientId"); // User.id of patient
   const status = searchParams.get("status"); // 'PENDING', 'DISPENSED', 'EXPIRED', 'All'
   const searchTerm = searchParams.get("searchTerm") || "";
 
   if (!patientId) {
-    return NextResponse.json({ error: "Missing patientId" }, { status: 400 });
+    return formatResponse(false, null, "Missing patientId", 400);
   }
 
   try {
-    const whereClause: any = {
-      patientId: patientId, // Link to the User model
-    };
+    const whereClause: any = { patientId };
 
-    if (status && status !== 'All') {
+    if (status && status !== "All") {
       whereClause.status = status;
     }
 
     let prescriptions = await prisma.prescription.findMany({
       where: whereClause,
       include: {
-        patient: { select: { name: true } }, // Patient's name (for consistency)
+        patient: { select: { name: true } },
         doctor: { include: { User: { select: { name: true } } } },
       },
-      orderBy: { issuedDate: 'desc' },
+      orderBy: { issuedDate: "desc" },
     });
 
     // Client-side filtering for search term
     if (searchTerm) {
       const lowerCaseSearchTerm = searchTerm.toLowerCase();
-      prescriptions = prescriptions.filter(rx =>
-        rx.medication?.toLowerCase().includes(lowerCaseSearchTerm) ||
-        rx.doctor?.User?.name?.toLowerCase().includes(lowerCaseSearchTerm)
+      prescriptions = prescriptions.filter(
+        (rx) =>
+          rx.medication?.toLowerCase().includes(lowerCaseSearchTerm) ||
+          rx.doctor?.User?.name?.toLowerCase().includes(lowerCaseSearchTerm)
       );
     }
 
-    const formattedPrescriptions = prescriptions.map(rx => ({
+    const formattedPrescriptions = prescriptions.map((rx) => ({
       id: rx.id,
       patientId: rx.patientId,
-      patientName: rx.patient?.name || 'N/A',
+      patientName: rx.patient?.name || "N/A",
       doctorId: rx.doctorId,
-      doctorName: rx.doctor?.User?.name || 'N/A',
+      doctorName: rx.doctor?.User?.name || "N/A",
       medication: rx.medication,
       dosage: rx.dosage,
-      instructions: rx.instructions || 'N/A',
-      issuedDate: rx.issuedDate ? new Date(rx.issuedDate).toISOString().split('T')[0] : 'N/A',
-      expiryDate: rx.expiryDate ? new Date(rx.expiryDate).toISOString().split('T')[0] : 'N/A',
+      instructions: rx.instructions || "N/A",
+      issuedDate: rx.issuedDate
+        ? new Date(rx.issuedDate).toISOString().split("T")[0]
+        : "N/A",
+      expiryDate: rx.expiryDate
+        ? new Date(rx.expiryDate).toISOString().split("T")[0]
+        : "N/A",
       status: rx.status,
-      notes: rx.notes || 'N/A',
-      createdAt: rx.createdAt ? new Date(rx.createdAt).toLocaleDateString() : 'N/A',
+      notes: rx.notes || "N/A",
+      createdAt: rx.createdAt
+        ? new Date(rx.createdAt).toLocaleDateString()
+        : "N/A",
     }));
 
-    return NextResponse.json(formattedPrescriptions);
+    return formatResponse(true, formattedPrescriptions);
   } catch (err: any) {
     console.error("GET /api/patient/prescriptions error:", err);
-    return NextResponse.json({ error: err.message || "Internal server error" }, { status: 500 });
+    return formatResponse(
+      false,
+      null,
+      err.message || "Internal server error",
+      500
+    );
   }
 }
+
+export const GETHandler = withApiHandler(GET);

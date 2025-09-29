@@ -1,71 +1,52 @@
-import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-
-// import { requireAuth } from "@/lib/auth";
+import prisma from "@/server/db/prismadb";
 import { rateLimit } from "@/lib/rate-limit";
-import { formatResponse, verifyAuth } from "@/lib/verifyAuth";
+import { formatResponse } from "@/lib/formatResponse";
+import { verifyAuth } from "@/lib/verifyAuth";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
 // Optional: Define allowed action types
 const VALID_ACTIONS = ["view", "purchase", "favorite"];
 
-export async function POST(req: Request) {
-  try {
-    
-       const auth = await verifyAuth(req);
-      if (!auth.success) return formatResponse(false, null, auth.error, 401);
-    
-    
-    const ip = req.headers.get("x-forwarded-for") || "local";
-    
-      if (!rateLimit(ip)) {
-        return NextResponse.json({ message: "Too many requests" }, { status: 429 });
-      }
-    
-      // const authResult = await requireAuth(req);
-      // if (authResult instanceof Response) return authResult;
-    
+async function handler(req: Request) {
+  const auth = await verifyAuth(req);
+  if (!auth.success) {
+    return formatResponse(false, null, auth.error, 401);
+  }
 
-    const body = await req.json();
-    const { userId, productId, action } = body;
+  const ip = req.headers.get("x-forwarded-for") || "local";
+  if (!rateLimit(ip)) {
+    return formatResponse(false, null, "Too many requests", 429);
+  }
+
+  try {
+    const { userId, productId, action } = await req.json();
 
     if (!userId || !productId || !action) {
-      return NextResponse.json(
-        { error: "Missing userId, productId, or action" },
-        { status: 400 }
-      );
+      return formatResponse(false, null, "Missing userId, productId, or action", 400);
     }
 
     if (!VALID_ACTIONS.includes(action)) {
-      return NextResponse.json(
-        { error: `Invalid action type. Allowed: ${VALID_ACTIONS.join(", ")}` },
-        { status: 400 }
+      return formatResponse(
+        false,
+        null,
+        `Invalid action type. Allowed: ${VALID_ACTIONS.join(", ")}`,
+        400
       );
     }
 
-    await prisma.userActivity.create({
-      data: {
-        userId,
-        productId,
-        action,
-      },
+    const activity = await prisma.userActivity.create({
+      data: { userId, productId, action },
     });
 
-    return NextResponse.json(
-      { message: "User activity logged successfully" },
-      { status: 200 }
-    );
-  } catch (error) {
+    return formatResponse(true, activity, "User activity logged successfully", 200);
+  } catch (error: any) {
     console.error("Error logging user activity:", error);
-    return NextResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
+    return formatResponse(false, null, "Internal Server Error", 500, error.message);
   }
 }
 
-export function GET() {
-  return NextResponse.json(
-    { error: "Method Not Allowed" },
-    { status: 405 }
-  );
+export const POST = withApiHandler(handler);
+
+export async function GET() {
+  return formatResponse(false, null, "Method Not Allowed", 405);
 }

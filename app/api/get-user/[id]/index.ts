@@ -1,85 +1,59 @@
-import { Prisma } from '@prisma/client'
-import { NextApiRequest, NextApiResponse } from 'next'
-import { getSession } from 'next-auth/react'
-
-import prisma, { client } from "@/server/db/prismadb";
+// app/api/users/[id]/route.ts
+import { Prisma } from "@prisma/client";
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
+import { verifyAuth } from "@/lib/verifyAuth";
 
-import { request } from 'http';
-import { NextResponse } from 'next/server';
-
-export default async function handle(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-   const auth = await verifyAuth(req);
+// ================= DELETE =================
+async function deleteUser(request: Request, { params }: { params: { id: string } }) {
+  const auth = await verifyAuth(request);
   if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
+  const { id } = params;
 
-  const session = await getSession({ req })
-  // if (!session.isAdmin) {
-  //   return res.status(401).end()
-  // }
-
-  if (req.method === 'DELETE') {
-    deleteUser(req, res)
-  } else if (req.method === 'PUT') {
-    updateUser(req, res)
-  } else {
-    res.status(404).end()
-  }
-}
-
-async function deleteUser(req: NextApiRequest, res: NextApiResponse) {
-  const amaId = req.query.id as string
-  const { searchParams } = new URL(req.url);
-  
-    const agentId = searchParams.get("agentId");
-    const limit = parseInt(searchParams.get("limit") || "10", 10);
-    const offset = parseInt(searchParams.get("offset") || "0", 10);
-  
-    if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
-      return NextResponse.json(
-        { message: "Invalid pagination parameters." },
-        { status: 400 }
-      );
-    }
-  
   try {
-    // const ama = await prisma.exercise.delete({
-    //   where: {
-    //     id: amaId,
-    //   },
-    // })
-    // return res.status(204).json({ id: ama.id })
-  } catch (e) {
-    console.log(e)
-    NextResponse
+    const deletedUser = await prisma.user.delete({
+      where: { id },
+    });
+
+    return formatResponse(true, { id: deletedUser.id }, "User deleted successfully");
+  } catch (error: any) {
+    console.error("DELETE /api/users/[id] error:", error);
+    return formatResponse(false, null, error.message || "Error deleting user", 500);
   }
 }
 
-async function updateUser(req: NextApiRequest, res: NextApiResponse) {
-  const amaId = req.query.id as string
-  const { question } = JSON.parse(req.body)
+// ================= PUT =================
+async function updateUser(request: Request, { params }: { params: { id: string } }) {
+  const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+  const { id } = params;
+  const body = await request.json();
+  const { question } = body;
+
   try {
-    // const ama = await prisma.booking.update({
-    //   where: {
-    //     id: amaId,
-    //   },
-    //   data: {
-    //     question: question.question,
-    //     answer: question.answer,
-    //     status: question.status,
-    //     audioUrl: question.audioUrl ?? null,
-    //     audioWaveform: Array.isArray(question.audioWaveform)
-    //       ? question.audioWaveform
-    //       : Prisma.DbNull,
-    //   },
-    // })
+    const updatedBooking = await prisma.booking.update({
+      where: { id },
+      data: {
+        question: question.question,
+        answer: question.answer,
+        status: question.status,
+        audioUrl: question.audioUrl ?? null,
+        audioWaveform: Array.isArray(question.audioWaveform)
+          ? question.audioWaveform
+          : Prisma.DbNull,
+      },
+    });
 
-    return res.status(200).json("ama")
-  } catch (e) {
-    console.log(e)
-    NextResponse.end()
+    return formatResponse(true, updatedBooking, "User updated successfully");
+  } catch (error: any) {
+    console.error("PUT /api/users/[id] error:", error);
+    return formatResponse(false, null, error.message || "Error updating user", 500);
   }
 }
+
+// ================= EXPORTS =================
+export const DELETE = withApiHandler(deleteUser);
+export const PUT = withApiHandler(updateUser);

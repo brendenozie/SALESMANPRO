@@ -1,47 +1,44 @@
-
-
 // app/api/patient/invoices/route.ts
-import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
-export async function GET(request: Request) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
+async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const patientId = searchParams.get("patientId"); // This is the User.id for the patient
+  const patientId = searchParams.get("patientId"); // User.id of patient
   const status = searchParams.get("status"); // 'PAID', 'PENDING', 'OVERDUE', 'CANCELED', 'All'
   const searchTerm = searchParams.get("searchTerm") || "";
 
   if (!patientId) {
-    return NextResponse.json({ error: "Missing patientId" }, { status: 400 });
+    return formatResponse(false, null, "Missing patientId", 400);
   }
 
   try {
     const whereClause: any = {
-      patientId: patientId, // Link to the User model
+      patientId: patientId,
     };
 
-    if (status && status !== 'All') {
+    if (status && status !== "All") {
       whereClause.status = status;
     }
 
     let invoices = await prisma.patientInvoices.findMany({
       where: whereClause,
       include: {
-        patient: { select: { name: true } }, // Patient's name (for consistency)
+        patient: { select: { name: true } },
       },
-      orderBy: { invoiceDate: 'desc' },
+      orderBy: { invoiceDate: "desc" },
     });
 
     // Client-side filtering for search term
     if (searchTerm) {
       const lowerCaseSearchTerm = searchTerm.toLowerCase();
-      invoices = invoices.filter(invoice => {
-        const itemsString = Array.isArray(invoice.items) ? JSON.stringify(invoice.items).toLowerCase() : (typeof invoice.items === 'string' ? invoice.items.toLowerCase() : '');
+      invoices = invoices.filter((invoice) => {
+        const itemsString = Array.isArray(invoice.items)
+          ? JSON.stringify(invoice.items).toLowerCase()
+          : typeof invoice.items === "string"
+          ? invoice.items.toLowerCase()
+          : "";
         return (
           invoice.id.toLowerCase().includes(lowerCaseSearchTerm) ||
           itemsString.includes(lowerCaseSearchTerm)
@@ -49,22 +46,39 @@ export async function GET(request: Request) {
       });
     }
 
-    const formattedInvoices = invoices.map(invoice => ({
+    const formattedInvoices = invoices.map((invoice) => ({
       id: invoice.id,
       patientId: invoice.patientId,
-      patientName: invoice.patient?.name || 'N/A',
+      patientName: invoice.patient?.name || "N/A",
       amount: invoice.amount,
-      date: invoice.invoiceDate ? new Date(invoice.invoiceDate).toISOString().split('T')[0] : 'N/A',
-      dueDate: invoice.dueDate ? new Date(invoice.dueDate).toISOString().split('T')[0] : 'N/A',
+      date: invoice.invoiceDate
+        ? new Date(invoice.invoiceDate).toISOString().split("T")[0]
+        : "N/A",
+      dueDate: invoice.dueDate
+        ? new Date(invoice.dueDate).toISOString().split("T")[0]
+        : "N/A",
       status: invoice.status,
-      items: Array.isArray(invoice.items) ? invoice.items : (typeof invoice.items === 'string' ? JSON.parse(invoice.items) : []),
-      notes: invoice.notes || 'N/A',
-      createdAt: invoice.createdAt ? new Date(invoice.createdAt).toLocaleDateString() : 'N/A',
+      items: Array.isArray(invoice.items)
+        ? invoice.items
+        : typeof invoice.items === "string"
+        ? JSON.parse(invoice.items)
+        : [],
+      notes: invoice.notes || "N/A",
+      createdAt: invoice.createdAt
+        ? new Date(invoice.createdAt).toLocaleDateString()
+        : "N/A",
     }));
 
-    return NextResponse.json(formattedInvoices);
+    return formatResponse(true, formattedInvoices);
   } catch (err: any) {
     console.error("GET /api/patient/invoices error:", err);
-    return NextResponse.json({ error: err.message || "Internal server error" }, { status: 500 });
+    return formatResponse(
+      false,
+      null,
+      err.message || "Internal server error",
+      500
+    );
   }
 }
+
+export const GETHandler = withApiHandler(GET);

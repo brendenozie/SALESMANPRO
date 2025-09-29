@@ -1,28 +1,24 @@
-import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-
+// app/api/location/route.ts
+import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
-import { request } from "http";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { verifyAuth } from "@/lib/verifyAuth";
 
 // GET /api/location?userId=&agentId=
-export async function GET(req: Request) {
+async function getLocation(req: Request) {
   try {
-    
-       const auth = await verifyAuth(req);
-      if (!auth.success) return formatResponse(false, null, auth.error, 401);
-    
+    const auth = await verifyAuth(req);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
     const { searchParams } = new URL(req.url);
     const userId = searchParams.get("userId");
     const agentId = searchParams.get("agentId");
 
     if (!userId) {
-      return NextResponse.json(
-        { error: "Missing required parameter: userId" },
-        { status: 400 }
-      );
+      return formatResponse(false, null, "Missing required parameter: userId", 400);
     }
 
-    // Optional: filter by agentId if needed (example placeholder)
+    // Optional: filter by agentId if needed
     // const whereClause: any = { userId };
     // if (agentId) whereClause.agentId = agentId;
 
@@ -31,18 +27,14 @@ export async function GET(req: Request) {
     });
 
     if (!location) {
-      return NextResponse.json(
-        { error: "Location not found" },
-        { status: 404 }
-      );
+      return formatResponse(false, null, "Location not found", 404);
     }
 
-    return NextResponse.json(location, { status: 200 });
+    return formatResponse(true, location);
   } catch (error: any) {
     console.error("Error fetching location:", error);
-    return NextResponse.json(
-      { error: "Server error fetching location", detail: error.message },
-      { status: 500 }
-    );
+    return formatResponse(false, null, "Server error fetching location", 500);
   }
 }
+
+export const GET = withApiHandler(getLocation);

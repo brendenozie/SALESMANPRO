@@ -1,82 +1,90 @@
-import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
+import { verifyAuth } from "@/lib/verifyAuth";
 
+/**
+ * API route to fetch a specific client's inventory details, including product and agent information.
+ * Uses pagination parameters (limit and offset) for efficient data retrieval.
+ */
+export const GET = withApiHandler(async (req: Request) => {
+  // 1. Authentication Check
+  const auth = await verifyAuth(req);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
-export default async function GET( req : Request ) {
-  
-     const auth = await verifyAuth(req);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  if (req.method !== "GET") {
-    return NextResponse.json({ message: "Method not allowed. Use GET." });
-  }
-
-  const { clientId } = req.query;
+  // 2. Extract and Validate Parameters
   const { searchParams } = new URL(req.url);
-  
-    const agentId = searchParams.get("agentId");
-    const limit = parseInt(searchParams.get("limit") || "10", 10);
-    const offset = parseInt(searchParams.get("offset") || "0", 10);
-  
-    if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
-      return NextResponse.json(
-        { message: "Invalid pagination parameters." },
-        { status: 400 }
-      );
-    }
-  
 
-  // Validate clientId
+  const clientId = searchParams.get("clientId");
+  const limit = parseInt(searchParams.get("limit") || "10", 10);
+  const offset = parseInt(searchParams.get("offset") || "0", 10);
+
   if (!clientId || typeof clientId !== "string") {
-    return NextResponse.json({ message: "Invalid or missing clientId." });
+    return formatResponse(
+      false,
+      null,
+      "Invalid or missing clientId query parameter.",
+      400
+    );
   }
 
-  try {
-    // Fetch client inventory and related product data
-    const clientInventory = await prisma.clientInventory.findMany({
-      where: { clientId },
-      include: {
-        inventoryItem: {
-          include: {
-            product: {
-              include :{
-                productCategory:true
-              }
-            }, // Include product details
+  if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
+    return formatResponse(
+      false,
+      null,
+      "Invalid pagination parameters.",
+      400
+    );
+  }
+
+  // 3. Fetch client inventory and related product data
+  const clientInventory = await prisma.clientInventory.findMany({
+    where: { clientId },
+    take: limit,
+    skip: offset,
+    include: {
+      inventoryItem: {
+        include: {
+          product: {
+            include: {
+              productCategory: true,
+            },
           },
         },
-        salesAgent: true, // Include sales agent details
       },
-    });
+      salesAgent: true,
+    },
+  });
 
-    // Map client inventory to structure the response
-    const inventoryDetails = clientInventory.map((item) => ({
-      clientInventoryId: item.id,
-      product:item.inventoryItem.product,
-      productId: item.inventoryItem.productId,
-      productName: item.inventoryItem.product?.name || "Unknown Product",
-      quantityPurchased: item.quantity,
-      salesAgentId: item.salesAgent.id,
-      salesAgentName: item.salesAgent.name,
-      category :  item.inventoryItem.product.category,
-          subCategory:  item.inventoryItem.product.subCategory,
-          tags    :  item.inventoryItem.product.tags,
-          brand       :  item.inventoryItem.product.brand,
-    }));
+  // 4. Map client inventory to response format
+  const inventoryDetails = clientInventory.map((item) => ({
+    clientInventoryId: item.id,
+    productId: item.inventoryItem.product?.id,
+    productName: item.inventoryItem.product?.name || "Unknown Product",
+    quantityPurchased: item.quantity,
+    salesAgentId: item.salesAgent?.id,
+    salesAgentName: item.salesAgent?.name || "N/A",
+    productDetails: {
+      category: item.inventoryItem.product?.productCategory?.name || "Uncategorized",
+      subCategory: item.inventoryItem.product?.subCategory,
+      tags: item.inventoryItem.product?.tags,
+      brand: item.inventoryItem.product?.brand,
+      costPrice: item.inventoryItem.product?.costPrice,
+      salesPrice: item.inventoryItem.product?.salesPrice,
+    },
+  }));
 
-    // Respond with structured data
-    return res.status(200).json({
+  // 5. Return structured response
+  return formatResponse(
+    true,
+    {
       clientId,
+      count: inventoryDetails.length,
+      offset,
+      limit,
       inventory: inventoryDetails,
-    });
-  } catch (error: any) {
-    console.error("Error fetching client inventory:", error);
-
-    return NextResponse.json({
-      message: "An error occurred while fetching client inventory.",
-      error: error.message || "Unknown error",
-    });
-  }
-}
+    },
+    "Client inventory fetched successfully.",
+    200
+  );
+});

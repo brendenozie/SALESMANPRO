@@ -1,124 +1,93 @@
-import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-
+// app/api/exercise/route.ts
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
-import { request } from "http";
-import { NextApiRequest, NextApiResponse } from "next";
-import { getSession } from "next-auth/react";
 
+// ================= GET =================
+async function getExercise(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const agentId = searchParams.get("agentId");
+  const limit = parseInt(searchParams.get("limit") || "10", 10);
+  const offset = parseInt(searchParams.get("offset") || "0", 10);
 
-export default async function handle(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-   
+  if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
+    return formatResponse(false, null, "Invalid pagination parameters.", 400);
+  }
 
+  try {
+    const exercises = await prisma.exercise.findMany({
+      where: { agentId: agentId || undefined },
+      skip: offset,
+      take: limit,
+    });
 
+    const totalCount = await prisma.exercise.count({
+      where: { agentId: agentId || undefined },
+    });
 
-  const session = await getSession({ req })
-  // if (!session.isAdmin) {
-  //   return res.status(401).end()
-  // }
-  // if (req.method === 'GET') {
-  //   await GetExercise(req, res)
-  //   return;
-  // }
-  // if (req.method === 'DELETE') {
-  //   await deleteExercise(req, res)
-  //   return;
-  // }
-  // if (req.method === 'PUT') {
-  //   await updateExercise(req, res)
-  //   return;
-  // }
-
-  // else {
-  //   res.status(404).end()
-  //   return;
-  // }
+    return formatResponse(true, {
+      InfoResponse: {
+        count: totalCount,
+        next: offset + limit < totalCount ? offset + limit : null,
+        pages: Math.ceil(totalCount / limit),
+        prev: offset > 0 ? Math.max(offset - limit, 0) : null,
+      },
+      results: exercises,
+    });
+  } catch (e: any) {
+    console.error("GET /api/exercise error:", e);
+    return formatResponse(false, null, e.message || "Internal server error", 500);
+  }
 }
 
-// async function GetExercise(req: NextApiRequest, res: NextApiResponse) {
-//   const exerciseId = req.query.id as string
-const { searchParams } = new URL(req.url);
-  
-    const agentId = searchParams.get("agentId");
-    const limit = parseInt(searchParams.get("limit") || "10", 10);
-    const offset = parseInt(searchParams.get("offset") || "0", 10);
-  
-    if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
-      return NextResponse.json(
-        { message: "Invalid pagination parameters." },
-        { status: 400 }
-      );
-    }
-  
+// ================= DELETE =================
+async function deleteExercise(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const exerciseId = searchParams.get("id");
 
-//   try {
+  if (!exerciseId) {
+    return formatResponse(false, null, "Missing exerciseId", 400);
+  }
 
-//     const exercise = await prisma.exercise.findFirst({
-//       where: {
-//         id: exerciseId,
-//       },
-//     });
+  try {
+    const exercise = await prisma.exercise.delete({
+      where: { id: exerciseId },
+    });
 
-//     return res.status(200).json({
-//       InfoResponse: {
-//         count: 1,
-//         next: "2",
-//         pages: 10,
-//         prev: "0"
-//       },
-//       results: exercise
-//     })
-//   } catch (e) {
-//     NextResponse
-//   }
-// }
+    return formatResponse(true, { id: exercise.id }, "Exercise deleted");
+  } catch (e: any) {
+    console.error("DELETE /api/exercise error:", e);
+    return formatResponse(false, null, e.message || "Internal server error", 500);
+  }
+}
 
-// async function deleteExercise(req: NextApiRequest, res: NextApiResponse) {
-//   const amaId = req.query.id as string
-//   try {
-//     const ama = await prisma.exercise.delete({
-//       where: {
-//         id: amaId,
-//       },
-//     })
-//     return res.status(204).json({ id: ama.id })
-//   } catch (e) {
-//     console.log(e)
-//     NextResponse
-//   }
-// }
+// ================= PUT =================
+async function updateExercise(request: Request) {
+  const body = await request.json();
+  const { id, exerciseName, publicId, url, status } = body;
 
-// async function updateExercise(req: NextApiRequest, res: NextApiResponse) {
+  if (!id) {
+    return formatResponse(false, null, "Missing exercise ID", 400);
+  }
 
-//   const {
-//     id,
-//     exerciseName,
-//     publicId,
-//     url,
-//     status,
-//   } = req.body;
+  try {
+    const updatedExercise = await prisma.exercise.update({
+      where: { id },
+      data: {
+        exName: exerciseName,
+        publicId,
+        url,
+        status,
+      },
+    });
 
-//   const session = await getSession({ req });
-//   try {
+    return formatResponse(true, updatedExercise, "Exercise updated");
+  } catch (e: any) {
+    console.error("PUT /api/exercise error:", e);
+    return formatResponse(false, null, e.message || "Internal server error", 500);
+  }
+}
 
-//     const result = await prisma.exercise.update({
-//       where: {
-//         id: id,
-//       },
-//       data: {
-//         exName: exerciseName,
-//         // publicId,
-//         // url,
-//         // status,
-//       },
-//     });
-//     return res.json(result);
-
-//   } catch (e) {
-//     console.log(e)
-//     NextResponse.end()
-//   }
-// }
+export const GET = withApiHandler(getExercise);
+export const DELETE = withApiHandler(deleteExercise);
+export const PUT = withApiHandler(updateExercise);

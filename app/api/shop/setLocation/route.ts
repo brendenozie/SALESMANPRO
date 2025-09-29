@@ -1,30 +1,27 @@
-import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
-import { rateLimit } from "../../../../lib/rate-limit";
-
+import { verifyAuth } from "@/lib/verifyAuth";
+import { rateLimit } from "@/lib/rate-limit";
 import { formatResponse } from "@/lib/formatResponse";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-export async function POST(req: Request) {
-  
-     const auth = await verifyAuth(req);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
+// POST /api/location
+async function handler(req: Request) {
+  const auth = await verifyAuth(req);
+  if (!auth.success) {
+    return formatResponse(false, null, auth.error, 401);
+  }
+
   const ip = req.headers.get("x-forwarded-for") || "local";
 
   if (!rateLimit(ip)) {
-    return NextResponse.json({ message: "Too many requests" }, { status: 429 });
+    return formatResponse(false, null, "Too many requests", 429);
   }
 
   try {
-    const body = await req.json();
-    const { userId, latitude, longitude, address, description } = body;
+    const { userId, latitude, longitude, address, description } = await req.json();
 
     if (!userId || !latitude || !longitude || !address) {
-      return NextResponse.json(
-        { message: "All fields are required" },
-        { status: 400 }
-      );
+      return formatResponse(false, null, "All fields are required", 400);
     }
 
     const location = await prisma.location.upsert({
@@ -33,12 +30,11 @@ export async function POST(req: Request) {
       create: { userId, latitude, longitude, address, description },
     });
 
-    return NextResponse.json(
-      { message: "Location updated", location },
-      { status: 200 }
-    );
-  } catch (error) {
+    return formatResponse(true, location, "Location updated successfully", 200);
+  } catch (error: any) {
     console.error("Error updating location:", error);
-    return NextResponse.json({ message: "Server Error" }, { status: 500 });
+    return formatResponse(false, null, "Server error updating location", 500, error.message);
   }
 }
+
+export const POST = withApiHandler(handler);

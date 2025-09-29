@@ -1,57 +1,38 @@
-import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { getAuthSession } from "@/lib/auth";
-import { Prisma } from "@prisma/client";
-
 import { formatResponse } from "@/lib/formatResponse";
-
-// export const dynamic = "force-dynamic";
-
-// // app/api/stores/[storeId]/company-locations/route.ts
-// import { NextRequest, NextResponse } from "next/server";
-// import { getAuthSession } from "@/lib/auth"; // Adjust path as per your project structure
-// import { prisma } from "@/lib/prisma"; // Adjust path as per your project structure
+import { verifyAuth } from "@/lib/verifyAuth";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
 // GET: Retrieve all CompanyLocation records for a specific store
-export async function GET(
-  req: NextRequest,
+async function getHandler(
+  req: Request,
   { params }: { params: { storeId: string } }
 ) {
+  const auth = await verifyAuth(req);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+  const session = await getAuthSession();
+  if (!session?.user?.id) {
+    return formatResponse(false, null, "Unauthorized", 401);
+  }
+
+  const { storeId } = params;
+
+  const company = await prisma.company.findUnique({
+    where: { id: storeId, userId: session.user.id },
+    select: { id: true },
+  });
+
+  if (!company) {
+    return formatResponse(false, null, "Store not found or unauthorized", 404);
+  }
+
   try {
-     const auth = await verifyAuth(req);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
-    const session = await getAuthSession();
-
-    // 1. Authenticate the user
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const storeId = params.storeId;
-
-    // 2. Verify that the requested store belongs to the current user
-    const company = await prisma.company.findUnique({
-      where: {
-        id: storeId,
-        userId: session.user.id,
-      },
-      select: { id: true }, // Only select ID to confirm existence and ownership
-    });
-
-    if (!company) {
-      return NextResponse.json({ error: "Store not found or unauthorized" }, { status: 404 });
-    }
-
-    // 3. Retrieve CompanyLocation records for the specified store,
-    //    including the related Location data and all override fields.
     const companyLocations = await prisma.companyLocation.findMany({
-      where: {
-        companyId: storeId,
-      },
+      where: { companyId: storeId },
       include: {
-        location: { // Include the full Location object
+        location: {
           select: {
             id: true,
             name: true,
@@ -81,83 +62,69 @@ export async function GET(
           },
         },
       },
-      orderBy: {
-        sortOrder: 'asc', // Order by the CompanyLocation's sortOrder
-      },
+      orderBy: { sortOrder: "asc" },
     });
 
-    // Return the CompanyLocation objects with nested Location data.
-    // The frontend can then use this to build its display tree and manage overrides.
-    return NextResponse.json(companyLocations);
-
-  } catch (error) {
+    return formatResponse(true, companyLocations, "Company locations retrieved", 200);
+  } catch (error: any) {
     console.error("Error retrieving company locations:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return formatResponse(false, null, "Internal Server Error", 500, error.message);
   }
 }
 
 // POST: Create a new CompanyLocation association for a store
-export async function POST(
-  req: NextRequest,
+async function postHandler(
+  req: Request,
   { params }: { params: { storeId: string } }
 ) {
-  try {
-   const auth = await verifyAuth(req);
+  const auth = await verifyAuth(req);
   if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
+  const session = await getAuthSession();
+  if (!session?.user?.id) {
+    return formatResponse(false, null, "Unauthorized", 401);
+  }
 
-    const session = await getAuthSession();
+  const { storeId } = params;
+  const body = await req.json();
+  const {
+    locationId,
+    displayName,
+    addressLine1Override,
+    addressLine2Override,
+    cityOverride,
+    stateOverride,
+    postalCodeOverride,
+    countryOverride,
+    latitudeOverride,
+    longitudeOverride,
+    sortOrder,
+    visible,
+  } = body;
 
-    // 1. Authenticate the user
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  if (!locationId) {
+    return formatResponse(false, null, "locationId is required", 400);
+  }
 
-    const storeId = params.storeId;
-    const {
-      locationId,
-      displayName,
-      addressLine1Override,
-      addressLine2Override,
-      cityOverride,
-      stateOverride,
-      postalCodeOverride,
-      countryOverride,
-      latitudeOverride,
-      longitudeOverride,
-      sortOrder,
-      visible,
-    } = await req.json();
+  const company = await prisma.company.findUnique({
+    where: { id: storeId, userId: session.user.id },
+    select: { id: true },
+  });
 
-    // Basic validation
-    if (!locationId) {
-      return NextResponse.json({ error: "locationId is required" }, { status: 400 });
-    }
+  if (!company) {
+    return formatResponse(false, null, "Store not found or unauthorized", 404);
+  }
 
-    // 2. Verify that the requested store belongs to the current user
-    const company = await prisma.company.findUnique({
-      where: {
-        id: storeId,
-        userId: session.user.id,
-      },
-      select: { id: true },
-    });
+  const locationExists = await prisma.location.findUnique({
+    where: { id: locationId },
+    select: { id: true },
+  });
 
-    if (!company) {
-      return NextResponse.json({ error: "Store not found or unauthorized" }, { status: 404 });
-    }
+  if (!locationExists) {
+    return formatResponse(false, null, "Provided locationId does not exist", 400);
+  }
 
-    // 3. Verify that the locationId exists
-    const locationExists = await prisma.location.findUnique({
-      where: { id: locationId },
-      select: { id: true },
-    });
-
-    if (!locationExists) {
-      return NextResponse.json({ error: "Provided locationId does not exist" }, { status: 400 });
-    }
-
-    // 4. Create the new CompanyLocation record
+  try {
     const newCompanyLocation = await prisma.companyLocation.create({
       data: {
         company: { connect: { id: storeId } },
@@ -171,22 +138,21 @@ export async function POST(
         countryOverride,
         latitudeOverride,
         longitudeOverride,
-        sortOrder: sortOrder ?? 0, // Default sortOrder if not provided
-        visible: visible ?? true, // Default visible if not provided
+        sortOrder: sortOrder ?? 0,
+        visible: visible ?? true,
       },
-      include: {
-        location: true, // Include the full Location object in the response
-      },
+      include: { location: true },
     });
 
-    return NextResponse.json(newCompanyLocation, { status: 201 });
-
+    return formatResponse(true, newCompanyLocation, "Company location created", 201);
   } catch (error: any) {
-    // Handle unique constraint violation (e.g., trying to add the same location twice)
-    if (error.code === 'P2002' && error.meta?.target?.includes('companyId_locationId')) {
-      return NextResponse.json({ error: "This location is already associated with the store." }, { status: 409 });
+    if (error.code === "P2002" && error.meta?.target?.includes("companyId_locationId")) {
+      return formatResponse(false, null, "This location is already associated with the store.", 409);
     }
     console.error("Error creating company location:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return formatResponse(false, null, "Internal Server Error", 500, error.message);
   }
 }
+
+export const GET = withApiHandler(getHandler);
+export const POST = withApiHandler(postHandler);

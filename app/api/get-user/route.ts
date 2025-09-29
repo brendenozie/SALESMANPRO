@@ -1,62 +1,49 @@
-import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-
-import { formatResponse } from "@/lib/formatResponse";
-import { request } from "http";
+// app/api/users/route.ts (or app/api/users/[page]/route.ts if dynamic)
 import { NextApiRequest, NextApiResponse } from "next";
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
 
-
-export default async function handle(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-   const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
-
-
-  const { page } = req.query;
-  const { searchParams } = new URL(req.url);
-  
-    const agentId = searchParams.get("agentId");
-    const limit = parseInt(searchParams.get("limit") || "10", 10);
-    const offset = parseInt(searchParams.get("offset") || "0", 10);
-  
-    if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
-      return NextResponse.json(
-        { message: "Invalid pagination parameters." },
-        { status: 400 }
-      );
-    }
-  
+async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "GET") {
+    try {
+      const { page = "0" } = req.query;
+      const currentPage = parseInt(page as string, 10) || 0;
 
-    // const users = await prisma.user.findMany();
-    // res.json(users);
+      const limit = 20;
+      const skip = currentPage > 0 ? currentPage * limit : 0;
 
+      const [count, users] = await prisma.$transaction([
+        prisma.user.count(),
+        prisma.user.findMany({
+          skip,
+          take: limit,
+        }),
+      ]);
 
-    let currentPage = page as unknown as number;
-    let skip = currentPage >0  ? currentPage *20 : 0;
-    
-    const results = await prisma.$transaction([
-      prisma.user.count({
-        skip : skip,
-        take: 20,
-      }),
-      prisma.user.findMany({
-        skip : skip,
-        take: 20,
-      }),
-    ]);
+      const totalPages = Math.ceil(count / limit);
 
-    res.json({InfoResponse:{count: results[0] ?? 0,
-                  next: currentPage * 20 > results[0] ? currentPage : 0 ,
-                  pages: results[0]/20 > 0 ? results[0]/20 : 1 ,
-                  prev: currentPage-1 > 0 ? currentPage-1 : 0},
-              results: results[1]
-            });
-  } else {
-    throw new Error(
-      `The HTTP ${req.method} method is not supported at this route.`
-    );
+      return res.status(200).json(
+        formatResponse(true, {
+          info: {
+            count,
+            pages: totalPages,
+            next: currentPage + 1 < totalPages ? currentPage + 1 : null,
+            prev: currentPage > 0 ? currentPage - 1 : null,
+          },
+          results: users,
+        })
+      );
+    } catch (error: any) {
+      return res
+        .status(500)
+        .json(formatResponse(false, null, error.message || "Internal server error"));
+    }
   }
+
+  return res
+    .status(405)
+    .json(formatResponse(false, null, `Method ${req.method} not allowed`, 405));
 }
+
+export default withApiHandler(handler);

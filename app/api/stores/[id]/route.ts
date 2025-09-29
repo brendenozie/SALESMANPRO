@@ -1,94 +1,71 @@
+// app/api/companies/[id]/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { getAuthSession } from "@/lib/auth";
 import { companySchema } from "@/lib/validations/company";
-
 import { formatResponse } from "@/lib/formatResponse";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
 export const dynamic = "force-dynamic";
 
-// GET a single company by ID
-export async function GET(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
-   const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
-
-
+// =======================
+// GET: Retrieve a single company by ID
+// =======================
+async function getCompany(req: Request, { params }: { params: { id: string } }) {
   const session = await getAuthSession();
   if (!session?.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return formatResponse(false, null, "Unauthorized", 401);
   }
 
-  try {
-    const company = await prisma.company.findFirst({
-      where: {
-        id: params.id,
-        userId: session.user.id, // Ensure the user owns this company
-      },
-      include: { // Include all related data to populate the edit form
-        SEO: true,
-        AnalyticsConfig: true,
-        PaymentSettings: true,
-        ShippingSettings: true,
-        socialLinks: true,
-        policies: true,
-        faqs: true,
-        testimonials: true,
-        heroSlides: true,
-        promotions: true,
-        StoreCategory: {
-          include: {
-            category: true
-          }
-        },
-      },
-    });
+  const company = await prisma.company.findFirst({
+    where: {
+      id: params.id,
+      userId: session.user.id,
+    },
+    include: {
+      SEO: true,
+      AnalyticsConfig: true,
+      PaymentSettings: true,
+      ShippingSettings: true,
+      socialLinks: true,
+      policies: true,
+      faqs: true,
+      testimonials: true,
+      heroSlides: true,
+      promotions: true,
+      StoreCategory: { include: { category: true } },
+    },
+  });
 
-    if (!company) {
-      return NextResponse.json({ error: "Company not found" }, { status: 404 });
-    }
-
-    return NextResponse.json(company);
-  } catch (error) {
-    console.error("Failed to fetch company:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  if (!company) {
+    return formatResponse(false, null, "Company not found", 404);
   }
+
+  return formatResponse(true, company, "Company fetched successfully");
 }
 
-// PUT (update) a company
-export async function PUT(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
-   const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
-
-
-    // Destructure the id from params immediately
-  const { id } = params;
-
+// =======================
+// PUT: Update a company
+// =======================
+async function updateCompany(req: Request, { params }: { params: { id: string } }) {
   const session = await getAuthSession();
-  
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return formatResponse(false, null, "Unauthorized", 401);
   }
 
-  // Use the destructured 'id' variable for the check
+  const { id } = params;
   if (!id) {
-    return NextResponse.json({ error: "Company ID is required" }, { status: 400 });
+    return formatResponse(false, null, "Company ID is required", 400);
   }
 
   const body = await req.json();
   const parseResult = companySchema.safeParse(body);
 
   if (!parseResult.success) {
-    return NextResponse.json({ errors: parseResult.error.errors }, { status: 400 });
+    return formatResponse(false, parseResult.error.errors, "Validation failed", 400);
   }
 
   const {
-    // Destructure to separate relation data from direct company fields
     seo,
     analyticsConfig,
     paymentSettings,
@@ -101,182 +78,148 @@ export async function PUT(
     promotions,
     CompanyLocation,
     StoreCategory,
-    ...companyData // The rest are direct fields of the company
+    ...companyData
   } = parseResult.data;
 
-  try {
-    const companyToUpdate = await prisma.company.findFirst({
-        where: { id: params.id, userId: session.user.id }
-    });
+  const companyToUpdate = await prisma.company.findFirst({
+    where: { id, userId: session.user.id },
+  });
 
-    if (!companyToUpdate) {
-        return NextResponse.json({ error: "Company not found or you do not have permission to edit it." }, { status: 404 });
-    }
-
-    const updatedCompany = await prisma.company.update({
-      where: { id: params.id },
-      data: {
-        // 1. Update direct company fields
-        ...companyData,
-
-        CompanyLocation: CompanyLocation ? {
-          deleteMany: {},
-          create: CompanyLocation.map((cl: any) => ({
-            locationId: cl.locationId,
-            visible: cl.visible ?? true,
-            sortOrder: cl.sortOrder ?? 0,
-            displayName: cl.displayName ?? null,
-            addressLine1Override: cl.addressLine1Override ?? null,
-            addressLine2Override: cl.addressLine2Override ?? null,
-            cityOverride: cl.cityOverride ?? null,
-            stateOverride: cl.stateOverride ?? null,
-            postalCodeOverride: cl.postalCodeOverride ?? null,
-            countryOverride: cl.countryOverride ?? null,
-            latitudeOverride: cl.latitudeOverride ?? null,
-            longitudeOverride: cl.longitudeOverride ?? null,
-          })),
-        } : undefined,
-        
-        CoreValues: body.CoreValues ? {
-          deleteMany: {}, // remove all existing core values for this company
-          create: body.CoreValues.map((cv: any) => ({
-            title: cv.title,
-            description: cv.description,
-            icon: cv.icon || "",
-          }))
-        } : undefined,
-        
-        // 2. Handle nested relations correctly
-        
-        SEO: seo ? {
-          upsert: {
-            create: seo,
-            update: seo,
-          }
-        } : undefined,
-
-        AnalyticsConfig: analyticsConfig ? { update: analyticsConfig } : undefined,
-        PaymentSettings: paymentSettings ? { update: paymentSettings } : undefined,
-        ShippingSettings: shippingSettings ? { update: shippingSettings } : undefined,
-
-        socialLinks: socialLinks ? { deleteMany: {}, create: socialLinks } : undefined,
-        policies: policies ? { deleteMany: {}, create: policies } : undefined,
-        faqs: faqs ? { deleteMany: {}, create: faqs } : undefined,
-        testimonials: testimonials ? { deleteMany: {}, create: testimonials } : undefined,
-        
-        heroSlides: heroSlides ? { 
-            deleteMany: {}, 
-            create: heroSlides.map(h => ({
-                ...h, 
-                endsAt: h.endsAt ? new Date(h.endsAt) : undefined
-            })) 
-        } : undefined,
-
-        promotions: promotions ? { 
-            deleteMany: {}, 
-            create: promotions.map(p => ({
-                ...p, 
-                
-                perks: p.perks ? p.perks.map((perk: any) => ({
-                  ...perk,
-                  id: perk.id || undefined,
-                })) : [],
-                trustLogos: p.trustLogos ? p.trustLogos.map((logo: any) => ({
-                  ...logo,
-                  id: logo.id || undefined,
-                })) : [],
-                startsAt: p.startsAt ? new Date(p.startsAt) : undefined, 
-                endsAt: p.endsAt ? new Date(p.endsAt) : undefined,
-
-
-            })) 
-        } : undefined,
-
-        // Simplified StoreCategory data processing
-        StoreCategory: StoreCategory ? {
-          deleteMany: {},
-          create: StoreCategory.map((sc: any) => ({
-            displayName: sc.displayName,
-            icon: sc.icon,
-            sortOrder: sc.sortOrder ?? 0,
-            categoryId: sc.categoryId,
-            subcategories: sc.subcategories, // Pass the whole JSON array as-is
-            allBrands: sc.allBrands, // Pass the whole JSON array as-is
-          })),
-        } : undefined,
-        
-        // StoreCategory: StoreCategory ? {
-        //   deleteMany: {},
-        //   create: StoreCategory.map((sc: any) => ({
-        //     displayName: sc.displayName,
-        //     icon: sc.icon,
-        //     sortOrder: sc.sortOrder ?? 0,
-        //     category: {
-        //       connect: { id: sc.categoryId },
-        //     },
-        //     // If subcategories are just an array of basic objects or strings:
-        //     subcategories: Array.isArray(sc.subcategories) ? sc.subcategories : [],
-        //     // If allBrands are just an array of strings:
-        //     allBrands: Array.isArray(sc.allBrands) ? sc.allBrands : [],
-        //   })),
-        // } : undefined,
-
-
-      },
-    });
-
-    return NextResponse.json(updatedCompany);
-  } catch (error) {
-    console.error("Failed to update company:", error);
-    // Add more detailed logging for debugging
-    if (error instanceof Error) {
-        console.error(error.message);
-    }
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  if (!companyToUpdate) {
+    return formatResponse(false, null, "Company not found or unauthorized", 404);
   }
+
+  const updatedCompany = await prisma.company.update({
+    where: { id },
+    data: {
+      ...companyData,
+      CompanyLocation: CompanyLocation
+        ? {
+            deleteMany: {},
+            create: CompanyLocation.map((cl: any) => ({
+              locationId: cl.locationId,
+              visible: cl.visible ?? true,
+              sortOrder: cl.sortOrder ?? 0,
+              displayName: cl.displayName ?? null,
+              addressLine1Override: cl.addressLine1Override ?? null,
+              addressLine2Override: cl.addressLine2Override ?? null,
+              cityOverride: cl.cityOverride ?? null,
+              stateOverride: cl.stateOverride ?? null,
+              postalCodeOverride: cl.postalCodeOverride ?? null,
+              countryOverride: cl.countryOverride ?? null,
+              latitudeOverride: cl.latitudeOverride ?? null,
+              longitudeOverride: cl.longitudeOverride ?? null,
+            })),
+          }
+        : undefined,
+
+      CoreValues: body.CoreValues
+        ? {
+            deleteMany: {},
+            create: body.CoreValues.map((cv: any) => ({
+              title: cv.title,
+              description: cv.description,
+              icon: cv.icon || "",
+            })),
+          }
+        : undefined,
+
+      SEO: seo
+        ? {
+            upsert: { create: seo, update: seo },
+          }
+        : undefined,
+
+      AnalyticsConfig: analyticsConfig ? { update: analyticsConfig } : undefined,
+      PaymentSettings: paymentSettings ? { update: paymentSettings } : undefined,
+      ShippingSettings: shippingSettings ? { update: shippingSettings } : undefined,
+
+      socialLinks: socialLinks ? { deleteMany: {}, create: socialLinks } : undefined,
+      policies: policies ? { deleteMany: {}, create: policies } : undefined,
+      faqs: faqs ? { deleteMany: {}, create: faqs } : undefined,
+      testimonials: testimonials ? { deleteMany: {}, create: testimonials } : undefined,
+
+      heroSlides: heroSlides
+        ? {
+            deleteMany: {},
+            create: heroSlides.map((h) => ({
+              ...h,
+              endsAt: h.endsAt ? new Date(h.endsAt) : undefined,
+            })),
+          }
+        : undefined,
+
+      promotions: promotions
+        ? {
+            deleteMany: {},
+            create: promotions.map((p) => ({
+              ...p,
+              perks: p.perks ? p.perks.map((perk: any) => ({ ...perk, id: perk.id || undefined })) : [],
+              trustLogos: p.trustLogos ? p.trustLogos.map((logo: any) => ({ ...logo, id: logo.id || undefined })) : [],
+              startsAt: p.startsAt ? new Date(p.startsAt) : undefined,
+              endsAt: p.endsAt ? new Date(p.endsAt) : undefined,
+            })),
+          }
+        : undefined,
+
+      StoreCategory: StoreCategory
+        ? {
+            deleteMany: {},
+            create: StoreCategory.map((sc: any) => ({
+              displayName: sc.displayName,
+              icon: sc.icon,
+              sortOrder: sc.sortOrder ?? 0,
+              categoryId: sc.categoryId,
+              subcategories: sc.subcategories,
+              allBrands: sc.allBrands,
+            })),
+          }
+        : undefined,
+    },
+  });
+
+  return formatResponse(true, updatedCompany, "Company updated successfully");
 }
 
-// DELETE a company
-export async function DELETE(
-  req: Request,
-  { params }: { params: { companyId: string } }
-) {
-   const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+// =======================
+// DELETE: Delete a company
+// =======================
+async function deleteCompany(req: Request, { params }: { params: { companyId: string } }) {
+  const session = await getAuthSession();
+  if (!session?.user?.id) {
+    return formatResponse(false, null, "Unauthorized", 401);
+  }
 
+  const companyToDelete = await prisma.company.findFirst({
+    where: { id: params.companyId, userId: session.user.id },
+    select: {
+      sEOId: true,
+      analyticsConfigId: true,
+      paymentSettingsId: true,
+      shippingSettingsId: true,
+    },
+    orderBy: { createdAt: "desc" },
+  });
 
-    const session = await getAuthSession();
-    if (!session?.user?.id) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  if (!companyToDelete) {
+    return formatResponse(false, null, "Company not found or unauthorized", 404);
+  }
 
-    try {
-        const companyToDelete = await prisma.company.findFirst({
-            where: { id: params.companyId, userId: session.user.id },
-            select: { sEOId: true, analyticsConfigId: true, paymentSettingsId: true, shippingSettingsId: true },
-            orderBy: { createdAt: 'desc' }
-        });
+  await prisma.$transaction(async (tx) => {
+    if (companyToDelete.sEOId) await tx.sEO.delete({ where: { id: companyToDelete.sEOId } });
+    if (companyToDelete.analyticsConfigId) await tx.analyticsConfig.delete({ where: { id: companyToDelete.analyticsConfigId } });
+    if (companyToDelete.paymentSettingsId) await tx.paymentSettings.delete({ where: { id: companyToDelete.paymentSettingsId } });
+    if (companyToDelete.shippingSettingsId) await tx.shippingSettings.delete({ where: { id: companyToDelete.shippingSettingsId } });
 
-        if (!companyToDelete) {
-            return NextResponse.json({ error: "Company not found or you do not have permission to delete it." }, { status: 404 });
-        }
+    await tx.company.delete({ where: { id: params.companyId } });
+  });
 
-        // Use a transaction to ensure all related data is deleted successfully
-        await prisma.$transaction(async (tx) => {
-            // Manually delete related 1-to-1 records because of `onDelete: NoAction`
-            if (companyToDelete.sEOId) await tx.sEO.delete({ where: { id: companyToDelete.sEOId }});
-            if (companyToDelete.analyticsConfigId) await tx.analyticsConfig.delete({ where: { id: companyToDelete.analyticsConfigId }});
-            if (companyToDelete.paymentSettingsId) await tx.paymentSettings.delete({ where: { id: companyToDelete.paymentSettingsId }});
-            if (companyToDelete.shippingSettingsId) await tx.shippingSettings.delete({ where: { id: companyToDelete.shippingSettingsId }});
-
-            // Now delete the company itself. Prisma will handle cascading deletes for other relations.
-            await tx.company.delete({ where: { id: params.companyId } });
-        });
-        
-        return NextResponse.json({ message: "Company deleted successfully" }, { status: 200 });
-
-    } catch (error) {
-        console.error("Failed to delete company:", error);
-        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
-    }
+  return formatResponse(true, null, "Company deleted successfully");
 }
+
+// =======================
+// Export handlers with wrapper
+// =======================
+export const GET = withApiHandler(getCompany);
+export const PUT = withApiHandler(updateCompany);
+export const DELETE = withApiHandler(deleteCompany);

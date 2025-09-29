@@ -1,116 +1,71 @@
+// app/api/post/route.ts
 import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-
+import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
-import { request } from "http";
-import { NextApiRequest, NextApiResponse } from "next";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
+async function registerUser(req: Request) {
+  try {
+    const body = await req.json();
 
+    const {
+      name,
+      email,
+      password,
+      birthYear,
+      bmiResult,
+      currentHeightInCm,
+      currentWeightInKg,
+      exerciseGoal,
+      focusArea,
+      gender,
+      img,
+      physicalActivityLevel,
+      weeklyGoalInKM,
+      weightInKgGoal,
+      provider,
+    } = body.data || {};
 
-// POST /api/post
-
-export default async function GET( req : Request ) {
-
-   
-
-
-
-  if (req.method === 'POST') {
-    await RegisterUser(req, res);
-    return;
-  } 
-
-  var payloadObj = JSON.parse(req.body);
-
-  return res.send({status:401,message:req.method, dt:payloadObj});
-}
-
-async function RegisterUser(req: NextApiRequest, res: NextApiResponse) {
-  
-  const {name, email, password,
-    birthYear,
-    bmiResult,
-    currentHeightInCm,
-    currentWeightInKg,
-    exerciseGoal,
-    focusArea,
-    gender,
-    img,
-    physicalActivityLevel,
-    weeklyGoalInKM,
-    weightInKgGoal, 
-    provider} = req.body.data;
-
-  if(!email || !password || !name){
-    return res.send({status:400,message:"Missing Registration details"});
-  }
-
-  //check to see if user exists
-  const user = await prisma.user.findUnique({
-    where : {
-      email: email
+    if (!email || !password || !name) {
+      return formatResponse(false, null, "Missing registration details", 400);
     }
-  });
 
-  if(user){
-    return res.send({status:200,message:"User already Exists", body:user});
+    // Check if user exists
+    const existingUser = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (existingUser) {
+      return formatResponse(true, existingUser, "User already exists", 200);
+    }
+
+    // Example: creating a user (uncomment when ready to store password)
+    // const hashedPassword = await bcrypt.hash(password, 10);
+    // const newUser = await prisma.user.create({
+    //   data: {
+    //     name,
+    //     email,
+    //     hashedPassword,
+    //     birthYear,
+    //     bmiResult,
+    //     currentHeightInCm,
+    //     currentWeightInKg,
+    //     exerciseGoal,
+    //     focusArea,
+    //     gender,
+    //     img,
+    //     physicalActivityLevel,
+    //     weeklyGoalInKM,
+    //     weightInKgGoal,
+    //     provider,
+    //   },
+    // });
+
+    return formatResponse(false, null, "This account does not exist. Please register.", 404);
+  } catch (error: any) {
+    console.error(error);
+    return formatResponse(false, null, "Internal server error", 500);
   }
-
-  // const hashedPassword = password;
-
-  // const result = await prisma.user.create({
-  //   data: {
-  //     name,
-  //     email,
-  //     // hashedPassword : password,
-  //     // birthYear,
-  //     // bmiResult,
-  //     // currentHeightInCm,
-  //     // currentWeightInKg,
-  //     // exerciseGoal,
-  //     // focusArea,
-  //     // gender,
-  //     // // img,
-  //     // physicalActivityLevel,
-  //     // weeklyGoalInKM,
-  //     // weightInKgGoal, 
-  //     // provider
-  //   },
-  // });
-
-  // const accountResult = await prisma.account.create({
-  //   data: {
-  //     userId : `${result.id}`,
-  //     type : 'oauth',
-  //     provider,
-  //     providerAccountId : '1111111111111111',
-  //     access_token : 'ya29.a0AfB_byAxwTjDvgwdumfbpCo9HT45pg_4lj5EB_pXuby6lN1CdprT-ojCHG1S7b0sFQDrxU57o0CA0F8NRIR1bJEGNqvpB-gurgIYSO92PYdLXL55eLT8vcezwtEi1DYHLIj1-TfSOEm3Utnzk87NbEnFH40MaCgYKAWsSARMSFQHsvYlsY7LJG1u-CgBgsIDGeK5fvg0163',
-  //     expires_at : 1692001786,
-  //     token_type : 'Bearer',
-  //     scope : 'https://www.hobbyhorse.com/auth/userinfo.profile https://www.hobbyhorse.com/auth/userinfo.email',
-  //     id_token : 'eyJhbGciOiJSUzI1NiIsImtpZCI6IjdjOWM3OGUzYjAwZTFiYjA5MmQyNDZjODg3YjExMjIwYzg3YjdkMjAiLCJ0eXAiOiJKV1QifQ',
-  //   },
-  // });
-
-  // if(result.hashedPassword){
-
-  //   let {hashedPassword,...newObject} = result;
-
-  //   if(result.emailVerified == null){
-
-  //     let {emailVerified,...newUser} = newObject;
-      
-  //     return res.send({status:200,message:"Success.", body:newUser});
-  //   }
-    
-  //    return res.send({status:200,message:"Success.", body:newObject});
-
-  // }
-
-  // if(result) return res.send({status:200,message:"Success.", body:result});
-  
-  return res.send({status:400,message:"This account does not exist. Create an account by registering"});
-  
-  
 }
 
+export const POST = withApiHandler(registerUser);

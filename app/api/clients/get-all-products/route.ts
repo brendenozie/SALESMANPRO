@@ -1,126 +1,140 @@
-import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler"; // Assumed utility
+import { formatResponse } from "@/lib/formatResponse"; // Assumed utility
+import { verifyAuth } from "@/lib/verifyAuth"; // Assumed utility
+import { CommissionBasedOn } from "@prisma/client"; // Assuming these types exist
 
-import { formatResponse } from "@/lib/formatResponse";
-import { NextApiRequest, NextApiResponse } from "next";
+// Handles the assignment of inventory from an Agent's stock to a Client's inventory.
+export const POST = withApiHandler(async (request: Request) => {
+  // 1. Authentication and Authorization Check
+  const auth = await verifyAuth(request);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  // Add an authorization check here if only specific roles (e.g., 'ADMIN') can use this endpoint.
 
+  const body = await request.json();
+  const { agentInventoryId, clientId, quantity } = body;
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  
-     const auth = await verifyAuth(req);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  if (req.method === "GET") {
-    try {
-      const products = await prisma.product.findMany({
+  // 2. Enhanced Input Validation
+  const parsedQuantity = Number(quantity);
+
+  if (
+    !agentInventoryId ||
+    typeof agentInventoryId !== "string" ||
+    !clientId ||
+    typeof clientId !== "string" ||
+    !parsedQuantity ||
+    parsedQuantity <= 0 ||
+    !Number.isInteger(parsedQuantity)
+  ) {
+    return formatResponse(
+      false,
+      null,
+      "Invalid input data. Please verify agentInventoryId, clientId (both strings), and quantity (positive integer).",
+      400
+    );
+  }
+
+  try {
+    // 3. Database Transaction for Atomicity
+    const transaction = await prisma.$transaction(async (tx) => {
+      // a. Fetch the agent inventory item details
+      const agentInventory = await tx.agentInventory.findUnique({
+        where: { id: agentInventoryId },
         include: {
-          productCategory: true,
-          inventoryItems: {
-            include: {
-              AgentInventory: true,
-            },
-          },
-          CommissionRate: true, // Include commission rate data
+          inventoryItem: { include: { product: true } },
+          salesAgent: true,
         },
       });
 
-      const formattedProducts = products.map((product) => {
-        const inventoryId = product.inventoryItems.map((item) => item.id);
+      if (!agentInventory) {
+        throw new Error("Agent inventory item not found.");
+      }
+      if (agentInventory.quantity < parsedQuantity) {
+        throw new Error(`Insufficient stock. Available: ${agentInventory.quantity}, Requested: ${parsedQuantity}`);
+      }
 
-        // Calculate company stock
-        const companyStock = product.inventoryItems.reduce((sum, item) => sum + item.quantity, 0);
+      const { inventoryItem } = agentInventory;
+      const product = inventoryItem.product;
 
-        // Calculate agent stock
-        const agentStock = product.inventoryItems.reduce((sum, item) => {
-          const agentStockSum = item.AgentInventory.reduce((agentSum, agentItem) => agentSum + agentItem.quantity, 0);
-          return sum + agentStockSum;
-        }, 0);
-
-        // Extract commission details
-        const commissionRate = product.CommissionRate?.commissionRate || 0;
-        const commissionType = product.CommissionRate?.commissionType || "COST";
-
-        return {
-          id: product.id,
-          name: product.name,
-          companyId: product.companyId,
-          inventoryId: inventoryId,
-          category: product.productCategory?.name || "Uncategorized",
-          companyStock,
-          agentStock,
-          costPrice: product.costPrice,
-          salesPrice: product.salesPrice,
-          commissionRate,
-          commissionType,
-        };
+      // b. Reduce stock from the agent's inventory
+      await tx.agentInventory.update({
+        where: { id: agentInventoryId },
+        data: { quantity: { decrement: parsedQuantity } },
       });
 
-      return res.status(200).json(formattedProducts);
-    } catch (error) {
-      console.error(error);
-      return NextResponse.json({ message: "Internal server error" });
-    }
-  } else {
-    return NextResponse.json({ message: "Method not allowed" });
+      // c. Assign inventory to the client (upsert)
+      const clientInventory = await tx.clientInventory.upsert({
+        where: {
+          clientId_inventoryItemId: {
+            clientId,
+            inventoryItemId: inventoryItem.id,
+          },
+        },
+        update: { quantity: { increment: parsedQuantity } },
+        create: {
+          clientId,
+          inventoryItemId: inventoryItem.id,
+          agentInventoryId,
+          salesAgentId: agentInventory.salesAgentId,
+          quantity: parsedQuantity,
+        },
+      });
+
+      // d. Calculate and record commissions
+      // NOTE: Assuming the 'Commission' model stores the RATE configuration, not the earned record.
+      // If the model is used for earned records, consider renaming the table for rates (e.g., ProductCommissionRate).
+      const commissionRates = await tx.commission.findMany({
+        where: { productId: product.id },
+      });
+
+      const recordedCommissions: any[] = [];
+
+      for (const rateConfig of commissionRates) {
+        const { commissionRate = 0, basedOn } = rateConfig;
+
+        // CRITICAL FIX: Base commission on costPrice if basedOn is 'COST'.
+        // If 'COST' is intended to be *Sales Price* in your business logic, adjust this.
+        const basePrice = basedOn === "COST" ? product.costPrice : product.salesPrice;
+
+        // Ensure commissionRate is a valid number
+        if (typeof commissionRate !== 'number' || commissionRate < 0) continue;
+
+        const commissionEarned = commissionRate * basePrice * parsedQuantity;
+
+        if (commissionEarned > 0) {
+          recordedCommissions.push(
+            await tx.commissionEarned.create({ // Assuming a separate model for earned commissions: CommissionEarned
+              data: {
+                salesAgentId: agentInventory.salesAgentId,
+                productId: product.id,
+                commissionRate,
+                commissionEarned,
+                basedOn: basedOn as CommissionBasedOn, // Casting based on imported type
+                // Optionally add: clientInventoryId: clientInventory.id,
+              },
+            })
+          );
+        }
+      }
+
+      // Return combined results from the transaction
+      return { clientInventory, commissions: recordedCommissions };
+    });
+
+    return formatResponse(
+      true,
+      transaction,
+      "Product successfully assigned to client and commissions recorded.",
+      200
+    );
+  } catch (error: any) {
+    console.error("Assignment Error:", error.message || error);
+    // The wrapper 'withApiHandler' should handle this, but explicit return is fine too.
+    return formatResponse(
+      false,
+      null,
+      error.message || "An unexpected error occurred during assignment.",
+      500
+    );
   }
-}
-
-
-// 5. Fetch products sorted by proximity
-// import clientPromise from '../../lib/mongodb';
-
-// export default async function handler(req, res) {
-//   if (req.method === 'GET') {
-//     const { lat, lng } = req.query;
-const { searchParams } = new URL(req.url);
-  
-    const agentId = searchParams.get("agentId");
-    const limit = parseInt(searchParams.get("limit") || "10", 10);
-    const offset = parseInt(searchParams.get("offset") || "0", 10);
-  
-    if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
-      return NextResponse.json(
-        { message: "Invalid pagination parameters." },
-        { status: 400 }
-      );
-    }
-  
-//     const db = (await clientPromise).db();
-//     const products = await db.collection('Product')
-//       .aggregate([
-//         {
-//           $geoNear: {
-//             near: { type: 'Point', coordinates: [parseFloat(lng), parseFloat(lat)] },
-//             distanceField: 'distance',
-//             spherical: true,
-//           },
-//         },
-//       ]).toArray();
-//     res.status(200).json(products);
-//   }
-// }
-
-
-// 5. Fetch products sorted by proximity
-// import clientPromise from '../../lib/mongodb';
-
-// export default async function handler(req, res) {
-//   if (req.method === 'GET') {
-//     const { lat, lng } = req.query;
-//     const db = (await clientPromise).db();
-//     const query = lat && lng
-//       ? [
-//           {
-//             $geoNear: {
-//               near: { type: 'Point', coordinates: [parseFloat(lng), parseFloat(lat)] },
-//               distanceField: 'distance',
-//               spherical: true,
-//             },
-//           },
-//         ]
-//       : [{ $sample: { size: 10 } }]; // Return random products if location is unavailable
-    
-//     const products = await db.collection('Product').aggregate(query).toArray();
-//     res.status(200).json(products);
-//   }
-// }
+});

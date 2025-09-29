@@ -1,28 +1,44 @@
-import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-
+// app/api/client/[clientId]/requests/route.ts
+import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
+import { verifyAuth } from "@/lib/verifyAuth";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
+/**
+ * API route to create a new product request from a client.
+ */
+async function POST(req: Request) {
+  // 1. Authentication Check
+  const auth = await verifyAuth(req);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
-export default async function GET( req : Request ) {
-  
-     const auth = await verifyAuth(req);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  if (req.method !== "POST") {
-    return NextResponse.json({ message: "Method not allowed. Use POST." });
+  // 2. Read and Parse JSON body
+  let body;
+  try {
+    body = await req.json();
+  } catch (error) {
+    return formatResponse(false, null, "Invalid JSON body provided.", 400);
   }
 
-  const { clientId, productId, quantity, salesAgentId } = req.body;
+  const { clientId, productId, quantity, salesAgentId } = body;
 
-  // Validate the request body
-  if (!clientId || !productId || !quantity || typeof quantity !== "number") {
-    return NextResponse.json({ message: "Invalid or missing request data." });
+  // 3. Validation
+  if (
+    !clientId ||
+    !productId ||
+    !quantity ||
+    typeof quantity !== "number" ||
+    quantity <= 0
+  ) {
+    return formatResponse(
+      false,
+      null,
+      "Invalid or missing request data. Required fields: clientId (string), productId (string), and quantity (positive number).",
+      400
+    );
   }
 
   try {
-
-
     const data: any = {
       requestedById: clientId,
       requestedByType: "CLIENT",
@@ -36,59 +52,13 @@ export default async function GET( req : Request ) {
       data.salesAgent = { connect: { id: salesAgentId } };
     }
 
-    // Create the product request
-    const productRequest = await prisma.request.create({
-      data,
-    });
+    // 4. Create product request
+    const productRequest = await prisma.request.create({ data });
 
-    // Check if the product exists
-    // const product = await prisma.product.findUnique({
-    //   where: { id: productId },
-    // });
-
-    // if (!product) {
-    //   return res.status(404).json({ message: "Product not found." });
-    // }
-
-    // // Check if the client exists
-    // const client = await prisma.client.findUnique({
-    //   where: { id: clientId },
-    // });
-
-    // if (!client) {
-    //   return res.status(404).json({ message: "Client not found." });
-    // }
-
-    // // If salesAgentId is provided, check if the sales agent exists
-    // let salesAgent = null;
-    // if (salesAgentId) {
-    //   salesAgent = await prisma.salesAgent.findUnique({
-    //     where: { id: salesAgentId },
-    //   });
-
-    //   if (!salesAgent) {
-    //     return res.status(404).json({ message: "Sales agent not found." });
-    //   }
-    // }
-
-    // // Create the request
-    // const productRequest = await prisma.request.create({
-    //   data: {
-    //     requestedById: clientId,
-    //     requestedByType: "CLIENT", // Assuming the type is CLIENT
-    //     product: {
-    //       connect: { id: productId },
-    //     },
-    //     quantity,
-    //     salesAgent: salesAgentId || null, // Associate with the sales agent or leave null for the company
-    //     status: "PENDING", // Default status
-    //   },
-    // });
-
-    // // Respond with the created request
-    return res.status(201).json({
-      message: "Product request created successfully.",
-      request: {
+    // 5. Success Response
+    return formatResponse(
+      true,
+      {
         requestId: productRequest.id,
         productId: productRequest.productId,
         clientId: productRequest.requestedById,
@@ -97,13 +67,22 @@ export default async function GET( req : Request ) {
         status: productRequest.status,
         createdAt: productRequest.createdAt,
       },
-    });
+      "Product request created successfully.",
+      201
+    );
   } catch (error: any) {
-    console.error("Error creating product request:", error);
+    console.error("❌ Error creating product request:", error);
 
-    return NextResponse.json({
-      message: "An error occurred while creating the product request.",
-      error: error.message || "Unknown error",
-    });
+    // 6. Error Response
+    return formatResponse(
+      false,
+      null,
+      error.message ||
+        "An error occurred while creating the product request.",
+      500
+    );
   }
 }
+
+export const POSTHandler = withApiHandler(POST);
+export { POSTHandler as POST };

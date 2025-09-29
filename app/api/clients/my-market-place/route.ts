@@ -1,76 +1,63 @@
-import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
+import { verifyAuth } from "@/lib/verifyAuth";
 
+/**
+ * API route to fetch a specific seller's marketplace product listings.
+ * It uses the 'sellerId' query parameter for filtering and supports pagination.
+ */
+export const GET = withApiHandler(async (req: Request) => {
+  // 1. Authentication Check
+  const auth = await verifyAuth(req);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
-export default async function GET( req : Request ) {
-  
-     const auth = await verifyAuth(req);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  if (req.method !== "GET") {
-    return NextResponse.json({ message: "Method not allowed. Use GET." });
-  }
-
-  const { sellerId } = req.query;
+  // 2. Extract and Validate Parameters
   const { searchParams } = new URL(req.url);
-  
-    const agentId = searchParams.get("agentId");
-    const limit = parseInt(searchParams.get("limit") || "10", 10);
-    const offset = parseInt(searchParams.get("offset") || "0", 10);
-  
-    if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
-      return NextResponse.json(
-        { message: "Invalid pagination parameters." },
-        { status: 400 }
-      );
-    }
-  
 
-  // Validate sellerId
+  const sellerId = searchParams.get("sellerId");
+  const limit = parseInt(searchParams.get("limit") || "10", 10);
+  const offset = parseInt(searchParams.get("offset") || "0", 10);
+
+  if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
+    return formatResponse(
+      false,
+      null,
+      "Invalid pagination parameters.",
+      400
+    );
+  }
+
   if (!sellerId || typeof sellerId !== "string") {
-    return NextResponse.json({ message: "Invalid or missing sellerId." });
+    return formatResponse(
+      false,
+      null,
+      "Invalid or missing sellerId query parameter.",
+      400
+    );
   }
 
-  try {
-    // Fetch marketplace products for the seller
-    const products = await prisma.marketplaceListing.findMany({
-      where: { sellerId },      
-      include: {
-        productCategory: true, // Include product details
-      },
-    });
+  // 3. Fetch marketplace products for the seller
+  const products = await prisma.marketplaceListing.findMany({
+    where: { sellerId },
+    take: limit,
+    skip: offset,
+    include: {
+      productCategory: true,
+    },
+  });
 
-    // Structure response data
-    // const marketplaceProducts = products.map((item) => ({
-    //   id: item.id,
-    //   sellerId: item.sellerId,
-    //   sellerType: item.sellerType,
-    //   productId: item.productId,
-    //   title: item.title,
-    //   description: item.description,
-    //   quantity: item.quantity,
-    //   createdAt: item.createdAt,
-    //   updatedAt: item.updatedAt,
-    //   salesPrice: item.salesPrice,
-    //   discount: item.discount,
-    //   isOnOffer: item.isOnOffer,
-    //   isFlashDeal: item.isFlashDeal,
-    //   isNewArrival: item.isNewArrival,
-    //   isDiscounted: item.isDiscounted,
-    //   isFeatured: item.isFeatured,
-    //   buyingPrice: item.buyingPrice,
-    //   sellingPrice: item.sellingPrice,
-    //   productName: item.product?.name || "Unknown Product",
-    // }));
-
-    return res.status(200).json({ sellerId, products });
-  } catch (error: any) {
-    console.error("Error fetching marketplace products:", error);
-    return NextResponse.json({
-      message: "An error occurred while fetching marketplace products.",
-      error: error.message || "Unknown error",
-    });
-  }
-}
+  // 4. Return structured response
+  return formatResponse(
+    true,
+    {
+      sellerId,
+      count: products.length,
+      offset,
+      limit,
+      products,
+    },
+    "Marketplace products fetched successfully.",
+    200
+  );
+});

@@ -1,108 +1,116 @@
-// app/api/seller/orders/route.ts
-import { NextRequest, NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path if needed
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
+import { verifyAuth } from "@/lib/verifyAuth";
 import { OrderStatus } from "@prisma/client";
 
-import { formatResponse } from "@/lib/formatResponse";
+/**
+ * API route to fetch aggregated order data and individual order items
+ * for a seller's company dashboard. Supports pagination and searching.
+ */
+export const GET = withApiHandler(async (req: Request) => {
+  // 1. Authentication
+  const auth = await verifyAuth(req);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
-export async function GET(req: NextRequest) {
-  
-     const auth = await verifyAuth(req);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
+  // 2. Extract query parameters
   const { searchParams } = new URL(req.url);
 
-  const agentId = searchParams.get("agentId");
   const limit = parseInt(searchParams.get("limit") || "10", 10);
-  const offset = parseInt(searchParams.get("offset") || "0", 10);
   const page = parseInt(searchParams.get("page") || "1", 10);
-  const companyId = searchParams.get("companyId") || "63f7c9e2d91b1b2a5e80b007";
+  const companyId = searchParams.get("companyId");
   const search = searchParams.get("search") || "";
 
-  if (isNaN(limit) || isNaN(offset) || isNaN(page) || limit <= 0 || offset < 0) {
-    return NextResponse.json({ message: "Invalid pagination parameters." }, { status: 400 });
-  }
-
-  const currentPage = page;
   const itemsPerPage = limit;
+  const currentPage = page > 0 ? page : 1;
   const skip = (currentPage - 1) * itemsPerPage;
 
-  if (!companyId) {
-    return NextResponse.json({ error: "companyId is required" }, { status: 400 });
+  if (isNaN(limit) || isNaN(page) || limit <= 0 || page < 1) {
+    return formatResponse(
+      false,
+      null,
+      "Invalid pagination parameters (limit or page).",
+      400
+    );
   }
 
-  try {
-    const whereFilter: any = {
-      marketplaceListing: {
-        companyId: companyId,
-        ...(search ? { name: { contains: search, mode: 'insensitive' } } : {})
-      }
-    };
+  if (!companyId) {
+    return formatResponse(false, null, "companyId is required.", 400);
+  }
 
-    const [orderItems, totalOrderItems] = await prisma.$transaction([
-      prisma.orderItem.findMany({
-        where: whereFilter,
-        include: {
-          marketplaceListing: true,
+  // 3. Filtering
+  const whereFilter: any = {
+    marketplaceListing: {
+      companyId,
+      ...(search ? { title: { contains: search, mode: "insensitive" } } : {}),
+    },
+  };
+
+  // 4. Fetch order items + count
+  const [orderItems, totalOrderItems] = await prisma.$transaction([
+    prisma.orderItem.findMany({
+      where: whereFilter,
+      include: {
+        marketplaceListing: true,
+        order: {
+          select: {
+            status: true,
+            createdAt: true,
+            client: { select: { id: true, name: true } },
+          },
         },
-        skip,
-        take: itemsPerPage,
-        orderBy: { order: { createdAt: 'desc' } },
-      }),
-      prisma.orderItem.count({ where: whereFilter }),
-    ]);
-
-    const totalRevenueAgg = await prisma.orderItem.aggregate({
-      _sum: { price: true },
-      where: {
-        marketplaceListing: { companyId },
       },
-    });
+      skip,
+      take: itemsPerPage,
+      orderBy: { order: { createdAt: "desc" } },
+    }),
+    prisma.orderItem.count({ where: whereFilter }),
+  ]);
 
-    const pendingRevenueAgg = await prisma.orderItem.aggregate({
-      _sum: { price: true },
-      where: {
-        marketplaceListing: { companyId },
-        order: { status: OrderStatus.PENDING },
-      },
-    });
+  // 5. Revenue aggregates
+  const commonRevenueWhere = { marketplaceListing: { companyId } };
 
-    const completedRevenueAgg = await prisma.orderItem.aggregate({
-      _sum: { price: true },
-      where: {
-        marketplaceListing: { companyId },
-        order: { status: OrderStatus.COMPLETED },
-      },
-    });
+  const totalRevenueAgg = await prisma.orderItem.aggregate({
+    _sum: { price: true },
+    where: commonRevenueWhere,
+  });
 
-    const orderItemsForMonthly = await prisma.orderItem.findMany({
-      select: {
-        order: { select: { createdAt: true } },
-        price: true,
-      },
-      where: {
-        marketplaceListing: { companyId },
-      },
-    });
+  const pendingRevenueAgg = await prisma.orderItem.aggregate({
+    _sum: { price: true },
+    where: { ...commonRevenueWhere, order: { status: OrderStatus.PENDING } },
+  });
 
-    const monthlyRevenue = Array(12).fill(0);
-    orderItemsForMonthly.forEach((item) => {
-      const month = new Date(item.order.createdAt).getMonth();
-      monthlyRevenue[month] += item.price;
-    });
+  const completedRevenueAgg = await prisma.orderItem.aggregate({
+    _sum: { price: true },
+    where: { ...commonRevenueWhere, order: { status: OrderStatus.COMPLETED } },
+  });
 
-    return NextResponse.json({
+  // 6. Monthly revenue
+  const orderItemsForMonthly = await prisma.orderItem.findMany({
+    select: { order: { select: { createdAt: true } }, price: true },
+    where: commonRevenueWhere,
+  });
+
+  const monthlyRevenue = Array(12).fill(0);
+  orderItemsForMonthly.forEach((item) => {
+    const month = new Date(item.order.createdAt).getMonth(); // 0–11
+    monthlyRevenue[month] += item.price;
+  });
+
+  // 7. Return response
+  return formatResponse(
+    true,
+    {
       orderItems,
       totalOrderItems,
       totalPages: Math.ceil(totalOrderItems / itemsPerPage),
+      currentPage,
       totalRevenue: totalRevenueAgg._sum.price || 0,
       pendingRevenue: pendingRevenueAgg._sum.price || 0,
       completedRevenue: completedRevenueAgg._sum.price || 0,
       monthlyRevenue,
-    });
-  } catch (error) {
-    console.error("Error fetching order items:", error);
-    return NextResponse.json({ error: "Failed to fetch order items" }, { status: 500 });
-  }
-}
+    },
+    "Seller order dashboard data fetched successfully.",
+    200
+  );
+});

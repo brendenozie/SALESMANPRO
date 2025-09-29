@@ -1,141 +1,88 @@
-import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { getAuthSession } from "@/lib/auth";
-import { Prisma } from "@prisma/client";
-
 import { formatResponse } from "@/lib/formatResponse";
-import { request } from "http";
-
-// app/api/stores/[storeId]/company-locations/[companyLocationId]/route.ts
-// import { NextRequest, NextResponse } from "next/server";
-// import { getAuthSession } from "@/lib/auth"; // Adjust path as per your project structure
-// import { prisma } from "@/lib/prisma"; // Adjust path as per your project structure
+import { verifyAuth } from "@/lib/verifyAuth";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
 // PUT: Update a specific CompanyLocation record
-export async function PUT(
-  req: NextRequest,
+async function putHandler(
+  req: Request,
   { params }: { params: { storeId: string; companyLocationId: string } }
 ) {
+  const auth = await verifyAuth(req);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+  const session = await getAuthSession();
+  if (!session?.user?.id) {
+    return formatResponse(false, null, "Unauthorized", 401);
+  }
+
+  const { storeId, companyLocationId } = params;
+  const data = await req.json();
+
+  // Check ownership
+  const existing = await prisma.companyLocation.findFirst({
+    where: {
+      id: companyLocationId,
+      companyId: storeId,
+      company: { userId: session.user.id },
+    },
+    select: { id: true },
+  });
+
+  if (!existing) {
+    return formatResponse(false, null, "CompanyLocation not found or unauthorized", 404);
+  }
+
   try {
-    
-       const auth = await verifyAuth(req);
-      if (!auth.success) return formatResponse(false, null, auth.error, 401);
-    
-    
-    const session = await getAuthSession();
-
-    // 1. Authenticate the user
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const storeId = params.storeId;
-    const companyLocationId = params.companyLocationId;
-    const {
-      displayName,
-      addressLine1Override,
-      addressLine2Override,
-      cityOverride,
-      stateOverride,
-      postalCodeOverride,
-      countryOverride,
-      latitudeOverride,
-      longitudeOverride,
-      sortOrder,
-      visible,
-    } = await req.json();
-
-    // 2. Verify that the CompanyLocation exists and belongs to the specified store and user
-    const existingCompanyLocation = await prisma.companyLocation.findUnique({
-      where: {
-        id: companyLocationId,
-        companyId: storeId, // Ensure it belongs to this store
-        company: { // Further ensure the store belongs to the authenticated user
-          userId: session.user.id,
-        },
-      },
-      select: { id: true }, // Select ID to confirm existence and ownership
-    });
-
-    if (!existingCompanyLocation) {
-      return NextResponse.json({ error: "CompanyLocation not found or unauthorized" }, { status: 404 });
-    }
-
-    // 3. Update the CompanyLocation record
-    const updatedCompanyLocation = await prisma.companyLocation.update({
+    const updated = await prisma.companyLocation.update({
       where: { id: companyLocationId },
-      data: {
-        displayName,
-        addressLine1Override,
-        addressLine2Override,
-        cityOverride,
-        stateOverride,
-        postalCodeOverride,
-        countryOverride,
-        latitudeOverride,
-        longitudeOverride,
-        sortOrder, // Allow null to reset to default if needed, or provide a default
-        visible,   // Allow null to reset to default if needed, or provide a default
-      },
-      include: {
-        location: true, // Include the full Location object in the response
-      },
+      data,
+      include: { location: true },
     });
-
-    return NextResponse.json(updatedCompanyLocation);
-
-  } catch (error) {
+    return formatResponse(true, updated, "CompanyLocation updated successfully", 200);
+  } catch (error: any) {
     console.error("Error updating company location:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return formatResponse(false, null, "Internal Server Error", 500, error.message);
   }
 }
 
 // DELETE: Delete a specific CompanyLocation record
-export async function DELETE(
-  req: NextRequest,
+async function deleteHandler(
+  req: Request,
   { params }: { params: { storeId: string; companyLocationId: string } }
 ) {
+  const auth = await verifyAuth(req);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+  const session = await getAuthSession();
+  if (!session?.user?.id) {
+    return formatResponse(false, null, "Unauthorized", 401);
+  }
+
+  const { storeId, companyLocationId } = params;
+
+  const existing = await prisma.companyLocation.findFirst({
+    where: {
+      id: companyLocationId,
+      companyId: storeId,
+      company: { userId: session.user.id },
+    },
+    select: { id: true },
+  });
+
+  if (!existing) {
+    return formatResponse(false, null, "CompanyLocation not found or unauthorized", 404);
+  }
+
   try {
-    
-       const auth = await verifyAuth(req);
-      if (!auth.success) return formatResponse(false, null, auth.error, 401);
-    
-    
-    const session = await getAuthSession();
-
-    // 1. Authenticate the user
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const storeId = params.storeId;
-    const companyLocationId = params.companyLocationId;
-
-    // 2. Verify that the CompanyLocation exists and belongs to the specified store and user
-    const existingCompanyLocation = await prisma.companyLocation.findUnique({
-      where: {
-        id: companyLocationId,
-        companyId: storeId, // Ensure it belongs to this store
-        company: { // Further ensure the store belongs to the authenticated user
-          userId: session.user.id,
-        },
-      },
-      select: { id: true },
-    });
-
-    if (!existingCompanyLocation) {
-      return NextResponse.json({ error: "CompanyLocation not found or unauthorized" }, { status: 404 });
-    }
-
-    // 3. Delete the CompanyLocation record
-    await prisma.companyLocation.delete({
-      where: { id: companyLocationId },
-    });
-
-    return NextResponse.json({ message: "CompanyLocation deleted successfully" }, { status: 200 });
-
-  } catch (error) {
+    await prisma.companyLocation.delete({ where: { id: companyLocationId } });
+    return formatResponse(true, null, "CompanyLocation deleted successfully", 200);
+  } catch (error: any) {
     console.error("Error deleting company location:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return formatResponse(false, null, "Internal Server Error", 500, error.message);
   }
 }
+
+export const PUT = withApiHandler(putHandler);
+export const DELETE = withApiHandler(deleteHandler);

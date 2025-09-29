@@ -1,142 +1,7 @@
 // app/api/teacher/courses/[courseId]/assignments/route.ts
-import { NextResponse } from 'next/server';
-import prisma from "@/server/db/prismadb"; // Adjust path as per your project structure
+import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
-
-
-export async function GET(request: Request, { params }: { params: { courseId: string } }) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  const { courseId } = params;
-  const { searchParams } = new URL(request.url);
-  const educatorId = searchParams.get('educatorId'); // The educator viewing/managing assignments
-  // const companyId = searchParams.get('companyId');   // For multi-tenancy
-
-  // --- Authentication & Authorization (Placeholder) ---
-  // In a real application, you would:
-  // 1. Get the authenticated user's session.
-  // 2. Verify the user is an 'EDUCATOR' and their ID matches 'educatorId'.
-  // 3. Ensure the 'educatorId' is authorized to manage assignments for this 'courseId' and 'companyId'.
-  // const session = await auth();
-  // if (!session || session.user.id !== educatorId || session.user.role !== 'EDUCATOR') {
-  //   return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-  // }
-  // ----------------------------------------------------
-
-  if (!courseId || !educatorId) {
-    return NextResponse.json({ message: 'Missing courseId, educatorId, or companyId' }, { status: 400 });
-  }
-
-  
-  try {
-    const educator = await prisma.educator.findUnique({
-          where: { userId: educatorId },
-          select: {
-            id: true, // This is the Educator's _id, which will be used for relations
-            companyId:true,
-            user: {
-              select: {
-                name: true,
-                email: true,            
-                role: true, // Fetch the role from the Educator model
-              },
-            },
-          },
-        });
-    
-        if (!educator || !educator.user) {
-          return NextResponse.json({ message: 'Educator not found' }, { status: 404 });
-        }
-
-    // Verify the educator is linked to the company and course (optional but good practice)
-    const course = await prisma.course.findUnique({
-      where: { id: courseId,},
-      select: {
-        id: true,
-        title: true,
-        description: true,
-        academicLevels: {
-          select: {
-            academicLevel: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-          },
-        },
-      },
-    });
-
-    if (!course) {
-      return NextResponse.json({ message: 'Course not found or not associated with this company' }, { status: 404 });
-    }
-
-    // Fetch Exams (assignments) for this course
-    const assignments = await prisma.courseAssignment.findMany({
-      where: {
-        courseId: courseId,
-        companyId: educator.companyId,
-        // Filter by relevant exam types that represent assignments
-        // You might want to add a specific 'ASSIGNMENT' ExamType if 'HOMEWORK'/'PROJECT' isn't sufficient
-        OR: [
-          { type: 'HOMEWORK' },
-          { type: 'PROJECT' },
-          { type: 'QUIZ' }, // Quizzes can also be assignments
-          { type: 'OTHER' }, // Or a generic 'OTHER'
-        ],
-      },
-      include: {
-        _count: {
-          select: { submissions: true }, // Count submissions for each assignment
-        },
-      },
-      orderBy: { publishedAt: 'asc' }, // Order by due date
-    });
-
-    const formattedAssignments = assignments.map(assignment => ({
-      id: assignment.id,
-      title: assignment.title,
-      description: assignment.description,
-      dueDate: assignment.dueDate.toISOString().split('T')[0], // Format to YYYY-MM-DD
-      publishedAt: assignment.publishedAt.toISOString().split('T')[0], // Format to YYYY-MM-DD
-      maxPoints: assignment.maxGrade,
-      status: assignment.type, // Using examType as status for simplicity, you might map this
-      submissionCount: assignment._count.submissions,
-      // You might need a more sophisticated status logic (e.g., 'Draft', 'Published', 'Graded')
-      // For now, mapping ExamType to 'status' as a placeholder.
-      // In a real app, you might have a separate AssignmentStatus enum or logic.
-      displayStatus: assignment.type === 'HOMEWORK' ? 'Published' :
-                     assignment.type === 'PROJECT' ? 'Published' :
-                     assignment.type === 'QUIZ' ? 'Published' : 'Draft', // Placeholder mapping
-    }));
-
-    // Determine the primary academic level for the course for display
-    const academicLevel = course.academicLevels.length > 0
-      ? course.academicLevels[0].academicLevel
-      : { id: 'N/A', name: 'No Academic Level' };
-
-    return NextResponse.json({
-      course: {
-        id: course.id,
-        title: course.title,
-        academicLevelId: academicLevel.id,
-        academicLevelName: academicLevel.name,
-      },
-      assignments: formattedAssignments,
-    });
-
-  } catch (error) {
-    console.error('Error fetching course assignments:', error);
-    return NextResponse.json({ message: 'Failed to fetch course assignments' }, { status: 500 });
-  }
-}
-
-// // app/api/teacher/assignments/route.ts
-// import { NextResponse } from 'next/server';
-// import prisma from "@/server/db/prismadb"; // Adjust path as per your project structure
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
 // Define ExamType enum for validation
 enum ExamType {
@@ -148,80 +13,116 @@ enum ExamType {
   OTHER = 'OTHER',
 }
 
-export async function POST(request: Request) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  const {
-    id, // Optional, for updating existing assignment
-    title,
-    description,
-    dueDate,
-    maxPoints,
-    status, // This will map to ExamType in Prisma
-    courseId,
-    educatorId, // createdById
-    companyId,
-  } = await request.json();
+// GET /api/teacher/courses/[courseId]/assignments
+async function getAssignments(request: Request, { params }: { params: { courseId: string } }) {
+  const { courseId } = params;
+  const { searchParams } = new URL(request.url);
+  const educatorId = searchParams.get('educatorId');
 
-  // --- Authentication & Authorization (Placeholder) ---
-  // In a real application, you would:
-  // 1. Get the authenticated user's session.
-  // 2. Verify the user is an 'EDUCATOR' and their ID matches 'educatorId'.
-  // 3. Ensure the 'educatorId' is authorized to manage assignments for this course/company.
-  // const session = await auth();
-  // if (!session || session.user.id !== educatorId || session.user.role !== 'EDUCATOR') {
-  //   return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-  // }
-  // ----------------------------------------------------
-
-  if (!title || !dueDate || maxPoints === undefined || maxPoints === null || !status || !courseId || !educatorId || !companyId) {
-    return NextResponse.json({ message: 'Missing required assignment data: title, dueDate, maxPoints, status, courseId, educatorId, companyId' }, { status: 400 });
-  }
-
-  // Validate status mapping to ExamType
-  const examType = status.toUpperCase() as ExamType; // Assuming frontend status maps directly to ExamType
-  if (!(Object.values(ExamType) as string[]).includes(examType)) {
-    return NextResponse.json({ message: `Invalid assignment status. Must be one of: ${Object.values(ExamType).join(', ')}` }, { status: 400 });
-  }
-
-  // Parse dueDate to Date object
-  const parsedDueDate = new Date(dueDate);
-  if (isNaN(parsedDueDate.getTime())) {
-    return NextResponse.json({ message: 'Invalid due date format' }, { status: 400 });
+  if (!courseId || !educatorId) {
+    return formatResponse(false, null, 'Missing courseId or educatorId', 400);
   }
 
   try {
+    const educator = await prisma.educator.findUnique({
+      where: { userId: educatorId },
+      select: { id: true, companyId: true, user: { select: { name: true, email: true, role: true } } },
+    });
+
+    if (!educator || !educator.user) {
+      return formatResponse(false, null, 'Educator not found', 404);
+    }
+
+    const course = await prisma.course.findUnique({
+      where: { id: courseId },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        academicLevels: { select: { academicLevel: { select: { id: true, name: true } } } },
+      },
+    });
+
+    if (!course) {
+      return formatResponse(false, null, 'Course not found', 404);
+    }
+
+    const assignments = await prisma.courseAssignment.findMany({
+      where: {
+        courseId,
+        companyId: educator.companyId,
+        OR: [
+          { type: 'HOMEWORK' },
+          { type: 'PROJECT' },
+          { type: 'QUIZ' },
+          { type: 'OTHER' },
+        ],
+      },
+      include: { _count: { select: { submissions: true } } },
+      orderBy: { publishedAt: 'asc' },
+    });
+
+    const formattedAssignments = assignments.map(a => ({
+      id: a.id,
+      title: a.title,
+      description: a.description,
+      dueDate: a.dueDate.toISOString().split('T')[0],
+      publishedAt: a.publishedAt.toISOString().split('T')[0],
+      maxPoints: a.maxGrade,
+      status: a.type,
+      submissionCount: a._count.submissions,
+      displayStatus: ['HOMEWORK', 'PROJECT', 'QUIZ'].includes(a.type) ? 'Published' : 'Draft',
+    }));
+
+    const academicLevel = course.academicLevels[0]?.academicLevel ?? { id: 'N/A', name: 'No Academic Level' };
+
+    return formatResponse(true, {
+      course: { id: course.id, title: course.title, academicLevelId: academicLevel.id, academicLevelName: academicLevel.name },
+      assignments: formattedAssignments,
+    }, 'Assignments fetched successfully', 200);
+
+  } catch (error: any) {
+    console.error('Error fetching course assignments:', error);
+    return formatResponse(false, null, error.message || 'Failed to fetch assignments', 500);
+  }
+}
+
+// POST /api/teacher/courses/[courseId]/assignments
+async function postAssignment(request: Request) {
+  const body = await request.json();
+  const { id, title, description, dueDate, maxPoints, status, courseId, educatorId, companyId } = body;
+
+  if (!title || !dueDate || maxPoints === undefined || !status || !courseId || !educatorId || !companyId) {
+    return formatResponse(false, null, 'Missing required assignment data', 400);
+  }
+
+  const examType = status.toUpperCase() as ExamType;
+  if (!(Object.values(ExamType) as string[]).includes(examType)) {
+    return formatResponse(false, null, `Invalid assignment status. Must be one of: ${Object.values(ExamType).join(', ')}`, 400);
+  }
+
+  const parsedDueDate = new Date(dueDate);
+  if (isNaN(parsedDueDate.getTime())) return formatResponse(false, null, 'Invalid due date format', 400);
+
+  try {
     const assignmentData = {
-      title: title,
-      description: description,
-      dueDate: parsedDueDate, // Using examDate as dueDate for assignments
+      title,
+      description,
+      dueDate: parsedDueDate,
       maxScore: maxPoints,
-      examType: examType,
-      courseId: courseId,
+      examType,
+      courseId,
       createdById: educatorId,
-      companyId: companyId,
+      companyId,
     };
 
     let assignment;
     if (id) {
-      // Update existing assignment (Exam)
-      assignment = await prisma.courseAssignment.update({
-        where: { id: id },
-        data: {
-          ...assignmentData,
-          updatedAt: new Date(),
-        },
-      });
+      assignment = await prisma.courseAssignment.update({ where: { id }, data: { ...assignmentData, updatedAt: new Date() } });
     } else {
-      // Create new assignment (Exam)
-      assignment = await prisma.courseAssignment.create({
-        data: assignmentData,
-      });
+      assignment = await prisma.courseAssignment.create({ data: assignmentData });
     }
 
-    // Return the created/updated assignment, formatted similarly to GET for consistency
     const formattedAssignment = {
       id: assignment.id,
       title: assignment.title,
@@ -229,73 +130,50 @@ export async function POST(request: Request) {
       dueDate: assignment.dueDate.toISOString().split('T')[0],
       maxPoints: assignment.maxGrade,
       publishedAt: assignment.publishedAt,
-      status: assignment.status, // Use ExamType as status
-      // For submissionCount, we'd need to fetch it separately or count on client if not critical for response
-      submissionCount: 0, // Placeholder, will be accurate on GET
-      displayStatus: assignment.type === 'HOMEWORK' ? 'Published' :
-                     assignment.type === 'PROJECT' ? 'Published' :
-                     assignment.type === 'QUIZ' ? 'Published' : 'Draft', // Placeholder mapping
+      status: assignment.type,
+      submissionCount: 0,
+      displayStatus: ['HOMEWORK', 'PROJECT', 'QUIZ'].includes(assignment.type) ? 'Published' : 'Draft',
     };
 
-    return NextResponse.json(formattedAssignment, { status: id ? 200 : 201 });
+    return formatResponse(true, formattedAssignment, id ? 'Assignment updated successfully' : 'Assignment created successfully', id ? 200 : 201);
+
   } catch (error: any) {
     console.error('Error saving assignment:', error);
-    return NextResponse.json({ message: 'Failed to save assignment', error: error.message }, { status: 500 });
+    return formatResponse(false, null, error.message || 'Failed to save assignment', 500);
   }
 }
 
-
-// app/api/teacher/assignments/[assignmentId]/route.ts
-// import { NextResponse } from 'next/server';
-// import prisma from "@/server/db/prismadb"; // Adjust path as per your project structure
-
-export async function DELETE(request: Request, { params }: { params: { assignmentId: string } }) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
+// DELETE /api/teacher/assignments/[assignmentId]
+async function deleteAssignment(request: Request, { params }: { params: { assignmentId: string } }) {
   const { assignmentId } = params;
   const { searchParams } = new URL(request.url);
-  const educatorId = searchParams.get('educatorId'); // The educator performing the deletion
-  const companyId = searchParams.get('companyId');   // For multi-tenancy
-
-  // --- Authentication & Authorization (Placeholder) ---
-  // In a real application, you would:
-  // 1. Get the authenticated user's session.
-  // 2. Verify the user is an 'EDUCATOR' and their ID matches 'educatorId'.
-  // 3. Ensure the 'educatorId' is authorized to delete this assignment (e.g., they created it or are an admin).
-  // const session = await auth();
-  // if (!session || session.user.id !== educatorId || session.user.role !== 'EDUCATOR') {
-  //   return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-  // }
-  // ----------------------------------------------------
+  const educatorId = searchParams.get('educatorId');
+  const companyId = searchParams.get('companyId');
 
   if (!assignmentId || !educatorId || !companyId) {
-    return NextResponse.json({ message: 'Missing assignmentId, educatorId, or companyId' }, { status: 400 });
+    return formatResponse(false, null, 'Missing assignmentId, educatorId, or companyId', 400);
   }
 
   try {
-    // Optional: Verify the assignment belongs to the correct course/company and was created by this educator
     const assignmentToDelete = await prisma.courseAssignment.findUnique({
       where: { id: assignmentId },
       select: { courseId: true, companyId: true, createdById: true },
     });
 
     if (!assignmentToDelete || assignmentToDelete.companyId !== companyId || assignmentToDelete.createdById !== educatorId) {
-      return NextResponse.json({ message: 'Assignment not found or unauthorized to delete' }, { status: 404 });
+      return formatResponse(false, null, 'Assignment not found or unauthorized to delete', 404);
     }
 
-    // Delete the assignment (Exam record).
-    // Note: Prisma's default behavior for onDelete: Cascade might handle related Submissions/Grades.
-    // Review your schema's `onDelete` actions for `ExamSubmission` and `Grade` models.
-    // If not cascading, you'll need to manually delete related records first.
-    await prisma.exam.delete({
-      where: { id: assignmentId },
-    });
+    await prisma.courseAssignment.delete({ where: { id: assignmentId } });
 
-    return NextResponse.json({ message: 'Assignment deleted successfully' }, { status: 200 });
-  } catch (error) {
+    return formatResponse(true, null, 'Assignment deleted successfully', 200);
+  } catch (error: any) {
     console.error('Error deleting assignment:', error);
-    return NextResponse.json({ message: 'Failed to delete assignment' }, { status: 500 });
+    return formatResponse(false, null, error.message || 'Failed to delete assignment', 500);
   }
 }
+
+// Export handlers wrapped with withApiHandler
+export const GET = withApiHandler(getAssignments, { requireAuth: true });
+export const POST = withApiHandler(postAssignment, { requireAuth: true });
+export const DELETE = withApiHandler(deleteAssignment, { requireAuth: true });

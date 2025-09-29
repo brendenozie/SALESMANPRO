@@ -1,33 +1,18 @@
 // app/api/admin/parents/route.ts
-import { NextResponse } from 'next/server';
-import prisma from "@/server/db/prismadb";  // Adjust path as per your project structure
+import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-
-export async function GET(request: Request) {
-   
-
-
-
-  const { searchParams } = new URL(request.url);
-  const teacherId = searchParams.get('teacherId'); // Used to derive companyId
-
-  // --- Authentication & Authorization (Placeholder) ---
-  // In a real application, you would:
-  // 1. Get the authenticated user's session.
-  // 2. Verify the user has 'ADMIN' or 'EDUCATOR' role.
-  // 3. If 'EDUCATOR', ensure they are accessing data within their company.
-  // const session = await auth();
-  // if (!session || !session.user) {
-  //   return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-  // }
-  // ----------------------------------------------------
-
-  if (!teacherId) {
-    return NextResponse.json({ message: 'Missing teacherId' }, { status: 400 });
-  }
-
+// GET /api/admin/parents?teacherId=...
+async function getParents(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const teacherId = searchParams.get('teacherId');
+
+    if (!teacherId) {
+      return formatResponse(false, null, 'Missing teacherId', 400);
+    }
+
     // Derive companyId from the educator (teacherId)
     const educator = await prisma.educator.findUnique({
       where: { userId: teacherId },
@@ -35,36 +20,31 @@ export async function GET(request: Request) {
     });
 
     if (!educator || !educator.companyId) {
-      return NextResponse.json({ message: 'Educator not found or not associated with a company' }, { status: 404 });
+      return formatResponse(false, null, 'Educator not found or not associated with a company', 404);
     }
-    const companyId = educator.companyId;
 
     const parents = await prisma.parent.findMany({
-      where: {
-        companyId: companyId, // Ensure multi-tenancy
-      },
+      where: { companyId: educator.companyId },
       include: {
         user: {
-          select: { name: true, email: true }, // Include user details for parent name/email
+          select: { name: true, email: true },
         },
       },
-      orderBy: {
-        user: {
-          name: 'asc',
-        },
-      },
+      orderBy: { user: { name: 'asc' } },
     });
 
-    // Map to the ParentOption type expected by the frontend
     const parentOptions = parents.map(parent => ({
       id: parent.id,
       name: parent.user?.name || 'N/A',
       email: parent.user?.email || 'N/A',
     }));
 
-    return NextResponse.json(parentOptions);
-  } catch (error) {
+    return formatResponse(true, parentOptions, 'Parents fetched successfully', 200);
+  } catch (error: any) {
     console.error('Error fetching parents:', error);
-    return NextResponse.json({ message: 'Failed to fetch parents' }, { status: 500 });
+    return formatResponse(false, null, error.message || 'Failed to fetch parents', 500);
   }
 }
+
+// Export GET handler wrapped with withApiHandler
+export const GET = withApiHandler(getParents, { requireAuth: true });
