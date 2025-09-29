@@ -1,29 +1,28 @@
-import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-
+// ts
+// app/api/communications/today/route.ts
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
+import { verifyAuth } from "@/lib/verifyAuth";
 
-
-export default async function GET( req : Request ) {
-  
-     const auth = await verifyAuth(req);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  if (req.method !== "GET") {
-    return NextResponse.json({ message: "Method not allowed" });
+export const GET = withApiHandler(async (req: Request) => {
+  const auth = await verifyAuth(req);
+  if (!auth.success) {
+    return formatResponse(false, null, auth.error, 401);
   }
 
   try {
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    today.setUTCHours(0, 0, 0, 0);
 
     const communicationsToday = await prisma.communication.count({
       where: { createdAt: { gte: today } },
     });
 
-    res.status(200).json({ today: communicationsToday });
-  } catch (error) {
-    console.error(error);
-    NextResponse.json({ message: "Internal server error" });
+    return formatResponse(true, { today: communicationsToday });
+  } catch (error: any) {
+    console.error("Error fetching today's communications:", error);
+    return formatResponse(false, null, error.message || "Internal server error", 500);
   }
-}
+});
+

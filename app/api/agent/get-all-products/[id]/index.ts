@@ -1,115 +1,79 @@
-import { Prisma } from '@prisma/client'
-import { NextApiRequest, NextApiResponse } from 'next'
-import { getSession } from 'next-auth/react'
-import prisma, { client } from "@/server/db/prismadb";
+typescript
+// app/api/admin/cities/[id]/route.ts
+import { NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
+import prisma from "@/server/db/prismadb";
+import { verifyAuth } from "@/lib/verifyAuth";
 import { formatResponse } from "@/lib/formatResponse";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-import { NextResponse } from 'next/server';
+// GET single city by ID
+async function getCity(req: Request, { params }: { params: { id: string } }) {
+  const auth = await verifyAuth(req);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
-export default async function handle(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
+  const cityId = params.id;
+  try {
+    const city = await prisma.exercise.findUnique({
+      where: { id: cityId },
+    });
 
-     const auth = await verifyAuth(req);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
-  const session = await getSession({ req })
-  // if (!session.isAdmin) {
-  //   return res.status(401).end()
-  // }
-  if (req.method === 'GET') {
-    await GetCity(req, res)
-    return;
-  }
-  if (req.method === 'DELETE') {
-    await deleteCity(req, res)
-    return;
-  } 
-  if (req.method === 'PUT') {
-    await updateCity(req, res)
-    return;
-  }
-  
-  else {
-    res.status(404).end()
-    return;
-  }
-}
-
-async function GetCity(req: NextApiRequest, res: NextApiResponse) {
-  const cityId = req.query.id as string
-  const { searchParams } = new URL(req.url);
-  
-    const agentId = searchParams.get("agentId");
-    const limit = parseInt(searchParams.get("limit") || "10", 10);
-    const offset = parseInt(searchParams.get("offset") || "0", 10);
-  
-    if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
-      return NextResponse.json(
-        { message: "Invalid pagination parameters." },
-        { status: 400 }
-      );
+    if (!city) {
+      return formatResponse(false, null, "City not found", 404);
     }
-  
+
+    return formatResponse(true, city, "City fetched successfully", 200);
+  } catch (error) {
+    console.error("Error fetching city:", error);
+    return NextResponse.json({ message: "Internal server error" }, { status: 500 });
+  }
+}
+
+// DELETE city by ID
+async function deleteCity(req: Request, { params }: { params: { id: string } }) {
+  const auth = await verifyAuth(req);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+  const cityId = params.id;
   try {
-    // const city = await prisma.exercise.findFirst({
-    //   where: {
-    //     id: cityId,
-    //   },
-    // })
-    // return res.status(200).json({InfoResponse:{count: 1,
-    //                 next: "2",
-    //                 pages: 10,
-    //                 prev: "0"},
-    //           results: city
-    //           })
-  } catch (e) {
-    console.log(e)
-    NextResponse
+    const deleted = await prisma.exercise.delete({
+      where: { id: cityId },
+    });
+
+    return formatResponse(true, deleted, "City deleted successfully", 200);
+  } catch (error) {
+    console.error("Error deleting city:", error);
+    return NextResponse.json({ message: "Internal server error" }, { status: 500 });
   }
 }
 
-async function deleteCity(req: NextApiRequest, res: NextApiResponse) {
-  const amaId = req.query.id as string
+// UPDATE city
+async function updateCity(req: Request, { params }: { params: { id: string } }) {
+  const auth = await verifyAuth(req);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+  const cityId = params.id;
+  const body = await req.json();
+
   try {
-    // const ama = await prisma.exercise.delete({
-    //   where: {
-    //     id: amaId,
-    //   },
-    // })
-    // return res.status(204).json({ id: ama.id })
-  } catch (e) {
-    console.log(e)
-    NextResponse
+    const updated = await prisma.exercise.update({
+      where: { id: cityId },
+      data: {
+        cityName: body.cityName,
+        publicId: body.publicId,
+        url: body.url,
+        status: body.status,
+      },
+    });
+
+    return formatResponse(true, updated, "City updated successfully", 200);
+  } catch (error) {
+    console.error("Error updating city:", error);
+    return NextResponse.json({ message: "Internal server error" }, { status: 500 });
   }
 }
 
-async function updateCity(req: NextApiRequest, res: NextApiResponse) {
+export const GET = withApiHandler(getCity);
+export const DELETE = withApiHandler(deleteCity);
+export const PUT = withApiHandler(updateCity);
 
-    const {
-      id,
-      cityName,
-      publicId,
-      url,
-      status,
-    } = req.body;
-
-    const session = await getSession({ req });
-    try {
-
-    // const result = await prisma.exercise.update({
-    //                   where: {
-    //                     id: id,
-    //                   },
-    //                 data: {
-    //                 },
-    //                 });
-    return res.json("result");
-
-  } catch (e) {
-    console.log(e)
-    NextResponse.end()
-  }
-}

@@ -1,30 +1,41 @@
-import { NextApiRequest, NextApiResponse } from 'next'
-import prisma, { client } from "@/server/db/prismadb";
+
+// app/api/admin/bookings/[id]/route.ts
+import { NextResponse } from "next/server";
+import prisma from "@/server/db/prismadb";
+import { verifyAuth } from "@/lib/verifyAuth";
 import { formatResponse } from "@/lib/formatResponse";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-
-export default async function handle(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-   const auth = await verifyAuth(req);
+// PUT -> increment booking reactions
+async function updateBooking(req: Request, { params }: { params: { id: string } }) {
+  const auth = await verifyAuth(req);
   if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
+  const bookingId = params.id;
 
-  const amaId = req.query.id as string
-  if (req.method === 'PUT') {
-    // const ama = await prisma.booking.update({
-    //   where: {
-    //     id: amaId,
-    //   },
-    //   data: {
-    //     reactions: {
-    //       increment: 1,
-    //     },
-    //   },
-    // })
-    res.json({ id: "ama?.id", reactions: "ama?.reactions", status: "ama?.status "})
-  } else {
-    return res.status(404).end()
+  try {
+    const updatedBooking = await prisma.booking.update({
+      where: { id: bookingId },
+      data: {
+        reactions: { increment: 1 },
+      },
+    });
+
+    return formatResponse(
+      true,
+      {
+        id: updatedBooking.id,
+        reactions: updatedBooking.reactions,
+        status: updatedBooking.status,
+      },
+      "Booking updated successfully",
+      200
+    );
+  } catch (error) {
+    console.error("Error updating booking:", error);
+    return NextResponse.json({ message: "Internal server error" }, { status: 500 });
   }
 }
+
+export const PUT = withApiHandler(updateBooking);
+

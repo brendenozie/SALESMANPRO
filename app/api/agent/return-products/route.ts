@@ -1,41 +1,44 @@
+ts
+// app/api/returnProductToAgent/route.ts
 import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
-import { NextApiRequest, NextApiResponse } from "next";
+import { verifyAuth } from "@/lib/verifyAuth";
 
-
-// pages/api/returnProductToAgent.ts
-
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
- 
-    const auth = await verifyAuth(req);
-   if (!auth.success) return formatResponse(false, null, auth.error, 401);
- 
- 
-  const { agentId, clientId, inventoryItemId, quantity } = req.body;
-
-  if (!agentId || !clientId || !inventoryItemId || !quantity) {
-    return NextResponse.json({ error: "Missing required fields." });
+export const POST = withApiHandler(async (req: Request) => {
+  const auth = await verifyAuth(req);
+  if (!auth.success) {
+    return formatResponse(false, null, auth.error, 401);
   }
 
   try {
+    const { agentId, clientId, inventoryItemId, quantity } = await req.json();
+
+    if (!agentId || !clientId || !inventoryItemId || !quantity) {
+      return formatResponse(false, null, "Missing required fields.", 400);
+    }
+
     // Retrieve client's inventory
     const clientInventory = await prisma.clientInventory.findUnique({
       where: { clientId_inventoryItemId: { clientId, inventoryItemId } },
     });
 
     if (!clientInventory || clientInventory.quantity < quantity) {
-      return NextResponse.json({
-        error: "Insufficient quantity in the client's inventory for return.",
-      });
+      return formatResponse(
+        false,
+        null,
+        "Insufficient quantity in the client's inventory for return.",
+        400
+      );
     }
 
     // Retrieve agent's inventory
-    let agentInventory ;
-    // await prisma.agentInventory.findUnique({
-    //   // where: { inventoryItemId_salesAgentId: { inventoryItemId, salesAgentId: agentId } },
-    // });
+    let agentInventory = await prisma.agentInventory.findUnique({
+      where: {
+        inventoryItemId_salesAgentId: { inventoryItemId, salesAgentId: agentId },
+      },
+    });
 
     if (!agentInventory) {
       // Create a new inventory entry for the agent if it doesn't exist
@@ -43,70 +46,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         data: {
           inventoryItemId,
           salesAgentId: agentId,
-          quantity: 0, // Start with 0 before incrementing
+          quantity: 0,
         },
       });
     }
 
-    // Update client's inventory (decrease quantity)
+    // Update client's inventory (decrement)
     await prisma.clientInventory.update({
       where: { id: clientInventory.id },
       data: { quantity: { decrement: quantity } },
     });
 
-    // Update agent's inventory (increase quantity)
+    // Update agent's inventory (increment)
     await prisma.agentInventory.update({
       where: { id: agentInventory.id },
       data: { quantity: { increment: quantity } },
     });
 
-    // Reverse commission
-    // const product = await prisma.product.findUnique({
-    //   where: { id: agentInventory.inventoryItem.productId },
-    // });
+    // TODO: Reverse commission + logs if needed (currently commented out in your version)
 
-    // const commissionRate = 0.1; // 10% commission rate (adjust if necessary)
-    // const reversedCommission = product.price * quantity * commissionRate;
-
-    // await prisma.commission.create({
-    //   data: {
-    //     salesAgentId: agentId,
-    //     productId: product.id,
-    //     commissionRate,
-    //     commissionEarned: -reversedCommission, // Negative value to reverse commission
-    //     basedOn: "RETURN",
-    //     status: "PENDING",
-    //   },
-    // });
-
-    // Log the return transaction
-    // await prisma.clientInventoryLog.create({
-    //   data: {
-    //     clientInventoryId: clientInventory.id,
-    //     action: "returned",
-    //     salesAgentId: agentId,
-    //     quantity,
-    //     damaged: 0,
-    //   },
-    // });
-
-    // await prisma.agentInventoryLog.create({
-    //   data: {
-    //     agentInventoryId: agentInventory.id,
-    //     action: "client-return",
-    //     clientId,
-    //     quantity,
-    //     damaged: 0,
-    //   },
-    // });
-
-    return res
-      .status(200)
-      .json({ message: "Product returned successfully." });
-  } catch (error) {
+    return formatResponse(true, null, "Product returned successfully.", 200);
+  } catch (error: any) {
     console.error("Error processing product return:", error);
-    return res
-      .status(500)
-      .json({ error: "An error occurred while processing the return." });
+    return formatResponse(
+      false,
+      null,
+      error.message || "An error occurred while processing the return.",
+      500
+    );
   }
-};
+});
+

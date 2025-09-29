@@ -1,302 +1,69 @@
+typescript
+// app/api/post/route.ts
 import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-
+import prisma from "@/server/db/prismadb";
+import { verifyAuth } from "@/lib/verifyAuth";
 import { formatResponse } from "@/lib/formatResponse";
-import { request } from "http";
-import { NextApiRequest, NextApiResponse } from "next";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
+async function handleInventory(req: Request) {
+  const auth = await verifyAuth(req);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
+  const body = await req.json();
+  const {
+    productId,
+    quantity,
+    damaged,
+    action,
+    companyId,
+    salesAgentId,
+    reason,
+    adminId,
+    commissionRate,
+    target,
+  } = body;
 
-// POST /api/post
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  
-     const auth = await verifyAuth(req);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  if (req.method !== 'POST') {
-    return NextResponse.json({ error: 'Method Not Allowed' });
-  }
-
-  const { productId, quantity, damaged, action, companyId, salesAgentId, reason, adminId, commissionRate, target } = req.body;
-
-  // Input validation
+  // Validation
   if (!productId || !action || !quantity || quantity <= 0) {
-    return NextResponse.json({ error: 'Invalid product ID or quantity.' });
+    return formatResponse(false, null, "Invalid product ID or quantity", 400);
   }
 
   try {
-    // Find inventory item by product ID
     let inventoryItem = await prisma.inventoryItem.findFirst({
       where: { productId },
     });
 
-    // If inventory item doesn't exist and action is RESTOCK or NEWSTOCK, create a new inventory item
-    if (!inventoryItem && (action === 'RESTOCK' || action === 'NEWSTOCK')) {
+    // Handle NEWSTOCK
+    if (!inventoryItem && (action === "RESTOCK" || action === "NEWSTOCK")) {
       inventoryItem = await prisma.inventoryItem.create({
         data: {
-          product: {
-                connect: {
-                  id: productId, // Assuming `productId` exists in the Product table
-                },
-              },
-          company: {
-              connect: {
-                id: companyId, // Connect to existing company
-              },
-            },
+          product: { connect: { id: productId } },
+          company: { connect: { id: companyId } },
           quantity,
-          reorderThreshold: 10, // Default reorder threshold
+          reorderThreshold: 10,
         },
       });
 
-      // Create a log for the new stock addition
       await prisma.inventoryLog.create({
         data: {
           inventoryId: inventoryItem.id,
-          action: 'NEWSTOCK', // Default action for new items
-          damaged: damaged,
+          action: "NEWSTOCK",
+          damaged,
           quantity,
         },
       });
 
-      return res.status(201).json({ message: 'New inventory item added.', inventory: inventoryItem });
+      return formatResponse(true, inventoryItem, "New inventory item added", 201);
     }
 
-     if (!inventoryItem) {
-      return res.status(404).json({ error: 'Inventory item not found.' });
+    if (!inventoryItem) {
+      return formatResponse(false, null, "Inventory item not found", 404);
     }
 
-    // Check if the action is 'RESTOCK' and quantity is valid
-    if (action === 'RESTOCK' && quantity > 0) {
-      // Update inventory quantity
+    // Handle RESTOCK
+    if (action === "RESTOCK") {
       const updatedInventory = await prisma.inventoryItem.update({
-      where: { id: inventoryItem.id },
-      data: {
-        quantity: inventoryItem.quantity + quantity,
-        updatedAt: new Date(),
-      },
-      });
-
-      // Add inventory log
-      await prisma.inventoryLog.create({
-      data: {
-        inventoryId: inventoryItem.id,
-        action: action,        
-        damaged:damaged,
-        quantity,
-      },
-      });
-
-      return res.status(200).json({ message: 'Product restocked successfully.', inventory: updatedInventory });
-    }  
-
-    if (action === 'ASSIGN') {
-      // Ensure sufficient quantity in inventory
-      if (inventoryItem.quantity < quantity) {
-        return NextResponse.json({ error: 'Insufficient inventory quantity.' });
-      }
-
-      // Find agent inventory item by product ID
-      let agentinventoryItem = await prisma.agentInventory.findFirst({
-        where: { inventoryItemId: inventoryItem.id },
-      });
-
-      // Update main inventory quantity
-      let updatedInventory = await prisma.inventoryItem.update({
-        where: { id: inventoryItem.id },
-        data: {
-          quantity: inventoryItem.quantity - quantity,
-          updatedAt: new Date(),
-        },
-      });
-
-      // Create or update commission
-      let commission = await prisma.commission.upsert({
-        where: {
-          salesAgentId_productId: { salesAgentId, productId: inventoryItem.productId },
-        },
-        update: {
-          commissionEarned: { increment: quantity * commissionRate },
-          updatedAt: new Date(),
-        },
-        create: {
-          salesAgentId,
-          productId: inventoryItem.productId,
-          // orderId: null, // Assign later if needed
-          commissionRate,
-          commissionEarned: quantity * commissionRate,
-          basedOn: 'QUANTITY',
-        },
-      });
-
-      // Create or update target
-      let targetP = await prisma.target.upsert({
-        where: {
-          salesAgentId_productId: { salesAgentId, productId: inventoryItem.productId },
-        },
-        update: {
-          achievedValue: { increment: quantity },
-          updatedAt: new Date(),
-        },
-        create: {
-          salesAgentId,
-          productId: inventoryItem.productId,
-          targetType: target.type,
-          targetValue: target.value, // Set a default target value
-          achievedValue: quantity,
-          startDate: new Date(),
-          endDate: new Date(new Date().setMonth(new Date().getMonth() + 1)),
-        },
-      });
-
-      // If inventory item doesn't exist and action is RESTOCK or NEWSTOCK, create a new inventory item
-      if (!agentinventoryItem) {
-        agentinventoryItem = await prisma.agentInventory.create({
-          data: {
-            salesAgentId,
-            inventoryItemId: inventoryItem.id,
-            quantity,
-          },
-        });
-
-        // Add inventory log
-        await prisma.inventoryLog.create({
-          data: {
-            inventoryId: inventoryItem.id,
-            action: 'ASSIGN',
-            damaged,
-            quantity,
-          },
-        });
-
-        return res.status(200).json({
-          message: 'Product assigned successfully.',
-          inventory: updatedInventory,
-          commission,
-          targetP,
-        });
-      }
-
-      // Update agent inventory quantity
-      const updatedAgentInventory = await prisma.agentInventory.update({
-        where: { id: agentinventoryItem.id },
-        data: {
-          quantity: agentinventoryItem.quantity + quantity,
-          updatedAt: new Date(),
-        },
-      });
-
-      // Add inventory log
-      await prisma.agentInventoryLog.create({
-        data: {
-          agentInventoryId: agentinventoryItem.id,
-          action: action,
-          damaged: damaged,
-          totalPrice: 100,//inventoryItem. * quantity,
-          quantity,
-        },
-      });
-
-      return res.status(200).json({
-        message: 'Product assigned successfully.',
-        inventory: updatedInventory,
-        commission,
-        targetP,
-      });
-  }
-
-
-    // if (action === 'ASSIGN') {
-    //   // Ensure sufficient quantity in inventory
-    //   if (inventoryItem.quantity < quantity) {
-    //     return NextResponse.json({ error: 'Insufficient inventory quantity.' });
-    //   }
-
-
-    //   // Find agent inventory item by product ID
-    // let agentinventoryItem = await prisma.agentInventory.findFirst({
-    //   where: { inventoryItemId : inventoryItem.id },
-    // });
-
-    // // Update main inventory quantity
-    //   let updatedInventory = await prisma.inventoryItem.update({
-    //     where: { id: inventoryItem.id },
-    //     data: {
-    //       quantity: inventoryItem.quantity - quantity,
-    //       updatedAt: new Date(),
-    //     },
-    //   });
-
-    // // If inventory item doesn't exist and action is RESTOCK or NEWSTOCK, create a new inventory item
-    // if (!agentinventoryItem) {
-
-    //     agentinventoryItem = await prisma.agentInventory.create({
-    //       data: {
-    //         salesAgentId,
-    //         inventoryItemId:inventoryItem.id,
-    //         quantity,
-    //       },
-    //     });
-
-    //   // Add inventory log
-    //   await prisma.inventoryLog.create({
-    //     data: {
-    //       inventoryId: inventoryItem.id,
-    //       action: 'ASSIGN',
-    //       damaged,
-    //       quantity,
-    //     },
-    //   });      
-
-    //   return res.status(200).json({ message: 'Product assigned successfully.', inventory: updatedInventory });
-    // }
-
-    
-    // // Update agent inventory quantity
-    //   const updatedAgentInventory = await prisma.agentInventory.update({
-    //   where: { id: agentinventoryItem.id },
-    //   data: {
-    //     quantity: agentinventoryItem.quantity + quantity,
-    //     updatedAt: new Date(),
-    //   },
-    //   });
-
-    //   // Add inventory log
-    //   await prisma.agentInventoryLog.create({
-    //     data: {
-    //       agentInventoryId: inventoryItem.id,
-    //       action: action,        
-    //       damaged:damaged,
-    //       quantity,
-    //     },
-    //   });
-
-    //   return res.status(200).json({ message: 'Product assigned successfully.', inventory: updatedInventory });
-    // }
-
-    if (action === 'RETURN') {
-
-      // Ensure sufficient quantity in inventory
-      if (inventoryItem.quantity < quantity) {
-        return NextResponse.json({ error: 'Insufficient Agent inventory quantity.' });
-      }
-
-      // Find agent inventory item by product ID
-      let agentinventoryItem = await prisma.agentInventory.findFirst({
-        where: { inventoryItemId : inventoryItem.id },
-      });
-
-      if (!agentinventoryItem || agentinventoryItem.quantity < quantity) {
-          return NextResponse.json({ error: 'Insufficient Agent inventory quantity.' });
-        }
-
-      // If inventory item doesn't exist and action is RESTOCK or NEWSTOCK, create a new inventory item
-      if (!agentinventoryItem) {    
-        return NextResponse.json({ message: 'Error Something\'s not write.'});
-      }
-      
-      // Update main inventory quantity
-      let updatedInventory = await prisma.inventoryItem.update({
         where: { id: inventoryItem.id },
         data: {
           quantity: inventoryItem.quantity + quantity,
@@ -304,27 +71,138 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         },
       });
 
-    // Update agent inventory quantity
-      const updatedAgentInventory = await prisma.agentInventory.update({
-      where: { id: agentinventoryItem.id },
-      data: {
-        quantity: agentinventoryItem.quantity - quantity,
-        updatedAt: new Date(),
-      },
-      });
-
-      // Add inventory log
-      await prisma.agentInventoryLog.create({
+      await prisma.inventoryLog.create({
         data: {
-          agentInventoryId: inventoryItem.id,
-          action: action,        
-          damaged:damaged,
-          totalPrice: 100,//inventoryItem.price *
+          inventoryId: inventoryItem.id,
+          action,
+          damaged,
           quantity,
         },
       });
 
-      // Add return log
+      return formatResponse(true, updatedInventory, "Product restocked successfully", 200);
+    }
+
+    // Handle ASSIGN
+    if (action === "ASSIGN") {
+      if (inventoryItem.quantity < quantity) {
+        return formatResponse(false, null, "Insufficient inventory quantity", 400);
+      }
+
+      let agentInventoryItem = await prisma.agentInventory.findFirst({
+        where: { inventoryItemId: inventoryItem.id },
+      });
+
+      const updatedInventory = await prisma.inventoryItem.update({
+        where: { id: inventoryItem.id },
+        data: {
+          quantity: inventoryItem.quantity - quantity,
+          updatedAt: new Date(),
+        },
+      });
+
+      const commission = await prisma.commission.upsert({
+        where: { salesAgentId_productId: { salesAgentId, productId: inventoryItem.productId } },
+        update: {
+          commissionEarned: { increment: quantity * commissionRate },
+          updatedAt: new Date(),
+        },
+        create: {
+          salesAgentId,
+          productId: inventoryItem.productId,
+          commissionRate,
+          commissionEarned: quantity * commissionRate,
+          basedOn: "QUANTITY",
+        },
+      });
+
+      const targetP = await prisma.target.upsert({
+        where: { salesAgentId_productId: { salesAgentId, productId: inventoryItem.productId } },
+        update: { achievedValue: { increment: quantity }, updatedAt: new Date() },
+        create: {
+          salesAgentId,
+          productId: inventoryItem.productId,
+          targetType: target?.type,
+          targetValue: target?.value,
+          achievedValue: quantity,
+          startDate: new Date(),
+          endDate: new Date(new Date().setMonth(new Date().getMonth() + 1)),
+        },
+      });
+
+      if (!agentInventoryItem) {
+        agentInventoryItem = await prisma.agentInventory.create({
+          data: { salesAgentId, inventoryItemId: inventoryItem.id, quantity },
+        });
+
+        await prisma.inventoryLog.create({
+          data: { inventoryId: inventoryItem.id, action: "ASSIGN", damaged, quantity },
+        });
+
+        return formatResponse(
+          true,
+          { inventory: updatedInventory, commission, targetP },
+          "Product assigned successfully",
+          200
+        );
+      }
+
+      await prisma.agentInventory.update({
+        where: { id: agentInventoryItem.id },
+        data: { quantity: agentInventoryItem.quantity + quantity, updatedAt: new Date() },
+      });
+
+      await prisma.agentInventoryLog.create({
+        data: {
+          agentInventoryId: agentInventoryItem.id,
+          action,
+          damaged,
+          totalPrice: 100, // TODO: calculate actual total price
+          quantity,
+        },
+      });
+
+      return formatResponse(
+        true,
+        { inventory: updatedInventory, commission, targetP },
+        "Product assigned successfully",
+        200
+      );
+    }
+
+    // Handle RETURN
+    if (action === "RETURN") {
+      const agentInventoryItem = await prisma.agentInventory.findFirst({
+        where: { inventoryItemId: inventoryItem.id },
+      });
+
+      if (!agentInventoryItem || agentInventoryItem.quantity < quantity) {
+        return formatResponse(false, null, "Insufficient agent inventory quantity", 400);
+      }
+
+      const updatedInventory = await prisma.inventoryItem.update({
+        where: { id: inventoryItem.id },
+        data: {
+          quantity: inventoryItem.quantity + quantity,
+          updatedAt: new Date(),
+        },
+      });
+
+      await prisma.agentInventory.update({
+        where: { id: agentInventoryItem.id },
+        data: { quantity: agentInventoryItem.quantity - quantity, updatedAt: new Date() },
+      });
+
+      await prisma.agentInventoryLog.create({
+        data: {
+          agentInventoryId: agentInventoryItem.id,
+          action,
+          damaged,
+          totalPrice: 100,
+          quantity,
+        },
+      });
+
       await prisma.return.create({
         data: {
           inventoryItem: { connect: { id: inventoryItem.id } },
@@ -335,39 +213,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         },
       });
 
-      // Add inventory log
       await prisma.inventoryLog.create({
-        data: {
-          inventoryId: inventoryItem.id,
-          action: action,
-          damaged,
-          quantity,
-        },
+        data: { inventoryId: inventoryItem.id, action, damaged, quantity },
       });
 
-      return res.status(200).json({ message: 'Product returned successfully.', inventory: updatedInventory });
+      return formatResponse(true, updatedInventory, "Product returned successfully", 200);
     }
 
-    // if (action === 'REQUEST') {
-    //   // Create a request for admin approval
-    //   const request = await prisma.request.create({
-    //     data: {
-    //       requestedById : salesAgentId,
-    //       ApprovedById : adminId,
-    //       productId : productId,
-
-    //       quantity,
-    //       status: 'PENDING', // Default status
-    //     },
-    //   });
-
-    //   return res.status(200).json({ message: 'Request submitted successfully.', request });
-    // }
-    
-    return NextResponse.json({ error: 'Invalid action or quantity.' });
-
-  } catch (error) {
-    console.error('Restock Error:', error);
-    return NextResponse.json({ error: 'Internal Server Error' });
+    return formatResponse(false, null, "Invalid action or quantity", 400);
+  } catch (error: any) {
+    console.error("Inventory Error:", error);
+    return NextResponse.json({ error: "Internal Server Error", details: error.message }, { status: 500 });
   }
 }
+
+export const POST = withApiHandler(handleInventory);
+

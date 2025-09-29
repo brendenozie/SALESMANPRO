@@ -1,26 +1,19 @@
+typescript
+// app/api/admin/agents/[id]/inventory/route.ts
 import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-
+import prisma from "@/server/db/prismadb";
+import { verifyAuth } from "@/lib/verifyAuth";
 import { formatResponse } from "@/lib/formatResponse";
-import { request } from "http";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
+async function getAgentInventory(req: Request, { params }: { params: { id: string } }) {
+  const auth = await verifyAuth(req);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
-export default async function GET( req : Request ) {
-  
-     const auth = await verifyAuth(req);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  if (req.method !== "GET") {
-    return NextResponse.json({ message: "Method not allowed. Use GET." });
-  }
+  const salesAgentId = params.id;
 
-  const { salesAgentId } = req.query;
-
-
-
-  // Validate salesAgentId
-  if (!salesAgentId || typeof salesAgentId !== "string") {
-    return NextResponse.json({ message: "Invalid or missing salesAgentId." });
+  if (!salesAgentId) {
+    return formatResponse(false, null, "Invalid or missing salesAgentId.", 400);
   }
 
   try {
@@ -30,7 +23,7 @@ export default async function GET( req : Request ) {
       include: {
         inventoryItem: {
           include: {
-            product: true, // Include product details
+            product: true,
           },
         },
       },
@@ -42,10 +35,10 @@ export default async function GET( req : Request ) {
       include: {
         inventoryItem: {
           include: {
-            product: true, // Include product details
+            product: true,
           },
         },
-        client: true, // Include client details
+        client: true,
       },
     });
 
@@ -67,32 +60,39 @@ export default async function GET( req : Request ) {
         .filter((sale) => sale.productId === productId)
         .reduce((sum, sale) => sum + sale.quantitySold, 0);
 
-        console.log(item);
-
       return {
         agentInventoryId: item.id,
-        inventoryItemId: item.inventoryItem.id, // Company inventory ID
+        inventoryItemId: item.inventoryItem.id,
         productId,
         product: item.inventoryItem.product,
         productName: item.inventoryItem.product?.name || "Unknown Product",
         totalAssignedStock: item.quantity,
         totalSold,
-        remainingStock: Math.max(item.quantity, 0),
+        remainingStock: Math.max(item.quantity - totalSold, 0),
       };
     });
 
-    // Respond with structured data
-    return res.status(200).json({
-      salesAgentId,
-      inventory: inventoryDetails,
-      sales: salesDetails,
-    });
+    return formatResponse(
+      true,
+      {
+        salesAgentId,
+        inventory: inventoryDetails,
+        sales: salesDetails,
+      },
+      "Agent inventory fetched successfully",
+      200
+    );
   } catch (error: any) {
     console.error("Error fetching inventory:", error);
-
-    return NextResponse.json({
-      message: "An error occurred while fetching inventory.",
-      error: error.message || "Unknown error",
-    });
+    return NextResponse.json(
+      {
+        message: "An error occurred while fetching inventory.",
+        error: error.message || "Unknown error",
+      },
+      { status: 500 }
+    );
   }
 }
+
+export const GET = withApiHandler(getAgentInventory);
+

@@ -1,73 +1,69 @@
-import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-
+ts
+// app/api/salesAgent/sales/route.ts
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
-import { request } from "http";
-import { NextApiRequest, NextApiResponse } from "next";
+import { verifyAuth } from "@/lib/verifyAuth";
 
-
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  try {
-    
-       const auth = await verifyAuth(req);
-      if (!auth.success) return formatResponse(false, null, auth.error, 401);
-    
-    
-    if (req.method === "GET") {
-      // Parse query parameters
-      // const { startDate, endDate, salesAgentId } = req.query;
-      const { searchParams } = new URL(req.url);
-  
-    const agentId = searchParams.get("agentId");
-    const limit = parseInt(searchParams.get("limit") || "10", 10);
-    const offset = parseInt(searchParams.get("offset") || "0", 10);
-  
-    if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
-      return NextResponse.json(
-        { message: "Invalid pagination parameters." },
-        { status: 400 }
-      );
-    }
-  
-
-      // // Filter sales based on query parameters
-      // const sales = await prisma.order.findMany({
-      //   where: {
-      //     createdAt: {
-      //       gte: startDate ? new Date(startDate as string) : undefined,
-      //       lte: endDate ? new Date(endDate as string) : undefined,
-      //     },
-      //     salesAgentId: salesAgentId ? String(salesAgentId) : undefined, // Filter by sales agent ID
-
-      //   },
-      //   include: {
-      //     product: true,
-      //     client: true,
-      //     salesAgent: true,
-      //   },
-      // });
-
-      // // Format data for the frontend
-      // const formattedSales = sales.map((sale) => ({
-      //   id: sale.id,
-      //   productName: sale.product.name,
-      //   category: sale.product.category || "N/A",
-      //   quantity: sale.quantity,
-      //   price: sale.product.price,
-      //   totalAmount: sale.totalPrice,
-      //   region: sale.client.name,
-      //   date: sale.createdAt.toISOString(),
-      //   salesAgent: sale.salesAgent ? sale.salesAgent.name : "Unknown",
-      // }));
-
-      // console.log(formattedSales);
-
-      // return res.status(200).json(formattedSales);
-    } else {
-      return NextResponse.json({ error: "Method not allowed" });
-    }
-  } catch (error) {
-    console.error("Error fetching sales data:", error);
-    return NextResponse.json({ error: "Internal Server Error" });
+export const GET = withApiHandler(async (req: Request) => {
+  const auth = await verifyAuth(req);
+  if (!auth.success) {
+    return formatResponse(false, null, auth.error, 401);
   }
-}
+
+  const { searchParams } = new URL(req.url);
+  const agentId = searchParams.get("agentId");
+  const startDate = searchParams.get("startDate");
+  const endDate = searchParams.get("endDate");
+  const limit = parseInt(searchParams.get("limit") || "10", 10);
+  const offset = parseInt(searchParams.get("offset") || "0", 10);
+
+  if (!agentId) {
+    return formatResponse(false, null, "agentId is required", 400);
+  }
+
+  if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
+    return formatResponse(false, null, "Invalid pagination parameters", 400);
+  }
+
+  try {
+    const start = startDate ? new Date(startDate) : undefined;
+    const end = endDate ? new Date(endDate) : undefined;
+
+    const sales = await prisma.order.findMany({
+      where: {
+        salesAgentId: agentId,
+        createdAt: {
+          gte: start,
+          lte: end,
+        },
+      },
+      include: {
+        product: true,
+        client: true,
+        salesAgent: true,
+      },
+      skip: offset,
+      take: limit,
+      orderBy: { createdAt: "desc" },
+    });
+
+    const formattedSales = sales.map((sale) => ({
+      id: sale.id,
+      productName: sale.product?.name || "N/A",
+      category: sale.product?.category || "N/A",
+      quantity: sale.quantity,
+      price: sale.product?.price,
+      totalAmount: sale.totalPrice,
+      region: sale.client?.name || "N/A",
+      date: sale.createdAt.toISOString(),
+      salesAgent: sale.salesAgent?.name || "Unknown",
+    }));
+
+    return formatResponse(true, formattedSales);
+  } catch (error: any) {
+    console.error("Error fetching sales data:", error);
+    return formatResponse(false, null, error.message || "Internal Server Error", 500);
+  }
+});
+

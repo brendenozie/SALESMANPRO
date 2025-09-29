@@ -1,59 +1,59 @@
+
+// app/api/admin/product-categories/route.ts
 import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-import { NextApiRequest, NextApiResponse } from "next";
-
+import prisma from "@/server/db/prismadb";
+import { verifyAuth } from "@/lib/verifyAuth";
 import { formatResponse } from "@/lib/formatResponse";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-
-export default async function handle(
-  req: Request,
-  res: NextApiResponse
-) {
-   const auth = await verifyAuth(req);
+// GET product categories with pagination
+async function getProductCategories(req: Request) {
+  const auth = await verifyAuth(req);
   if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
-
-  let { page, } = req.query;
   const { searchParams } = new URL(req.url);
 
-  const agentId = searchParams.get("agentId");
-  const limit = parseInt(searchParams.get("limit") || "10", 10);
-  const offset = parseInt(searchParams.get("offset") || "0", 10);
+  const page = parseInt(searchParams.get("page") || "0", 10);
+  const limit = parseInt(searchParams.get("limit") || "20", 10);
 
-  if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
+  if (isNaN(page) || isNaN(limit) || page < 0 || limit <= 0) {
     return NextResponse.json(
       { message: "Invalid pagination parameters." },
       { status: 400 }
     );
   }
 
+  try {
+    const skip = page > 0 ? page * limit : 0;
 
-    if (req.method === "GET") {
-  
-      let currentPage = page as unknown as number;
-      let skip = currentPage >0  ? currentPage *20 : 0;
-      
-      const results = await prisma.$transaction([
-        prisma.productCategory.count({
-          skip : skip,
-          take: 20,
-        }),
-        prisma.productCategory.findMany({
-          skip : skip,
-          take: 20,
-        }),
-      ]);
-  
-      res.json({InfoResponse:{count: results[0] ?? 0,
-                    next: currentPage * 20 > results[0] ? currentPage : 0 ,
-                    pages: results[0]/20 > 0 ? results[0]/20 : 1 ,
-                    prev: currentPage-1 > 0 ? currentPage-1 : 0},
-                results: results[1]
-              });
+    const [totalCount, categories] = await prisma.$transaction([
+      prisma.productCategory.count(),
+      prisma.productCategory.findMany({
+        skip,
+        take: limit,
+      }),
+    ]);
 
-    } else {
-      throw new Error(
-        `The HTTP ${req.method} method is not supported at this route.`
-      );
-    }
+    const infoResponse = {
+      count: totalCount ?? 0,
+      next: skip + limit < totalCount ? page + 1 : null,
+      pages: Math.ceil(totalCount / limit),
+      prev: page > 0 ? page - 1 : null,
+    };
+
+    return formatResponse(
+      true,
+      { info: infoResponse, results: categories },
+      "Product categories fetched successfully",
+      200
+    );
+  } catch (error) {
+    console.error("Error fetching product categories:", error);
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
+  }
 }
+
+export const GET = withApiHandler(getProductCategories);

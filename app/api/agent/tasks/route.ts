@@ -1,34 +1,26 @@
-import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
 
+// app/api/tasks/route.ts
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
-import { NextApiRequest, NextApiResponse } from "next";
+import { verifyAuth } from "@/lib/verifyAuth";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  
-     const auth = await verifyAuth(req);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  if (req.method !== "GET") {
-    return NextResponse.json({ message: "Method not allowed" });
+export const GET = withApiHandler(async (req: Request) => {
+  const auth = await verifyAuth(req);
+  if (!auth.success) {
+    return formatResponse(false, null, auth.error, 401);
   }
 
   try {
-    // Define today's and tomorrow's UTC date boundaries
-    // const today = new Date();
-    // today.setUTCHours(0, 0, 0, 0); // Start of today
-    // const tomorrow = new Date(today);
-    // tomorrow.setUTCDate(today.getUTCDate() + 1); // Start of tomorrow
-
-    // Fetch tasks due today
+    // Example: fetch all tasks, ordered by dueTime ascending
     const tasks = await prisma.task.findMany({
-      orderBy: { dueTime: "asc" }, // Order by time
+      orderBy: { dueTime: "asc" },
     });
 
-    // Respond with the tasks
-    res.status(200).json(tasks);
-  } catch (error) {
+    return formatResponse(true, tasks);
+  } catch (error: any) {
     console.error("Error fetching tasks:", error);
-    NextResponse.json({ message: "Internal server error" });
+    return formatResponse(false, null, error.message || "Internal server error", 500);
   }
-}
+});
+

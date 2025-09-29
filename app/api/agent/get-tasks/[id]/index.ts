@@ -1,57 +1,47 @@
-import { NextApiRequest, NextApiResponse } from "next";
-import { PrismaClient } from "@prisma/client";
-
-import { formatResponse } from "@/lib/formatResponse";
+typescript
+// app/api/tasks/[id]/route.ts
 import { NextResponse } from "next/server";
+import prisma from "@/server/db/prismadb";
+import { verifyAuth } from "@/lib/verifyAuth";
+import { formatResponse } from "@/lib/formatResponse";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-const prisma = new PrismaClient();
+async function getTask(req: Request, { params }: { params: { id: string } }) {
+  const auth = await verifyAuth(req);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  
-     const auth = await verifyAuth(req);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  if (req.method !== "GET") {
-    return NextResponse.json({ message: "Method not allowed" });
+  const { id } = params;
+  const { searchParams } = new URL(req.url);
+
+  const limit = parseInt(searchParams.get("limit") || "10", 10);
+  const offset = parseInt(searchParams.get("offset") || "0", 10);
+
+  if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
+    return NextResponse.json(
+      { message: "Invalid pagination parameters." },
+      { status: 400 }
+    );
   }
 
   try {
-    // Define today's and tomorrow's UTC date boundaries
-    // const today = new Date();
-    // today.setUTCHours(0, 0, 0, 0); // Start of today
-    // const tomorrow = new Date(today);
-    // tomorrow.setUTCDate(today.getUTCDate() + 1); // Start of tomorrow
-
-    // Fetch tasks due today
-    // Fetch tasks due today
-    const amaId = req.query.id as string
-    const { searchParams } = new URL(req.url);
-    
-      const agentId = searchParams.get("agentId");
-      const limit = parseInt(searchParams.get("limit") || "10", 10);
-      const offset = parseInt(searchParams.get("offset") || "0", 10);
-    
-      if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
-        return NextResponse.json(
-          { message: "Invalid pagination parameters." },
-          { status: 400 }
-        );
-      }
-    
-    const tasks = await prisma.task.findFirst({
-      where: {
-        id: amaId,
-      },
-      // orderBy: { dueTime: "asc" }, // Order by time
+    const task = await prisma.task.findFirst({
+      where: { id },
+      // orderBy: { dueTime: "asc" }, // Optional ordering
     });
 
-    // Respond with the tasks
-    res.status(200).json(tasks);
+    if (!task) {
+      return formatResponse(false, null, "Task not found", 404);
+    }
 
-    // Respond with the tasks
-    res.status(200).json(tasks);
+    return formatResponse(true, task, "Task fetched successfully", 200);
   } catch (error) {
-    console.error("Error fetching tasks:", error);
-    NextResponse.json({ message: "Internal server error" });
+    console.error("Error fetching task:", error);
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
+
+export const GET = withApiHandler(getTask);
+

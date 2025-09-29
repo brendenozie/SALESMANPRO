@@ -1,27 +1,24 @@
+ts
+// app/api/requests/route.ts
 import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
+import { verifyAuth } from "@/lib/verifyAuth";
 
-
-export default async function GET( req : Request ) {
-  
-     const auth = await verifyAuth(req);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  if (req.method !== "POST") {
-    return NextResponse.json({ message: "Method not allowed. Use POST." });
-  }
-
-  const { salesAgentId, productId, quantity, } = req.body;
-
-  // Validate the request body
-  if (!salesAgentId || !productId || !quantity || typeof quantity !== "number") {
-    return NextResponse.json({ message: "Invalid or missing request data." });
+export const POST = withApiHandler(async (req: Request) => {
+  const auth = await verifyAuth(req);
+  if (!auth.success) {
+    return formatResponse(false, null, auth.error, 401);
   }
 
   try {
+    const { salesAgentId, productId, quantity } = await req.json();
 
+    // Validate request body
+    if (!salesAgentId || !productId || !quantity || typeof quantity !== "number") {
+      return formatResponse(false, null, "Invalid or missing request data.", 400);
+    }
 
     const data: any = {
       requestedById: salesAgentId,
@@ -31,64 +28,11 @@ export default async function GET( req : Request ) {
       status: "PENDING",
     };
 
-    // Add salesAgent if provided
-    // if (salesAgentId) {
-    //   data.salesAgent = { connect: { id: salesAgentId } };
-    // }
+    const productRequest = await prisma.request.create({ data });
 
-    // Create the product request
-    const productRequest = await prisma.request.create({
-      data,
-    });
-
-    // Check if the product exists
-    // const product = await prisma.product.findUnique({
-    //   where: { id: productId },
-    // });
-
-    // if (!product) {
-    //   return res.status(404).json({ message: "Product not found." });
-    // }
-
-    // // Check if the client exists
-    // const client = await prisma.client.findUnique({
-    //   where: { id: clientId },
-    // });
-
-    // if (!client) {
-    //   return res.status(404).json({ message: "Client not found." });
-    // }
-
-    // // If salesAgentId is provided, check if the sales agent exists
-    // let salesAgent = null;
-    // if (salesAgentId) {
-    //   salesAgent = await prisma.salesAgent.findUnique({
-    //     where: { id: salesAgentId },
-    //   });
-
-    //   if (!salesAgent) {
-    //     return res.status(404).json({ message: "Sales agent not found." });
-    //   }
-    // }
-
-    // // Create the request
-    // const productRequest = await prisma.request.create({
-    //   data: {
-    //     requestedById: clientId,
-    //     requestedByType: "CLIENT", // Assuming the type is CLIENT
-    //     product: {
-    //       connect: { id: productId },
-    //     },
-    //     quantity,
-    //     salesAgent: salesAgentId || null, // Associate with the sales agent or leave null for the company
-    //     status: "PENDING", // Default status
-    //   },
-    // });
-
-    // // Respond with the created request
-    return res.status(201).json({
-      message: "Product request created successfully.",
-      request: {
+    return formatResponse(
+      true,
+      {
         requestId: productRequest.id,
         productId: productRequest.productId,
         clientId: productRequest.requestedById,
@@ -97,13 +41,17 @@ export default async function GET( req : Request ) {
         status: productRequest.status,
         createdAt: productRequest.createdAt,
       },
-    });
+      "Product request created successfully.",
+      201
+    );
   } catch (error: any) {
     console.error("Error creating product request:", error);
-
-    return NextResponse.json({
-      message: "An error occurred while creating the product request.",
-      error: error.message || "Unknown error",
-    });
+    return formatResponse(
+      false,
+      null,
+      error.message || "An error occurred while creating the product request.",
+      500
+    );
   }
-}
+});
+

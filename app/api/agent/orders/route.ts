@@ -1,122 +1,113 @@
+typescript
+// app/api/admin/agents/[id]/orders/route.ts
 import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-
+import prisma from "@/server/db/prismadb";
+import { verifyAuth } from "@/lib/verifyAuth";
 import { formatResponse } from "@/lib/formatResponse";
-import { NextApiRequest, NextApiResponse } from "next";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
+async function getOrders(req: Request, { params }: { params: { id: string } }) {
+  const auth = await verifyAuth(req);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
-const getOrders = async (req: NextApiRequest, res: NextApiResponse) => {
-  
-     const auth = await verifyAuth(req);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  const { page = 1, limit = 10, status = 'all', search = '', agentId } = req.query;
+  const { searchParams } = new URL(req.url);
+  const page = parseInt(searchParams.get("page") || "1", 10);
+  const limit = parseInt(searchParams.get("limit") || "10", 10);
+  const status = searchParams.get("status") || "all";
+  const search = searchParams.get("search") || "";
+  const agentId = params.id;
 
-  const currentPage = parseInt(page as string, 10) || 1;
-  const itemsPerPage = parseInt(limit as string, 10) || 5;
-
-  const skip = (currentPage - 1) * itemsPerPage;
-  const take = itemsPerPage;
+  const skip = (page - 1) * limit;
 
   try {
-  
-  // Fetch total orders, revenues, and pending requests
-  const [totalOrders, totalRevenue, pendingRevenueFromLogs, completedRevenue, pendingRequests] =
-    await Promise.all([
-      prisma.agentInventoryLog.count({
-        where: { agentInventory: { salesAgentId: agentId as string } },
-      }),
-      prisma.clientInventoryLog.aggregate({
-        where: {
-          salesAgentId: agentId as string,
-          action: "ASSIGNED",
-        },
-        _sum: { totalPrice: true },
-      }),
-      prisma.clientInventoryLog.aggregate({
-        where: {
-          salesAgentId: agentId as string,
-          action: "allocated",
-          status: "pending",
-        },
-        _sum: { totalPrice: true },
-      }),
-      prisma.clientInventoryLog.aggregate({
-        where: {
-          salesAgentId: agentId as string,
-          action: "allocated",
-          status: "completed",
-        },
-        _sum: { totalPrice: true },
-      }),
-      prisma.request.aggregate({
-        where: {
-          salesAgentId: agentId as string,
-          status: "PENDING",
-        },
-        _sum: { totalPrice: true },
-      }),
-    ]);
+    // Aggregate totals
+    const [totalOrders, totalRevenue, pendingRevenueFromLogs, completedRevenue, pendingRequests] =
+      await Promise.all([
+        prisma.agentInventoryLog.count({
+          where: { agentInventory: { salesAgentId: agentId } },
+        }),
+        prisma.clientInventoryLog.aggregate({
+          where: { salesAgentId: agentId, action: "ASSIGNED" },
+          _sum: { totalPrice: true },
+        }),
+        prisma.clientInventoryLog.aggregate({
+          where: { salesAgentId: agentId, action: "allocated", status: "pending" },
+          _sum: { totalPrice: true },
+        }),
+        prisma.clientInventoryLog.aggregate({
+          where: { salesAgentId: agentId, action: "allocated", status: "completed" },
+          _sum: { totalPrice: true },
+        }),
+        prisma.request.aggregate({
+          where: { salesAgentId: agentId, status: "PENDING" },
+          _sum: { totalPrice: true },
+        }),
+      ]);
 
-  // Combine pending revenues from logs and requests
-  const totalPendingRevenue =
-    (pendingRevenueFromLogs._sum.totalPrice || 0) +
-    (pendingRequests._sum.totalPrice || 0);
+    const totalPendingRevenue =
+      (pendingRevenueFromLogs._sum.totalPrice || 0) +
+      (pendingRequests._sum.totalPrice || 0);
 
-  // Fetch orders with pagination
-  const orders = await prisma.clientInventoryLog.findMany({
-    where: {
-      salesAgentId: agentId as string,
-      action: "allocated",
-    },
-    skip,
-    take: itemsPerPage,
-    orderBy: { createdAt: "desc" },
-  });
+    // Fetch orders with pagination
+    const orders = await prisma.clientInventoryLog.findMany({
+      where: {
+        salesAgentId: agentId,
+        action: "allocated",
+        ...(status !== "all" ? { status } : {}),
+        ...(search
+          ? {
+              inventoryItem: {
+                product: {
+                  name: { contains: search, mode: "insensitive" },
+                },
+              },
+            }
+          : {}),
+      },
+      skip,
+      take: limit,
+      orderBy: { createdAt: "desc" },
+      include: {
+        inventoryItem: { include: { product: true } },
+        client: true,
+      },
+    });
 
-  // Monthly revenue grouped by months
-  const monthlyRevenue = await prisma.clientInventoryLog.groupBy({
-    by: ["createdAt"],
-    where: {
-      salesAgentId: agentId as string,
-      action: "allocated",
-    },
-    _sum: { totalPrice: true },
-  });
+    // Monthly revenue grouped
+    const monthlyRevenue = await prisma.clientInventoryLog.groupBy({
+      by: ["createdAt"],
+      where: { salesAgentId: agentId, action: "allocated" },
+      _sum: { totalPrice: true },
+    });
 
-  // Format monthly revenue
-  const monthlyRevenueFormatted = monthlyRevenue.map((entry) => ({
-    month: new Date(entry.createdAt).toLocaleString("default", {
-      month: "long",
-    }),
-    year: new Date(entry.createdAt).getFullYear(),
-    revenue: entry._sum.totalPrice || 0,
-  }));
+    const monthlyRevenueFormatted = monthlyRevenue.map((entry) => ({
+      month: new Date(entry.createdAt).toLocaleString("default", { month: "long" }),
+      year: new Date(entry.createdAt).getFullYear(),
+      revenue: entry._sum.totalPrice || 0,
+    }));
 
-  const allOrders = {
-    orders,
-    totalOrders,
-    totalPages: Math.ceil(totalOrders / itemsPerPage),
-    totalRevenue: totalRevenue._sum.totalPrice || 0,
-    pendingRevenue: totalPendingRevenue,
-    completedRevenue: completedRevenue._sum.totalPrice || 0,
-    monthlyRevenue: monthlyRevenueFormatted,
-  };
-
-    res.status(200).json(allOrders);
-  } catch (error) {
-    console.error('Error fetching orders:', error);
-    NextResponse.json({ error: 'Failed to fetch orders' });
-  }
-};
-
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  switch (req.method) {
-    case 'GET':
-      await getOrders(req, res);
-      break;
-    default:
-      res.setHeader('Allow', ['GET']);
-      NextResponse.end(`Method ${req.method} Not Allowed`);
+    return formatResponse(
+      true,
+      {
+        orders,
+        totalOrders,
+        totalPages: Math.ceil(totalOrders / limit),
+        totalRevenue: totalRevenue._sum.totalPrice || 0,
+        pendingRevenue: totalPendingRevenue,
+        completedRevenue: completedRevenue._sum.totalPrice || 0,
+        monthlyRevenue: monthlyRevenueFormatted,
+      },
+      "Orders fetched successfully",
+      200
+    );
+  } catch (error: any) {
+    console.error("Error fetching orders:", error);
+    return NextResponse.json(
+      { message: "Failed to fetch orders", error: error.message || "Unknown error" },
+      { status: 500 }
+    );
   }
 }
+
+export const GET = withApiHandler(getOrders);
+

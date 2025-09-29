@@ -1,53 +1,62 @@
+ts
+// app/api/returnStock/route.ts
 import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
-import { NextApiRequest, NextApiResponse } from "next";
+import { verifyAuth } from "@/lib/verifyAuth";
 
-
-// POST return stock from an agent
-export async function returnStock(req: NextApiRequest, res: NextApiResponse) {
-  
-     const auth = await verifyAuth(req);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  if (req.method !== "POST") {
-    return NextResponse.json({ message: "Method not allowed" });
+export const POST = withApiHandler(async (req: Request) => {
+  const auth = await verifyAuth(req);
+  if (!auth.success) {
+    return formatResponse(false, null, auth.error, 401);
   }
-
-  const { productId, agentId, quantity, isDamaged } = req.body;
 
   try {
-    // const agentInventory = await prisma.agentInventory.findFirst({
-    //   where: { productId, salesAgentId: agentId },
-    // });
+    const { productId, agentId, quantity, isDamaged } = await req.json();
 
-    // if (!agentInventory || agentInventory.quantity < quantity) {
-    //   return NextResponse.json({ message: "Insufficient agent stock" });
-    // }
+    if (!productId || !agentId || !quantity) {
+      return formatResponse(false, null, "Missing required fields.", 400);
+    }
 
-    // // Deduct from agent stock
-    // await prisma.agentInventory.update({
-    //   where: { id: agentInventory.id },
-    //   data: { quantity: agentInventory.quantity - quantity },
-    // });
+    // Check agent's inventory
+    const agentInventory = await prisma.agentInventory.findFirst({
+      where: { productId, salesAgentId: agentId },
+    });
 
-    // if (!isDamaged) {
-    //   const inventoryItem = await prisma.inventoryItem.findFirst({
-    //     where: { productId },
-    //   });
+    if (!agentInventory || agentInventory.quantity < quantity) {
+      return formatResponse(false, null, "Insufficient agent stock.", 400);
+    }
 
-    //   if (inventoryItem) {
-    //     await prisma.inventoryItem.update({
-    //       where: { id: inventoryItem.id },
-    //       data: { quantity: inventoryItem.quantity + quantity },
-    //     });
-    //   }
-    // }
+    // Deduct from agent stock
+    await prisma.agentInventory.update({
+      where: { id: agentInventory.id },
+      data: { quantity: agentInventory.quantity - quantity },
+    });
 
-    res.status(200).json({ message: "Stock returned successfully" });
-  } catch (error) {
-    console.error(error);
-    NextResponse.json({ message: "Internal server error" });
+    // Return to company stock if not damaged
+    if (!isDamaged) {
+      const inventoryItem = await prisma.inventoryItem.findFirst({
+        where: { productId },
+      });
+
+      if (inventoryItem) {
+        await prisma.inventoryItem.update({
+          where: { id: inventoryItem.id },
+          data: { quantity: inventoryItem.quantity + quantity },
+        });
+      }
+    }
+
+    return formatResponse(true, null, "Stock returned successfully.", 200);
+  } catch (error: any) {
+    console.error("Error returning stock:", error);
+    return formatResponse(
+      false,
+      null,
+      error.message || "Internal server error",
+      500
+    );
   }
-}
+});
+
