@@ -21,8 +21,8 @@ const slugify = (text: string) =>
 // Fetch all tour packages with their destinations
 // =======================================================================
 async function handleGET(request: Request) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   try {
     const tourPackages = await prisma.tourPackage.findMany({
@@ -42,8 +42,8 @@ async function handleGET(request: Request) {
 // Create a new tour package and associate it with destinations
 // =======================================================================
 async function handlePOST(request: Request) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   try {
     const body = await request.json();

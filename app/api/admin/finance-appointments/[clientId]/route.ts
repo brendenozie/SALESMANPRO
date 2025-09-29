@@ -16,8 +16,8 @@ interface Context {
 // Fetches a single appointment by ID
 // =======================================================================
 async function handleGetAppointment(request: Request, context: Context) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { id } = context.params;
 
@@ -38,8 +38,8 @@ async function handleGetAppointment(request: Request, context: Context) {
 // Updates an existing appointment by ID
 // =======================================================================
 async function handlePutAppointment(request: Request, context: Context) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { id } = context.params;
   const { date, notes, status } = await request.json();
@@ -61,8 +61,8 @@ async function handlePutAppointment(request: Request, context: Context) {
 // Deletes an appointment by ID
 // =======================================================================
 async function handleDeleteAppointment(request: Request, context: Context) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { id } = context.params;
 

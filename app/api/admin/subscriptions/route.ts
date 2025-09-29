@@ -1,12 +1,13 @@
 import prisma from '@/server/db/prismadb';
 import { PlanStatus, SubscriptionStatus, BillingCycle } from '@prisma/client';
-import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+import { formatResponse } from "@/lib/formatResponse";
+
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
 
 // GET /api/subscriptions - List subscriptions with pagination and filters
 async function handleGET(request: Request) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   try {
     const { searchParams } = new URL(request.url);
@@ -58,8 +59,8 @@ async function handleGET(request: Request) {
 
 // POST /api/subscriptions - Create a new subscription
 async function handlePOST(request: Request) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   try {
     const {

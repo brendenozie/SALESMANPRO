@@ -17,8 +17,8 @@ interface Params {
 // Fetches a single Event Registration by its ID.
 // =======================================================================
 async function getRegistration(request: Request, { params }: Params) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { id } = params;
 
@@ -62,8 +62,8 @@ async function getRegistration(request: Request, { params }: Params) {
 // Updates an existing Event Registration by ID.
 // =======================================================================
 async function updateRegistration(request: Request, { params }: Params) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { id } = params;
   const body = await request.json();
@@ -143,8 +143,8 @@ async function updateRegistration(request: Request, { params }: Params) {
 // Deletes an Event Registration by ID (effectively cancelling it).
 // =======================================================================
 async function deleteRegistration(request: Request, { params }: Params) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { id } = params;
 

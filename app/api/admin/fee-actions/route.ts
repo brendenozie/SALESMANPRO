@@ -10,8 +10,8 @@ import { verifyAuth } from '@/lib/verifyAuth';
 // Handles GET requests for all fee records filtered by schoolId.
 // =======================================================================
 async function getFees(request: Request) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { searchParams } = new URL(request.url);
   const schoolId = searchParams.get('schoolId');
@@ -30,8 +30,8 @@ async function getFees(request: Request) {
 // Handles POST requests for adding new fee records.
 // =======================================================================
 async function createFeeRecord(request: Request) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const body = await request.json();
   const { studentName, studentClass, term, academicYear, totalFeesDue, amountPaid, dueDate, schoolId } = body;

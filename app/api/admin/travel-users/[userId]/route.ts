@@ -7,8 +7,8 @@ import { withApiHandler } from "@/lib/hooks/withApiHandler";
 // DELETE /api/admin/[adminSlug]/users/[userId]
 // Deletes a specific user by ID
 async function handleDELETE(request: Request, { params }: { params: { adminSlug: string; userId: string } }) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { adminSlug, userId } = params;
 

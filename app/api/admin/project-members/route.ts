@@ -17,8 +17,8 @@ interface ProjectMemberCreateData {
  * Can filter by projectId.
  */
 export const GET = withApiHandler(async (request: NextRequest) => {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { searchParams } = new URL(request.url);
   const projectId = searchParams.get("projectId");
@@ -38,8 +38,8 @@ export const GET = withApiHandler(async (request: NextRequest) => {
  * Handles POST requests to create a new project member.
  */
 export const POST = withApiHandler(async (request: NextRequest) => {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { projectId, userId, role }: ProjectMemberCreateData = await request.json();
 

@@ -10,8 +10,8 @@ const formatDate = (date: Date | null) => (date ? date.toISOString().split("T")[
 
 // GET /api/admin/[adminSlug]/clients
 async function handleGET(request: Request) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
@@ -52,8 +52,8 @@ async function handleGET(request: Request) {
 
 // POST /api/admin/[adminSlug]/clients
 async function handlePOST(request: Request) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");

@@ -1,7 +1,8 @@
 // app/api/admin/student-fee-records/route.ts
 import { NextRequest } from 'next/server';
 import { getStudentFeeRecords, createStudentFeeRecord, StudentFeeRecord } from '@/lib/data';
-import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+import { formatResponse } from "@/lib/formatResponse";
+
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
 
 // GET handler – fetch all student fee records

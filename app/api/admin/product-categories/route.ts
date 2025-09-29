@@ -7,8 +7,8 @@ import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
 // GET: List all categories for a company
 export const GET = withApiHandler(async (request: NextRequest) => {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
@@ -27,8 +27,8 @@ export const GET = withApiHandler(async (request: NextRequest) => {
 
 // POST: Create a new product category
 export const POST = withApiHandler(async (request: NextRequest) => {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const data = await request.json();
 

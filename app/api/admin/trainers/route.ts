@@ -1,7 +1,8 @@
 // app/api/admin/[adminSlug]/trainers/route.ts
 import prisma from '@/server/db/prismadb';
 import bcrypt from 'bcryptjs';
-import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+import { formatResponse } from "@/lib/formatResponse";
+
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
 
 // Helper to generate unique 6-digit login codes
@@ -18,8 +19,8 @@ async function generateUniqueLoginCode(): Promise<string> {
 
 // GET /api/admin/[adminSlug]/trainers
 async function handleGET(request: Request) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');
@@ -56,8 +57,8 @@ async function handleGET(request: Request) {
 
 // POST /api/admin/[adminSlug]/trainers
 async function handlePOST(request: Request) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');

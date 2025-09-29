@@ -12,8 +12,8 @@ interface ProjectMemberUpdateData {
 
 // GET: Retrieve a single project member by ID
 export const GET = withApiHandler(async (request: NextRequest, { params }: { params: { id: string } }) => {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { id } = params;
   if (!id) return formatResponse(false, null, "Project member ID is required.", 400);
@@ -30,8 +30,8 @@ export const GET = withApiHandler(async (request: NextRequest, { params }: { par
 
 // PUT: Update a project member by ID
 export const PUT = withApiHandler(async (request: NextRequest, { params }: { params: { id: string } }) => {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { id } = params;
   const { role }: ProjectMemberUpdateData = await request.json();
@@ -49,8 +49,8 @@ export const PUT = withApiHandler(async (request: NextRequest, { params }: { par
 
 // DELETE: Remove a project member by ID
 export const DELETE = withApiHandler(async (request: NextRequest, { params }: { params: { id: string } }) => {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { id } = params;
   if (!id) return formatResponse(false, null, "Project member ID is required for deletion.", 400);

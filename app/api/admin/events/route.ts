@@ -53,8 +53,8 @@ function transformEventResponse(event: any) {
 // =======================================================================
 async function getEvents(request: Request) {
   // Authentication check
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');
@@ -166,8 +166,8 @@ async function getEvents(request: Request) {
 // =======================================================================
 async function createEvent(request: Request) {
   // Authentication check
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const body = await request.json();
   const {

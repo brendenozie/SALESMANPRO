@@ -7,7 +7,8 @@ import { formatResponse } from '@/lib/formatResponse';
 
 // Removed old imports:
 // import { NextApiRequest, NextApiResponse } from 'next';
-// import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+// import { formatResponse } from "@/lib/formatResponse";
+
 // import { request } from 'http';
 
 const prisma = new PrismaClient();

@@ -1,7 +1,8 @@
 // app/api/teacher/courses/[courseId]/attendance-data/route.ts
 import { NextResponse } from 'next/server';
 import prisma from "@/server/db/prismadb"; // Adjust path as per your project structure
-import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+import { formatResponse } from "@/lib/formatResponse";
+
 
 // Define AttendanceStatus to match your Prisma schema
 export type AttendanceStatus = 'PRESENT' | 'ABSENT' | 'TARDY' | 'EXCUSED';

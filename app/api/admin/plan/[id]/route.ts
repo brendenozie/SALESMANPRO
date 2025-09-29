@@ -19,8 +19,8 @@ const putHandler = async (
   request: Request,
   { params }: { params: { id: string } }
 ) => {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { id } = params;
   const {
@@ -57,8 +57,8 @@ const deleteHandler = async (
   request: Request,
   { params }: { params: { id: string } }
 ) => {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { id } = params;
 

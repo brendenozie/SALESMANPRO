@@ -13,8 +13,8 @@ interface Params {
 // GET: Fetch a single Donor profile by ID
 // =======================================================================
 async function getDonor(request: Request, { params }: Params) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { id } = params;
 
@@ -47,8 +47,8 @@ async function getDonor(request: Request, { params }: Params) {
 // PUT: Update an existing Donor profile by ID
 // =======================================================================
 async function updateDonor(request: Request, { params }: Params) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { id } = params;
   const body = await request.json();
@@ -70,8 +70,8 @@ async function updateDonor(request: Request, { params }: Params) {
 // DELETE: Delete a Donor profile by ID
 // =======================================================================
 async function deleteDonor(request: Request, { params }: Params) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { id } = params;
 

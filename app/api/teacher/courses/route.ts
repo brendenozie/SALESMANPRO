@@ -5,7 +5,8 @@
 
 import { NextResponse } from 'next/server';
 import prisma from "@/server/db/prismadb"; // Adjust path as per your project structure
-import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+import { formatResponse } from "@/lib/formatResponse";
+
 import { type } from 'os';
 import { title } from 'process';
 

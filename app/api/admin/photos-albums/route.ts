@@ -10,8 +10,8 @@ import { withApiHandler } from "@/lib/hooks/withApiHandler";
  * @description Fetches all photo albums, optionally filtered by companyId.
  */
 const getHandler = async (request: Request) => {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
@@ -32,8 +32,8 @@ const getHandler = async (request: Request) => {
  * @description Creates a new photo album and its associated photos.
  */
 const postHandler = async (request: Request) => {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const body = await request.json();
   const { title, description, tags, photoUrls, companyId, userId } = body;

@@ -1,7 +1,8 @@
 // app/api/admin/[adminSlug]/travel-bookings/route.ts
 import prisma from '@/server/db/prismadb';
 import { NextResponse } from 'next/server';
-import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+import { formatResponse } from "@/lib/formatResponse";
+
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
 
 // Helper function to format dates
@@ -10,8 +11,8 @@ const formatDate = (date?: Date | string) =>
 
 // GET /api/admin/[adminSlug]/travel-bookings
 async function handleGET(request: Request) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');
@@ -59,8 +60,8 @@ async function handleGET(request: Request) {
 
 // POST /api/admin/[adminSlug]/travel-bookings
 async function handlePOST(request: Request) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');

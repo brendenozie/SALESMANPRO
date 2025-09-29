@@ -13,8 +13,8 @@ const prisma = new PrismaClient();
 // =======================================================================
 async function handleGetAppointments(request: Request) {
   // Authentication is handled by withApiHandler, but we check success here
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');
@@ -49,8 +49,8 @@ async function handleGetAppointments(request: Request) {
 // =======================================================================
 async function handlePostAppointment(request: Request) {
   // Authentication is handled by withApiHandler, but we check success here
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const body = await request.json();
   const { clientId, expertId, date, notes, companyId } = body;

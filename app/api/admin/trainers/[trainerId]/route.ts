@@ -1,6 +1,7 @@
 // app/api/admin/[adminSlug]/trainers/[trainerId]/route.ts
 import prisma from '@/server/db/prismadb';
-import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+import { formatResponse } from "@/lib/formatResponse";
+
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
 
 // PUT /api/admin/[adminSlug]/trainers/[trainerId]
@@ -8,8 +9,8 @@ import { withApiHandler } from '@/lib/hooks/withApiHandler';
 async function handlePUT(request: Request, { params }: { params: { adminSlug: string; trainerId: string } }) {
   const { adminSlug, trainerId } = params;
 
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   try {
     const body = await request.json();
@@ -72,8 +73,8 @@ async function handlePUT(request: Request, { params }: { params: { adminSlug: st
 async function handleDELETE(request: Request, { params }: { params: { adminSlug: string; trainerId: string } }) {
   const { adminSlug, trainerId } = params;
 
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   try {
     const company = await prisma.company.findUnique({ where: { slug: adminSlug }, select: { id: true } });

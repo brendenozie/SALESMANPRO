@@ -24,8 +24,8 @@ async function generateUniqueLoginCode(): Promise<string> {
 
 // --- GET /api/parents ---
 async function handleGetParents(request: NextRequest) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
@@ -65,8 +65,8 @@ async function handleGetParents(request: NextRequest) {
 
 // --- POST /api/parents ---
 async function handlePostParent(request: NextRequest) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const body = await request.json();
   const { email, name, companyId, phone, bio, address, profilePicture } = body;

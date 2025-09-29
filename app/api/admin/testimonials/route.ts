@@ -1,12 +1,13 @@
 // app/api/testimonials/route.ts
 import prisma from '@/server/db/prismadb';
-import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+import { formatResponse } from "@/lib/formatResponse";
+
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
 
 // GET /api/testimonials
 async function handleGET(request: Request) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   try {
     const { searchParams } = new URL(request.url);
@@ -31,8 +32,8 @@ async function handleGET(request: Request) {
 
 // POST /api/testimonials
 async function handlePOST(request: Request) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   try {
     const body = await request.json();

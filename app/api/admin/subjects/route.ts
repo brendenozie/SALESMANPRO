@@ -4,8 +4,8 @@ import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
 // GET /api/subjects
 async function handleGET(request: Request) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   try {
     const subjects = await prisma.subject.findMany({
@@ -36,8 +36,8 @@ async function handleGET(request: Request) {
 
 // POST /api/subjects
 async function handlePOST(request: Request) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   try {
     const body = await request.json();

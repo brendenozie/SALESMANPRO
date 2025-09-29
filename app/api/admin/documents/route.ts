@@ -10,8 +10,8 @@ const prisma = new PrismaClient();
 // GET: Fetch all documents
 // =======================================================================
 async function getDocuments(request: Request) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const documents = await prisma.document.findMany({
     include: {
@@ -31,8 +31,8 @@ async function getDocuments(request: Request) {
 // POST: Create a new document
 // =======================================================================
 async function createDocument(request: Request) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { name, fileUrl, mimeType, fileSize, uploaderId, companyId } = await request.json();
 

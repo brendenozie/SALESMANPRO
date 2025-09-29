@@ -13,8 +13,8 @@ interface Params {
 // PUT: Update an existing donation by ID
 // =======================================================================
 async function updateDonation(request: Request, { params }: Params) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { id } = params;
   const body = await request.json();
@@ -36,8 +36,8 @@ async function updateDonation(request: Request, { params }: Params) {
 // DELETE: Delete a donation by ID
 // =======================================================================
 async function deleteDonation(request: Request, { params }: Params) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { id } = params;
   await prisma.donation.delete({

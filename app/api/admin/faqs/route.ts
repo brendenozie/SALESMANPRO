@@ -13,8 +13,8 @@ const prisma = new PrismaClient();
 // Fetches all FAQs, filtered by companyId.
 // =======================================================================
 async function getFaqs(request: Request) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');
@@ -40,8 +40,8 @@ async function getFaqs(request: Request) {
 // Creates a new FAQ item.
 // =======================================================================
 async function createFaq(request: Request) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const body = await request.json();
   const { question, answer, companyId } = body;

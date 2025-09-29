@@ -2,7 +2,8 @@
 import { NextResponse } from 'next/server';
 import prisma from "@/server/db/prismadb";
 import { Prisma } from '@prisma/client';
-import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+import { formatResponse } from "@/lib/formatResponse";
+
 
 
 // GET /api/admin/writers/[id] - Get a single writer by ID

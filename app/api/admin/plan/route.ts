@@ -16,8 +16,8 @@ import { withApiHandler } from "@/lib/hooks/withApiHandler";
  * Fetch all plans with support for pagination and filtering by companyId.
  */
 const getHandler = async (request: Request) => {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { searchParams } = new URL(request.url);
 
@@ -58,8 +58,8 @@ const getHandler = async (request: Request) => {
  * Create a new plan.
  */
 const postHandler = async (request: Request) => {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const {
     companyId,

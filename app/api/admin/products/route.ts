@@ -8,8 +8,8 @@ import { withApiHandler } from "@/lib/hooks/withApiHandler";
 // GET /api/products
 // Fetches all products, optionally filtered by companyId
 export const GET = withApiHandler(async (request: NextRequest) => {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
@@ -34,8 +34,8 @@ export const GET = withApiHandler(async (request: NextRequest) => {
 // POST /api/products
 // Creates a new product
 export const POST = withApiHandler(async (request: NextRequest) => {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const body = await request.json();
   const {

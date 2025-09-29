@@ -13,8 +13,8 @@ interface Params {
 // GET: Fetch a single educator by ID
 // =======================================================================
 async function getEducator(request: Request, { params }: Params) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { id } = params;
 
@@ -116,8 +116,8 @@ async function getEducator(request: Request, { params }: Params) {
 // PATCH: Updates an existing Educator profile by ID
 // =======================================================================
 async function updateEducator(request: Request, { params }: Params) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { id } = params;
   const body = await request.json();
@@ -288,8 +288,8 @@ async function updateEducator(request: Request, { params }: Params) {
 // DELETE: Deletes an Educator profile by ID
 // =======================================================================
 async function deleteEducator(request: Request, { params }: Params) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { id } = params;
 

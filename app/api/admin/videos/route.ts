@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb';
 import { VideoStatus } from '@prisma/client';
-import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+import { formatResponse } from "@/lib/formatResponse";
+
 
 // GET /api/videos - Fetch all videos
 export async function GET(request: Request) {

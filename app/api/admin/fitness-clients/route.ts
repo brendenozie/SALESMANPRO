@@ -7,7 +7,8 @@ import { withApiHandler } from '@/lib/hooks/withApiHandler';
 import { formatResponse } from '@/lib/formatResponse';
 
 // Removed old imports:
-// import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+// import { formatResponse } from "@/lib/formatResponse";
+
 
 // Type definition for the context object
 type RouteContext = {

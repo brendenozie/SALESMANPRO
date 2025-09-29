@@ -8,8 +8,8 @@ import { verifyAuth } from "@/lib/verifyAuth";
 // GET all Donor profiles
 // =======================================================================
 async function getDonors(request: Request) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const donors = await prisma.donor.findMany({
     include: {
@@ -42,8 +42,8 @@ async function getDonors(request: Request) {
 // POST a new Donor profile
 // =======================================================================
 async function createDonor(request: Request) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const body = await request.json();
   const { userId, phoneNumber, companyId } = body;

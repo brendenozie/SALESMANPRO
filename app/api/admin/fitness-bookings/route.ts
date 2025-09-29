@@ -7,7 +7,8 @@ import { formatResponse } from '@/lib/formatResponse';
 
 // Removed old imports:
 // import { NextResponse } from 'next/server';
-// import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+// import { formatResponse } from "@/lib/formatResponse";
+
 
 // Type definition for the context object, which includes dynamic parameters
 type RouteContext = {

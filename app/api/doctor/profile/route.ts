@@ -63,8 +63,8 @@ export async function GET(request: Request) {
 
 export async function PUT(request: Request) {
   
-   const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+   
+
 
 const { searchParams } = new URL(request.url);
   const doctorId = searchParams.get("doctorId");

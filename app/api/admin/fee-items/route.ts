@@ -11,8 +11,8 @@ import { verifyAuth } from '@/lib/verifyAuth';
 // =======================================================================
 async function handleGetFeeItems(request: Request) {
   // 1. Authentication Check
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   // 2. Business Logic
   const feeItems = await getFeeItems();
@@ -27,8 +27,8 @@ async function handleGetFeeItems(request: Request) {
 // =======================================================================
 async function handlePostFeeItem(request: Request) {
   // 1. Authentication Check
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   // 2. Parse Body and Validation
   const body: Omit<FeeItem, 'id'> = await request.json();

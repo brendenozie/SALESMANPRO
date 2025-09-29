@@ -15,8 +15,8 @@ interface Context {
 // =======================================================================
 async function handlePostPayment(request: Request, context: Context) {
   // 1. Authentication Check (Handled by withApiHandler)
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { id } = context.params;
   const { amount, date, method, receiptNumber } = await request.json();

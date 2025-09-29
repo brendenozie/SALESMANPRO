@@ -38,8 +38,8 @@ function transformQuestionResponse(question: any) {
 // Fetches a single ExamQuestion by its ID.
 // =======================================================================
 async function getQuestion(request: Request, { params }: Params) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { id } = params;
 
@@ -70,8 +70,8 @@ async function getQuestion(request: Request, { params }: Params) {
 // Updates an existing ExamQuestion by ID.
 // =======================================================================
 async function updateQuestion(request: Request, { params }: Params) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { id } = params;
   const body = await request.json();
@@ -156,8 +156,8 @@ async function updateQuestion(request: Request, { params }: Params) {
 // Deletes an ExamQuestion by ID.
 // =======================================================================
 async function deleteQuestion(request: Request, { params }: Params) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { id } = params;
 

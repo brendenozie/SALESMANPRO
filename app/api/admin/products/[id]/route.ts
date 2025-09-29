@@ -7,8 +7,8 @@ import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
 // PUT /api/products/:id
 export const PUT = withApiHandler(async (request: NextRequest, { params }: { params: { id: string } }) => {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { id } = params;
   const body = await request.json();
@@ -74,8 +74,8 @@ export const PUT = withApiHandler(async (request: NextRequest, { params }: { par
 
 // DELETE /api/products/:id
 export const DELETE = withApiHandler(async (request: NextRequest, { params }: { params: { id: string } }) => {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { id } = params;
 

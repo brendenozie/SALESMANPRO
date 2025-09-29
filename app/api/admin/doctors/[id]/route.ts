@@ -28,8 +28,8 @@ async function formatDoctorData(doctor: any) {
 // GET: Fetch a single doctor by ID
 // =======================================================================
 async function getDoctor(request: Request, { params }: { params: { id: string } }) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { id } = params;
 
@@ -52,8 +52,8 @@ async function getDoctor(request: Request, { params }: { params: { id: string } 
 // PUT: Update an existing doctor by ID
 // =======================================================================
 async function updateDoctor(request: Request, { params }: { params: { id: string } }) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { id } = params;
   const body = await request.json();
@@ -99,8 +99,8 @@ async function updateDoctor(request: Request, { params }: { params: { id: string
 // DELETE: Delete a doctor by ID
 // =======================================================================
 async function deleteDoctor(request: Request, { params }: { params: { id: string } }) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { id } = params;
 

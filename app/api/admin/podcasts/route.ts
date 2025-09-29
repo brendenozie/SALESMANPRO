@@ -9,8 +9,8 @@ import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
 // GET /api/admin/podcasts
 const getPodcasts = async (request: NextRequest) => {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const companyId = request.nextUrl.searchParams.get("companyId");
 
@@ -48,8 +48,8 @@ const getPodcasts = async (request: NextRequest) => {
 
 // POST /api/admin/podcasts
 const createPodcast = async (request: NextRequest) => {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const body = await request.json();
   const {

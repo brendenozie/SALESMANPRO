@@ -1,7 +1,8 @@
 // app/api/teacher/courses/[courseId]/grades-data/route.ts
 import { NextResponse } from 'next/server';
 import prisma from "@/server/db/prismadb"; // Adjust path as per your project structure
-import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+import { formatResponse } from "@/lib/formatResponse";
+
 
 // Define GradeStatus enum for validation (must match your Prisma schema enum)
 export enum GradeStatus {

@@ -15,8 +15,8 @@ interface Params {
 // GET: Fetch a single document by ID
 // =======================================================================
 async function getDocument(request: Request, { params }: Params) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { id } = params;
   const document = await prisma.document.findUnique({
@@ -34,8 +34,8 @@ async function getDocument(request: Request, { params }: Params) {
 // PUT: Update an existing document by ID
 // =======================================================================
 async function updateDocument(request: Request, { params }: Params) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { id } = params;
   const body = await request.json();
@@ -52,8 +52,8 @@ async function updateDocument(request: Request, { params }: Params) {
 // DELETE: Delete a document by ID
 // =======================================================================
 async function deleteDocument(request: Request, { params }: Params) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { id } = params;
 

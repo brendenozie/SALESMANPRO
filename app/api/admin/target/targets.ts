@@ -4,8 +4,8 @@ import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
 // GET /api/targets
 async function handleGET(request: Request) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   try {
     const targets = await prisma.target.findMany({

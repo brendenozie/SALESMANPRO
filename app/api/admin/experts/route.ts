@@ -31,8 +31,8 @@ function formatExpertData(expert) {
 // Fetches all experts for a specific company.
 // =======================================================================
 async function getExperts(request) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');
@@ -76,8 +76,8 @@ async function getExperts(request) {
 // Creates a new expert (including a new user with EXPERT role).
 // =======================================================================
 async function createExpert(request) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');

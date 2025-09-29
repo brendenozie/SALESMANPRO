@@ -13,8 +13,8 @@ import { formatResponse } from "@/lib/formatResponse";
 // GET: Fetch all destinations with their associated location data
 // =======================================================================
 async function getDestinations(request: Request) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');

@@ -28,8 +28,8 @@ interface ProjectCreateData {
  * GET /api/projects - Fetch all projects
  */
 export const GET = withApiHandler(async (request: NextRequest) => {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const projects = await prisma.project.findMany({
     include: {
@@ -51,8 +51,8 @@ export const GET = withApiHandler(async (request: NextRequest) => {
  * POST /api/projects - Create a new project
  */
 export const POST = withApiHandler(async (request: NextRequest) => {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const {
     name,

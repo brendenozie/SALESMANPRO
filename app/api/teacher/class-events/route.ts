@@ -15,8 +15,8 @@ const VALID_EVENT_AUDIENCES = ["ALL", "ACADEMIC_LEVEL", "COURSE", "EDUCATOR", "S
 // const VALID_EVENT_AUDIENCES = ['ALL', 'STUDENTS', 'EDUCATORS', 'PARENTS', 'STAFF', 'ACADEMIC_LEVEL', 'COURSE', 'DEPARTMENT']; // Example values
 
 export async function GET(request: Request) {
-   const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+   
+
 
 
   try {

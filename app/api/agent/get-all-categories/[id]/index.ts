@@ -2,7 +2,8 @@ import { Prisma } from '@prisma/client'
 import { NextApiRequest, NextApiResponse } from 'next'
 import { getSession } from 'next-auth/react'
 import prisma, { client } from "@/server/db/prismadb";
-import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+import { formatResponse } from "@/lib/formatResponse";
+
 import { request } from 'http';
 import { NextResponse } from 'next/server';
 

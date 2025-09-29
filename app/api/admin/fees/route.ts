@@ -11,8 +11,8 @@ import { verifyAuth } from '@/lib/verifyAuth';
 // =======================================================================
 async function handleGetFeeRecords(request: Request) {
   // Authentication is handled by withApiHandler, but we check success here
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { searchParams } = new URL(request.url);
   const schoolId = searchParams.get('schoolId');
@@ -31,8 +31,8 @@ async function handleGetFeeRecords(request: Request) {
 // =======================================================================
 async function handlePostFeeRecord(request: Request) {
   // Authentication is handled by withApiHandler, but we check success here
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const body = await request.json();
   const { studentName, studentClass, term, academicYear, totalFeesDue, amountPaid, dueDate, schoolId } = body;

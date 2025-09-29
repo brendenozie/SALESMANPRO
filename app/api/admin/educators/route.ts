@@ -28,8 +28,8 @@ async function generateUniqueLoginCode(): Promise<string> {
 // Fetches all educator profiles
 // =======================================================================
 async function getEducators(request: Request) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');
@@ -137,8 +137,8 @@ async function getEducators(request: Request) {
 // Creates a new Educator profile
 // =======================================================================
 async function createEducator(request: Request) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const body = await request.json();
   const { email, name, companyId, phone, bio, address, profilePicture, departmentId, academicLevelIds } = body;

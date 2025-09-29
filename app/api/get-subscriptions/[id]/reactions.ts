@@ -8,8 +8,8 @@ export default async function handle(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-   const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+   
+
 
 
   const amaId = req.query.id as string

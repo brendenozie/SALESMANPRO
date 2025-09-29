@@ -6,7 +6,8 @@ import { formatResponse } from '@/lib/formatResponse';
 
 // Removed old imports:
 // import { NextApiRequest, NextApiResponse } from 'next'; // Not standard for App Router
-// import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+// import { formatResponse } from "@/lib/formatResponse";
+
 
 const prisma = new PrismaClient();
 

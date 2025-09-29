@@ -1,7 +1,8 @@
 // app/api/admin/student-fee-records/[id]/payments/route.ts
 import { NextRequest } from 'next/server';
 import { addPaymentToStudentFeeRecord } from '@/lib/data';
-import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+import { formatResponse } from "@/lib/formatResponse";
+
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
 
 interface Context {

@@ -66,8 +66,8 @@ function transformExamResponse(exam: any) {
 // Fetches all exams with optional filters.
 // =======================================================================
 async function getExams(request: Request) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');
@@ -129,8 +129,8 @@ async function getExams(request: Request) {
 // Creates a new Exam.
 // =======================================================================
 async function createExam(request: Request) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const body = await request.json();
   const {

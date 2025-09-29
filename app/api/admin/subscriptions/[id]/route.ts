@@ -1,12 +1,13 @@
 import prisma from '@/server/db/prismadb';
 import { PlanStatus, SubscriptionStatus, BillingCycle } from '@prisma/client';
-import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+import { formatResponse } from "@/lib/formatResponse";
+
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
 
 // PUT /api/subscriptions/[id] - Update subscription
 async function handlePUT(request: Request, { params }: { params: { id: string } }) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { id } = params;
 
@@ -39,8 +40,8 @@ async function handlePUT(request: Request, { params }: { params: { id: string } 
 
 // DELETE /api/subscriptions/[id] - Delete subscription
 async function handleDELETE(request: Request, { params }: { params: { id: string } }) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { id } = params;
 

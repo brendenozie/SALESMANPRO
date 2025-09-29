@@ -71,8 +71,8 @@ function transformExamResponse(exam: any) {
 // Fetches a single Exam by its ID.
 // =======================================================================
 async function getExam(request: Request, { params }: Params) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { id } = params;
 
@@ -108,8 +108,8 @@ async function getExam(request: Request, { params }: Params) {
 // Updates an existing Exam by ID.
 // =======================================================================
 async function updateExam(request: Request, { params }: Params) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { id } = params;
   const body = await request.json();
@@ -230,8 +230,8 @@ async function updateExam(request: Request, { params }: Params) {
 // Deletes an Exam by ID.
 // =======================================================================
 async function deleteExam(request: Request, { params }: Params) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { id } = params;
 

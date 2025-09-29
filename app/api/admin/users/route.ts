@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb';
 import { UserStatus, Plan, ROLE } from '@prisma/client'; // Added ROLE enum import
-import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+import { formatResponse } from "@/lib/formatResponse";
+
 
 // GET /api/users
 // Fetches users with support for pagination, searching, and filtering.
@@ -97,8 +98,8 @@ export async function GET(request: Request) {
 // Handles creating a new user
 export async function POST(request: Request) {
   try {
-   const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+   
+
 
 
     const { companyId, ...userData } = await request.json();

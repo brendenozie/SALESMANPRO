@@ -13,8 +13,8 @@ interface Context {
 // Handles GET requests for a single fee item.
 // =======================================================================
 async function handleGetFeeItem(request: Request, context: Context) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { id } = context.params;
   const feeItem = await getFeeItemById(id);
@@ -31,8 +31,8 @@ async function handleGetFeeItem(request: Request, context: Context) {
 // Handles PUT requests for updating a fee item.
 // =======================================================================
 async function handlePutFeeItem(request: Request, context: Context) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { id } = context.params;
   const updatedData: Partial<Omit<FeeItem, 'id'>> = await request.json();
@@ -56,8 +56,8 @@ async function handlePutFeeItem(request: Request, context: Context) {
 // Handles DELETE requests for deleting a fee item.
 // =======================================================================
 async function handleDeleteFeeItem(request: Request, context: Context) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { id } = context.params;
   const success = await deleteFeeItem(id);

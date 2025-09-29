@@ -34,8 +34,8 @@ function transformQuestionResponse(question: any) {
 // =======================================================================
 async function getExamQuestions(request: Request) {
   // Authentication is handled by withApiHandler, but we verify here for internal response logic
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { searchParams } = new URL(request.url);
   const examId = searchParams.get('examId');
@@ -73,8 +73,8 @@ async function getExamQuestions(request: Request) {
 // Creates a new ExamQuestion.
 // =======================================================================
 async function createExamQuestion(request: Request) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const body = await request.json();
   const {

@@ -18,8 +18,8 @@ const slugify = (text: string) =>
 
 // GET /api/tour-packages/[id]
 async function handleGET(request: Request, { params }: { params: { id: string } }) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { id } = params;
   if (!id) return formatResponse(false, null, "Tour package ID is required", 400);
@@ -46,8 +46,8 @@ async function handleGET(request: Request, { params }: { params: { id: string } 
 
 // PUT /api/tour-packages/[id]
 async function handlePUT(request: Request) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { pathname } = new URL(request.url);
   const id = pathname.split("/").pop();
@@ -108,8 +108,8 @@ async function handlePUT(request: Request) {
 
 // DELETE /api/tour-packages/[id]
 async function handleDELETE(request: Request) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { pathname } = new URL(request.url);
   const id = pathname.split("/").pop();

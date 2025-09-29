@@ -1,7 +1,8 @@
 // app/api/admin/[adminSlug]/travel-bookings/[bookingId]/route.ts
 import prisma from '@/server/db/prismadb';
 import { NextResponse } from 'next/server';
-import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+import { formatResponse } from "@/lib/formatResponse";
+
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
 
 // Helper function to format dates
@@ -10,8 +11,7 @@ const formatDate = (date?: Date | string) =>
 
 // PUT /api/admin/[adminSlug]/travel-bookings/[bookingId]
 async function handlePUT(request: Request, { params }: { params: { adminSlug: string; bookingId: string } }) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
 
   const { adminSlug, bookingId } = params;
 
@@ -57,7 +57,7 @@ async function handlePUT(request: Request, { params }: { params: { adminSlug: st
         destinationId: destinationId || null,
       },
       include: {
-        client: { select: { user: { select: { name: true; email: true } } } },
+        client: { select: { user: { select: { name: true, email: true } } } },
         tourPackage: { select: { name: true } },
         destination: { select: { name: true } },
       },
@@ -68,8 +68,8 @@ async function handlePUT(request: Request, { params }: { params: { adminSlug: st
       title: updatedBooking.title,
       description: updatedBooking.description || '',
       bookingType: updatedBooking.bookingType,
-      startDate: formatDate(updatedBooking.startDate),
-      endDate: formatDate(updatedBooking.endDate),
+      startDate: formatDate(updatedBooking.startDate || ''),
+      endDate: formatDate(updatedBooking.endDate || ''),
       totalPrice: updatedBooking.totalPrice,
       status: updatedBooking.status,
       notes: updatedBooking.notes || '',
@@ -92,8 +92,8 @@ async function handlePUT(request: Request, { params }: { params: { adminSlug: st
 
 // DELETE /api/admin/[adminSlug]/travel-bookings/[bookingId]
 async function handleDELETE(request: Request, { params }: { params: { adminSlug: string; bookingId: string } }) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { adminSlug, bookingId } = params;
 

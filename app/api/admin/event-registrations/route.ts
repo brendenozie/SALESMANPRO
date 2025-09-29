@@ -13,8 +13,8 @@ const VALID_REGISTRATION_STATUSES = ["REGISTERED", "ATTENDED", "CANCELLED", "WAI
 // =======================================================================
 async function getRegistrations(request: Request) {
   // Authentication check
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { searchParams } = new URL(request.url);
   const eventId = searchParams.get('eventId');
@@ -108,8 +108,8 @@ async function getRegistrations(request: Request) {
 // =======================================================================
 async function createRegistration(request: Request) {
   // Authentication check
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const body = await request.json();
   const {

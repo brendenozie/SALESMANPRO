@@ -37,8 +37,8 @@ function transformSubmissionResponse(submission: any) {
 // Updates an existing Exam Submission (typically for grading/feedback).
 // =======================================================================
 async function updateSubmission(request: Request, { params }: Params) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { id } = params;
   const body = await request.json();
@@ -84,8 +84,8 @@ async function updateSubmission(request: Request, { params }: Params) {
 // Deletes an Exam Submission by ID.
 // =======================================================================
 async function deleteSubmission(request: Request, { params }: Params) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { id } = params;
 

@@ -28,8 +28,8 @@ async function formatDoctorData(doctor: any) {
 // GET: Fetch all doctors
 // =======================================================================
 async function getDoctors(request: Request) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
@@ -85,8 +85,8 @@ async function getDoctors(request: Request) {
 // POST: Create a new doctor
 // =======================================================================
 async function createDoctor(request: Request) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const body = await request.json();
   const { name, email, phone, profilePicture, specialty, status, companyId } = body;

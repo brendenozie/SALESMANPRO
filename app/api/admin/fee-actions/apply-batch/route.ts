@@ -10,8 +10,8 @@ import { verifyAuth } from '@/lib/verifyAuth';
 // Handles POST requests for applying fees to students in a batch based on criteria.
 // =======================================================================
 async function applyBatchFees(request: Request) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const body: BatchApplyFeeParams = await request.json();
   const { academicYear, term, targetType, targetValue } = body;

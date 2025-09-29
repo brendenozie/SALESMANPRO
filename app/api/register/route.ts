@@ -10,8 +10,8 @@ import { NextApiRequest, NextApiResponse } from "next";
 
 export default async function GET( req : Request ) {
 
-   const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+   
+
 
 
   if (req.method === 'POST') {

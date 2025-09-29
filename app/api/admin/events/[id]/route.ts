@@ -59,8 +59,8 @@ function transformEventResponse(event: any) {
 // Fetches a single Event by its ID.
 // =======================================================================
 async function getEvent(request: Request, { params }: Params) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { id } = params;
 
@@ -85,8 +85,8 @@ async function getEvent(request: Request, { params }: Params) {
 // Updates an existing Event by ID.
 // =======================================================================
 async function updateEvent(request: Request, { params }: Params) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { id } = params;
   const body = await request.json();
@@ -237,8 +237,8 @@ async function updateEvent(request: Request, { params }: Params) {
 // Deletes an Event by ID.
 // =======================================================================
 async function deleteEvent(request: Request, { params }: Params) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { id } = params;
 

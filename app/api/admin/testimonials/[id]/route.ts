@@ -1,12 +1,13 @@
 // app/api/testimonials/[id]/route.ts
 import prisma from '@/server/db/prismadb';
-import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+import { formatResponse } from "@/lib/formatResponse";
+
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
 
 // GET /api/testimonials/[id]
 async function handleGET(request: Request, { params }: { params: { id: string } }) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { id } = params;
 
@@ -31,8 +32,8 @@ async function handleGET(request: Request, { params }: { params: { id: string } 
 
 // PUT /api/testimonials/[id]
 async function handlePUT(request: Request, { params }: { params: { id: string } }) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { id } = params;
 
@@ -54,8 +55,8 @@ async function handlePUT(request: Request, { params }: { params: { id: string } 
 
 // DELETE /api/testimonials/[id]
 async function handleDELETE(request: Request, { params }: { params: { id: string } }) {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
+
 
   const { id } = params;
 

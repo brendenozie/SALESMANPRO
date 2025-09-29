@@ -1,7 +1,8 @@
 // app/api/video-albums/[id]/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb';
-import { verifyAuth, formatResponse } from '@/lib/verifyAuth';
+import { formatResponse } from "@/lib/formatResponse";
+
 
 /**
  * @route GET /api/video-albums/:id
