@@ -40,13 +40,13 @@ export default function CategoryTree({
 
     const availableMap = useMemo(() => {
         const map = new Map<string, IProductCategory>();
-        availableCategories.forEach(cat => map.set(cat.id, cat));
+        availableCategories?.forEach(cat => map.set(cat.id, cat));
         return map;
     }, [availableCategories]);
 
     const categoriesForContext = useMemo(() => {
         const allowedNames = new Set(STORE_CATEGORY_MAP[category] || []);
-        return availableCategories.filter(cat => allowedNames.has(cat.name || ''));
+        return availableCategories?.filter(cat => allowedNames.has(cat.name || '')) || [];
     }, [category, availableCategories]);
 
     const filteredData = useMemo(() => {
