@@ -9,9 +9,6 @@ import { withApiHandler } from '@/lib/hooks/withApiHandler';
 async function handlePUT(request: Request, { params }: { params: { adminSlug: string; trainerId: string } }) {
   const { adminSlug, trainerId } = params;
 
-  
-
-
   try {
     const body = await request.json();
     const { name, email, phone, specialty, bio, certifications, photoUrl, status } = body;

@@ -52,7 +52,7 @@ const getStoreCategories = async (request: Request) => {
     icon: sc.icon || sc.category?.icon || "📦",
     sortOrder: sc.sortOrder,
     visible: sc.visible,
-    items: (sc.items as SubcategoryJson[] | null) || [],
+    subcategories: (sc.subcategories as SubcategoryJson[] | null) || [],
     allBrands: sc.allBrands,
     categoryName: sc.category?.name,
     categorySlug: sc.category?.slug,

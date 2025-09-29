@@ -22,16 +22,16 @@ async function getSales(req: NextRequest) {
     }
 
     // Example placeholder — adjust your relations accordingly
-    const sales = await prisma.order.findMany({
+    const sales = await prisma.customerOrder.findMany({
       where: {
         createdAt: {
           gte: startDate ? new Date(startDate) : undefined,
           lte: endDate ? new Date(endDate) : undefined,
         },
-        salesAgentId: agentId || undefined,
+        agentId: agentId || undefined,
       },
       include: {
-        product: true,
+        marketplaceListing: true,
         client: true,
         salesAgent: true,
       },

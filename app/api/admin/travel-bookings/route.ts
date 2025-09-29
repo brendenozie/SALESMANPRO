@@ -1,8 +1,7 @@
 // app/api/admin/[adminSlug]/travel-bookings/route.ts
 import prisma from '@/server/db/prismadb';
-import { NextResponse } from 'next/server';
-import { formatResponse } from "@/lib/formatResponse";
 
+import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
 
 // Helper function to format dates
@@ -11,8 +10,6 @@ const formatDate = (date?: Date | string) =>
 
 // GET /api/admin/[adminSlug]/travel-bookings
 async function handleGET(request: Request) {
-  
-
 
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');
@@ -25,7 +22,7 @@ async function handleGET(request: Request) {
     const bookings = await prisma.booking.findMany({
       where: { companyId: company.id },
       include: {
-        client: { select: { user: { select: { name: true; email: true } } } },
+        client: { select: { user: { select: { name: true, email: true } } } },
         tourPackage: { select: { name: true } },
         destination: { select: { name: true } },
       },
@@ -37,8 +34,8 @@ async function handleGET(request: Request) {
       title: booking.title,
       description: booking.description || '',
       bookingType: booking.bookingType,
-      startDate: formatDate(booking.startDate),
-      endDate: formatDate(booking.endDate),
+      startDate: formatDate(booking.startDate || ''),
+      endDate: formatDate(booking.endDate || ''),
       totalPrice: booking.totalPrice,
       status: booking.status,
       notes: booking.notes || '',
@@ -61,8 +58,6 @@ async function handleGET(request: Request) {
 // POST /api/admin/[adminSlug]/travel-bookings
 async function handlePOST(request: Request) {
   
-
-
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');
   if (!companyId) return formatResponse(false, null, 'Company ID is required', 400);
@@ -109,7 +104,7 @@ async function handlePOST(request: Request) {
         ...(destinationId && { destination: { connect: { id: destinationId } } }),
       },
       include: {
-        client: { select: { user: { select: { name: true; email: true } } } },
+        client: { select: { user: { select: { name: true, email: true } } } },
         tourPackage: { select: { name: true } },
         destination: { select: { name: true } },
       },
@@ -120,8 +115,8 @@ async function handlePOST(request: Request) {
       title: newBooking.title,
       description: newBooking.description || '',
       bookingType: newBooking.bookingType,
-      startDate: formatDate(newBooking.startDate),
-      endDate: formatDate(newBooking.endDate),
+      startDate: formatDate(newBooking.startDate || ''),
+      endDate: formatDate(newBooking.endDate || ''),
       totalPrice: newBooking.totalPrice,
       status: newBooking.status,
       notes: newBooking.notes || '',

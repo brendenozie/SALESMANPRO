@@ -1,6 +1,4 @@
 // app/api/admin/students/[id]/route.ts
-import { NextRequest } from "next/server";
-import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { EnrollmentStatus, StudentLevelStatus, ROLE } from "@prisma/client";
 
@@ -8,9 +6,7 @@ import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
 // GET /api/students/[id] – fetch a single student
-async function getStudent(req: NextRequest, { params }: { params: { id: string } }) {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+async function getStudent(req: Request, { params }: { params: { id: string } }) {
 
   const { id } = params;
 
@@ -80,9 +76,8 @@ async function getStudent(req: NextRequest, { params }: { params: { id: string }
 }
 
 // PATCH /api/students/[id] – update a student
-async function updateStudent(req: NextRequest) {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+async function updateStudent(req: Request) {
+  
 
   try {
     const { pathname } = new URL(req.url);
@@ -181,9 +176,8 @@ async function updateStudent(req: NextRequest) {
 }
 
 // DELETE /api/students/[id] – delete a student
-async function deleteStudent(req: NextRequest) {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+async function deleteStudent(req: Request) {
+  
 
   try {
     const { pathname } = new URL(req.url);

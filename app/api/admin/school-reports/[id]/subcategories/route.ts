@@ -1,5 +1,5 @@
 // app/api/store-categories/[id]/subcategories/route.ts
-import { NextRequest } from "next/server";
+
 import prisma from "@/server/db/prismadb";
 import { v4 as uuidv4 } from "uuid";
 import { verifyAuth } from "@/lib/verifyAuth";
@@ -16,7 +16,7 @@ type SubcategoryJson = {
 };
 
 // --- POST: Add a new subcategory ---
-async function addSubcategory(req: NextRequest, { params }: { params: { id: string } }) {
+async function addSubcategory(req: Request, { params }: { params: { id: string } }) {
   const auth = await verifyAuth(req);
   if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
@@ -31,7 +31,7 @@ async function addSubcategory(req: NextRequest, { params }: { params: { id: stri
     const storeCategory = await prisma.storeCategory.findUnique({ where: { id } });
     if (!storeCategory) return formatResponse(false, null, "Parent store category not found", 404);
 
-    const currentItems: SubcategoryJson[] = (storeCategory.items as SubcategoryJson[] | null) || [];
+    const currentItems: SubcategoryJson[] = (storeCategory.subcategories as SubcategoryJson[] | null) || [];
 
     // Check for duplicate subcategory name
     const isDuplicateName = currentItems.some(item => item.name.toLowerCase() === name.toLowerCase());
@@ -51,7 +51,7 @@ async function addSubcategory(req: NextRequest, { params }: { params: { id: stri
 
     await prisma.storeCategory.update({
       where: { id },
-      data: { items: updatedItems },
+      data: { subcategories: updatedItems },
     });
 
     return formatResponse(true, newSubcategory, "Subcategory added successfully", 201);

@@ -2,7 +2,6 @@
 import prisma from '@/server/db/prismadb';
 import bcrypt from 'bcryptjs';
 import { formatResponse } from "@/lib/formatResponse";
-
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
 
 // Helper to generate unique 6-digit login codes
@@ -20,10 +19,10 @@ async function generateUniqueLoginCode(): Promise<string> {
 // GET /api/admin/[adminSlug]/trainers
 async function handleGET(request: Request) {
   
-
-
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');
+
+  if (!companyId) return formatResponse(false, null, 'Company ID is required', 400);
 
   try {
     const company = await prisma.company.findUnique({ where: { id: companyId }, select: { id: true } });
@@ -58,10 +57,10 @@ async function handleGET(request: Request) {
 // POST /api/admin/[adminSlug]/trainers
 async function handlePOST(request: Request) {
   
-
-
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');
+
+  if (!companyId) return formatResponse(false, null, 'Company ID is required', 400);
 
   try {
     const body = await request.json();

@@ -1,16 +1,13 @@
 // app/api/products/route.ts
 import { NextRequest } from "next/server";
 import prisma from "@/server/db/prismadb";
-import { verifyAuth } from "@/lib/verifyAuth";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
 // GET /api/products
 // Fetches all products, optionally filtered by companyId
-export const GET = withApiHandler(async (request: NextRequest) => {
+export const GET = withApiHandler(async (request: Request) => {
   
-
-
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
 
@@ -33,7 +30,7 @@ export const GET = withApiHandler(async (request: NextRequest) => {
 
 // POST /api/products
 // Creates a new product
-export const POST = withApiHandler(async (request: NextRequest) => {
+export const POST = withApiHandler(async (request: Request) => {
   
 
 
@@ -69,7 +66,7 @@ export const POST = withApiHandler(async (request: NextRequest) => {
       images: images || [],
       tags: [],
       profitMargin: (sellingPrice - costPrice) / sellingPrice || 0,
-      brand: "Restaurant Brand", // adjust if needed
+      brand: "Brand", // adjust if needed
       company: { connect: { id: companyId } },
       productCategory: { connect: { id: productCategoryId } },
       costPrice,

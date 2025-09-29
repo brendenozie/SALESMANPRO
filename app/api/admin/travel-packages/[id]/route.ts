@@ -18,22 +18,23 @@ const slugify = (text: string) =>
 // GET /api/tour-packages/[id]
 async function handleGET(request: Request, { params }: { params: { id: string } }) {
   
-
-
   const { id } = params;
   if (!id) return formatResponse(false, null, "Tour package ID is required", 400);
 
   try {
     const tourPackage = await prisma.tourPackage.findUnique({
       where: { id },
-      include: { destination: true },
+      include: { destinations: true },
     });
 
     if (!tourPackage) return formatResponse(false, null, "Tour package not found", 404);
 
     const transformedPackage = {
       ...tourPackage,
-      destination: tourPackage.destination?.name || "N/A",
+      destinations: tourPackage.destinations.map((dest) => {
+        const { tourPackageId, ...rest } = dest;
+        return rest;
+      }) || "N/A",
     };
 
     return formatResponse(true, transformedPackage);

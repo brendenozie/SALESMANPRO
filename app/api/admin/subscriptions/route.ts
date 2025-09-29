@@ -7,8 +7,6 @@ import { withApiHandler } from '@/lib/hooks/withApiHandler';
 // GET /api/subscriptions - List subscriptions with pagination and filters
 async function handleGET(request: Request) {
   
-
-
   try {
     const { searchParams } = new URL(request.url);
 

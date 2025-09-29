@@ -1,5 +1,5 @@
 // app/api/admin/student-fee-records/[id]/payments/route.ts
-import { NextRequest } from 'next/server';
+
 import { addPaymentToStudentFeeRecord } from '@/lib/data';
 import { formatResponse } from "@/lib/formatResponse";
 
@@ -9,9 +9,7 @@ interface Context {
   params: { id: string }; // studentFeeRecordId
 }
 
-async function postPayment(req: NextRequest, context: Context) {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+async function postPayment(req:Request, context: Context) {
 
   const { id } = context.params;
   const { amount, date, method, receiptNumber } = await req.json();

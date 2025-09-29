@@ -1,12 +1,12 @@
 // app/api/admin/[adminSlug]/schedule/route.ts
-import { NextRequest } from "next/server";
+
 import prisma from "@/server/db/prismadb";
 import { verifyAuth } from "@/lib/verifyAuth";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
 // --- GET: Fetch all scheduled and draft content ---
-async function getSchedule(req: NextRequest, { params }: { params: { adminSlug: string } }) {
+async function getSchedule(req: Request, { params }: { params: { adminSlug: string } }) {
   const auth = await verifyAuth(req);
   if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
@@ -21,7 +21,7 @@ async function getSchedule(req: NextRequest, { params }: { params: { adminSlug: 
 
     const videos = await prisma.video.findMany({
       where: { status: { in: ["PUBLISHED", "PROCESSING", "DRAFT"] } },
-      select: { id: true, title: true, status: true, date: true },
+      select: { id: true, title: true, status: true, },
     });
 
     const formattedArticles = articles.map(item => ({
@@ -50,12 +50,15 @@ async function getSchedule(req: NextRequest, { params }: { params: { adminSlug: 
 }
 
 // --- POST: Create new scheduled content ---
-async function createSchedule(req: NextRequest, { params }: { params: { adminSlug: string } }) {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+async function createSchedule(req: Request, { params }: { params: { adminSlug: string } }) {
+  
+  const company = await prisma.company.findFirst(
+    { where: { slug: params.adminSlug } }
+  );
 
-  const isAdmin = true; // TODO: Replace with real authentication logic
-  if (!isAdmin) return formatResponse(false, null, "Unauthorized", 401);
+  if (!company) {
+    return formatResponse(false, null, "Company not found", 404);
+  }
 
   try {
     const body = await req.json();
@@ -73,6 +76,7 @@ async function createSchedule(req: NextRequest, { params }: { params: { adminSlu
           title,
           status,
           publishDate: date ? new Date(date) : undefined,
+          company: { connect: { id: company.id } },
         },
       });
     } else if (type === "Video") {
@@ -80,7 +84,9 @@ async function createSchedule(req: NextRequest, { params }: { params: { adminSlu
         data: {
           title,
           status,
-          date: date ? new Date(date) : undefined,
+          // album:{ connect: { id: company.id } },
+          // date: date ? new Date(date) : undefined,
+          // company: { connect: { id: company.id } },
         },
       });
     } else {
@@ -97,7 +103,7 @@ async function createSchedule(req: NextRequest, { params }: { params: { adminSlu
 }
 
 // --- PATCH: Update scheduled content ---
-async function updateSchedule(req: NextRequest, { params }: { params: { adminSlug: string } }) {
+async function updateSchedule(req: Request, { params }: { params: { adminSlug: string } }) {
   const auth = await verifyAuth(req);
   if (!auth.success) return formatResponse(false, null, auth.error, 401);
 

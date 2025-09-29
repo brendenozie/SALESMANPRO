@@ -1,5 +1,6 @@
 // app/api/properties/[id]/route.ts
-import prisma from "@/lib/prisma";
+
+import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 

@@ -54,7 +54,7 @@ const getBestSellingProducts = async (req: NextRequest) => {
   const listingMap = new Map(listings.map((l) => [l.id, l.name || "Unknown Product"]));
 
   const formattedProducts = bestSellingProducts.map((item) => ({
-    name: listingMap.get(item.marketplaceListingId) || "Unknown Product",
+    name: listingMap.get(item?.marketplaceListingId) || "Unknown Product",
     totalSold: item._sum.quantity || 0,
   }));
 

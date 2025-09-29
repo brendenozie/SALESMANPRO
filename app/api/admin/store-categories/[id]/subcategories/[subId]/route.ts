@@ -1,6 +1,5 @@
 // app/api/store-categories/[id]/subcategories/[subId]/route.ts
 import prisma from "@/server/db/prismadb";
-import { NextRequest } from "next/server";
 
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -15,10 +14,9 @@ type SubcategoryJson = {
 };
 
 // PATCH - Update a subcategory
-async function patchSubcategory(req: NextRequest, { params }: { params: { id: string; subId: string } }) {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
-
+async function patchSubcategory(req: Request, { params }: { params: { id: string; subId: string } }) {
+  
+  
   const { id, subId } = params;
   const body = await req.json();
   const { name, slug, sortOrder, visible } = body;
@@ -27,7 +25,7 @@ async function patchSubcategory(req: NextRequest, { params }: { params: { id: st
     const storeCategory = await prisma.storeCategory.findUnique({ where: { id } });
     if (!storeCategory) return formatResponse(false, null, "Parent store category not found", 404);
 
-    let currentItems: SubcategoryJson[] = (storeCategory.items as SubcategoryJson[] | null) || [];
+    let currentItems: SubcategoryJson[] = (storeCategory.subcategories as SubcategoryJson[] | null) || [];
     const subIndex = currentItems.findIndex(sub => sub.id === subId);
     if (subIndex === -1) return formatResponse(false, null, "Subcategory not found within this category", 404);
 
@@ -44,7 +42,7 @@ async function patchSubcategory(req: NextRequest, { params }: { params: { id: st
     }
 
     currentItems[subIndex] = updatedSub;
-    await prisma.storeCategory.update({ where: { id }, data: { items: currentItems } });
+    await prisma.storeCategory.update({ where: { id }, data: { subcategories: currentItems } });
 
     return formatResponse(true, updatedSub, "Subcategory updated successfully", 200);
   } catch (err: any) {
@@ -54,17 +52,15 @@ async function patchSubcategory(req: NextRequest, { params }: { params: { id: st
 }
 
 // DELETE - Remove a subcategory
-async function deleteSubcategory(req: NextRequest, { params }: { params: { id: string; subId: string } }) {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
-
+async function deleteSubcategory(req: Request, { params }: { params: { id: string; subId: string } }) {
+  
   const { id, subId } = params;
 
   try {
     const storeCategory = await prisma.storeCategory.findUnique({ where: { id } });
     if (!storeCategory) return formatResponse(false, null, "Parent store category not found", 404);
 
-    let currentItems: SubcategoryJson[] = (storeCategory.items as SubcategoryJson[] | null) || [];
+    let currentItems: SubcategoryJson[] = (storeCategory.subcategories as SubcategoryJson[] | null) || [];
     const filteredItems = currentItems.filter(sub => sub.id !== subId);
 
     if (filteredItems.length === currentItems.length)
@@ -72,7 +68,7 @@ async function deleteSubcategory(req: NextRequest, { params }: { params: { id: s
 
     // Optional: reorder sortOrder
     const reorderedItems = filteredItems.map((item, idx) => ({ ...item, sortOrder: idx }));
-    await prisma.storeCategory.update({ where: { id }, data: { items: reorderedItems } });
+    await prisma.storeCategory.update({ where: { id }, data: { subcategories: reorderedItems } });
 
     return formatResponse(true, { deletedSubId: subId }, "Subcategory deleted successfully", 200);
   } catch (err: any) {

@@ -1,6 +1,6 @@
 // app/api/reports/route.ts
 import prisma from "@/server/db/prismadb";
-import { NextRequest } from "next/server";
+
 import { verifyAuth } from "@/lib/verifyAuth";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -18,7 +18,7 @@ const getEndOfMonth = () => {
 };
 
 // GET /api/reports
-async function getReports(req: NextRequest) {
+async function getReports(req: Request) {
   const auth = await verifyAuth(req);
   if (!auth.success) return formatResponse(false, null, auth.error, 401);
 

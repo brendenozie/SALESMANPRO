@@ -1,5 +1,5 @@
 // app/api/admin/podcasts/route.ts
-import { NextRequest, NextResponse } from "next/server";
+
 import prisma from "@/server/db/prismadb";
 import { v4 as uuidv4 } from "uuid";
 
@@ -8,11 +8,11 @@ import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
 // GET /api/admin/podcasts
-const getPodcasts = async (request: NextRequest) => {
+const getPodcasts = async (request: Request) => {
   
+  const searchParams = new URL(request.url).searchParams;
 
-
-  const companyId = request.nextUrl.searchParams.get("companyId");
+  const companyId = searchParams.get("companyId");
 
   const whereClause: { creatorId?: string } = {};
   if (companyId) {
@@ -31,23 +31,11 @@ const getPodcasts = async (request: NextRequest) => {
     },
   });
 
-  return NextResponse.json(
-    {
-      meta: {
-        companyId: companyId || "all",
-        totalItems: podcasts.length,
-        totalPages: 1,
-        currentPage: 1,
-        perPage: podcasts.length,
-      },
-      results: podcasts,
-    },
-    { status: 200 }
-  );
+  return formatResponse(true, podcasts, null, 200);
 };
 
 // POST /api/admin/podcasts
-const createPodcast = async (request: NextRequest) => {
+const createPodcast = async (request: Request) => {
   
 
 
@@ -79,9 +67,11 @@ const createPodcast = async (request: NextRequest) => {
     !creatorId ||
     !creatorType
   ) {
-    return NextResponse.json(
-      { message: "Missing required podcast fields." },
-      { status: 400 }
+    return formatResponse(
+      false,
+      null,
+      "Missing required fields",
+      400
     );
   }
 
@@ -94,9 +84,11 @@ const createPodcast = async (request: NextRequest) => {
     isNaN(parsedEpisodeNumber) ||
     parsedEpisodeNumber <= 0
   ) {
-    return NextResponse.json(
-      { message: "Duration and Episode Number must be positive numbers." },
-      { status: 400 }
+    return formatResponse(
+      false,
+      null,
+      "Duration and episodeNumber must be positive integers",
+      400
     );
   }
 
@@ -131,7 +123,7 @@ const createPodcast = async (request: NextRequest) => {
     },
   });
 
-  return NextResponse.json(newPodcast, { status: 201 });
+  return formatResponse(true, newPodcast, null, 201);
 };
 
 // Wrap handlers withApiHandler for consistent error handling

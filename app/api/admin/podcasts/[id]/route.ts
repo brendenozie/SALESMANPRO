@@ -1,5 +1,5 @@
 // app/api/admin/podcasts/[id]/route.ts
-import { NextRequest } from "next/server";
+
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -12,7 +12,7 @@ interface PodcastRouteParams {
 // PUT /api/admin/podcasts/[id]
 // Updates an existing podcast
 const putHandler = async (
-  request: NextRequest,
+  request: Request,
   { params }: PodcastRouteParams
 ) => {
   const { id } = params;
@@ -78,7 +78,7 @@ const putHandler = async (
 // DELETE /api/admin/podcasts/[id]
 // Deletes a podcast
 const deleteHandler = async (
-  request: NextRequest,
+  request: Request,
   { params }: PodcastRouteParams
 ) => {
   const { id } = params;

@@ -1,5 +1,6 @@
-// app/api/categories/route.ts
-import prisma from '@/lib/prisma';
+// app/api/categories/route.ts  
+import prisma from '@/server/db/prismadb';
+
 import { formatResponse } from '@/lib/formatResponse';
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
 

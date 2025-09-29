@@ -1,5 +1,5 @@
 // app/api/store-categories/route.ts
-import { NextRequest } from "next/server";
+
 import prisma from "@/server/db/prismadb";
 import { v4 as uuidv4 } from "uuid";
 import { verifyAuth } from "@/lib/verifyAuth";
@@ -16,7 +16,7 @@ type SubcategoryJson = {
 };
 
 // --- GET: Fetch all store categories ---
-async function getStoreCategories(req: NextRequest) {
+async function getStoreCategories(req: Request) {
   const auth = await verifyAuth(req);
   if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
@@ -51,7 +51,7 @@ async function getStoreCategories(req: NextRequest) {
       icon: sc.icon || sc.category?.icon || "📦",
       sortOrder: sc.sortOrder,
       visible: sc.visible,
-      items: (sc.items as SubcategoryJson[] | null) || [],
+      items: (sc.subcategories as SubcategoryJson[] | null) || [],
       allBrands: sc.allBrands,
       categoryName: sc.category?.name,
       categorySlug: sc.category?.slug,
@@ -65,7 +65,7 @@ async function getStoreCategories(req: NextRequest) {
 }
 
 // --- POST: Create a new store category ---
-async function createStoreCategory(req: NextRequest) {
+async function createStoreCategory(req: Request) {
   const auth = await verifyAuth(req);
   if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
@@ -93,7 +93,7 @@ async function createStoreCategory(req: NextRequest) {
         icon,
         sortOrder: sortOrder ?? 0,
         visible: visible ?? true,
-        items: [],
+        subcategories: [],
         allBrands: [],
       },
       include: {
@@ -111,7 +111,7 @@ async function createStoreCategory(req: NextRequest) {
       icon: newStoreCategory.icon || newStoreCategory.category?.icon || "📦",
       sortOrder: newStoreCategory.sortOrder,
       visible: newStoreCategory.visible,
-      items: (newStoreCategory.items as SubcategoryJson[] | null) || [],
+      items: (newStoreCategory.subcategories as SubcategoryJson[] | null) || [],
       allBrands: newStoreCategory.allBrands,
       categoryName: newStoreCategory.category?.name,
       categorySlug: newStoreCategory.category?.slug,

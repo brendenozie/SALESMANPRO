@@ -59,7 +59,6 @@ async function handleGET(request: Request) {
         name: true,
         email: true,
         role: true,
-        plan: true,
         status: true,
         emailVerified: true,
         lastLogin: true,

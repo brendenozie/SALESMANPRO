@@ -1,8 +1,7 @@
 // app/api/admin/[adminSlug]/travel-bookings/[bookingId]/route.ts
 import prisma from '@/server/db/prismadb';
-import { NextResponse } from 'next/server';
-import { formatResponse } from "@/lib/formatResponse";
 
+import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
 
 // Helper function to format dates

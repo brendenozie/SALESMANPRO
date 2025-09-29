@@ -5,11 +5,11 @@ import { verifyAuth } from "@/lib/verifyAuth";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-async function getSalesAgentRevenue(req: NextRequest) {
+async function getSalesAgentRevenue(req: Request) {
   const auth = await verifyAuth(req);
   if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
-  const { searchParams } = req.nextUrl;
+  const { searchParams } = new URL(req.url);
   const startDate = searchParams.get("startDate");
   const endDate = searchParams.get("endDate");
   const companyId = searchParams.get("companyId");

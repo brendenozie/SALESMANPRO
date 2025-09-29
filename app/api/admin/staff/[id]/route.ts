@@ -1,6 +1,5 @@
 // app/api/admin/[adminSlug]/staff/[id]/route.ts
 import prisma from "@/server/db/prismadb";
-import { NextRequest } from "next/server";
 
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -30,10 +29,8 @@ async function formatStaffData(staffMember: any) {
 }
 
 // GET staff by ID
-async function getStaff(req: NextRequest, { params }: { params: { id: string } }) {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
-
+async function getStaff(req: Request, { params }: { params: { id: string } }) {
+  
   const { id } = params;
   try {
     const staffMember = await prisma.staffProfile.findUnique({
@@ -52,10 +49,8 @@ async function getStaff(req: NextRequest, { params }: { params: { id: string } }
 }
 
 // PUT staff by ID
-async function updateStaff(req: NextRequest, { params }: { params: { id: string } }) {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
-
+async function updateStaff(req: Request, { params }: { params: { id: string } }) {
+ 
   const { id } = params;
   const body = await req.json();
   const { name, email, phone, profilePicture, jobTitle, department, employmentStatus, startDate } = body;
@@ -88,10 +83,8 @@ async function updateStaff(req: NextRequest, { params }: { params: { id: string 
 }
 
 // DELETE staff by ID
-async function deleteStaff(req: NextRequest, { params }: { params: { id: string } }) {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
-
+async function deleteStaff(req: Request, { params }: { params: { id: string } }) {
+  
   const { id } = params;
   try {
     const existingStaff = await prisma.staffProfile.findUnique({ where: { id }, select: { userId: true } });

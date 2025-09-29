@@ -1,5 +1,5 @@
 // app/api/admin/student-fee-records/[id]/route.ts
-import { NextRequest } from 'next/server';
+
 import { getStudentFeeRecordById, updateStudentFeeRecord, deleteStudentFeeRecord, StudentFeeRecord } from '@/lib/data';
 import { formatResponse } from "@/lib/formatResponse";
 
@@ -10,9 +10,7 @@ interface Context {
 }
 
 // GET handler
-async function getStudentFee(req: NextRequest, context: Context) {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+async function getStudentFee(req: Request, context: Context) {
 
   try {
     const { id } = context.params;
@@ -28,9 +26,7 @@ async function getStudentFee(req: NextRequest, context: Context) {
 }
 
 // PUT handler
-async function updateStudentFee(req: NextRequest, context: Context) {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+async function updateStudentFee(req: Request, context: Context) {
 
   try {
     const { id } = context.params;
@@ -53,10 +49,8 @@ async function updateStudentFee(req: NextRequest, context: Context) {
 }
 
 // DELETE handler
-async function deleteStudentFee(req: NextRequest, context: Context) {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
-
+async function deleteStudentFee(req: Request, context: Context) {
+  
   try {
     const { id } = context.params;
     const success = await deleteStudentFeeRecord(id);

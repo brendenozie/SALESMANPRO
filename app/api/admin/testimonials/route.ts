@@ -1,14 +1,11 @@
 // app/api/testimonials/route.ts
 import prisma from '@/server/db/prismadb';
 import { formatResponse } from "@/lib/formatResponse";
-
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
 
 // GET /api/testimonials
 async function handleGET(request: Request) {
   
-
-
   try {
     const { searchParams } = new URL(request.url);
     const companyId = searchParams.get('companyId');
@@ -20,7 +17,7 @@ async function handleGET(request: Request) {
 
     const testimonials = await prisma.testimonial.findMany({
       where,
-      orderBy: { createdAt: 'desc' },
+      // orderBy: { createdAt: 'desc' },
     });
 
     return formatResponse(true, { testimonials });

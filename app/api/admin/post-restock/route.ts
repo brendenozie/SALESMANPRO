@@ -4,6 +4,7 @@ import prisma from "@/server/db/prismadb";
 import { verifyAuth } from "@/lib/verifyAuth";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { TargetStatus } from "@prisma/client";
 
 export const POST = withApiHandler(async (req: Request) => {
   const auth = await verifyAuth(req);
@@ -98,16 +99,22 @@ export const POST = withApiHandler(async (req: Request) => {
     });
 
     const targetP = await prisma.target.upsert({
-      where: { salesAgentId_productId: { salesAgentId, productId } },
+      where: { 
+        
+      },
       update: { achievedValue: { increment: quantity }, updatedAt: new Date() },
       create: {
-        salesAgentId,
+        salesAgent: { connect: { id: salesAgentId } },
         productId,
-        targetType: target.type,
+        targetType: target.type, //  COST or QUANTITY
         targetValue: target.value,
         achievedValue: quantity,
         startDate: new Date(),
         endDate: new Date(new Date().setMonth(new Date().getMonth() + 1)),
+        metricType: target.metricType, //, "SALES_VOLUME", "NUMBER_OF_CLIENTS"
+        periodStart: new Date(),
+        periodEnd: new Date(new Date().setMonth(new Date().getMonth() + 1)),
+        status: "ONGOING" as TargetStatus,
       },
     });
 
@@ -169,7 +176,7 @@ export const POST = withApiHandler(async (req: Request) => {
         returnedBy: { connect: { id: salesAgentId } },
         quantity,
         reason,
-        ApprovedBy: { connect: { id: adminId } },
+        ReturnApprovedBy: { connect: { id: adminId } },
       },
     });
 

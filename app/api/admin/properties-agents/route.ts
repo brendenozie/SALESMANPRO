@@ -111,7 +111,7 @@ async function postHandler(req: Request) {
       phone,
       bio,
       profilePicture: profileImageUrl,
-      emailVerified: new Date(),
+      emailVerified: false,
     },
   });
 

@@ -1,15 +1,11 @@
 // app/api/product-categories/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
-import { verifyAuth } from "@/lib/verifyAuth";
-import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
 // GET: List all categories for a company
-export const GET = withApiHandler(async (request: NextRequest) => {
+export const GET = withApiHandler(async (request: Request, context: any) => {
   
-
-
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
 
@@ -26,10 +22,8 @@ export const GET = withApiHandler(async (request: NextRequest) => {
 });
 
 // POST: Create a new product category
-export const POST = withApiHandler(async (request: NextRequest) => {
+export const POST = withApiHandler(async (request: Request) => {
   
-
-
   const data = await request.json();
 
   const {

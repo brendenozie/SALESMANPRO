@@ -1,15 +1,15 @@
 // app/api/admin/reports/orders-by-status/route.ts
-import { NextRequest } from "next/server";
+
 import prisma from "@/server/db/prismadb";
 import { verifyAuth } from "@/lib/verifyAuth";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
-const getOrdersByStatus = async (req: NextRequest) => {
+const getOrdersByStatus = async (req: Request) => {
   const auth = await verifyAuth(req);
   if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
-  const { searchParams } = req.nextUrl;
+  const { searchParams } = new URL(req.url);
   const startDate = searchParams.get("startDate");
   const endDate = searchParams.get("endDate");
   const companyId = searchParams.get("companyId");

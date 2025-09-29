@@ -7,8 +7,6 @@ import { withApiHandler } from '@/lib/hooks/withApiHandler';
 // GET /api/testimonials/[id]
 async function handleGET(request: Request, { params }: { params: { id: string } }) {
   
-
-
   const { id } = params;
 
   try {

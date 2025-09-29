@@ -1,15 +1,12 @@
 // app/api/admin/writers/route.ts
-import { NextResponse } from 'next/server';
+
 import prisma from "@/server/db/prismadb";
-import { Prisma } from '@prisma/client';
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
-import { formatResponse, verifyAuth } from "@/lib/verifyAuth";
+import { formatResponse } from "@/lib/formatResponse";
 
 // GET /api/admin/writers - Get all writers
 export const GET = withApiHandler(async (request: Request) => {
-const auth = await verifyAuth(request);
-if (!auth.success) return formatResponse(false, null, auth.error, 401);
-
+    
 const { searchParams } = new URL(request.url);
 const companyId = searchParams.get('companyId');
 
@@ -26,9 +23,7 @@ return formatResponse(true, writers, "Writers fetched successfully", 200);
 
 // POST /api/admin/writers - Create a new writer
 export const POST = withApiHandler(async (request: Request) => {
-const auth = await verifyAuth(request);
-if (!auth.success) return formatResponse(false, null, auth.error, 401);
-
+    
 const body = await request.json();
 const {
 name,

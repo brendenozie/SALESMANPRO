@@ -6,8 +6,7 @@ import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
 async function getTopCustomers(req: NextRequest) {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
 
   const { searchParams } = req.nextUrl;
   const startDate = searchParams.get("startDate");

@@ -3,12 +3,9 @@ import { NextResponse } from 'next/server';
 import prisma from "@/server/db/prismadb";
 import { Prisma } from '@prisma/client';
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
-import { formatResponse, verifyAuth } from "@/lib/verifyAuth";
 
 // GET /api/admin/writers/[id] - Get a single writer by ID
 export const GET = withApiHandler(async (request: Request, { params }: { params: { id: string } }) => {
-const auth = await verifyAuth(request);
-if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
 const { id } = params;
 
@@ -29,8 +26,6 @@ return NextResponse.json(writer, { status: 200 });
 
 // PUT /api/admin/writers/[id] - Update a writer by ID
 export const PUT = withApiHandler(async (request: Request, { params }: { params: { id: string } }) => {
-const auth = await verifyAuth(request);
-if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
 const { id } = params;
 const body = await request.json();
@@ -97,8 +92,6 @@ return NextResponse.json(updatedWriter, { status: 200 });
 
 // DELETE /api/admin/writers/[id] - Delete a writer by ID
 export const DELETE = withApiHandler(async (request: Request, { params }: { params: { id: string } }) => {
-const auth = await verifyAuth(request);
-if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
 const { id } = params;
 

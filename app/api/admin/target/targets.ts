@@ -6,8 +6,6 @@ import { withApiHandler } from "@/lib/hooks/withApiHandler";
 // GET /api/targets
 async function handleGET(request: Request) {
   
-
-
   try {
     const targets = await prisma.target.findMany({
       include: {
@@ -25,3 +23,39 @@ async function handleGET(request: Request) {
 
 // Export the handler wrapped with withApiHandler
 export const GET = withApiHandler(handleGET);
+
+// POST /api/targets
+async function handlePOST(request: Request) {
+  try {
+    const {
+      salesAgentId,
+      productId,
+      targetAmount,
+      startDate,
+      endDate,
+    } = await request.json();
+
+    if (!salesAgentId || !productId || targetAmount === undefined || !startDate || !endDate) {
+      return formatResponse(false, null, "Missing required fields", 400);
+    }
+
+    const newTarget = await prisma.target.create({
+      data: {
+        salesAgentId,
+        productId,
+        targetAmount,
+        startDate: new Date(startDate),
+        endDate: new Date(endDate),
+      },
+    });
+
+    return formatResponse(true, newTarget, "Target created successfully", 201);
+  } catch (error: any) {
+    console.error("Error creating target:", error);
+    return formatResponse(false, null, "Failed to create target", 500);
+  }
+}
+
+// Export the handler wrapped with withApiHandler
+export const POST = withApiHandler(handlePOST);
+

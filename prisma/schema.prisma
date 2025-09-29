@@ -1552,10 +1552,18 @@ model Target {
   Company   Company?     @relation(fields: [companyId], references: [id])
   companyId String?      @db.ObjectId
 
+  @@index([id])
+  @@index([agentId, productId], name: "agent_product_unique")
   @@index([agentId])
   @@index([productId])
   @@index([companyId])
   @@index([status])
+  @@index([isAchieved])
+  @@index([periodStart, periodEnd])
+  @@index([targetType])
+  @@index([metricType])
+  @@index([createdAt])
+  @@index([updatedAt])
 }
 
 enum TargetType {
@@ -4414,6 +4422,7 @@ model Video {
   id           String      @id @default(auto()) @map("_id") @db.ObjectId
   title        String?
   url          String? // The S3 URL of the video file
+  description  String?
   thumbnailUrl String? // The URL of the video's thumbnail image
   duration     String? // Duration of the video in seconds
   views        Int         @default(0)
@@ -4430,6 +4439,7 @@ model Video {
   companyId String?  @db.ObjectId
   User      User?    @relation(fields: [userId], references: [id])
   userId    String?  @db.ObjectId
+  tags      String[]
 
   // Add index for faster lookups
   // Add index for faster lookups
@@ -4535,9 +4545,12 @@ model PhotoAlbum {
 // Refactored Photo model
 // This model now only stores information specific to an individual image
 model Photo {
-  id       String  @id @default(auto()) @map("_id") @db.ObjectId
-  imageUrl String // The S3 or cloud storage URL of the photo file
-  altText  String? // For accessibility and SEO
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  imageUrl    String // The S3 or cloud storage URL of the photo file
+  altText     String? // For accessibility and SEO
+  title       String?
+  description String?
+  tags        String[]
 
   // Each photo belongs to one PhotoAlbum
   albumId String     @db.ObjectId
@@ -4547,6 +4560,9 @@ model Photo {
   companyId String?  @db.ObjectId
   User      User?    @relation(fields: [userId], references: [id])
   userId    String?  @db.ObjectId
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([albumId])
   @@index([companyId])

@@ -1,29 +1,40 @@
 // app/api/admin/student-fee-records/route.ts
-import { NextRequest } from 'next/server';
+
 import { getStudentFeeRecords, createStudentFeeRecord, StudentFeeRecord } from '@/lib/data';
 import { formatResponse } from "@/lib/formatResponse";
-
+import prisma from '@/server/db/prismadb';
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
 
+interface Context {
+  params?: { id?: string };
+}
+
 // GET handler – fetch all student fee records
-async function getAllStudentFees(req: NextRequest) {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+async function getAllStudentFees(req: Request, context: Context) {
+  
+  const companySlug = context.params?.id;
+
+  const company = await prisma.company.findUnique({
+    where: { slug: companySlug }
+  });
+
+  if (!company) {
+    return formatResponse(false, null, 'Company not found.', 404);
+  }
+
 
   try {
-    const records = await getStudentFeeRecords();
+    const records = await getStudentFeeRecords(company.id);
     return formatResponse(true, records, 'Fetched student fee records successfully.');
   } catch (error: any) {
     console.error('Error fetching student fee records:', error);
     return formatResponse(false, null, error.message || 'Failed to fetch student fee records', 500);
   }
 }
-
+``
 // POST handler – create a new student fee record
-async function createStudentFee(req: NextRequest) {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
-
+async function createStudentFee(req: Request) {
+  
   try {
     const body: { studentId: string; academicYear: string; term: string } = await req.json();
     const { studentId, academicYear, term } = body;

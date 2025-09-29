@@ -1,15 +1,12 @@
 // app/api/locations/[id]/route.ts
-import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma"; 
+import prisma from "@/server/db/prismadb";
 import { verifyAuth } from "@/lib/verifyAuth";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
 // GET /api/locations/:id
 const getLocation = async (req: Request, { params }: { params: { id: string } }) => {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
-
+  
   const { id } = params;
   const location = await prisma.location.findUnique({
     where: { id },

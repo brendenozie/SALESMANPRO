@@ -36,9 +36,7 @@ async function formatStaffData(staffMember: any) {
 }
 
 // GET /api/admin/staff
-async function getStaff(req: NextRequest) {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+async function getStaff(req: Request) {
 
   const { searchParams } = new URL(req.url);
   const companyId = searchParams.get("companyId");
@@ -86,9 +84,7 @@ async function getStaff(req: NextRequest) {
 }
 
 // POST /api/admin/staff
-async function createStaff(req: NextRequest) {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+async function createStaff(req: Request) {
 
   const body = await req.json();
   const { name, email, phone, profilePicture, jobTitle, department, employmentStatus, startDate, companyId } = body;

@@ -1,14 +1,10 @@
 // app/api/showings/route.ts
 import prisma from "@/server/db/prismadb";
-import { NextRequest } from "next/server";
-
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
 // GET all Showings for a specific company
-async function getShowings(req: NextRequest) {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+async function getShowings(req: Request) {
 
   try {
     const { searchParams } = new URL(req.url);
@@ -33,10 +29,8 @@ async function getShowings(req: NextRequest) {
 }
 
 // POST a new Showing
-async function createShowing(req: NextRequest) {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
-
+async function createShowing(req: Request) {
+ 
   try {
     const body = await req.json();
     const {

@@ -1,15 +1,11 @@
 // app/api/sponsors/route.ts
 import prisma from '@/server/db/prismadb';
-import { NextRequest } from 'next/server';
 import { formatResponse } from "@/lib/formatResponse";
-
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
 
 // GET all sponsors
-async function getSponsors(req: NextRequest) {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
-
+async function getSponsors(req: Request) {
+  
   try {
     const { searchParams } = new URL(req.url);
     const companyId = searchParams.get('companyId');
@@ -27,10 +23,8 @@ async function getSponsors(req: NextRequest) {
 }
 
 // POST a new sponsor
-async function createSponsor(req: NextRequest) {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
-
+async function createSponsor(req: Request) {
+  
   try {
     const body = await req.json();
     const { companyName, contactName, contactEmail, contactPhone, websiteUrl, logoUrl, status, companyId } = body;

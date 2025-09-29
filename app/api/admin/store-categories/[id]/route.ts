@@ -1,7 +1,5 @@
 // app/api/store-categories/route.ts
 import prisma from "@/server/db/prismadb";
-import { NextRequest } from "next/server";
-
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
@@ -15,10 +13,8 @@ type SubcategoryJson = {
 };
 
 // GET - Fetch all store categories, optionally filtered by companyId
-async function getStoreCategories(req: NextRequest) {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
-
+async function getStoreCategories(req: Request) {
+  
   const { searchParams } = new URL(req.url);
   const companyId = searchParams.get("companyId");
 
@@ -49,7 +45,7 @@ async function getStoreCategories(req: NextRequest) {
       icon: sc.icon || sc.category?.icon || "📦",
       sortOrder: sc.sortOrder,
       visible: sc.visible,
-      items: (sc.items as SubcategoryJson[] | null) || [],
+      items: (sc.subcategories as SubcategoryJson[] | null) || [],
       allBrands: sc.allBrands,
       categoryName: sc.category?.name,
       categorySlug: sc.category?.slug,
@@ -63,10 +59,8 @@ async function getStoreCategories(req: NextRequest) {
 }
 
 // POST - Create a new store category
-async function postStoreCategory(req: NextRequest) {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
-
+async function postStoreCategory(req: Request) {
+  
   try {
     const body = await req.json();
     const { companyId, categoryId, displayName, icon, sortOrder, visible } = body;
@@ -91,7 +85,7 @@ async function postStoreCategory(req: NextRequest) {
         icon,
         sortOrder: sortOrder ?? 0,
         visible: visible ?? true,
-        items: [],
+        subcategories: [],
         allBrands: [],
       },
       include: { category: { select: { id: true, name: true, slug: true, icon: true, image: true, description: true } } },
@@ -105,7 +99,7 @@ async function postStoreCategory(req: NextRequest) {
       icon: newStoreCategory.icon || newStoreCategory.category?.icon || "📦",
       sortOrder: newStoreCategory.sortOrder,
       visible: newStoreCategory.visible,
-      items: (newStoreCategory.items as SubcategoryJson[] | null) || [],
+      items: (newStoreCategory.subcategories as SubcategoryJson[] | null) || [],
       allBrands: newStoreCategory.allBrands,
       categoryName: newStoreCategory.category?.name,
       categorySlug: newStoreCategory.category?.slug,
@@ -122,10 +116,8 @@ async function postStoreCategory(req: NextRequest) {
 }
 
 // DELETE - Delete a store category by ID
-async function deleteStoreCategory(req: NextRequest) {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
-
+async function deleteStoreCategory(req: Request) {
+  
   try {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");

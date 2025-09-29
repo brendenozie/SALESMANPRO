@@ -3,13 +3,10 @@ import prisma from "@/server/db/prismadb";
 
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
-import { NextRequest } from "next/server";
 
 // GET a single store with category tree and counts
-async function getStore(req: NextRequest, { params }: { params: { id: string } }) {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
-
+async function getStore(req: Request, { params }: { params: { id: string } }) {
+  
   try {
     const storeId = params.id;
 

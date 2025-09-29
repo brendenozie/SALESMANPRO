@@ -1,14 +1,11 @@
 // app/api/showings/[showingId]/route.ts
 import prisma from "@/server/db/prismadb";
-import { NextRequest } from "next/server";
-
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
 // GET /api/showings/[showingId]
-async function getShowing(req: NextRequest, { params }: { params: { showingId: string } }) {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+async function getShowing(req: Request, { params }: { params: { showingId: string } }) {
+ 
 
   const { showingId } = params;
 
@@ -27,10 +24,8 @@ async function getShowing(req: NextRequest, { params }: { params: { showingId: s
 }
 
 // PATCH /api/showings/[showingId]
-async function updateShowing(req: NextRequest, { params }: { params: { showingId: string } }) {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
-
+async function updateShowing(req: Request, { params }: { params: { showingId: string } }) {
+ 
   const { showingId } = params;
 
   try {
@@ -89,10 +84,8 @@ async function updateShowing(req: NextRequest, { params }: { params: { showingId
 }
 
 // DELETE /api/showings/[showingId]
-async function deleteShowing(req: NextRequest, { params }: { params: { showingId: string } }) {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
-
+async function deleteShowing(req: Request, { params }: { params: { showingId: string } }) {
+  
   const { showingId } = params;
 
   try {

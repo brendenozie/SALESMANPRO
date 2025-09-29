@@ -1,7 +1,6 @@
 // app/api/project-members/route.ts
-import { NextRequest } from "next/server";
+
 import prisma from "@/server/db/prismadb";
-import { verifyAuth } from "@/lib/verifyAuth";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
@@ -16,10 +15,8 @@ interface ProjectMemberCreateData {
  * Handles GET requests to retrieve project members.
  * Can filter by projectId.
  */
-export const GET = withApiHandler(async (request: NextRequest) => {
+export const GET = withApiHandler(async (request: Request) => {
   
-
-
   const { searchParams } = new URL(request.url);
   const projectId = searchParams.get("projectId");
 
@@ -37,7 +34,7 @@ export const GET = withApiHandler(async (request: NextRequest) => {
 /**
  * Handles POST requests to create a new project member.
  */
-export const POST = withApiHandler(async (request: NextRequest) => {
+export const POST = withApiHandler(async (request: Request) => {
   
 
 

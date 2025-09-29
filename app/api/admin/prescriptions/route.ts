@@ -54,7 +54,7 @@ export const GET = withApiHandler(async (req) => {
   let prescriptions = await prisma.prescription.findMany({
     where: whereClause,
     include: {
-      patient: { select: { name: true } },
+      patient: { select: { user: { select: { name: true } } } },
       doctor: { include: { User: { select: { name: true } } } },
     },
     orderBy: { issuedDate: "desc" },
@@ -64,7 +64,7 @@ export const GET = withApiHandler(async (req) => {
     const lower = searchTerm.toLowerCase();
     prescriptions = prescriptions.filter(
       (rx) =>
-        rx.patient?.name?.toLowerCase().includes(lower) ||
+        rx.patient?.user?.name?.toLowerCase().includes(lower) ||
         rx.doctor?.User?.name?.toLowerCase().includes(lower) ||
         rx.medication?.toLowerCase().includes(lower)
     );
@@ -118,7 +118,7 @@ export const POST = withApiHandler(async (req) => {
       status: status || "PENDING",
     },
     include: {
-      patient: { select: { name: true } },
+      patient: { select: { user: { select: { name: true } } } },
       doctor: { include: { User: { select: { name: true } } } },
     },
   });

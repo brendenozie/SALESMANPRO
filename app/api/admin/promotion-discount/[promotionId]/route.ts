@@ -56,7 +56,7 @@ export const PUT = withApiHandler(async (request, { params }) => {
 
   // Check for code conflict if updated
   if (code && code !== existingPromotion.code) {
-    const conflictPromo = await prisma.promotion.findUnique({
+    const conflictPromo = await prisma.promotion.findFirst({
       where: { code },
     });
     if (conflictPromo) {
@@ -69,7 +69,7 @@ export const PUT = withApiHandler(async (request, { params }) => {
     }
   }
 
-  const updatedPromotion = await prisma.promotion.update({
+  const updatedPromotion = await prisma.promotionDiscount.update({
     where: { id: promotionId },
     data: {
       name,

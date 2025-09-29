@@ -14,13 +14,13 @@ enum ROLE {
 }
 
 // --- Authorization helper ---
-const authorizeAdmin = async (req: NextRequest) => {
+const authorizeAdmin = async (req: Request) => {
   // TODO: Implement real RBAC logic here
   return { authorized: true, status: 200, message: "Authorized" };
 };
 
 // --- GET: Fetch all agents ---
-async function getAgents(req: NextRequest) {
+async function getAgents(req: Request) {
   const auth = await verifyAuth(req);
   if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
@@ -61,7 +61,7 @@ async function getAgents(req: NextRequest) {
 }
 
 // --- POST: Create a new agent ---
-async function createAgent(req: NextRequest) {
+async function createAgent(req: Request) {
   const auth = await verifyAuth(req);
   if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
@@ -106,7 +106,7 @@ async function createAgent(req: NextRequest) {
         phone,
         bio,
         profilePicture: profileImageUrl,
-        emailVerified: new Date(),
+        emailVerified: false,
       },
     });
 

@@ -14,13 +14,13 @@ enum ROLE {
 }
 
 // --- Authorization helper ---
-const authorizeAdmin = async (req: NextRequest) => {
+const authorizeAdmin = async (req: Request) => {
   // Replace with real RBAC logic (decode token, check user role, etc.)
   return { authorized: true, status: 200, message: "Authorized" };
 };
 
 // --- PUT: Update an existing agent ---
-async function updateAgent(req: NextRequest, { params }: { params: { id: string } }) {
+async function updateAgent(req: Request, { params }: { params: { id: string } }) {
   const auth = await verifyAuth(req);
   if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
@@ -99,7 +99,7 @@ async function updateAgent(req: NextRequest, { params }: { params: { id: string 
 }
 
 // --- DELETE: Delete an agent ---
-async function deleteAgent(req: NextRequest, { params }: { params: { id: string } }) {
+async function deleteAgent(req: Request, { params }: { params: { id: string } }) {
   const auth = await verifyAuth(req);
   if (!auth.success) return formatResponse(false, null, auth.error, 401);
 

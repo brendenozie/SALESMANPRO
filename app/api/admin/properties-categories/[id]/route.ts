@@ -1,7 +1,5 @@
 // app/api/categories/[id]/route.ts
-import { NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
-import { verifyAuth } from '@/lib/verifyAuth';
+import prisma from '@/server/db/prismadb';
 import { formatResponse } from '@/lib/formatResponse';
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
 

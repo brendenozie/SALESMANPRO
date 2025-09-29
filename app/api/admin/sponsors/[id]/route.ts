@@ -1,15 +1,13 @@
 // app/api/sponsors/[id]/route.ts
 import prisma from '@/server/db/prismadb';
-import { NextRequest } from 'next/server';
-import { formatResponse } from "@/lib/formatResponse";
 
+import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
 
 // GET a single sponsor by ID
-async function getSponsor(req: NextRequest, { params }: { params: { id: string } }) {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
-
+async function getSponsor(req: Request, { params }: { params: { id: string } }) {
+  
+  
   const { id } = params;
   try {
     const sponsor = await prisma.sponsor.findUnique({ where: { id } });
@@ -23,10 +21,8 @@ async function getSponsor(req: NextRequest, { params }: { params: { id: string }
 }
 
 // PUT (update) a sponsor by ID
-async function updateSponsor(req: NextRequest, { params }: { params: { id: string } }) {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
-
+async function updateSponsor(req: Request, { params }: { params: { id: string } }) {
+  
   const { id } = params;
   try {
     const body = await req.json();
@@ -54,9 +50,7 @@ async function updateSponsor(req: NextRequest, { params }: { params: { id: strin
 }
 
 // DELETE a sponsor by ID
-async function deleteSponsor(req: NextRequest, { params }: { params: { id: string } }) {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+async function deleteSponsor(req: Request, { params }: { params: { id: string } }) {
 
   const { id } = params;
   try {

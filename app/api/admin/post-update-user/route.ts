@@ -6,8 +6,6 @@ import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
 // PUT /api/user?agentId=&limit=&offset=
 export const PUT = withApiHandler(async (req: Request) => {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
   const { searchParams } = new URL(req.url);
   const agentId = searchParams.get("agentId"); // not yet used

@@ -21,7 +21,7 @@ interface ProjectUpdateData {
 /**
  * GET /api/projects/:id - Retrieve a single project by ID
  */
-export const GET = withApiHandler(async (request: NextRequest, { params }: { params: { id: string } }) => {
+export const GET = withApiHandler(async (request: Request, { params }: { params: { id: string } }) => {
   
 
 
@@ -50,10 +50,8 @@ export const GET = withApiHandler(async (request: NextRequest, { params }: { par
 /**
  * PUT /api/projects/:id - Update a project by ID
  */
-export const PUT = withApiHandler(async (request: NextRequest, { params }: { params: { id: string } }) => {
+export const PUT = withApiHandler(async (request: Request, { params }: { params: { id: string } }) => {
   
-
-
   const { id } = params;
   if (!id) return formatResponse(false, null, "Project ID is required for update.", 400);
 
@@ -89,10 +87,8 @@ export const PUT = withApiHandler(async (request: NextRequest, { params }: { par
 /**
  * DELETE /api/projects/:id - Delete a project by ID
  */
-export const DELETE = withApiHandler(async (request: NextRequest, { params }: { params: { id: string } }) => {
+export const DELETE = withApiHandler(async (request: Request, { params }: { params: { id: string } }) => {
   
-
-
   const { id } = params;
   if (!id) return formatResponse(false, null, "Project ID is required for deletion.", 400);
 

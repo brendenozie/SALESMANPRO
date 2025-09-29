@@ -1,6 +1,5 @@
 // app/api/admin/staff/route.ts
 import prisma from "@/server/db/prismadb";
-import { NextRequest } from "next/server";
 
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -30,10 +29,8 @@ async function formatStaffData(staffMember: any) {
 }
 
 // GET all staff
-async function getAllStaff(req: NextRequest) {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
-
+async function getAllStaff(req: Request) {
+ 
   const { searchParams } = new URL(req.url);
   const companyId = searchParams.get("companyId");
   const searchTerm = searchParams.get("searchTerm") || "";
@@ -72,10 +69,8 @@ async function getAllStaff(req: NextRequest) {
 }
 
 // POST create new staff
-async function createStaff(req: NextRequest) {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
-
+async function createStaff(req: Request) {
+  
   const body = await req.json();
   const { name, email, phone, profilePicture, jobTitle, department, employmentStatus, startDate, companyId } = body;
 

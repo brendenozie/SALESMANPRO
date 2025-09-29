@@ -40,7 +40,9 @@ export const GET = withApiHandler(async (_req, { params }) => {
   const prescription = await prisma.prescription.findUnique({
     where: { id },
     include: {
-      patient: { select: { name: true } },
+      patient: {
+        select: { user: { select: { name: true } } },
+      },
       doctor: { include: { User: { select: { name: true } } } },
     },
   });
@@ -86,10 +88,23 @@ export const PUT = withApiHandler(async (req, { params }) => {
       status,
     },
     include: {
-      patient: { select: { name: true } },
+      patient: { select: { user: { select: { name: true } } } },
       doctor: { include: { User: { select: { name: true } } } },
     },
   });
 
   const formatted = await formatPrescriptionData(updatedPrescription);
-  return formatResponse(true, formatted, "Prescrip
+  return formatResponse(true, formatted, "Prescription updated successfully", 200);
+});
+
+/**
+ * DELETE /api/admin/[adminSlug]/prescriptions/[id]
+ */
+export const DELETE = withApiHandler(async (_req, { params }) => {
+  const { id } = params;
+  await prisma.prescription.delete({ where: { id } });
+  return formatResponse(true, null, "Prescription deleted successfully", 204);
+});
+
+// Note: Authentication and authorization checks should be added as needed
+// depending on your application's requirements.

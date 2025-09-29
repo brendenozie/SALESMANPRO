@@ -1,5 +1,5 @@
 // app/api/locations/route.ts
-import prisma from "@/lib/prisma";
+import prisma from "@/server/db/prismadb";
 import { verifyAuth } from "@/lib/verifyAuth";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";

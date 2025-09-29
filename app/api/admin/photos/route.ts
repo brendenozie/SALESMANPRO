@@ -25,15 +25,30 @@ export const POST = withApiHandler(async (request: Request) => {
     return formatResponse(false, null, "Title and imageUrl are required", 400);
   }
 
+
+
+  if (body.albumId) {
+    const album = await prisma.photoAlbum.findUnique({ where: { id: body.albumId } });
+    if (!album) {
+      return formatResponse(false, null, "Album not found", 404);
+    }
+    if (album.companyId !== companyId) {
+      return formatResponse(false, null, "Album does not belong to the specified company", 400);
+    }
+  } else {
+    return formatResponse(false, null, "albumId is required", 400);
+  }
+
+
   const newPhoto = await prisma.photo.create({
     data: {
       title,
       description,
       imageUrl,
       tags: tags || [],
-      date: new Date(),
       companyId,
       userId,
+      album: { connect: { id: body.albumId } },
     },
   });
 

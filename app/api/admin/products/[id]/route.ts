@@ -1,15 +1,12 @@
 // app/api/products/[id]/route.ts
-import { NextRequest } from "next/server";
+
 import prisma from "@/server/db/prismadb";
-import { verifyAuth } from "@/lib/verifyAuth";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
 // PUT /api/products/:id
-export const PUT = withApiHandler(async (request: NextRequest, { params }: { params: { id: string } }) => {
+export const PUT = withApiHandler(async (request: Request, { params }: { params: { id: string } }) => {
   
-
-
   const { id } = params;
   const body = await request.json();
   const {
@@ -73,10 +70,8 @@ export const PUT = withApiHandler(async (request: NextRequest, { params }: { par
 });
 
 // DELETE /api/products/:id
-export const DELETE = withApiHandler(async (request: NextRequest, { params }: { params: { id: string } }) => {
+export const DELETE = withApiHandler(async (request: Request, { params }: { params: { id: string } }) => {
   
-
-
   const { id } = params;
 
   await prisma.product.delete({

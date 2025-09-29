@@ -107,7 +107,7 @@ const createClient = async (req: Request) => {
       role: ROLE.CLIENT,
       phone,
       bio,
-      emailVerified: new Date(),
+      emailVerified: false,
     },
   });
 
