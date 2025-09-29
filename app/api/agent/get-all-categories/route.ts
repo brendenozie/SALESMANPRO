@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
 import { NextApiRequest, NextApiResponse } from "next";
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+
+import { formatResponse } from "@/lib/formatResponse";
 
 
 export default async function handle(

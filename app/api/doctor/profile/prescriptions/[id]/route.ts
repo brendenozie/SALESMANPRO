@@ -1,7 +1,8 @@
 // app/api/doctor/prescriptions/[id]/route.ts (for updating prescription status/notes by doctor)
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+
+import { formatResponse } from "@/lib/formatResponse";
 
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
   

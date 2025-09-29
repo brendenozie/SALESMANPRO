@@ -3,7 +3,8 @@
 // app/api/patient/invoices/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+
+import { formatResponse } from "@/lib/formatResponse";
 
 export async function GET(request: Request) {
   

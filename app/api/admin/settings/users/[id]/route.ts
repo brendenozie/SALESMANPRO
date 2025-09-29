@@ -1,7 +1,8 @@
 // app/api/settings/users/[id]/route.ts
 import { NextRequest } from "next/server";
 import prisma from "@/server/db/prismadb";
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+
+import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
 // PUT /api/settings/users/[id] - Update user

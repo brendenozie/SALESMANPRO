@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { z } from "zod";
 import nodemailer from "nodemailer";
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+
+import { formatResponse } from "@/lib/formatResponse";
 import { request } from "http";
 
 // Zod schema

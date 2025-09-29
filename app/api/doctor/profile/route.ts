@@ -1,7 +1,8 @@
 // app/api/doctor/profile/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+
+import { formatResponse } from "@/lib/formatResponse";
 
 // Helper function to format doctor data
 async function formatDoctorProfile(doctor: any) {

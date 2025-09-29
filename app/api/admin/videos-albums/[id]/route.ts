@@ -1,100 +1,53 @@
 // app/api/video-albums/[id]/route.ts
 import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb';
-import { formatResponse } from "@/lib/formatResponse";
+import { withApiHandler } from '@/lib/hooks/withApiHandler';
+import { formatResponse } from '@/lib/formatResponse';
 
-
-/**
- * @route GET /api/video-albums/:id
- * @description Fetches a single video album by ID.
- * @returns {Response} A JSON response containing the specified video album.
- */
-export async function GET(request: Request, { params }: { params: { id: string } }) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
+// GET /api/video-albums/:id
+export const GET = withApiHandler(async (request: Request, { params }: { params: { id: string } }) => {
   const { id } = params;
-  try {
-    const videoAlbum = await prisma.videoAlbum.findUnique({
-      where: { id },
-      include: {
-        videos: true, // Include all videos in the album
-      },
-    });
 
-    if (!videoAlbum) {
-      return NextResponse.json({ error: 'Video album not found' }, { status: 404 });
-    }
+  const videoAlbum = await prisma.videoAlbum.findUnique({
+    where: { id },
+    include: { videos: true },
+  });
 
-    return NextResponse.json(videoAlbum, { status: 200 });
-  } catch (error) {
-    console.error(`Error fetching video album with ID ${id}:`, error);
-    return NextResponse.json({ error: 'Failed to fetch video album' }, { status: 500 });
+  if (!videoAlbum) {
+    return formatResponse(false, null, 'Video album not found', 404);
   }
-}
 
-/**
- * @route PUT /api/video-albums/:id
- * @description Updates an existing video album's metadata.
- * @returns {Response} A JSON response containing the updated video album.
- */
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
+  return formatResponse(true, videoAlbum, 'Video album fetched successfully', 200);
+});
+
+// PUT /api/video-albums/:id
+export const PUT = withApiHandler(async (request: Request, { params }: { params: { id: string } }) => {
   const { id } = params;
-  try {
-    const body = await request.json();
-    const { title, description, tags } = body;
+  const body = await request.json();
+  const { title, description, tags } = body;
 
-    const updatedVideoAlbum = await prisma.videoAlbum.update({
-      where: { id },
-      data: {
-        title,
-        description,
-        tags,
-        updatedAt: new Date(),
-      },
-      include: {
-        videos: true,
-      },
-    });
+  const updatedVideoAlbum = await prisma.videoAlbum.update({
+    where: { id },
+    data: {
+      title,
+      description,
+      tags,
+      updatedAt: new Date(),
+    },
+    include: { videos: true },
+  });
 
-    return NextResponse.json(updatedVideoAlbum, { status: 200 });
-  } catch (error) {
-    // if (error.code === 'P2025') {
-    //   return NextResponse.json({ error: 'Video album not found' }, { status: 404 });
-    // }
-    console.error(`Error updating video album with ID ${id}:`, error);
-    return NextResponse.json({ error: 'Failed to update video album' }, { status: 500 });
-  }
-}
+  return formatResponse(true, updatedVideoAlbum, 'Video album updated successfully', 200);
+});
 
-/**
- * @route DELETE /api/video-albums/:id
- * @description Deletes a video album and all its associated videos.
- * @returns {Response} A 204 No Content response.
- */
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
+// DELETE /api/video-albums/:id
+export const DELETE = withApiHandler(async (request: Request, { params }: { params: { id: string } }) => {
   const { id } = params;
-  try {
-    await prisma.$transaction([
-      prisma.video.deleteMany({ where: { albumId: id } }),
-      prisma.videoAlbum.delete({ where: { id } }),
-    ]);
 
-    return new NextResponse(null, { status: 204 });
-  } catch (error) {
-    // if (error.code === 'P2025') {
-    //   return NextResponse.json({ error: 'Video album not found' }, { status: 404 });
-    // }
-    console.error(`Error deleting video album with ID ${id}:`, error);
-    return NextResponse.json({ error: 'Failed to delete video album' }, { status: 500 });
-  }
-}
+  await prisma.$transaction([
+    prisma.video.deleteMany({ where: { albumId: id } }),
+    prisma.videoAlbum.delete({ where: { id } }),
+  ]);
+
+  return new NextResponse(null, { status: 204 });
+});

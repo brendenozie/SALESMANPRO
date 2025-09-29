@@ -1,7 +1,8 @@
 // app/api/store-categories/[id]/subcategories/[subId]/route.ts
 import prisma from "@/server/db/prismadb";
 import { NextRequest } from "next/server";
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+
+import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
 // Helper type for subcategories

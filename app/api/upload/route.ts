@@ -3,7 +3,8 @@
 import { NextResponse } from "next/server";
 import AWS from "aws-sdk";
 import { v4 as uuidv4 } from "uuid";
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+
+import { formatResponse } from "@/lib/formatResponse";
 
 // Tell Next.js to run this route in a Node.js runtime
 export const runtime = "nodejs";

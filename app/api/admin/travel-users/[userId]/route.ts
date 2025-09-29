@@ -1,7 +1,8 @@
 // app/api/admin/[adminSlug]/users/[userId]/route.ts
 import prisma from "@/server/db/prismadb";
 import { NextResponse } from "next/server";
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+
+import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
 // DELETE /api/admin/[adminSlug]/users/[userId]

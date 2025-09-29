@@ -1,7 +1,8 @@
 // app/api/tour-packages/route.ts
 import prisma from "@/server/db/prismadb";
 import { NextResponse } from "next/server";
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+
+import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
 // Slugify function

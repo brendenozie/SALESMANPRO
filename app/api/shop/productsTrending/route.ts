@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+
+import { formatResponse } from "@/lib/formatResponse";
 
 // GET /api/trending?agentId=&limit=&days=&weightViews=&weightPurchases=&weightFavorites=
 export async function GET(req: Request) {

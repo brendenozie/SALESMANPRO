@@ -1,38 +1,37 @@
-import { NextResponse } from 'next/server';
-import prisma from '@/server/db/prismadb';
-import { VideoStatus } from '@prisma/client';
+// app/api/videos/route.ts
+import prisma from "@/server/db/prismadb";
+import { VideoStatus } from "@prisma/client";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
-
+import { verifyAuth } from "@/lib/verifyAuth";
 
 // GET /api/videos - Fetch all videos
-export async function GET(request: Request) {
+async function handleGET(request: Request) {
   try {
-     const auth = await verifyAuth(request);
+    const auth = await verifyAuth(request);
     if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
+
     const { searchParams } = new URL(request.url);
-    const companyId = searchParams.get('companyId');
+    const companyId = searchParams.get("companyId");
 
     const videos = await prisma.video.findMany({
       where: companyId ? { companyId } : {},
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json(videos, { status: 200 });
-  } catch (error) {
-    console.error('Error fetching videos:', error);
-    return NextResponse.json({ error: 'Failed to fetch videos' }, { status: 500 });
+    return formatResponse(true, videos, "Videos fetched successfully", 200);
+  } catch (error: any) {
+    console.error("Error fetching videos:", error);
+    return formatResponse(false, null, error.message || "Failed to fetch videos", 500);
   }
 }
 
 // POST /api/videos - Create a new video
-export async function POST(request: Request) {
+async function handlePOST(request: Request) {
   try {
-     const auth = await verifyAuth(request);
+    const auth = await verifyAuth(request);
     if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
+
     const body = await request.json();
     const {
       title,
@@ -49,13 +48,13 @@ export async function POST(request: Request) {
     } = body;
 
     if (!title || !imageUrl) {
-      return NextResponse.json({ error: 'Title, URL, and imageUrl are required' }, { status: 400 });
+      return formatResponse(false, null, "Title and imageUrl are required", 400);
     }
 
     const newVideo = await prisma.video.create({
       data: {
         title,
-        url: thumbnailUrl || imageUrl,
+        url: url || thumbnailUrl || imageUrl, // ensure fallback
         thumbnailUrl: thumbnailUrl || imageUrl,
         description,
         duration,
@@ -68,9 +67,13 @@ export async function POST(request: Request) {
       },
     });
 
-    return NextResponse.json(newVideo, { status: 201 });
-  } catch (error) {
-    console.error('Error creating video:', error);
-    return NextResponse.json({ error: 'Failed to create video' }, { status: 500 });
+    return formatResponse(true, newVideo, "Video created successfully", 201);
+  } catch (error: any) {
+    console.error("Error creating video:", error);
+    return formatResponse(false, null, error.message || "Failed to create video", 500);
   }
 }
+
+// Export wrapped handlers
+export const GET = withApiHandler(handleGET);
+export const POST = withApiHandler(handlePOST);

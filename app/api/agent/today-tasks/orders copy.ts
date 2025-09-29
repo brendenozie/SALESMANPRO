@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
 
 import { OrderStatus } from "@prisma/client";
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+
+import { formatResponse } from "@/lib/formatResponse";
 import { NextApiRequest, NextApiResponse } from "next";
 
 const getOrders = async (req: NextApiRequest, res: NextApiResponse) => {

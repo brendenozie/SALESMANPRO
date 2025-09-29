@@ -1,85 +1,70 @@
-import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+// app/api/admin/agents/requests/route.ts
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse, verifyAuth } from "@/lib/verifyAuth";
 
+// GET /api/admin/agents/requests?agentId=...&limit=10&offset=0
+export const GET = withApiHandler(async (request: Request) => {
+const auth = await verifyAuth(request);
+if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
-export default async function GET( req : Request ) {
-  
-     const auth = await verifyAuth(req);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  if (req.method !== "GET") {
-    return NextResponse.json({ message: "Method not allowed. Use GET." });
-  }
+const { searchParams } = new URL(request.url);
 
-  const { agentId, limit = 10, offset = 0 } = req.query;
-  const { searchParams } = new URL(req.url);
+const agentId = searchParams.get("agentId");
+const limit = parseInt(searchParams.get("limit") || "10", 10);
+const offset = parseInt(searchParams.get("offset") || "0", 10);
 
-  const agentId = searchParams.get("agentId");
-  const limit = parseInt(searchParams.get("limit") || "10", 10);
-  const offset = parseInt(searchParams.get("offset") || "0", 10);
-
-  if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
-    return NextResponse.json(
-      { message: "Invalid pagination parameters." },
-      { status: 400 }
-    );
-  }
-
-
-// Validate limit and offset as integers
-const parsedLimit = parseInt(limit as string, 10);
-const parsedOffset = parseInt(offset as string, 10);
-
-if (isNaN(parsedLimit) || isNaN(parsedOffset) || parsedLimit <= 0 || parsedOffset < 0) {
-  return NextResponse.json({ message: "Invalid pagination parameters." });
+// Validate pagination
+if (isNaN(limit) || isNaN(offset) || limit <= 0 || offset < 0) {
+return formatResponse(false, null, "Invalid pagination parameters.", 400);
 }
 
-  // Validate agentId
-  if (!agentId || typeof agentId !== "string") {
-    return NextResponse.json({ message: "Invalid or missing clientId." });
-  }
-
-  try {
-
-    // Fetch product requests with pagination
-    const productRequests = await prisma.request.findMany({
-      where: {  requestedByType : "CLIENT",
-        salesAgentId: agentId 
-      },
-      include: {
-        product: true,
-        salesAgent: true,
-      },
-      take: parsedLimit,
-      skip: parsedOffset,
-    });
-
-    // Format the response
-    const formattedRequests = productRequests.map((request) => ({
-      requestId: request.id,
-      productId: request.productId,
-      productName: request.product?.name || "Unknown Product",
-      quantityRequested: request.quantity,
-      salesAgentId: request.salesAgent?.id || null,
-      salesAgentName: request.salesAgent?.name || "Unassigned",
-      status: request.status || "Pending",
-      requestedAt: request.createdAt.toISOString(),
-    }));
-
-    console.log(formattedRequests);
-
-    // Respond with structured data
-    return res.status(200).json({
-      agentId,
-      requests: formattedRequests,
-    });
-  } catch (error: any) {
-    console.error("Error fetching product requests:", error);
-
-    return NextResponse.json({
-      message: "An error occurred while fetching product requests.",
-      error: error.message || "Unknown error",
-    });
-  }
+// Validate agentId
+if (!agentId || typeof agentId !== "string") {
+return formatResponse(false, null, "Invalid or missing agentId.", 400);
 }
+
+try {
+const productRequests = await prisma.request.findMany({
+where: {
+requestedByType: "CLIENT",
+salesAgentId: agentId,
+},
+include: {
+product: true,
+salesAgent: true,
+},
+take: limit,
+skip: offset,
+});
+
+
+const formattedRequests = productRequests.map((req) => ({
+  requestId: req.id,
+  productId: req.productId,
+  productName: req.product?.name || "Unknown Product",
+  quantityRequested: req.quantity,
+  salesAgentId: req.salesAgent?.id || null,
+  salesAgentName: req.salesAgent?.name || "Unassigned",
+  status: req.status || "Pending",
+  requestedAt: req.createdAt.toISOString(),
+}));
+
+return formatResponse(
+  true,
+  { agentId, requests: formattedRequests },
+  "Product requests fetched successfully",
+  200
+);
+
+
+} catch (error: any) {
+console.error("Error fetching product requests:", error);
+return formatResponse(
+false,
+null,
+error.message || "An error occurred while fetching product requests.",
+500
+);
+}
+});

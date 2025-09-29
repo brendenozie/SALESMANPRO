@@ -1,6 +1,7 @@
 // app/api/admin/[adminSlug]/staff/[id]/route.ts
 import prisma from "@/server/db/prismadb";
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+
+import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { NextRequest } from "next/server";
 

@@ -3,7 +3,8 @@ import prisma from "@/server/db/prismadb";
 import { getAuthSession } from "@/lib/auth"; // Your session utility
 import { companySchema } from "@/lib/validations/company"; // Your Zod schema
 import { Prisma } from "@prisma/client";
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+
+import { formatResponse } from "@/lib/formatResponse";
 
 export const dynamic = "force-dynamic";
 

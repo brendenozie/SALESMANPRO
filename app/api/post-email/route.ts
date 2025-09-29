@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
 
 import SendMail from "../../../service/mailservice";
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+
+import { formatResponse } from "@/lib/formatResponse";
 import { request } from "http";
 
 export default async function GET( req : Request ) {

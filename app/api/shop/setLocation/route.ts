@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { rateLimit } from "../../../../lib/rate-limit";
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+
+import { formatResponse } from "@/lib/formatResponse";
 
 export async function POST(req: Request) {
   

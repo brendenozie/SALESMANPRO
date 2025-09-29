@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import type { Prisma } from "@prisma/client";
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+
+import { formatResponse } from "@/lib/formatResponse";
 import { request } from "http";
 
 // GET /api/marketplace-listings?agentId=&search=&brand=&category=&subCategory=&minPrice=&maxPrice=&availability=&sort=&page=&limit=

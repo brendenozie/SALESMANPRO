@@ -1,39 +1,37 @@
-import { NextResponse } from 'next/server';
-import prisma from '@/server/db/prismadb';
-import { VideoStatus } from '@prisma/client';
+// app/api/videos/[id]/route.ts
+import prisma from "@/server/db/prismadb";
+import { VideoStatus } from "@prisma/client";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
-
-import { request } from 'http';
+import { verifyAuth } from "@/lib/verifyAuth";
 
 // GET /api/videos/:id
-export async function GET(_: Request, { params }: { params: { id: string } }) {
+async function handleGET(request: Request, { params }: { params: { id: string } }) {
   try {
-     const auth = await verifyAuth(_);
+    const auth = await verifyAuth(request);
     if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
+
     const video = await prisma.video.findUnique({
       where: { id: params.id },
     });
 
     if (!video) {
-      return NextResponse.json({ error: 'Video not found' }, { status: 404 });
+      return formatResponse(false, null, "Video not found", 404);
     }
 
-    return NextResponse.json(video, { status: 200 });
-  } catch (error) {
-    console.error('Error fetching video:', error);
-    return NextResponse.json({ error: 'Failed to fetch video' }, { status: 500 });
+    return formatResponse(true, video, "Video fetched successfully", 200);
+  } catch (error: any) {
+    console.error("Error fetching video:", error);
+    return formatResponse(false, null, error.message || "Failed to fetch video", 500);
   }
 }
 
 // PUT /api/videos/:id
-export async function PUT(request: Request, { params }: { params: { id: string } }) {
+async function handlePUT(request: Request, { params }: { params: { id: string } }) {
   try {
-     const auth = await verifyAuth(request);
+    const auth = await verifyAuth(request);
     if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
+
     const body = await request.json();
     const {
       title,
@@ -64,53 +62,37 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       },
     });
 
-    return NextResponse.json(updatedVideo, { status: 200 });
-  } catch (error) {
-    console.error('Error updating video:', error);
-    return NextResponse.json({ error: 'Failed to update video' }, { status: 500 });
+    return formatResponse(true, updatedVideo, "Video updated successfully", 200);
+  } catch (error: any) {
+    console.error("Error updating video:", error);
+    return formatResponse(false, null, error.message || "Failed to update video", 500);
   }
 }
 
 // DELETE /api/videos/:id
-// export async function DELETE(_: Request, { params }: { params: { id: string } }) {
-//   try {
-//     await prisma.video.delete({
-//       where: { id: params.id },
-//     });
-
-//     return new Response(null, { status: 204 });
-//   } catch (error) {
-//     console.error('Error deleting video:', error);
-//     return NextResponse.json({ error: 'Failed to delete video' }, { status: 500 });
-//   }
-// }
-
-// app/api/videos/[id]/route.ts
-// import { NextResponse } from 'next/server';
-// import prisma from '@/server/db/prismadb';
-
-/**
- * @route DELETE /api/videos/:id
- * @description Deletes a single video by its ID.
- * @returns {Response} A 204 No Content response.
- */
-export async function DELETE(request: Request, { params }: { params: { id: string } }) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  const { id } = params;
+async function handleDELETE(request: Request, { params }: { params: { id: string } }) {
   try {
-    await prisma.video.delete({
-      where: { id },
-    });
+    const auth = await verifyAuth(request);
+    if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
-    return new NextResponse(null, { status: 204 });
-  } catch (error) {
-    // if (error.code === 'P2025') {
-    //   return NextResponse.json({ error: 'Video not found' }, { status: 404 });
-    // }
-    console.error(`Error deleting video with ID ${id}:`, error);
-    return NextResponse.json({ error: 'Failed to delete video' }, { status: 500 });
+    const { id } = params;
+
+    await prisma.video.delete({ where: { id } });
+
+    return formatResponse(true, null, "Video deleted successfully", 204);
+  } catch (error: any) {
+    console.error(`Error deleting video with ID ${params.id}:`, error);
+
+    // Prisma "Record not found" error (optional handling)
+    if ((error as any).code === "P2025") {
+      return formatResponse(false, null, "Video not found", 404);
+    }
+
+    return formatResponse(false, null, error.message || "Failed to delete video", 500);
   }
 }
+
+// Export wrapped handlers
+export const GET = withApiHandler(handleGET);
+export const PUT = withApiHandler(handlePUT);
+export const DELETE = withApiHandler(handleDELETE);

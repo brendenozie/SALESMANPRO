@@ -1,7 +1,8 @@
 // app/api/class-teacher-academic-levels/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+
+import { formatResponse } from "@/lib/formatResponse";
 
 // Define types for the API response structure
 export type ClassTeacherInfo = {

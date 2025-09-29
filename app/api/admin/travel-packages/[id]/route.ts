@@ -1,7 +1,6 @@
 // app/api/tour-packages/[id]/route.ts
 import prisma from "@/server/db/prismadb";
-import { NextResponse } from "next/server";
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
 // Slugify function
@@ -107,9 +106,7 @@ async function handlePUT(request: Request) {
 }
 
 // DELETE /api/tour-packages/[id]
-async function handleDELETE(request: Request) {
-  
-
+async function handleDELETE(request: Request) { 
 
   const { pathname } = new URL(request.url);
   const id = pathname.split("/").pop();

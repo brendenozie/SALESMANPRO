@@ -1,85 +1,66 @@
-import { NextResponse } from "next/server";
-import prisma from "@/server/db/prismadb"; // Adjust path as needed
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
-import { request } from "http";
+// app/api/admin/agents/route.ts
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse, verifyAuth } from "@/lib/verifyAuth";
+
+// GET /api/admin/agents - Get all sales agents
+export const GET = withApiHandler(async (request: Request) => {
+const auth = await verifyAuth(request);
+if (!auth.success) return formatResponse(false, null, auth.error, 401);
+
+const agents = await prisma.salesAgent.findMany({
+select: {
+id: true,
+name: true,
+email: true,
+phoneNumber: true,
+commissions: {
+select: {
+commissionEarned: true,
+createdAt: true,
+status: true,
+},
+orderBy: {
+createdAt: "desc",
+},
+},
+},
+});
+
+// Example: compute aggregates or flatten structure
+const processedAgents = agents.map((agent) => {
+const totalCommissions = agent.commissions.reduce(
+(sum, commission) =>
+sum +
+(commission.status === "COMPLETED"
+? commission.commissionEarned
+: 0),
+0
+);
 
 
-export default async function GET( req : Request ) {
-  
-     const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  if (req.method !== "GET") {
-    return NextResponse.json({ message: "Method not allowed" });
-  }
+const recentCommission = agent.commissions[0];
 
-  try {
-    const agents = await prisma.salesAgent.findMany({
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        phoneNumber: true,
-        // Fetch orders and their details
-        // orders: {
-        //   select: {
-        //     totalPrice: true,
-        //     createdAt: true,
-        //   },
-        //   orderBy: {
-        //     createdAt: "desc",
-        //   },
-        // },
-        // Fetch commission details
-        commissions: {
-          select: {
-            commissionEarned: true,
-            createdAt: true,
-            status: true,
-          },
-          orderBy: {
-            createdAt: "desc",
-          },
-        },
-      },
-    });
+return {
+  id: agent.id,
+  name: agent.name,
+  email: agent.email,
+  phoneNumber: agent.phoneNumber,
+  totalCommissions,
+  recentCommission: {
+    amount: recentCommission?.commissionEarned || 0,
+    date: recentCommission?.createdAt || null,
+    status: recentCommission?.status || "PENDING",
+  },
+};
 
-    // const processedAgents = agents.map(agent => {
-    //   // Calculate total sales from orders
-    //   const totalSales = agent.orders.reduce((sum, order) => sum + order.totalPrice, 0);
 
-    //   // Calculate total commissions earned
-    //   const totalCommissions = agent.commissions.reduce(
-    //     (sum, commission) => sum + (commission.status === "COMPLETED" ? commission.commissionEarned : 0),
-    //     0
-    //   );
+});
 
-    //   // Retrieve the most recent transaction and commission
-    //   const recentTransaction = agent.orders[0];
-    //   const recentCommission = agent.commissions[0];
-
-    //   return {
-    //     id: agent.id,
-    //     name: agent.name,
-    //     email: agent.email,
-    //     phoneNumber: agent.phoneNumber,
-    //     totalSales,
-    //     totalCommissions,
-    //     recentTransaction: {
-    //       amount: recentTransaction?.totalPrice || 0,
-    //       date: recentTransaction?.createdAt || null,
-    //     },
-    //     recentCommission: {
-    //       amount: recentCommission?.commissionEarned || 0,
-    //       date: recentCommission?.createdAt || null,
-    //       status: recentCommission?.status || "PENDING",
-    //     },
-    //   };
-    // });
-
-    return res.status(200).json("processedAgents");
-  } catch (error) {
-    console.error("Error fetching sales agents:", error);
-    return NextResponse.json({ error: "Internal server error" });
-  }
-}
+return formatResponse(
+true,
+processedAgents,
+"Sales agents fetched successfully",
+200
+);
+});

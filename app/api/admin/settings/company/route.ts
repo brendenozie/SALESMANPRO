@@ -1,7 +1,8 @@
 // app/api/settings/company/route.ts
 import { NextRequest } from "next/server";
 import prisma from "@/server/db/prismadb"; // Use your Prisma instance
-import { verifyAuth, formatResponse } from "@/lib/verifyAuth";
+
+import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
 // GET company settings
