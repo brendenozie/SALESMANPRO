@@ -1,9 +1,9 @@
 // app/api/product-requests/route.ts
 import prisma from "@/server/db/prismadb";
-import { withAuthAndRateLimit } from "@/lib/hooks/withAuthAndRateLimit";
 import { formatResponse } from "@/lib/formatResponse";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-export const GET = withAuthAndRateLimit(async (request, _ctx) => {
+export const GET = withApiHandler(async (request, context) => {
   const { searchParams } = new URL(request.url);
 
   const limit = parseInt(searchParams.get("limit") || "10", 10);
@@ -14,7 +14,11 @@ export const GET = withAuthAndRateLimit(async (request, _ctx) => {
   }
 
   // pull user out of context (auth already verified)
-  const user = _ctx.user;
+  const user = context.user;
+
+  if (!user) {
+    return formatResponse(false, null, "Unauthorized", 401);
+  }
 
   // Optionally enforce that only SALES_AGENTs can hit this endpoint
   if (user.role !== "SALES_AGENT") {
@@ -24,11 +28,11 @@ export const GET = withAuthAndRateLimit(async (request, _ctx) => {
   const productRequests = await prisma.request.findMany({
     where: {
       requestedByType: "SALES_AGENT",
-      requestedById: user.id, // user id from JWT
+      requesterId: user.id, // user id from JWT
     },
     include: {
       product: true,
-      salesAgent: true,
+      requester: true,
     },
     take: limit,
     skip: offset,
@@ -40,10 +44,10 @@ export const GET = withAuthAndRateLimit(async (request, _ctx) => {
     productId: request.productId,
     productName: request.product?.name || "Unknown Product",
     quantityRequested: request.quantity,
-    salesAgentId: request.salesAgent?.id || null,
-    salesAgentName: request.salesAgent?.name || "Unassigned",
+    salesAgentId: request.requester?.id || null,
+    salesAgentName: request.requester?.name || "Unassigned",
     status: request.status || "Pending",
-    requestedAt: request.createdAt.toISOString(),
+    requestedAt: request.createdAt?.toISOString(),
   }));
 
   return formatResponse(true, { userId: user.id, requests: formattedRequests }, "Fetched successfully", 200);

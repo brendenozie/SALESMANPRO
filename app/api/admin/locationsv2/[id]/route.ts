@@ -120,7 +120,7 @@ async function handlePutLocation(request: Request, { params }: RouteParams) {
     };
 
     // withApiHandler will wrap this in formatResponse(true, formattedUpdatedLocation, null, 200)
-    return formattedUpdatedLocation;
+    return formatResponse(true, formattedUpdatedLocation, "Location updated successfully", 200);
 
   } catch (error) {
     // Catch specific Prisma errors before generic catch by withApiHandler
@@ -165,7 +165,7 @@ async function handleDeleteLocation(request: Request, { params }: RouteParams) {
     });
 
     // Return success response with status 200
-    return { message: 'Location deleted successfully.' };
+    return formatResponse(true, null, 'Location deleted successfully.', 200);
 
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {

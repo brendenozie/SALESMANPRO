@@ -32,8 +32,13 @@ const VALID_ANNOUNCEMENT_AUDIENCES = [
  * GET /api/announcements/[id]
  * Fetch a single announcement
  */
-export const GET = withApiHandler(async (request, { params, user }) => {
-  const { id } = params;
+export const GET = withApiHandler(async (request, context) => {
+  const { id } = context.params;
+  const { user } = context;
+
+  if (!user) {
+    return formatResponse(false, null, "Unauthorized", 401);
+  }
 
   const announcement = await prisma.announcement.findUnique({
     where: { id },
@@ -70,8 +75,14 @@ export const GET = withApiHandler(async (request, { params, user }) => {
  * PATCH /api/announcements/[id]
  * Update an announcement
  */
-export const PATCH = withApiHandler(async (request, { params, user }) => {
-  const { id } = params;
+export const PATCH = withApiHandler(async (request, context) => {
+  const { id } = context.params;
+  const { user } = context;
+
+  if (!user) {
+    return formatResponse(false, null, "Unauthorized", 401);
+  }
+
   const body = await request.json();
 
   const {
@@ -187,8 +198,14 @@ export const PATCH = withApiHandler(async (request, { params, user }) => {
  * DELETE /api/announcements/[id]
  * Delete an announcement
  */
-export const DELETE = withApiHandler(async (request, { params, user }) => {
-  const { id } = params;
+export const DELETE = withApiHandler(async (request, context) => {
+  const { user } = context;
+
+  if (!user) {
+    return formatResponse(false, null, "Unauthorized", 401);
+  }
+  
+  const { id } = context.params;
 
   const existing = await prisma.announcement.findUnique({ where: { id } });
   if (!existing) {

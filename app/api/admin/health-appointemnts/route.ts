@@ -35,7 +35,7 @@ async function getAppointments(
 
   // --- Authorization & Pre-Check ---
   const authResult = await getCompanyAndUserIds(adminSlug);
-  if (authResult.success === false) return authResult; // Returns 404 if company not found
+  if (!('company' in authResult)) return authResult; // Returns 404 if company not found
 
   const { companyUserIds } = authResult;
 
@@ -157,7 +157,7 @@ async function createAppointment(
 
   // --- Authorization & Verification ---
   const authResult = await getCompanyAndUserIds(adminSlug);
-  if (authResult.success === false) return authResult; // Returns 404 if company not found
+  if (!('company' in authResult)) return authResult; // Returns 404 if company not found
 
   const { company } = authResult;
 
@@ -190,12 +190,19 @@ async function createAppointment(
       // If you have a doctorId, link it here
       OrderItem: {
         create: {
-          marketplaceListingId: serviceListing.id,
+          marketplaceListing: { connect: { id: serviceListing.id } },
           quantity: 1,
           price: serviceListing.sellingPrice,
           status: "PENDING",
           date: date,
           timeSlot: time,
+          appointment: {
+            create: {
+              userId: patientUser.id,
+              companyId: company.id,
+              status: "PENDING"
+            }
+          }
         }
       },
     },

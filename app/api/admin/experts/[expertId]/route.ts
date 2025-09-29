@@ -1,10 +1,35 @@
 import prisma from '@/server/db/prismadb';
 import { withApiHandler } from '@/lib/hooks/withApiHandler'; // New import
 import { formatResponse } from '@/lib/formatResponse'; // New import
-import { verifyAuth } from '@/lib/verifyAuth'; // Existing import
+
+// Define the type for the dynamic segments from the URL
+interface Params {
+  params: { adminSlug: string; expertId: string };
+}
+
+// Define the Expert type based on your Prisma schema
+type Expert = {
+  id: string;
+  userId: string;
+  user?: {
+    id: string | null;
+    name: string | null;
+    email: string | null;
+    phone?: string | null;
+  };
+  companyId: string;
+  specialty: string;
+  experienceYears: number | null;
+  travelsCompleted: number | null;
+  photoUrl?: string | null;
+  bio?: string | null;
+  contactEmail?: string | null;
+  contactPhone?: string | null;
+  status: string;
+};
 
 // Helper function to format the expert data for response
-function formatExpertData(expertData) {
+function formatExpertData(expertData : Expert) {
   return {
     id: expertData.id,
     userId: expertData.userId,
@@ -24,10 +49,8 @@ function formatExpertData(expertData) {
 
 // PUT /api/admin/[adminSlug]/experts/[expertId]
 // Updates an existing expert's details.
-async function updateExpert(request, { params }) {
+async function updateExpert(request: Request, { params }: Params) {
   
-
-
   const { adminSlug, expertId } = params;
 
   const body = await request.json();
@@ -91,8 +114,9 @@ async function updateExpert(request, { params }) {
     const formattedUpdatedExpert = formatExpertData(updatedExpertData);
     return formatResponse(true, { data: formattedUpdatedExpert }, null, 200);
 
-  } catch (error) {
+  } catch (error: any) {
     console.error(`Error updating expert ${expertId}:`, error);
+
     if (error.code === 'P2025') {
       return formatResponse(false, null, 'Expert not found.', 404);
     }
@@ -106,10 +130,8 @@ async function updateExpert(request, { params }) {
 
 // DELETE /api/admin/[adminSlug]/experts/[expertId]
 // Deletes a specific expert profile.
-async function deleteExpert(request, { params }) {
+async function deleteExpert(request: Request, { params }: Params) {
   
-
-
   const { adminSlug, expertId } = params;
 
   // 1. Verify company and expert existence
@@ -139,7 +161,7 @@ async function deleteExpert(request, { params }) {
     });
 
     return formatResponse(true, { message: 'Expert deleted successfully.' }, null, 200);
-  } catch (error) {
+  } catch (error : any) {
     console.error(`Error deleting expert ${expertId}:`, error);
     if (error.code === 'P2025') {
       return formatResponse(false, null, 'Expert not found.', 404);

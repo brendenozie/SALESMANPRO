@@ -6,8 +6,30 @@ import { withApiHandler } from '@/lib/hooks/withApiHandler'; // New import
 import { formatResponse } from '@/lib/formatResponse'; // New import
 import { verifyAuth } from '@/lib/verifyAuth';
 
+// Define the Expert type based on your Prisma schema
+type Expert = {
+  expertise: any[];
+  id: string;
+  userId: string;
+  user?: {
+    id: string | null;
+    name: string | null;
+    email: string | null;
+    phone?: string | null;
+  };
+  companyId: string;
+  specialty: string;
+  experienceYears: number | null;
+  travelsCompleted: number | null;
+  photoUrl?: string | null;
+  bio?: string | null;
+  contactEmail?: string | null;
+  contactPhone?: string | null;
+  status: string;
+};
+
 // Helper function to format the expert data for response
-function formatExpertData(expert) {
+function formatExpertData(expert: Expert) {
   return {
     id: expert.id,
     userId: expert.userId,
@@ -30,10 +52,8 @@ function formatExpertData(expert) {
 // GET /api/admin/[adminSlug]/experts
 // Fetches all experts for a specific company.
 // =======================================================================
-async function getExperts(request) {
+async function getExperts(request: Request) {
   
-
-
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');
 
@@ -75,10 +95,8 @@ async function getExperts(request) {
 // POST /api/admin/[adminSlug]/experts
 // Creates a new expert (including a new user with EXPERT role).
 // =======================================================================
-async function createExpert(request) {
+async function createExpert(request: Request) {
   
-
-
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');
 

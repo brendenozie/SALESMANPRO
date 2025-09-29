@@ -69,9 +69,8 @@ async function restockInventory(
         inventoryId: id, // Use the item ID
         action: "RESTOCK",
         quantity: parsedQuantity,
-        details: reason || "Standard restock",
         // Note: Assuming 'userId' is passed in the body for logging purposes
-        userId: userId, 
+        // userId: userId, 
       },
     }),
   ]);

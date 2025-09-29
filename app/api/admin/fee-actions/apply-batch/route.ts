@@ -11,8 +11,6 @@ import { verifyAuth } from '@/lib/verifyAuth';
 // =======================================================================
 async function applyBatchFees(request: Request) {
   
-
-
   const body: BatchApplyFeeParams = await request.json();
   const { academicYear, term, targetType, targetValue } = body;
 

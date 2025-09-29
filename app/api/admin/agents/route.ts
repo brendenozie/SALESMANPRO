@@ -3,10 +3,11 @@ import prisma from "@/server/db/prismadb";
 import { withAuthAndRateLimit } from "@/lib/hooks/withAuthAndRateLimit";
 import { formatResponse } from "@/lib/formatResponse";
 import bcrypt from "bcryptjs/umd/types";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
 // GET /api/sales-agents
 // Fetch all sales agents for a company, including sales/commission aggregates
-export const GET = withAuthAndRateLimit(async (request, { context }) => {
+export const GET = withApiHandler(async (request, context) => {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId") || context.user?.companyId;
 

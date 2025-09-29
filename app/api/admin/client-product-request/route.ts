@@ -22,7 +22,7 @@ async function getRequests(req: Request) {
       where: { requestedByType: "CLIENT" },
       include: {
         product: true,
-        user: true,
+        requester: true,
       },
       take: limit,
       skip: offset,
@@ -33,10 +33,10 @@ async function getRequests(req: Request) {
       productId: request.productId,
       productName: request.product?.name || "Unknown Product",
       quantityRequested: request.quantity,
-      salesAgentId: request.salesAgent?.id || null,
-      salesAgentName: request.salesAgent?.name || "Unassigned",
+      salesAgentId: request.requester?.id || null,
+      salesAgentName: request.requester?.name || "Unassigned",
       status: request.status || "Pending",
-      requestedAt: request.createdAt.toISOString(),
+      requestedAt: request.createdAt?.toISOString(),
     }));
 
     return NextResponse.json({

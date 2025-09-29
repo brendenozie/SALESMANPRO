@@ -1,11 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
+
+
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 import { Prisma } from "@prisma/client";
-
-// Define the expected structure for route parameters
-type RouteParams = { params: { id: string } };
 
 // Helper function to format the Parent response data
 const formatParentResponse = (parent: any) => ({
@@ -25,8 +23,9 @@ const formatParentResponse = (parent: any) => ({
 });
 
 // --- GET Handler Core Logic ---
-async function handleGetParent(request: NextRequest, { params }: RouteParams) {
-  const { id } = params;
+async function handleGetParent(request: Request, context: { params: { id: string } }) {
+  
+  const { id } = context.params;
 
   const parent = await prisma.parent.findUnique({
     where: { id },
@@ -52,12 +51,12 @@ async function handleGetParent(request: NextRequest, { params }: RouteParams) {
     return formatResponse(false, null, "Parent not found", 404);
   }
 
-  return formatParentResponse(parent);
+  return formatResponse(true, formatParentResponse(parent), "Parent fetched successfully", 200);
 }
 
 // --- PATCH Handler Core Logic ---
-async function handlePatchParent(request: NextRequest, { params }: RouteParams) {
-  const { id } = params;
+async function handlePatchParent(request: Request, context: { params: { id: string } }) {
+  const { id } = context.params;
   const body = await request.json();
   const { phone, bio, address, profilePicture, name, email, loginCode, ...rest } = body;
 
@@ -135,12 +134,12 @@ async function handlePatchParent(request: NextRequest, { params }: RouteParams) 
     return formatResponse(false, null, "Failed to retrieve updated parent record.", 500);
   }
 
-  return formatParentResponse(finalParent);
+  return formatResponse(true, formatParentResponse(finalParent), "Parent updated successfully", 200);
 }
 
 // --- DELETE Handler Core Logic ---
-async function handleDeleteParent(request: NextRequest, { params }: RouteParams) {
-  const { id } = params;
+async function handleDeleteParent(request: Request, context: { params: { id: string } }) {
+  const { id } = context.params;
 
   try {
     const deletedParent = await prisma.parent.delete({
@@ -150,7 +149,7 @@ async function handleDeleteParent(request: NextRequest, { params }: RouteParams)
     // Attempt to delete the associated User record as well (optional, depending on business logic)
     // await prisma.user.delete({ where: { id: deletedParent.userId } });
 
-    return { message: "Parent deleted successfully", deletedId: deletedParent.id };
+    return formatResponse(true, { message: "Parent deleted successfully", deletedId: deletedParent.id }, null, 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
         if (error.code === 'P2025') {

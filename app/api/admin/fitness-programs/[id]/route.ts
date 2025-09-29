@@ -32,7 +32,9 @@ const getTourPackageLogic = async (request: Request, { params }: RouteContext) =
     const tourPackage = await prisma.tourPackage.findUnique({
         where: { id },
         include: {
-            destination: true,
+            destinations: {
+                select: { id: true, name: true }, // Adjust fields as necessary
+            },
         },
     });
 
@@ -45,7 +47,10 @@ const getTourPackageLogic = async (request: Request, { params }: RouteContext) =
     const transformedPackage = {
         ...tourPackage,
         // Assuming destination is a single object here based on original include structure
-        destinationName: tourPackage.destination.name,
+        destinationName: tourPackage.destinations.map(dest => {
+            return { id: dest.id, name: dest.name };
+        }),
+
     };
 
     // Return 200 success response using formatResponse utility

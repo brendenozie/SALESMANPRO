@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+
+
 import prisma from "@/server/db/prismadb";
 import { OrderStatus } from "@prisma/client";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -12,7 +13,7 @@ type RouteParams = { params: { id: string } };
 /**
  * Updates a specific order item's rider and/or the parent order's status.
  */
-async function handlePutOrderItem(req: NextRequest, { params }: RouteParams) {
+async function handlePutOrderItem(req: Request, { params }: RouteParams) {
   const orderItemId = params.id;
   const { searchParams } = new URL(req.url);
 
@@ -52,7 +53,7 @@ async function handlePutOrderItem(req: NextRequest, { params }: RouteParams) {
     });
 
     // withApiHandler wraps this result in a success formatResponse with status 200
-    return { success: true, message: "Order item and associated order status updated successfully." };
+    return formatResponse(true, null, "Order item and associated order status updated successfully.", 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
         // Record not found error

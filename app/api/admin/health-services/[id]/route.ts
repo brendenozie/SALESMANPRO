@@ -39,7 +39,7 @@ async function handleGetService(request: Request, { params }: ServiceParams) {
   const formattedService = await formatServiceData(service);
   
   // Return the data; withApiHandler will wrap it in success: true and status 200
-  return formattedService;
+  return formatResponse(true, formattedService, "Service fetched successfully", 200);
 }
 
 /**
@@ -63,7 +63,7 @@ async function handleUpdateService(request: Request, { params }: ServiceParams) 
     });
 
     const formattedUpdatedService = await formatServiceData(updatedService);
-    return formattedUpdatedService;
+    return formatResponse(true, formattedUpdatedService, "Service updated successfully", 200);
 
   } catch (err: any) {
     // Handle unique constraint violation specifically (Prisma code P2002)

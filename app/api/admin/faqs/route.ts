@@ -14,8 +14,6 @@ const prisma = new PrismaClient();
 // =======================================================================
 async function getFaqs(request: Request) {
   
-
-
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');
   // Note: The original 'status' param was present but not used, so I'm omitting it here.

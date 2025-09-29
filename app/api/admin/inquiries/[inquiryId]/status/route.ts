@@ -36,7 +36,7 @@ async function handlePatchInquiryStatus(request: Request, { params }: PatchParam
     });
 
     // withApiHandler will wrap this result in formatResponse(true, ...) with status 200
-    return updatedInquiry;
+    return formatResponse(true, updatedInquiry, 'Inquiry status updated successfully.', 200);
   } catch (error: any) {
     // Handle Prisma error for record not found
     if (error.code === 'P2025') {

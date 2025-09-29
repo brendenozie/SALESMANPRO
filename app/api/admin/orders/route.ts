@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+
+
 import prisma from "@/server/db/prismadb";
 import { OrderStatus } from "@prisma/client";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -13,7 +14,7 @@ type RouteParams = { params: {} };
  * Fetches all order items for a specific company (seller dashboard),
  * including pagination and revenue metrics.
  */
-async function handleGetSellerOrders(req: NextRequest, { params }: RouteParams) {
+async function handleGetSellerOrders(req: Request, { params }: RouteParams) {
   const { searchParams } = new URL(req.url);
 
   // Parse and validate pagination parameters
@@ -53,7 +54,7 @@ async function handleGetSellerOrders(req: NextRequest, { params }: RouteParams) 
                 id: true,
                 status: true,
                 createdAt: true,
-                user: { select: { name: true, email: true } } // Include some user info
+                // user: { select: { name: true, email: true } } // Include some user info
             }
         },
       },
@@ -99,21 +100,27 @@ async function handleGetSellerOrders(req: NextRequest, { params }: RouteParams) 
   const monthlyRevenue = Array(12).fill(0);
   orderItemsForMonthly.forEach((item) => {
     // Assuming createdAt is in the current year context or is being compared
-    const month = new Date(item.order.createdAt).getMonth();
+    const month = new Date(item.order.createdAt || '').getMonth();
     monthlyRevenue[month] += item.price;
   });
 
 
   // 5. Return aggregated response
-  return {
+  return formatResponse(true, {
     orderItems,
-    totalOrderItems,
-    totalPages: Math.ceil(totalOrderItems / itemsPerPage),
-    totalRevenue: totalRevenueAgg._sum.price || 0,
-    pendingRevenue: pendingRevenueAgg._sum.price || 0,
-    completedRevenue: completedRevenueAgg._sum.price || 0,
-    monthlyRevenue,
-  };
+    pagination: {
+      totalItems: totalOrderItems,
+      totalPages: Math.ceil(totalOrderItems / itemsPerPage),
+      currentPage: currentPage,
+      itemsPerPage: itemsPerPage,
+    },
+    revenue: {
+      total: totalRevenueAgg._sum.price || 0,
+      pending: pendingRevenueAgg._sum.price || 0,
+      completed: completedRevenueAgg._sum.price || 0,
+      monthly: monthlyRevenue,
+    },
+  }, "Seller orders fetched successfully", 200);
 }
 
 // Wrap the core logic with the API handler middleware.

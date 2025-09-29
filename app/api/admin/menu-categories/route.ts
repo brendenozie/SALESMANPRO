@@ -1,4 +1,5 @@
-import { NextResponse, NextRequest } from 'next/server';
+
+
 import prisma from '@/server/db/prismadb';
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
 import { formatResponse } from '@/lib/formatResponse';
@@ -12,7 +13,7 @@ type RouteParams = { params: {} };
 /**
  * Fetches all product categories, optionally filtered by companyId.
  */
-async function handleGetCategories(request: NextRequest, { params }: RouteParams) {
+async function handleGetCategories(request: Request, { params }: RouteParams) {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');
 
@@ -23,7 +24,7 @@ async function handleGetCategories(request: NextRequest, { params }: RouteParams
   });
 
   // withApiHandler handles wrapping this result in a success formatResponse with status 200
-  return categories;
+  return formatResponse(true, { data: categories }, "Product categories fetched successfully", 200);
 }
 
 // --- POST Handler Core Logic ---
@@ -49,7 +50,7 @@ async function handlePostCategory(request: Request, { params }: RouteParams) {
         image: image || null,
         sortOrder: parseInt(sortOrder) || 0,
         visible: typeof visible === 'boolean' ? visible : true,
-        company: { connect: { id: companyId } },
+        Company: { connect: { id: companyId } },
 
         // Default required fields based on inferred schema
         longDescription: '',

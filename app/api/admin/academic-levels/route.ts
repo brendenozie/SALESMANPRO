@@ -1,13 +1,15 @@
 // app/api/academic-levels/route.ts
 import prisma from "@/server/db/prismadb";
-import { withAuthAndRateLimit } from "@/lib/hooks/withAuthAndRateLimit";
 import { formatResponse } from "@/lib/formatResponse";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
+
 
 // ---------------------------
 // GET /api/academic-levels
 // Fetch all AcademicLevel entries for a given company
 // ---------------------------
-export const GET = withAuthAndRateLimit(async (request) => {
+export const GET = withApiHandler(async (request, context) => {
+
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
 
@@ -27,7 +29,7 @@ export const GET = withAuthAndRateLimit(async (request) => {
 // POST /api/academic-levels
 // Create a new AcademicLevel entry
 // ---------------------------
-export const POST = withAuthAndRateLimit(async (request) => {
+export const POST = withApiHandler(async (request, context) => {
   const body = await request.json();
   const { name, description, sortOrder, companyId } = body;
 

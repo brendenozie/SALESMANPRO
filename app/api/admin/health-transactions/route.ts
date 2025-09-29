@@ -42,29 +42,33 @@ async function handlePostTransaction(request: Request, { params }: POSTParams) {
   }
 
   // 2. Create the CustomerOrder (Transaction)
-  const newOrder = await prisma.customerOrder.create({
-    data: {
-      companyId: companyId,
-      consumerId: consumer ? consumer.id : undefined, // Link to consumer if found
-      totalPrice: amountPaid,
-      orderSource: "IN_PERSON", // Mark as POS transaction
-      status: "COMPLETED", // Assuming POS transactions are immediately completed
-      paymentOption: paymentMethod,
-      name: patientId ? undefined : (body.patientName || 'Walk-in Customer'),
-      email: patientId ? undefined : (body.patientEmail || 'N/A'),
-      phone: patientId ? undefined : (body.patientPhone || 'N/A'),
-      notes: notes,
-      items: {
-        create: items.map((item: any) => ({
-          marketplaceListingId: item.productId,
-          quantity: item.quantity,
-          price: item.unitPrice,
-          status: "COMPLETED",
-          // The order item must link to an actual order item model, not just a service/product.
-          // Assuming 'price' here is the final amount paid for that item instance.
-        })),
-      },
+  const orderData: any = {
+    companyId: companyId,
+    totalPrice: amountPaid,
+    orderSource: "IN_PERSON", // Mark as POS transaction
+    status: "COMPLETED", // Assuming POS transactions are immediately completed
+    paymentOption: paymentMethod,
+    name: patientId ? undefined : (body.patientName || 'Walk-in Customer'),
+    email: patientId ? undefined : (body.patientEmail || 'N/A'),
+    phone: patientId ? undefined : (body.patientPhone || 'N/A'),
+    notes: notes,
+    items: {
+      create: items.map((item: any) => ({
+        marketplaceListingId: item.productId,
+        quantity: item.quantity,
+        price: item.unitPrice,
+        status: "COMPLETED",
+        // The order item must link to an actual order item model, not just a service/product.
+        // Assuming 'price' here is the final amount paid for that item instance.
+      })),
     },
+  };
+  if (consumer) {
+    orderData.consumerId = consumer.id;
+  }
+
+  const newOrder = await prisma.customerOrder.create({
+    data: orderData,
   });
 
   // 3. Create a Payment record for the order

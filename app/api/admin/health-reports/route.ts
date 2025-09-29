@@ -1,7 +1,7 @@
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
-import { MarketplaceListingStatus } from "@prisma/client";
+import { ListingStatus } from "@prisma/client";
 
 // Define the core logic for the GET handler
 async function handleGetService(
@@ -41,7 +41,7 @@ async function handleGetService(
   // 2. Build Where Clause
   const whereClause: any = {
     companyId: company.id,
-    status: MarketplaceListingStatus.ACTIVE, // Only active services
+    status: ListingStatus.ACTIVE, // Only active services
   };
 
   if (categoryFilter && categoryFilter !== 'All') {
@@ -143,7 +143,7 @@ async function handleCreateService(
       isAvailable: true,
       productCategoryId: productCategory.id,
       category: productCategory.name,
-      status: status as MarketplaceListingStatus,
+      status: status as ListingStatus,
       duration,
       images: images,
       finalPrice: servicePrice,

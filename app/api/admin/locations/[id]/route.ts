@@ -1,4 +1,5 @@
-import { NextRequest } from "next/server";
+
+
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -11,7 +12,7 @@ type RouteParams = { params: { id: string } };
 /**
  * Retrieves a single Location record by its ID.
  */
-async function handleGetLocation(request: NextRequest, { params }: RouteParams) {
+async function handleGetLocation(request: Request, { params }: RouteParams) {
   const { id } = params;
 
   const location = await prisma.location.findUnique({
@@ -28,7 +29,7 @@ async function handleGetLocation(request: NextRequest, { params }: RouteParams) 
   }
 
   // withApiHandler wraps this successful result in formatResponse(true, location) with status 200
-  return location;
+  return formatResponse(true, location, "Location fetched successfully", 200);
 }
 
 // --- PATCH Handler ---
@@ -36,7 +37,7 @@ async function handleGetLocation(request: NextRequest, { params }: RouteParams) 
  * Updates one or more fields of an existing Location record.
  * This is meant for partial updates.
  */
-async function handlePatchLocation(request: NextRequest, { params }: RouteParams) {
+async function handlePatchLocation(request: Request, { params }: RouteParams) {
   const { id } = params;
   const body = await request.json();
 
@@ -57,7 +58,7 @@ async function handlePatchLocation(request: NextRequest, { params }: RouteParams
         updatedAt: new Date(),
       },
     });
-    return updatedLocation;
+    return formatResponse(true, updatedLocation, "Location updated successfully", 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
       return formatResponse(false, null, 'Location not found for update.', 404);
@@ -71,7 +72,7 @@ async function handlePatchLocation(request: NextRequest, { params }: RouteParams
  * Fully replaces/updates an existing Location record.
  * This is meant for full updates and includes robust checks.
  */
-async function handlePutLocation(request: NextRequest, { params }: RouteParams) {
+async function handlePutLocation(request: Request, { params }: RouteParams) {
   const { id: locationId } = params;
   const body = await request.json();
 
@@ -140,14 +141,14 @@ async function handlePutLocation(request: NextRequest, { params }: RouteParams) 
     },
   });
 
-  return updatedLocation;
+  return formatResponse(true, updatedLocation, "Location updated successfully", 200);
 }
 
 // --- DELETE Handler ---
 /**
  * Deletes a Location record after checking for dependencies (children and associations).
  */
-async function handleDeleteLocation(request: NextRequest, { params }: RouteParams) {
+async function handleDeleteLocation(request: Request, { params }: RouteParams) {
   const { id: locationId } = params;
 
   // 1. Verify location exists and check for children

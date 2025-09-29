@@ -1,5 +1,5 @@
 // app/api/parents/route.ts
-import { NextRequest } from "next/server";
+
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -23,8 +23,7 @@ async function generateUniqueLoginCode(): Promise<string> {
 }
 
 // --- GET /api/parents ---
-async function handleGetParents(request: NextRequest) {
-  
+async function handleGetParents(request: Request) { 
 
 
   const { searchParams } = new URL(request.url);
@@ -64,7 +63,7 @@ async function handleGetParents(request: NextRequest) {
 }
 
 // --- POST /api/parents ---
-async function handlePostParent(request: NextRequest) {
+async function handlePostParent(request: Request) {
   
 
 

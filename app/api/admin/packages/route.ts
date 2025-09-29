@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+
+
 import prisma from '@/server/db/prismadb'; // Assuming this is your standard Prisma client import
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
 import { formatResponse } from '@/lib/formatResponse';
@@ -11,7 +12,7 @@ type RouteParams = { params: {} };
 /**
  * Fetches all packages, filtered by companyId.
  */
-async function handleGetPackages(request: NextRequest, { params }: RouteParams) {
+async function handleGetPackages(request: Request, { params }: RouteParams) {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');
 
@@ -27,14 +28,14 @@ async function handleGetPackages(request: NextRequest, { params }: RouteParams) 
   });
 
   // withApiHandler handles wrapping this result in a success formatResponse with status 200
-  return { packages };
+  return formatResponse(true, { packages }, "Packages fetched successfully", 200);
 }
 
 // --- POST Handler Core Logic ---
 /**
  * Creates a new package.
  */
-async function handlePostPackage(request: NextRequest, { params }: RouteParams) {
+async function handlePostPackage(request: Request, { params }: RouteParams) {
   const body = await request.json();
 
   const { title, price, frequency, features, status, isFeatured, companyId } = body;

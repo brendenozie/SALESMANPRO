@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
+
+
 import prisma from '@/server/db/prismadb'; // Assuming this is your standard Prisma client import
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
 import { formatResponse } from '@/lib/formatResponse';
@@ -11,7 +12,7 @@ type RouteParams = { params: { id: string } };
 /**
  * Fetches a single package by ID.
  */
-async function handleGetPackage(request: NextRequest, { params }: RouteParams) {
+async function handleGetPackage(request: Request, { params }: RouteParams) {
   const { id } = params;
 
   const pkg = await prisma.package.findUnique({
@@ -23,14 +24,14 @@ async function handleGetPackage(request: NextRequest, { params }: RouteParams) {
   }
 
   // withApiHandler handles wrapping this result in a success formatResponse with status 200
-  return pkg;
+  return formatResponse(true, pkg, "Package fetched successfully", 200);
 }
 
 // --- PUT Handler Core Logic ---
 /**
  * Updates a package by ID.
  */
-async function handlePutPackage(request: NextRequest, { params }: RouteParams) {
+async function handlePutPackage(request: Request, { params }: RouteParams) {
   const { id } = params;
   const body = await request.json();
   const { title, price, frequency, features, status, isFeatured } = body;
@@ -65,7 +66,7 @@ async function handlePutPackage(request: NextRequest, { params }: RouteParams) {
 /**
  * Deletes a package by ID.
  */
-async function handleDeletePackage(request: NextRequest, { params }: RouteParams) {
+async function handleDeletePackage(request: Request, { params }: RouteParams) {
   const { id } = params;
 
   try {

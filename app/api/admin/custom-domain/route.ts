@@ -44,11 +44,15 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const userId = await auth.user || '';
+  const user = await auth.user || '';
+
+  if (!user) { 
+    return formatResponse(false, null, "User not found", 404);
+  }
 
   // 4) Persist on the company record (assuming auth.userId maps to Company.userId)
   const company = await prisma.company.updateMany({
-    where: { userId: userId },
+    where: { userId: user.id },
     data: { domain },
   });
 

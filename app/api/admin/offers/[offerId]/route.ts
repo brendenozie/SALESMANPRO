@@ -1,4 +1,5 @@
-import { NextResponse, NextRequest } from "next/server";
+
+
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -56,7 +57,7 @@ async function handleGetOffer(request: Request, { params }: RouteParams) {
   };
 
   // withApiHandler wraps this result in a success formatResponse with status 200
-  return formattedOffer;
+  return formatResponse(true, formattedOffer, "Offer fetched successfully", 200);
 }
 
 // --- PATCH Handler Core Logic ---
@@ -137,7 +138,7 @@ async function handlePatchOffer(request: Request, { params }: RouteParams) {
       data: updateData,
     });
 
-    return updatedOffer;
+    return formatResponse(true, updatedOffer, "Offer updated successfully", 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
       // Record not found
@@ -159,7 +160,7 @@ async function handleDeleteOffer(request: Request, { params }: RouteParams) {
       where: { id: offerId },
     });
 
-    return { message: 'Offer deleted successfully.' };
+    return formatResponse(true, null, 'Offer deleted successfully.', 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
       // Record not found

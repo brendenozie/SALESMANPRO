@@ -59,7 +59,7 @@ async function handleGetServices(request: Request, { params }: RouteParams) {
   );
 
   // Return the data; withApiHandler will wrap it in success: true and status 200
-  return formattedServices;
+  return formatResponse(true, formattedServices, "Services fetched successfully", 200);
 }
 
 /**

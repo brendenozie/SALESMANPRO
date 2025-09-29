@@ -42,6 +42,18 @@ export const GET = withApiHandler(async (request: Request, context: HandlerConte
  * @description Creates a new content item.
  */
 export const POST = withApiHandler(async (request: Request, context: HandlerContext) => {
+
+  const company = await prisma.company.findUnique({
+    where: { slug: context.params.adminSlug },
+    select: { id: true },
+  });
+
+  const companyId = company?.id;
+
+  if (!companyId) {
+    return NextResponse.json({ message: "Company not found" }, { status: 404 });
+  }
+
   const body = await request.json();
   const { title, type, publishDate, authorId, photoAlbumId, videoAlbumId, status } = body;
 
@@ -65,6 +77,9 @@ export const POST = withApiHandler(async (request: Request, context: HandlerCont
       authorId: authorId ?? context.user?.id, // fallback to auth user if available
       photoAlbumId,
       videoAlbumId,
+      companyId,
+      createdAt: new Date(),
+      updatedAt: new Date(),
     },
     include: {
       photoAlbum: true,

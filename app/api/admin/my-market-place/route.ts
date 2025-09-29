@@ -1,4 +1,5 @@
-import { NextRequest } from "next/server";
+
+
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -10,7 +11,7 @@ type RouteParams = { params: {} };
 /**
  * Fetches a paginated list of marketplace listings for a specific companyId.
  */
-async function handleGetListings(req: NextRequest, { params }: RouteParams) {
+async function handleGetListings(req: Request, { params }: RouteParams) {
   const { searchParams } = new URL(req.url);
 
   const companyId = searchParams.get("companyId");
@@ -53,16 +54,15 @@ async function handleGetListings(req: NextRequest, { params }: RouteParams) {
 
   // 5. Return the full data structure
   // withApiHandler wraps this result in formatResponse(true, data, null, 200)
-  return {
+  return formatResponse(true, {
+    data: listings,
     meta: {
-      companyId,
-      totalItems: total,
+      total,
+      page,
+      limit,
       totalPages,
-      currentPage: page,
-      perPage: limit,
     },
-    results: listings,
-  };
+  }, "Marketplace listings fetched successfully", 200);
 }
 
 // Wrap the core logic with the API handler middleware

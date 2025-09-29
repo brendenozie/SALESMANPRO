@@ -3,7 +3,7 @@ import { companySchema } from "@/lib/validations/company";
 import { Prisma } from "@prisma/client";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
-import { VerifiedUser } from "@/lib/verifyAuth"; // <-- Import the user type
+import { VerifiedUser } from "@/lib/verifyAuth"; 
 
 export const dynamic = "force-dynamic";
 

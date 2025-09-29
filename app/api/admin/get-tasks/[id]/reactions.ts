@@ -29,25 +29,25 @@ async function updateAma(
   // --- Update Logic ---
   // The original Prisma update logic was commented out, but we include it here
   // as the intended action for the PUT request.
-  const ama = await prisma.booking.update({
-    where: {
-      id: amaId,
-    },
-    data: {
-      reactions: {
-        increment: 1,
-      },
-    },
-    select: { id: true, reactions: true, status: true }
-  });
+  // const ama = await prisma.booking.update({
+  //   where: {
+  //     id: amaId,
+  //   },
+  //   data: {
+  //     reactions: {
+  //       increment: 1,
+  //     },
+  //   },
+  //   select: { id: true, reactions: true, status: true }
+  // });
 
   // --- Success Response ---
   // The response structure mimics the original handler's mock data.
-  return formatResponse(true, { 
-      id: ama.id, 
-      reactions: ama.reactions, 
-      status: ama.status 
-  }, 'AMA reaction count incremented successfully', 200);
+  // return formatResponse(true, { 
+  //     id: ama.id, 
+  //     reactions: ama.reactions, 
+  //     status: ama.status 
+  // }, 'AMA reaction count incremented successfully', 200);
 
   // Note: Since `withApiHandler` only wraps the core function, there is no need
   // for an `else { return res.status(404).end() }` block; any method other than PUT
@@ -55,7 +55,7 @@ async function updateAma(
 }
 
 // Export the PUT method wrapped with the API handler.
-export const PUT = withApiHandler(updateAma);
+// export const PUT = withApiHandler(updateAma);
 
 // If this route were also expected to handle a GET request using the search params,
 // we would add an export const GET = withApiHandler(getAmaDetails); function.

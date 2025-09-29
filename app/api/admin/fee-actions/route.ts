@@ -2,7 +2,7 @@
 
 import { withApiHandler } from '@/lib/hooks/withApiHandler'; // New import
 import { formatResponse } from '@/lib/formatResponse'; // New import
-import { getFeeRecords, addFeeRecord } from '@/lib/data'; // Adjust path as needed
+import { getFeeItemById, createFeeItem } from '@/lib/data'; // Adjust path as needed
 import { verifyAuth } from '@/lib/verifyAuth';
 
 // =======================================================================
@@ -11,8 +11,6 @@ import { verifyAuth } from '@/lib/verifyAuth';
 // =======================================================================
 async function getFees(request: Request) {
   
-
-
   const { searchParams } = new URL(request.url);
   const schoolId = searchParams.get('schoolId');
 
@@ -21,7 +19,7 @@ async function getFees(request: Request) {
   }
 
   // NOTE: Assuming getFeeRecords handles the actual data fetching logic.
-  const records = getFeeRecords(schoolId);
+  const records = getFeeItemById(schoolId);
   return formatResponse(true, records, null, 200);
 }
 
@@ -42,17 +40,15 @@ async function createFeeRecord(request: Request) {
   }
 
   // NOTE: This logic assumes addFeeRecord is a mock or non-Prisma function.
-  const newRecord = addFeeRecord({
-    studentName,
-    studentClass,
-    term,
+  const newRecord = createFeeItem({
+    name: studentName, // or another appropriate value
+    description: null, // or provide a description if available
+    defaultAmount: totalFeesDue ?? 0,
+    applicableTo: studentClass, // or another appropriate value
+    applicableValue: null, // or provide if available
     academicYear,
-    totalFeesDue,
-    amountPaid,
-    lastPaymentDate: null,
-    dueDate,
-    studentId: `S${Math.floor(Math.random() * 10000).toString().padStart(4, '0')}`, // Generate a mock studentId
-    schoolId // Pass schoolId to the mock DB function
+    term,
+    isMandatory: true // or set based on your logic
   });
 
   return formatResponse(true, newRecord, null, 201);

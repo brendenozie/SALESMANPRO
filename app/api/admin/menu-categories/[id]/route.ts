@@ -32,7 +32,7 @@ async function handlePutCategory(request: Request, { params }: RouteParams) {
     });
 
     // withApiHandler will wrap this result in a success formatResponse with status 200
-    return updatedCategory;
+    return formatResponse(true, updatedCategory, "Product category updated successfully", 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === 'P2002' && error.meta?.target) {
@@ -62,7 +62,7 @@ async function handleDeleteCategory(request: Request, { params }: RouteParams) {
     });
 
     // withApiHandler will wrap this result in a success formatResponse with status 200
-    return { message: 'Product category deleted successfully' };
+    return formatResponse(true, null, 'Product category deleted successfully', 200);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
       // Record not found

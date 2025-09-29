@@ -1,6 +1,5 @@
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
-import { verifyAuth } from "@/lib/verifyAuth";
 import prisma from "@/server/db/prismadb";
 
 // Define the CourseMaterialType enum for validation

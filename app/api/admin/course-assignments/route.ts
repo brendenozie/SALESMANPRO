@@ -33,7 +33,11 @@ const getHandler = async (req: Request) => {
         select: {
           id: true,
           title: true,
-          instructor: { select: { user: { select: { name: true } } } },
+          CourseEducatorAssignment:{
+            include:{
+                educator: { select: { user: { select: { name: true } } } },
+            }
+          },
           academicLevels: {
             include: { academicLevel: { select: { id: true, name: true, sortOrder: true } } },
           },
@@ -48,7 +52,7 @@ const getHandler = async (req: Request) => {
     id: assignment.id,
     courseId: assignment.courseId,
     courseTitle: assignment.course?.title || "N/A",
-    courseInstructorName: assignment.course?.instructor?.user?.name || "N/A",
+    courseInstructorName: assignment.course?.CourseEducatorAssignment?.[0]?.educator?.user?.name || "N/A",
     courseAcademicLevels:
       assignment.course?.academicLevels
         .map((al) => al.academicLevel)
@@ -72,10 +76,10 @@ export const GET = withApiHandler(getHandler);
 // /api/course-assignments
 const postHandler = async (req: Request) => {
   const body = await req.json();
-  const { courseId, title, description, dueDate, maxGrade } = body;
+  const { courseId, title, description, dueDate, maxGrade, createdBy } = body;
 
-  if (!courseId || !title || !dueDate) {
-    return formatResponse(false, null, "Course ID, Title, and Due Date are required.", 400);
+  if (!courseId || !title || !dueDate || !createdBy) {
+    return formatResponse(false, null, "Course ID, Title, Due Date, and Created By are required.", 400);
   }
 
   // validate course exists
@@ -86,18 +90,23 @@ const postHandler = async (req: Request) => {
 
   const newAssignment = await prisma.courseAssignment.create({
     data: {
-      courseId,
+      course: { connect: { id: courseId } },
       title,
       description,
       dueDate: new Date(dueDate),
       maxGrade,
+      createdBy: { connect: { id: createdBy } },
     },
     include: {
       course: {
         select: {
           id: true,
           title: true,
-          instructor: { select: { user: { select: { name: true } } } },
+          CourseEducatorAssignment: {
+            include:{
+                educator: { select: { user: { select: { name: true } } } },
+            }
+          },
           academicLevels: {
             include: { academicLevel: { select: { id: true, name: true, sortOrder: true } } },
           },
@@ -111,7 +120,7 @@ const postHandler = async (req: Request) => {
     id: newAssignment.id,
     courseId: newAssignment.courseId,
     courseTitle: newAssignment.course?.title || "N/A",
-    courseInstructorName: newAssignment.course?.instructor?.user?.name || "N/A",
+    courseInstructorName: newAssignment.course?.CourseEducatorAssignment?.[0]?.educator?.user?.name || "N/A",
     courseAcademicLevels:
       newAssignment.course?.academicLevels
         .map((al) => al.academicLevel)

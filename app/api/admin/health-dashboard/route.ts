@@ -1,6 +1,7 @@
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
+import { ROLE } from "@prisma/client";
 
 /**
  * Core logic to fetch dashboard summary statistics for a given company.
@@ -29,8 +30,8 @@ async function getDashboardSummary(
   today.setHours(0, 0, 0, 0); // Start of today (UTC or local, depending on environment)
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1); // Start of tomorrow
-
-  const rolesFilter = ["CLIENT", "CONSUMER", "STUDENT", "PARENT"];
+  const rolesFilter: ROLE[] = [ROLE.CLIENT, ROLE.CONSUMER, ROLE.STUDENT, ROLE.PARENT];
+  // const rolesFilter = ["CLIENT", "CONSUMER", "STUDENT", "PARENT"];
 
   // Pre-fetch all relevant patient/client User IDs for query filtering
   const companyUsers = await prisma.user.findMany({

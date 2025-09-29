@@ -19,7 +19,7 @@ async function authorizeAppointmentAccess(adminSlug: string, appointmentId: stri
 
     if (!company) {
       // Use 403 Forbidden for authorization failure or 404 Not Found if you want to hide company existence
-      return formatResponse(false, null, "Company not found or access denied.", 403);
+      return { success: false, data: null, error: "Company not found or access denied.", status: 403 };
     }
 
     // 2. Get all user IDs associated with this company
@@ -35,10 +35,11 @@ async function authorizeAppointmentAccess(adminSlug: string, appointmentId: stri
     });
 
     if (!appointmentCheck) {
-        return formatResponse(false, null, "Appointment not found or not associated with this company.", 404);
+        return { success: false, data: null, error: "Appointment not found or not associated with this company.", status: 404 };
     }
 
-    return { company, companyUserIds };
+    return { success: true, data: { company, companyUserIds }, error: null, status: 200 };
+
 }
 
 
@@ -53,7 +54,8 @@ async function getAppointment(
 
   // Perform Authorization Check (Business Logic)
   const authCheck = await authorizeAppointmentAccess(adminSlug, id);
-  if (authCheck.success === false) return authCheck; // Returns 403/404 error response
+  
+  if (authCheck.success === false) return formatResponse(false, null, authCheck.error, authCheck.status); // Returns 403/404 error response
 
   // --- Data Fetching ---
   const appointment = await prisma.appointment.findUnique({
@@ -63,7 +65,7 @@ async function getAppointment(
       date: true,
       status: true,
       createdAt: true,
-      updatedAt: true,
+      // updatedAt: true,
       user: { select: { id: true, name: true, email: true, phone: true } },
       OrderItem: {
         select: {
@@ -100,17 +102,15 @@ async function getAppointment(
 /**
  * PUT Handler: Updates an existing appointment.
  */
-async function updateAppointment(
-  request: Request,
-  { params }: { params: { adminSlug: string; id: string } }
-) {
+async function updateAppointment(request: Request, context: { params: { adminSlug: string; id: string } }) {
+  const { params } = context;
   const { adminSlug, id } = params;
   const body = await request.json();
   const { date, time, status } = body; // Simplified body destructuring
 
   // Perform Authorization Check (Business Logic)
   const authCheck = await authorizeAppointmentAccess(adminSlug, id);
-  if (authCheck.success === false) return authCheck; // Returns 403/404 error response
+  if (authCheck.success === false) return formatResponse(false, null, authCheck.error, authCheck.status); // Returns 403/404 error response
 
   // --- Update Data Preparation ---
   let updateData: any = { updatedAt: new Date() };
@@ -149,7 +149,7 @@ async function deleteAppointment(
 
   // Perform Authorization Check (Business Logic)
   const authCheck = await authorizeAppointmentAccess(adminSlug, id);
-  if (authCheck.success === false) return authCheck; // Returns 403/404 error response
+  if (authCheck.success === false) return formatResponse(false, null, authCheck.error, authCheck.status); // Returns 403/404 error response
 
   // --- Delete Logic ---
   // Delete associated OrderItems first if onDelete is not Cascade

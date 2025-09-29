@@ -82,21 +82,33 @@ async function handlePost(request: Request, context: HandlerContext): Promise<Ne
   // Use a transaction to ensure atomicity
   const result = await prisma.$transaction(async (tx) => {
     // Find or create the consumer first
+    // Find the user by email first to get the userId
+    const existingUser = await tx.user.findUnique({
+      where: { email: customerEmail },
+      select: { id: true }
+    });
+
+    // Find or create the user first
+    let userId: string;
+    if (existingUser) {
+      userId = existingUser.id;
+    } else {
+      const newUser = await tx.user.create({
+        data: {
+          email: customerEmail,
+          name: customerName,
+          role: "CONSUMER" as ROLE,
+        },
+      });
+      userId = newUser.id;
+    }
+
     const consumer = await tx.consumer.upsert({
-      where: {
-        user: {
-          email: customerEmail
-        }
-      },
+      where: { userId },
       update: {},
       create: {
         companyId: company.id,
-        user: {
-          connectOrCreate: {
-            where: { email: customerEmail },
-            create: { email: customerEmail, name: customerName, role: "CONSUMER" as ROLE }
-          }
-        }
+        userId: userId,
       },
       include: { user: true }
     });

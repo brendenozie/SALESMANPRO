@@ -18,7 +18,7 @@ export const POST = withApiHandler(
         port: parseInt(process.env.EMAIL_PORT || "465"),
         secure: true,
         auth: {
-          user: process.env.EMAIL_USER, // e.g. "sales@jasirihomes.com"
+          user: process.env.EMAIL_USER, // e.g. "mail@gmail.com"
           pass: process.env.EMAIL_PASS, // use env var, never hardcode
         },
       });

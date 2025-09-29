@@ -31,7 +31,12 @@ async function formatAppointmentData(appointment: any) {
 }
 
 // --- GET /api/admin/appointments
-export const GET = withApiHandler(async (request, { user }) => {
+export const GET = withApiHandler(async (request, context) => {
+  const { user } = context;
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
   const searchTerm = searchParams.get("searchTerm") || "";
@@ -79,7 +84,12 @@ export const GET = withApiHandler(async (request, { user }) => {
 });
 
 // --- POST /api/admin/appointments
-export const POST = withApiHandler(async (request, { user }) => {
+export const POST = withApiHandler(async (request, context) => {
+  const { user } = context;
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  
   const body = await request.json();
   const { userId, doctorId, service, date, time, status, companyId } = body;
 

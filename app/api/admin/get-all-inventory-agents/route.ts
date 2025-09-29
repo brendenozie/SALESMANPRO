@@ -26,6 +26,9 @@ async function fetchAllAgents() {
           },
         },
       },
+      user: {
+        select: { id: true, name: true, email: true },
+      }, // Include user details if needed
     },
   });
 
@@ -44,7 +47,8 @@ async function fetchAllAgents() {
 
     return {
       id: agent.id,
-      name: agent.name,
+      name: agent.user.name,
+      email: agent.user.email,
       totalAssigned,
       inventory,
     };

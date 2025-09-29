@@ -26,7 +26,7 @@ async function handleGetInquiries(request: Request) {
   });
 
   // withApiHandler will wrap this result in formatResponse(true, ...) with status 200
-  return { results: inquiries };
+  return formatResponse(true, { results: inquiries }, "Inquiries fetched successfully", 200);
 }
 
 // --- POST Handler ---

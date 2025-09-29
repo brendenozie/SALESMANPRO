@@ -1,4 +1,5 @@
-import { NextRequest } from 'next/server';
+
+
 import prisma from '@/server/db/prismadb';
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
 import { formatResponse } from '@/lib/formatResponse';
@@ -24,7 +25,7 @@ const slugify = (text: string): string => {
  * GET Handler: Fetches all CompanyLocation records for a specific company ID (passed via query).
  * It also fetches any necessary parent locations not directly associated with the company.
  */
-async function handleGetLocations(req: NextRequest, { params }: RouteParams) {
+async function handleGetLocations(req: Request, { params }: RouteParams) {
   const { searchParams } = new URL(req.url);
   const companyId = searchParams.get("companyId");
 
@@ -101,7 +102,7 @@ async function handleGetLocations(req: NextRequest, { params }: RouteParams) {
   }));
 
   // withApiHandler will wrap this result in formatResponse(true, { data: combined_list }) with status 200
-  return { data: [...formattedCompanyLocs, ...formattedParents] };
+  return formatResponse(true, { data: [...formattedCompanyLocs, ...formattedParents] }, "Locations fetched successfully", 200);
 }
 
 // --- POST Handler Core Logic ---

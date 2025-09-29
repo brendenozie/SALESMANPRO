@@ -8,17 +8,17 @@ import { formatResponse } from '@/lib/formatResponse';
 // --- Utility Functions (Kept for formatting) ---
 
 // Helper function to format dates for frontend display (Date -> YYYY-MM-DD)
-const formatDate = (date) => date ? new Date(date).toISOString().split('T')[0] : 'N/A';
+const formatDate = (date : Date | null) => date ? new Date(date).toISOString().split('T')[0] : 'N/A';
 // Helper function to format time for frontend display (Date -> HH:MM AM/PM)
-const formatTime = (date) => date ? new Date(date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }) : 'N/A';
+const formatTime = (date: Date | null) => date ? new Date(date).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true }) : 'N/A';
 
 // Helper to access dynamic parameters
 // Context is passed automatically in App Router handlers: { params: { adminSlug: string, bookingId: string } }
-const getParams = (context) => context.params;
+const getParams = (context: any) => context.params;
 
 // --- PUT Handler Logic (Update Booking) ---
 // This function will be wrapped by withApiHandler
-const putBookingLogic = async (request, context) => {
+const putBookingLogic = async (request: Request, context: any) => {
   const { adminSlug, bookingId } = getParams(context);
 
   const body = await request.json();
@@ -94,8 +94,8 @@ const putBookingLogic = async (request, context) => {
     title: updatedBooking.title,
     description: updatedBooking.description || '',
     bookingType: updatedBooking.bookingType,
-    startTime: updatedBooking.startTime.toISOString(),
-    endTime: updatedBooking.endTime.toISOString(),
+    startTime: updatedBooking.startTime?.toISOString(),
+    endTime: updatedBooking.endTime?.toISOString(),
     date: formatDate(updatedBooking.startTime),
     time: `${formatTime(updatedBooking.startTime)} - ${formatTime(updatedBooking.endTime)}`,
     status: updatedBooking.status,
@@ -118,7 +118,7 @@ export const PUT = withApiHandler(putBookingLogic);
 
 // --- DELETE Handler Logic (Delete Booking) ---
 // This function will be wrapped by withApiHandler
-const deleteBookingLogic = async (request, context) => {
+const deleteBookingLogic = async (request: Request, context: any) => {
   const { adminSlug, bookingId } = getParams(context);
 
   // 1. Verify Company Slug

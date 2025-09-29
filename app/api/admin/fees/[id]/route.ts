@@ -2,7 +2,7 @@
 
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
 import { formatResponse } from '@/lib/formatResponse';
-import { addPaymentToRecord } from '@/lib/data'; // Adjust path as needed
+import { addPaymentToStudentFeeRecord } from '@/lib/data'; // Adjust path as needed
 import { verifyAuth } from '@/lib/verifyAuth';
 
 interface Context {
@@ -32,7 +32,7 @@ async function handlePostPayment(request: Request, context: Context) {
   }
 
   // 3. Business Logic
-  const updatedRecord = addPaymentToRecord(id, { amount, date, method, receiptNumber });
+  const updatedRecord = addPaymentToStudentFeeRecord(id, { amount, date, method, receiptNumber });
 
   if (updatedRecord) {
     // 4. Success Response

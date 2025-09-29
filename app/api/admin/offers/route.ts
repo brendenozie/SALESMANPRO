@@ -1,4 +1,5 @@
-import { NextResponse, NextRequest } from "next/server";
+
+
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -13,7 +14,7 @@ const VALID_STATUSES = ['Pending', 'Accepted', 'Rejected', 'Closed'];
 /**
  * Fetches all Offers for a specific company.
  */
-async function handleGetOffers(request: NextRequest, { params }: RouteParams) {
+async function handleGetOffers(request: Request, { params }: RouteParams) {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');
 
@@ -62,7 +63,7 @@ async function handleGetOffers(request: NextRequest, { params }: RouteParams) {
   }));
 
   // withApiHandler handles wrapping this result in a success formatResponse with status 200
-  return { results: formattedOffers };
+  return formatResponse(true, { results: formattedOffers }, "Offers fetched successfully", 200);
 }
 
 // --- POST Handler Core Logic ---

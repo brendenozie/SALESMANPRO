@@ -17,8 +17,7 @@ interface Params {
 // Fetches a specific FAQ by ID.
 // =======================================================================
 async function getFaq(req: Request, { params }: Params) {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
 
   const faqId = params.id;
   if (!faqId) {
@@ -41,8 +40,7 @@ async function getFaq(req: Request, { params }: Params) {
 // Updates an existing FAQ.
 // =======================================================================
 async function updateFaq(req: Request, { params }: Params) {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
 
   const faqId = params.id;
   if (!faqId) {
@@ -67,8 +65,7 @@ async function updateFaq(req: Request, { params }: Params) {
 // Deletes a specific FAQ.
 // =======================================================================
 async function deleteFaq(req: Request, { params }: Params) {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
 
   const faqId = params.id;
   if (!faqId) {

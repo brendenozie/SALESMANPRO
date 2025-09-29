@@ -102,7 +102,7 @@ export const POST = withApiHandler(async (request) => {
   const newOrder = await prisma.customerOrder.create({
     data: {
       companyId,
-      customerId,
+      consumerId: customerId,
       delivery,
       items: {
         create: items.map((item) => ({
@@ -111,6 +111,7 @@ export const POST = withApiHandler(async (request) => {
           price: item.price,
         })),
       },
+      totalPrice: items.reduce((sum, item) => sum + item.price * item.quantity, 0),
     },
     include: {
       items: {
@@ -124,9 +125,9 @@ export const POST = withApiHandler(async (request) => {
           },
         },
       },
-      customer: { select: { id: true, name: true, email: true } },
+      // customer: { select: { id: true, name: true, email: true } },
     },
   });
 
-  return formatResponse(true, newOrder, 'Customer order created successfully');
+  return formatResponse(true, newOrder, 'Customer order created successfully', 201);
 });

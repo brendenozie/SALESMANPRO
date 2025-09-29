@@ -30,7 +30,6 @@ export const PUT = withAuthAndRateLimit(async (request, { params }) => {
       phoneNumber,
       user: {
         update: {
-          id: existingAgent.userId,
           name,
           email,
         },

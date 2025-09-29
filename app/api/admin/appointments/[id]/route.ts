@@ -34,11 +34,16 @@ async function formatAppointmentData(appointment: any) {
 }
 
 // --- GET /api/admin/appointments/[id]
-export const GET = withApiHandler(async (_request, { params, user }) => {
-  const { id } = params;
+export const GET = withApiHandler(async (request, context) => {
+  const { id } = context.params;
+  const { user } = context;
+
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   const appointment = await prisma.appointment.findFirst({
-    where: user?.role === "ADMIN"
+    where: context.user?.role === "ADMIN"
       ? { id }
       : { id, doctorId: user.id }, // doctors can only see their own
     include: {
@@ -56,9 +61,16 @@ export const GET = withApiHandler(async (_request, { params, user }) => {
 });
 
 // --- PUT /api/admin/appointments/[id]
-export const PUT = withApiHandler(async (request, { params, user }) => {
-  const { id } = params;
+export const PUT = withApiHandler(async (request, context) => {
+  const { id } = context.params;
+  const { user } = context;
+
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const body = await request.json();
+
   const { userId, doctorId, service, date, time, status } = body;
 
   // Ensure doctor can only update their own appointment
@@ -108,8 +120,13 @@ export const PUT = withApiHandler(async (request, { params, user }) => {
 });
 
 // --- DELETE /api/admin/appointments/[id]
-export const DELETE = withApiHandler(async (_request, { params, user }) => {
-  const { id } = params;
+export const DELETE = withApiHandler(async (request, context) => {
+  const { id } = context.params;
+  const { user } = context;
+
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   // Ensure doctor can only delete their own appointment
   const existingAppointment = await prisma.appointment.findFirst({

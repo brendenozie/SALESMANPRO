@@ -22,7 +22,7 @@ async function fetchCompanySettings(adminSlug: string) {
       themeSettings: true, // JSON field
       AnalyticsConfig: { select: { isActive: true, googleTag: true, facebookTag: true, hotjarSiteId: true } },
       PaymentSettings: { select: { stripeKey: true, paypalKey: true, mpesaShortcode: true } },
-      SocialLink: { select: { channel: true, url: true } },
+      // SocialLink: { select: { channel: true, url: true } },
     }
   });
 }
@@ -45,7 +45,7 @@ function formatSettings(company: Awaited<ReturnType<typeof fetchCompanySettings>
       paypalKey: company.PaymentSettings?.paypalKey,
       mpesaShortcode: company.PaymentSettings?.mpesaShortcode,
     },
-    socialLinks: company.SocialLink,
+    // socialLinks: company.SocialLink,
   };
 }
 
@@ -62,7 +62,7 @@ async function handleGetSettings(request: Request, { params }: SettingsParams) {
   const settings = formatSettings(company);
 
   // withApiHandler will wrap this in success: true and status 200
-  return settings;
+  return formatResponse(true, settings, "Settings fetched successfully", 200);
 }
 
 /**
@@ -115,7 +115,14 @@ async function handleUpdateSettings(request: Request, { params }: SettingsParams
     await prisma.analyticsConfig.update({ where: { id: company.analyticsConfigId }, data: analyticsData });
   } else if (notificationsEnabled !== undefined) {
     await prisma.analyticsConfig.create({
-      data: { ...analyticsData, Company: { connect: { id: companyId } } }
+      data: { 
+        ...analyticsData, 
+        company: { 
+          connect: { 
+            id: companyId 
+          } 
+        } 
+      }
     });
   }
 
@@ -130,7 +137,7 @@ async function handleUpdateSettings(request: Request, { params }: SettingsParams
       await prisma.paymentSettings.update({ where: { id: company.paymentSettingsId }, data: paymentData });
     } else {
       await prisma.paymentSettings.create({
-        data: { ...paymentData, Company: { connect: { id: companyId } } }
+        data: { ...paymentData, company: { connect: { id: companyId } } }
       });
     }
   }

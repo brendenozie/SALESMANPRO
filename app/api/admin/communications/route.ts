@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb';
 // Import the unified API handler wrapper
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
+import { CommunicationType } from '@prisma/client';
 
 // Define the types for the handler context and request body
 type HandlerContext = {
@@ -27,6 +28,10 @@ type CommunicationBody = {
 async function handleGet(request: Request, context: HandlerContext): Promise<NextResponse> {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');
+
+  if (!companyId) {
+    return NextResponse.json({ message: 'Missing companyId' }, { status: 400 });
+  }
 
   const company = await prisma.company.findUnique({
     where: { id: companyId },
@@ -76,6 +81,10 @@ async function handlePost(request: Request, context: HandlerContext): Promise<Ne
     scheduledDate,
   } = body;
 
+  if (!companyId) {
+    return NextResponse.json({ message: 'Missing companyId' }, { status: 400 });
+  }
+
   const company = await prisma.company.findUnique({
     where: { id: companyId },
     select: { id: true },
@@ -102,7 +111,7 @@ async function handlePost(request: Request, context: HandlerContext): Promise<Ne
       companyId: companyId,
       subject,
       content,
-      communicationType,
+      communicationType: communicationType as CommunicationType,
       status,
       recipients,
       sentDate: status === 'SENT' ? new Date(scheduledDate!) : null,

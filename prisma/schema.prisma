@@ -1299,10 +1299,11 @@ model User {
   VideoAlbum VideoAlbum[]
   Document   Document[]
 
-  Expert      Expert?
-  Testimonial Testimonial[]
-  Blog        Blog[]
+  Expert       Expert?
+  Testimonial  Testimonial[]
+  Blog         Blog[]
   // @@index([email])
+  InventoryLog InventoryLog[]
 
   @@index([companyId])
   // @@index([settingsId])
@@ -1416,6 +1417,9 @@ model InventoryLog {
   damaged       Int           @default(0)
   action        String
   quantity      Int
+  details       String?
+  userId        String?       @db.ObjectId
+  user          User?         @relation(fields: [userId], references: [id])
   createdAt     DateTime?     @default(now())
 
   @@index([inventoryId])
@@ -1629,6 +1633,8 @@ model marketplaceListings {
   tax          Float? @default(0)
   shippingCost Float? @default(0)
   pricingTiers Json[] // Added: For complex pricing structures, matches Product
+
+  duration String? // For rentals or time-based listings
 
   // Deal Flags (Mirroring Product Model)
   isAvailable  Boolean @default(true)
@@ -5059,6 +5065,4 @@ model CompanySettings {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  // @@index([companyId])
 }

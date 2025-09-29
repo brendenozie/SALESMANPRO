@@ -5,6 +5,11 @@ import { withApiHandler } from "@/lib/hooks/withApiHandler";
 // --- GET /api/admin/[slug]/billing/invoices
 export const GET = withApiHandler(async (req, { params, user }) => {
   const companyId = params.slug;
+
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  
   const { searchParams } = new URL(req.url);
 
   const page = parseInt(searchParams.get("page") || "1", 10);

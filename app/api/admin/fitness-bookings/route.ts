@@ -5,11 +5,6 @@ import prisma from '@/server/db/prismadb';
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
 import { formatResponse } from '@/lib/formatResponse'; 
 
-// Removed old imports:
-// import { NextResponse } from 'next/server';
-// import { formatResponse } from "@/lib/formatResponse";
-
-
 // Type definition for the context object, which includes dynamic parameters
 type RouteContext = {
     params: {

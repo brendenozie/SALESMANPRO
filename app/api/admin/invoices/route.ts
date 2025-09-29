@@ -1,7 +1,7 @@
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
-import { CustomerOrderStatus } from "@prisma/client";
+import { OrderStatus } from "@prisma/client";
 
 // Define the expected structure for route parameters
 type RouteParams = { params: { adminSlug: string } };
@@ -107,12 +107,15 @@ async function handleGetInvoices(request: Request, { params }: RouteParams) {
   }));
 
   // withApiHandler will wrap this result in formatResponse(true, ...) with status 200
-  return {
+  
+  return formatResponse(true, {
     invoices: formattedInvoices,
-    totalItems,
-    totalPages: Math.ceil(totalItems / limit),
-    currentPage: page,
-  };
+    pagination: {
+      totalItems,
+      totalPages: Math.ceil(totalItems / limit),
+      currentPage: page,
+    },
+  }, "Invoices fetched successfully", 200);
 }
 
 // --- POST Handler ---
@@ -123,7 +126,7 @@ async function handlePostInvoice(request: Request, { params }: RouteParams) {
   const { adminSlug } = params;
   const body = await request.json();
 
-  const { patientId, items, paymentMethod, amountPaid, status = "PENDING" as CustomerOrderStatus, notes } = body;
+  const { patientId, items, paymentMethod, amountPaid, status = "PENDING" as OrderStatus, notes } = body;
 
   if (!items || items.length === 0 || amountPaid === undefined) {
     return formatResponse(false, null, "Missing required fields: items, amountPaid", 400);
@@ -139,11 +142,16 @@ async function handlePostInvoice(request: Request, { params }: RouteParams) {
   }
 
   let consumer = null;
+  
   if (patientId) {
     // Assuming patientId here is the User.id linked to a Consumer profile
     consumer = await prisma.consumer.findUnique({
       where: { userId: patientId },
-      select: { id: true, name: true, email: true, phone: true }
+      include : {
+        user: {
+          select: { id: true, name: true, email: true, phone: true }
+        }
+      }
     });
     if (!consumer) {
       return formatResponse(false, null, "Patient (Consumer) not found", 404);
@@ -153,10 +161,14 @@ async function handlePostInvoice(request: Request, { params }: RouteParams) {
   const newInvoice = await prisma.customerOrder.create({
     data: {
       companyId: company.id,
-      consumerId: consumer?.id,
-      name: consumer?.name || body.patientName || 'Walk-in Patient',
-      email: consumer?.email || body.patientEmail,
-      phone: consumer?.phone || body.patientPhone,
+      consumerId: consumer?.id || "",
+      name: consumer?.user?.name || body.patientName || 'Walk-in Patient',
+      email: consumer?.user?.email || body.patientEmail,
+      phone: consumer?.user?.phone || body.patientPhone,
+      // consumerId: consumer?.id,
+      // name: consumer?.name || body.patientName || 'Walk-in Patient',
+      // email: consumer?.email || body.patientEmail,
+      // phone: consumer?.phone || body.patientPhone,
       totalPrice: parseFloat(amountPaid),
       orderSource: "IN_PERSON", // Or "ADMIN_GENERATED"
       status,

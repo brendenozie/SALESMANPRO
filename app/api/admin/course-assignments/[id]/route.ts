@@ -15,7 +15,19 @@ const getHandler = async (_req: Request, { params }: { params: { id: string } })
         select: {
           id: true,
           title: true,
-          instructor: { select: { user: { select: { name: true } } } },
+          CourseEducatorAssignment:{
+            include:{
+              educator:{
+                select:{
+                  user:{
+                    select:{  
+                      name:true
+                    }
+                  }
+                }
+              }
+            }
+          },
           academicLevels: {
             include: { academicLevel: { select: { id: true, name: true, sortOrder: true } } },
           },
@@ -33,7 +45,7 @@ const getHandler = async (_req: Request, { params }: { params: { id: string } })
     id: assignment.id,
     courseId: assignment.courseId,
     courseTitle: assignment.course?.title || "N/A",
-    courseInstructorName: assignment.course?.instructor?.user?.name || "N/A",
+    courseInstructorName: assignment.course?.CourseEducatorAssignment?.[0]?.educator?.user?.name || "N/A",
     courseAcademicLevels:
       assignment.course?.academicLevels
         .map((al) => al.academicLevel)
@@ -91,7 +103,11 @@ const patchHandler = async (req: Request, { params }: { params: { id: string } }
         select: {
           id: true,
           title: true,
-          instructor: { select: { user: { select: { name: true } } } },
+          CourseEducatorAssignment: {
+              include:{
+                  educator: { select: { user: { select: { name: true } } } },
+              }
+          },
           academicLevels: {
             include: { academicLevel: { select: { id: true, name: true, sortOrder: true } } },
           },
@@ -105,7 +121,7 @@ const patchHandler = async (req: Request, { params }: { params: { id: string } }
     id: updatedAssignment.id,
     courseId: updatedAssignment.courseId,
     courseTitle: updatedAssignment.course?.title || "N/A",
-    courseInstructorName: updatedAssignment.course?.instructor?.user?.name || "N/A",
+    courseInstructorName: updatedAssignment.course?.CourseEducatorAssignment?.[0]?.educator?.user?.name || "N/A",
     courseAcademicLevels:
       updatedAssignment.course?.academicLevels
         .map((al) => al.academicLevel)

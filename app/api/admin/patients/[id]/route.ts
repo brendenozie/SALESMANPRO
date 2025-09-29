@@ -1,5 +1,5 @@
 // app/api/admin/clients/[id]/route.ts
-import { NextRequest } from "next/server";
+
 import prisma from "@/server/db/prismadb";
 import { verifyAuth } from "@/lib/verifyAuth";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -43,7 +43,7 @@ async function formatPatientData(consumer: any) {
 }
 
 // --- GET /api/admin/clients/[id] ---
-async function handleGetClient(request: NextRequest, { params }: { params: { id: string } }) {
+async function handleGetClient(request: Request, { params }: { params: { id: string } }) {
   
 
 
@@ -72,7 +72,7 @@ async function handleGetClient(request: NextRequest, { params }: { params: { id:
 }
 
 // --- PUT /api/admin/clients/[id] ---
-async function handlePutClient(request: NextRequest, { params }: { params: { id: string } }) {
+async function handlePutClient(request: Request, { params }: { params: { id: string } }) {
   
 
 
@@ -116,7 +116,7 @@ async function handlePutClient(request: NextRequest, { params }: { params: { id:
 }
 
 // --- DELETE /api/admin/clients/[id] ---
-async function handleDeleteClient(request: NextRequest, { params }: { params: { id: string } }) {
+async function handleDeleteClient(request: Request, { params }: { params: { id: string } }) {
   
 
 

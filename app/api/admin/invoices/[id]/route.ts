@@ -1,7 +1,8 @@
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
-import { CustomerOrderStatus } from "@prisma/client"; // Assuming CustomerOrderStatus enum is available
+import { OrderStatus } from "@prisma/client";
+// import { CustomerOrderStatus } from "@prisma/client"; // Assuming CustomerOrderStatus enum is available
 
 // Define the expected structure for route parameters
 type RouteParams = { params: { adminSlug: string; id: string } };
@@ -72,7 +73,7 @@ async function handleGetInvoice(request: Request, { params }: RouteParams) {
   };
 
   // withApiHandler will wrap this result in formatResponse(true, ...) with status 200
-  return formattedInvoice;
+  return formatResponse(true, formattedInvoice, "Invoice fetched successfully", 200);
 }
 
 // --- PUT Handler ---
@@ -117,7 +118,8 @@ async function handlePutInvoice(request: Request, { params }: RouteParams) {
   });
 
   // If status is updated to 'Paid' or 'COMPLETED', create/update Payment record
-  const paymentStatuses: CustomerOrderStatus[] = ['Paid', 'COMPLETED'] as CustomerOrderStatus[];
+  const paymentStatuses: OrderStatus[] = ['Paid', 'COMPLETED'] as OrderStatus[];
+
   if (status && paymentStatuses.includes(status)) {
     // Find or create a user ID to associate the payment with
     const consumer = invoiceToUpdate.consumerId ?
@@ -140,7 +142,7 @@ async function handlePutInvoice(request: Request, { params }: RouteParams) {
   }
 
   // withApiHandler will wrap this result in formatResponse(true, ...) with status 200
-  return { message: "Invoice updated successfully", invoice: updatedInvoice };
+  return formatResponse(true, updatedInvoice, "Invoice updated successfully", 200);
 }
 
 // Wrap the core logic with the API handler middleware

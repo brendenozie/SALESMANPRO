@@ -1,4 +1,5 @@
-import { NextRequest } from "next/server";
+
+
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
@@ -9,7 +10,7 @@ import { getAuthSession } from "@/lib/auth"; // Used to fetch session for create
  * GET Handler: Retrieves a comprehensive list of all Location records, typically used
  * for building a location tree or selection list in an admin panel.
  */
-async function handleGetLocations(request: NextRequest) {
+async function handleGetLocations(request: Request) {
   // Although authentication is handled by withApiHandler, the user session
   // is often needed inside the handler logic (e.g., filtering based on user role/permissions).
   // We'll proceed with fetching all, as the original code did.
@@ -48,14 +49,14 @@ async function handleGetLocations(request: NextRequest) {
   });
 
   // withApiHandler will wrap this result in formatResponse(true, { data: locations }) with status 200
-  return { data: locations };
+  return formatResponse(true, { data: locations }, "Locations fetched successfully", 200);
 }
 
 // --- POST Handler ---
 /**
  * POST Handler: Creates a new Location record.
  */
-async function handlePostLocation(request: NextRequest) {
+async function handlePostLocation(request: Request) {
   // Fetch session data again to reliably get the userId for the 'createdBy' field,
   // which is separate from the basic auth check performed by withApiHandler.
   const session = await getAuthSession();

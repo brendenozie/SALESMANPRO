@@ -3,6 +3,7 @@ import prisma from '@/server/db/prismadb';
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
 import { formatResponse } from '@/lib/formatResponse';
 import { z } from 'zod';
+import { OrderStatus } from '@prisma/client';
 
 // --- Validation schema
 const updateOrderSchema = z.object({
@@ -20,8 +21,11 @@ export const GET = withApiHandler(async (_request, context) => {
   const order = await prisma.customerOrder.findUnique({
     where: { id },
     include: {
-      customer: { select: { id: true, name: true, email: true } },
-      items: { select: { id: true, productName: true, quantity: true, price: true } },
+      // customer: { select: { id: true, name: true, email: true } },
+
+      items: { select: { id: true, marketplaceListing: {
+        select: { id: true, name: true },
+      }, quantity: true, price: true } },
     },
   });
 
@@ -29,7 +33,7 @@ export const GET = withApiHandler(async (_request, context) => {
     return formatResponse(false, null, 'Customer order not found', 404);
   }
 
-  return formatResponse(true, order);
+  return formatResponse(true, order, 'Customer order fetched successfully', 200);
 });
 
 // --- PUT /api/customer-orders/:id
@@ -49,15 +53,17 @@ export const PUT = withApiHandler(async (request, context) => {
   const updatedOrder = await prisma.customerOrder.update({
     where: { id },
     data: {
-      status,
+      status: status as OrderStatus | undefined,
       deliveryStatus,
       deliveryPersonName,
       deliveryPersonContact,
       updatedAt: new Date(),
     },
     include: {
-      customer: { select: { id: true, name: true, email: true } },
-      items: { select: { id: true, productName: true, quantity: true, price: true } },
+      // customer: { select: { id: true, name: true, email: true } },  // Include customer details
+      items: { select: { id: true, marketplaceListing: {
+        select: { id: true, name: true },
+      }, quantity: true, price: true } },
     },
   });
 
