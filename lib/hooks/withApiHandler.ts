@@ -1,12 +1,12 @@
-// /lib/hooks/withApiHandler.ts
-import { verifyAuth } from "@/lib/verifyAuth";
+import { verifyAuth, VerifiedUser } from "@/lib/verifyAuth"; // Import VerifiedUser
 import { enforceRateLimit } from "@/lib/hooks/enforceRateLimit";
 import { handlePrismaError } from "@/lib/hooks/handlePrismaError";
 import { formatResponse } from "@/lib/formatResponse";
 
+// Update the HandlerContext to use the specific VerifiedUser type
 type HandlerContext = {
   params: any;
-  user?: any;
+  user?: VerifiedUser; // Use the imported type here
 };
 
 type HandlerFn = (request: Request, context: HandlerContext) => Promise<Response>;
@@ -18,10 +18,10 @@ interface ApiHandlerOptions {
 
 /**
  * Unified API wrapper with:
- * - Auth (optional)
+ * - Auth (optional) using NextAuth's session cookie
  * - Rate limiting (optional)
  * - Prisma + unexpected error handling
- * - Attaches `user` to context for downstream handlers
+ * - Attaches a typed `user` object to the context for downstream handlers
  */
 export function withApiHandler(
   handler: HandlerFn,
@@ -32,9 +32,10 @@ export function withApiHandler(
       // --- Auth
       if (options.requireAuth) {
         const auth = await verifyAuth(request);
-        if (!auth.success) {
-          return formatResponse(false, null, auth.error, 401);
+        if (!auth.success || !auth.user) { // Also check if auth.user exists
+          return formatResponse(false, null, auth.error || "Unauthorized", 401);
         }
+        // The user object is now strongly typed as VerifiedUser
         context = { ...context, user: auth.user };
       }
 
@@ -45,7 +46,10 @@ export function withApiHandler(
       }
 
       // --- Run actual handler
+      // We need to assert that context.user is defined if auth is required.
+      // The check above ensures this, but TypeScript might not infer it.
       return await handler(request, context);
+      
     } catch (error) {
       return handlePrismaError(error);
     }

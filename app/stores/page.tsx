@@ -13,7 +13,19 @@ import {
 import StoreCard from '@/components/stores/StoreCard';
 import useSWR, { mutate } from 'swr';
 
-const fetcher = (url: string) => fetch(url).then(res => res.json());
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '';
+
+const fetcher = (url: string) => fetch(url).then(async res => {
+
+    if (!res.ok) {
+        throw new Error('Network response was not ok');
+    }
+
+    let resJson = await res.json();
+
+    return resJson.data;
+}   
+);
 
 interface Store {
   id: string;
@@ -120,7 +132,7 @@ export default function StoresPage() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const { data: session, status } = useSession();
     const [store, setStore] = useState<Store | null>(null);
-
+    
     // 2. Initialize hooks to read from and write to the URL
     const router = useRouter();
     const pathname = usePathname();
@@ -131,7 +143,7 @@ export default function StoresPage() {
     const page = parseInt(searchParams.get('page') || '1', 10);
 
     const { data: stores = [], error, isLoading } = useSWR<Store[]>(
-        session?.user?.id ? `/api/stores?userId=${session.user.id}` : null,
+        session?.user?.id ? `${apiBaseUrl}/api/stores?userId=${session.user.id}` : null,
         fetcher
     );
 
@@ -139,7 +151,7 @@ export default function StoresPage() {
     const totalPages = useMemo(() => Math.ceil(stores.length / pageSize), [stores, pageSize]);
     const paginatedStores = useMemo(() => {
         const start = (page - 1) * pageSize;
-        return stores.slice(start, start + pageSize);
+        return stores.length > 0 && stores?.slice(start, start + pageSize);
     }, [stores, page, pageSize]);
 
     // 4. Create a handler that updates the URL when the page changes
@@ -161,9 +173,9 @@ export default function StoresPage() {
         setIsModalOpen(false);
         setIsDeleting(true);
         try {
-            const res = await fetch(`/api/stores/${store.id}`, { method: 'DELETE' });
+            const res = await fetch(`${apiBaseUrl}/api/stores/${store.id}`, { method: 'DELETE' });
             if (!res.ok) throw new Error('Delete failed');
-            mutate(`/api/stores?userId=${session?.user?.id}`);
+            mutate(`${apiBaseUrl}/api/stores?userId=${session?.user?.id}`);
         } catch (err) {
             console.error('Failed to delete store:', err);
         } finally {
@@ -172,7 +184,7 @@ export default function StoresPage() {
         }
     };
 
-    const handleCreate = () => router.push('/stores/create');
+    const handleCreate = () => router.push(`${apiBaseUrl}/stores/create`);
     const isAuthLoading = status === 'loading';
 
     return (
@@ -209,7 +221,7 @@ export default function StoresPage() {
                 ) : (
                     <>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {paginatedStores.map(store => (
+                            {paginatedStores && paginatedStores?.map(store => (
                                 <StoreCard
                                     key={store.id}
                                     {...store}

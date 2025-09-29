@@ -1,26 +1,32 @@
-// app/api/companies/route.ts
 import prisma from "@/server/db/prismadb";
-import { getAuthSession } from "@/lib/auth";
 import { companySchema } from "@/lib/validations/company";
 import { Prisma } from "@prisma/client";
-
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { VerifiedUser } from "@/lib/verifyAuth"; // <-- Import the user type
 
 export const dynamic = "force-dynamic";
+
+// Define a consistent type for the context that our handlers will receive.
+type HandlerContext = {
+  params: any;
+  user?: VerifiedUser; // Use the imported type here
+};
 
 // =======================
 // GET all companies for the authenticated user
 // =======================
-async function getCompanies(req: Request) {
-  const session = await getAuthSession();
-
-  if (!session?.user?.id) {
+async function getCompanies(req: Request, context: HandlerContext) {
+  // No need to check for the user's existence!
+  // The withApiHandler wrapper guarantees that 'context.user' is present.
+  const { user } = context;
+  
+  if (!user) {
     return formatResponse(false, null, "Unauthorized", 401);
   }
 
   const companies = await prisma.company.findMany({
-    where: { userId: session.user.id },
+    where: { userId: user.id },
     orderBy: { createdAt: "asc" },
   });
 
@@ -30,18 +36,19 @@ async function getCompanies(req: Request) {
 // =======================
 // POST a new company
 // =======================
-async function createCompany(req: Request) {
-  const session = await getAuthSession();
-
-  if (!session?.user?.id) {
-    return formatResponse(false, null, "Unauthorized", 401);
-  }
+async function createCompany(req: Request, context: HandlerContext) {
+  // The user is guaranteed to be here as well.
+  const { user } = context;
 
   const body = await req.json();
   const parseResult = companySchema.safeParse(body);
 
   if (!parseResult.success) {
     return formatResponse(false, parseResult.error.errors, "Validation failed", 400);
+  }
+
+  if (!user) {
+    return formatResponse(false, null, "Unauthorized", 401);
   }
 
   const data = parseResult.data;
@@ -72,8 +79,8 @@ async function createCompany(req: Request) {
         stats: data.stats,
         pricingTiers: data.pricingTiers,
 
-        // User link
-        user: { connect: { id: session.user.id } },
+        // User link - using the user ID from the handler's context
+        user: { connect: { id: user.id } },
 
         // Nested One-to-One
         SEO: data.seo ? { create: data.seo } : undefined,
@@ -126,8 +133,8 @@ async function createCompany(req: Request) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
       return formatResponse(false, null, "The slug or domain is already taken.", 409);
     }
-    console.error("❌ Company creation failed:", error);
-    return formatResponse(false, null, "Internal Server Error", 500);
+    
+    throw error;
   }
 }
 
@@ -136,3 +143,4 @@ async function createCompany(req: Request) {
 // =======================
 export const GET = withApiHandler(getCompanies);
 export const POST = withApiHandler(createCompany);
+
