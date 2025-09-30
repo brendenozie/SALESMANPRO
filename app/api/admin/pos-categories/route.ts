@@ -1,8 +1,5 @@
 // app/api/store-categories/route.ts
-import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
-import { v4 as uuidv4 } from "uuid";
-import { verifyAuth } from "@/lib/verifyAuth";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
@@ -18,8 +15,6 @@ type SubcategoryJson = {
 // GET /api/store-categories
 const getStoreCategories = async (request: Request) => {
   
-
-
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
 

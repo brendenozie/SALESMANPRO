@@ -28,7 +28,7 @@ export interface AuthResult {
  * @param request The incoming Request or NextRequest object.
  * @returns An AuthResult object with success status and user payload or an error.
  */
-export async function verifyAuth(request: Request): Promise<AuthResult> {
+export async function verifyAuth(request: Request | NextRequest): Promise<AuthResult> {
   try {
     // The `getToken` helper from `next-auth/jwt` is designed to read and decrypt
     // the JWT stored in the session cookie. It uses the NEXTAUTH_SECRET automatically.

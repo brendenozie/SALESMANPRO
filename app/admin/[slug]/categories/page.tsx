@@ -1,6 +1,8 @@
 import React from 'react';
 import CategoryManagerClient from './CategoryManagerClient';
 import { IStoreCategory } from '@/types/typings';
+import { cookies } from "next/headers";
+
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
@@ -19,22 +21,28 @@ export default async function CategoryManagerPage({ params }: PageProps) {
   const companyId = params.slug;
 
   try {
+    const cookieHeader = cookies().toString();
+
     console.log('Fetching store categories for company:', params.slug);
     const res = await fetch(
       `${apiUrl}/admin/get-store-categories?companyId=${params.slug}`,
-      { cache: 'no-store' }
+      { cache: 'no-store', headers: { Cookie: cookieHeader } },
     );
 
     if (res.ok) {
       console.log(`res.json() for company ${params.slug} categories`);
 
       const resJson = await res.json();
+
+      console.log('resJson:', resJson);
       // Ensure the response has the expected structure
-      if (!resJson || !resJson.results) {
+      if (!resJson || !resJson.data) {
         throw new Error('Invalid response structure');
       }
 
-      const data = resJson.results || resJson.data; // Handle both cases
+      console.log('resJson.results:', resJson.results);
+
+      const data = resJson.results || resJson.data.results || resJson.data; // Handle both cases
       
       storeCategories = data.map((sc: any) => ({
         id: sc.id,

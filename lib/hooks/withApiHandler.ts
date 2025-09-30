@@ -31,10 +31,13 @@ export function withApiHandler(
     try {
       // --- Auth
       if (options.requireAuth) {
+
         const auth = await verifyAuth(request);
+
         if (!auth.success || !auth.user) { // Also check if auth.user exists
           return formatResponse(false, null, auth.error || "Unauthorized", 401);
         }
+        
         // The user object is now strongly typed as VerifiedUser
         context = { ...context, user: auth.user };
       }
