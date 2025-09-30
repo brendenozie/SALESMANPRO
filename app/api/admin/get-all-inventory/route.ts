@@ -42,9 +42,7 @@ async function getInventory(req: Request) {
 
   const items = products.map((p) => {
     // find override category if exists
-    const overrideCat =
-      p.productCategory?.StoreCategory.find((sc) => sc.companyId === p.companyId) ||
-      null;
+    const overrideCat =   p.productCategory?.StoreCategory.find((sc) => sc.companyId === p.companyId) ||      null;
 
     // collect inventory IDs
     const inventoryIds = p.inventoryItems.map((inv) => inv.id);
@@ -72,6 +70,7 @@ async function getInventory(req: Request) {
       longDescription: p.longDescription || '',
       tags: p.tags,
       category: overrideCat,
+      productCategoryId: p.productCategoryId || '',
       subCategory: p.subCategory || null,
       subCategoryName: p.subCategoryName || '',
       brand: p.brand || null,

@@ -647,7 +647,7 @@ export default function AddToProductMarketModal({
           <h2 className="text-xl font-bold">
             {marketListItem ? 'Edit Listing' : 'New Listing'}
           </h2>
-          {!marketListItem && (
+          {!product && (
             <button
               type="button"
               onClick={handleLoadFromProduct}
