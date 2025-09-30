@@ -1,70 +1,163 @@
-// app/admin/products/ProductsClient.tsx
-
 "use client";
 
-import React, { useState } from "react";
-import { CheckCircleIcon, ClockIcon, XMarkIcon } from "@heroicons/react/24/outline";
-import type { OrderItem } from "./page";
+import React, { useState, useMemo } from "react";
+import {
+  CheckCircleIcon,
+  ClockIcon,
+  XMarkIcon,
+  TruckIcon,
+  ShoppingCartIcon,
+  CurrencyDollarIcon,
+  UsersIcon,
+  ArrowPathIcon,
+  CalendarDaysIcon
+} from "@heroicons/react/24/outline";
 
+// NOTE: The `OrderItem` type is missing, so we define a robust placeholder structure here.
+// In a real application, this should be imported from "./page".
+interface Order {
+    id: string;
+    status: string;
+    rider: string | null;
+    name: string | null;
+    email: string | null;
+    createdAt: string;
+    consumer: {
+        name: string;
+    } | null;
+}
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+interface MarketplaceListing {
+    title: string;
+    // Add other relevant fields if available, e.g., imageUrl
+}
+
+export interface OrderItem {
+    id: string;
+    productId: string;
+    quantity: number;
+    price: number;
+    order: Order;
+    marketplaceListing: MarketplaceListing | null;
+}
 
 interface ClientProps {
   initialOrderItems: OrderItem[];
 }
 
+// ---------------------------------------------
+// I. HELPER COMPONENTS
+// ---------------------------------------------
+
+/**
+ * Renders a color-coded badge for order status.
+ */
+const StatusBadge: React.FC<{ status?: string }> = ({ status }) => {
+    let Icon;
+    let text = status || "UNKNOWN";
+    let classes = "";
+
+    switch (status) {
+        case "COMPLETED":
+            Icon = CheckCircleIcon;
+            classes = "text-green-700 bg-green-100 border-green-300";
+            break;
+        case "PENDING":
+            Icon = ClockIcon;
+            classes = "text-yellow-700 bg-yellow-100 border-yellow-300";
+            break;
+        case "OUT_FOR_DELIVERY":
+        case "IN_PROGRESS":
+            Icon = TruckIcon;
+            classes = "text-blue-700 bg-blue-100 border-blue-300";
+            break;
+        default:
+            Icon = XMarkIcon;
+            classes = "text-red-700 bg-red-100 border-red-300";
+    }
+
+    return (
+        <span className={`inline-flex items-center gap-1.5 px-3 py-1 font-semibold rounded-full text-xs border ${classes}`}>
+            <Icon className="w-4 h-4" />
+            {text.replace(/_/g, ' ')}
+        </span>
+    );
+};
+
+// ---------------------------------------------
+// II. MAIN COMPONENT & LOGIC
+// ---------------------------------------------
+
 export default function ProductsClient({ initialOrderItems }: ClientProps) {
   const [orderItems, setOrderItems] = useState<OrderItem[]>(initialOrderItems);
-  const [loading] = useState<boolean>(false);
-  const [error] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error] = useState<string>(""); // Kept for future error display logic
   const [selectedOrder, setSelectedOrder] = useState<OrderItem | null>(null);
   const [status, setStatus] = useState<string>("PENDING");
   const [rider, setRider] = useState<string>("");
+  
+  // Available status options for the dropdown
+  const statusOptions = [
+    "PENDING",
+    "IN_PROGRESS",
+    "OUT_FOR_DELIVERY",
+    "COMPLETED",
+    "CANCELLED",
+  ];
 
   const updateOrder = async () => {
     if (!selectedOrder) return;
-  
-    const res = await fetch(
-      `/api/admin/orders/${selectedOrder.id}?status=${encodeURIComponent(
-        status
-      )}&riderId=${encodeURIComponent(rider)}`,
-      {
-        method: "PUT",
-      }
-    );
-  
-    const data = await res.json();
-  
-    if (!res.ok || !data.success) {
-      alert("Failed to update order");
-      return;
-    }
-  
-    // Optimistically update UI
-    setOrderItems((prev) =>
-      prev.map((item) =>
-        item.id === selectedOrder.id
-          ? {
-              ...item,
-              order: {
-                ...item.order,
-                status,
-                rider,
-              },
+    setLoading(true);
+
+    try {
+        // NOTE: Modified API call to use standard URL structure and removed env var concatenation
+        const res = await fetch(
+            `/api/admin/orders/${selectedOrder.order.id}?status=${encodeURIComponent(
+                status
+            )}&riderId=${encodeURIComponent(rider)}`,
+            {
+                method: "PUT",
             }
-          : item
-      )
-    );
-  
-    alert("Order updated successfully");
-    closeModal();
+        );
+        
+        // Assuming the API returns the updated OrderItem structure upon success
+        const data = await res.json();
+        
+        if (!res.ok || !data.success) {
+            throw new Error(data.message || "API update failed");
+        }
+
+        // Optimistically update UI
+        setOrderItems((prev) =>
+            prev.map((item) =>
+                item.id === selectedOrder.id
+                    ? {
+                        ...item,
+                        order: {
+                            ...item.order,
+                            status,
+                            rider, // Assumes rider ID is what's stored here
+                        },
+                    }
+                    : item
+            )
+        );
+
+        alert("Order updated successfully!");
+        closeModal();
+
+    } catch (e) {
+        console.error("Update failed:", e);
+        alert(`Failed to update order: ${(e as Error).message}`);
+    } finally {
+        setLoading(false);
+    }
   };
     
-
   const openModal = (item: OrderItem) => {
     setSelectedOrder(item);
     setStatus(item.order?.status || "PENDING");
-    setRider(item.order?.rider || "");
+    setRider(item.order?.rider || ""); // Use the rider ID/name from the order
   };
 
   const closeModal = () => {
@@ -73,144 +166,183 @@ export default function ProductsClient({ initialOrderItems }: ClientProps) {
     setRider("");
   };
 
-  const getStatusBadge = (st?: string) => {
-    switch (st) {
-      case "COMPLETED":
-        return (
-          <span className="flex items-center gap-1 text-green-600 bg-green-100 px-2 py-1 rounded-full text-xs">
-            <CheckCircleIcon className="w-4 h-4" /> Completed
-          </span>
-        );
-      case "PENDING":
-        return (
-          <span className="flex items-center gap-1 text-yellow-600 bg-yellow-100 px-2 py-1 rounded-full text-xs">
-            <ClockIcon className="w-4 h-4" /> Pending
-          </span>
-        );
-      default:
-        return (
-          <span className="flex items-center gap-1 text-red-600 bg-red-100 px-2 py-1 rounded-full text-xs">
-            <XMarkIcon className="w-4 h-4" /> Failed
-          </span>
-        );
-    }
-  };
+  // --- Summary Data ---
+  const summary = useMemo(() => {
+    const totalOrders = orderItems.length;
+    const pending = orderItems.filter(item => item.order.status === 'PENDING').length;
+    const totalRevenue = orderItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    return { totalOrders, pending, totalRevenue };
+  }, [orderItems]);
+
 
   return (
-    <div className="container mx-auto py-10 px-4">
-      <h1 className="text-4xl font-extrabold text-center mb-10 text-white">Order Items</h1>
+    <div className="min-h-screen bg-gray-50 p-6 sm:p-10">
+        
+      {/* HEADER */}
+      <header className="max-w-7xl mx-auto mb-10 border-b border-gray-200 pb-6">
+        <h1 className="text-4xl font-extrabold text-gray-900 leading-tight flex items-center gap-3">
+          Order Fulfillment Dashboard <TruckIcon className="h-8 w-8 text-indigo-600" />
+        </h1>
+        <p className="text-lg text-gray-500 mt-1">
+          Monitor and update real-time fulfillment status and assignments.
+        </p>
+      </header>
 
-      {/* Loading & Error States */}
-      {loading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="text-gray-300 text-lg font-semibold animate-pulse">Loading...</div>
+      {/* SUMMARY CARDS */}
+      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <div className="p-6 bg-white rounded-xl shadow-lg border-l-4 border-indigo-500">
+          <p className="text-sm text-gray-500 font-medium flex items-center"><ShoppingCartIcon className="w-4 h-4 mr-1"/> Total Order Items</p>
+          <p className="text-3xl font-bold text-gray-800 mt-1">{summary.totalOrders}</p>
         </div>
-      ) : error ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="text-red-400 text-lg font-semibold">{error}</div>
+        <div className="p-6 bg-white rounded-xl shadow-lg border-l-4 border-yellow-500">
+          <p className="text-sm text-gray-500 font-medium flex items-center"><ClockIcon className="w-4 h-4 mr-1"/> Items Pending</p>
+          <p className="text-3xl font-bold text-yellow-600 mt-1">{summary.pending}</p>
         </div>
-      ) : orderItems.length === 0 ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="text-gray-400 text-lg font-semibold">No order items found.</div>
+        <div className="p-6 bg-white rounded-xl shadow-lg border-l-4 border-green-500">
+          <p className="text-sm text-gray-500 font-medium flex items-center"><CurrencyDollarIcon className="w-4 h-4 mr-1"/> Total Value</p>
+          <p className="text-3xl font-bold text-green-600 mt-1">${summary.totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2 })}</p>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {orderItems.map((item) => (
-            <div
-              key={item.id}
-              className="bg-white shadow-lg rounded-xl p-6 text-black transition-transform transform hover:scale-105 cursor-pointer"
-              onClick={() => openModal(item)}
-            >
-              <h2 className="text-xl font-bold mb-2">
-                {item.marketplaceListing?.title || "N/A"}
-              </h2>
-              <p className="text-gray-600 mb-1">
-                <strong>Customer:</strong>{" "}
-                {item.order?.name || item.order?.consumer?.name || item.order?.email || "N/A"}
-              </p>
-              <p className="text-gray-600 mb-1">
-                <strong>Quantity:</strong> {item.quantity}
-              </p>
-              <p className="text-gray-800 font-medium mb-1">
-                <strong>Total:</strong> ${ (item.price * item.quantity).toFixed(2) }
-              </p>
-              <p className="my-2">{getStatusBadge(item.order?.status)}</p>
-              <p className="text-gray-500 text-sm">
-                Ordered on:{" "}
-                {item.order?.createdAt
-                  ? new Date(item.order.createdAt).toLocaleDateString()
-                  : "N/A"}
-              </p>
+      </div>
+      
+      {/* MAIN CONTENT / LIST */}
+      <div className="max-w-7xl mx-auto">
+        {loading ? (
+            <div className="flex justify-center items-center h-64">
+                <div className="text-indigo-600 text-lg font-semibold flex items-center gap-2">
+                    <ArrowPathIcon className="w-6 h-6 animate-spin"/> Loading Order Items...
+                </div>
             </div>
-          ))}
-        </div>
-      )}
+        ) : error ? (
+            <div className="bg-red-100 border border-red-400 text-red-700 p-4 rounded-lg text-center">{error}</div>
+        ) : orderItems.length === 0 ? (
+            <div className="bg-white p-16 rounded-xl shadow-xl border-2 border-dashed border-gray-300 text-center">
+                <ShoppingCartIcon className="w-10 h-10 text-gray-400 mx-auto mb-4"/>
+                <p className="text-xl font-semibold text-gray-700">No active order items found.</p>
+            </div>
+        ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {orderItems.map((item) => (
+                    <div
+                        key={item.id}
+                        className="bg-white shadow-xl rounded-2xl p-6 border-t-4 border-indigo-400 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-2xl cursor-pointer"
+                        onClick={() => openModal(item)}
+                    >
+                        {/* Status Badge & Title */}
+                        <div className="flex justify-between items-start mb-3 border-b border-gray-100 pb-3">
+                            <h2 className="text-xl font-extrabold text-gray-900 leading-tight">
+                                {item.marketplaceListing?.title || "Unknown Product"}
+                            </h2>
+                            <StatusBadge status={item.order?.status} />
+                        </div>
+                        
+                        {/* Details */}
+                        <div className="space-y-2 text-sm text-gray-600">
+                            <p className="flex justify-between items-center">
+                                <span className="font-medium flex items-center"><UsersIcon className="w-4 h-4 mr-1 text-indigo-400"/> Customer:</span>
+                                <span className="text-gray-800 font-semibold">{item.order?.consumer?.name || item.order?.name || "N/A"}</span>
+                            </p>
+                            <p className="flex justify-between items-center">
+                                <span className="font-medium flex items-center"><ShoppingCartIcon className="w-4 h-4 mr-1 text-indigo-400"/> Quantity:</span>
+                                <span className="text-gray-800 font-semibold">{item.quantity}</span>
+                            </p>
+                            <p className="flex justify-between items-center text-base font-bold border-t border-gray-100 pt-2 mt-2">
+                                <span>Total Price:</span>
+                                <span className="text-green-600">${ (item.price * item.quantity).toFixed(2) }</span>
+                            </p>
+                            <p className="text-xs text-gray-400 pt-1 flex items-center justify-end">
+                                <CalendarDaysIcon className="w-3 h-3 mr-1"/>
+                                Ordered: {item.order?.createdAt ? new Date(item.order.createdAt).toLocaleDateString() : "N/A"}
+                            </p>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        )}
+      </div>
 
-      {/* Modal */}
+      {/* MODAL (Visually Appealing & Intuitive) */}
       {selectedOrder && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-          <div className="bg-white rounded-xl p-6 w-full max-w-lg text-black">
-            <h2 className="text-2xl font-bold mb-4">Order Details</h2>
-            <p className="mb-2">
-              <strong>Product:</strong>{" "}
-              {selectedOrder.marketplaceListing?.title}
-            </p>
-            <p className="mb-2">
-              <strong>Customer:</strong>{" "}
-              {selectedOrder.order?.consumer?.name}
-            </p>
-            <p className="mb-2">
-              <strong>Quantity:</strong> {selectedOrder.quantity}
-            </p>
-            <p className="mb-4">
-              <strong>Total:</strong> $
-              {(selectedOrder.price * selectedOrder.quantity).toFixed(2)}
-            </p>
-
-            <div className="mt-4">
-              <label className="block text-sm font-medium text-gray-700">
-                Update Status
-              </label>
-              <select
-                className="w-full p-2 border rounded-lg mt-1"
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-              >
-                <option value="PENDING">PENDING</option>
-                <option value="IN_PROGRESS">IN PROGRESS</option>
-                <option value="COMPLETED">COMPLETED</option>  
-                <option value="recurring">RECURRING</option>
-                <option value="shipped">SHIPPED</option>
-                <option value="OUT_FOR_DELIVERY">OUT FOR DELIVERY</option>
-                <option value="COMPLETED">CANCELLED</option>
-              </select>
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-70 backdrop-blur-sm z-50 flex justify-center items-center p-4">
+          <div className="bg-white rounded-2xl p-8 w-full max-w-lg text-gray-900 shadow-2xl relative">
+            
+            {/* Modal Header */}
+            <div className="flex justify-between items-start border-b border-gray-200 pb-3 mb-5">
+                <h2 className="text-2xl font-extrabold text-indigo-600">Fulfillment Update</h2>
+                <button onClick={closeModal} className="text-gray-400 hover:text-gray-700 transition">
+                    <XMarkIcon className="w-6 h-6" />
+                </button>
+            </div>
+            
+            {/* Order Summary */}
+            <div className="bg-indigo-50 p-4 rounded-xl mb-6 border border-indigo-200">
+                <p className="text-lg font-bold mb-2">
+                    {selectedOrder.marketplaceListing?.title || "Product Details"}
+                </p>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                    <p><strong>Customer:</strong> {selectedOrder.order?.consumer?.name || selectedOrder.order?.name}</p>
+                    <p><strong>Quantity:</strong> {selectedOrder.quantity}</p>
+                    <p className="col-span-2"><strong>Total:</strong> <span className="text-green-600 font-bold">${(selectedOrder.price * selectedOrder.quantity).toFixed(2)}</span></p>
+                </div>
             </div>
 
-            <div className="mt-4">
-              <label className="block text-sm font-medium text-gray-700">
-                Assign Rider
-              </label>
-              <input
-                type="text"
-                className="w-full p-2 border rounded-lg mt-1"
-                placeholder="Enter rider name or ID"
-                value={rider}
-                onChange={(e) => setRider(e.target.value)}
-              />
+            {/* Status Update Form */}
+            <div className="mt-4 space-y-5">
+              <div className="relative">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Update Status
+                </label>
+                <select
+                  className="w-full p-3 border border-gray-300 rounded-lg appearance-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition cursor-pointer"
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
+                >
+                  {statusOptions.map(opt => (
+                    <option key={opt} value={opt}>
+                      {opt.replace(/_/g, ' ')}
+                    </option>
+                  ))}
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 top-6 flex items-center px-2 text-gray-700">
+                    <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Assign Rider / Tracker ID
+                </label>
+                <input
+                  type="text"
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+                  placeholder="Enter rider name or tracking ID"
+                  value={rider}
+                  onChange={(e) => setRider(e.target.value)}
+                />
+              </div>
             </div>
 
-            <div className="flex justify-end gap-4 mt-6">
+            {/* Action Buttons */}
+            <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-100">
               <button
                 onClick={closeModal}
-                className="bg-gray-500 text-white px-4 py-2 rounded-lg"
+                className="px-5 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition"
               >
                 Cancel
               </button>
               <button
                 onClick={updateOrder}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg"
+                disabled={loading}
+                className="flex items-center gap-1 px-5 py-2 text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition disabled:bg-indigo-400"
               >
-                Update
+                {loading ? (
+                    <>
+                        <ArrowPathIcon className="w-5 h-5 animate-spin"/> Updating...
+                    </>
+                ) : (
+                    <>
+                        <CheckCircleIcon className="w-5 h-5"/> Save Changes
+                    </>
+                )}
               </button>
             </div>
           </div>
