@@ -23,24 +23,19 @@ export default async function CategoryManagerPage({ params }: PageProps) {
   try {
     const cookieHeader = cookies().toString();
 
-    console.log('Fetching store categories for company:', params.slug);
     const res = await fetch(
       `${apiUrl}/admin/get-store-categories?companyId=${params.slug}`,
       { cache: 'no-store', headers: { Cookie: cookieHeader } },
     );
 
     if (res.ok) {
-      console.log(`res.json() for company ${params.slug} categories`);
-
+      
       const resJson = await res.json();
 
-      console.log('resJson:', resJson);
       // Ensure the response has the expected structure
       if (!resJson || !resJson.data) {
         throw new Error('Invalid response structure');
       }
-
-      console.log('resJson.results:', resJson.results);
 
       const data = resJson.results || resJson.data.results || resJson.data; // Handle both cases
       
@@ -97,7 +92,7 @@ export default async function CategoryManagerPage({ params }: PageProps) {
           image: sc.category.image,
         },
       }));
-      console.log('Fetched store categories:', storeCategories);
+      
     } else {
       console.error('Failed to fetch store categories', res.status, res.statusText);
     }
