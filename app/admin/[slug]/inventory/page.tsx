@@ -2,17 +2,10 @@
 
 import React from "react";
 import AdminInventoryClient, { InventoryItem } from "./AdminInventoryClient";
-import { IStoreCategory, ProductForm } from "@/types/typings";
+import { IStoreCategory } from "@/types/typings";
+import { cookies } from "next/headers";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
-
-
-type Tag = {
-  id: string;
-  name: string;
-  image: string;
-  status: string;
-};
 
 type Agent = {
   id: string;
@@ -38,54 +31,53 @@ export default async function AdminInventoryPage({ params }: Props) {
   let agentsData: Agent[] = [];
 
   try {
+    const cookieHeader = await cookies().toString();
+
     // Fetch all products for this company
     const productsRes = await fetch(`${apiUrl}/admin/get-all-inventory?companyId=${encodeURIComponent(companyId)}`,
-      { cache: "no-store" } // equivalent to SSR on every request
+      { cache: "no-store", headers: { Cookie: cookieHeader } } // equivalent to SSR on every request
     );
 
     if (productsRes.ok) {
-      productsData = (await productsRes.json()).data as InventoryItem[];
+      let prodeuctR = (await productsRes.json());
+
+      productsData = Array.isArray(prodeuctR.data.results) ? prodeuctR.data.results : [];
+
     }
 
     // Fetch all categories for this company
     const categoriesRes = await fetch(`${apiUrl}/admin/get-store-categories?companyId=${encodeURIComponent(companyId )}`,
-      { cache: "no-store" }
+      { cache: "no-store", headers: { Cookie: cookieHeader } } // equivalent to SSR on every request
     );
 
     if (categoriesRes.ok) {
-          const { results } = await categoriesRes.json() as { results: IStoreCategory[] };
-          categoriesData = Array.isArray(results) ? results : [];
+          const { data } = await categoriesRes.json() as { data: { results: IStoreCategory[] } };
+          categoriesData = Array.isArray(data.results) ? data.results : [];
     }
 
     // Fetch all agents for this company
-    const agentsRes = await fetch(
-      `${apiUrl}/admin/get-all-inventory-agents?companyId=${encodeURIComponent(companyId)}`,
-      { cache: "no-store" }
-    );
-    if (agentsRes.ok) {
-      agentsData = (await agentsRes.json()) as Agent[];
-    }
+    // const agentsRes = await fetch(
+    //   `${apiUrl}/admin/get-all-inventory-agents?companyId=${encodeURIComponent(companyId)}`,
+    //   { cache: "no-store", headers: { Cookie: cookieHeader } } // equivalent to SSR on every request
+    // );
+    // if (agentsRes.ok) {
+    //   agentsData = (await agentsRes.json()).data as Agent[];
+    // }
 
-    // Sanity check: ensure arrays
-    if (!Array.isArray(productsData)) {
-      throw new Error("Products API response is not an array.");
-    }
-    if (!Array.isArray(categoriesData)) {
-      throw new Error("Categories API response is not an array.");
-    }
-    if (!Array.isArray(agentsData)) {
-      throw new Error("Agents API response is not an array.");
-    }
+    // // Sanity check: ensure arrays
+    // if (!Array.isArray(productsData)) {
+    //   throw new Error("Products API response is not an array.");
+    // }
+    // if (!Array.isArray(categoriesData)) {
+    //   throw new Error("Categories API response is not an array.");
+    // }
+    // if (!Array.isArray(agentsData)) {
+    //   throw new Error("Agents API response is not an array.");
+    // }
   } catch (err: any) {
     console.error("AdminInventoryPage-fetch error:", err.message);
     // We simply proceed with empty arrays if something fails.
   }
-
-
-  console.log(productsData);
-  // console.log(categoriesData);
-  // console.log(agentsData);
-
 
   return (
     <AdminInventoryClient

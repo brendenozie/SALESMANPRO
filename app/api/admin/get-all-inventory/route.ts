@@ -141,9 +141,9 @@ async function getInventory(req: Request) {
       usageInstructions: p.usageInstructions || '',
       expirationDate: p.expirationDate?.toISOString() || null,
       // real-estate
-      bedrooms: p.bedrooms || {},
-      studios: p.studios || {},
-      bathrooms: p.bathrooms || 0,
+      bedrooms: p.bedrooms || [],
+      studios: p.studios || [],
+      bathrooms: p.bathrooms || "0",
       area: p.area || '',
       propertyTypeId: p.propertyTypeId || '',
       serviceSchedule: p.serviceSchedule || '',
@@ -174,9 +174,9 @@ async function getInventory(req: Request) {
       id: p.id,
       name: p.name,
       companyId: p.companyId,
-      inventoryIds,
-      companyStock,
-      agentStock,
+      inventoryIds: [], // inventoryIds,
+      companyStock: 0, // companyStock,
+      agentStock: 0, // agentStock,
       sales: 0, // Placeholder, sales calculation isn't present in original
       productItem,
       category: overrideCat,
@@ -188,7 +188,7 @@ async function getInventory(req: Request) {
   // Return the raw data structure. `withApiHandler` handles wrapping this in a NextResponse.json.
   
     return formatResponse(true, {
-              data: items,
+              results:items,
               paging: { page, limit, total: items.length }, // Note: `total` here is the count of items in the *current page*
             }, 'Sales agents fetched successfully', 200);
 }

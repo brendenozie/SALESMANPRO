@@ -14,6 +14,7 @@ import { CATEGORY_STEPS } from '@/constant/CATEGORY_STEPS';
 import { FORM_COMPONENTS } from '@/constant/FORM_COMPONENTS';
 import { STEP_LABELS } from '@/constant/STEP_LABELS';
 import CategoryPicker from './CategoryPicker';
+// import { cookies } from "next/headers";
 
 // Assuming ProductForm, StoreCategory, ProductCategory, BookingSlotType are defined in typings.ts
 import { ProductForm, IStoreCategory } from '@/types/typings'; 
@@ -42,11 +43,13 @@ export interface BookingSlotType {
 // 2) Helpers: upload & payload
 ////////////////////////////////////////////////////////////////////////////////
 async function uploadFiles(files: File[], type: 'image' | 'video'): Promise<string[]> {
+  // const cookieStore = cookies();
   const uploads = files.map((file) => {
     const fd = new FormData();
     fd.append('type', type);
     fd.append('file', file);
-    return fetch('/api/upload', { method: 'POST', body: fd })
+    return fetch('/api/upload', 
+      { method: 'POST', body: fd , headers: { Cookie: cookieStore.toString() } })
       .then((res) => {
         if (!res.ok) throw new Error('Upload failed');
         return res.json();
@@ -363,6 +366,7 @@ export default function AddProductModal({
   companyId,
   categories,
 }: AddProductModalProps) {
+  // const cookieStore = cookies();
   const { formData, updateField } = useProductForm(product, companyId);
   
   const [step, setStep] = useState(1);
@@ -395,7 +399,6 @@ export default function AddProductModal({
     [formData.category]
   );
 
-  
   const lastStepIndex = stepsForCategory.length;
   const isFirstStep   = step === 1;
   const isLastStep    = step === lastStepIndex;
@@ -425,6 +428,7 @@ export default function AddProductModal({
 
   // Submit
   const handleSave = async () => {
+    // const cookieStore = cookies();
     if (!window.confirm('Save this product?')) return;
     setLoading(true);
     try {
@@ -435,7 +439,7 @@ export default function AddProductModal({
 
       const res = await fetch(`${apiUrl}/admin/post-product`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', credentials: 'include', },
         body: JSON.stringify(payload),
       });
       if (!res.ok) throw new Error(res.statusText);
@@ -503,8 +507,8 @@ export default function AddProductModal({
                 setFormData={updateField as any}
                 handleInputChange={handleInputChange}
                 filteredSubCategories={
-                  formData.category?.items.length
-                    ? formData.category.items
+                  formData.category?.subcategories.length
+                    ? formData.category.subcategories
                     : formData.category?.category?.subcategories ?? []
                 }
                 filteredBrands={filteredBrands /* from your memo for later steps */}

@@ -1,13 +1,11 @@
 // app/api/product/route.ts
 import prisma from "@/server/db/prismadb";
-import { verifyAuth } from "@/lib/verifyAuth";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
+
 // POST or PUT /api/product
 async function handlePost(req: Request) {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
   const body = await req.json();
   const {
@@ -169,10 +167,8 @@ async function handlePost(req: Request) {
   const parsedYear = year != null ? parseInt(year as any, 10) : null;
   const parsedBathrooms =
     bathrooms != null ? parseInt(bathrooms as any, 10) : null;
-  const parsedBedrooms =
-    bedrooms != null ? parseInt(bedrooms as any, 10) : null;
-  const parsedStudios =
-    studios != null ? parseInt(studios as any, 10) : null;
+  const parsedBedrooms =  bedrooms != null ? bedrooms: null;
+  const parsedStudios =  studios != null ? studios : null;
   const parsedLatitude =
     latitude != null ? parseFloat(latitude as any) : null;
   const parsedLongitude =
@@ -211,131 +207,245 @@ async function handlePost(req: Request) {
     : null;
 
   // Construct upsert data
-  const data: any = {
-    company: { connect: { id: companyId } },
-    name,
-    description: description || null,
-    longDescription: parsedLongDesc,
-    tags: parsedTags,
-    images: parsedImages,
-    video: video || null,
-    productCategory: productCategoryId
-      ? { connect: { id: productCategoryId } }
-      : undefined,
-    category: rawCategory?.displayName || null,
-    subCategory,
-    subCategoryName,
-    quantity: parsedQuantity,
-    costPrice: parsedCostPrice,
-    sellingPrice: parsedSellingPrice,
-    finalPrice: parsedFinalPrice,
-    profitMargin: parsedProfitMargin,
-    discount: parsedDiscount,
-    pricingTiers: parsedPricingTiers,
-    isOnOffer: !!isOnOffer,
-    isFlashDeal: !!isFlashDeal,
-    isDiscounted: !!isDiscounted,
-    isNewArrival: !!isNewArrival,
-    isFeatured: !!isFeatured,
-    startDealDate: parsedStartDealDate,
-    endDealDate: parsedEndDealDate,
-    brand: brand || null,
-    model: model || null,
-    color: parsedColor,
-    size: parsedSize,
-    weight: weight || null,
-    condition: condition || null,
-    dimensions: dimensions || null,
-    material: parsedMaterial,
-    // Vehicle
-    year: parsedYear,
-    make: make || null,
-    trim: trim || null,
-    type: type || null,
-    mileage: mileage || null,
-    engineType: engineType || null,
-    engineSize: parsedEngineSize,
-    horsepower: parsedHorsepower,
-    torque: parsedTorque,
-    fuelType: fuelType || null,
-    fuelEconomy: fuelEconomy || null,
-    transmission: transmission || null,
-    drivetrain: drivetrain || null,
-    vin: vin || null,
-    logbookStatus: logbookStatus || null,
-    serviceHistory: serviceHistory || null,
-    negotiable: !!negotiable,
-    financingAvailable: !!financingAvailable,
-    tradeIn: !!tradeIn,
-    features: parsedFeatures,
-    previousOwners,
-    tireCondition: tireCondition || null,
-    accidentalHistory: !!accidentalHistory,
-    // Book
-    author: author || null,
-    publisher: publisher || null,
-    isbn: isbn || null,
-    // Fashion
-    fabricComposition: fabricComposition || null,
-    careInstructions: careInstructions || null,
-    // Appliance
-    energyRating: energyRating || null,
-    warrantyPeriod: warrantyPeriod || null,
-    applianceDimensions: applianceDimensions || null,
-    // Beauty
-    ingredients: ingredients || null,
-    usageInstructions: usageInstructions || null,
-    expirationDate: parsedExpirationDate,
-    // Property
-    propertyType: propertyTypeId
-      ? { connect: { id: propertyTypeId } }
-      : undefined,
-    bathrooms: parsedBathrooms,
-    area: area || null,
-    bedrooms: parsedBedrooms,
-    studios: parsedStudios,
-    serviceSchedule: serviceSchedule || null,
-    availabilityStart: parsedAvailabilityStart,
-    availabilityEnd: parsedAvailabilityEnd,
-    // Location & contact
-    location: location || null,
-    locationName: locationName || null,
-    latitude: parsedLatitude,
-    longitude: parsedLongitude,
-    contact: contact || null,
-    contactName: contactName || null,
-    email: email || null,
-    locationId: locationId || undefined,
-    // Marketplace & fulfillment
-    delivery: !!delivery,
-    paymentOption: paymentOption || "AT SHOP",
-    showOnGhuba: !!showOnGhuba,
-    digitalUrl: digitalUrl || null,
-    autoDeliver: !!autoDeliver,
-    hourlyRate: parsedHourlyRate,
-    minimumHours: parsedMinimumHours,
-    minNoticePeriod: minNoticePeriod || null,
-    maxBookingAhead: maxBookingAhead || null,
-    totalCapacity: parsedTotalCapacity,
-    deliveryMethod: deliveryMethod || null,
-    fulfillmentStatus: fulfillmentStatus || null,
-    providerRating: parsedProviderRating,
-    bookingSlots: parsedBookingSlots,
-    collection: collectionId
-      ? { connect: { id: collectionId } }
-      : undefined,
-    status: status || "ACTIVE",
-    tax: tax != null ? parseFloat(tax as any) : 0,
-    shippingCost: shippingCost != null ? parseFloat(shippingCost as any) : 0,
-    updatedAt: new Date(),
-  };
-
+  // const data : any = 
   // Create or update
   const product = id
-    ? await prisma.product.update({ where: { id }, data })
-    : await prisma.product.create({
-        data: { ...data, createdAt: new Date() },
-      });
+    ? await prisma.product.update({ where: { id }, 
+      data:{
+          company: { connect: { id: companyId } },
+          name,
+          description: description || null,
+          longDescription: parsedLongDesc,
+          tags: parsedTags,
+          images: parsedImages,
+          video: video || null,
+          productCategory: productCategoryId
+            ? { connect: { id: productCategoryId } }
+            : undefined,
+          category: rawCategory?.displayName || null,
+          subCategory,
+          subCategoryName,
+          quantity: parsedQuantity,
+          costPrice: parsedCostPrice,
+          sellingPrice: parsedSellingPrice,
+          finalPrice: parsedFinalPrice,
+          profitMargin: parsedProfitMargin,
+          discount: parsedDiscount,
+          pricingTiers: parsedPricingTiers,
+          isOnOffer: !!isOnOffer,
+          isFlashDeal: !!isFlashDeal,
+          isDiscounted: !!isDiscounted,
+          isNewArrival: !!isNewArrival,
+          isFeatured: !!isFeatured,
+          startDealDate: parsedStartDealDate,
+          endDealDate: parsedEndDealDate,
+          brand: brand || null,
+          model: model || null,
+          color: parsedColor,
+          size: parsedSize,
+          weight: weight || null,
+          condition: condition || null,
+          dimensions: dimensions || null,
+          material: parsedMaterial,
+          // Vehicle
+          year: parsedYear,
+          make: make || null,
+          trim: trim || null,
+          type: type || null,
+          mileage: mileage || null,
+          engineType: engineType || null,
+          engineSize: parsedEngineSize,
+          horsepower: parsedHorsepower,
+          torque: parsedTorque,
+          fuelType: fuelType || null,
+          fuelEconomy: fuelEconomy || null,
+          transmission: transmission || null,
+          drivetrain: drivetrain || null,
+          vin: vin || null,
+          logbookStatus: logbookStatus || null,
+          serviceHistory: serviceHistory || null,
+          negotiable: !!negotiable,
+          financingAvailable: !!financingAvailable,
+          tradeIn: !!tradeIn,
+          features: parsedFeatures,
+          previousOwners,
+          tireCondition: tireCondition || null,
+          accidentalHistory: !!accidentalHistory,
+          // Book
+          author: author || null,
+          publisher: publisher || null,
+          isbn: isbn || null,
+          // Fashion
+          fabricComposition: fabricComposition || null,
+          careInstructions: careInstructions || null,
+          // Appliance
+          energyRating: energyRating || null,
+          warrantyPeriod: warrantyPeriod || null,
+          applianceDimensions: applianceDimensions || null,
+          // Beauty
+          ingredients: ingredients || null,
+          usageInstructions: usageInstructions || null,
+          expirationDate: parsedExpirationDate,
+          // Property
+          propertyType: propertyTypeId
+            ? { connect: { id: propertyTypeId } }
+            : undefined,
+          bathrooms: parsedBathrooms != null ? String(parsedBathrooms) : null,
+          area: area || null,
+          bedrooms: parsedBedrooms !== null && parsedBedrooms !== undefined ? [parsedBedrooms] : undefined,
+          studios: parsedStudios !== null && parsedStudios !== undefined ? [parsedStudios] : undefined,
+          serviceSchedule: serviceSchedule || null,
+          availabilityStart: parsedAvailabilityStart,
+          availabilityEnd: parsedAvailabilityEnd,
+          // Location & contact
+          location: location || null,
+          locationName: locationName || null,
+          latitude: parsedLatitude,
+          longitude: parsedLongitude,
+          contact: contact || null,
+          contactName: contactName || null,
+          email: email || null,
+          locationId: locationId || undefined,
+          // Marketplace & fulfillment
+          delivery: !!delivery,
+          paymentOption: paymentOption || "AT SHOP",
+          showOnGhuba: !!showOnGhuba,
+          digitalUrl: digitalUrl || null,
+          autoDeliver: !!autoDeliver,
+          hourlyRate: parsedHourlyRate,
+          minimumHours: parsedMinimumHours,
+          minNoticePeriod: minNoticePeriod || null,
+          maxBookingAhead: maxBookingAhead || null,
+          totalCapacity: parsedTotalCapacity,
+          deliveryMethod: deliveryMethod || null,
+          fulfillmentStatus: fulfillmentStatus || null,
+          providerRating: parsedProviderRating,
+          bookingSlots: parsedBookingSlots,
+          Collection: collectionId ? { connect: { id: collectionId } } : undefined,
+          status: status || "ACTIVE",
+          tax: tax != null ? parseFloat(tax as any) : 0,
+          shippingCost: shippingCost != null ? parseFloat(shippingCost as any) : 0,
+          updatedAt: new Date(),
+        }
+      })
+    : await prisma.product.create(
+      {  data:{
+              company: { connect: { id: companyId } },
+          name,
+          description: description || null,
+          longDescription: parsedLongDesc,
+          tags: parsedTags,
+          images: parsedImages,
+          video: video || null,
+          productCategory: productCategoryId
+            ? { connect: { id: productCategoryId } }
+            : undefined,
+          category: rawCategory?.displayName || null,
+          subCategory,
+          subCategoryName,
+          quantity: parsedQuantity,
+          costPrice: parsedCostPrice,
+          sellingPrice: parsedSellingPrice,
+          finalPrice: parsedFinalPrice,
+          profitMargin: parsedProfitMargin,
+          discount: parsedDiscount,
+          pricingTiers: parsedPricingTiers,
+          isOnOffer: !!isOnOffer,
+          isFlashDeal: !!isFlashDeal,
+          isDiscounted: !!isDiscounted,
+          isNewArrival: !!isNewArrival,
+          isFeatured: !!isFeatured,
+          startDealDate: parsedStartDealDate,
+          endDealDate: parsedEndDealDate,
+          brand: brand || null,
+          model: model || null,
+          color: parsedColor,
+          size: parsedSize,
+          weight: weight || null,
+          condition: condition || null,
+          dimensions: dimensions || null,
+          material: parsedMaterial,
+          // Vehicle
+          year: parsedYear,
+          make: make || null,
+          trim: trim || null,
+          type: type || null,
+          mileage: mileage || null,
+          engineType: engineType || null,
+          engineSize: parsedEngineSize,
+          horsepower: parsedHorsepower,
+          torque: parsedTorque,
+          fuelType: fuelType || null,
+          fuelEconomy: fuelEconomy || null,
+          transmission: transmission || null,
+          drivetrain: drivetrain || null,
+          vin: vin || null,
+          logbookStatus: logbookStatus || null,
+          serviceHistory: serviceHistory || null,
+          negotiable: !!negotiable,
+          financingAvailable: !!financingAvailable,
+          tradeIn: !!tradeIn,
+          features: parsedFeatures,
+          previousOwners,
+          tireCondition: tireCondition || null,
+          accidentalHistory: !!accidentalHistory,
+          // Book
+          author: author || null,
+          publisher: publisher || null,
+          isbn: isbn || null,
+          // Fashion
+          fabricComposition: fabricComposition || null,
+          careInstructions: careInstructions || null,
+          // Appliance
+          energyRating: energyRating || null,
+          warrantyPeriod: warrantyPeriod || null,
+          applianceDimensions: applianceDimensions || null,
+          // Beauty
+          ingredients: ingredients || null,
+          usageInstructions: usageInstructions || null,
+          expirationDate: parsedExpirationDate,
+          // Property
+          propertyType: propertyTypeId
+            ? { connect: { id: propertyTypeId } }
+            : undefined,
+          bathrooms: parsedBathrooms != null ? String(parsedBathrooms) : null,
+          area: area || null,
+          bedrooms: parsedBedrooms !== null && parsedBedrooms !== undefined ? [parsedBedrooms] : undefined,
+          studios: parsedStudios !== null && parsedStudios !== undefined ? [parsedStudios] : undefined,
+          serviceSchedule: serviceSchedule || null,
+          availabilityStart: parsedAvailabilityStart,
+          availabilityEnd: parsedAvailabilityEnd,
+          // Location & contact
+          location: location || null,
+          locationName: locationName || null,
+          latitude: parsedLatitude,
+          longitude: parsedLongitude,
+          contact: contact || null,
+          contactName: contactName || null,
+          email: email || null,
+          locationId: locationId || undefined,
+          // Marketplace & fulfillment
+          delivery: !!delivery,
+          paymentOption: paymentOption || "AT SHOP",
+          showOnGhuba: !!showOnGhuba,
+          digitalUrl: digitalUrl || null,
+          autoDeliver: !!autoDeliver,
+          hourlyRate: parsedHourlyRate,
+          minimumHours: parsedMinimumHours,
+          minNoticePeriod: minNoticePeriod || null,
+          maxBookingAhead: maxBookingAhead || null,
+          totalCapacity: parsedTotalCapacity,
+          deliveryMethod: deliveryMethod || null,
+          fulfillmentStatus: fulfillmentStatus || null,
+          providerRating: parsedProviderRating,
+          bookingSlots: parsedBookingSlots,
+          Collection: collectionId ? { connect: { id: collectionId } } : undefined,
+          status: status || "ACTIVE",
+          tax: tax != null ? parseFloat(tax as any) : 0,
+          shippingCost: shippingCost != null ? parseFloat(shippingCost as any) : 0,
+          updatedAt: new Date(),
+          createdAt: new Date(),
+               }});
 
   return formatResponse(true, product, "Product saved successfully.", id ? 200 : 201);
 }

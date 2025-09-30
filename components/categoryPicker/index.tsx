@@ -162,7 +162,8 @@ const CategoryPicker: React.FC<CategoryPickerProps> = ({
       {filteredSubCategories.length > 0 && (
         <div>
           <h3 className="text-lg font-semibold text-gray-700 dark:text-white mb-3">Subcategory</h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          <div key={formData.category?.id || "all"} 
+           className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {filteredSubCategories.map((sub) => (
               <button
                 key={sub.id}

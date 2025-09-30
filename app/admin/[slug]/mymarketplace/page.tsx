@@ -1,6 +1,7 @@
 import React from "react";
 import ClientInventoryClient from "./ClientInventoryClient";
 import { IStoreCategory, MarketListingForm } from "@/types/typings";
+import { cookies } from "next/headers";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -20,6 +21,7 @@ interface PageProps {
 
 export default async function ClientInventoryPage({ params }: PageProps) {
   const companyId = params.slug;
+  const cookieHeader = await cookies().toString();
 
   let productsData: MarketListingForm[] = [];
   let categoriesData: IStoreCategory[] = [];
@@ -28,11 +30,11 @@ export default async function ClientInventoryPage({ params }: PageProps) {
     // --- Fetch marketplace listings ---
     const res = await fetch(
       `${apiUrl}/admin/my-market-place?companyId=${encodeURIComponent(companyId)}`,
-      { cache: "no-store" }
+      { cache: "no-store", headers: { Cookie: cookieHeader } }
     );
     if (res.ok) {
       const json = await res.json();
-      productsData = json.results as MarketListingForm[];
+      productsData = Array.isArray(json.data.results) ? json.data.results : [];
     } else {
       console.error(
         "[ClientInventoryPage] Failed to fetch marketplace products:",
@@ -44,12 +46,12 @@ export default async function ClientInventoryPage({ params }: PageProps) {
     // --- Fetch store categories ---
     const categoriesRes = await fetch(
       `${apiUrl}/admin/get-store-categories?companyId=${encodeURIComponent(companyId)}`,
-      { cache: "no-store" }
+      { cache: "no-store", headers: { Cookie: cookieHeader } }
     );
 
     if (categoriesRes.ok) {
       const json = await categoriesRes.json();
-      categoriesData = json.results ?? [];
+      categoriesData = Array.isArray(json.data.results) ? json.data.results : [];
     } else {
       console.error(
         "[ClientInventoryPage] Failed to fetch store categories:",
