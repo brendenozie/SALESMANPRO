@@ -26,11 +26,14 @@ import {
   BookOpenIcon,
   TagIcon,
   GlobeAltIcon,
-  ArrowPathIcon, // For submitting state
+  ArrowPathIcon,
+  BuildingOffice2Icon, // For submitting state
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import Image from 'next/image'; // For optimized image handling
 import toast, { Toaster } from 'react-hot-toast'; // For notifications
+import { Agent } from './page';
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // --- Basic Modal Component (If you have your own, replace this) ---
 interface ModalProps {
@@ -271,11 +274,11 @@ const AgentProfileCard: React.FC<AgentProfileCardProps> = ({ agent, adminSlug, o
       <div className="mb-4">
         <div className="flex items-center text-gray-600 text-sm mb-1">
           <BriefcaseIcon className="h-4 w-4 mr-2" />
-          <span className="font-semibold">Specialties:</span> {agent.specialties.join(', ') || 'N/A'}
+          <span className="font-semibold">Specialties:</span> {agent.specialties?.join(', ') || 'N/A'}
         </div>
         <div className="flex items-center text-gray-600 text-sm">
           <MapPinIcon className="h-4 w-4 mr-2" />
-          <span className="font-semibold">Regions:</span> {agent.regions.join(', ') || 'N/A'}
+          <span className="font-semibold">Regions:</span> {agent.regions?.join(', ') || 'N/A'}
         </div>
       </div>
 
@@ -292,12 +295,12 @@ const AgentProfileCard: React.FC<AgentProfileCardProps> = ({ agent, adminSlug, o
 
       <div className="mt-auto flex justify-end space-x-3 pt-4 border-t border-gray-100">
         {/* You can keep this link if you still want a dedicated view page */}
-        <Link
+        {/* <Link
           href={`/admin/${adminSlug}/agents/${agent.id}`}
           className="flex items-center px-4 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-100 transition"
         >
           <EyeIcon className="h-5 w-5 mr-1" /> View
-        </Link>
+        </Link> */}
         <button
           onClick={() => onEdit(agent)} // Now opens modal
           className="flex items-center px-4 py-2 bg-purple-50 text-purple-700 rounded-lg text-sm font-medium hover:bg-purple-100 transition"
@@ -579,13 +582,14 @@ const loader = ({ src, width, quality }: { src: string; width: number; quality?:
 // --- Main AgentsPage Component ---
 interface AgentsPageProps {
   params: {
-    adminSlug: string;
+    companyId: string;
+    agentsData: Agent[];
   };
 }
 
 export default function AgentsPage({ params }: AgentsPageProps) {
-  const { adminSlug } = params;
-  const [agents, setAgents] = useState<AgentProfile[]>([]);
+  const { companyId, agentsData } = params;
+  const [agents, setAgents] = useState<any[]>(agentsData || []);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterActive, setFilterActive] = useState('All'); // 'All', 'true', 'false'
   const [isLoading, setIsLoading] = useState(true);
@@ -594,9 +598,9 @@ export default function AgentsPage({ params }: AgentsPageProps) {
 
   // Modals state
   const [showAddEditModal, setShowAddEditModal] = useState(false);
-  const [editingAgent, setEditingAgent] = useState<AgentProfile | null>(null); // Null for add, AgentProfile for edit
+  const [editingAgent, setEditingAgent] = useState<any | null>(null); // Null for add, AgentProfile for edit
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
-  const [agentToDelete, setAgentToDelete] = useState<AgentProfile | null>(null);
+  const [agentToDelete, setAgentToDelete] = useState<any | null>(null);
 
   // In a real application, apiUrl would be used to fetch and mutate data
   // const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
@@ -606,10 +610,18 @@ export default function AgentsPage({ params }: AgentsPageProps) {
     setError(null);
     try {
       // Simulate API call with a delay
-      await new Promise(resolve => setTimeout(resolve, 800)); // Simulate network latency
-      const data = generateSampleAgents();
-      setAgents(data.sort((a, b) => new Date(b.joinedAt).getTime() - new Date(a.joinedAt).getTime()));
-      toast.success("Agents loaded successfully!");
+      const res = await fetch(`${apiUrl}/admin/agents?companyId=${companyId}`, { method: 'GET' });
+      if (!res.ok) throw new Error(`Error fetching agents: ${res.statusText}`);
+      const rawData = await res.json();
+      let data = Array.isArray(rawData.data) ? rawData.data.map((agent: any) => ({
+        ...agent,
+        loginCode: agent.loginCode || 'N/A' // Ensure loginCode is present
+      })) : [];
+      if (data.length === 0) {
+        // If no data from API, use sample data for demo purposes
+        data = generateSampleAgents();
+      }
+      setAgents(data);
     } catch (err: any) {
       console.error("Error fetching agents:", err);
       setError(err.message || "Failed to load agents.");
@@ -619,9 +631,9 @@ export default function AgentsPage({ params }: AgentsPageProps) {
     }
   }, []);
 
-  useEffect(() => {
-    fetchAgents();
-  }, [fetchAgents]);
+  // useEffect(() => {
+  //   fetchAgents();
+  // }, [fetchAgents]);
 
   // --- Handlers for Modals ---
   const handleAddAgent = () => {
@@ -701,8 +713,8 @@ export default function AgentsPage({ params }: AgentsPageProps) {
       const matchesSearch = agent.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             agent.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             agent.phone.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                            agent.specialties.some(s => s.toLowerCase().includes(searchTerm.toLowerCase())) ||
-                            agent.regions.some(r => r.toLowerCase().includes(searchTerm.toLowerCase()));
+                            agent.specialties.some((s: any) => s.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                            agent.regions.some((r: any) => r.toLowerCase().includes(searchTerm.toLowerCase()));
       const matchesActive = filterActive === 'All' ||
                             (filterActive === 'true' && agent.isActive) ||
                             (filterActive === 'false' && !agent.isActive);
@@ -724,7 +736,7 @@ export default function AgentsPage({ params }: AgentsPageProps) {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
           <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
-            Manage Agents <span className="ml-2 text-purple-600 text-base sm:text-xl">🏠🔑</span>
+            Manage Agents <span className="ml-2 text-purple-600 text-base sm:text-xl">🔑</span>
           </h1>
           <p className="text-md text-gray-600 mt-1">
             Oversee your team of professionals, track performance, and manage profiles.
@@ -743,7 +755,7 @@ export default function AgentsPage({ params }: AgentsPageProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <AgentSummaryCard title="Total Agents" value={totalAgents} icon={UsersIcon} colorClass="bg-gradient-to-br from-blue-500 to-blue-700" />
         <AgentSummaryCard title="Active Agents" value={activeAgents} icon={CheckCircleIcon} colorClass="bg-gradient-to-br from-green-500 to-green-700" />
-        <AgentSummaryCard title="Total Listings" value={totalListingsOverall} icon={HomeModernIcon} colorClass="bg-gradient-to-br from-purple-500 to-purple-700" />
+        <AgentSummaryCard title="Total Listings" value={totalListingsOverall} icon={BuildingOffice2Icon} colorClass="bg-gradient-to-br from-purple-500 to-purple-700" />
         <AgentSummaryCard title="Closed Deals" value={totalClosedDealsOverall} icon={CurrencyDollarIcon} colorClass="bg-gradient-to-br from-yellow-500 to-yellow-700" />
       </div>
 
@@ -836,7 +848,7 @@ export default function AgentsPage({ params }: AgentsPageProps) {
                 <AgentProfileCard
                   key={agent.id}
                   agent={agent}
-                  adminSlug={adminSlug}
+                  adminSlug={companyId}
                   onEdit={handleEditAgent} // Pass the handler to open edit modal
                   onDelete={handleDeleteClick}
                 />

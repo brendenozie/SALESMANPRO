@@ -34,6 +34,7 @@ export default async function ClientInventoryPage({ params }: PageProps) {
     );
     if (res.ok) {
       const json = await res.json();
+      console.log(json);
       productsData = Array.isArray(json.data.results) ? json.data.results : [];
     } else {
       console.error(

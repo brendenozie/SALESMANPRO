@@ -15,9 +15,9 @@ async function handleGetListings(req: Request, { params }: RouteParams) {
   const { searchParams } = new URL(req.url);
 
   const companyId = searchParams.get("companyId");
-  const limit     = parseInt(searchParams.get("limit")  || "10", 10);
-  const page      = parseInt(searchParams.get("page")   || "1", 10);
-  const offset    = (page - 1) * limit;
+  const limit = parseInt(searchParams.get("limit")  || "10", 10);
+  const page = parseInt(searchParams.get("page")   || "1", 10);
+  const offset = (page - 1) * limit;
 
   // 1. Input Validation (Use formatResponse for explicit bad requests)
   if (!companyId) {
@@ -55,7 +55,7 @@ async function handleGetListings(req: Request, { params }: RouteParams) {
   // 5. Return the full data structure
   // withApiHandler wraps this result in formatResponse(true, data, null, 200)
   return formatResponse(true, {
-    data: listings,
+    results: listings,
     meta: {
       total,
       page,

@@ -1,17 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
+// Assuming these are imported correctly from your components folder
 import ProductRequestModal from "@/components/ProductRequestModal";
 import AddToProductMarketModal from "@/components/AddToProductMarketModal";
 import { IStoreCategory, MarketListingForm } from "@/types/typings";
-
-// type Category = {
-//   id: string;
-//   name: string;
-//   image: string;
-//   tags: string[];
-//   status: string;
-// };
 
 interface ClientProps {
   companyId: string;
@@ -21,9 +14,13 @@ interface ClientProps {
 
 export default function ClientInventoryClient({ companyId, categoriesData, productsData }: ClientProps) {
   const [showRemoveProductModal, setShowRemoveProductModal] = useState(false);
-  const [showRequestModal, setShowRequestModal] = useState(false); // Consider if this modal is still needed or can be consolidated
   const [showAddToMarketModal, setShowAddToMarketModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<MarketListingForm | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("ALL");
+  
+  // NOTE: The showRequestModal state was redundant in the original code,
+  // as removal uses ProductRequestModal. I've removed the showRequestModal state.
 
   const handleEditProductClick = (product: MarketListingForm) => {
     setSelectedProduct(product);
@@ -40,125 +37,183 @@ export default function ClientInventoryClient({ companyId, categoriesData, produ
     setShowAddToMarketModal(true);
   };
 
+  // --- Filtered Products Logic (Efficiency) ---
+  const filteredProducts = useMemo(() => {
+    return productsData.filter(product => {
+      const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase())  || 
+                            product.description?.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const matchesCategory = selectedCategory === "ALL" || 
+                              product.category === selectedCategory; // Assuming category name is used for filtering
+
+      return matchesSearch && matchesCategory;
+    });
+  }, [productsData, searchTerm, selectedCategory]);
+  
+  // --- Quick Stats (Intuitive Overview) ---
+  const totalProducts = productsData.length;
+  const totalQuantity = productsData.reduce((sum, p) => sum + p.quantity, 0);
+
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-6 sm:p-10">
-      {/* Header Section */}
-      <header className="text-center mb-12">
-        <h1 className="text-5xl font-extrabold text-gray-900 leading-tight mb-4 drop-shadow-sm">
-          Your Market Place 🛍️
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-8 lg:p-12 transition-colors duration-500">
+      
+      {/* 🌟 VIBRANT HEADER SECTION */}
+      <header className="max-w-7xl mx-auto mb-12">
+        <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-900 dark:text-white leading-tight mb-2">
+          Product Marketplace 🚀
         </h1>
-        <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-          Manage your product listings, add new items, and keep your inventory up-to-date.
+        <p className="text-lg text-gray-600 dark:text-gray-400 max-w-3xl">
+          Central hub for managing your company's product listings, inventory, and market visibility.
         </p>
       </header>
 
-      {/* Main Content Area */}
-      <div className="max-w-7xl mx-auto bg-white border border-gray-100 rounded-3xl shadow-2xl p-6 sm:p-10 backdrop-blur-sm bg-opacity-95">
-
-        {/* Products Header and Add Button */}
-        <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
-          <h2 className="text-3xl font-bold text-gray-800">Your Products</h2>
-          <button
-            onClick={handleAddProductClick}
-            className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl shadow-lg hover:bg-blue-700 transform hover:scale-105 transition duration-300 ease-in-out focus:outline-none focus:ring-4 focus:ring-blue-300"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
-            </svg>
-            Add New Product
-          </button>
+      {/* 📊 OVERVIEW STATS & ACTIONS */}
+      <div className="max-w-7xl mx-auto mb-10">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+            {/* Stat Card 1 */}
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700">
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total Listings</p>
+                <p className="text-4xl font-extrabold text-blue-600 mt-1">{totalProducts}</p>
+            </div>
+            {/* Stat Card 2 */}
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700">
+                <p className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Stock Quantity</p>
+                <p className="text-4xl font-extrabold text-green-600 mt-1">{totalQuantity}</p>
+            </div>
+            {/* Action Card/Button */}
+            <div 
+                onClick={handleAddProductClick}
+                className="bg-blue-50 dark:bg-blue-900/30 p-6 rounded-2xl shadow-inner cursor-pointer flex flex-col justify-center items-center text-center border-2 border-dashed border-blue-200 dark:border-blue-700 hover:bg-blue-100 transition duration-300"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-600 dark:text-blue-400 mb-2" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
+                </svg>
+                <p className="text-lg font-bold text-blue-700 dark:text-blue-300">Add New Product</p>
+            </div>
         </div>
+      </div>
 
-        {/* Product Grid */}
+      {/* 🔍 FILTER & SEARCH BAR */}
+      <div className="max-w-7xl mx-auto mb-8 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md flex flex-col sm:flex-row gap-4 items-center border border-gray-100 dark:border-gray-700">
+        <input
+          type="text"
+          placeholder="Search product name or description..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full sm:w-2/3 px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 transition duration-150"
+        />
+        
+        <select
+          value={selectedCategory}
+          onChange={(e) => setSelectedCategory(e.target.value)}
+          className="w-full sm:w-1/3 px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 transition duration-150 appearance-none bg-white dark:bg-gray-700"
+        >
+          <option value="ALL">All Categories ({productsData.length})</option>
+          {categoriesData.map(cat => (
+            <option key={cat.id} value={cat.displayName || 'Unknown'}>
+                {cat.displayName} ({productsData.filter(p => p.category.name === cat.displayName).length})
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* 📦 PRODUCT GRID */}
+      <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-          {productsData && productsData.length > 0 ? (
-            productsData.map((product, index) => (
+          {filteredProducts.length > 0 ? (
+            filteredProducts.map((product, index) => (
               <div
-                key={product.id || index} // Use _id if available, fallback to index
-                className="bg-white border border-gray-200 rounded-2xl p-6 shadow-lg hover:shadow-xl transition transform hover:-translate-y-1 duration-300 relative overflow-hidden"
+                key={product.id || index}
+                className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-xl hover:shadow-2xl transition transform hover:scale-[1.02] duration-300 relative overflow-hidden group"
               >
-                {/* Product Status Badges (Example - add logic based on your data) */}
-                {product.isNewArrival && (
-                  <span className="absolute top-3 right-3 bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">New!</span>
-                )}
-                {product.isOnOffer && (
-                  <span className="absolute top-3 left-3 bg-purple-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">On Offer</span>
-                )}
+                {/* Product Image Placeholder (Crucial visual element) */}
+                <div className="h-32 w-full bg-gray-100 dark:bg-gray-700 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
+                    {/* Replace with actual image: <img src={product.imageUrl} alt={product.name} className="object-cover h-full w-full" /> */}
+                    <svg className="h-12 w-12 text-gray-400 dark:text-gray-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4.5-4.5 2 2 3.5-3.5 2 2V15zm-2-9a2 2 0 11-4 0 2 2 0 014 0z" clipRule="evenodd"></path></svg>
+                </div>
 
+                {/* Status Badges */}
+                <div className="absolute top-3 right-3 flex gap-2">
+                    {product.isNewArrival && (
+                    <span className="bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">New!</span>
+                    )}
+                    {product.isOnOffer && (
+                    <span className="bg-purple-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">Offer</span>
+                    )}
+                </div>
 
-                <h3 className="text-2xl font-extrabold text-gray-900 mb-2 leading-snug">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1 line-clamp-2">
                   {product.name || "Untitled Product"}
                 </h3>
-                <p className="text-sm text-gray-600 mb-4 line-clamp-2" >
-                  {product.description || "No description provided."}
-                </p>
+                <p className="text-sm text-blue-600 dark:text-blue-400 font-medium mb-3">{product.category.name}</p>
 
-                <div className="space-y-1 mb-5">
-                  <p className="text-md text-gray-700 font-medium">
-                    Quantity: <span className="font-bold text-gray-900">{product.quantity}</span>
-                  </p>
-                  <p className="text-md text-gray-700 font-medium">
-                    Buying Price: <span className="font-bold text-green-600">${product.buyingPrice.toFixed(2)}</span>
-                  </p>
-                  <p className="text-md text-gray-700 font-medium">
-                    Selling Price: <span className="font-bold text-blue-600">${product.sellingPrice.toFixed(2)}</span>
-                  </p>
+
+                <div className="grid grid-cols-2 gap-y-2 mb-5 text-sm">
+                  <p className="text-gray-500 dark:text-gray-400">Stock:</p>
+                  <p className="font-bold text-right text-gray-900 dark:text-white">{product.quantity}</p>
+                  
+                  <p className="text-gray-500 dark:text-gray-400">Selling Price:</p>
+                  <p className="font-bold text-right text-green-600">${product.sellingPrice.toFixed(2)}</p>
+                  
                   {product.discount && product.discount > 0 && (
-                     <p className="text-md text-gray-700 font-medium">
-                        Discount: <span className="font-bold text-red-500">{product.discount}%</span>
-                    </p>
+                    <>
+                      <p className="text-gray-500 dark:text-gray-400">Discount:</p>
+                      <p className="font-bold text-right text-red-500">{product.discount}%</p>
+                    </>
                   )}
                 </div>
 
-                <div className="flex justify-end gap-3 mt-4 pt-4 border-t border-gray-100">
+                {/* Action Buttons with Hover Effect */}
+                <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-700">
                   <button
                     onClick={() => handleEditProductClick(product)}
-                    className="flex items-center gap-1 px-4 py-2 rounded-lg bg-indigo-500 text-white font-medium text-sm transition-all duration-300 ease-in-out hover:bg-indigo-600 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                    title="Edit Product"
+                    className="p-2 rounded-full bg-indigo-50 hover:bg-indigo-100 text-indigo-600 transition-all duration-300 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-400"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                      <path d="M13.586 3.586a2 2 0 112.828 2.828l-7.65 7.65A2 2 0 019.172 15L6 15v-3.172a2 2 0 01.586-1.414l7.65-7.65zM11 2a1 1 0 00-1 1v1a1 1 0 102 0V3a1 1 0 00-1-1z" />
-                    </svg>
-                    Edit
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 112.828 2.828l-7.65 7.65A2 2 0 019.172 15L6 15v-3.172a2 2 0 01.586-1.414l7.65-7.65z" /></svg>
                   </button>
 
                   <button
                     onClick={() => handleRemoveProductClick(product)}
-                    className="flex items-center gap-1 px-4 py-2 rounded-lg bg-red-500 text-white font-medium text-sm transition-all duration-300 ease-in-out hover:bg-red-600 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-red-400"
+                    title="Remove Listing"
+                    className="p-2 rounded-full bg-red-50 hover:bg-red-100 text-red-600 transition-all duration-300 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-red-400"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 011-1h4a1 1 0 110 2H8a1 1 0 01-1-1zm1 3a1 1 0 100 2h4a1 1 0 100-2H8z" clipRule="evenodd" />
-                    </svg>
-                    Remove
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 011-1h4a1 1 0 110 2H8a1 1 0 01-1-1zm1 3a1 1 0 100 2h4a1 1 0 100-2H8z" clipRule="evenodd" /></svg>
                   </button>
                 </div>
               </div>
             ))
           ) : (
-            // Empty State
-            <div className="col-span-full text-center py-20 px-4 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 flex flex-col items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-20 w-20 text-gray-400 mb-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            // 🚫 Empty State / No Results
+            <div className="col-span-full text-center py-20 px-4 bg-white dark:bg-gray-800 rounded-2xl border-2 border-dashed border-gray-300 dark:border-gray-600 flex flex-col items-center justify-center shadow-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-20 w-20 text-blue-400 dark:text-blue-500 mb-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <p className="text-2xl font-semibold text-gray-600 mb-3">No Products Yet!</p>
-              <p className="text-lg text-gray-500 mb-6 max-w-md">
-                It looks like your marketplace is empty. Let's add your first product!
+              <p className="text-2xl font-bold text-gray-700 dark:text-white mb-3">
+                {productsData.length === 0 ? "No Products Yet!" : "No Matching Products Found"}
               </p>
-              <button
-                onClick={handleAddProductClick}
-                className="flex items-center gap-2 px-7 py-3 bg-blue-600 text-white font-semibold rounded-xl shadow-lg hover:bg-blue-700 transform hover:scale-105 transition duration-300 ease-in-out focus:outline-none focus:ring-4 focus:ring-blue-300"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
-                </svg>
-                Add Your First Product
-              </button>
+              <p className="text-lg text-gray-500 dark:text-gray-400 mb-6 max-w-md">
+                {productsData.length === 0 
+                  ? "It looks like your marketplace is empty. Click below to add your first item."
+                  : "Try clearing your filters or search term to see all listings."
+                }
+              </p>
+              {productsData.length === 0 && (
+                <button
+                  onClick={handleAddProductClick}
+                  className="flex items-center gap-2 px-7 py-3 bg-blue-600 text-white font-semibold rounded-xl shadow-xl hover:bg-blue-700 transform hover:scale-[1.05] transition duration-300 ease-in-out focus:outline-none focus:ring-4 focus:ring-blue-300"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" /></svg>
+                  Add Your First Product
+                </button>
+              )}
             </div>
           )}
         </div>
       </div>
 
-      {/* Modals */}
+      {/* MODALS */}
       {showRemoveProductModal && selectedProduct && (
         <ProductRequestModal
           showRequestProductModal={showRemoveProductModal}
@@ -171,20 +226,11 @@ export default function ClientInventoryClient({ companyId, categoriesData, produ
         <AddToProductMarketModal
           showRequestProductModal={showAddToMarketModal}
           setShowRequestProductModal={setShowAddToMarketModal}
-          product={null} // Product prop for AddToProductMarketModal might be redundant if marketListItem serves the purpose
+          product={null} 
           marketListItem={selectedProduct} // Pass selectedProduct for edit, null for new
           categories={categoriesData}
           companyId={companyId}
-          locations={[]}
-        />
-      )}
-
-      {/* Re-evaluate the necessity of this modal if it's redundant with ProductRequestModal for removal */}
-      {showRequestModal && selectedProduct && (
-        <ProductRequestModal
-          showRequestProductModal={showRequestModal}
-          setShowRequestProductModal={setShowRequestModal}
-          product={selectedProduct}
+          locations={[]} // Assuming locations is defined elsewhere or handled in the modal
         />
       )}
     </div>

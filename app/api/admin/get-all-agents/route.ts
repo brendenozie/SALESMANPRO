@@ -19,10 +19,9 @@ const getAgentsLogic = async (req: Request) => {
     // 2. Fetch the agents
     const agents = await prisma.salesAgent.findMany({
         where: { companyId },
-        select: { id: true, 
-            // name: true 
-
-        }
+        include: { user: {
+            select: { id: true, name: true, email: true }
+        } } // Include related user data
     });
 
     // 3. Return the successful response

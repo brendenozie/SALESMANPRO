@@ -40,7 +40,6 @@ export default async function AdminInventoryPage({ params }: Props) {
 
     if (productsRes.ok) {
       let prodeuctR = (await productsRes.json());
-
       productsData = Array.isArray(prodeuctR.data.results) ? prodeuctR.data.results : [];
 
     }
@@ -56,13 +55,14 @@ export default async function AdminInventoryPage({ params }: Props) {
     }
 
     // Fetch all agents for this company
-    // const agentsRes = await fetch(
-    //   `${apiUrl}/admin/get-all-inventory-agents?companyId=${encodeURIComponent(companyId)}`,
-    //   { cache: "no-store", headers: { Cookie: cookieHeader } } // equivalent to SSR on every request
-    // );
-    // if (agentsRes.ok) {
-    //   agentsData = (await agentsRes.json()).data as Agent[];
-    // }
+    const agentsRes = await fetch(
+      `${apiUrl}/admin/get-all-inventory-agents?companyId=${encodeURIComponent(companyId)}`,
+      { cache: "no-store", headers: { Cookie: cookieHeader } } // equivalent to SSR on every request
+    );
+    if (agentsRes.ok) {
+      let agentsR= (await agentsRes.json());
+      agentsData = Array.isArray(agentsR.data) ? agentsR.data : [];
+    }
 
     // // Sanity check: ensure arrays
     // if (!Array.isArray(productsData)) {

@@ -16,8 +16,26 @@ async function fetchAllAgents() {
   // --- Data Fetching ---
   // Fetch all agents and their AgentInventory entries (with product details)
   const agents = await prisma.salesAgent.findMany({
+    where: {
+      AgentInventory: {
+        some: {
+          inventoryItem: {
+            product: {
+              is: {}, // ✅ means "relation must exist" (i.e. not null)
+            },
+          },
+        },
+      },
+    },
     include: {
       AgentInventory: {
+        where: {
+          inventoryItem: {
+            product: {
+              is: {}, // ✅ again, ensures product is present
+            },
+          },
+        },
         include: {
           inventoryItem: {
             include: {
@@ -28,27 +46,32 @@ async function fetchAllAgents() {
       },
       user: {
         select: { id: true, name: true, email: true },
-      }, // Include user details if needed
+      },
     },
   });
 
+
   // --- Data Transformation ---
   // Format the data for the client
+
   const formatted = agents.map((agent) => {
     // Build an inventory list of { productId, productName, quantity }
-    const inventory = agent.AgentInventory.map((entry) => ({
-      productId: entry.inventoryItem.product.id,
-      productName: entry.inventoryItem.product.name,
-      quantity: entry.quantity,
-    }));
+    const inventory = agent.AgentInventory.map((entry) => {
+    const product = entry.inventoryItem.product;
+        return {
+          productId: product?.id ?? null,
+          productName: product?.name ?? "Unknown Product",
+          quantity: entry.quantity,
+        };
+      });
 
     // Sum up total quantity assigned to this agent
     const totalAssigned = inventory.reduce((sum, item) => sum + item.quantity, 0);
 
     return {
       id: agent.id,
-      name: agent.user.name,
-      email: agent.user.email,
+      name: agent.user?.name ?? "No name",
+      email: agent.user?.email ?? "No email",
       totalAssigned,
       inventory,
     };

@@ -99,24 +99,31 @@ export const POST = withApiHandler(async (req: Request) => {
     });
 
     const targetP = await prisma.target.upsert({
-      where: { 
-        
-      },
-      update: { achievedValue: { increment: quantity }, updatedAt: new Date() },
-      create: {
-        salesAgent: { connect: { id: salesAgentId } },
-        productId,
-        targetType: target.type, //  COST or QUANTITY
-        targetValue: target.value,
-        achievedValue: quantity,
-        startDate: new Date(),
-        endDate: new Date(new Date().setMonth(new Date().getMonth() + 1)),
-        metricType: target.metricType, //, "SALES_VOLUME", "NUMBER_OF_CLIENTS"
-        periodStart: new Date(),
-        periodEnd: new Date(new Date().setMonth(new Date().getMonth() + 1)),
-        status: "ONGOING" as TargetStatus,
-      },
-    });
+        where: { 
+          agent_product_unique: { 
+            agentId: salesAgentId, 
+            productId: productId,
+          }
+        },
+        update: { 
+          achievedValue: { increment: quantity },
+          updatedAt: new Date(),
+        },
+        create: {
+          salesAgent: { connect: { id: salesAgentId } },
+          product: { connect: { id: productId } }, // ✅ required relation
+          targetType: target.type, // COST or QUANTITY
+          targetValue: target.value,
+          achievedValue: quantity,
+          startDate: new Date(),
+          endDate: new Date(new Date().setMonth(new Date().getMonth() + 1)),
+          metricType: target.metricType ?? "SALES_VOLUME" , // avoid undefined
+          periodStart: new Date(),
+          periodEnd: new Date(new Date().setMonth(new Date().getMonth() + 1)),
+          status: "ONGOING" as TargetStatus,
+        },
+      });
+
 
     let agentInventory = await prisma.agentInventory.findFirst({
       where: { inventoryItemId: inventoryItem.id, salesAgentId },
@@ -172,7 +179,7 @@ export const POST = withApiHandler(async (req: Request) => {
 
     await prisma.return.create({
       data: {
-        inventoryItem: { connect: { id: inventoryItem.id } },
+        inventoryId: inventoryItem.id,
         returnedBy: { connect: { id: salesAgentId } },
         quantity,
         reason,

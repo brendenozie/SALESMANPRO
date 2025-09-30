@@ -173,9 +173,9 @@ async function getInventory(req: Request) {
       id: p.id,
       name: p.name,
       companyId: p.companyId,
-      inventoryIds: [], // inventoryIds,
-      companyStock: 0, // companyStock,
-      agentStock: 0, // agentStock,
+      inventoryIds: inventoryIds,
+      companyStock: companyStock,
+      agentStock: agentStock,
       sales: 0, // Placeholder, sales calculation isn't present in original
       productItem,
       category: overrideCat,

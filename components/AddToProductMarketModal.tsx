@@ -632,6 +632,7 @@ export default function AddToProductMarketModal({
 
   return (
     <Modal
+      title='Add to Marketplace'
       isOpen={showRequestProductModal}
       onClose={() => setShowRequestProductModal(false)}
     >

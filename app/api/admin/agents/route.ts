@@ -2,8 +2,8 @@
 import prisma from "@/server/db/prismadb";
 import { withAuthAndRateLimit } from "@/lib/hooks/withAuthAndRateLimit";
 import { formatResponse } from "@/lib/formatResponse";
-import bcrypt from "bcryptjs/umd/types";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import bcrypt from "bcryptjs";
 
 // GET /api/sales-agents
 // Fetch all sales agents for a company, including sales/commission aggregates

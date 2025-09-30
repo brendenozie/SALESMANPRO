@@ -1,6 +1,7 @@
 import React from "react";
 import AgentsClient from "./AgentsClient";
 
+import { cookies } from "next/headers";
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // ✨ Updated Agent type to include the loginCode
@@ -36,10 +37,15 @@ interface PageProps {
 export default async function AgentsPage({ params }: PageProps) {
   const companyId = params.slug;
   let agentsData: Agent[] = [];
-
+  const cookieHeader = await cookies().toString();
+  
   try {
     const res = await fetch(`${apiUrl}/admin/agents?companyId=${companyId}`, {
       cache: "no-store",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: cookieHeader,
+      },
     });
     if (res.ok) {
       // The API now returns the loginCode, so we need to process it.
@@ -50,10 +56,10 @@ export default async function AgentsPage({ params }: PageProps) {
       // We just need to ensure the loginCode is included. Let's assume the GET route
       // was also updated to return 'loginCode'. If not, you'd add it there.
       // For now, we'll assume the API provides it.
-      agentsData = rawData.map((agent: any) => ({
+      agentsData = Array.isArray(rawData.data) ? rawData.data.map((agent: any) => ({
         ...agent,
         loginCode: agent.loginCode || 'N/A' // Ensure loginCode is present
-      }));
+      })) : [];
 
     } else {
       console.error(
@@ -68,6 +74,7 @@ export default async function AgentsPage({ params }: PageProps) {
 
   // ✨ Pass companyId to the client component agentsData={agentsData} companyId={companyId} adminSlug={companyId}
   return <AgentsClient params={{
-    adminSlug: companyId
+    companyId: companyId,
+    agentsData
   }} />;
 }

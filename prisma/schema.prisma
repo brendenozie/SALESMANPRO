@@ -1537,7 +1537,7 @@ model Target {
 
   agentId    String     @db.ObjectId
   salesAgent SalesAgent @relation(fields: [agentId], references: [id])
-  metricType String // e.g., "SALES_VOLUME", "NUMBER_OF_CLIENTS"
+  metricType String? // e.g., "SALES_VOLUME", "NUMBER_OF_CLIENTS"
 
   periodStart DateTime
   periodEnd   DateTime
@@ -1552,8 +1552,9 @@ model Target {
   Company   Company?     @relation(fields: [companyId], references: [id])
   companyId String?      @db.ObjectId
 
+  // @@index([agentId, productId], name: "agent_product_unique")
+  @@unique([agentId, productId], name: "agent_product_unique")
   @@index([id])
-  @@index([agentId, productId], name: "agent_product_unique")
   @@index([agentId])
   @@index([productId])
   @@index([companyId])
@@ -1572,6 +1573,16 @@ enum TargetType {
   REVENUE
   UNITS
   ORDERS
+}
+
+enum MetricType {
+  SALES_VOLUME
+  NUMBER_OF_CLIENTS
+  CUSTOMER_RETENTION
+  NEW_CUSTOMERS
+  AVERAGE_DEAL_SIZE
+  SALES_GROWTH
+  SALES_CONVERSION_RATE
 }
 
 enum TargetStatus {
