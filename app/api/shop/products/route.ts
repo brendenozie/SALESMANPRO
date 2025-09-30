@@ -8,10 +8,6 @@ import { request } from "http";
 // GET /api/marketplace-listings?agentId=&search=&brand=&category=&subCategory=&minPrice=&maxPrice=&availability=&sort=&page=&limit=
 export async function GET(req: Request) {
   try {
-     const auth = await verifyAuth(req);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
     const { searchParams } = new URL(req.url);
     const agentId = searchParams.get("agentId");
     const search = searchParams.get("search") || undefined;
@@ -31,7 +27,7 @@ export async function GET(req: Request) {
     const skip = (page - 1) * limit;
 
     // Build where clause
-    const where: Prisma.MarketplaceListingWhereInput = {
+    const where: Prisma.marketplaceListingsWhereInput = {
       ...(agentId && { companyId: agentId }),
       ...(search && { title: { contains: search, mode: 'insensitive' } }),
       ...(minPrice || maxPrice) && {
@@ -49,7 +45,7 @@ export async function GET(req: Request) {
 
     // Sorting
     // Default sort by createdAt desc, or allow sorting by price or createdAt
-    let orderBy: Prisma.MarketplaceListingOrderByWithRelationInput = { createdAt: 'desc' };
+    let orderBy: Prisma.marketplaceListingsOrderByWithRelationInput = { createdAt: 'desc' };
     if (sortParam) {
       const [field, direction] = sortParam.split(':');
       if (
@@ -61,13 +57,13 @@ export async function GET(req: Request) {
     }
 
     const [listings, total] = await Promise.all([
-      prisma.marketplaceListing.findMany({
+      prisma.marketplaceListings.findMany({
         where,
         skip,
         take: limit,
         orderBy,
       }),
-      prisma.marketplaceListing.count({ where }),
+      prisma.marketplaceListings.count({ where }),
     ]);
 
     const totalPages = Math.ceil(total / limit);

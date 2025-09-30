@@ -6,10 +6,7 @@ import { formatResponse } from "@/lib/formatResponse";
 // GET /api/recommendations?userId=&agentId=&limit=&offset=
 export async function GET(req: Request) {
   try {
-     const auth = await verifyAuth(req);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
-  
+
     const { searchParams } = new URL(req.url);
     const userId = searchParams.get("userId");
     const agentId = searchParams.get("agentId");
@@ -29,12 +26,12 @@ export async function GET(req: Request) {
       orderBy: { createdAt: 'desc' },
       skip: offset,
       take: limit,
-      include: { product: true },
+      include: { marketplaceListings: true },
     });
 
-    const interactedProductIds = recent.map(i => i.productId);
-    const categories = recent.map(i => i.product?.productCategoryId).filter(Boolean) as string[];
-    const tags = recent.flatMap(i => i.product?.tags || []);
+    const interactedProductIds = recent.map(i => i.marketplaceListingId).filter((id): id is string => typeof id === 'string');
+    const categories = recent.map(i => i.marketplaceListings?.productCategoryId).filter(Boolean) as string[];
+    const tags = recent.flatMap(i => i.marketplaceListings?.tags || []);
 
     // Recommendations
     const recommendations = await prisma.marketplaceListings.findMany({

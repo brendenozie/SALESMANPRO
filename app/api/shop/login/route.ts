@@ -18,10 +18,7 @@ const JWT_EXPIRES_IN = "1h";
 // POST /api/login
 export async function POST(req: Request) {
   try {
-    
-       const auth = await verifyAuth(req);
-      if (!auth.success) return formatResponse(false, null, auth.error, 401);
-    
+        
     const ip = req.headers.get("x-forwarded-for") || "unknown";
     const now = Date.now();
 

@@ -72,7 +72,8 @@ async function getOrders(req: Request) {
     const monthlyRevenue = Array(12).fill(0);
     allOrders.forEach((o) => {
       const m = o.createdAt?.getMonth();
-      monthlyRevenue[m] += o.totalPrice;
+      if (m !== undefined) monthlyRevenue[m] += o.totalPrice || 0;
+      
     });
 
     // Meta

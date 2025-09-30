@@ -43,7 +43,7 @@ async function putHandler(
     return formatResponse(true, updated, "CompanyLocation updated successfully", 200);
   } catch (error: any) {
     console.error("Error updating company location:", error);
-    return formatResponse(false, null, "Internal Server Error", 500, error.message);
+    return formatResponse(false, null, error.message || "Internal Server Error", 500);
   }
 }
 
@@ -80,7 +80,7 @@ async function deleteHandler(
     return formatResponse(true, null, "CompanyLocation deleted successfully", 200);
   } catch (error: any) {
     console.error("Error deleting company location:", error);
-    return formatResponse(false, null, "Internal Server Error", 500, error.message);
+    return formatResponse(false, null, error.message || "Internal Server Error", 500);
   }
 }
 

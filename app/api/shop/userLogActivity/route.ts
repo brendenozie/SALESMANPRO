@@ -35,13 +35,13 @@ async function handler(req: Request) {
     }
 
     const activity = await prisma.userActivity.create({
-      data: { userId, productId, action },
+      data: { userId, marketplaceListingId: productId, activityType: action  },
     });
 
     return formatResponse(true, activity, "User activity logged successfully", 200);
   } catch (error: any) {
     console.error("Error logging user activity:", error);
-    return formatResponse(false, null, "Internal Server Error", 500, error.message);
+    return formatResponse(false, null, error.message || "Server error logging activity", 500);
   }
 }
 

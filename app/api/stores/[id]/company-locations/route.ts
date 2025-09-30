@@ -68,7 +68,7 @@ async function getHandler(
     return formatResponse(true, companyLocations, "Company locations retrieved", 200);
   } catch (error: any) {
     console.error("Error retrieving company locations:", error);
-    return formatResponse(false, null, "Internal Server Error", 500, error.message);
+    return formatResponse(false, null, error.message || "Internal Server Error", 500);
   }
 }
 
@@ -150,7 +150,7 @@ async function postHandler(
       return formatResponse(false, null, "This location is already associated with the store.", 409);
     }
     console.error("Error creating company location:", error);
-    return formatResponse(false, null, "Internal Server Error", 500, error.message);
+    return formatResponse(false, null, error.message || "Internal Server Error", 500);
   }
 }
 

@@ -7,9 +7,6 @@ import { request } from "http";
 // GET /api/marketplace-by-category?agentId=&categoryId=&page=&limit=
 export async function GET(req: Request) {
   try {
-     const auth = await verifyAuth(req);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-  
   
     const { searchParams } = new URL(req.url);
     const agentId = searchParams.get("agentId");

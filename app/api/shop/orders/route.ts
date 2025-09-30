@@ -135,12 +135,7 @@ async function getOrders(req: Request) {
     ]);
     const totalPages = Math.ceil(total / limit);
 
-    return formatResponse(true, orders, null, 200, {
-      total,
-      perPage: limit,
-      page,
-      totalPages,
-    });
+    return formatResponse(true, { orders, totalPages }, null, 200);
   } catch (err: any) {
     console.error("Error fetching orders:", err);
     return formatResponse(false, null, err.message, 500);
@@ -173,8 +168,9 @@ async function updateOrder(req: Request) {
 
     const consumer = await prisma.consumer.findUnique({
       where: { id: order.consumerId },
+      include: { user: { select: { email: true } } },
     });
-    if (consumer) await sendOrderEmail(consumer.email, status);
+    if (consumer) await sendOrderEmail(consumer.user.email, status);
 
     return formatResponse(true, order);
   } catch (err: any) {
