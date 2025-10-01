@@ -322,7 +322,7 @@ export default function AdminEventsClient({ slug, allOrganizers, allEvents }: Ad
                         </div>
                       </td>
                     </tr>
-                  ) : (allEvents &&
+                  ) : (allEvents.length > 0 &&
                     allEvents.map((event, index) => (
                       <motion.tr
                         key={event.id}

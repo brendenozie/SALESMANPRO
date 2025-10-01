@@ -3,6 +3,7 @@
 import React from "react";
 import AdminEventsClient from "./AdminEventsClient";
 import { IStoreCategory, IEvent } from "@/types/typings";
+import { cookies } from "next/headers";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -35,6 +36,7 @@ export type OrganizerOption = { id: string; name: string; email: string };
  */
 export default async function AdminInventoryPage({ params }: Props) {
   const companyId = params.slug;
+  const cookiesHeader = (await cookies()).toString  ();
 
   let categoriesData: IStoreCategory[] = [];
   let allEvents: IEvent[] = [];
@@ -45,30 +47,35 @@ export default async function AdminInventoryPage({ params }: Props) {
    
     // Fetch all categories for this company
     const categoriesRes = await fetch(`${apiUrl}/admin/get-store-categories?companyId=${encodeURIComponent(companyId )}`,
-      { cache: "no-store" }
+      { cache: "no-store", headers: { cookie: cookiesHeader } }
     );
 
     if (categoriesRes.ok) {
-          const { results } = await categoriesRes.json() as { results: IStoreCategory[] };
-          categoriesData = Array.isArray(results) ? results : [];
+      let categoriesJson = await categoriesRes.json();
+      console.log("Fetched categories:", categoriesJson);
+      categoriesData = categoriesJson.data.results as IStoreCategory[];
     }
 
     // Fetch all agents for this company
     const allOrganizersRes = await fetch(
       `${apiUrl}/admin/agents?companyId=${encodeURIComponent(companyId)}`,
-      { cache: "no-store" }
+      { cache: "no-store", headers: { cookie: cookiesHeader } }
     );
     if (allOrganizersRes.ok) {
-      allOrganizers = (await allOrganizersRes.json()) as Agent[];
+      let organizersJson = await allOrganizersRes.json();
+      console.log("Fetched organizers:", organizersJson);
+      allOrganizers = organizersJson.data as Agent[];
     }
 
      // Fetch all users who can be organizers (e.g., Admins, Educators, Staff)
     const organizersRes = await fetch(`${apiUrl}/admin/agents?companyId=${encodeURIComponent(companyId)}`, { // Assuming /api/users endpoint
       cache: "no-store",
+      headers: { cookie: cookiesHeader }
     });
     if (organizersRes.ok) {
-      const fetchedOrganizers = (await organizersRes.json()) as any[];
-      allOrganizers = fetchedOrganizers.map(u => ({ id: u.id, name: u.name || 'N/A', email: u.email || 'N/A' }));
+      let organizersJson = await organizersRes.json();
+      console.log("Fetched organizers:", organizersJson);
+      allOrganizers = organizersJson.data as Agent[];
     } else {
       console.error(`[EventsManagerPage] Failed to fetch organizers: ${organizersRes.status} ${organizersRes.statusText}`);
       // fetchError = true;
@@ -76,10 +83,13 @@ export default async function AdminInventoryPage({ params }: Props) {
 
     const eventsRes = await fetch(`${apiUrl}/admin/events?companyId=${encodeURIComponent(companyId)}`, { // Assuming /api/users endpoint
       cache: "no-store",
+      headers: { cookie: cookiesHeader }
     });
 
     if (eventsRes.ok) {
-      allEvents = (await eventsRes.json()) as IEvent[];
+      let eventsJson = await eventsRes.json();
+      console.log("Fetched events:", eventsJson);
+      allEvents = eventsJson.data as IEvent[];
     
     }else {
       const errorData = await eventsRes.json();
@@ -88,15 +98,15 @@ export default async function AdminInventoryPage({ params }: Props) {
 
     // Sanity check: ensure arrays
    
-    if (!Array.isArray(categoriesData)) {
-      throw new Error("Categories API response is not an array.");
-    }
-    if (!Array.isArray(allOrganizers)) {
-      throw new Error("Agents API response is not an array.");
-    }
-    if (!Array.isArray(allEvents)) {
-      throw new Error("Events API response is not an array.");
-    }
+    // if (!Array.isArray(categoriesData)) {
+    //   throw new Error("Categories API response is not an array.");
+    // }
+    // if (!Array.isArray(allOrganizers)) {
+    //   throw new Error("Agents API response is not an array.");
+    // }
+    // if (!Array.isArray(allEvents)) {
+    //   throw new Error("Events API response is not an array.");
+    // }
 
   } catch (err: any) {
     console.error("AdminInventoryPage-fetch error:", err.message);
