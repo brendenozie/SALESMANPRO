@@ -2,6 +2,7 @@ import React from "react";
 import PodcastsClient from "./PodcastsClient"; // Assuming PodcastsClient is in the same directory
 import { IStoreCategory } from "@/types/typings";
 
+import { cookies } from "next/headers";
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // Define the Podcast type
@@ -63,7 +64,7 @@ interface PageProps {
  */
 export default async function PodcastsAdminPage({ params }: PageProps) {
   const companyId = params.slug; // Using companyId as the slug for now, adjust as needed
-
+  const cookieHeader = (await cookies()).toString();
   let podcastsData: Podcast[] = [];
   let categoriesData: IStoreCategory[] = [];
 
@@ -71,12 +72,14 @@ export default async function PodcastsAdminPage({ params }: PageProps) {
     // Fetch podcasts
     const podcastsRes = await fetch(
       `${apiUrl}/admin/podcasts?companyId=${encodeURIComponent(companyId)}`,
-      { cache: "no-store" }
+      { cache: "no-store", headers: { cookie: cookieHeader } }
     );
 
     if (podcastsRes.ok) {
-      const data = (await podcastsRes.json()) as PaginatedPodcasts;
-      podcastsData = data.results;
+      const dataRes = await podcastsRes.json();
+      console.log("[PodcastsAdminPage] Fetched podcasts data:", dataRes);
+      const data = dataRes.data;
+      podcastsData = data;
     } else {
       console.error(
         "[PodcastsAdminPage] Failed to fetch podcasts:",
@@ -89,12 +92,12 @@ export default async function PodcastsAdminPage({ params }: PageProps) {
     // --- Fetch store categories ---
     const categoriesRes = await fetch(
       `${apiUrl}/admin/get-store-categories?companyId=${encodeURIComponent(companyId)}`,
-      { cache: "no-store" }
+      { cache: "no-store" , headers: { cookie: cookieHeader } }
     );
 
     if (categoriesRes.ok) {
       const json = await categoriesRes.json();
-      categoriesData = json.results ?? [];
+      categoriesData = json.data.results ?? [];
     } else {
       console.error(
         "[ClientInventoryPage] Failed to fetch store categories:",

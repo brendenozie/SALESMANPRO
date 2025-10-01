@@ -4,6 +4,8 @@ import MessagesPageClient, {
   ConversationData,
   UserData,
 } from "./MessagesPageClient";
+import { cookies } from "next/headers";
+
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -112,6 +114,8 @@ const generateSampleMessageData = (companyId: string, currentUserId: string): {
 export default async function MessagesManagerPage({ params }: Props) {
   const companyId = params.slug;
   const currentUserId = MOCK_CURRENT_USER_ID; // In a real app, get this from auth context
+  
+    const cookieHeader = await cookies().toString();
 
   let initialConversations: ConversationData[] = [];
   let allUsers: UserData[] = [];
@@ -120,11 +124,13 @@ export default async function MessagesManagerPage({ params }: Props) {
   try {
     // Fetch conversations for the current user
     const conversationsRes = await fetch(
-      `${apiUrl}/conversations?userId=${encodeURIComponent(currentUserId)}&companyId=${encodeURIComponent(companyId)}`,
-      { cache: "no-store" }
+      `${apiUrl}/admin/conversations?userId=${encodeURIComponent(currentUserId)}&companyId=${encodeURIComponent(companyId)}`,
+      { cache: "no-store", headers: { cookie: cookieHeader } }
     );
     if (conversationsRes.ok) {
-      initialConversations = (await conversationsRes.json()) as ConversationData[];
+      let dataConvers = await conversationsRes.json();
+      initialConversations = dataConvers.data as ConversationData[]
+      ;
     } else {
       console.error(`[MessagesManagerPage] Failed to fetch conversations: ${conversationsRes.status} ${conversationsRes.statusText}`);
       fetchError = true;
@@ -132,11 +138,12 @@ export default async function MessagesManagerPage({ params }: Props) {
 
     // Fetch all users in the company (for recipient selection in compose)
     const usersRes = await fetch(
-      `${apiUrl}/users?companyId=${encodeURIComponent(companyId)}`, // Assuming an /api/users endpoint
-      { cache: "no-store" }
+      `${apiUrl}/admin/users?companyId=${encodeURIComponent(companyId)}`, // Assuming an /api/users endpoint
+      { cache: "no-store", headers: { cookie: cookieHeader } }
     );
     if (usersRes.ok) {
-      allUsers = (await usersRes.json()) as UserData[];
+      let dataUsers = await usersRes.json();
+      allUsers = dataUsers.data as UserData[];
     } else {
       console.error(`[MessagesManagerPage] Failed to fetch users: ${usersRes.status} ${usersRes.statusText}`);
       fetchError = true;

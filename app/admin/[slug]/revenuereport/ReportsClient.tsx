@@ -73,33 +73,33 @@ const ReportsClient: React.FC = () => {
         productsRes,
         totalRes,
       ] = await Promise.all([
-        axios.get<OrdersByStatusResponse[]>(
+        axios.get<{data: { orders: OrdersByStatusResponse[]}}>(
           "/api/admin/reports/order-by-status",
-          { params }
+          { params, headers: { 'Cache-Control': 'no-store', initial: true } }
         ),
-        axios.get<SalesAgentRevenueResponse[]>(
+        axios.get<{data: SalesAgentRevenueResponse[]}>(
           "/api/admin/reports/sales-agent-revenue",
-          { params }
+          { params, headers: { 'Cache-Control': 'no-store', initial: true } }
         ),
-        axios.get<BestSellingProductsResponse[]>(
+        axios.get<{data: BestSellingProductsResponse[]}>(
           "/api/admin/reports/best-selling-products",
-          { params }
+          { params, headers: { 'Cache-Control': 'no-store', initial: true } }
         ),
-        axios.get<TotalRevenueResponse>(
+        axios.get<{data: TotalRevenueResponse}>(
           "/api/admin/reports/total-revenue",
-          { params }
+          { params, headers: { 'Cache-Control': 'no-store', initial: true } }
         ),
       ]);
 
       // Orders by Status (donut chart)
-      const ordersData = ordersRes.data;
+      const ordersData = ordersRes.data.data.orders;
       setOrdersByStatus({
         labels: ordersData.map((item) => item.status),
         series: ordersData.map((item) => item._count.id),
       });
 
       // Sales Agent Revenue (bar chart)
-      const revenueData = revenueRes.data;
+      const revenueData = revenueRes.data.data;
       setSalesAgentRevenue({
         labels: revenueData.map((agent) => agent.name),
         series: [
@@ -111,7 +111,7 @@ const ReportsClient: React.FC = () => {
       });
 
       // Best-Selling Products (line chart)
-      const productsData = productsRes.data;
+      const productsData = productsRes.data.data;
       setBestSellingProducts({
         labels: productsData.map((prod) => prod.name),
         series: [
@@ -123,7 +123,7 @@ const ReportsClient: React.FC = () => {
       });
 
       // Total Revenue (number)
-      setTotalRevenue(totalRes.data.totalRevenue || 0);
+      setTotalRevenue(totalRes.data.data.totalRevenue || 0);
     } catch (err) {
       console.error("Error fetching reports:", err);
       setError("Failed to load reports. Please try again.");

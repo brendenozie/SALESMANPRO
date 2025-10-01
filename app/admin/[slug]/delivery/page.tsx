@@ -1,6 +1,7 @@
 // app/admin/[slug]/delivery/page.tsx
 import React from "react";
 import DeliveryClient from "./DeliveryClient";
+import { cookies } from "next/headers";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -55,13 +56,15 @@ interface PageProps {
  */
 export default async function DeliveryPage({ params }: PageProps) {
   const companyId = params.slug;
+  const cookieHeader = (await cookies()).toString();
   let deliveryOrdersData: CustomerOrder[] = [];
   let error: string | null = null;
 
   try {
-    const ordersRes = await fetch(`${apiUrl}/admin/customer-orders?companyId=${companyId}&delivery=true`, { cache: "no-store" });
+    const ordersRes = await fetch(`${apiUrl}/admin/customer-orders?companyId=${companyId}&delivery=true`, { cache: "no-store", headers: { Cookie: cookieHeader } });
     if (ordersRes.ok) {
-      deliveryOrdersData = (await ordersRes.json()) as CustomerOrder[];
+      let data = await ordersRes.json();
+      deliveryOrdersData = data.data.orders || [];
     } else {
       error = `Failed to fetch delivery orders: ${ordersRes.status} ${ordersRes.statusText}`;
       console.error("[DeliveryPage] Failed to fetch delivery orders →", ordersRes.status, ordersRes.statusText);

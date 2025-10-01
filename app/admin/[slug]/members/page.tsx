@@ -1,6 +1,7 @@
 // app/admin/members/page.tsx
 import React from "react";
 import MembersClient from "./MembersClient";
+import { cookies } from "next/headers";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -42,6 +43,8 @@ interface PageProps {
  */
 export default async function MembersPage({ params }: PageProps) {
   const companyId = params.slug;
+  const cookieHeader = await cookies().toString();
+
   let membersData: Member[] = [];
   let projectsData: ProjectOption[] = [];
   let projectMembersData: ProjectMember[] = [];
@@ -50,25 +53,50 @@ export default async function MembersPage({ params }: PageProps) {
     // Fetch Users (Members)
     // NOTE: You'll need an API endpoint for fetching users, e.g., /api/users
     // For now, this is a placeholder. You might need to adjust your backend to expose users.
-    const usersRes = await fetch(`${apiUrl}/admin/users?companyId=${companyId}`, { cache: "no-store" });
+    const usersRes = await fetch(`${apiUrl}/admin/users?companyId=${companyId}`, { cache: "no-store", headers: { cookie: cookieHeader } });
     if (usersRes.ok) {
-      membersData = (await usersRes.json()) as Member[];
+      let data = await usersRes.json();
+      membersData = data.map((user: any) => ({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        createdAt: user.createdAt,
+      })) as Member[];
     } else {
       console.error("[MembersPage] Failed to fetch users →", usersRes.status, usersRes.statusText);
     }
 
     // Fetch Projects (for Project Member dropdown)
-    const projectsRes = await fetch(`${apiUrl}/admin/projects?companyId=${companyId}`, { cache: "no-store" });
+    const projectsRes = await fetch(`${apiUrl}/admin/projects?companyId=${companyId}`, { cache: "no-store", headers: { cookie: cookieHeader } });
     if (projectsRes.ok) {
-      projectsData = (await projectsRes.json()) as ProjectOption[];
+      let data = await projectsRes.json();
+      projectsData = data.map((project: any) => ({
+        id: project.id,
+        name: project.name,
+      })) as ProjectOption[];
     } else {
       console.error("[MembersPage] Failed to fetch projects →", projectsRes.status, projectsRes.statusText);
     }
 
     // Fetch Project Members
-    const projectMembersRes = await fetch(`${apiUrl}/admin/project-members?companyId=${companyId}`, { cache: "no-store" });
+    const projectMembersRes = await fetch(`${apiUrl}/admin/project-members?companyId=${companyId}`, { cache: "no-store", headers: { cookie: cookieHeader } });
     if (projectMembersRes.ok) {
-      projectMembersData = (await projectMembersRes.json()) as ProjectMember[];
+      let data = await projectMembersRes.json();
+      projectMembersData = data.map((pm: any) => ({
+        id: pm.id,
+        projectId: pm.projectId,
+        userId: pm.userId,
+        role: pm.role,
+        project: { id: pm.project.id, name: pm.project.name },
+        user: {
+          id: pm.user.id,
+          name: pm.user.name,
+          email: pm.user.email,
+          role: pm.user.role,
+          createdAt: pm.user.createdAt,
+        },
+      })) as ProjectMember[];
     } else {
       console.error("[MembersPage] Failed to fetch project members →", projectMembersRes.status, projectMembersRes.statusText);
     }

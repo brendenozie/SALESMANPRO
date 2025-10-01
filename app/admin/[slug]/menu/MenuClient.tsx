@@ -497,7 +497,12 @@ interface ClientProps {
 
 const MenuClient: React.FC<ClientProps> = ({ companyId, categoriesData, productsData }) => {
 
-  const { products, loading, error, refreshData, setProducts, setCategories } = useMenuData(companyId);
+  // const { products, loading, error, refreshData, setProducts, setCategories } = useMenuData(companyId);
+  const [products, setProducts] = useState<any[]>(productsData || []);
+  const [categories, setCategories] = useState<any[]>(categoriesData || []);
+
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [activeCategoryFilter, setActiveCategoryFilter] = useState<string>("All"); // Filter by category ID or "All"
@@ -764,7 +769,7 @@ const MenuClient: React.FC<ClientProps> = ({ companyId, categoriesData, products
           />
           <SummaryCard
             title="Total Categories"
-            value={categoriesData.length}
+            value={categoriesData?.length || 0}
             bgColor="bg-indigo-600"
             icon={<ListBulletIcon className="w-6 h-6 " />}
           />
@@ -833,7 +838,7 @@ const MenuClient: React.FC<ClientProps> = ({ companyId, categoriesData, products
           >
             <AdjustmentsVerticalIcon className="w-6 h-6 inline-block mr-2" /> All Dishes
           </button>
-          {categoriesData.map(category => (
+          {categoriesData?.length > 0 && categoriesData.map(category => (
             <button
               key={category.id}
               onClick={() => { setActiveCategoryFilter(category.categoryId || ''); setCurrentPage(1); }}
@@ -927,7 +932,7 @@ const MenuClient: React.FC<ClientProps> = ({ companyId, categoriesData, products
 
       {/* Edit MarketListingForm Modal */}
       <Modal isOpen={isEditProductModalOpen} onClose={() => { setIsEditProductModalOpen(false); setEditingProduct(null); }} title="Edit Dish Details">
-        {editingProduct && (
+        {isEditProductModalOpen && (
           // <MarketLForm
           //   onSubmit={handleUpdateProduct}
           //   onCancel={() => { setIsEditProductModalOpen(false); setEditingProduct(null); }}

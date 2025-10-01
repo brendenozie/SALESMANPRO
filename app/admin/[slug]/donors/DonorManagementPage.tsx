@@ -16,7 +16,8 @@ interface Donor {
   company?: Company;
 }
 
-const DonorManagementPage: React.FC = () => {
+const DonorManagementPage = ({ donationsData, donorsData, projectsData, campaignsData  } : any) => {
+
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [editingDonor, setEditingDonor] = useState<Donor | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(false);

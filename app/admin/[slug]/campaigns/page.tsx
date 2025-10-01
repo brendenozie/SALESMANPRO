@@ -1,6 +1,7 @@
 // app/admin/campaigns/page.tsx
 import React from "react";
 import CampaignsClient from "./CampaignsClient";
+import { cookies } from "next/headers";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -32,13 +33,21 @@ interface PageProps {
  */
 export default async function CampaignsPage({ params }: PageProps) {
   const companyId = params.slug; // Assuming campaigns can be filtered by companyId
+  const cookieHeader = await cookies().toString();
   let campaignsData: Campaign[] = [];
 
   try {
     // Adjust the API endpoint if your campaigns API supports companyId filtering
-    const res = await fetch(`${apiUrl}/campaigns?companyId=${companyId}`, { cache: "no-store" });
+    const res = await fetch(`${apiUrl}/campaigns?companyId=${companyId}`, { cache: "no-store", headers: { cookie: cookieHeader } });
     if (res.ok) {
-      campaignsData = (await res.json()) as Campaign[];
+      let data = await res.json();
+      campaignsData = data.map((campaign: any) => ({
+        ...campaign,
+        startDate: campaign.startDate ? new Date(campaign.startDate).toISOString() : null,
+        endDate: campaign.endDate ? new Date(campaign.endDate).toISOString() : null,
+        createdAt: new Date(campaign.createdAt).toISOString(),
+        updatedAt: new Date(campaign.updatedAt).toISOString(),
+      })) as Campaign[];
     } else {
       console.error(
         "[CampaignsPage] Failed to fetch campaigns →",

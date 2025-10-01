@@ -1,6 +1,7 @@
 // app/admin/projects/page.tsx
 import React from "react";
 import ProjectsClient from "./ProjectsClient";
+import { cookies } from "next/headers";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -35,13 +36,17 @@ interface PageProps {
  */
 export default async function ProjectsPage({ params }: PageProps) {
   const companyId = params.slug; // Assuming projects are filtered by companyId
+  
+  const cookieHeader = await cookies().toString();
   let projectsData: Project[] = [];
 
   try {
     // Adjust the API endpoint if your projects API supports companyId filtering
-    const res = await fetch(`${apiUrl}/admin/projects?companyId=${companyId}`, { cache: "no-store" });
+    const res = await fetch(`${apiUrl}/admin/projects?companyId=${companyId}`, { cache: "no-store", headers: { cookie: cookieHeader } });
     if (res.ok) {
-      projectsData = (await res.json()) as Project[];
+      let projectRes = await res.json();
+      console.log("[ProjectsPage] Fetched projects successfully:", projectRes);
+      projectsData = projectRes.data || [];
     } else {
       console.error(
         "[ProjectsPage] Failed to fetch projects →",

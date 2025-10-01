@@ -1,6 +1,7 @@
 // app/admin/donations/page.tsx
 import React from "react";
 import DonationsClient from "./DonationsClient";
+import { cookies } from "next/headers";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -50,7 +51,7 @@ interface PageProps {
 export default async function DonationsPage({ params }: PageProps) {
 
   const companyId = params.slug; // Assuming donations can be filtered by companyId
-
+  const cookieHeader = await cookies().toString();
   let donationsData: Donation[] = [];
   let donorsData: UserOption[] = [];
   let projectsData: ProjectOption[] = [];
@@ -58,9 +59,16 @@ export default async function DonationsPage({ params }: PageProps) {
 
   try {
     // Adjust the API endpoint if your donations API supports companyId filtering
-    const res = await fetch(`${apiUrl}/admin/donations?companyId=${companyId}`, { cache: "no-store" });
+    const res = await fetch(`${apiUrl}/admin/donations?companyId=${companyId}`, { cache: "no-store", headers: { cookie: cookieHeader } });
     if (res.ok) {
-      donationsData = (await res.json()) as Donation[];
+      let data = await res.json();
+      console.log("Fetched donations data:", data);
+      // Convert donationDate and createdAt to ISO strings if they are Date objects
+      donationsData = data.data.map((donation: any) => ({
+        ...donation,
+        donationDate: new Date(donation.donationDate).toISOString(),
+        createdAt: new Date(donation.createdAt).toISOString(),
+      }));
     } else {
       console.error(
         "[DonationsPage] Failed to fetch donations →",
@@ -75,9 +83,14 @@ export default async function DonationsPage({ params }: PageProps) {
   
   try {
     // Adjust the API endpoint if your donors API supports companyId filtering
-    const res = await fetch(`${apiUrl}/admin/donors?companyId=${companyId}`, { cache: "no-store" });
+    const res = await fetch(`${apiUrl}/admin/donors?companyId=${companyId}`, { cache: "no-store", headers: { cookie: cookieHeader } });
     if (res.ok) {
-      donorsData = (await res.json()) as UserOption[];
+      let data = await res.json();
+      donorsData = data.map((donor: any) => ({
+        id: donor.id,
+        name: donor.name,
+        email: donor.email,
+      })) as UserOption[];
     } else {
       console.error(
         "[DonationsPage] Failed to fetch donations →",
@@ -93,9 +106,13 @@ export default async function DonationsPage({ params }: PageProps) {
   
   try {
     // Adjust the API endpoint if your projects API supports companyId filtering
-    const res = await fetch(`${apiUrl}/admin/projects?companyId=${companyId}`, { cache: "no-store" });
+    const res = await fetch(`${apiUrl}/admin/projects?companyId=${companyId}`, { cache: "no-store", headers: { cookie: cookieHeader } });
     if (res.ok) {
-      projectsData = (await res.json()) as ProjectOption[];
+      let data = await res.json();
+      projectsData = data.map((project: any) => ({
+        id: project.id,
+        name: project.name,
+      })) as ProjectOption[];
     } else {
       console.error(
         "[DonationsPage] Failed to fetch donations →",
@@ -110,9 +127,13 @@ export default async function DonationsPage({ params }: PageProps) {
   
   try {
     // Adjust the API endpoint if your campaigns API supports companyId filtering
-    const res = await fetch(`${apiUrl}/admin/campaigns?companyId=${companyId}`, { cache: "no-store" });
+    const res = await fetch(`${apiUrl}/admin/campaigns?companyId=${companyId}`, { cache: "no-store", headers: { cookie: cookieHeader } });
     if (res.ok) {
-      campaignsData = (await res.json()) as CampaignOption[];
+      let data = await res.json();
+      campaignsData = data.map((campaign: any) => ({
+        id: campaign.id,
+        name: campaign.name,
+      })) as CampaignOption[];
     } else {
       console.error(
         "[DonationsPage] Failed to fetch donations →",

@@ -1,6 +1,8 @@
 // app/admin/[slug]/orders/page.tsx
 import React from "react";
 import OrdersClient from "./OrdersClient";
+import { cookies } from "next/headers";
+
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -54,13 +56,17 @@ interface PageProps {
  */
 export default async function OrdersPage({ params }: PageProps) {
   const companyId = params.slug;
+  const cookieHeader = (await cookies()).toString();
   let ordersData: CustomerOrder[] = [];
   let error: string | null = null;
 
   try {
-    const ordersRes = await fetch(`${apiUrl}/admin/customer-orders?companyId=${companyId}`, { cache: "no-store" });
+    const ordersRes = await fetch(`${apiUrl}/admin/customer-orders?companyId=${companyId}`, { cache: "no-store", headers: { Cookie: cookieHeader } });
     if (ordersRes.ok) {
-      ordersData = (await ordersRes.json()) as CustomerOrder[];
+      let data = await ordersRes.json();
+      console.log("[OrdersPage] Fetched orders data →", data);
+      ordersData = data.data.orders || [];
+      
     } else {
       error = `Failed to fetch orders: ${ordersRes.status} ${ordersRes.statusText}`;
       console.error("[OrdersPage] Failed to fetch orders →", ordersRes.status, ordersRes.statusText);

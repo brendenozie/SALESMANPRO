@@ -2,6 +2,7 @@
 import React from "react";
 import MenuClient from "./MenuClient";
 import { MarketListingForm, IStoreCategory } from "@/types/typings";
+import { cookies } from "next/headers";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -63,6 +64,7 @@ interface PaginatedListings {
  */
 export default async function MenuPage({ params }: PageProps) {
     const companyId = params.slug;
+    const cookieHeader = await cookies().toString();
   
     let productsData: MarketListingForm[] = [];
     let categoriesData: IStoreCategory[] = [];
@@ -70,13 +72,18 @@ export default async function MenuPage({ params }: PageProps) {
     try {
       const res = await fetch(
         `${apiUrl}/admin/my-market-place?companyId=${encodeURIComponent(companyId)}`,
-        { cache: "no-store" }
+        { cache: "no-store", headers: { cookie: cookieHeader } }
       );
   
       if (res.ok) {
         
-        const data = (await res.json()) as PaginatedListings;
-        productsData = data.results;    
+        let menuRes = await res.json();   
+        console.log("Fetched marketplace products data:", menuRes);
+        productsData = menuRes.data.results.map((product: any) => ({
+          ...product,
+          createdAt: product.createdAt ? new Date(product.createdAt).toISOString() : null,
+          updatedAt: product.updatedAt ? new Date(product.updatedAt).toISOString() : null,
+        })) as MarketListingForm[];
         
       } else {
         console.error(
@@ -92,15 +99,15 @@ export default async function MenuPage({ params }: PageProps) {
         `${apiUrl}/admin/get-store-categories?companyId=${encodeURIComponent(
           companyId
         )}`,
-        { cache: "no-store" }
+        { cache: "no-store", headers: { cookie: cookieHeader } }
       );
       if (categoriesRes.ok) {
-        const categoriesJson = (await categoriesRes.json()) as {
-          results: IStoreCategory[];
+          let catRes = await categoriesRes.json();
+          console.log("Fetched categories data:", catRes);
+          const categoriesJson: { InfoResponse: any; results: IStoreCategory[] } = catRes.data;
+          categoriesData = categoriesJson.results;
         };
-        categoriesData = categoriesJson.results;
-      }
-  
+        
     } catch (err: any) {
       console.error("[ClientInventoryPage] Error fetching marketplace products:", err.message);
     }

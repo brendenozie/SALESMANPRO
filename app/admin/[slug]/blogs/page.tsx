@@ -2,6 +2,7 @@
 
 import React from "react";
 import BlogsClient from "./BlogsClient";
+import { cookies } from "next/headers";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -45,6 +46,7 @@ interface PageProps {
 
 export default async function BlogsPage({ params }: PageProps) {
   const companyId = params.slug;
+  const cookieHeader = await cookies().toString();
   const limit     = 10;
   const page      = 1;
 
@@ -56,11 +58,11 @@ export default async function BlogsPage({ params }: PageProps) {
   try {
     const res = await fetch(
       `${apiUrl}/admin/get-all-blogs?companyId=${encodeURIComponent(companyId)}&limit=${limit}&page=${page}`,
-      { cache: "no-store" }
+      { cache: "no-store", headers: { cookie: cookieHeader } }
     );
 
     if (res.ok) {
-      const json = await res.json() as {
+      const json = await res.json() as {data: {
         meta: {
           totalItems: number;
           totalPages: number;
@@ -68,11 +70,12 @@ export default async function BlogsPage({ params }: PageProps) {
           perPage: number;
         };
         results: BlogItem[];
+      }
       };
 
-      blogsData   = json.results;
-      totalItems  = json.meta.totalItems;
-      totalPages  = json.meta.totalPages;
+      blogsData   = json.data.results;
+      totalItems  = json.data.meta.totalItems;
+      totalPages  = json.data.meta.totalPages;
     } else {
       console.error(
         "[BlogsPage] Failed to fetch blogs:",
@@ -86,13 +89,15 @@ export default async function BlogsPage({ params }: PageProps) {
       `${apiUrl}/admin/get-store-categories?companyId=${encodeURIComponent(
         companyId
       )}`,
-      { cache: "no-store" }
+      { cache: "no-store", headers: { cookie: cookieHeader } }
     );
     if (categoriesRes.ok) {
       const categoriesJson = (await categoriesRes.json()) as {
-        results: any[];
+        data: {
+          results: any[];
+        };
       };
-      categoriesData = categoriesJson.results;
+      categoriesData = categoriesJson.data.results;
     }
 
   } catch (err: any) {

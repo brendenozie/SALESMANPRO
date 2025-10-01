@@ -13,7 +13,7 @@ import {
   SocialChannel,
   StoreForm,
 } from "@/types/typings";
-import { User } from "@prisma/client"; // Import the User type from Prisma
+import { cookies } from "next/headers";
 
 export const dynamic = "force-dynamic";
 
@@ -100,16 +100,17 @@ export default async function EditStorePage({
   // --- Fetch available categories and locations for the form selectors ---
   const categoryRes = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/admin/get-all-categories`,
-    { cache: "no-store" }
+    { cache: "no-store", headers: { Cookie: (await cookies()).toString() } }
   );
   const categoryData = await categoryRes.json();
-  const availableCategories: IProductCategory[] = categoryData.results || [];
+  const availableCategories: IProductCategory[] = categoryData.data.results || [];
 
   const locationRes = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/admin/locations`
+    `${process.env.NEXT_PUBLIC_API_URL}/admin/locations`,
+    { cache: "no-store", headers: { Cookie: (await cookies()).toString() } }
   );
   const locationData = await locationRes.json();
-  const availableLocations: ILocation[] = locationData.data || [];
+  const availableLocations: ILocation[] = locationData.data.data || [];
 
   // --- Map the comprehensive Prisma object to the StoreForm shape ---
   const storeFormData: StoreForm = {

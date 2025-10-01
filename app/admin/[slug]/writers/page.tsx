@@ -2,6 +2,8 @@
 import React from "react";
 import WritersClient from "./WritersClient"; // Make sure the path is correct
 
+import { cookies } from "next/headers";
+
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // Define nested types for User and Company as they will be included by Prisma
@@ -51,15 +53,18 @@ interface PageProps {
 export default async function WritersPage({ params }: PageProps) {
   const companyId = params.slug;
   let writersData: Writer[] = [];
+  const cookieHeader = await cookies().toString();
 
   try {
     const res = await fetch(`${apiUrl}/admin/writers?companyId=${companyId}`, {
       cache: "no-store", // Ensure fresh data on each request
+      headers: { cookie: cookieHeader },
     });
     if (res.ok) {
       // The API now returns the full Writer structure including nested user and company.
       // We cast rawData directly to Writer[] for type safety.
-      const rawData: Writer[] = await res.json(); 
+      const rawRes = await res.json(); 
+      const rawData = rawRes.data as Writer[];
 
       // It's good practice to map and provide default values for robustness,
       // even if the API is expected to return all fields.
