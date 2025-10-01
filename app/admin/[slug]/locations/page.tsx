@@ -70,11 +70,11 @@ const buildLocationTree = (locations: Location[]): Location[] => {
   const roots: Location[] = [];
 
   // Build map keyed by locationId (not companyLocation.id)
-  locations.forEach((loc) => {
+  locations.length > 0 && locations.forEach((loc) => {
     map[loc.locationId] = { ...loc, children: [] };
   });
 
-  locations.forEach((loc) => {
+  locations.length > 0 && locations.forEach((loc) => {
     if (loc.parentId && map[loc.parentId]) {
       // attach child to parent using parentId (base location id)
       map[loc.parentId].children?.push(map[loc.locationId]);
@@ -122,7 +122,11 @@ export default function LocationManagementPage({params}:PageProps) {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/admin/locationsv2?companyId=${params.slug}`);
+      const res = await fetch(`/api/admin/locationsv2?companyId=${params.slug}`,
+        { 
+          integrity: "same-origin",
+        }
+      );
       if (!res.ok) {
         const errData = await res.json();
         throw new Error(errData.error || `HTTP error: ${res.status}`);
@@ -130,7 +134,7 @@ export default function LocationManagementPage({params}:PageProps) {
 
       const result = await res.json();
       console.log(result);
-      const data: Location[] = result.data || []; // <-- FIX: pick data array
+      const data: Location[] = result.data.data || []; // <-- FIX: pick data array
       setLocations(data);
     } catch (err: any) {
       setError(`Failed to fetch locations: ${err.message}`);

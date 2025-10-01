@@ -614,13 +614,15 @@ export default function AgentsPage({ params }: AgentsPageProps) {
     try {
       // TODO: Replace this with an actual fetch to your GET /api/admin/agents endpoint
       // Example:
-      const res = await fetch(`${apiUrl}?companyId=${slug}`);
+      const res = await fetch(`${apiUrl}?companyId=${slug}`,{ integrity: 'same-origin' }); // Adjust query params as needed
       if (!res.ok) {        
         const data = generateSampleAgents();
         setAgents(data.sort((a, b) => new Date(b.joinedAt).getTime() - new Date(a.joinedAt).getTime()));
       }
       else{
-        const data: AgentProfile[] = await res.json();
+        let dataRes = await res.json();
+        console.log("Fetched agents data:", dataRes);
+        const data: AgentProfile[] = dataRes.data.data;
         setAgents(data.sort((a, b) => new Date(b.joinedAt).getTime() - new Date(a.joinedAt).getTime()));
       }
 
