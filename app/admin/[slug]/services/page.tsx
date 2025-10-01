@@ -3,6 +3,8 @@ import React from "react";
 import AdminServicesClient from "./AdminServicesClient"; // Adjust path as needed
 import { IStoreCategory, MarketListingForm } from "@/types/typings";
 
+import { cookies } from "next/headers";
+
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -14,6 +16,8 @@ interface PageProps {
 
 export default async function ServicesPage({ params }: PageProps) {
   const companyId = params.slug;
+  
+    const cookieHeader = await cookies().toString();
 
   let initialServices: MarketListingForm[] = [];
   let categoriesData: IStoreCategory[] = [];
@@ -22,7 +26,7 @@ export default async function ServicesPage({ params }: PageProps) {
     // Fetch marketplace listings for the given companyId
     const res = await fetch(
       `${apiUrl}/admin/my-market-place?companyId=${encodeURIComponent(companyId)}`,
-      { cache: 'no-store' }
+      { cache: 'no-store' , headers: { Cookie: cookieHeader } }
     );
 
     // Fetch all categories for this company
@@ -30,11 +34,13 @@ export default async function ServicesPage({ params }: PageProps) {
       `${apiUrl}/admin/get-store-categories?companyId=${encodeURIComponent(
         companyId
       )}`,
-      { cache: 'no-store' }
+      { cache: 'no-store' , headers: { Cookie: cookieHeader } }
     );
 
     if (categoriesRes.ok) {
-      const { results } = await categoriesRes.json() as { results: IStoreCategory[] };
+      const categoriesJson = await categoriesRes.json();
+      console.log("Categories JSON:", categoriesJson);
+      const results = categoriesJson.data.results;
       categoriesData = Array.isArray(results) ? results : [];
     }
 
@@ -44,10 +50,10 @@ export default async function ServicesPage({ params }: PageProps) {
       const rawList =
         Array.isArray(json)
           ? json
-          : Array.isArray((json as any).results)
-          ? (json as any).results
-          : Array.isArray((json as any).listing)
-          ? (json as any).listing
+          : Array.isArray((json as any).data.results)
+          ? (json as any).data.results
+          : Array.isArray((json as any).data.listing)
+          ? (json as any).data.listing
           : [];
 
       initialServices = rawList.map((item: any) => ({

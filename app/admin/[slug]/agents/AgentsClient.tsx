@@ -228,10 +228,10 @@ const AgentSummaryCard: React.FC<AgentSummaryCardProps> = ({ title, value, icon:
 
 // Agent Profile Card for the list view
 interface AgentProfileCardProps {
-  agent: AgentProfile;
+  agent: any;
   adminSlug: string;
-  onEdit: (agent: AgentProfile) => void; // Changed to trigger modal
-  onDelete: (agent: AgentProfile) => void;
+  onEdit: (agent: any) => void; // Changed to trigger modal
+  onDelete: (agent: any) => void;
 }
 
 const AgentProfileCard: React.FC<AgentProfileCardProps> = ({ agent, adminSlug, onEdit, onDelete }) => {
@@ -328,7 +328,7 @@ interface AddEditAgentModalProps {
 }
 
 const AddEditAgentModal: React.FC<AddEditAgentModalProps> = ({ isOpen, onClose, agent, onSave, isSubmitting }) => {
-  const [formData, setFormData] = useState<Partial<AgentProfile>>({});
+  const [formData, setFormData] = useState<Partial<any>>({});
 
   useEffect(() => {
     // Initialize form data when modal opens or agent prop changes
@@ -583,7 +583,7 @@ const loader = ({ src, width, quality }: { src: string; width: number; quality?:
 interface AgentsPageProps {
   params: {
     companyId: string;
-    agentsData: Agent[];
+    agentsData: any[];
   };
 }
 
@@ -592,7 +592,7 @@ export default function AgentsPage({ params }: AgentsPageProps) {
   const [agents, setAgents] = useState<any[]>(agentsData || []);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterActive, setFilterActive] = useState('All'); // 'All', 'true', 'false'
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false); // For add/edit/delete operations
 
