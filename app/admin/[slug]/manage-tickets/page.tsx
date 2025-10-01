@@ -1,123 +1,34 @@
-// app/admin/[slug]/inventory/page.tsx
-
-import React from "react";
-import AdminEventsClient from "./AdminTicketsClient";
-import { IStoreCategory, IEvent } from "@/types/typings";
+// app/admin/[slug]/tickets/page.tsx
 import { cookies } from "next/headers";
+import AdminTicketsClient from "./AdminTicketsClient";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
-
-type Tag = {
-  id: string;
-  name: string;
-  image: string;
-  status: string;
-};
-
-type Agent = {
-  id: string;
-  name: string;
-   email: string
-};
-
 interface Props {
-  params: {
-    slug: string; // companyId
-  };
+  params: { slug: string };
 }
 
-export type OrganizerOption = { id: string; name: string; email: string };
-
-/**
- * This is a **Server Component**. It fetches all the data
- * at request‐time (no caching, just like getServerSideProps),
- * then renders the Client Component below.
- */
-export default async function AdminInventoryPage({ params }: Props) {
+export default async function AdminTicketsPage({ params }: Props) {
   const companyId = params.slug;
-  const cookiesHeader = (await cookies()).toString  ();
+  const cookiesHeader = (await cookies()).toString();
 
-  let categoriesData: IStoreCategory[] = [];
-  let allEvents: IEvent[] = [];
-  let allOrganizers: Agent[] = [];
+  let tickets = [];
 
   try {
-    // Fetch all products for this company
-   
-    // Fetch all categories for this company
-    const categoriesRes = await fetch(`${apiUrl}/admin/get-store-categories?companyId=${encodeURIComponent(companyId )}`,
+    const res = await fetch(
+      `${apiUrl}/admin/${companyId}/tickets`,
       { cache: "no-store", headers: { cookie: cookiesHeader } }
     );
 
-    if (categoriesRes.ok) {
-      let categoriesJson = await categoriesRes.json();
-      console.log("Fetched categories:", categoriesJson);
-      categoriesData = categoriesJson.data.results as IStoreCategory[];
-    }
-
-    // Fetch all agents for this company
-    const allOrganizersRes = await fetch(
-      `${apiUrl}/admin/agents?companyId=${encodeURIComponent(companyId)}`,
-      { cache: "no-store", headers: { cookie: cookiesHeader } }
-    );
-    if (allOrganizersRes.ok) {
-      let organizersJson = await allOrganizersRes.json();
-      console.log("Fetched organizers:", organizersJson);
-      allOrganizers = organizersJson.data as Agent[];
-    }
-
-     // Fetch all users who can be organizers (e.g., Admins, Educators, Staff)
-    const organizersRes = await fetch(`${apiUrl}/admin/agents?companyId=${encodeURIComponent(companyId)}`, { // Assuming /api/users endpoint
-      cache: "no-store",
-      headers: { cookie: cookiesHeader }
-    });
-    if (organizersRes.ok) {
-      let organizersJson = await organizersRes.json();
-      console.log("Fetched organizers:", organizersJson);
-      allOrganizers = organizersJson.data as Agent[];
+    if (res.ok) {
+      const json = await res.json();
+      tickets = json.data?.tickets || [];
     } else {
-      console.error(`[EventsManagerPage] Failed to fetch organizers: ${organizersRes.status} ${organizersRes.statusText}`);
-      // fetchError = true;
+      console.error(`Failed to fetch tickets: ${res.status}`);
     }
-
-    const eventsRes = await fetch(`${apiUrl}/admin/events?companyId=${encodeURIComponent(companyId)}`, { // Assuming /api/users endpoint
-      cache: "no-store",
-      headers: { cookie: cookiesHeader }
-    });
-
-    if (eventsRes.ok) {
-      let eventsJson = await eventsRes.json();
-      console.log("Fetched events:", eventsJson);
-      allEvents = eventsJson.data as IEvent[];
-    
-    }else {
-      const errorData = await eventsRes.json();
-      throw new Error(errorData.message || `HTTP error! status: ${eventsRes.status}`);
-    }
-
-    // Sanity check: ensure arrays
-   
-    // if (!Array.isArray(categoriesData)) {
-    //   throw new Error("Categories API response is not an array.");
-    // }
-    // if (!Array.isArray(allOrganizers)) {
-    //   throw new Error("Agents API response is not an array.");
-    // }
-    // if (!Array.isArray(allEvents)) {
-    //   throw new Error("Events API response is not an array.");
-    // }
-
   } catch (err: any) {
-    console.error("AdminInventoryPage-fetch error:", err.message);
-    // We simply proceed with empty arrays if something fails.
+    console.error("Error fetching tickets:", err.message);
   }
 
-  return (
-    <AdminEventsClient
-      slug={companyId}
-      allOrganizers={allOrganizers}
-      allEvents={allEvents}
-    />
-  );
+  return <AdminTicketsClient slug={companyId} initialTickets={tickets} />;
 }
