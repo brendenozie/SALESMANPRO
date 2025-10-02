@@ -1,564 +1,241 @@
-'use client';
+// app/admin/[slug]/properties/page.tsx
+// NO 'use client' directive
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import {
-  BuildingOfficeIcon,
-  PlusCircleIcon,
-  MagnifyingGlassIcon,
-  PencilSquareIcon,
-  TrashIcon,
-  EyeIcon,
-  MapPinIcon,
-  TagIcon,
-  PhotoIcon,
-  XMarkIcon,
-  HomeModernIcon, // More suitable for properties
-  TruckIcon, // For vehicles
-  BookOpenIcon, // For books
-  CurrencyDollarIcon,
-  CheckCircleIcon,
-  ClockIcon,
-} from '@heroicons/react/24/outline';
-import Link from 'next/link';
+import { notFound } from 'next/navigation';
+import { BuildingOfficeIcon } from '@heroicons/react/24/outline';
+import { cookies } from 'next/headers';
+import PropertyClientPage from './PropertyClientPage'; 
 
-// Assuming these components are correctly implemented and styled with Tailwind
-import AddToProductMarketModal from "@/components/AddToProductMarketModal";
-// If you have a dedicated delete modal component, uncomment and use it
-// import { PropertyDeleteConfirmModal } from './PropertyDeleteConfirmModal';
-
-import { IStoreCategory, ILocation, MarketListingForm } from '@/types/typings';
-
+import { ILocation, IStoreCategory, MarketListingForm } from '@/types/typings';
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
-interface PropertyManagementPageProps {
-  params: {
-    slug: string;
-  };
+
+
+// --- Sample Data Generation (MOCKUPS FOR FALLBACK) ---
+const generateMockProperties = (): MarketListingForm[] => [
+    {
+      id: 'PROP001',
+      name: 'Luxury 4-Bedroom Villa',
+      category: 'property',
+      type: 'For Sale',
+      status: 'Available',
+      finalPrice: 55000000,
+      locationName: 'Karen, Nairobi',
+      contactName: 'Jane Smith',
+      images: ['/images/property/villa-1.jpg'],
+      bathrooms: 4.5,
+      area: "4500",
+      createdAt: new Date(),
+      duration: undefined,
+      productCategoryId: '',
+      subCategory: undefined,
+      tags: [],
+      option: [],
+      color: [],
+      size: [],
+      weight: [],
+      material: [],
+      quantity: 0,
+      buyingPrice: 0,
+      sellingPrice: 0,
+      pricingTiers: [],
+      isAvailable: false,
+      isOnOffer: false,
+      isFlashDeal: false,
+      isNewArrival: false,
+      isDiscounted: false,
+      isFeatured: false,
+      bedrooms: [],
+      studios: [],
+      features: [],
+      bookingSlots: undefined,
+      requiredClientInfo: undefined,
+      amenities: [],
+      delivery: false,
+      paymentOption: '',
+      location: null
+    },
+    {
+      id: 'VEH002',
+      name: 'Toyota Prado TXL 2020',
+      category: 'vehicle',
+      type: 'Used',
+      status: 'Under_Offer',
+      finalPrice: 8900000,
+      locationName: 'Westlands, Nairobi',
+      contactName: 'John Doe',
+      images: ['/images/vehicle/prado-2.jpg'],
+      make: 'Toyota',
+      model: 'Prado TXL',
+      mileage: "45000",
+      createdAt: new Date(),
+      duration: undefined,
+      productCategoryId: '',
+      subCategory: undefined,
+      tags: [],
+      option: [],
+      color: [],
+      size: [],
+      weight: [],
+      material: [],
+      quantity: 0,
+      buyingPrice: 0,
+      sellingPrice: 0,
+      pricingTiers: [],
+      isAvailable: false,
+      isOnOffer: false,
+      isFlashDeal: false,
+      isNewArrival: false,
+      isDiscounted: false,
+      isFeatured: false,
+      bedrooms: [],
+      studios: [],
+      features: [],
+      bookingSlots: undefined,
+      requiredClientInfo: undefined,
+      amenities: [],
+      delivery: false,
+      paymentOption: '',
+      location: null
+    },
+    {
+      id: 'BOOK003',
+      name: 'The Art of Frontend Design',
+      category: 'book',
+      type: 'New',
+      status: 'Available',
+      finalPrice: 1500,
+      locationName: 'Online Store',
+      contactName: 'Michael Otieno',
+      images: ['/images/book/design-book.jpg'],
+      author: 'A. I. Designer',
+      publisher: 'TechPress',
+      isbn: '978-1234567890',
+      createdAt: new Date(),
+      duration: undefined,
+      productCategoryId: '',
+      subCategory: undefined,
+      tags: [],
+      option: [],
+      color: [],
+      size: [],
+      weight: [],
+      material: [],
+      quantity: 0,
+      buyingPrice: 0,
+      sellingPrice: 0,
+      pricingTiers: [],
+      isAvailable: false,
+      isOnOffer: false,
+      isFlashDeal: false,
+      isNewArrival: false,
+      isDiscounted: false,
+      isFeatured: false,
+      bedrooms: [],
+      studios: [],
+      features: [],
+      bookingSlots: undefined,
+      requiredClientInfo: undefined,
+      amenities: [],
+      delivery: false,
+      paymentOption: '',
+      location: null
+    },
+];
+
+// --- Generalized Data Fetching Utility ---
+const fetchData = async <T,>(
+    endpoint: string,
+    companyId: string,
+    cookiesHeaders: string,
+    fallbackData: () => T,
+    queryParam = 'companyId'
+): Promise<{ data: T | null; error: string | null }> => {
+    const url = `${apiUrl}/${endpoint}?${queryParam}=${encodeURIComponent(companyId)}`;
+    try {
+        const res = await fetch(url, { cache: 'no-store', headers: { cookie: cookiesHeaders } });
+
+        if (!res.ok) {
+            throw new Error(`Failed to fetch ${endpoint} (Status: ${res.status})`);
+        }
+
+        const dataRes = await res.json();
+        // Adjusting based on common API responses from the original file (results or data)
+        const data = dataRes?.results || dataRes?.data || dataRes; 
+
+        if (!data || (Array.isArray(data) && data.length === 0)) {
+            console.warn(`No data received for ${endpoint}. Using fallback sample data.`);
+            return { data: fallbackData(), error: null };
+        }
+
+        return { data: data as T, error: null };
+
+    } catch (e: any) {
+        console.error(`Server-side fetch failed for ${endpoint}:`, e);
+        return { data: fallbackData(), error: e.message || `Failed to load ${endpoint}.` };
+    }
+};
+
+
+interface PropertyPageProps {
+    params: {
+        slug: string; // The admin/company ID
+    };
 }
 
-export default function PropertyManagementPage({ params }: PropertyManagementPageProps) {
-  const companyId = params.slug;
 
-  const [properties, setProperties] = useState<MarketListingForm[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('All');
-  const [filterType, setFilterType] = useState('All');
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export default async function PropertyManagementPage({ params }: PropertyPageProps) {
+    const companyId = params.slug;
+    const cookiesHeaders = (await cookies()).toString();
 
-  const [categories, setCategories] = useState<IStoreCategory[] | undefined>();
-  const [locations, setLocations] = useState<ILocation[] | undefined>();
-
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [selectedProperty, setSelectedProperty] = useState<MarketListingForm | null>(null);
-  const [showAddToMarketProductModal, setShowAddToMarketProductModal] = useState(false);
-
-  // --- Data Fetching for Categories ---
-  const fetchCategories = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const res = await fetch(`${apiUrl}/admin/get-store-categories?companyId=${companyId}`, { cache: 'no-store' });
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.message || "Failed to fetch categories.");
-      }
-      const resJson = await res.json();
-      const data = resJson.results || resJson.data; // Handle both cases
-
-      if (!data) {
-        throw new Error('Invalid response structure for categories');
-      }
-
-      const storeCategories = data.map((sc: any) => ({
-        id: sc.id,
-        companyId: sc.companyId,
-        categoryId: sc.categoryId,
-        displayName: sc.displayName,
-        icon: sc.icon || sc.category?.icon, // Handle potential undefined category
-        sortOrder: sc.sortOrder,
-        visible: sc.visible,
-        items: Array.isArray(sc.items)
-          ? sc.items.map((sub: any) => ({
-              id: sub.id, name: sub.name, slug: sub.slug, sortOrder: sub.sortOrder, visible: sub.visible,
-            }))
-          : Array.isArray(sc.category?.subcategories) // Handle potential undefined category
-            ? sc.category.subcategories.map((sub: any) => ({
-                id: sub._id?.$oid || sub.id, name: sub.name, slug: sub.slug, sortOrder: sub.sortOrder, visible: sub.visible,
-              }))
-            : [],
-        allBrands: sc.allBrands || [],
-        category: {
-          id: sc.category?.id, name: sc.category?.name, slug: sc.category?.slug, // Optional chaining for safety
-          description: sc.category?.description, longDescription: sc.category?.longDescription,
-          seoTitle: sc.category?.seoTitle, seoDescription: sc.category?.seoDescription,
-          metaKeywords: sc.category?.metaKeywords, sortOrder: sc.category?.sortOrder,
-          visible: sc.category?.visible, isFeatured: sc.category?.isFeatured,
-          showInHomepage: sc.category?.showInHomepage, attributes: sc.category?.attributes,
-          subcategories: Array.isArray(sc.category?.subcategories)
-            ? sc.category.subcategories.map((sub: any) => ({
-                id: sub._id?.$oid || sub.id, name: sub.name, slug: sub.slug, sortOrder: sub.sortOrder, visible: sub.visible,
-              }))
-            : [],
-          icon: sc.category?.icon, image: sc.category?.image,
-        },
-      }));
-      setCategories(storeCategories);
-    } catch (err: any) {
-      setError(err.message || "Network error fetching categories.");
-    } finally {
-      setIsLoading(false);
+    if (!companyId) {
+        notFound();
     }
-  }, [companyId]);
 
-  useEffect(() => {
-    fetchCategories();
-  }, [fetchCategories]);
+    // --- 1. Fetch Properties (Market Listings) ---
+    const propertiesResult = await fetchData<MarketListingForm[]>('admin/my-market-place', companyId, cookiesHeaders, generateMockProperties);
+    
+    // --- 2. Fetch Categories ---
+    // NOTE: The original component had a complicated fetch/mapping for categories. We simplify the fetch call here.
+    const categoriesResult = await fetchData<{ results : IStoreCategory[] }>('admin/get-store-categories', companyId, cookiesHeaders, () => ({ results: [] } ), 'companyId');
 
-  // --- Data Fetching for Locations ---
-  const fetchLocations = useCallback(async () => {
-    try {
-      const response = await fetch('/api/admin/locations');
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `HTTP error! Status: ${response.status}`);
-      }
-      const data = await response.json();
-      setLocations(data.data || []);
-    } catch (err: any) {
-      // setError(`Failed to fetch locations: ${err.message}`); // Only set error if needed for UI
-    }
-  }, []);
+    // --- 3. Fetch Locations ---
+    // NOTE: The original fetch was to '/api/admin/locations' without companyId. Assuming this is a global list.
+    const locationsResult = await fetchData<ILocation[]>('admin/locations', '', cookiesHeaders, () => [], 'none');
 
-  useEffect(() => {
-    fetchLocations();
-  }, [fetchLocations]);
 
-  // --- Data Fetching for Properties (Market Listings) ---
-  const fetchProperties = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const response = await fetch(`${apiUrl}/admin/my-market-place?companyId=${encodeURIComponent(companyId)}`);
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `HTTP error! Status: ${response.status}`);
-      }
-      const json = await response.json();
-      const marketListings = json.results as MarketListingForm[];
-      setProperties(marketListings);
-    } catch (err: any) {
-      console.error("[PropertyManagementPage] Failed to fetch marketplace products:", err);
-      setError(err.message || "Failed to load properties.");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [companyId]);
+    // Consolidate data and error handling
+    const initialProperties: MarketListingForm[] = propertiesResult.data || generateMockProperties();
+    const initialCategories: IStoreCategory[] = categoriesResult.data?.results || [];
+    const initialLocations: ILocation[] = locationsResult.data || [];
+    
+    // Check if at least the main data (properties) failed initially
+    const serverLoadError: string | null = propertiesResult.error;
 
-  useEffect(() => {
-    fetchProperties();
-  }, [fetchProperties]);
+    return (
+        <div className="p-4 sm:p-6 lg:p-8 space-y-8 bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen font-sans text-gray-800">
+            {/* Static Header Section (Server Rendered) - Enhanced Visual Design */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-8 bg-white p-6 rounded-2xl shadow-lg border-b-4 border-indigo-600">
+                <div className="flex flex-col">
+                    <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-900 tracking-tight leading-tight flex items-center">
+                        <BuildingOfficeIcon className="h-10 w-10 text-indigo-600 mr-4 drop-shadow-md" />
+                        Property Listings Management
+                        <span className="ml-4 text-teal-600 text-2xl transform rotate-6 animate-pulse">🏠</span>
+                    </h1>
+                    <p className="text-lg text-gray-600 mt-3 max-w-2xl">
+                        Effortlessly manage your diverse property portfolio, add new listings, and update details with a beautifully designed, intuitive interface.
+                    </p>
+                </div>
+            </div>
 
-  // --- CRUD Operations ---
-  const handleSaveProperty = useCallback((propertyToSave: MarketListingForm) => {
-    setProperties(prevProperties => {
-      const existingIndex = prevProperties.findIndex(p => p.id === propertyToSave.id);
-      if (existingIndex > -1) {
-        const updatedProperties = [...prevProperties];
-        updatedProperties[existingIndex] = propertyToSave;
-        return updatedProperties;
-      } else {
-        return [propertyToSave, ...prevProperties];
-      }
-    });
-    setShowAddToMarketProductModal(false);
-    setSelectedProperty(null);
-    fetchProperties(); // Re-fetch for backend consistency
-  }, [fetchProperties]);
-
-  const handleDeleteProperty = useCallback(async (propertyId: string) => {
-    try {
-      // Uncomment and use your actual API call for deletion
-      // const response = await fetch(`${apiUrl}/admin/my-market-place/${propertyId}`, {
-      //   method: 'DELETE',
-      // });
-      // if (!response.ok) {
-      //   const errorData = await response.json();
-      //   throw new Error(errorData.message || 'Failed to delete property.');
-      // }
-      setProperties(prevProperties => prevProperties.filter(p => p.id !== propertyId));
-      setIsDeleteModalOpen(false);
-      setSelectedProperty(null);
-    } catch (err: any) {
-      setError(err.message || 'Error deleting property.');
-    }
-  }, []);
-
-  // --- Modal Handlers ---
-  const handleAddClick = () => {
-    setSelectedProperty(null);
-    setShowAddToMarketProductModal(true);
-  };
-
-  const handleEditClick = (property: MarketListingForm) => {
-    setSelectedProperty(property);
-    setShowAddToMarketProductModal(true);
-  };
-
-  const handleDeleteConfirmClick = (property: MarketListingForm) => {
-    setSelectedProperty(property);
-    setIsDeleteModalOpen(true);
-  };
-
-  const handleCloseModals = () => {
-    setShowAddToMarketProductModal(false);
-    setIsDeleteModalOpen(false);
-    setSelectedProperty(null);
-    setError(null);
-  };
-
-  // --- Filtering and Memoization ---
-  const filteredProperties = useMemo(() => {
-    return properties.filter(prop => {
-      const matchesSearch = prop.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (prop.locationName?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
-        (prop.contactName?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false) ||
-        (prop.category?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
-
-      const matchesStatus = filterStatus === 'All' || prop.status === filterStatus;
-      const matchesType = filterType === 'All' || prop.type === filterType;
-
-      return matchesSearch && matchesStatus && matchesType;
-    });
-  }, [properties, searchTerm, filterStatus, filterType]);
-
-  const uniqueStatuses = useMemo(() => Array.from(new Set(properties.map(p => p.status))).filter(Boolean) as string[], [properties]);
-  const uniqueTypes = useMemo(() => Array.from(new Set(properties.map(p => p.type))).filter(Boolean) as string[], [properties]);
-
-  // --- Utility Functions for Display ---
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-KE', { style: 'currency', currency: 'KES', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(price);
-  };
-
-  const getStatusBadgeClass = (status: MarketListingForm['status']) => {
-    switch (status) {
-      case 'Available': return 'bg-green-100 text-green-800 ring-green-600/20';
-      case 'Under_Offer': return 'bg-yellow-100 text-yellow-800 ring-yellow-600/20';
-      case 'Sold': return 'bg-red-100 text-red-800 ring-red-600/20';
-      case 'Draft': return 'bg-gray-100 text-gray-800 ring-gray-600/20';
-      default: return 'bg-gray-100 text-gray-800 ring-gray-600/20';
-    }
-  };
-
-  const getProductTypeIcon = (productTypeId: MarketListingForm['category']) => {
-    switch (productTypeId) {
-      case 'property': return <HomeModernIcon className="h-4 w-4 mr-1 text-indigo-500" />;
-      case 'vehicle': return <TruckIcon className="h-4 w-4 mr-1 text-emerald-500" />;
-      case 'book': return <BookOpenIcon className="h-4 w-4 mr-1 text-rose-500" />;
-      default: return <TagIcon className="h-4 w-4 mr-1 text-gray-400" />;
-    }
-  };
-
-  return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-8 bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen font-sans text-gray-800">
-      {/* Header Section */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-8">
-        <div className="flex flex-col">
-          <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-900 tracking-tight leading-tight flex items-center">
-            <BuildingOfficeIcon className="h-10 w-10 text-indigo-600 mr-4 drop-shadow-md" />
-            Property Listings
-            <span className="ml-4 text-teal-600 text-xl sm:text-2xl transform rotate-6 animate-pulse-slight">🏠</span>
-          </h1>
-          <p className="text-lg text-gray-600 mt-3 max-w-2xl">
-            Effortlessly manage your diverse property portfolio, add new listings, and update details with a beautifully designed, intuitive interface.
-          </p>
+            {/* 2. Render the Client Component with initial data */}
+            <PropertyClientPage
+                companyId={companyId}
+                initialProperties={initialProperties}
+                initialCategories={initialCategories}
+                initialLocations={initialLocations}
+                serverLoadError={serverLoadError}
+            />
         </div>
-        <button
-          onClick={handleAddClick}
-          className="inline-flex items-center px-7 py-3.5 border border-transparent text-lg font-semibold rounded-full shadow-lg text-white bg-gradient-to-r from-indigo-600 to-purple-700 hover:from-indigo-700 hover:to-purple-800 focus:outline-none focus:ring-3 focus:ring-offset-2 focus:ring-indigo-500 transition-all duration-300 ease-in-out transform hover:-translate-y-1 hover:scale-105 group"
-        >
-          <PlusCircleIcon className="-ml-1 mr-3 h-7 w-7 group-hover:rotate-90 transition-transform duration-300" aria-hidden="true" />
-          Add New Listing
-        </button>
-      </div>
-
-      {/* Loading and Error Indicators */}
-      {isLoading && (
-        <div className="flex flex-col items-center justify-center py-12 bg-white rounded-2xl shadow-xl border border-blue-200 animate-fade-in-up">
-          <svg className="animate-spin h-10 w-10 text-blue-500 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-          <p className="text-xl font-medium text-blue-700">Loading your marketplace listings...</p>
-          <p className="text-md text-gray-500 mt-2">Patience, valuable assets are on their way!</p>
-        </div>
-      )}
-      {error && (
-        <div className="bg-red-50 border border-red-400 text-red-800 px-8 py-5 rounded-2xl relative shadow-lg flex items-center justify-between animate-fade-in-down">
-          <div className="flex items-center">
-            <XMarkIcon className="h-7 w-7 text-red-600 mr-3" />
-            <div>
-              <strong className="font-bold text-lg">Oops! Error!</strong>
-              <span className="block sm:inline ml-2 text-md">{error}</span>
-            </div>
-          </div>
-          <button onClick={() => setError(null)} className="text-red-600 hover:text-red-900 focus:outline-none p-2 rounded-full hover:bg-red-100 transition-colors duration-200">
-            <XMarkIcon className="h-6 w-6" />
-          </button>
-        </div>
-      )}
-
-      {/* Search and Filters Section */}
-      {!isLoading && !error && (
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-7 animate-slide-in-up">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-7">
-            <div className="relative col-span-full lg:col-span-2">
-              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
-              </div>
-              <input
-                type="text"
-                placeholder="Search by name, location, agent, or category..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="block w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl leading-6 bg-gray-50 placeholder-gray-500
-                           focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base shadow-sm transition-all duration-200"
-              />
-            </div>
-            <div>
-              <label htmlFor="filterStatus" className="block text-sm font-medium text-gray-700 mb-2">Filter by Status</label>
-              <select
-                id="filterStatus"
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
-                className="block w-full py-3 px-4 border border-gray-300 bg-white rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base transition-all duration-200"
-              >
-                <option value="All">All Statuses</option>
-                {uniqueStatuses.map(status => (
-                  <option key={status} value={status}>{status}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label htmlFor="filterType" className="block text-sm font-medium text-gray-700 mb-2">Filter by Type</label>
-              <select
-                id="filterType"
-                value={filterType}
-                onChange={(e) => setFilterType(e.target.value)}
-                className="block w-full py-3 px-4 border border-gray-300 bg-white rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base transition-all duration-200"
-              >
-                <option value="All">All Types</option>
-                {uniqueTypes.map(type => (
-                  <option key={type} value={type}>{type}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Properties List/Table */}
-          <div className="overflow-x-auto rounded-xl shadow-inner border border-gray-100 bg-gray-50 p-1">
-            {filteredProperties.length === 0 ? (
-              <div className="text-center text-gray-500 py-20 bg-white rounded-xl shadow-md border border-gray-200">
-                <BuildingOfficeIcon className="mx-auto h-16 w-16 text-gray-300 mb-4 animate-bounce-slight" />
-                <h3 className="mt-3 text-2xl font-semibold text-gray-900">No listings found</h3>
-                <p className="mt-2 text-md text-gray-600">
-                  It looks a bit empty here! Try adjusting your search filters or click "Add New Listing" to get started.
-                </p>
-                <button
-                  onClick={handleAddClick}
-                  className="mt-6 inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-full shadow-md text-white bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-400 transition-transform transform hover:scale-105"
-                >
-                  <PlusCircleIcon className="-ml-1 mr-2 h-5 w-5" />
-                  Add First Listing
-                </button>
-              </div>
-            ) : (
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gradient-to-r from-gray-100 to-gray-200">
-                  <tr>
-                    <th scope="col" className="px-6 py-4 text-left text-sm font-bold text-gray-800 uppercase tracking-wider">
-                      Listing
-                    </th>
-                    <th scope="col" className="px-6 py-4 text-left text-sm font-bold text-gray-800 uppercase tracking-wider">
-                      Details
-                    </th>
-                    <th scope="col" className="px-6 py-4 text-left text-sm font-bold text-gray-800 uppercase tracking-wider">
-                      Price
-                    </th>
-                    <th scope="col" className="px-6 py-4 text-left text-sm font-bold text-gray-800 uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th scope="col" className="px-6 py-4 text-left text-sm font-bold text-gray-800 uppercase tracking-wider">
-                      Agent
-                    </th>
-                    <th scope="col" className="relative px-6 py-4">
-                      <span className="sr-only">Actions</span>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredProperties.map((property) => (
-                    <tr key={property.id} className="hover:bg-blue-50 transition-colors duration-200 ease-in-out">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        <div className="flex items-center">
-                          {property.images && property.images.length > 0 ? (
-                            <div className="flex-shrink-0 h-16 w-16 mr-4 rounded-lg overflow-hidden shadow-md border border-gray-200">
-                              <img className="h-full w-full object-cover" src={property.images[0]} alt={property.name} />
-                            </div>
-                          ) : (
-                            <div className="flex-shrink-0 h-16 w-16 mr-4 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 shadow-inner">
-                              <PhotoIcon className="h-8 w-8" />
-                            </div>
-                          )}
-                          <div>
-                            <div className="text-lg font-semibold text-gray-800 leading-snug">{property.name}</div>
-                            <div className="text-xs text-gray-500 flex items-center mt-1">
-                              <MapPinIcon className="h-3.5 w-3.5 mr-1.5 text-gray-400" /> {property.locationName || 'N/A'}
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                        <div className="space-y-1">
-                          <div className="flex items-center text-gray-700 font-medium">
-                            {getProductTypeIcon(property.category)} {property.type}
-                          </div>
-                          {property.category === 'property' && (
-                            <>
-                              <div className="flex items-center text-gray-500">
-                                <HomeModernIcon className="h-4 w-4 mr-1 text-gray-400" /> {property.bedrooms?.length ? `${property.bedrooms.length} Beds` : 'N/A Beds'}
-                              </div>
-                              <div className="flex items-center text-gray-500">
-                                <HomeModernIcon className="h-4 w-4 mr-1 text-gray-400" /> {property.bathrooms ?? 'N/A'} Baths
-                              </div>
-                              <div className="flex items-center text-gray-500">
-                                <HomeModernIcon className="h-4 w-4 mr-1 text-gray-400" /> {property.area ?? 'N/A'} SqFt
-                              </div>
-                            </>
-                          )}
-                          {property.category === 'vehicle' && (
-                            <>
-                              <div className="flex items-center text-gray-500">
-                                <TruckIcon className="h-4 w-4 mr-1 text-gray-400" /> Make: {property.make ?? 'N/A'}
-                              </div>
-                              <div className="flex items-center text-gray-500">
-                                <TruckIcon className="h-4 w-4 mr-1 text-gray-400" /> Model: {property.model ?? 'N/A'}
-                              </div>
-                              <div className="flex items-center text-gray-500">
-                                <TruckIcon className="h-4 w-4 mr-1 text-gray-400" /> Mileage: {property.mileage ?? 'N/A'}
-                              </div>
-                            </>
-                          )}
-                          {property.category === 'book' && (
-                            <>
-                              <div className="flex items-center text-gray-500">
-                                <BookOpenIcon className="h-4 w-4 mr-1 text-gray-400" /> Author: {property.author ?? 'N/A'}
-                              </div>
-                              <div className="flex items-center text-gray-500">
-                                <BookOpenIcon className="h-4 w-4 mr-1 text-gray-400" /> Publisher: {property.publisher ?? 'N/A'}
-                              </div>
-                              <div className="flex items-center text-gray-500">
-                                <BookOpenIcon className="h-4 w-4 mr-1 text-gray-400" /> ISBN: {property.isbn ?? 'N/A'}
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-xl font-extrabold text-teal-700">
-                        {formatPrice(property.finalPrice || 0)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-3.5 py-1.5 inline-flex text-xs leading-5 font-bold rounded-full shadow-sm ring-1 ring-inset ${getStatusBadgeClass(property.status)}`}>
-                          {property.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                        {property.contactName}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <div className="flex items-center justify-end space-x-2">
-                          <Link
-                            href={`/admin/${params.slug}/properties/${property.id}`}
-                            className="text-indigo-600 hover:text-indigo-800 p-2.5 rounded-full hover:bg-indigo-50 transition-all duration-200 transform hover:scale-110"
-                            title="View Details"
-                          >
-                            <EyeIcon className="h-5 w-5" />
-                          </Link>
-                          <button
-                            onClick={() => handleEditClick(property)}
-                            className="text-blue-600 hover:text-blue-800 p-2.5 rounded-full hover:bg-blue-50 transition-all duration-200 transform hover:scale-110"
-                            title="Edit"
-                          >
-                            <PencilSquareIcon className="h-5 w-5" />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteConfirmClick(property)}
-                            className="text-red-600 hover:text-red-800 p-2.5 rounded-full hover:bg-red-50 transition-all duration-200 transform hover:scale-110"
-                            title="Delete"
-                          >
-                            <TrashIcon className="h-5 w-5" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Add To Market Product Modal */}
-      {showAddToMarketProductModal && (
-        <AddToProductMarketModal
-          showRequestProductModal={showAddToMarketProductModal}
-          setShowRequestProductModal={setShowAddToMarketProductModal}
-          categories={categories ?? []}
-          companyId={companyId}
-          locations={locations ?? []}
-          marketListItem={selectedProperty}
-          // onSave={handleSaveProperty}
-        />
-      )}
-
-      {/* Property Delete Confirmation Modal (Improved inline styling) */}
-      {isDeleteModalOpen && selectedProperty && (
-        // You can replace this with your dedicated PropertyDeleteConfirmModal component if it's styled nicely
-        // <PropertyDeleteConfirmModal
-        //   isOpen={isDeleteModalOpen}
-        //   onClose={handleCloseModals}
-        //   onConfirmDelete={handleDeleteProperty}
-        //   property={selectedProperty}
-        // />
-        <div className="fixed inset-0 bg-gray-900 bg-opacity-70 overflow-y-auto h-full w-full z-50 flex justify-center items-center p-4 animate-fade-in">
-          <div className="bg-white p-8 rounded-xl shadow-2xl max-w-md mx-auto transform transition-all duration-300 ease-out scale-95 opacity-0 animate-scale-in-modal">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-2xl font-bold text-gray-900">Confirm Deletion</h3>
-              <button onClick={handleCloseModals} className="text-gray-400 hover:text-gray-600 transition-colors">
-                <XMarkIcon className="h-7 w-7" />
-              </button>
-            </div>
-            <p className="text-lg text-gray-700 mb-8 leading-relaxed">
-              Are you absolutely sure you want to permanently delete <span className="font-semibold text-red-600">"{selectedProperty.name}"</span>? This action cannot be undone.
-            </p>
-            <div className="flex justify-end space-x-4">
-              <button
-                onClick={handleCloseModals}
-                className="px-6 py-3 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-200"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => handleDeleteProperty(selectedProperty.id)}
-                className="px-6 py-3 rounded-lg bg-red-600 text-white font-medium hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200"
-              >
-                Delete Anyway
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
+    );
 }

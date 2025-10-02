@@ -1,3 +1,4 @@
+// app/admin/[slug]/offers/OfferFormModal.tsx
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -12,19 +13,57 @@ import {
   InformationCircleIcon,
   ClipboardDocumentListIcon,
   CalendarDaysIcon,
-  LinkIcon, // For contract URL
+  LinkIcon, 
 } from '@heroicons/react/24/outline';
-import { OfferContract } from './page'; // Adjust path as needed
+// Import types from the new client page component
+import { OfferContract, SelectOption } from './OffersClientPage'; 
 
 type OfferFormModalProps = {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (data: Partial<OfferContract>) => Promise<void>;
-  offer?: OfferContract; // Optional: if provided, it's edit mode
+  offer?: OfferContract; 
   isLoading: boolean;
   error: string | null;
-  adminSlug: string; // To potentially fetch company-specific data if needed (e.g., properties, clients, agents)
+  adminSlug: string; 
+  // NEW PROPS FOR SELECT OPTIONS
+  allProperties: SelectOption[];
+  allClients: SelectOption[];
+  allAgents: SelectOption[];
 };
+
+// Helper component for Select Field (Re-used for consistency)
+const SelectField: React.FC<{
+    label: string;
+    Icon: React.ElementType;
+    value: string;
+    onChange: (value: string) => void;
+    options: SelectOption[];
+    placeholder: string;
+    disabled: boolean;
+}> = ({ label, Icon, value, onChange, options, placeholder, disabled }) => (
+    <div>
+        <label htmlFor={label} className="block text-sm font-medium text-gray-700 mb-1">
+            <Icon className="inline-block h-4 w-4 mr-1 text-gray-500" /> {label} <span className="text-red-500">*</span>
+        </label>
+        <select
+            id={label}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white"
+            required
+            disabled={disabled || options.length === 0}
+        >
+            <option value="" disabled>{options.length === 0 ? `Loading ${label} list failed.` : placeholder}</option>
+            {options.length > 0 && options.map((option) => (
+                <option key={option.id} value={option.id}>
+                    {option.name} (ID: {option.id})
+                </option>
+            ))}
+        </select>
+    </div>
+);
+
 
 export const OfferFormModal: React.FC<OfferFormModalProps> = ({
   isOpen,
@@ -34,21 +73,23 @@ export const OfferFormModal: React.FC<OfferFormModalProps> = ({
   isLoading,
   error,
   adminSlug,
+  allProperties, 
+  allClients,    
+  allAgents,     
 }) => {
   const isEditMode = !!offer;
   const modalTitle = isEditMode ? 'Edit Property Offer' : 'Create New Offer';
   const submitButtonText = isEditMode ? 'Save Changes' : 'Create Offer';
 
-  const [propertyId, setPropertyId] = useState(offer?.propertyId || '');
-  const [propertyName, setPropertyName] = useState(offer?.propertyName || '');
-  const [clientId, setClientId] = useState(offer?.clientId || '');
-  const [clientName, setClientName] = useState(offer?.clientName || '');
-  const [agentId, setAgentId] = useState(offer?.agentId || '');
-  const [agentName, setAgentName] = useState(offer?.agentName || '');
+  // State now tracks IDs only for select fields
+  const [selectedPropertyId, setSelectedPropertyId] = useState(offer?.propertyId || '');
+  const [selectedClientId, setSelectedClientId] = useState(offer?.clientId || '');
+  const [selectedAgentId, setSelectedAgentId] = useState(offer?.agentId || '');
+  
   const [offerAmount, setOfferAmount] = useState(offer?.offerAmount || 0);
   const [status, setStatus] = useState<OfferContract['status']>(offer?.status || 'Pending');
   const [offerDate, setOfferDate] = useState(
-    offer?.offerDate ? new Date(offer.offerDate).toISOString().slice(0, 10) : '' // Format for date input
+    offer?.offerDate ? new Date(offer.offerDate).toISOString().slice(0, 10) : ''
   );
   const [closureDate, setClosureDate] = useState(
     offer?.closureDate ? new Date(offer.closureDate).toISOString().slice(0, 10) : ''
@@ -59,12 +100,9 @@ export const OfferFormModal: React.FC<OfferFormModalProps> = ({
   // Reset form fields when modal opens or 'offer' prop changes
   useEffect(() => {
     if (isOpen) {
-      setPropertyId(offer?.propertyId || '');
-      setPropertyName(offer?.propertyName || '');
-      setClientId(offer?.clientId || '');
-      setClientName(offer?.clientName || '');
-      setAgentId(offer?.agentId || '');
-      setAgentName(offer?.agentName || '');
+      setSelectedPropertyId(offer?.propertyId || '');
+      setSelectedClientId(offer?.clientId || '');
+      setSelectedAgentId(offer?.agentId || '');
       setOfferAmount(offer?.offerAmount || 0);
       setStatus(offer?.status || 'Pending');
       setOfferDate(
@@ -81,26 +119,30 @@ export const OfferFormModal: React.FC<OfferFormModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Basic client-side validation
-    if (!propertyId || !propertyName || !clientId || !clientName || !agentId || !agentName || !offerAmount || !offerDate) {
-      alert('Please fill in all required fields: Property, Client, Agent, Offer Amount, and Offer Date.');
+    // Look up names based on selected IDs (MANDATORY STEP)
+    const property = allProperties.find(p => p.id === selectedPropertyId);
+    const client = allClients.find(c => c.id === selectedClientId);
+    const agent = allAgents.find(a => a.id === selectedAgentId);
+
+    // Client-side validation for required fields
+    if (!property || !client || !agent || !offerAmount || !offerDate) {
+      alert('Please select a Property, Client, Agent, set the Offer Amount, and Offer Date.');
       return;
     }
 
     const offerData: Partial<OfferContract> = {
-      propertyId,
-      propertyName,
-      clientId,
-      clientName,
-      agentId,
-      agentName,
-      offerAmount: parseFloat(offerAmount.toString()), // Ensure number
+      propertyId: property.id,
+      propertyName: property.name, // Use looked-up name
+      clientId: client.id,
+      clientName: client.name,     // Use looked-up name
+      agentId: agent.id,
+      agentName: agent.name,       // Use looked-up name
+      offerAmount: parseFloat(offerAmount.toString()), 
       status,
-      offerDate: new Date(offerDate).toISOString(), // Ensure ISO string for backend
+      offerDate: new Date(offerDate).toISOString(),
       closureDate: closureDate ? new Date(closureDate).toISOString() : undefined,
       notes,
-      contractUrl: contractUrl || undefined, // Send undefined if empty
-      // For create mode, we would also add companyId here if applicable to the API
+      contractUrl: contractUrl || undefined, 
       ...(isEditMode ? {} : { companyId: adminSlug }),
     };
 
@@ -134,95 +176,39 @@ export const OfferFormModal: React.FC<OfferFormModalProps> = ({
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Property Details */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="propertyId" className="block text-sm font-medium text-gray-700 mb-1">
-                <HomeIcon className="inline-block h-4 w-4 mr-1 text-gray-500" /> Property ID <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                id="propertyId"
-                value={propertyId}
-                onChange={(e) => setPropertyId(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                required
-              />
-            </div>
-            <div>
-              <label htmlFor="propertyName" className="block text-sm font-medium text-gray-700 mb-1">
-                <HomeIcon className="inline-block h-4 w-4 mr-1 text-gray-500" /> Property Name <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                id="propertyName"
-                value={propertyName}
-                onChange={(e) => setPropertyName(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                required
-              />
-            </div>
-          </div>
+          
+          {/* Property Selection */}
+          <SelectField
+            label="Property"
+            Icon={HomeIcon}
+            value={selectedPropertyId}
+            onChange={setSelectedPropertyId}
+            options={allProperties}
+            placeholder="Select a property"
+            disabled={isLoading}
+          />
 
-          {/* Client Details */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="clientId" className="block text-sm font-medium text-gray-700 mb-1">
-                <UserIcon className="inline-block h-4 w-4 mr-1 text-gray-500" /> Client ID <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                id="clientId"
-                value={clientId}
-                onChange={(e) => setClientId(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                required
-              />
-            </div>
-            <div>
-              <label htmlFor="clientName" className="block text-sm font-medium text-gray-700 mb-1">
-                <UserIcon className="inline-block h-4 w-4 mr-1 text-gray-500" /> Client Name <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                id="clientName"
-                value={clientName}
-                onChange={(e) => setClientName(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                required
-              />
-            </div>
-          </div>
+          {/* Client Selection */}
+          <SelectField
+            label="Client"
+            Icon={UserIcon}
+            value={selectedClientId}
+            onChange={setSelectedClientId}
+            options={allClients}
+            placeholder="Select a client"
+            disabled={isLoading}
+          />
 
-          {/* Agent Details */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="agentId" className="block text-sm font-medium text-gray-700 mb-1">
-                <BriefcaseIcon className="inline-block h-4 w-4 mr-1 text-gray-500" /> Agent ID <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                id="agentId"
-                value={agentId}
-                onChange={(e) => setAgentId(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                required
-              />
-            </div>
-            <div>
-              <label htmlFor="agentName" className="block text-sm font-medium text-gray-700 mb-1">
-                <BriefcaseIcon className="inline-block h-4 w-4 mr-1 text-gray-500" /> Agent Name <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                id="agentName"
-                value={agentName}
-                onChange={(e) => setAgentName(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                required
-              />
-            </div>
-          </div>
+          {/* Agent Selection */}
+          <SelectField
+            label="Agent"
+            Icon={BriefcaseIcon}
+            value={selectedAgentId}
+            onChange={setSelectedAgentId}
+            options={allAgents}
+            placeholder="Select an agent"
+            disabled={isLoading}
+          />
 
           {/* Offer Amount & Offer Date */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -238,6 +224,7 @@ export const OfferFormModal: React.FC<OfferFormModalProps> = ({
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 required
                 min="0"
+                disabled={isLoading}
               />
             </div>
             <div>
@@ -251,6 +238,7 @@ export const OfferFormModal: React.FC<OfferFormModalProps> = ({
                 onChange={(e) => setOfferDate(e.target.value)}
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 required
+                disabled={isLoading}
               />
             </div>
           </div>
@@ -266,6 +254,7 @@ export const OfferFormModal: React.FC<OfferFormModalProps> = ({
                 value={status}
                 onChange={(e) => setStatus(e.target.value as OfferContract['status'])}
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                disabled={isLoading}
               >
                 <option value="Pending">Pending</option>
                 <option value="Accepted">Accepted</option>
@@ -283,7 +272,7 @@ export const OfferFormModal: React.FC<OfferFormModalProps> = ({
                 value={closureDate}
                 onChange={(e) => setClosureDate(e.target.value)}
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                disabled={status !== 'Closed' && status !== 'Accepted'} // Only enable if accepted/closed
+                disabled={isLoading || (status !== 'Closed' && status !== 'Accepted')}
               />
             </div>
           </div>
@@ -299,6 +288,7 @@ export const OfferFormModal: React.FC<OfferFormModalProps> = ({
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              disabled={isLoading}
             ></textarea>
           </div>
 
@@ -314,6 +304,7 @@ export const OfferFormModal: React.FC<OfferFormModalProps> = ({
               onChange={(e) => setContractUrl(e.target.value)}
               className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               placeholder="e.g., https://example.com/contract-doc.pdf"
+              disabled={isLoading}
             />
           </div>
 

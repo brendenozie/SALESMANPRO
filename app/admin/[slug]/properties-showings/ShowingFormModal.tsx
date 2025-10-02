@@ -1,3 +1,4 @@
+// app/admin/[slug]/showings/ShowingFormModal.tsx
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -11,8 +12,10 @@ import {
   InformationCircleIcon,
   ClockIcon,
 } from '@heroicons/react/24/outline';
-import { Showing } from './page';
-// import { Showing } from '@/app/admin/[adminSlug]/showings/page'; // Adjust path as needed
+import { Showing, SelectOption } from './ShowingsClientPage'; // Import types
+
+// --- Helper Type (Used for properties, clients, and agents lists) ---
+// The actual lists are passed in as props, eliminating the internal mock data.
 
 type ShowingFormModalProps = {
   isOpen: boolean;
@@ -21,7 +24,11 @@ type ShowingFormModalProps = {
   showing?: Showing; // Optional: if provided, it's edit mode
   isLoading: boolean;
   error: string | null;
-  adminSlug: string; // To potentially fetch company-specific data if needed
+  adminSlug: string; 
+  // NEW PROPS
+  allProperties: SelectOption[];
+  allClients: SelectOption[];
+  allAgents: SelectOption[];
 };
 
 export const ShowingFormModal: React.FC<ShowingFormModalProps> = ({
@@ -32,17 +39,20 @@ export const ShowingFormModal: React.FC<ShowingFormModalProps> = ({
   isLoading,
   error,
   adminSlug,
+  // DESTRUCTURE NEW PROPS
+  allProperties,
+  allClients,
+  allAgents,
 }) => {
   const isEditMode = !!showing;
   const modalTitle = isEditMode ? 'Edit Property Showing' : 'Schedule New Showing';
   const submitButtonText = isEditMode ? 'Save Changes' : 'Create Showing';
 
-  const [propertyId, setPropertyId] = useState(showing?.propertyId || '');
-  const [propertyName, setPropertyName] = useState(showing?.propertyName || '');
-  const [clientId, setClientId] = useState(showing?.clientId || '');
-  const [clientName, setClientName] = useState(showing?.clientName || '');
-  const [agentId, setAgentId] = useState(showing?.agentId || '');
-  const [agentName, setAgentName] = useState(showing?.agentName || '');
+  // State now stores ONLY the selected option IDs
+  const [selectedPropertyId, setSelectedPropertyId] = useState(showing?.propertyId || '');
+  const [selectedClientId, setSelectedClientId] = useState(showing?.clientId || '');
+  const [selectedAgentId, setSelectedAgentId] = useState(showing?.agentId || '');
+  
   const [dateTime, setDateTime] = useState(
     showing?.dateTime
       ? new Date(showing.dateTime).toISOString().slice(0, 16) // Format for datetime-local input
@@ -54,12 +64,10 @@ export const ShowingFormModal: React.FC<ShowingFormModalProps> = ({
   // Reset form fields when modal opens or 'showing' prop changes
   useEffect(() => {
     if (isOpen) {
-      setPropertyId(showing?.propertyId || '');
-      setPropertyName(showing?.propertyName || '');
-      setClientId(showing?.clientId || '');
-      setClientName(showing?.clientName || '');
-      setAgentId(showing?.agentId || '');
-      setAgentName(showing?.agentName || '');
+      // Initialize with IDs
+      setSelectedPropertyId(showing?.propertyId || '');
+      setSelectedClientId(showing?.clientId || '');
+      setSelectedAgentId(showing?.agentId || '');
       setDateTime(
         showing?.dateTime
           ? new Date(showing.dateTime).toISOString().slice(0, 16)
@@ -73,23 +81,28 @@ export const ShowingFormModal: React.FC<ShowingFormModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Basic client-side validation
-    if (!propertyId || !propertyName || !clientId || !clientName || !agentId || !agentName || !dateTime) {
-      alert('Please fill in all required fields: Property, Client, Agent, and Date/Time.');
+    // Find the full objects using the passed props (MANDATORY STEP)
+    const property = allProperties.find(p => p.id === selectedPropertyId);
+    const client = allClients.find(c => c.id === selectedClientId);
+    const agent = allAgents.find(a => a.id === selectedAgentId);
+
+    // Client-side validation for required fields
+    if (!property || !client || !agent || !dateTime) {
+      alert('Please select a Property, Client, Agent, and set a Date/Time.');
       return;
     }
 
+    // Use the found names and IDs from the selected objects
     const showingData: Partial<Showing> = {
-      propertyId,
-      propertyName,
-      clientId,
-      clientName,
-      agentId,
-      agentName,
+      propertyId: property.id,
+      propertyName: property.name,
+      clientId: client.id,
+      clientName: client.name,
+      agentId: agent.id,
+      agentName: agent.name,
       dateTime: new Date(dateTime).toISOString(), // Ensure ISO string for backend
       status,
       notes,
-      // For create mode, add companyId
       ...(isEditMode ? {} : { companyId: adminSlug }),
     };
 
@@ -97,6 +110,38 @@ export const ShowingFormModal: React.FC<ShowingFormModalProps> = ({
   };
 
   if (!isOpen) return null;
+
+  // Helper to render a Select Field
+  const SelectField: React.FC<{
+    label: string;
+    Icon: React.ElementType;
+    value: string;
+    onChange: (value: string) => void;
+    options: SelectOption[];
+    placeholder: string;
+  }> = ({ label, Icon, value, onChange, options, placeholder }) => (
+    <div>
+      <label htmlFor={label} className="block text-sm font-medium text-gray-700 mb-1">
+        <Icon className="inline-block h-4 w-4 mr-1 text-gray-500" /> {label} <span className="text-red-500">*</span>
+      </label>
+      <select
+        id={label}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white"
+        required
+        disabled={isLoading || options.length === 0} // Disable if loading or no options
+      >
+        <option value="" disabled>{options.length === 0 ? `Loading ${label} list failed.` : placeholder}</option>
+        {options.length > 0 && options.map((option) => (
+          <option key={option.id} value={option.id}>
+            {option.name} (ID: {option.id})
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4 animate-fade-in">
@@ -123,95 +168,35 @@ export const ShowingFormModal: React.FC<ShowingFormModalProps> = ({
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Property Details */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="propertyId" className="block text-sm font-medium text-gray-700 mb-1">
-                <HomeIcon className="inline-block h-4 w-4 mr-1 text-gray-500" /> Property ID <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                id="propertyId"
-                value={propertyId}
-                onChange={(e) => setPropertyId(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                required
-              />
-            </div>
-            <div>
-              <label htmlFor="propertyName" className="block text-sm font-medium text-gray-700 mb-1">
-                <HomeIcon className="inline-block h-4 w-4 mr-1 text-gray-500" /> Property Name <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                id="propertyName"
-                value={propertyName}
-                onChange={(e) => setPropertyName(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                required
-              />
-            </div>
-          </div>
+          {/* Property Selection */}
+          <SelectField
+            label="Property"
+            Icon={HomeIcon}
+            value={selectedPropertyId}
+            onChange={setSelectedPropertyId}
+            options={allProperties}
+            placeholder="Select a property"
+          />
 
-          {/* Client Details */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="clientId" className="block text-sm font-medium text-gray-700 mb-1">
-                <UserIcon className="inline-block h-4 w-4 mr-1 text-gray-500" /> Client ID <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                id="clientId"
-                value={clientId}
-                onChange={(e) => setClientId(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                required
-              />
-            </div>
-            <div>
-              <label htmlFor="clientName" className="block text-sm font-medium text-gray-700 mb-1">
-                <UserIcon className="inline-block h-4 w-4 mr-1 text-gray-500" /> Client Name <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                id="clientName"
-                value={clientName}
-                onChange={(e) => setClientName(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                required
-              />
-            </div>
-          </div>
+          {/* Client Selection */}
+          <SelectField
+            label="Client"
+            Icon={UserIcon}
+            value={selectedClientId}
+            onChange={setSelectedClientId}
+            options={allClients}
+            placeholder="Select a client"
+          />
 
-          {/* Agent Details */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label htmlFor="agentId" className="block text-sm font-medium text-gray-700 mb-1">
-                <BriefcaseIcon className="inline-block h-4 w-4 mr-1 text-gray-500" /> Agent ID <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                id="agentId"
-                value={agentId}
-                onChange={(e) => setAgentId(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                required
-              />
-            </div>
-            <div>
-              <label htmlFor="agentName" className="block text-sm font-medium text-gray-700 mb-1">
-                <BriefcaseIcon className="inline-block h-4 w-4 mr-1 text-gray-500" /> Agent Name <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                id="agentName"
-                value={agentName}
-                onChange={(e) => setAgentName(e.target.value)}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                required
-              />
-            </div>
-          </div>
+          {/* Agent Selection */}
+          <SelectField
+            label="Agent"
+            Icon={BriefcaseIcon}
+            value={selectedAgentId}
+            onChange={setSelectedAgentId}
+            options={allAgents}
+            placeholder="Select an agent"
+          />
 
           {/* Date, Time & Status */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -226,6 +211,7 @@ export const ShowingFormModal: React.FC<ShowingFormModalProps> = ({
                 onChange={(e) => setDateTime(e.target.value)}
                 className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 required
+                disabled={isLoading}
               />
             </div>
             <div>
@@ -236,7 +222,8 @@ export const ShowingFormModal: React.FC<ShowingFormModalProps> = ({
                 id="status"
                 value={status}
                 onChange={(e) => setStatus(e.target.value as Showing['status'])}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm bg-white"
+                disabled={isLoading}
               >
                 <option value="Scheduled">Scheduled</option>
                 <option value="Completed">Completed</option>
@@ -256,6 +243,7 @@ export const ShowingFormModal: React.FC<ShowingFormModalProps> = ({
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              disabled={isLoading}
             ></textarea>
           </div>
 

@@ -1,3 +1,4 @@
+// app/admin/[slug]/showings/ShowingDetailsModal.tsx
 'use client';
 
 import React from 'react';
@@ -11,8 +12,9 @@ import {
   ClipboardDocumentListIcon,
   SparklesIcon,
 } from '@heroicons/react/24/outline';
-import { Showing } from './page';
-// import { Showing } from '@/app/admin/[adminSlug]/showings/page'; // Adjust path as needed
+
+import { Showing } from './ShowingsClientPage';
+
 
 type ShowingDetailsModalProps = {
   isOpen: boolean;
@@ -96,6 +98,7 @@ export const ShowingDetailsModal: React.FC<ShowingDetailsModalProps> = ({ isOpen
             <p><strong>Last Updated:</strong> {new Date(showing.updatedAt).toLocaleString()}</p>
           </div>
 
+        
           {/* Action Button (Optional, e.g., link to edit) */}
           <div className="flex justify-end pt-4">
             {/* You could add an edit button here that opens the edit modal */}

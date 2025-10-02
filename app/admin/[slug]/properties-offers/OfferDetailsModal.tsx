@@ -1,3 +1,4 @@
+// app/admin/[slug]/offers/OfferDetailsModal.tsx
 'use client';
 
 import React from 'react';
@@ -13,7 +14,7 @@ import {
   CalendarDaysIcon,
   LinkIcon, // For contract URL
 } from '@heroicons/react/24/outline';
-import { OfferContract } from './page'; // Adjust path as needed
+import { OfferContract } from './OffersClientPage'; // UPDATED: Adjust path to new client component
 
 type OfferDetailsModalProps = {
   isOpen: boolean;
@@ -131,9 +132,8 @@ export const OfferDetailsModal: React.FC<OfferDetailsModalProps> = ({ isOpen, on
           {/* Timestamps */}
           <div className="text-xs text-gray-500 pt-4 border-t border-gray-100 mt-4">
             <p><strong>Offer ID:</strong> {offer.id}</p>
-            {/* If your API returns createdAt/updatedAt for offers, add them here */}
-            {/* <p><strong>Created At:</strong> {new Date(offer.createdAt).toLocaleString()}</p>
-            <p><strong>Last Updated:</strong> {new Date(offer.updatedAt).toLocaleString()}</p> */}
+             <p><strong>Created At:</strong> {new Date(offer.createdAt).toLocaleString()}</p>
+             <p><strong>Last Updated:</strong> {new Date(offer.updatedAt).toLocaleString()}</p>
           </div>
         </div>
       </div>
