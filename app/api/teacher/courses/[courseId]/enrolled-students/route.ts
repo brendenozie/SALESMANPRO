@@ -50,7 +50,7 @@ export default async function SendMessageServerPage({ params }: PageProps) {
       `${apiUrl}/teacher/courses/${courseId}/enrolled-students?educatorId=${encodeURIComponent(
         educatorUserId
       )}&companyId=${encodeURIComponent(companyId)}`,
-      { cache: "no-store" } // Always fetch fresh data
+      { next: { revalidate: 60 } } // Always fetch fresh data
     );
 
     const data = await res.json();

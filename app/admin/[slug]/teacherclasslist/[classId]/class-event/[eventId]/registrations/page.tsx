@@ -117,7 +117,7 @@ export default async function EventRegistrationsOverviewPage({ params }: PagePro
   try {
     // Fetch event details
     const eventRes = await fetch(`${apiUrl}/events/${eventId}`, {
-      cache: "no-store",
+      next: { revalidate: 60 },
     });
     if (eventRes.ok) {
       const eventData = await eventRes.json();
@@ -140,7 +140,7 @@ export default async function EventRegistrationsOverviewPage({ params }: PagePro
 
     // Fetch event registrations for this event
     const registrationsRes = await fetch(`${apiUrl}/event-registrations?eventId=${encodeURIComponent(eventId)}`, {
-      cache: "no-store",
+      next: { revalidate: 60 },
     });
     if (registrationsRes.ok) {
       initialRegistrations = (await registrationsRes.json()) as EventRegistrationData[];
@@ -151,7 +151,7 @@ export default async function EventRegistrationsOverviewPage({ params }: PagePro
 
     // Fetch all users in the company (for registration form/filtering)
     const usersRes = await fetch(`${apiUrl}/users?companyId=${encodeURIComponent(companyId)}`, { // Assuming /api/users endpoint
-      cache: "no-store",
+      next: { revalidate: 60 },
     });
     if (usersRes.ok) {
       allUsers = (await usersRes.json()) as UserOption[];
@@ -162,7 +162,7 @@ export default async function EventRegistrationsOverviewPage({ params }: PagePro
 
     // Fetch all students in the company (for registration form/filtering)
     const studentsRes = await fetch(`${apiUrl}/students?companyId=${encodeURIComponent(companyId)}`, { // Assuming /api/students endpoint
-      cache: "no-store",
+      next: { revalidate: 60 },
     });
     if (studentsRes.ok) {
       const fetchedStudents = (await studentsRes.json()) as any[];

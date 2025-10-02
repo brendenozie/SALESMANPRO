@@ -31,7 +31,7 @@ interface PageProps {
 }
 
 /**
- * Server Component: fetches the projects on every request (cache: "no-store"),
+ * Server Component: fetches the projects on every request (next: { revalidate: 60 }),
  * then renders the client component with the fetched data.
  */
 export default async function ProjectsPage({ params }: PageProps) {
@@ -42,7 +42,7 @@ export default async function ProjectsPage({ params }: PageProps) {
 
   try {
     // Adjust the API endpoint if your projects API supports companyId filtering
-    const res = await fetch(`${apiUrl}/admin/projects?companyId=${companyId}`, { cache: "no-store", headers: { cookie: cookieHeader } });
+    const res = await fetch(`${apiUrl}/admin/projects?companyId=${companyId}`, { next: { revalidate: 60 }, headers: { cookie: cookieHeader } });
     if (res.ok) {
       let projectRes = await res.json();
       console.log("[ProjectsPage] Fetched projects successfully:", projectRes);

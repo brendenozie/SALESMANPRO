@@ -99,7 +99,7 @@ export default async function ClassTeacherAcademicLevelsPageServer({ params }: P
   try {
     const res = await fetch(
       `${apiUrl}/teacher/academic-levels?teacherId=${encodeURIComponent(teacherId)}`, // Updated API path
-      { cache: "no-store" } // equivalent to SSR on every request
+      { next: { revalidate: 60 } } // equivalent to SSR on every request
     );
 
     if (res.ok) {

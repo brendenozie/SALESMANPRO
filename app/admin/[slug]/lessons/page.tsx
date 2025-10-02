@@ -133,7 +133,7 @@ export default async function TimetableManagerPage({ params }: PageProps) {
     // Fetch timetable entries with related course and educator info
     const timetableRes = await fetch(
       `${apiUrl}/admin/class-schedules?companyId=${encodeURIComponent(companyId)}`, // Corrected API path
-      { cache: "no-store" } // SSR on every request
+      { next: { revalidate: 60 } } // SSR on every request
     );
     if (timetableRes.ok) {
       initialTimetable = (await timetableRes.json()) as TimetableEntry[];
@@ -149,7 +149,7 @@ export default async function TimetableManagerPage({ params }: PageProps) {
     // Fetch all courses for dropdowns
     const coursesRes = await fetch(
       `${apiUrl}/admin/courses?companyId=${encodeURIComponent(companyId)}`, // Corrected API path
-      { cache: "no-store" }
+      { next: { revalidate: 60 } }
     );
     if (coursesRes.ok) {
       const fetchedCourses = (await coursesRes.json()) as any[];
@@ -171,7 +171,7 @@ export default async function TimetableManagerPage({ params }: PageProps) {
     // Fetch all educators for dropdowns
     const educatorsRes = await fetch(
       `${apiUrl}/admin/educators?companyId=${encodeURIComponent(companyId)}`, // Corrected API path
-      { cache: "no-store" }
+      { next: { revalidate: 60 } }
     );
     if (educatorsRes.ok) {
       const fetchedEducators = (await educatorsRes.json()) as any[];
@@ -192,7 +192,7 @@ export default async function TimetableManagerPage({ params }: PageProps) {
     // Fetch all academic levels (for display in course options)
     const academicLevelsRes = await fetch(
       `${apiUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`, // Corrected API path
-      { cache: "no-store" }
+      { next: { revalidate: 60 } }
     );
     if (academicLevelsRes.ok) {
       allAcademicLevels = (await academicLevelsRes.json()) as AcademicLevelOption[];

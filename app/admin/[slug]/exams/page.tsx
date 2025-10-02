@@ -171,7 +171,7 @@ export default async function ExamsManagerPage({ params }: PageProps) {
   try {
     // Fetch exams
     const examsRes = await fetch(`${apiUrl}/admin/exams?companyId=${encodeURIComponent(companyId)}`, {
-      cache: "no-store",
+      next: { revalidate: 60 },
     });
     if (examsRes.ok) {
       initialExams = (await examsRes.json()) as ExamData[];
@@ -182,7 +182,7 @@ export default async function ExamsManagerPage({ params }: PageProps) {
 
     // Fetch all courses
     const coursesRes = await fetch(`${apiUrl}/admin/courses?companyId=${encodeURIComponent(companyId)}`, {
-      cache: "no-store",
+      next: { revalidate: 60 },
     });
     if (coursesRes.ok) {
       allCourses = (await coursesRes.json()) as CourseOption[];
@@ -193,7 +193,7 @@ export default async function ExamsManagerPage({ params }: PageProps) {
 
     // Fetch all educators
     const educatorsRes = await fetch(`${apiUrl}/admin/educators?companyId=${encodeURIComponent(companyId)}`, {
-      cache: "no-store",
+      next: { revalidate: 60 },
     });
     if (educatorsRes.ok) {
       allEducators = (await educatorsRes.json()) as EducatorOption[];
@@ -204,7 +204,7 @@ export default async function ExamsManagerPage({ params }: PageProps) {
 
     // Fetch all academic levels (for display in course options)
     const academicLevelsRes = await fetch(`${apiUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`, {
-      cache: "no-store",
+      next: { revalidate: 60 },
     });
     if (academicLevelsRes.ok) {
       allAcademicLevels = (await academicLevelsRes.json()) as AcademicLevelOption[];

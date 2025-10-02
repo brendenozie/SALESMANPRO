@@ -255,7 +255,7 @@ export default function AdminResultsOverviewPage({
     setError(null);
     try {
       const res = await fetch(`${apiUrl}/exam-submissions?companyId=${encodeURIComponent(companyId)}`, {
-        cache: "no-store",
+        next: { revalidate: 60 },
       });
       if (res.ok) {
         const data: ExamSubmissionDataForAdmin[] = await res.json();

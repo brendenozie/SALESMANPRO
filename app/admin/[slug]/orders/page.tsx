@@ -61,7 +61,7 @@ export default async function OrdersPage({ params }: PageProps) {
   let error: string | null = null;
 
   try {
-    const ordersRes = await fetch(`${apiUrl}/admin/customer-orders?companyId=${companyId}`, { cache: "no-store", headers: { Cookie: cookieHeader } });
+    const ordersRes = await fetch(`${apiUrl}/admin/customer-orders?companyId=${companyId}`, { next: { revalidate: 60 }, headers: { Cookie: cookieHeader } });
     if (ordersRes.ok) {
       let data = await ordersRes.json();
       console.log("[OrdersPage] Fetched orders data →", data);

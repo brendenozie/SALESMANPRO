@@ -73,7 +73,7 @@ export default async function StudentGradesServerPage({ params }: PageProps) {
       url.searchParams.append('courseId', courseId);
     }
 
-    const res = await fetch(url.toString(), { cache: "no-store" });
+    const res = await fetch(url.toString(), { next: { revalidate: 60 } });
 
     if (res.ok) {
       // The API response structure is now different

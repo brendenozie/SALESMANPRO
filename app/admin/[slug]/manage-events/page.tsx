@@ -47,7 +47,7 @@ export default async function AdminInventoryPage({ params }: Props) {
    
     // Fetch all categories for this company
     const categoriesRes = await fetch(`${apiUrl}/admin/get-store-categories?companyId=${encodeURIComponent(companyId )}`,
-      { cache: "no-store", headers: { cookie: cookiesHeader } }
+      { next: { revalidate: 60 }, headers: { cookie: cookiesHeader } }
     );
 
     if (categoriesRes.ok) {
@@ -59,7 +59,7 @@ export default async function AdminInventoryPage({ params }: Props) {
     // Fetch all agents for this company
     const allOrganizersRes = await fetch(
       `${apiUrl}/admin/agents?companyId=${encodeURIComponent(companyId)}`,
-      { cache: "no-store", headers: { cookie: cookiesHeader } }
+      { next: { revalidate: 60 }, headers: { cookie: cookiesHeader } }
     );
     if (allOrganizersRes.ok) {
       let organizersJson = await allOrganizersRes.json();
@@ -69,7 +69,7 @@ export default async function AdminInventoryPage({ params }: Props) {
 
      // Fetch all users who can be organizers (e.g., Admins, Educators, Staff)
     const organizersRes = await fetch(`${apiUrl}/admin/agents?companyId=${encodeURIComponent(companyId)}`, { // Assuming /api/users endpoint
-      cache: "no-store",
+      next: { revalidate: 60 },
       headers: { cookie: cookiesHeader }
     });
     if (organizersRes.ok) {
@@ -82,7 +82,7 @@ export default async function AdminInventoryPage({ params }: Props) {
     }
 
     const eventsRes = await fetch(`${apiUrl}/admin/events?companyId=${encodeURIComponent(companyId)}`, { // Assuming /api/users endpoint
-      cache: "no-store",
+      next: { revalidate: 60 },
       headers: { cookie: cookiesHeader }
     });
 

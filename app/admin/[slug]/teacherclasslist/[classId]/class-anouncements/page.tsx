@@ -214,7 +214,7 @@ export default async function AnnouncementsManagerPage({ params }: PageProps) {
   try {
     // Fetch announcements
     const announcementsRes = await fetch(`${apiUrl}/announcements?companyId=${encodeURIComponent(companyId)}`, {
-      cache: "no-store",
+      next: { revalidate: 60 },
     });
     if (announcementsRes.ok) {
       initialAnnouncements = (await announcementsRes.json()) as AnnouncementData[];
@@ -225,7 +225,7 @@ export default async function AnnouncementsManagerPage({ params }: PageProps) {
 
     // Fetch all academic levels
     const academicLevelsRes = await fetch(`${apiUrl}/academic-levels?companyId=${encodeURIComponent(companyId)}`, {
-      cache: "no-store",
+      next: { revalidate: 60 },
     });
     if (academicLevelsRes.ok) {
       allAcademicLevels = (await academicLevelsRes.json()) as AcademicLevelOption[];
@@ -236,7 +236,7 @@ export default async function AnnouncementsManagerPage({ params }: PageProps) {
 
     // Fetch all courses
     const coursesRes = await fetch(`${apiUrl}/courses?companyId=${encodeURIComponent(companyId)}`, {
-      cache: "no-store",
+      next: { revalidate: 60 },
     });
     if (coursesRes.ok) {
       allCourses = (await coursesRes.json()) as CourseOption[];
@@ -247,7 +247,7 @@ export default async function AnnouncementsManagerPage({ params }: PageProps) {
 
     // Fetch all educators
     const educatorsRes = await fetch(`${apiUrl}/educators?companyId=${encodeURIComponent(companyId)}`, {
-      cache: "no-store",
+      next: { revalidate: 60 },
     });
     if (educatorsRes.ok) {
       const fetchedEducators = (await educatorsRes.json()) as any[];
@@ -259,7 +259,7 @@ export default async function AnnouncementsManagerPage({ params }: PageProps) {
 
     // Fetch all students
     const studentsRes = await fetch(`${apiUrl}/students?companyId=${encodeURIComponent(companyId)}`, {
-      cache: "no-store",
+      next: { revalidate: 60 },
     });
     if (studentsRes.ok) {
       const fetchedStudents = (await studentsRes.json()) as any[];
@@ -271,7 +271,7 @@ export default async function AnnouncementsManagerPage({ params }: PageProps) {
 
     // Fetch all departments (assuming a /api/departments endpoint exists)
     const departmentsRes = await fetch(`${apiUrl}/departments?companyId=${encodeURIComponent(companyId)}`, {
-      cache: "no-store",
+      next: { revalidate: 60 },
     });
     if (departmentsRes.ok) {
       allDepartments = (await departmentsRes.json()) as DepartmentOption[];
@@ -282,7 +282,7 @@ export default async function AnnouncementsManagerPage({ params }: PageProps) {
 
     // Fetch all parents (assuming a /api/parents endpoint exists)
     const parentsRes = await fetch(`${apiUrl}/parents?companyId=${encodeURIComponent(companyId)}`, {
-      cache: "no-store",
+      next: { revalidate: 60 },
     });
     if (parentsRes.ok) {
       const fetchedParents = (await parentsRes.json()) as any[];
@@ -296,7 +296,7 @@ export default async function AnnouncementsManagerPage({ params }: PageProps) {
     // This might be a combined endpoint or separate calls depending on your User roles.
     // For simplicity, we'll fetch all users and assume some can be authors.
     const authorsRes = await fetch(`${apiUrl}/users?companyId=${encodeURIComponent(companyId)}`, { // Assuming /api/users endpoint
-      cache: "no-store",
+      next: { revalidate: 60 },
     });
     if (authorsRes.ok) {
       const fetchedAuthors = (await authorsRes.json()) as any[];

@@ -92,7 +92,7 @@ export default async function AdminResultsOverviewPageWrapper({ params }: PagePr
   try {
     // Fetch all submissions for the company
     const submissionsRes = await fetch(`${apiUrl}/exam-submissions?companyId=${encodeURIComponent(companyId)}`, {
-      cache: "no-store",
+      next: { revalidate: 60 },
     });
     if (submissionsRes.ok) {
       initialSubmissions = (await submissionsRes.json()) as ExamSubmissionDataForAdmin[];
@@ -103,7 +103,7 @@ export default async function AdminResultsOverviewPageWrapper({ params }: PagePr
 
     // Fetch all exams (for filter dropdown)
     const examsRes = await fetch(`${apiUrl}/exams?companyId=${encodeURIComponent(companyId)}`, {
-      cache: "no-store",
+      next: { revalidate: 60 },
     });
     if (examsRes.ok) {
       const fetchedExams = (await examsRes.json()) as any[];
@@ -121,7 +121,7 @@ export default async function AdminResultsOverviewPageWrapper({ params }: PagePr
 
     // Fetch all students (for filter dropdown)
     const studentsRes = await fetch(`${apiUrl}/students?companyId=${encodeURIComponent(companyId)}`, { // Assuming /api/students endpoint
-      cache: "no-store",
+      next: { revalidate: 60 },
     });
     if (studentsRes.ok) {
       const fetchedStudents = (await studentsRes.json()) as any[];
@@ -138,7 +138,7 @@ export default async function AdminResultsOverviewPageWrapper({ params }: PagePr
 
     // Fetch all courses (for filter dropdown)
     const coursesRes = await fetch(`${apiUrl}/courses?companyId=${encodeURIComponent(companyId)}`, {
-      cache: "no-store",
+      next: { revalidate: 60 },
     });
     if (coursesRes.ok) {
       allCourses = (await coursesRes.json()) as CourseOption[];
@@ -149,7 +149,7 @@ export default async function AdminResultsOverviewPageWrapper({ params }: PagePr
 
     // Fetch all educators (for filter dropdown)
     const educatorsRes = await fetch(`${apiUrl}/educators?companyId=${encodeURIComponent(companyId)}`, {
-      cache: "no-store",
+      next: { revalidate: 60 },
     });
     if (educatorsRes.ok) {
       allEducators = (await educatorsRes.json()) as EducatorOption[];

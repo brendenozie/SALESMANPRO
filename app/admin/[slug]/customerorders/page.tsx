@@ -45,7 +45,7 @@ export default async function ProductsPage({ params }: Props) {
   try {
     const res = await fetch(
       `${apiUrl}/admin/orders?companyId=${encodeURIComponent(companyId)}`,
-      { cache: "no-store" } // SSR on every request
+      { next: { revalidate: 60 } } // SSR on every request
     );
     if (res.ok) {
       const json = (await res.json()) as { orderItems: OrderItem[] };

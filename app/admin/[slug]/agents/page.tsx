@@ -41,7 +41,7 @@ export default async function AgentsPage({ params }: PageProps) {
   
   try {
     const res = await fetch(`${apiUrl}/admin/agents?companyId=${companyId}`, {
-      cache: "no-store",
+      next: { revalidate: 60 },
       headers: {
         "Content-Type": "application/json",
         Cookie: cookieHeader,

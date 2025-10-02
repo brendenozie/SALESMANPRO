@@ -21,7 +21,7 @@ export default async function DepartmentsManagerPage({ params: { slug } }: PageP
 
   try {
     const res = await fetch(`${apiUrl}/admin/departments?companyId=${slug}`, { // Changed API endpoint
-      cache: "no-store", // SSR on every request
+      next: { revalidate: 60 }, // SSR on every request
     });
 
     if (res.ok) {

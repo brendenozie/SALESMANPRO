@@ -35,7 +35,7 @@ export default async function AdminInventoryPage({ params }: Props) {
 
     // Fetch all products for this company
     const productsRes = await fetch(`${apiUrl}/admin/get-all-inventory?companyId=${encodeURIComponent(companyId)}`,
-      { cache: "no-store", headers: { Cookie: cookieHeader } } // equivalent to SSR on every request
+      { next: { revalidate: 60 }, headers: { Cookie: cookieHeader } } // equivalent to SSR on every request
     );
 
     if (productsRes.ok) {
@@ -46,7 +46,7 @@ export default async function AdminInventoryPage({ params }: Props) {
 
     // Fetch all categories for this company
     const categoriesRes = await fetch(`${apiUrl}/admin/get-store-categories?companyId=${encodeURIComponent(companyId )}`,
-      { cache: "no-store", headers: { Cookie: cookieHeader } } // equivalent to SSR on every request
+      { next: { revalidate: 60 }, headers: { Cookie: cookieHeader } } // equivalent to SSR on every request
     );
 
     if (categoriesRes.ok) {
@@ -57,7 +57,7 @@ export default async function AdminInventoryPage({ params }: Props) {
     // Fetch all agents for this company
     const agentsRes = await fetch(
       `${apiUrl}/admin/get-all-inventory-agents?companyId=${encodeURIComponent(companyId)}`,
-      { cache: "no-store", headers: { Cookie: cookieHeader } } // equivalent to SSR on every request
+      { next: { revalidate: 60 }, headers: { Cookie: cookieHeader } } // equivalent to SSR on every request
     );
     if (agentsRes.ok) {
       let agentsR= (await agentsRes.json());

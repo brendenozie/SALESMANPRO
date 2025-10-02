@@ -58,7 +58,7 @@ const DonationsClient: React.FC<ClientProps> = ({
     setError(null);
 
     try {
-      const res = await fetch(`${apiUrl}/admin/donations`, { cache: "no-store" }); // Adjust for companyId if needed
+      const res = await fetch(`${apiUrl}/admin/donations`, { next: { revalidate: 60 } }); // Adjust for companyId if needed
       if (res.ok) {
         const data = await res.json();
         setDonationsData(data);

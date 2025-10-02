@@ -30,7 +30,7 @@ export default async function ClientInventoryPage({ params }: PageProps) {
     // --- Fetch marketplace listings ---
     const res = await fetch(
       `${apiUrl}/admin/my-market-place?companyId=${encodeURIComponent(companyId)}`,
-      { cache: "no-store", headers: { Cookie: cookieHeader } }
+      { next: { revalidate: 60 }, headers: { Cookie: cookieHeader } }
     );
     if (res.ok) {
       const json = await res.json();
@@ -47,7 +47,7 @@ export default async function ClientInventoryPage({ params }: PageProps) {
     // --- Fetch store categories ---
     const categoriesRes = await fetch(
       `${apiUrl}/admin/get-store-categories?companyId=${encodeURIComponent(companyId)}`,
-      { cache: "no-store", headers: { Cookie: cookieHeader } }
+      { next: { revalidate: 60 }, headers: { Cookie: cookieHeader } }
     );
 
     if (categoriesRes.ok) {

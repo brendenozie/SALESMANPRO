@@ -21,7 +21,7 @@ export default async function FeesPage() {
   try {
     // Fetch Student Fee Records
     const feesRes = await fetch(`${apiUrl}/admin/student-fee-records`, {
-      cache: "no-store", // Ensure fresh data on each request
+      next: { revalidate: 60 }, // Ensure fresh data on each request
     });
     if (feesRes.ok) {
       initialFeeRecordsData = await feesRes.json();
@@ -35,7 +35,7 @@ export default async function FeesPage() {
 
     // Fetch Students (needed for the "Create New Fee Record" modal)
     const studentsRes = await fetch(`${apiUrl}/admin/students`, {
-      cache: "no-store",
+      next: { revalidate: 60 },
     });
     if (studentsRes.ok) {
       initialStudentsData = await studentsRes.json();
@@ -49,7 +49,7 @@ export default async function FeesPage() {
 
     // Fetch Fee Items (useful for reference, perhaps for a future "Fee Item Management" page)
     const feeItemsRes = await fetch(`${apiUrl}/admin/fee-items`, {
-      cache: "no-store",
+      next: { revalidate: 60 },
     });
     if (feeItemsRes.ok) {
       initialFeeItemsData = await feeItemsRes.json();

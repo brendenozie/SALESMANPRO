@@ -27,7 +27,7 @@ export default async function StudentRosterPageServer({ params }: Props) {
   try {
     const res = await fetch(
       `${apiUrl}/teacher/academic-levels/${encodeURIComponent(academicLevelId)}/students?teacherId=${teacherId}`,
-      { cache: "no-store" } // equivalent to SSR on every request
+      { next: { revalidate: 60 } } // equivalent to SSR on every request
     );
 
     if (res.ok) {

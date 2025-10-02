@@ -307,7 +307,7 @@ export default function AdminBillingPage({ params }: { params: { slug: string } 
           variants={fadeIn}
           transition={{ delay: 0.2 }}
         >
-          Manage all financial transactions and invoices. (Company ID: {companyId})
+          Manage all financial transactions and invoices.
         </motion.p>
 
         <motion.div

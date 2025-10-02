@@ -10,7 +10,7 @@ export default async function TasksPage() {
   let tasksData = [];
 
   try {
-    const res = await fetch(`${url}/admin/tasks`, { cache: "no-store" });
+    const res = await fetch(`${url}/admin/tasks`, { next: { revalidate: 60 } });
     tasksData = await res.json();
   } catch (error) {
     console.error("Failed to fetch tasks:", error);

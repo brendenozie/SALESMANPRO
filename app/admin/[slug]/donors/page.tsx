@@ -45,7 +45,7 @@ interface PageProps {
 }
 
 /**
- * Server Component: fetches the donations on every request (cache: "no-store"),
+ * Server Component: fetches the donations on every request (next: { revalidate: 60 }),
  * then renders the client component with the fetched data.
  */
 export default async function DonationsPage({ params }: PageProps) {
@@ -60,7 +60,7 @@ export default async function DonationsPage({ params }: PageProps) {
 
   try {
     // Adjust the API endpoint if your donations API supports companyId filtering
-    const res = await fetch(`${apiUrl}/admin/donations?companyId=${companyId}`, { cache: "no-store", headers: { cookie: cookieHeader } });
+    const res = await fetch(`${apiUrl}/admin/donations?companyId=${companyId}`, { next: { revalidate: 60 }, headers: { cookie: cookieHeader } });
     if (res.ok) {
       let data = await res.json();
       console.log("Fetched donations data:", data);
@@ -84,7 +84,7 @@ export default async function DonationsPage({ params }: PageProps) {
   
   try {
     // Adjust the API endpoint if your donors API supports companyId filtering
-    const res = await fetch(`${apiUrl}/admin/donors?companyId=${companyId}`, { cache: "no-store", headers: { cookie: cookieHeader } });
+    const res = await fetch(`${apiUrl}/admin/donors?companyId=${companyId}`, { next: { revalidate: 60 }, headers: { cookie: cookieHeader } });
     if (res.ok) {
       let data = await res.json();
       console.log("Fetched donors data:", data);
@@ -108,7 +108,7 @@ export default async function DonationsPage({ params }: PageProps) {
   
   try {
     // Adjust the API endpoint if your projects API supports companyId filtering
-    const res = await fetch(`${apiUrl}/admin/projects?companyId=${companyId}`, { cache: "no-store", headers: { cookie: cookieHeader } });
+    const res = await fetch(`${apiUrl}/admin/projects?companyId=${companyId}`, { next: { revalidate: 60 }, headers: { cookie: cookieHeader } });
     if (res.ok) {
       let data = await res.json();
       console.log("Fetched projects data:", data);
@@ -130,7 +130,7 @@ export default async function DonationsPage({ params }: PageProps) {
   
   try {
     // Adjust the API endpoint if your campaigns API supports companyId filtering
-    const res = await fetch(`${apiUrl}/admin/campaigns?companyId=${companyId}`, { cache: "no-store", headers: { cookie: cookieHeader } });
+    const res = await fetch(`${apiUrl}/admin/campaigns?companyId=${companyId}`, { next: { revalidate: 60 }, headers: { cookie: cookieHeader } });
     if (res.ok) {
       let data = await res.json();
       console.log("Fetched campaigns data:", data);

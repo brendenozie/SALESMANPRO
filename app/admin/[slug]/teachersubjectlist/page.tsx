@@ -175,7 +175,7 @@ export default async function TeachersSubjectPage({ params }: Props) {
     // Call the new API route
     const res = await fetch(
       `${apiUrl}/teacher/teacher-assigned-subjects?teacherUserId=${encodeURIComponent(teacherUserId)}`,
-      { cache: "no-store" } // equivalent to SSR on every request
+      { next: { revalidate: 60 } } // equivalent to SSR on every request
     );
 
     if (res.ok) {

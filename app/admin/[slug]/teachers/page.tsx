@@ -186,7 +186,7 @@ export default async function TeachersManagementPage({ params }: PageProps) {
     // Fetch all educators for this company
     const educatorsRes = await fetch(
       `${apiUrl}/admin/educators?companyId=${encodeURIComponent(companyId)}`, // Corrected API path
-      { cache: "no-store" } // equivalent to SSR on every request
+      { next: { revalidate: 60 } } // equivalent to SSR on every request
     );
     if (educatorsRes.ok) {
       initialEducators = (await educatorsRes.json()) as EducatorType[];
@@ -200,7 +200,7 @@ export default async function TeachersManagementPage({ params }: PageProps) {
     // Fetch all departments for this company (or globally if not company-specific)
     const departmentsRes = await fetch( // Fetch departments via API instead of direct prisma call
       `${apiUrl}/admin/departments?companyId=${encodeURIComponent(companyId)}`, // Assuming departments API exists
-      { cache: "no-store" }
+      { next: { revalidate: 60 } }
     );
     if (departmentsRes.ok) {
       allDepartments = (await departmentsRes.json()) as DepartmentOption[];
@@ -215,7 +215,7 @@ export default async function TeachersManagementPage({ params }: PageProps) {
     // NEW: Fetch all academic levels for this company
     const academicLevelsRes = await fetch(
       `${apiUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`, // Corrected API path
-      { cache: "no-store" }
+      { next: { revalidate: 60 } }
     );
     if (academicLevelsRes.ok) {
       allAcademicLevels = (await academicLevelsRes.json()) as AcademicLevelOption[];

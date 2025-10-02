@@ -72,7 +72,7 @@ export default async function PodcastsAdminPage({ params }: PageProps) {
     // Fetch podcasts
     const podcastsRes = await fetch(
       `${apiUrl}/admin/podcasts?companyId=${encodeURIComponent(companyId)}`,
-      { cache: "no-store", headers: { cookie: cookieHeader } }
+      { next: { revalidate: 60 }, headers: { cookie: cookieHeader } }
     );
 
     if (podcastsRes.ok) {
@@ -92,7 +92,7 @@ export default async function PodcastsAdminPage({ params }: PageProps) {
     // --- Fetch store categories ---
     const categoriesRes = await fetch(
       `${apiUrl}/admin/get-store-categories?companyId=${encodeURIComponent(companyId)}`,
-      { cache: "no-store" , headers: { cookie: cookieHeader } }
+      { next: { revalidate: 60 } , headers: { cookie: cookieHeader } }
     );
 
     if (categoriesRes.ok) {

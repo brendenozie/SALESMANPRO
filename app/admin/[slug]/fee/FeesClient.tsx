@@ -644,7 +644,7 @@ const FeesClient: React.FC<FeesClientProps> = ({ initialFeeRecordsData, initialS
   const refreshData = async () => {
     setIsSubmitting(true);
     try {
-      const feesRes = await fetch(`/api/admin/student-fee-records`, { cache: "no-store" });
+      const feesRes = await fetch(`/api/admin/student-fee-records`, { next: { revalidate: 60 } });
       if (feesRes.ok) {
         const updatedFees: StudentFeeRecord[] = await feesRes.json();
         setFeeRecords(updatedFees);
@@ -652,7 +652,7 @@ const FeesClient: React.FC<FeesClientProps> = ({ initialFeeRecordsData, initialS
         console.error("[FeesClient] Failed to re-fetch fee records.");
       }
 
-      const studentsRes = await fetch(`/api/admin/students`, { cache: "no-store" });
+      const studentsRes = await fetch(`/api/admin/students`, { next: { revalidate: 60 } });
       if (studentsRes.ok) {
         const updatedStudents: Student[] = await studentsRes.json();
         setStudents(updatedStudents);
@@ -660,7 +660,7 @@ const FeesClient: React.FC<FeesClientProps> = ({ initialFeeRecordsData, initialS
         console.error("[FeesClient] Failed to re-fetch students.");
       }
 
-      const feeItemsRes = await fetch(`/api/admin/fee-items`, { cache: "no-store" });
+      const feeItemsRes = await fetch(`/api/admin/fee-items`, { next: { revalidate: 60 } });
       if (feeItemsRes.ok) {
         const updatedFeeItems: FeeItem[] = await feeItemsRes.json();
         setFeeItems(updatedFeeItems);

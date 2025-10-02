@@ -139,7 +139,7 @@ export default async function AppointmentsPage({ params }: Props) {
   try {
     const res = await fetch(
       `${apiUrl}/admin/orders?companyId=${encodeURIComponent(companyId)}`,
-      { cache: "no-store", headers: { cookie: cookieHeader } } // SSR on every request
+      { next: { revalidate: 60 }, headers: { cookie: cookieHeader } } // SSR on every request
     );
     if (res.ok) {
       const json = (await res.json()) as { data: { orderItems: OrderItem[] } };

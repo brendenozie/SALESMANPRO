@@ -599,7 +599,7 @@ const WritersClient: React.FC<ClientProps> = ({ writersData, companyId }) => {
       }
 
       // Re-fetch logic (simplified, assuming this route hits the same data endpoint)
-      const freshDataRes = await fetch(`/api/admin/writers?companyId=${companyId}`, { cache: "no-store" });
+      const freshDataRes = await fetch(`/api/admin/writers?companyId=${companyId}`, { next: { revalidate: 60 } });
       const updatedWriters: Writer[] = await freshDataRes.json();
       
       setWriters(updatedWriters);

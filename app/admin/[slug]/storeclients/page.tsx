@@ -11,7 +11,7 @@ interface PageProps {
 }
 
 /**
- * Server Component: fetches the clients on every request (cache: "no-store"),
+ * Server Component: fetches the clients on every request (next: { revalidate: 60 }),
  * then renders the client component with the fetched data.
  */
 export default async function ClientsPage({ params }: PageProps) {
@@ -21,7 +21,7 @@ export default async function ClientsPage({ params }: PageProps) {
   try {
     const res = await fetch(
       `${apiUrl}/admin/clients?companyId=${companyId}`,
-      { cache: "no-store" }
+      { next: { revalidate: 60 } }
     );
 
     if (res.ok) {

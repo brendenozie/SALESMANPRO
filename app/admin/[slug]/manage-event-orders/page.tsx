@@ -51,7 +51,7 @@ export default async function AdminOrdersPage({ params }: Props) {
     const organizersRes = await fetch(
       `${apiUrl}/admin/agents?companyId=${encodeURIComponent(companyId)}`,
       { 
-        cache: "no-store", 
+        next: { revalidate: 60 }, 
         headers: { cookie: cookiesHeader },
         // Add a timeout if needed: signal: AbortSignal.timeout(5000)
       }
@@ -68,7 +68,7 @@ export default async function AdminOrdersPage({ params }: Props) {
     const ordersRes = await fetch(
       `${apiUrl}/admin/orders?companyId=${encodeURIComponent(companyId)}`,
       { 
-        cache: "no-store", 
+        next: { revalidate: 60 }, 
         headers: { cookie: cookiesHeader },
       }
     );

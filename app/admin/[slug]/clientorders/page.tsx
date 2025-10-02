@@ -30,7 +30,7 @@ export default async function ProductRequestsPage(_: PageProps) {
   try {
     const res = await fetch(
       `${apiUrl}/admin/clientproductrequests`,
-      { cache: "no-store" } // SSR on every request
+      { next: { revalidate: 60 } } // SSR on every request
     );
 
     if (res.ok) {

@@ -125,7 +125,7 @@ export default async function MessagesManagerPage({ params }: Props) {
     // Fetch conversations for the current user
     const conversationsRes = await fetch(
       `${apiUrl}/admin/conversations?userId=${encodeURIComponent(currentUserId)}&companyId=${encodeURIComponent(companyId)}`,
-      { cache: "no-store", headers: { cookie: cookieHeader } }
+      { next: { revalidate: 60 }, headers: { cookie: cookieHeader } }
     );
     if (conversationsRes.ok) {
       let dataConvers = await conversationsRes.json();
@@ -139,7 +139,7 @@ export default async function MessagesManagerPage({ params }: Props) {
     // Fetch all users in the company (for recipient selection in compose)
     const usersRes = await fetch(
       `${apiUrl}/admin/users?companyId=${encodeURIComponent(companyId)}`, // Assuming an /api/users endpoint
-      { cache: "no-store", headers: { cookie: cookieHeader } }
+      { next: { revalidate: 60 }, headers: { cookie: cookieHeader } }
     );
     if (usersRes.ok) {
       let dataUsers = await usersRes.json();

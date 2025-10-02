@@ -483,7 +483,7 @@ export default function AdminAnnouncementsPage({
     setError(null);
     try {
       const res = await fetch(`${apiUrl}/announcements?companyId=${encodeURIComponent(companyId)}`, {
-        cache: "no-store",
+        next: { revalidate: 60 },
       });
       if (res.ok) {
         const data: AnnouncementData[] = await res.json();

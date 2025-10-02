@@ -65,7 +65,7 @@ const OrdersClient: React.FC<ClientProps> = ({ ordersData: initialOrdersData, co
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/customer-orders?companyId=${companyId}`, { cache: "no-store" });
+      const res = await fetch(`${apiUrl}/customer-orders?companyId=${companyId}`, { next: { revalidate: 60 } });
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.message || `Failed to fetch orders: ${res.statusText}`);

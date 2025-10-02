@@ -24,7 +24,7 @@ export default async function PosPage({ params }: PageProps) {
     // Fetch Store Categories
     // Correcting the API path to match your provided route: /api/store-categories
     const categoriesRes = await fetch(`${apiUrl}/admin/pos-categories?companyId=${companyId}`, {
-      cache: "no-store",
+      next: { revalidate: 60 },
     });
     if (categoriesRes.ok) {
       const categoriesData = await categoriesRes.json();
@@ -40,7 +40,7 @@ export default async function PosPage({ params }: PageProps) {
     // Fetch Marketplace Listings (Products)
     // Correcting the API path to match your provided route: /api/marketplace-list
     const productsRes = await fetch(`${apiUrl}/admin/pos-marketplace-listings?companyId=${companyId}`, {
-      cache: "no-store",
+      next: { revalidate: 60 },
     });
     if (productsRes.ok) {
       const productsData = await productsRes.json();

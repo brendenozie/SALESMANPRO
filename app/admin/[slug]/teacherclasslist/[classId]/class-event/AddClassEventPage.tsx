@@ -140,7 +140,7 @@ export default function AddClassEventPage({
 
       // Updated API call to match the new backend endpoint
       const res = await fetch(`${apiUrl}/teacher/class-events?academicLevelId=${encodeURIComponent(classId)}&teacherId=${encodeURIComponent(teacherId)}`, {
-        cache: "no-store",
+        next: { revalidate: 60 },
       });
 
       if (res.ok) {

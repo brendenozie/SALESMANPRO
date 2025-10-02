@@ -144,7 +144,7 @@ export default async function GlobalCourseMaterialsManagementPage({ params }: Pa
     // The API route /api/course-materials now supports filtering by companyId
     const materialsRes = await fetch(
       `${apiUrl}/course-materials?companyId=${encodeURIComponent(companyId)}`,
-      { cache: "no-store" }
+      { next: { revalidate: 60 } }
     );
     if (materialsRes.ok) {
       initialMaterials = (await materialsRes.json()) as CourseMaterialType[];
@@ -158,7 +158,7 @@ export default async function GlobalCourseMaterialsManagementPage({ params }: Pa
     // Fetch all courses for this company (for filtering and linking)
     const coursesRes = await fetch(
       `${apiUrl}/courses?companyId=${encodeURIComponent(companyId)}`,
-      { cache: "no-store" }
+      { next: { revalidate: 60 } }
     );
     if (coursesRes.ok) {
       const fetchedCourses = (await coursesRes.json()) as any[]; // Use 'any' for initial fetch, then map
@@ -178,7 +178,7 @@ export default async function GlobalCourseMaterialsManagementPage({ params }: Pa
     // Fetch all educators (for the "uploaded by" dropdown)
     const educatorsRes = await fetch(
       `${apiUrl}/educators?companyId=${encodeURIComponent(companyId)}`,
-      { cache: "no-store" }
+      { next: { revalidate: 60 } }
     );
     if (educatorsRes.ok) {
       const fetchedEducators = (await educatorsRes.json()) as any[];
@@ -197,7 +197,7 @@ export default async function GlobalCourseMaterialsManagementPage({ params }: Pa
     // Fetch all academic levels (for filtering)
     const academicLevelsRes = await fetch(
       `${apiUrl}/academic-levels?companyId=${encodeURIComponent(companyId)}`,
-      { cache: "no-store" }
+      { next: { revalidate: 60 } }
     );
     if (academicLevelsRes.ok) {
       allAcademicLevels = (await academicLevelsRes.json()) as AcademicLevelOption[];

@@ -40,7 +40,7 @@ export default async function AdminCheckinPage({ params }: Props) {
     const fetchUrl = `${apiUrl}/admin/${adminSlug}/events?status=SCHEDULED&fields=id,title,startDateTime`;
 
     const response = await fetch(fetchUrl, {
-      cache: "no-store", // Ensure we get fresh data
+      next: { revalidate: 60 }, // Ensure we get fresh data
       headers: { cookie: cookiesHeader }, // Pass auth cookies
     });
 

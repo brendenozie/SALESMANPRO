@@ -51,7 +51,7 @@ export default async function TakeAttendanceServerPage({ params }: PageProps) {
 
     const res = await fetch(
       `${apiUrl}/teacher/courses/${courseId}/attendance-data?educatorId=${encodeURIComponent(educatorId)}&companyId=${encodeURIComponent(companyId)}&date=${encodeURIComponent(today)}`,
-      { cache: "no-store" } // Ensure fresh data
+      { next: { revalidate: 60 } } // Ensure fresh data
     );
 
     if (res.ok) {

@@ -368,7 +368,7 @@ export default function AdminExamsOverviewPage({ initialExams, allCourses, allEd
     setError(null);
     try {
       const res = await fetch(`${apiUrl}/admin/exams?companyId=${encodeURIComponent(companyId)}`, {
-        cache: "no-store",
+        next: { revalidate: 60 },
       });
       if (res.ok) {
         const data: ExamData[] = await res.json();

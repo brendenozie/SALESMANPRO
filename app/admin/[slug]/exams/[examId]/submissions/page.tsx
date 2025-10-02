@@ -115,7 +115,7 @@ export default async function ExamSubmissionsPage({ params }: PageProps) {
   try {
     // Fetch exam details
     const examRes = await fetch(`${apiUrl}/exams/${examId}`, {
-      cache: "no-store",
+      next: { revalidate: 60 },
     });
     if (examRes.ok) {
       const examData = await examRes.json();
@@ -135,7 +135,7 @@ export default async function ExamSubmissionsPage({ params }: PageProps) {
 
     // Fetch exam submissions
     const submissionsRes = await fetch(`${apiUrl}/exam-submissions?examId=${encodeURIComponent(examId)}`, {
-      cache: "no-store",
+      next: { revalidate: 60 },
     });
     if (submissionsRes.ok) {
       initialSubmissions = (await submissionsRes.json()) as ExamSubmissionData[];

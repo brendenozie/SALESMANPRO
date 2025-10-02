@@ -111,7 +111,7 @@ export default async function AdminReportsPage({ params }: Props) {
   try {
     const reportsRes = await fetch(
       `${apiUrl}/school-reports?companyId=${encodeURIComponent(companyId)}`,
-      { cache: "no-store" } // equivalent to SSR on every request
+      { next: { revalidate: 60 } } // equivalent to SSR on every request
     );
 
     if (reportsRes.ok) {

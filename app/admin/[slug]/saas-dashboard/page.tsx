@@ -49,13 +49,13 @@ export default async function DashboardPage({ params }: PageProps) {
 
   try {
     // In a real app, you'd fetch from your API:
-    // const statsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/stats?companyId=${companyId}`, { cache: "no-store" });
+    // const statsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/stats?companyId=${companyId}`, { next: { revalidate: 60 } });
     // if (statsRes.ok) stats = await statsRes.json();
 
-    // const activityRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/recent-activity?companyId=${companyId}`, { cache: "no-store" });
+    // const activityRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/recent-activity?companyId=${companyId}`, { next: { revalidate: 60 } });
     // if (activityRes.ok) recentActivities = await activityRes.json();
 
-    // const reviewsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/latest-reviews?companyId=${companyId}`, { cache: "no-store" });
+    // const reviewsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/latest-reviews?companyId=${companyId}`, { next: { revalidate: 60 } });
     // if (reviewsRes.ok) latestReviews = await reviewsRes.json();
 
     // --- Dummy Data ---

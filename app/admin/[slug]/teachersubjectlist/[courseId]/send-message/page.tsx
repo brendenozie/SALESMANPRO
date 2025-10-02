@@ -71,7 +71,7 @@ export default async function ManageEventsServerPage({ params }: PageProps) {
   try {
     const res = await fetch(
       `${apiUrl}/teacher/courses/${courseId}/events?educatorId=${encodeURIComponent(educatorId)}`,
-      { cache: "no-store" } // Ensure fresh data
+      { next: { revalidate: 60 } } // Ensure fresh data
     );
 
     if (res.ok) {

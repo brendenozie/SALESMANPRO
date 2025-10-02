@@ -325,7 +325,7 @@ export default function ExamSubmissionsManagerPage({ examDetails, initialSubmiss
     setError(null);
     try {
       const res = await fetch(`${apiUrl}/exam-submissions?examId=${encodeURIComponent(examDetails.id)}`, {
-        cache: "no-store",
+        next: { revalidate: 60 },
       });
       if (res.ok) {
         const data: ExamSubmissionData[] = await res.json();

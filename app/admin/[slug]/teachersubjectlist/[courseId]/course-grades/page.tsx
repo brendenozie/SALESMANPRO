@@ -66,7 +66,7 @@ export default async function ConsolidatedGradesServerPage({ params }: PageProps
   try {
     const res = await fetch(
       `${apiUrl}/teacher/courses/${courseId}/grades-data?educatorId=${encodeURIComponent(educatorId)}`,
-      { cache: "no-store" }
+      { next: { revalidate: 60 } }
     );
 
     if (res.ok) {

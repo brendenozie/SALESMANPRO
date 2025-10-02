@@ -54,7 +54,7 @@ const ProjectsClient: React.FC<ClientProps> = ({ projectsData: initialProjectsDa
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/admin/projects`, { cache: "no-store" }); // Use the admin endpoint
+      const res = await fetch(`${apiUrl}/admin/projects`, { next: { revalidate: 60 } }); // Use the admin endpoint
       if (res.ok) {
         const data = await res.json();
         setProjectsData(data);

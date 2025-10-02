@@ -17,7 +17,7 @@ export default async function AdminTicketsPage({ params }: Props) {
   try {
     const res = await fetch(
       `${apiUrl}/admin/${companyId}/tickets`,
-      { cache: "no-store", headers: { cookie: cookiesHeader } }
+      { next: { revalidate: 60 }, headers: { cookie: cookiesHeader } }
     );
 
     if (res.ok) {

@@ -238,7 +238,7 @@ export default function EventRegistrationsPage({
     setError(null);
     try {
       const res = await fetch(`${apiUrl}/event-registrations?eventId=${encodeURIComponent(eventDetails.id)}`, {
-        cache: "no-store",
+        next: { revalidate: 60 },
       });
       if (res.ok) {
         const data: EventRegistrationData[] = await res.json();

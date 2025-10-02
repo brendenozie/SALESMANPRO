@@ -56,7 +56,7 @@ export default async function PosPage({ params }: PageProps) {
 
   try {
     // Fetch Product Categories for the company
-    const categoriesRes = await fetch(`${apiUrl}/admin/menu-categories?companyId=${companyId}`, { cache: "no-store" });
+    const categoriesRes = await fetch(`${apiUrl}/admin/menu-categories?companyId=${companyId}`, { next: { revalidate: 60 } });
     if (categoriesRes.ok) {
       categoriesData = (await categoriesRes.json()) as ProductCategory[];
     } else {
@@ -64,7 +64,7 @@ export default async function PosPage({ params }: PageProps) {
     }
 
     // Fetch Products (dishes) for the company
-    const productsRes = await fetch(`${apiUrl}/admin/products?companyId=${companyId}`, { cache: "no-store" });
+    const productsRes = await fetch(`${apiUrl}/admin/products?companyId=${companyId}`, { next: { revalidate: 60 } });
     if (productsRes.ok) {
       productsData = (await productsRes.json()) as Product[];
     } else {

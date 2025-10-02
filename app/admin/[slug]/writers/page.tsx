@@ -57,7 +57,7 @@ export default async function WritersPage({ params }: PageProps) {
 
   try {
     const res = await fetch(`${apiUrl}/admin/writers?companyId=${companyId}`, {
-      cache: "no-store", // Ensure fresh data on each request
+      next: { revalidate: 60 }, // Ensure fresh data on each request
       headers: { cookie: cookieHeader },
     });
     if (res.ok) {

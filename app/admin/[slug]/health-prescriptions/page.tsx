@@ -323,7 +323,7 @@ export default function AdminPrescriptionsPage({ params }: { params: { slug: str
           variants={fadeIn}
           transition={{ delay: 0.2 }}
         >
-          Manage and track patient prescriptions. (Company ID: {companyId})
+          Manage and track patient prescriptions.
         </motion.p>
 
         <motion.div

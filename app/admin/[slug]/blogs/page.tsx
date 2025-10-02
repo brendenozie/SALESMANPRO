@@ -58,7 +58,7 @@ export default async function BlogsPage({ params }: PageProps) {
   try {
     const res = await fetch(
       `${apiUrl}/admin/get-all-blogs?companyId=${encodeURIComponent(companyId)}&limit=${limit}&page=${page}`,
-      { cache: "no-store", headers: { cookie: cookieHeader } }
+      { next: { revalidate: 60 }, headers: { cookie: cookieHeader } }
     );
 
     if (res.ok) {
@@ -89,7 +89,7 @@ export default async function BlogsPage({ params }: PageProps) {
       `${apiUrl}/admin/get-store-categories?companyId=${encodeURIComponent(
         companyId
       )}`,
-      { cache: "no-store", headers: { cookie: cookieHeader } }
+      { next: { revalidate: 60 }, headers: { cookie: cookieHeader } }
     );
     if (categoriesRes.ok) {
       const categoriesJson = (await categoriesRes.json()) as {

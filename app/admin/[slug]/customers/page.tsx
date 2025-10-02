@@ -22,13 +22,13 @@ interface PageProps {
 
 /**
  * Server Component that fetches clients on every request
- * (cache: "no-store") and passes the array down to the client side.
+ * (next: { revalidate: 60 }) and passes the array down to the client side.
  */
 export default async function ClientsPage(_: PageProps) {
   let clientsData: Client[] = [];
 
   try {
-    const res = await fetch(`${apiUrl}/admin/clients`, { cache: "no-store" });
+    const res = await fetch(`${apiUrl}/admin/clients`, { next: { revalidate: 60 } });
     if (res.ok) {
       clientsData = (await res.json()) as Client[];
     } else {

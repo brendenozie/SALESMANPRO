@@ -61,7 +61,7 @@ export default async function StudentScheduleServerPage({ params }: PageProps) {
   try {
     const res = await fetch(
       `${apiUrl}/student/schedule?studentId=${encodeURIComponent(studentId)}`,
-      { cache: "no-store" } // Ensure fresh data
+      { next: { revalidate: 60 } } // Ensure fresh data
     );
 
     if (res.ok) {

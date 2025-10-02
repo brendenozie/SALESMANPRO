@@ -64,7 +64,7 @@ export default async function CourseReportsServerPage({ params }: PageProps) {
   try {
     const res = await fetch(
       `${apiUrl}/teacher/courses-for-reports?educatorId=${encodeURIComponent(educatorId)}`,
-      { cache: "no-store" } // Ensure fresh data
+      { next: { revalidate: 60 } } // Ensure fresh data
     );
 
     if (res.ok) {

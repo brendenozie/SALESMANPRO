@@ -84,7 +84,7 @@ export default async function ClientInventoryPage({ params }: PageProps) {
   try {
     const res = await fetch(
       `${apiUrl}/admin/my-market-place?companyId=${encodeURIComponent(companyId)}`,
-      { cache: "no-store" }
+      { next: { revalidate: 60 } }
     );
 
     if (res.ok) {
@@ -106,7 +106,7 @@ export default async function ClientInventoryPage({ params }: PageProps) {
       `${apiUrl}/admin/get-store-categories?companyId=${encodeURIComponent(
         companyId
       )}`,
-      { cache: "no-store" }
+      { next: { revalidate: 60 } }
     );
     if (categoriesRes.ok) {
       const categoriesJson = (await categoriesRes.json()) as {

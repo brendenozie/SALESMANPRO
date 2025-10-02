@@ -151,7 +151,7 @@ export default async function AdminCoursesPage({ params }: PageProps) {
     // Fetch all courses for this company
     const coursesRes = await fetch(
       `${apiUrl}/admin/courses?companyId=${encodeURIComponent(companyId)}`,
-      { cache: "no-store" } // equivalent to SSR on every request
+      { next: { revalidate: 60 } } // equivalent to SSR on every request
     );
     if (coursesRes.ok) {
       initialCourses = (await coursesRes.json()) as CourseType[];
@@ -165,7 +165,7 @@ export default async function AdminCoursesPage({ params }: PageProps) {
     // Fetch all educators for this company
     const educatorsRes = await fetch(
       `${apiUrl}/admin/educators?companyId=${encodeURIComponent(companyId)}`,
-      { cache: "no-store" }
+      { next: { revalidate: 60 } }
     );
     if (educatorsRes.ok) {
       const fetchedEducators = (await educatorsRes.json()) as any[]; // Use 'any' for initial fetch, then map
@@ -184,7 +184,7 @@ export default async function AdminCoursesPage({ params }: PageProps) {
     // Fetch all departments for this company
     const departmentsRes = await fetch(
       `${apiUrl}/admin/departments?companyId=${encodeURIComponent(companyId)}`,
-      { cache: "no-store" }
+      { next: { revalidate: 60 } }
     );
     if (departmentsRes.ok) {
       allDepartments = (await departmentsRes.json()) as DepartmentOption[];
@@ -198,7 +198,7 @@ export default async function AdminCoursesPage({ params }: PageProps) {
     // Fetch all academic levels for this company
     const academicLevelsRes = await fetch(
       `${apiUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`,
-      { cache: "no-store" }
+      { next: { revalidate: 60 } }
     );
     if (academicLevelsRes.ok) {
       allAcademicLevels = (await academicLevelsRes.json()) as AcademicLevelOption[];

@@ -23,7 +23,7 @@ interface PageProps {
 }
 
 /**
- * This is a Server Component. It runs on each request (cache: "no-store"),
+ * This is a Server Component. It runs on each request (next: { revalidate: 60 }),
  * fetches all product requests, then renders the Client component below.
  */
 export default async function ProductRequestsPage({ params }: PageProps) {
@@ -34,7 +34,7 @@ export default async function ProductRequestsPage({ params }: PageProps) {
 
   try {
     const res = await fetch(`${apiUrl}/admin/agentproductrequests`, {
-      cache: "no-store",
+      next: { revalidate: 60 },
     });
 
     if (res.ok) {

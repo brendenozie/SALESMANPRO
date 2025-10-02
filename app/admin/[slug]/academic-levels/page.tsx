@@ -88,7 +88,7 @@ export default async function AcademicLevelsManagementPage({ params }: PageProps
     // Fetch all academic levels for this company
     const academicLevelsRes = await fetch(
       `${apiUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`,
-      { cache: "no-store" } // equivalent to SSR on every request
+      { next: { revalidate: 60 } } // equivalent to SSR on every request
     );
     if (academicLevelsRes.ok) {
       initialAcademicLevels = (await academicLevelsRes.json()) as AcademicLevelType[];

@@ -111,8 +111,8 @@ const useMenuData = (companyId: string) => {
     setError(null);
     try {
       // Simulate API calls
-      const categoriesRes = await fetch(`${apiUrl}/admin/my-market-place?companyId=${companyId}`, { cache: "no-store" });
-      const productsRes = await fetch(`${apiUrl}/admin/get-store-categories?companyId=${companyId}`, { cache: "no-store" });
+      const categoriesRes = await fetch(`${apiUrl}/admin/my-market-place?companyId=${companyId}`, { next: { revalidate: 60 } });
+      const productsRes = await fetch(`${apiUrl}/admin/get-store-categories?companyId=${companyId}`, { next: { revalidate: 60 } });
 
       if (categoriesRes.ok && productsRes.ok) {
         

@@ -125,7 +125,7 @@ export default async function CourseMaterialsManagementPage({ params }: PageProp
     // Fetch course details
     const courseRes = await fetch(
       `${apiUrl}/courses/${encodeURIComponent(courseId)}`,
-      { cache: "no-store" }
+      { next: { revalidate: 60 } }
     );
     if (courseRes.ok) {
       courseDetails = (await courseRes.json()) as CourseDetailsType;
@@ -139,7 +139,7 @@ export default async function CourseMaterialsManagementPage({ params }: PageProp
     // Fetch all materials for this specific course
     const materialsRes = await fetch(
       `${apiUrl}/course-materials?courseId=${encodeURIComponent(courseId)}`,
-      { cache: "no-store" }
+      { next: { revalidate: 60 } }
     );
     if (materialsRes.ok) {
       initialMaterials = (await materialsRes.json()) as CourseMaterialType[];
@@ -153,7 +153,7 @@ export default async function CourseMaterialsManagementPage({ params }: PageProp
     // Fetch all educators (for the "uploaded by" dropdown)
     const educatorsRes = await fetch(
       `${apiUrl}/educators?companyId=${encodeURIComponent(companyId)}`,
-      { cache: "no-store" }
+      { next: { revalidate: 60 } }
     );
     if (educatorsRes.ok) {
       const fetchedEducators = (await educatorsRes.json()) as any[];

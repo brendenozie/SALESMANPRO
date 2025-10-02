@@ -70,7 +70,7 @@ const DeliveryClient: React.FC<ClientProps> = ({ deliveryOrdersData: initialDeli
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/admin/customer-orders?companyId=${companyId}&delivery=true`, { cache: "no-store" });
+      const res = await fetch(`${apiUrl}/admin/customer-orders?companyId=${companyId}&delivery=true`, { next: { revalidate: 60 } });
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.message || `Failed to fetch delivery orders: ${res.statusText}`);

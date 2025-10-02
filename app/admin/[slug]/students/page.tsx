@@ -175,7 +175,7 @@ export default async function StudentsManagementPage({ params }: PageProps) {
     // Fetch all students for this company
     const studentsRes = await fetch(
       `${apiUrl}/admin/students?companyId=${encodeURIComponent(companyId)}`,
-      { cache: "no-store" } // equivalent to SSR on every request
+      { next: { revalidate: 60 } } // equivalent to SSR on every request
     );
     if (studentsRes.ok) {
       initialStudents = (await studentsRes.json()) as StudentType[];
@@ -189,7 +189,7 @@ export default async function StudentsManagementPage({ params }: PageProps) {
     // Fetch all parents for this company (or globally if not company-specific)
     const parentsRes = await fetch(
       `${apiUrl}/admin/parents?companyId=${encodeURIComponent(companyId)}`,
-      { cache: "no-store" }
+      { next: { revalidate: 60 } }
     );
     if (parentsRes.ok) {
       const parentsData = (await parentsRes.json()) as ParentOption[];
@@ -210,7 +210,7 @@ export default async function StudentsManagementPage({ params }: PageProps) {
     // Fetch all academic levels for this company
     const academicLevelsRes = await fetch(
       `${apiUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`,
-      { cache: "no-store" }
+      { next: { revalidate: 60 } }
     );
     if (academicLevelsRes.ok) {
       allAcademicLevels = (await academicLevelsRes.json()) as AcademicLevelOption[];

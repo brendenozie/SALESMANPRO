@@ -30,9 +30,9 @@ const MembersClient: React.FC<ClientProps> = ({ membersData: initialMembersData,
     setLoading(true);
     setError(null);
     try {
-      const usersRes = await fetch(`${apiUrl}/users`, { cache: "no-store" }); // Assuming a /api/users endpoint
-      const projectsRes = await fetch(`${apiUrl}/projects`, { cache: "no-store" });
-      const projectMembersRes = await fetch(`${apiUrl}/project-members`, { cache: "no-store" });
+      const usersRes = await fetch(`${apiUrl}/users`, { next: { revalidate: 60 } }); // Assuming a /api/users endpoint
+      const projectsRes = await fetch(`${apiUrl}/projects`, { next: { revalidate: 60 } });
+      const projectMembersRes = await fetch(`${apiUrl}/project-members`, { next: { revalidate: 60 } });
 
       if (usersRes.ok && projectsRes.ok && projectMembersRes.ok) {
         setMembersData(await usersRes.json());

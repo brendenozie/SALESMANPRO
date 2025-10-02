@@ -43,7 +43,7 @@ export default async function CategoryManagerPage(_: PageProps) {
 
   try {
     const res = await fetch(`${apiUrl}/admin/get-categories`, {
-      cache: "no-store", // SSR on every request
+      next: { revalidate: 60 }, // SSR on every request
     });
 
     if (res.ok) {

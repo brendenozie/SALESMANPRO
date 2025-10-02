@@ -50,7 +50,7 @@ export default async function AdminOrdersPage({ params }: Props) {
     // 1. Fetch organizers (Unchanged)
     const organizersRes = await fetch(
       `${apiUrl}/admin/agents?companyId=${encodeURIComponent(companyId)}`,
-      { cache: "no-store", headers: { cookie: cookiesHeader } }
+      { next: { revalidate: 60 }, headers: { cookie: cookiesHeader } }
     );
     if (organizersRes.ok) {
       const organizersJson = await organizersRes.json();
@@ -62,7 +62,7 @@ export default async function AdminOrdersPage({ params }: Props) {
     const ordersRes = await fetch(
       // Assuming your API endpoint for all orders is simply /admin/{slug}/orders
       `${apiUrl}/admin/${companyId}/orders`, 
-      { cache: "no-store", headers: { cookie: cookiesHeader } }
+      { next: { revalidate: 60 }, headers: { cookie: cookiesHeader } }
     );
     if (ordersRes.ok) {
       const ordersJson = await ordersRes.json();

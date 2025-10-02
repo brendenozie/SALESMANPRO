@@ -64,7 +64,7 @@ export default async function ClassScheduleServerPage({ params }: PageProps) {
   try {
     const res = await fetch(
       `${apiUrl}/teacher/courses/${courseId}/schedule?educatorId=${encodeURIComponent(educatorId)}&companyId=${encodeURIComponent(companyId)}`,
-      { cache: "no-store" } // Ensure fresh data
+      { next: { revalidate: 60 } } // Ensure fresh data
     );
 
     if (res.ok) {

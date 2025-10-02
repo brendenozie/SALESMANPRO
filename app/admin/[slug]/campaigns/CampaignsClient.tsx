@@ -39,7 +39,7 @@ const CampaignsClient: React.FC<ClientProps> = ({ campaignsData: initialCampaign
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/campaigns`, { cache: "no-store" }); // Adjust for companyId if needed
+      const res = await fetch(`${apiUrl}/campaigns`, { next: { revalidate: 60 } }); // Adjust for companyId if needed
       if (res.ok) {
         const data = await res.json();
         setCampaignsData(data);

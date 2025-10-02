@@ -112,7 +112,7 @@ export default async function GlobalCourseAssignmentsManagementPage({ params }: 
     // Fetch all assignments for this company
     const assignmentsRes = await fetch(
       `${apiUrl}/course-assignments?companyId=${encodeURIComponent(companyId)}`,
-      { cache: "no-store" }
+      { next: { revalidate: 60 } }
     );
     if (assignmentsRes.ok) {
       initialAssignments = (await assignmentsRes.json()) as CourseAssignmentType[];
@@ -126,7 +126,7 @@ export default async function GlobalCourseAssignmentsManagementPage({ params }: 
     // Fetch all courses for this company (for filtering and linking)
     const coursesRes = await fetch(
       `${apiUrl}/courses?companyId=${encodeURIComponent(companyId)}`,
-      { cache: "no-store" }
+      { next: { revalidate: 60 } }
     );
     if (coursesRes.ok) {
       const fetchedCourses = (await coursesRes.json()) as any[]; // Use 'any' for initial fetch, then map
@@ -146,7 +146,7 @@ export default async function GlobalCourseAssignmentsManagementPage({ params }: 
     // Fetch all academic levels (for filtering)
     const academicLevelsRes = await fetch(
       `${apiUrl}/academic-levels?companyId=${encodeURIComponent(companyId)}`,
-      { cache: "no-store" }
+      { next: { revalidate: 60 } }
     );
     if (academicLevelsRes.ok) {
       allAcademicLevels = (await academicLevelsRes.json()) as AcademicLevelOption[];

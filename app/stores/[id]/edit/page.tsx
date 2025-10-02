@@ -100,14 +100,14 @@ export default async function EditStorePage({
   // --- Fetch available categories and locations for the form selectors ---
   const categoryRes = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/admin/get-all-categories`,
-    { cache: "no-store", headers: { Cookie: (await cookies()).toString() } }
+    { next: { revalidate: 60 }, headers: { Cookie: (await cookies()).toString() } }
   );
   const categoryData = await categoryRes.json();
   const availableCategories: IProductCategory[] = categoryData.data.results || [];
 
   const locationRes = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/admin/locations`,
-    { cache: "no-store", headers: { Cookie: (await cookies()).toString() } }
+    { next: { revalidate: 60 }, headers: { Cookie: (await cookies()).toString() } }
   );
   const locationData = await locationRes.json();
   const availableLocations: ILocation[] = locationData.data.data || [];

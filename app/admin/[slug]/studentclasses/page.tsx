@@ -44,7 +44,7 @@ export default async function StudentClassesServerPage({ params }: PageProps) {
   try {
     const res = await fetch(
       `${apiUrl}/student/classes?studentId=${encodeURIComponent(studentId)}`,
-      { cache: "no-store" } // Ensure fresh data
+      { next: { revalidate: 60 } } // Ensure fresh data
     );
 
     if (res.ok) {

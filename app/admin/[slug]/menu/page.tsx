@@ -72,7 +72,7 @@ export default async function MenuPage({ params }: PageProps) {
     try {
       const res = await fetch(
         `${apiUrl}/admin/my-market-place?companyId=${encodeURIComponent(companyId)}`,
-        { cache: "no-store", headers: { cookie: cookieHeader } }
+        { next: { revalidate: 60 }, headers: { cookie: cookieHeader } }
       );
   
       if (res.ok) {
@@ -99,7 +99,7 @@ export default async function MenuPage({ params }: PageProps) {
         `${apiUrl}/admin/get-store-categories?companyId=${encodeURIComponent(
           companyId
         )}`,
-        { cache: "no-store", headers: { cookie: cookieHeader } }
+        { next: { revalidate: 60 }, headers: { cookie: cookieHeader } }
       );
       if (categoriesRes.ok) {
           let catRes = await categoriesRes.json();

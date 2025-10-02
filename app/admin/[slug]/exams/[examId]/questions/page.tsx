@@ -109,7 +109,7 @@ export default async function ExamQuestionsPage({ params }: PageProps) {
   try {
     // Fetch exam details
     const examRes = await fetch(`${apiUrl}/admin/exams/${examId}`, {
-      cache: "no-store",
+      next: { revalidate: 60 },
     });
     if (examRes.ok) {
       const examData = await examRes.json();
@@ -129,7 +129,7 @@ export default async function ExamQuestionsPage({ params }: PageProps) {
 
     // Fetch exam questions
     const questionsRes = await fetch(`${apiUrl}/admin/exam-questions?examId=${encodeURIComponent(examId)}`, {
-      cache: "no-store",
+      next: { revalidate: 60 },
     });
     if (questionsRes.ok) {
       initialQuestions = (await questionsRes.json()) as ExamQuestionData[];

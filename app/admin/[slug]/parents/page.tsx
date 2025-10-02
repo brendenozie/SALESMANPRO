@@ -95,7 +95,7 @@ export default async function ParentsManagementPage({ params }: PageProps) {
     // Fetch all parents for this company
     const parentsRes = await fetch(
       `${apiUrl}/admin/parents?companyId=${encodeURIComponent(companyId)}`,
-      { cache: "no-store" } // equivalent to SSR on every request
+      { next: { revalidate: 60 } } // equivalent to SSR on every request
     );
     if (parentsRes.ok) {
       initialParents = (await parentsRes.json()) as ParentType[];

@@ -28,7 +28,7 @@ export default async function SalesSummaryPage(_: PageProps) {
   let salesData: Sale[] = [];
 
   try {
-    const res = await fetch(`${apiUrl}/admin/sales`, { cache: "no-store" });
+    const res = await fetch(`${apiUrl}/admin/sales`, { next: { revalidate: 60 } });
     if (res.ok) {
       salesData = (await res.json()) as Sale[];
     } else {

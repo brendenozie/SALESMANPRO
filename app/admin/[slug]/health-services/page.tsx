@@ -260,7 +260,7 @@ export default function AdminServicesPage({ params }: { params: { slug: string }
           variants={fadeIn}
           transition={{ delay: 0.2 }}
         >
-          Manage the medical services offered by your clinic. (Company ID: {companyId})
+          Manage the medical services offered by your clinic.
         </motion.p>
 
         <motion.div

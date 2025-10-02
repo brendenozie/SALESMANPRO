@@ -233,7 +233,7 @@ export default async function EventsManagerPage({ params }: PageProps) {
   try {
     // Fetch events relevant to this academic level
     const eventsRes = await fetch(`${apiUrl}/teacher/class-events?academicLevelId=${encodeURIComponent(academicLevelId)}&teacherId=${encodeURIComponent(teacherId)}`, {
-      cache: "no-store",
+      next: { revalidate: 60 },
     });
     if (eventsRes.ok) {
       initialEvents = (await eventsRes.json()) as EventData[];
@@ -249,7 +249,7 @@ export default async function EventsManagerPage({ params }: PageProps) {
     // If not, you can remove this fetch and simplify the form's academic level selection.
     
     const academicLevelsRes = await fetch(`${apiUrl}/teacher/academic-levels?teacherId=${encodeURIComponent(teacherId)}`, {
-      cache: "no-store",
+      next: { revalidate: 60 },
     });
     
     if (academicLevelsRes.ok) {
@@ -266,7 +266,7 @@ export default async function EventsManagerPage({ params }: PageProps) {
 
     // Fetch all courses/subjects for the specified academic level (classId)
     const coursesRes = await fetch(`${apiUrl}/teacher/class-subjects?academicLevelId=${encodeURIComponent(academicLevelId)}&teacherId=${encodeURIComponent(teacherId)}`, {
-      cache: "no-store",
+      next: { revalidate: 60 },
     });
     if (coursesRes.ok) {
       allCourses = (await coursesRes.json()) as CourseOption[];
@@ -277,7 +277,7 @@ export default async function EventsManagerPage({ params }: PageProps) {
 
     // Fetch all educators associated with the specific academic level
     const educatorsRes = await fetch(`${apiUrl}/teacher/class-educators?academicLevelId=${encodeURIComponent(academicLevelId)}&teacherId=${encodeURIComponent(teacherId)}`, {
-      cache: "no-store",
+      next: { revalidate: 60 },
     });
     if (educatorsRes.ok) {
       allEducators = (await educatorsRes.json()) as EducatorOption[];
@@ -291,7 +291,7 @@ export default async function EventsManagerPage({ params }: PageProps) {
 
     // Fetch all students for the specific academic level
     const studentsRes = await fetch(`${apiUrl}/teacher/academic-levels/${academicLevelId}/students?teacherId=${encodeURIComponent(teacherId)}`, {
-      cache: "no-store",
+      next: { revalidate: 60 },
     });
     if (studentsRes.ok) {
       allStudents = (await studentsRes.json()) as StudentOption[];
@@ -302,7 +302,7 @@ export default async function EventsManagerPage({ params }: PageProps) {
 
     // Fetch all departments for the company
     const departmentsRes = await fetch(`${apiUrl}/teacher/class-departments?teacherId=${encodeURIComponent(teacherId)}`, {
-      cache: "no-store",
+      next: { revalidate: 60 },
     });
     if (departmentsRes.ok) {
       allDepartments = (await departmentsRes.json()) as DepartmentOption[];
@@ -313,7 +313,7 @@ export default async function EventsManagerPage({ params }: PageProps) {
 
     // Fetch all parents for the company
     const parentsRes = await fetch(`${apiUrl}/teacher/class-parents?teacherId=${encodeURIComponent(teacherId)}`, {
-      cache: "no-store",
+      next: { revalidate: 60 },
     });
     if (parentsRes.ok) {
       allParents = (await parentsRes.json()) as ParentOption[];

@@ -252,7 +252,7 @@ export default function MessagesPageClient({ initialConversations, allUsers, cur
     setError(null);
     try {
       const res = await fetch(`${apiUrl}/conversations?userId=${encodeURIComponent(currentUserId)}&companyId=${encodeURIComponent(companyId)}`, {
-        cache: "no-store",
+        next: { revalidate: 60 },
       });
       if (res.ok) {
         const data: ConversationData[] = await res.json();
@@ -274,7 +274,7 @@ export default function MessagesPageClient({ initialConversations, allUsers, cur
     setError(null);
     try {
       const res = await fetch(`${apiUrl}/conversations/${convId}/messages?userId=${encodeURIComponent(currentUserId)}`, {
-        cache: "no-store",
+        next: { revalidate: 60 },
       });
       if (res.ok) {
         const data = await res.json();

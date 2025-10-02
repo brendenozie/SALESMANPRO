@@ -53,7 +53,7 @@ export default async function MembersPage({ params }: PageProps) {
     // Fetch Users (Members)
     // NOTE: You'll need an API endpoint for fetching users, e.g., /api/users
     // For now, this is a placeholder. You might need to adjust your backend to expose users.
-    const usersRes = await fetch(`${apiUrl}/admin/users?companyId=${companyId}`, { cache: "no-store", headers: { cookie: cookieHeader } });
+    const usersRes = await fetch(`${apiUrl}/admin/users?companyId=${companyId}`, { next: { revalidate: 60 }, headers: { cookie: cookieHeader } });
     if (usersRes.ok) {
       let data = await usersRes.json();
       membersData = data.map((user: any) => ({
@@ -68,7 +68,7 @@ export default async function MembersPage({ params }: PageProps) {
     }
 
     // Fetch Projects (for Project Member dropdown)
-    const projectsRes = await fetch(`${apiUrl}/admin/projects?companyId=${companyId}`, { cache: "no-store", headers: { cookie: cookieHeader } });
+    const projectsRes = await fetch(`${apiUrl}/admin/projects?companyId=${companyId}`, { next: { revalidate: 60 }, headers: { cookie: cookieHeader } });
     if (projectsRes.ok) {
       let data = await projectsRes.json();
       projectsData = data.map((project: any) => ({
@@ -80,7 +80,7 @@ export default async function MembersPage({ params }: PageProps) {
     }
 
     // Fetch Project Members
-    const projectMembersRes = await fetch(`${apiUrl}/admin/project-members?companyId=${companyId}`, { cache: "no-store", headers: { cookie: cookieHeader } });
+    const projectMembersRes = await fetch(`${apiUrl}/admin/project-members?companyId=${companyId}`, { next: { revalidate: 60 }, headers: { cookie: cookieHeader } });
     if (projectMembersRes.ok) {
       let data = await projectMembersRes.json();
       projectMembersData = data.map((pm: any) => ({

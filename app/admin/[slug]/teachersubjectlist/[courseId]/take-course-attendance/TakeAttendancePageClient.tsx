@@ -69,7 +69,7 @@ export default function TakeAttendancePageClient({
       try {
         const res = await fetch(
           `${apiUrl}/teacher/courses/${course.id}/attendance-data?educatorId=${encodeURIComponent(educatorId)}&companyId=${encodeURIComponent(companyId)}&date=${encodeURIComponent(attendanceDate)}`,
-          { cache: "no-store" }
+          { next: { revalidate: 60 } }
         );
 
         if (res.ok) {

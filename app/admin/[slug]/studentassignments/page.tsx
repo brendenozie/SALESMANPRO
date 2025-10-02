@@ -69,7 +69,7 @@ export default async function StudentAssignmentsServerPage({ params, searchParam
       url.searchParams.append('courseId', courseId);
     }
 
-    const res = await fetch(url.toString(), { cache: "no-store" });
+    const res = await fetch(url.toString(), { next: { revalidate: 60 } });
 
     if (res.ok) {
       const data = await res.json();

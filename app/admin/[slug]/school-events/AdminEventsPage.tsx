@@ -136,7 +136,7 @@ export default function AdminEventsPage({
     setError(null);
     try {
       const res = await fetch(`${apiUrl}/events?companyId=${encodeURIComponent(companyId)}`, {
-        cache: "no-store",
+        next: { revalidate: 60 },
       });
       if (res.ok) {
         const data: EventData[] = await res.json();
