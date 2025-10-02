@@ -1,56 +1,80 @@
-
-
-import DoctorsClient from "./DoctorsClient";
+import { motion } from "framer-motion";
 import { cookies } from "next/headers";
+import DoctorsClient from "./DoctorsClient";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:3000/api";
+const apiBaseUrl =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:3000/api";
 
 interface Props {
   params: { slug: string };
 }
 
+// Animation variants
+const fadeIn = {
+  hidden: { opacity: 0, y: 50 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.7, ease: "easeOut" },
+  },
+};
 
 /**
  * Fetch doctors for a given company
  */
 async function fetchDoctors(companyId: string) {
+  const cookiesHeaders = (await cookies()).toString();
   try {
     const res = await fetch(
       `${apiBaseUrl}/admin/doctors?companyId=${companyId}`,
       {
         method: "GET",
-        headers: { "Content-Type": "application/json" },
-        next: { revalidate: 60 }, // always fresh
+        headers: {
+          "Content-Type": "application/json",
+          cookie: cookiesHeaders,
+        },
+        next: { revalidate: 60 }, // ISR cache
       }
     );
 
     if (!res.ok) {
-      throw new Error(`Failed to fetch appointments: ${res.statusText}`);
+      throw new Error(`Failed to fetch doctors: ${res.statusText}`);
     }
 
     const json = await res.json();
     return json.data || [];
   } catch (err) {
-    console.error("fetchAppointments error:", err);
+    console.error("fetchDoctors error:", err);
     return [];
   }
 }
 
-export default async function AdminDoctorsPage({ params }: { params: { slug: string } }) {
+export default async function AdminDoctorsPage({ params }: Props) {
   const companyId = params.slug;
   const doctors = await fetchDoctors(companyId);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-gray-900 dark:to-gray-800 p-8 font-inter">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-5xl font-extrabold text-gray-900 dark:text-white mb-6 drop-shadow-lg">
+        <motion.h1
+          className="text-5xl font-extrabold text-gray-900 dark:text-white mb-6 drop-shadow-lg"
+          initial="hidden"
+          animate="visible"
+          variants={fadeIn}
+        >
           Doctor Management
-        </h1>
-        <p className="text-xl text-gray-700 dark:text-gray-300 mb-12">
+        </motion.h1>
+        <motion.p
+          className="text-xl text-gray-700 dark:text-gray-300 mb-12"
+          initial="hidden"
+          animate="visible"
+          variants={fadeIn}
+          transition={{ delay: 0.2 }}
+        >
           Manage information and availability of your medical team.
-        </p>
+        </motion.p>
 
-        {/* Pass initial server-fetched data into Client Component */}
+        {/* ✅ SSR doctors passed to client */}
         <DoctorsClient initialDoctors={doctors} companyId={companyId} />
       </div>
     </div>

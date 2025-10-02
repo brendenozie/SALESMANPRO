@@ -1,11 +1,13 @@
 "use client";
-import { useState } from "react";
+
 import { XMarkIcon } from "@heroicons/react/24/solid";
 import { AnimatePresence } from "framer-motion";
 
 
-export default function DoctorModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+function DoctorModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+  
   if (!isOpen) return null;
+  
   return (
     <AnimatePresence>
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -49,3 +51,5 @@ export default function DoctorModal({ isOpen, onClose }: { isOpen: boolean; onCl
     </AnimatePresence>
   );
 }
+
+export default DoctorModal;

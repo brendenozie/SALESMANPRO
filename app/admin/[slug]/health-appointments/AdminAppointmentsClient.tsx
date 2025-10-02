@@ -732,4 +732,3 @@ export default function AdminAppointmentsClient({
 
   );
 }
-  

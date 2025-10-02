@@ -453,7 +453,7 @@ export default function AddProductModal({
   };
 
   return (
-    <Modal isOpen={showRequestProductModal} onClose={() => setShowRequestProductModal(false)}>
+    <Modal title='' isOpen={showRequestProductModal} onClose={() => setShowRequestProductModal(false)}>
       <div className="relative p-6 bg-white rounded-xl shadow-lg text-gray-900 w-full max-w-4xl h-[90vh] flex flex-col">
         {loading && (
           <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-10">
