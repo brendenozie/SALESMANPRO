@@ -56,23 +56,23 @@ export default async function AdminDoctorsPage({ params }: Props) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-gray-900 dark:to-gray-800 p-8 font-inter">
       <div className="max-w-7xl mx-auto">
-        <motion.h1
+        <h1
           className="text-5xl font-extrabold text-gray-900 dark:text-white mb-6 drop-shadow-lg"
-          initial="hidden"
-          animate="visible"
-          variants={fadeIn}
+          // initial="hidden"
+          // animate="visible"
+          // variants={fadeIn}
         >
           Doctor Management
-        </motion.h1>
-        <motion.p
+        </h1>
+        <p
           className="text-xl text-gray-700 dark:text-gray-300 mb-12"
-          initial="hidden"
-          animate="visible"
-          variants={fadeIn}
-          transition={{ delay: 0.2 }}
+          // initial="hidden"
+          // animate="visible"
+          // variants={fadeIn}
+          // transition={{ delay: 0.2 }}
         >
           Manage information and availability of your medical team.
-        </motion.p>
+        </p>
 
         {/* ✅ SSR doctors passed to client */}
         <DoctorsClient initialDoctors={doctors} companyId={companyId} />
