@@ -2,13 +2,14 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
 
 async function listClients(request: Request) {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId") || "";
 
   if (!companyId) {
-    return NextResponse.json({ error: "Missing companyId" }, { status: 400 });
+    return formatResponse(false, null, "Missing companyId", 400);
   }
 
   try {
@@ -48,10 +49,10 @@ async function listClients(request: Request) {
       })
     );
 
-    return NextResponse.json(enriched);
-  } catch (err: any) {
+    return formatResponse(true, enriched, "Clients fetched successfully");
+  } catch (err) {
     console.error("GET /api/admin/clients error:", err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return formatResponse(false, null, err, 500);
   }
 }
 
@@ -75,7 +76,7 @@ async function createClient(request: Request) {
       data: { companyId, userId: user.id },
     });
 
-    return NextResponse.json(
+    return formatResponse(true, 
       {
         id: client.id,
         name: user.name,
@@ -87,9 +88,9 @@ async function createClient(request: Request) {
       },
       { status: 201 }
     );
-  } catch (err: any) {
+  } catch (err) {
     console.error("POST /api/admin/clients error:", err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return formatResponse(false, null, err, 500);
   }
 }
 

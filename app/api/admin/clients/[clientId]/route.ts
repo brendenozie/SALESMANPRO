@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
 
 interface Params {
   context:{
@@ -14,7 +15,7 @@ async function getClient(_req: Request,  context : {
   }) {
   const clientId = context.params.id;
   if (!clientId) {
-    return NextResponse.json({ error: "Missing client id" }, { status: 400 });
+    return formatResponse(false, null, "Missing client id", 400);
   }
 
   try {
@@ -26,10 +27,10 @@ async function getClient(_req: Request,  context : {
     });
 
     if (!client) {
-      return NextResponse.json({ error: "Client not found" }, { status: 404 });
+      return formatResponse(false, null, "Client not found", 404);
     }
 
-    return NextResponse.json({
+    return formatResponse(true, {
       id: client.id,
       name: client.user.name,
       email: client.user.email,
@@ -39,7 +40,7 @@ async function getClient(_req: Request,  context : {
       averageOrderValue: 0,
     });
   } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return formatResponse(false, null, err.message, 500);
   }
 }
 
@@ -48,7 +49,7 @@ async function updateClient(request: Request, context : {
   }) {
   const clientId = context.params.id;
   if (!clientId) {
-    return NextResponse.json({ error: "Missing client id" }, { status: 400 });
+    return formatResponse(false, null, "Missing client id", 400);
   }
 
   const body = await request.json();
@@ -61,7 +62,7 @@ async function updateClient(request: Request, context : {
     });
 
     if (!existing) {
-      return NextResponse.json({ error: "Client not found" }, { status: 404 });
+      return formatResponse(false, null, "Client not found", 404);
     }
 
     const updatedUser = await prisma.user.update({
@@ -73,7 +74,7 @@ async function updateClient(request: Request, context : {
       },
     });
 
-    return NextResponse.json({
+    return formatResponse(true, {
       id: clientId,
       name: updatedUser.name,
       email: updatedUser.email,
@@ -81,9 +82,9 @@ async function updateClient(request: Request, context : {
       totalPurchases: 0,
       lastPurchaseDate: null,
       averageOrderValue: 0,
-    });
+    },);
   } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return formatResponse(false, null, err.message, 500);
   }
 }
 
@@ -92,14 +93,14 @@ async function deleteClient(_req: Request, context : {
   }) {
   const clientId = context.params.id;
   if (!clientId) {
-    return NextResponse.json({ error: "Missing client id" }, { status: 400 });
+    return formatResponse(false, null, "Missing client id", 400);
   }
 
   try {
     await prisma.client.delete({ where: { id: clientId } });
-    return NextResponse.json({}, { status: 204 });
+    return formatResponse(true, null, "Client deleted successfully", 204);
   } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return formatResponse(false, null, err.message, 500);
   }
 }
 

@@ -1020,8 +1020,8 @@ model Client {
 
   membershipType   String? // e.g., "Premium", "Standard", "Trial"
   membershipStatus ClientStatus @default(PENDING) // New status field
-  joinDate         DateTime     @default(now())
-  lastActive       DateTime     @default(now())
+  joinDate         DateTime?    @default(now())
+  lastActive       DateTime?    @default(now())
   photoUrl         String? // URL for client's photo (optional)
 
   // --- NEW FIELDS FOR CLIENT MANAGEMENT ---

@@ -30,7 +30,9 @@ const getClients = async (req: Request) => {
 
   const clients = await prisma.client.findMany({
     where: companyId ? { companyId } : {},
-    include: { user: true },
+    include: { user: {
+      select: { name: true, email: true, phone: true }
+    } },
     orderBy: { createdAt: "desc" },
   });
 
