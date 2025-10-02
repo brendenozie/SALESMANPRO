@@ -34,7 +34,9 @@ async function getAgents(req: Request) {
   try {
     const salesAgents = await prisma.salesAgent.findMany({
       where: { companyId },
-      include: { user: true },
+      include: { user: {
+        select: { id:true, name:true, email:true, phone:true, bio:true, profilePicture:true }
+      } },
       orderBy: { createdAt: "desc" },
     });
 
