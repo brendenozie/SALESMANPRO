@@ -158,8 +158,8 @@ const BookingCard = ({ booking, onEdit, onDelete }: { booking: BookingData; onEd
   );
 };
 
-export default function BookingsPage({ params }: BookingsPageProps) {
-  const { slug } = params;
+export default function BookingsPage() {
+  const { slug } = useParams();
 
   const [bookings, setBookings] = useState<BookingData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -173,11 +173,13 @@ export default function BookingsPage({ params }: BookingsPageProps) {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${apiBaseUrl}/admin/fitness-bookings?companyId=${slug}`);
+      const response = await fetch(`${apiBaseUrl}/admin/fitness-bookings?companyId=${slug}`
+        , { credentials: 'include' }
+      );
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      const data: BookingData[] = await response.json();
+      const data: BookingData[] = (await response.json()).data || [];
       setBookings(data);
       toast.success("Bookings loaded successfully!", { duration: 3000 });
     } catch (err: any) {
@@ -228,10 +230,11 @@ export default function BookingsPage({ params }: BookingsPageProps) {
     try {
       const response = await fetch(`${apiBaseUrl}/admin/fitness-bookings/${bookingToDelete.id}`, {
         method: 'DELETE',
+        credentials: 'include',
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = (await response.json()).data || {};
         throw new Error(errorData.message || `Failed to delete booking "${bookingToDelete.title}".`);
       }
 
@@ -336,7 +339,7 @@ export default function BookingsPage({ params }: BookingsPageProps) {
         onClose={() => setIsBookingModalOpen(false)}
         onSave={handleSaveBooking}
         booking={currentBooking}
-        slug={slug}
+        slug={slug?.toString() || ''}
       />
 
       <ConfirmationModal

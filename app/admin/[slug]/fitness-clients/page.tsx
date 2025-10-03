@@ -198,8 +198,8 @@ const ClientCardSkeleton = () => (
 );
 
 
-export default function ClientsPage({ params }: ClientsPageProps) {
-  const { slug } = params;
+export default function ClientsPage() {
+  const { slug } = useParams();
 
   const [clients, setClients] = useState<ClientData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -213,11 +213,13 @@ export default function ClientsPage({ params }: ClientsPageProps) {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${apiBaseUrl}/admin/fitness-clients?companyId=${slug}`);
+      const response = await fetch(`${apiBaseUrl}/admin/fitness-clients?companyId=${slug}`
+        , { method: 'GET', credentials: 'include' }
+      );
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      const data: ClientData[] = await response.json();
+      const data: ClientData[] = (await response.json()).data || [];
       setClients(data);
     } catch (err: any) {
       setError(err.message);
@@ -266,6 +268,9 @@ export default function ClientsPage({ params }: ClientsPageProps) {
     try {
       const response = await fetch(`${apiBaseUrl}/admin/fitness-clients/${clientToDelete.id}`, {
         method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+
       });
 
       if (!response.ok) {
@@ -363,7 +368,7 @@ export default function ClientsPage({ params }: ClientsPageProps) {
         onClose={() => setIsClientModalOpen(false)}
         onSave={handleSaveClient}
         client={currentClient}
-        slug={slug}
+        slug={slug?.toString() || ''}
       />
 
       {/* Confirmation Modal for Deletion */}

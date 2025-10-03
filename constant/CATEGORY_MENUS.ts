@@ -688,7 +688,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     },
     {
       label: "Blog & Content",
-      href: `/admin/${adminSlug}/travel-blog`,
+      href: `/admin/${adminSlug}/blogs`,
       icon: NewspaperIcon
     },
     {
@@ -698,7 +698,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     },
     {
       label: "Inquiries",
-      href: `/admin/${adminSlug}/travel-inquiries`,
+      href: `/admin/${adminSlug}/inquiries`,
       icon: QuestionMarkCircleIcon
     },
     {

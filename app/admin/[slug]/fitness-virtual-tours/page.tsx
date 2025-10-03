@@ -68,11 +68,13 @@ export default function AdminVirtualToursPage() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${apiBaseUrl}/admin/virtual-tours?companyId=${slug}`);
+      const response = await fetch(`${apiBaseUrl}/admin/virtual-tours?companyId=${slug}`
+        , { credentials: 'include' }
+      );
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      const data: VirtualTourData[] = await response.json();
+      const data: VirtualTourData[] = (await response.json()).data || [];
       setVirtualTours(data);
     } catch (err: any) {
       setError(err.message);
@@ -122,10 +124,11 @@ export default function AdminVirtualToursPage() {
     try {
       const response = await fetch(`${apiBaseUrl}/admin/virtual-tours/${tourToDelete.id}`, {
         method: 'DELETE',
+        credentials: 'include',
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = (await response.json()).data || {};
         throw new Error(errorData.message || `Failed to delete virtual tour "${tourToDelete.title}".`);
       }
 

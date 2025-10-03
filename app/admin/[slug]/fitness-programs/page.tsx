@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BellAlertIcon, CalendarDateRangeIcon, CalendarDaysIcon, PencilIcon, PlusCircleIcon, TrashIcon, UserIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import Head from 'next/head'; // For setting page title/meta tags
+import { useParams } from 'next/navigation';
 
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
@@ -152,11 +153,12 @@ const AddProgramModal = ({ isOpen, onClose, onAddProgram, slug }: {
     if (isOpen) {
       const fetchEducators = async () => {
         try {
-          const res = await fetch(`${apiBaseUrl}/admin/educators?id=${slug}`); // Assuming an API to get educators
+          const res = await fetch(`${apiBaseUrl}/admin/educators?id=${slug}`, { credentials: 'include' });
           if (!res.ok) {
             throw new Error('Failed to fetch instructors');
           }
-          const data = await res.json();
+          const data = (await res.json()).data.data || [];
+          console.log('Fetched educators:', data);
           setEducators(data);
         } catch (err: any) {
           console.error('Error fetching instructors:', err);
@@ -177,6 +179,7 @@ const AddProgramModal = ({ isOpen, onClose, onAddProgram, slug }: {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Credentials': 'include', // Include cookies for authentication
         },
         body: JSON.stringify({
           name,
@@ -192,7 +195,7 @@ const AddProgramModal = ({ isOpen, onClose, onAddProgram, slug }: {
         throw new Error(errorData.message || 'Failed to add program');
       }
 
-      const newProgram: Program = await res.json();
+      const newProgram: Program = ( await res.json()).data;
       onAddProgram(newProgram); // Add the new program to the list
       onClose(); // Close the modal
       // Reset form fields
@@ -265,7 +268,7 @@ const AddProgramModal = ({ isOpen, onClose, onAddProgram, slug }: {
                 required
               >
                 <option value="">Select an Instructor</option>
-                {educators.map((edu) => (
+                {educators.length > 0 && educators.map((edu) => (
                   <option key={edu.id} value={edu.id}>
                     {edu.name}
                   </option>
@@ -396,8 +399,10 @@ export default async function handler(req, res) {
 */
 
 
-export default function ProgramsPage({ params }: ProgramsProps) {
-  const { slug } = params;
+export default function ProgramsPage() {
+
+  const { slug } = useParams<ProgramsProps['params']>();
+  
   const [programs, setPrograms] = useState<Program[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -408,11 +413,13 @@ export default function ProgramsPage({ params }: ProgramsProps) {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${apiBaseUrl}/admin/fitness-programs?id=${slug}`);
+      const response = await fetch(`${apiBaseUrl}/admin/fitness-programs?id=${slug}`, {
+        credentials: 'include', // Include cookies for authentication
+      });
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      const data: Program[] = await response.json();
+      const data: Program[] = (await response.json()).data || [];
       setPrograms(data);
     } catch (err: any) {
       setError(err.message);

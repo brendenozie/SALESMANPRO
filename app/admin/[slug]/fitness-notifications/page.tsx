@@ -133,7 +133,7 @@ const CommunicationCard = ({ comm, onEdit, onDelete }: { comm: CommunicationData
   );
 };
 
-export default function CommunicationsPage({ params }: CommunicationsPageProps) {
+export default function CommunicationsPage() {
   const { slug } = useParams();
 
   const [communications, setCommunications] = useState<CommunicationData[]>([]);
@@ -146,11 +146,13 @@ export default function CommunicationsPage({ params }: CommunicationsPageProps) 
   const fetchCommunications = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${apiBaseUrl}/admin/communications?companyId=${slug}`);
+      const response = await fetch(`${apiBaseUrl}/admin/communications?companyId=${slug}`
+        , { credentials: 'include' }
+      );
       if (!response.ok) {
         throw new Error('Failed to fetch communications.');
       }
-      const data: CommunicationData[] = await response.json();
+      const data: CommunicationData[] = (await response.json()).data || [];
       setCommunications(data);
     } catch (err: any) {
       toast.error(`Error loading communications: ${err.message}`);
@@ -198,10 +200,11 @@ export default function CommunicationsPage({ params }: CommunicationsPageProps) 
     try {
       const response = await fetch(`${apiBaseUrl}/admin/communications/${communicationToDelete.id}`, {
         method: 'DELETE',
+        credentials: 'include',
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = (await response.json()).data || {};
         throw new Error(errorData.message || `Failed to delete message "${communicationToDelete.subject}".`);
       }
 

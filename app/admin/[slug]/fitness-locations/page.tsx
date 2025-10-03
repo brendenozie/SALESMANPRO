@@ -190,8 +190,8 @@ const LocationCardSkeleton = () => (
   </div>
 );
 
-export default function LocationsPage({ params }: LocationsPageProps) {
-  const { slug } = params;
+export default function LocationsPage() {
+  const { slug } = useParams();
 
   const [locations, setLocations] = useState<LocationData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -206,11 +206,13 @@ export default function LocationsPage({ params }: LocationsPageProps) {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${apiBaseUrl}/admin/locationsv2?companyId=${slug}`);
+      const response = await fetch(`${apiBaseUrl}/admin/locationsv2?companyId=${slug}`
+        , { method: 'GET', credentials: 'include' }
+      );
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      const responser = await response.json();
+      const responser = (await response.json()).data;
       
       const data: LocationData[] = responser.data;
 
@@ -267,10 +269,12 @@ export default function LocationsPage({ params }: LocationsPageProps) {
     try {
       const response = await fetch(`${apiBaseUrl}/admin/locationsv2/${locationToDelete.id}`, {
         method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = (await response.json()).data || {};
         throw new Error(errorData.message || `Failed to delete location "${locationToDelete.name}".`);
       }
 
@@ -365,7 +369,7 @@ export default function LocationsPage({ params }: LocationsPageProps) {
         onClose={() => setIsLocationModalOpen(false)}
         onSave={handleSaveLocation}
         location={currentLocation}
-        slug={slug}
+        slug={slug?.toString() || ''}
       />
 
       {/* Confirmation Modal for Deletion */}

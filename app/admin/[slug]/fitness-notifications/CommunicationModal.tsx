@@ -66,8 +66,10 @@ const CommunicationModal: React.FC<CommunicationModalProps> = ({ isOpen, onClose
     const fetchClients = async () => {
       setLoadingForm(true);
       try {
-        const response = await fetch(`${apiBaseUrl}/admin/fitness-clients?companyId=${slug}`);
-        const data = await response.json();
+        const response = await fetch(`${apiBaseUrl}/admin/fitness-clients?companyId=${slug}`
+          , { credentials: 'include' }
+        );
+        const data = (  await response.json()).data || [];
         if (!response.ok) throw new Error(data.message || 'Failed to fetch clients.');
         setClients(data.map((c: any) => ({ id: c.id, name: c.name, email: c.email })));
       } catch (err: any) {
@@ -132,7 +134,10 @@ const CommunicationModal: React.FC<CommunicationModalProps> = ({ isOpen, onClose
         method: method,
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
+        credentials: 'include',
+        // Include credentials for authentication (cookies, etc.)
         body: JSON.stringify({
           subject,
           content,

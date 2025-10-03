@@ -165,13 +165,17 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, onSave, bo
           fetch(`${apiBaseUrl}/admin/locationsv2?companyId=${slug}`),
         ]);
 
-        const clientsData = await clientsRes.json();
-        const educatorsData = await educatorsRes.json();
-        const locationsData = await locationsRes.json();
+        const clientsData = ( await clientsRes.json()).data || [];
+        const educatorsData = (await educatorsRes.json()).data || [];
+        const locationsData = (await locationsRes.json()).data.data || [];
 
         if (!clientsRes.ok) throw new Error(clientsData.message || 'Failed to fetch clients');
         if (!educatorsRes.ok) throw new Error(educatorsData.message || 'Failed to fetch educators');
         if (!locationsRes.ok) throw new Error(locationsData.message || 'Failed to fetch locations');
+
+        console.log('Fetched clients:', clientsData);
+        console.log('Fetched educators:', educatorsData);
+        console.log('Fetched locations:', locationsData);
 
         setClients(clientsData.map((c: any) => ({ id: c.id, name: c.name, email: c.email })));
         setEducators(educatorsData.map((e: any) => ({ id: e.id, name: e.name })));

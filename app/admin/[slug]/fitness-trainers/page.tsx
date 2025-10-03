@@ -138,8 +138,8 @@ const TrainerCard = ({ trainer, onEdit, onDelete }: { trainer: TrainerData; onEd
 };
 
 
-export default function TrainersPage({ params }: TrainersPageProps) {
-  const { slug } = params;
+export default function TrainersPage() {
+  const { slug } = useParams();
 
   const [trainers, setTrainers] = useState<TrainerData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -153,11 +153,14 @@ export default function TrainersPage({ params }: TrainersPageProps) {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${apiBaseUrl}/admin/trainers?companyId=${slug}`);
+      const response = await fetch(`${apiBaseUrl}/admin/trainers?companyId=${slug}`, {
+        method: 'GET',
+        credentials: 'include',
+      });
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      const data: TrainerData[] = await response.json();
+      const data: TrainerData[] = (await response.json()).data || [];
       setTrainers(data);
     } catch (err: any) {
       setError(err.message);
@@ -206,6 +209,7 @@ export default function TrainersPage({ params }: TrainersPageProps) {
     try {
       const response = await fetch(`${apiBaseUrl}/admin/trainers/${trainerToDelete.id}`, {
         method: 'DELETE',
+        credentials: 'include',
       });
 
       if (!response.ok) {
@@ -306,7 +310,7 @@ export default function TrainersPage({ params }: TrainersPageProps) {
         onClose={() => setIsTrainerModalOpen(false)}
         onSave={handleSaveTrainer}
         trainer={currentTrainer}
-        slug={slug}
+        slug={slug?.toString() || ''}
       />
 
       {/* Confirmation Modal for Deletion */}

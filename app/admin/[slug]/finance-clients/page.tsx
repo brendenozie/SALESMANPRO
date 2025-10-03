@@ -9,6 +9,7 @@ import {
   MagnifyingGlassIcon,
   XMarkIcon,
 } from "@heroicons/react/24/solid";
+import { useParams } from "next/navigation";
 
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
@@ -41,8 +42,8 @@ interface FormState {
   status: ClientStatus;
 }
 
-export default function ClientsPage({ params }: PageProps) {
-  const companyId = params.slug;
+export default function ClientsPage() {
+  const { slug : companyId } = useParams();
 
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -63,10 +64,14 @@ export default function ClientsPage({ params }: PageProps) {
     setLoading(true);
     try {
       const res = await fetch(
-        `${apiBaseUrl}/admin/finance-clients?companyId=${companyId}`
+        `${apiBaseUrl}/admin/finance-clients?companyId=${companyId}`,
+        {
+          method: "GET",
+          credentials: "include",
+        }
       );
-      const data: { clients: Client[] } = await res.json();
-      setClients(data.clients);
+      const data: { data: Client[] } = (await res.json()).data || [];
+      setClients(data.data);
     } catch (error) {
       console.error("Error fetching clients:", error);
     } finally {
@@ -90,6 +95,7 @@ export default function ClientsPage({ params }: PageProps) {
         method,
         headers: {
           "Content-Type": "application/json",
+          "Credentials": "include",
         },
         body: JSON.stringify(formState),
       });

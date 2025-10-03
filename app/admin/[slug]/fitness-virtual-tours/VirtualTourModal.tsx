@@ -94,8 +94,10 @@ const VirtualTourModal: React.FC<VirtualTourModalProps> = ({ isOpen, onClose, on
         method: method,
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
-        body: JSON.stringify({
+        credentials: 'include', // Include credentials for authentication (cookies, etc.) 
+      body: JSON.stringify({
           title,
           location,
           duration,

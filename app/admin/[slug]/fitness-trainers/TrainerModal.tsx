@@ -132,6 +132,7 @@ const TrainerModal: React.FC<TrainerModalProps> = ({ isOpen, onClose, onSave, tr
         method: method,
         headers: {
           'Content-Type': 'application/json',
+          'Credentials': 'include',
         },
         body: JSON.stringify({
           name,
