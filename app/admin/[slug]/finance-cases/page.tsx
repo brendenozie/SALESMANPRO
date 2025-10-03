@@ -10,9 +10,9 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/solid";
 
+import { useParams } from "next/navigation";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
-
 
 interface PageProps {
   params: {
@@ -54,8 +54,9 @@ interface FormState {
   status: CaseStatus;
 }
 
-export default function CasesPage({ params }: PageProps) {
-  const companyId = params.slug;
+export default function CasesPage() {
+  const params = useParams();
+  const companyId = params.slug as string;
 
   const [cases, setCases] = useState<Case[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -77,8 +78,13 @@ export default function CasesPage({ params }: PageProps) {
   const fetchCases = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${apiBaseUrl}/admin/cases?companyId=${companyId}`);
-      const data: Case[] = await res.json();
+      const res = await fetch(`${apiBaseUrl}/admin/cases?companyId=${companyId}`, {
+        headers: { 'Credentials': 'include' },
+      });
+      const dataRes = await res.json();
+      console.log("Fetched cases:", dataRes);
+      const data = dataRes || [];
+
       setCases(data);
     } catch (error) {
       console.error("Error fetching cases:", error);
@@ -91,12 +97,17 @@ export default function CasesPage({ params }: PageProps) {
     try {
       const clientsRes = await fetch(
         `${apiBaseUrl}/admin/finance-clients?companyId=${companyId}`
+        , { headers: { 'Credentials': 'include' } }
       );
-      const clientsData: { clients: Client[] } = await clientsRes.json();
-      setClients(clientsData.clients);
+      const clientsData:  Client[]  = (await clientsRes.json()).data;
+      console.log("Fetched clients:", clientsData);
+      setClients(clientsData);
 
-      const usersRes = await fetch(`${apiBaseUrl}/admin/experts?companyId=${companyId}`);
-      const usersData: User[] = await usersRes.json();
+      const usersRes = await fetch(`${apiBaseUrl}/admin/experts?companyId=${companyId}`, {
+        headers: { 'Credentials': 'include' },
+      });
+      const usersData: User[] = (await usersRes.json()).data.data;
+      console.log("Fetched users:", usersData);
       setUsers(usersData);
     } catch (error) {
       console.error("Error fetching clients or users:", error);
@@ -120,6 +131,7 @@ export default function CasesPage({ params }: PageProps) {
         method,
         headers: {
           "Content-Type": "application/json",
+          'Credentials': 'include',
         },
         body: JSON.stringify({ ...formState, companyId }),
       });
@@ -153,6 +165,7 @@ export default function CasesPage({ params }: PageProps) {
       try {
         const res = await fetch(`${apiBaseUrl}/cases/${id}`, {
           method: "DELETE",
+          headers: { 'Credentials': 'include', },
         });
         if (!res.ok) {
           throw new Error("API request failed");
@@ -192,16 +205,17 @@ export default function CasesPage({ params }: PageProps) {
     setShowModal(true);
   };
 
-  const filteredCases = cases.filter(
-    (caseItem) =>
-      caseItem.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      caseItem.client.user.name
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
-      caseItem.assignedTo.name
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase())
-  );
+  const filteredCases = cases;
+  // .filter(
+    // (caseItem) =>
+    //   caseItem.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    //   caseItem.client.user.name
+    //     .toLowerCase()
+    //     .includes(searchTerm.toLowerCase()) ||
+    //   caseItem.assignedTo.name
+    //     .toLowerCase()
+    //     .includes(searchTerm.toLowerCase())
+  // );
 
   return (
     // --- your full JSX remains unchanged ---

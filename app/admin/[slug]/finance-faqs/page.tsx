@@ -48,8 +48,10 @@ const FAQsPage = () => {
   const fetchFaqs = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${apiBaseUrl}/admin/faqs?companyId=${companyId}`);
-      const data: { faqs: FAQ[] } = await res.json();
+      const res = await fetch(`${apiBaseUrl}/admin/faqs?companyId=${companyId}`
+        , { headers: { "Credentials": "include" } }
+      );
+      const data: { faqs: FAQ[] } = (await res.json()).data;
       setFaqs(data.faqs);
     } catch (error) {
       console.error("Error fetching FAQs:", error);
@@ -104,7 +106,8 @@ const FAQsPage = () => {
 
       const res = await fetch(url, {
         method,
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json", "Credentials": "include" },
         body: JSON.stringify({ ...formState, companyId }),
       });
 
@@ -123,7 +126,11 @@ const FAQsPage = () => {
     if (window.confirm("Are you sure you want to delete this FAQ?")) {
       setLoading(true);
       try {
-        const res = await fetch(`${apiBaseUrl}/admin/faqs/${id}`, { method: "DELETE" });
+        const res = await fetch(`${apiBaseUrl}/admin/faqs/${id}`, { 
+          method: "DELETE",
+        headers: { 
+          "Content-Type": "application/json", "Credentials": "include" },
+          });
         if (!res.ok) throw new Error("Failed to delete FAQ");
         await fetchFaqs();
       } catch (error) {

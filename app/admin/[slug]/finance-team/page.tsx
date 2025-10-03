@@ -65,7 +65,7 @@ interface ExpertFormState {
 
 const ExpertManagementPage = () => {
   const params = useParams();
-  const companyId = params.adminSlug as string;
+  const companyId = params.slug as string;
 
   const [experts, setExperts] = useState<ExpertData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -83,8 +83,20 @@ const ExpertManagementPage = () => {
   const fetchExperts = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${apiBaseUrl}/admin/experts?companyId=${companyId}`);
-      const data: ExpertData[] = await res.json();
+      const res = await fetch(
+        `${apiBaseUrl}/admin/experts?companyId=${companyId}`,
+        {
+          headers: {
+            'Credentials': 'include',
+          },
+        }
+      );
+      const dataRes= (await res.json()).data;
+      console.log("Fetched experts:", dataRes);
+      
+      const data: ExpertData[] = dataRes.data || [];
+      
+
       setExperts(data);
     } catch (error) {
       console.error("Error fetching experts:", error);
@@ -174,7 +186,7 @@ const ExpertManagementPage = () => {
           : `${apiBaseUrl}/admin/experts?companyId=${companyId}`,
         {
           method: isEditing ? "PUT" : "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json" ,'Credentials': 'include',},
           body: JSON.stringify(expert),
         }
       );
@@ -197,6 +209,7 @@ const ExpertManagementPage = () => {
       try {
         const res = await fetch(`${apiBaseUrl}/admin/experts/${id}`, {
           method: "DELETE",
+          headers: { 'Credentials': 'include', },
         });
         if (!res.ok) throw new Error("Failed to delete expert");
         await fetchExperts();
@@ -262,7 +275,7 @@ const ExpertManagementPage = () => {
               </thead>
               <tbody className="divide-y divide-gray-700">
                 <AnimatePresence>
-                  {experts.map((expert) => (
+                  {experts.length > 0 && experts.map((expert) => (
                     <motion.tr
                       key={expert.id}
                       initial={{ opacity: 0, x: -20 }}

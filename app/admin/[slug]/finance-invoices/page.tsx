@@ -15,6 +15,7 @@ import {
   ArrowPathIcon,
 } from "@heroicons/react/24/solid";
 
+import { useParams } from "next/navigation";
 
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
@@ -90,12 +91,14 @@ const InvoiceStatusBadge = ({ status }: { status: Invoice["status"] }) => {
 };
 
 // --- Main Page ---
-export default function InvoicesPage({ params }: PageProps) {
-  const companyId = params.adminSlug;
+export default function InvoicesPage() {
+  const { slug: companyId } = useParams();
+
+  // --- State ---
 
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [currentInvoice, setCurrentInvoice] = useState<Invoice | null>(null);
@@ -114,9 +117,11 @@ export default function InvoicesPage({ params }: PageProps) {
   const fetchInvoices = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${apiBaseUrl}/admin/finance-invoices?companyId=${companyId}`);
-      const data = await res.json();
-      setInvoices(data.invoices);
+      const res = await fetch(`${apiBaseUrl}/admin/finance-invoices?companyId=${companyId}`, {
+        headers: { "Credentials" : "include" },
+      });
+      const data = await res.json();   
+      setInvoices(data);
     } catch (err) {
       console.error("Error fetching invoices:", err);
     } finally {
@@ -131,9 +136,11 @@ export default function InvoicesPage({ params }: PageProps) {
   // --- Fetch Clients ---
   const fetchClients = async () => {
     try {
-      const res = await fetch(`${apiBaseUrl}/admin/finance-clients?companyId=${companyId}`);
+      const res = await fetch(`${apiBaseUrl}/admin/finance-clients?companyId=${companyId}`,
+        { headers: { "Credentials" : "include" } }
+      );
       const data = await res.json();
-      setClients(data.clients);
+      setClients(data.data);
     } catch (err) {
       console.error("Error fetching clients:", err);
     }
@@ -192,7 +199,7 @@ export default function InvoicesPage({ params }: PageProps) {
           : `${apiBaseUrl}/admin/finance-invoices`,
         {
           method: isEditing ? "PUT" : "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", "Credentials" : "include" },
           body: JSON.stringify({ ...formState, companyId }),
         }
       );
@@ -214,7 +221,8 @@ export default function InvoicesPage({ params }: PageProps) {
 
     setLoading(true);
     try {
-      const res = await fetch(`${apiBaseUrl}/admin/finance-invoices/${id}`, { method: "DELETE" });
+      const res = await fetch(`${apiBaseUrl}/admin/finance-invoices/${id}`, { 
+        method: "DELETE", headers: { "Credentials" : "include" } });
       if (!res.ok) throw new Error("Failed to delete invoice");
       await fetchInvoices();
     } catch (err) {
@@ -299,7 +307,7 @@ export default function InvoicesPage({ params }: PageProps) {
               </thead>
               <tbody className="divide-y divide-gray-700">
                 <AnimatePresence>
-                  {invoices.length >0 && invoices.map((invoice) => (
+                  {invoices.length > 0 && invoices.map((invoice) => (
                     <motion.tr
                       key={invoice.id}
                       initial={{ opacity: 0, x: -20 }}

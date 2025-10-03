@@ -16,6 +16,7 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/solid";
 
+import { useParams } from "next/navigation";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
 
@@ -106,8 +107,10 @@ const AppointmentStatusBadge: React.FC<AppointmentStatusBadgeProps> = ({
 };
 
 // ---------- Main Page ----------
-export default function AppointmentsPage({ params }: PageProps) {
-  const companyId = params.slug;
+export default function AppointmentsPage() {
+  
+  const params = useParams();
+  const companyId = params.slug as string;
 
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -134,7 +137,8 @@ export default function AppointmentsPage({ params }: PageProps) {
     try {
       const res = await fetch(`${apiBaseUrl}/admin/finance-appointments?companyId=${companyId}`);
       if (!res.ok) throw new Error("Failed to fetch appointments");
-      const data: Appointment[] = await res.json();
+      const dataRes= await res.json();
+      const data: Appointment[] = dataRes.data || [];
       setAppointments(data);
     } catch (error) {
       console.error("Error fetching appointments:", error);
@@ -146,14 +150,19 @@ export default function AppointmentsPage({ params }: PageProps) {
   const fetchClientsAndUsers = async () => {
     try {
       const [clientsRes, usersRes] = await Promise.all([
-        fetch(`${apiBaseUrl}/admin/finance-clients?companyId=${companyId}`),
-        fetch(`${apiBaseUrl}/admin/finance-experts?companyId=${companyId}`),
+        fetch(`${apiBaseUrl}/admin/finance-clients?companyId=${companyId}`,
+          { headers: { 'Credentials': 'include' } }
+        ),
+        fetch(`${apiBaseUrl}/admin/experts?companyId=${companyId}`,
+          { headers: { 'Credentials': 'include' } }
+        ),
       ]);
+
       if (!clientsRes.ok || !usersRes.ok)
         throw new Error("Failed to fetch clients or users");
 
-      const clientsData: Client[] = await clientsRes.json();
-      const usersData: Expert[] = await usersRes.json();
+      const clientsData = (await clientsRes.json()).data;
+      const usersData = (await usersRes.json()).data.data;
 
       setClients(clientsData);
       setUsers(usersData);
@@ -219,7 +228,7 @@ export default function AppointmentsPage({ params }: PageProps) {
           : "/api/admin/finance-appointments",
         {
           method: isEditing ? "PUT" : "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", 'Credentials': 'include' },
           body: JSON.stringify({ ...appointmentData, companyId }),
         }
       );
@@ -541,7 +550,7 @@ export default function AppointmentsPage({ params }: PageProps) {
         <p>Loading...</p>
       ) : (
         <div className="space-y-3">
-          {appointments.map((appt) => (
+          {appointments.length > 0 && appointments.map((appt) => (
             <motion.div
               key={appt.id}
               initial={{ opacity: 0, y: 5 }}

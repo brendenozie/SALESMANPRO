@@ -13,7 +13,7 @@ import {
   StarIcon,
 } from "@heroicons/react/24/solid";
 
-
+import { useParams } from "next/navigation";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
 
@@ -47,8 +47,8 @@ interface PageProps {
   };
 }
 
-const PackagesPage = ({ params }: PageProps) => {
-  const companyId = params.slug;
+const PackagesPage = () => {
+  const { slug: companyId } = useParams() as { slug: string };
 
   const [packages, setPackages] = useState<ServicePackage[]>([]);
   const [loading, setLoading] = useState(true);
@@ -69,8 +69,10 @@ const PackagesPage = ({ params }: PageProps) => {
   const fetchPackages = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${apiBaseUrl}/admin/packages?companyId=${companyId}`);
-      const data = await res.json();
+      const res = await fetch(`${apiBaseUrl}/admin/packages?companyId=${companyId}`,
+        { headers: { "Credentials" : "include" } }
+      );
+      const data = (await res.json()).data;
       setPackages(data.packages as ServicePackage[]);
     } catch (error) {
       console.error("Error fetching packages:", error);
@@ -162,7 +164,7 @@ const PackagesPage = ({ params }: PageProps) => {
           : `${apiBaseUrl}/admin/packages`,
         {
           method: isEditing ? "PUT" : "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", "Credentials" : "include" },
           body: JSON.stringify({ ...packageData, companyId }),
         }
       );
@@ -184,6 +186,7 @@ const PackagesPage = ({ params }: PageProps) => {
       try {
         const res = await fetch(`${apiBaseUrl}/admin/packages/${id}`, {
           method: "DELETE",
+          headers: { "Credentials" : "include" },
         });
         if (!res.ok) throw new Error("Failed to delete package");
         await fetchPackages();
@@ -218,7 +221,7 @@ const PackagesPage = ({ params }: PageProps) => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               <AnimatePresence>
-                {packages.map((pkg, index) => (
+                {packages.length > 0 && packages.map((pkg, index) => (
                   <motion.div
                     key={pkg.id}
                     initial={{ opacity: 0, y: 20 }}

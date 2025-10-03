@@ -13,6 +13,7 @@ import {
   EyeIcon,
 } from "@heroicons/react/24/solid";
 import { useParams } from "next/navigation";
+import { headers } from "next/headers";
 
 
 
@@ -33,8 +34,8 @@ type FormState = Omit<Testimonial, "id" | "companyId">;
 
 // ---- Component ----
 const TestimonialsPage = () => {
-  const params = useParams<{ adminSlug: string }>();
-  const companyId = params.adminSlug;
+  const params = useParams<{ slug: string }>();
+  const companyId = params.slug;
 
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [loading, setLoading] = useState(true);
@@ -54,9 +55,13 @@ const TestimonialsPage = () => {
   const fetchTestimonials = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`${apiBaseUrl}/admin/testimonials?companyId=${companyId}`);
+      const res = await fetch(
+        `${apiBaseUrl}/admin/testimonials?companyId=${companyId}`, {
+        headers: { "Content-Type": "application/json", "Credentials": "include" },}
+      );
       if (!res.ok) throw new Error("Failed to fetch testimonials");
-      const data = await res.json();
+      const data = (await res.json()).data;
+      console.log(data);
       setTestimonials(data.testimonials);
     } catch (error) {
       console.error("Error fetching testimonials:", error);
@@ -107,8 +112,9 @@ const TestimonialsPage = () => {
       const method = isEditing ? "PUT" : "POST";
 
       const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
+        method,        
+        headers: { 
+          "Content-Type": "application/json", "Credentials": "include" },
         body: JSON.stringify({ ...formState, companyId }),
       });
 
@@ -129,7 +135,8 @@ const TestimonialsPage = () => {
     try {
       const res = await fetch(`${apiBaseUrl}/admin/testimonials/${id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json", "Credentials": "include" },
         body: JSON.stringify({ status: newStatus }),
       });
       if (!res.ok) throw new Error("Failed to update testimonial status");
@@ -145,7 +152,9 @@ const TestimonialsPage = () => {
     if (window.confirm("Are you sure you want to delete this testimonial?")) {
       setLoading(true);
       try {
-        const res = await fetch(`${apiBaseUrl}/admin/testimonials/${id}`, { method: "DELETE" });
+        const res = await fetch(`${apiBaseUrl}/admin/testimonials/${id}`, { method: "DELETE",
+        headers: { 
+          "Content-Type": "application/json", "Credentials": "include" }, });
         if (!res.ok) throw new Error("Failed to delete testimonial");
         await fetchTestimonials();
       } catch (error) {

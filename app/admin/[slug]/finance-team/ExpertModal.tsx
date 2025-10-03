@@ -147,6 +147,7 @@ const ExpertModal: React.FC<ExpertModalProps> = ({ isOpen, onClose, onSave, expe
         method: method,
         headers: {
           'Content-Type': 'application/json',
+          'Credentials': 'include',
         },
         body: JSON.stringify({
           name, email, phone: phone || null, specialty,
