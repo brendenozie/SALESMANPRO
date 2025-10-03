@@ -152,17 +152,17 @@ export const StaffManagerClient: React.FC<StaffManagerProps> = ({ initialStaff, 
   };//, [companyId, searchTerm, filterStatus]); // Dependencies trigger re-fetch
 
   // Re-fetch when search term or filter status changes (excluding initial load)
-  useEffect(() => {
-      // Small optimization: skip fetch if component just mounted and search/filter is default.
-      if (staff.length === 0 && initialStaff.length > 0 && searchTerm === '' && filterStatus === 'All') return; 
+  // useEffect(() => {
+  //     // Small optimization: skip fetch if component just mounted and search/filter is default.
+  //     if (staff.length === 0 && initialStaff.length > 0 && searchTerm === '' && filterStatus === 'All') return; 
       
-      const handler = setTimeout(() => {
-          fetchStaff();
-      }, 300); // Debounce search
+  //     const handler = setTimeout(() => {
+  //         fetchStaff();
+  //     }, 300); // Debounce search
       
-      return () => clearTimeout(handler);
+  //     return () => clearTimeout(handler);
       
-  }, [searchTerm, filterStatus]); // Removed fetchStaff from deps to avoid infinite loop due to its own definition changes
+  // }, [searchTerm, filterStatus]); // Removed fetchStaff from deps to avoid infinite loop due to its own definition changes
 
 
   // Handlers for modal interactions

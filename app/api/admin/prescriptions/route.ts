@@ -5,8 +5,8 @@ import { formatResponse } from "@/lib/formatResponse";
 
 // Helper to format prescription data for the frontend
 async function formatPrescriptionData(prescription: any) {
-  const patientName = prescription.patient?.name || "N/A";
-  const doctorName = prescription.doctor?.user?.name || "N/A";
+  const patientName = prescription.patient?.user?.name || "N/A";
+  const doctorName = prescription.doctor?.User?.name || "N/A";
 
   return {
     id: prescription.id,
@@ -106,9 +106,9 @@ export const POST = withApiHandler(async (req) => {
 
   const newPrescription = await prisma.prescription.create({
     data: {
-      patientId,
-      doctorId,
-      companyId,
+      patient: { connect: { id: patientId } },
+      doctor: { connect: { id: doctorId } },
+      company: { connect: { id: companyId } },
       medication,
       dosage,
       instructions,

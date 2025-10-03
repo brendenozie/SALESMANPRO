@@ -12,20 +12,20 @@ import {
 } from "@heroicons/react/24/outline";
 import StoreCard from '@/components/stores/StoreCard';
 import useSWR, { mutate } from 'swr';
-import { cookies } from 'next/headers';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || '';
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
-const fetcher = (url: string) => fetch(url).then(async res => {
+const fetcher = (url: string) => fetch(url, { credentials: 'include' })
+.then(async res => 
+    {
+        if (!res.ok) {
+            throw new Error('Network response was not ok');
+        }
 
-    if (!res.ok) {
-        throw new Error('Network response was not ok');
-    }
+        let resJson = await res.json();
 
-    let resJson = await res.json();
-
-    return resJson.data;
-}   
+        return resJson.data;
+    }   
 );
 
 interface Store {
@@ -144,7 +144,7 @@ export default function StoresPage() {
     const page = parseInt(searchParams.get('page') || '1', 10);
 
     const { data: stores = [], error, isLoading } = useSWR<Store[]>(
-        session?.user?.id ? `${apiBaseUrl}/api/stores?userId=${session.user.id}` : null,
+        session?.user?.id ? `${apiBaseUrl}/stores?userId=${session.user.id}` : null,
         fetcher
     );
 
@@ -174,9 +174,9 @@ export default function StoresPage() {
         setIsModalOpen(false);
         setIsDeleting(true);
         try {
-            const res = await fetch(`${apiBaseUrl}/api/stores/${store.id}`, { method: 'DELETE' });
+            const res = await fetch(`${apiBaseUrl}/stores/${store.id}`, { method: 'DELETE' });
             if (!res.ok) throw new Error('Delete failed');
-            mutate(`${apiBaseUrl}/api/stores?userId=${session?.user?.id}`);
+            mutate(`${apiBaseUrl}/stores?userId=${session?.user?.id}`);
         } catch (err) {
             console.error('Failed to delete store:', err);
         } finally {

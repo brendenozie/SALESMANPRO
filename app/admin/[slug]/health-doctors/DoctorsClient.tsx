@@ -8,6 +8,7 @@ import {
 import Modal from '@/components/Modal';
 import DoctorModal from './DoctorModal';
 import DoctorsTable from './DoctorsTable';
+import { EditDoctorModal } from './EditDoctorModal';
   
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || '127.0.0.1:3000/api';
@@ -42,7 +43,7 @@ function DoctorsClient({ initialDoctors, companyId }: { initialDoctors: Doctor[]
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState<"All" | Doctor["status"]>("All");
   
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -250,97 +251,14 @@ function DoctorsClient({ initialDoctors, companyId }: { initialDoctors: Doctor[]
         onClose={() => setIsAddModalOpen(false)}
       />
 
-       {/* Edit Doctor Modal */}
-      <AnimatePresence>
-        <Modal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} title={`Edit Doctor: ${selectedDoctor?.name || ''}`}>
-          <form onSubmit={(e) => { e.preventDefault(); updateDoctor(); }} className="space-y-4">
-            <div>
-              <label htmlFor="editName" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
-              <input
-                type="text"
-                id="editName"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                value={editDoctorData.name || ''}
-                onChange={(e) => setEditDoctorData({ ...editDoctorData, name: e.target.value })}
-                required
-              />
-            </div>
-            <div>
-              <label htmlFor="editEmail" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
-              <input
-                type="email"
-                id="editEmail"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                value={editDoctorData.email || ''}
-                onChange={(e) => setEditDoctorData({ ...editDoctorData, email: e.target.value })}
-                required
-              />
-            </div>
-            <div>
-              <label htmlFor="editPhone" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Phone (Optional)</label>
-              <input
-                type="tel"
-                id="editPhone"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                value={editDoctorData.phone || ''}
-                onChange={(e) => setEditDoctorData({ ...editDoctorData, phone: e.target.value })}
-              />
-            </div>
-            <div>
-              <label htmlFor="editProfilePicture" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Profile Picture URL (Optional)</label>
-              <input
-                type="url"
-                id="editProfilePicture"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                value={editDoctorData.profilePicture || ''}
-                onChange={(e) => setEditDoctorData({ ...editDoctorData, profilePicture: e.target.value })}
-              />
-            </div>
-            <div>
-              <label htmlFor="editSpecialty" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Specialty</label>
-              <input
-                type="text"
-                id="editSpecialty"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                value={editDoctorData.specialty || ''}
-                onChange={(e) => setEditDoctorData({ ...editDoctorData, specialty: e.target.value })}
-                required
-              />
-            </div>
-            <div>
-              <label htmlFor="editStatus" className="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
-              <select
-                id="editStatus"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                value={editDoctorData.status || ''}
-                onChange={(e) => setEditDoctorData({ ...editDoctorData, status: e.target.value as Doctor['status'] })}
-                required
-              >
-                <option value="ACTIVE">Active</option>
-                <option value="ON_LEAVE">On Leave</option>
-                <option value="INACTIVE">Inactive</option>
-              </select>
-            </div>
-            <div className="flex justify-end space-x-3">
-              <button
-                type="button"
-                onClick={() => setIsEditModalOpen(false)}
-                className="px-4 py-2 rounded-md border border-gray-300 text-gray-700 dark:text-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
-              >
-                Save Changes
-              </button>
-            </div>
-          </form>
-        </Modal>
-      </AnimatePresence>
-
-
+      {/* Edit Modal */}
+      <EditDoctorModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        doctorToEdit={selectedDoctor}
+        onSave={updateDoctor}
+      />
+  
       {/* Delete Confirmation Modal */}
       <AnimatePresence>
         <Modal isOpen={isDeleteConfirmOpen} onClose={() => setIsDeleteConfirmOpen(false)} title="Confirm Deletion">

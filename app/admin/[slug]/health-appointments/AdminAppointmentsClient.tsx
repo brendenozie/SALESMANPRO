@@ -98,14 +98,7 @@ export default function AdminAppointmentsClient({
   initialDoctors,
 }: Props) {
 
-  const [appointments, setAppointments] = useState<Appointment[]>(initialAppointments);
-
-  // ✅ Example client-side filtering (fast, no refetch needed for search)
-  const filteredAppointments = appointments.filter((a) => {
-    const matchesSearch = a.patientName.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = filterStatus === "All" || a.status === filterStatus;
-    return matchesSearch && matchesStatus;
-  });
+  const [appointments, setAppointments] = useState<Appointment[]>(initialAppointments)
 
   const [patients, setPatients] = useState<PatientOption[]>(initialPatients);
   const [doctors, setDoctors] = useState<DoctorOption[]>(initialDoctors);
@@ -131,6 +124,15 @@ export default function AdminAppointmentsClient({
   });
 
   const [editAppointmentData, setEditAppointmentData] = useState<Partial<Appointment>>({});
+
+  // ✅ Example client-side filtering (fast, no refetch needed for search)
+  const filteredAppointments = useCallback(() => {
+    return appointments.length > 0 ? appointments.filter((a) => {
+      const matchesSearch = a.patientName.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesStatus = filterStatus === "All" || a.status === filterStatus;
+      return matchesSearch && matchesStatus;
+    }) : [];
+  }, [appointments, searchTerm, filterStatus]);
   
   const handleAddAppointmentClick = () => {
     setNewAppointmentData({

@@ -42,7 +42,8 @@ async function fetchDoctors(companyId: string) {
     }
 
     const json = await res.json();
-    return json.data || [];
+    console.log("Fetched doctors:", json);
+    return json.data.data || [];
   } catch (err) {
     console.error("fetchDoctors error:", err);
     return [];
@@ -58,19 +59,11 @@ export default async function AdminDoctorsPage({ params }: Props) {
       <div className="max-w-7xl mx-auto">
         <h1
           className="text-5xl font-extrabold text-gray-900 dark:text-white mb-6 drop-shadow-lg"
-          // initial="hidden"
-          // animate="visible"
-          // variants={fadeIn}
         >
           Doctor Management
         </h1>
         <p
-          className="text-xl text-gray-700 dark:text-gray-300 mb-12"
-          // initial="hidden"
-          // animate="visible"
-          // variants={fadeIn}
-          // transition={{ delay: 0.2 }}
-        >
+          className="text-xl text-gray-700 dark:text-gray-300 mb-12">
           Manage information and availability of your medical team.
         </p>
 

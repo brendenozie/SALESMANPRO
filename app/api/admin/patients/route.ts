@@ -5,8 +5,8 @@ import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
 // Helper function to format patient data
-async function formatPatientData(consumer: any) {
-  const user = consumer.user;
+async function formatPatientData(patient: any) {
+  const user = patient.user;
   let lastVisitDate: string | null = null;
 
   if (user?.id) {
@@ -21,22 +21,23 @@ async function formatPatientData(consumer: any) {
   }
 
   return {
-    id: consumer.id,
+    id: patient.id,
+    userId: user?.id || null,
     name: user?.name || "N/A",
     email: user?.email || "N/A",
     phone: user?.phone || "",
     profilePicture:
       user?.profilePicture ||
-      `https://placehold.co/100x100/A7F3D0/0D9488?text=${user?.name ? user.name.charAt(0) : "?"}${
-        user?.name ? user.name.charAt(1) : ""
-      }`,
+      `https://placehold.co/100x100/A7F3D0/0D9488?text=${
+        user?.name ? user.name.charAt(0) : "?"
+      }${user?.name ? user.name.charAt(1) : ""}`,
     dob: user?.dateOfBirth
       ? new Date(user.dateOfBirth).toISOString().split("T")[0]
       : "N/A",
     gender: user?.gender || "Other",
     lastVisit: lastVisitDate || "N/A",
-    createdAt: consumer.createdAt
-      ? new Date(consumer.createdAt).toLocaleDateString()
+    createdAt: patient.createdAt
+      ? new Date(patient.createdAt).toLocaleDateString()
       : "N/A",
   };
 }
@@ -51,8 +52,8 @@ export const GET = withApiHandler(async (request: Request) => {
     return formatResponse(false, null, "Missing companyId", 400);
   }
 
-  let consumers = await prisma.consumer.findMany({
-    where: { companyId },
+  let patients = await prisma.patient.findMany({
+    where: { user: { companyId } }, // filter by company via user
     include: {
       user: {
         select: {
@@ -69,52 +70,59 @@ export const GET = withApiHandler(async (request: Request) => {
     orderBy: { createdAt: "desc" },
   });
 
+  console.log(`Fetched ${patients.length} patients for companyId ${companyId}`);
+
+  // Apply search filtering if searchTerm is provided
   if (searchTerm) {
     const lower = searchTerm.toLowerCase();
-    consumers = consumers.filter(
-      (c) =>
-        c.user?.name?.toLowerCase().includes(lower) ||
-        c.user?.email?.toLowerCase().includes(lower) ||
-        c.user?.phone?.toLowerCase().includes(lower) ||
-        c.user?.dateOfBirth?.toISOString().toLowerCase().includes(lower)
+    patients = patients.filter(
+      (p) =>
+        p.user?.name?.toLowerCase().includes(lower) ||
+        p.user?.email?.toLowerCase().includes(lower) ||
+        p.user?.phone?.toLowerCase().includes(lower) ||
+        p.user?.dateOfBirth?.toISOString().toLowerCase().includes(lower)
     );
   }
 
-  const enriched = await Promise.all(consumers.map(formatPatientData));
+  const enriched = await Promise.all(patients.map(formatPatientData));
   return formatResponse(true, enriched, null, 200);
 });
 
 // POST /api/admin/patients
 export const POST = withApiHandler(async (request: Request) => {
   const body = await request.json();
-  const { name, email, phone, dob, gender, profilePicture, companyId } = body;
+  const { name, email, phone, dob, gender, profilePicture, companyId, address, contactInfo } = body;
 
   if (!companyId || !email || !name) {
     return formatResponse(false, null, "companyId, name, and email are required", 400);
   }
 
   try {
+    // Create user record
     const user = await prisma.user.create({
       data: {
         name,
         email,
         phone,
         profilePicture,
-        role: "CONSUMER",
+        role: "PATIENT", // ensure role aligns with your ROLE enum
         dateOfBirth: dob ? new Date(dob) : null,
         gender: gender || null,
+        companyId,
       },
     });
 
-    const consumer = await prisma.consumer.create({
+    // Create patient record linked to user
+    const patient = await prisma.patient.create({
       data: {
-        companyId,
         userId: user.id,
+        address: address || null,
+        contactInfo: contactInfo || null,
       },
       include: { user: true },
     });
 
-    const newPatient = await formatPatientData(consumer);
+    const newPatient = await formatPatientData(patient);
     return formatResponse(true, newPatient, null, 201);
   } catch (err: any) {
     if (err.code === "P2002" && err.meta?.target?.includes("email")) {

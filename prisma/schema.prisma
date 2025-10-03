@@ -4342,7 +4342,7 @@ model PatientInvoices {
   invoiceDate DateTime      @default(now())
   dueDate     DateTime? // Optional due date for payment
   status      InvoiceStatus @default(PENDING)
-  items       Json // Store an array of objects or strings for invoice line items
+  items       Json[] // Store an array of objects or strings for invoice line items
   notes       String?
 
   createdAt          DateTime             @default(now())

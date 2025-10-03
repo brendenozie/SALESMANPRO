@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { PrescriptionManager } from './PrescriptionManager'; // Import the Client Component
-
+import { cookies } from 'next/headers';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
 
@@ -41,34 +41,83 @@ const COMPANY_ID = "654321098765432109876543";
 
 
 // Server-side data fetching functions
-async function getInitialPrescriptionData(companyId: string): Promise<Prescription[]> {
-  // Simulate a database query or internal service call
-  await new Promise(resolve => setTimeout(resolve, 300));
-  
-  // MOCK DATA: Replace with your actual database query
-  return [
-    { id: 'rx001', patientId: 'p1', patientName: 'Alice Johnson', doctorId: 'd1', doctorName: 'Dr. Smith', medication: 'Amoxicillin', dosage: '250mg', issuedDate: '2025-09-01', status: 'PENDING', createdAt: '2025-09-01' },
-    { id: 'rx002', patientId: 'p2', patientName: 'Bob Williams', doctorId: 'd2', doctorName: 'Dr. Lee', medication: 'Lisinopril', dosage: '10mg', issuedDate: '2025-08-15', expiryDate: '2025-10-15', status: 'DISPENSED', createdAt: '2025-08-10' },
-    { id: 'rx003', patientId: 'p3', patientName: 'Charlie Brown', doctorId: 'd1', doctorName: 'Dr. Smith', medication: 'Ibuprofen', dosage: '400mg', issuedDate: '2025-01-01', expiryDate: '2025-09-30', status: 'EXPIRED', createdAt: '2025-01-01' },
-  ];
+async function getInitialPrescriptionData(companyId: string, cookieHeader: string): Promise<Prescription[]> {
+  try {
+    const res = await fetch(
+      `${apiBaseUrl}/admin/prescriptions?companyId=${companyId}`,
+      {
+        method: "GET",
+        headers: { "Content-Type": "application/json", Cookie: cookieHeader },
+        next: { revalidate: 60 }, // always fresh
+      }
+    );
+    if (!res.ok) {
+      throw new Error(`Failed to fetch prescriptions: ${res.statusText}`);
+    }
+    const json = await res.json();
+    console.log("Fetched prescriptions:", json);
+    return json.data || [];
+  } catch (err) {
+    console.error("getInitialPrescriptionData error:", err);
+    return [];
+  }
 }
 
-async function getPatientOptions(companyId: string): Promise<PatientOption[]> {
-  await new Promise(resolve => setTimeout(resolve, 100));
-  return [
-    { id: 'c1', name: 'Alice Johnson', userId: 'p1' },
-    { id: 'c2', name: 'Bob Williams', userId: 'p2' },
-    { id: 'c3', name: 'Charlie Brown', userId: 'p3' },
-  ];
+
+/**
+ * Fetch patients for a given company
+ */
+async function fetchPatients(companyId: string, cookieHeader: string) {
+  try {
+    const res = await fetch(
+      `${apiBaseUrl}/admin/patients?companyId=${companyId}`,
+      {
+        method: "GET",
+        headers: { "Content-Type": "application/json", Cookie: cookieHeader }, // forward auth cookies if required
+        next: { revalidate: 60 },
+      }
+    );
+
+    if (!res.ok) {
+      throw new Error(`Failed to fetch patients: ${res.statusText}`);
+    }
+
+    const json = await res.json();
+    console.log("Fetched patients:", json);
+    return json.data || [];
+  } catch (err) {
+    console.error("fetchPatients error:", err);
+    return [];
+  }
 }
 
-async function getDoctorOptions(companyId: string): Promise<DoctorOption[]> {
-  await new Promise(resolve => setTimeout(resolve, 100));
-  return [
-    { id: 'd1', name: 'Dr. Smith', userId: 'u11' },
-    { id: 'd2', name: 'Dr. Lee', userId: 'u22' },
-  ];
+/**
+ * Fetch doctors for a given company
+ */
+async function fetchDoctors(companyId: string, cookieHeader: string) {
+  try {
+    const res = await fetch(
+      `${apiBaseUrl}/admin/doctors?companyId=${companyId}`,
+      {
+        method: "GET",
+        headers: { "Content-Type": "application/json", Cookie: cookieHeader },
+        next: { revalidate: 60 },
+      }
+    );
+
+    if (!res.ok) {
+      throw new Error(`Failed to fetch doctors: ${res.statusText}`);
+    }
+
+    const json = await res.json();
+    console.log("Fetched doctors:", json);
+    return json.data.data || [];
+  } catch (err) {
+    console.error("fetchDoctors error:", err);
+    return [];
+  }
 }
+
 
 //  const fetchPrescriptions = useCallback(async () => {
 //     setLoading(true);
@@ -93,12 +142,13 @@ async function getDoctorOptions(companyId: string): Promise<DoctorOption[]> {
 
 export default async function AdminPrescriptionsPage({ params }: { params: { slug: string } }) {
   const companyId = params.slug || COMPANY_ID;
+  const cookieHeader = (await cookies()).toString(); // Get the cookie header from the request context
 
   // 1. Fetch ALL necessary data concurrently on the server
   const [initialPrescriptions, patients, doctors] = await Promise.all([
-    getInitialPrescriptionData(companyId),
-    getPatientOptions(companyId),
-    getDoctorOptions(companyId)
+    getInitialPrescriptionData(companyId, cookieHeader),
+    fetchPatients(companyId, cookieHeader),
+    fetchDoctors(companyId, cookieHeader)
   ]);
 
   return (

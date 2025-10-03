@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
 
 // Shared formatter
 async function formatAppointmentData(appointment: any) {
@@ -15,26 +16,27 @@ async function formatAppointmentData(appointment: any) {
     hour12: true,
   });
 
-  return {
-    id: appointment.id,
-    patientName,
-    doctorId: appointment.doctorId,
-    doctorName,
-    date: formattedDate,
-    time: formattedTime,
-    status: appointment.status,
-    service: appointment.service || "N/A",
-    createdAt: appointment.createdAt
-      ? new Date(appointment.createdAt).toLocaleDateString()
-      : "N/A",
-  };
+  return  {
+            id: appointment.id,
+            patientName,
+            doctorId: appointment.doctorId,
+            doctorName,
+            date: formattedDate,
+            time: formattedTime,
+            status: appointment.status,
+            service: appointment.service || "N/A",
+            createdAt: appointment.createdAt
+              ? new Date(appointment.createdAt).toLocaleDateString()
+              : "N/A",
+          };
+        
 }
 
 // --- GET /api/admin/appointments
 export const GET = withApiHandler(async (request, context) => {
   const { user } = context;
   if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return formatResponse(false, "Unauthorized", 'error', 401);
   }
 
   const { searchParams } = new URL(request.url);
@@ -43,7 +45,7 @@ export const GET = withApiHandler(async (request, context) => {
   const filterStatus = searchParams.get("filterStatus"); // 'Scheduled', 'Completed', 'Cancelled', 'All'
 
   if (!companyId) {
-    return NextResponse.json({ error: "Missing companyId" }, { status: 400 });
+    return formatResponse(false, "Missing companyId", 'error', 400);
   }
 
   const whereClause: any = { companyId };
@@ -80,35 +82,32 @@ export const GET = withApiHandler(async (request, context) => {
     filtered.map(async (appt) => formatAppointmentData(appt))
   );
 
-  return NextResponse.json(enrichedAppointments, { status: 200 });
+  return formatResponse(
+    true,
+    enrichedAppointments,
+    'appointments',
+    200
+  );
+  // return formatResponse(,enrichedAppointments, { status: 200 });
 });
 
 // --- POST /api/admin/appointments
 export const POST = withApiHandler(async (request, context) => {
   const { user } = context;
   if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return formatResponse(false, "Unauthorized", 'error', 401);
   }
   
   const body = await request.json();
   const { userId, doctorId, service, date, time, status, companyId } = body;
 
   if (!userId || !doctorId || !date || !time || !status || !companyId) {
-    return NextResponse.json(
-      {
-        error:
-          "Missing required fields: userId, doctorId, date, time, status, companyId",
-      },
-      { status: 400 }
-    );
+    return formatResponse(false, "Missing required fields: userId, doctorId, date, time, status, companyId", 'error', 400);
   }
 
   // Doctors can only create their own appointments
   if (user?.role !== "ADMIN" && doctorId !== user.id) {
-    return NextResponse.json(
-      { error: "You cannot create appointments for another doctor" },
-      { status: 403 }
-    );
+    return formatResponse(false, "You cannot create appointments for another doctor", 'error', 403);
   }
 
   // Combine date and time into one Date object
@@ -118,7 +117,7 @@ export const POST = withApiHandler(async (request, context) => {
   const newAppointment = await prisma.appointment.create({
     data: {
       user: { connect: { id: userId } },
-      doctorId,
+      doctor: { connect: { id: doctorId } },
       service,
       date: appointmentDateTime,
       status,
@@ -131,5 +130,5 @@ export const POST = withApiHandler(async (request, context) => {
   });
 
   const formattedNewAppointment = await formatAppointmentData(newAppointment);
-  return NextResponse.json(formattedNewAppointment, { status: 201 });
+  return formatResponse(true, formattedNewAppointment, 'appointment', 201);
 });

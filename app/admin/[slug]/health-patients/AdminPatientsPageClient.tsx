@@ -95,7 +95,7 @@ export default function AdminPatientsPageClient({
   companyId,
 }: AdminPatientsPageClientProps) {
   
-  const [patients, setPatients] = useState<Patient[]>([]);
+  const [patients, setPatients] = useState<Patient[]>(initialPatients);
     const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);

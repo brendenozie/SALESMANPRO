@@ -1,19 +1,20 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
 
 // --- GET /api/admin/[slug]/billing/invoices
 export const GET = withApiHandler(async (req, { params, user }) => {
-  const companyId = params.slug;
-
+  
   if (!user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return formatResponse(false, "Unauthorized", 'error', 401);
   }
   
   const { searchParams } = new URL(req.url);
-
+  
+  const companyId = searchParams.get("companyId");
   const page = parseInt(searchParams.get("page") || "1", 10);
   const limit = parseInt(searchParams.get("limit") || "10", 10);
   const status = searchParams.get("status")?.toUpperCase();
@@ -53,6 +54,7 @@ export const GET = withApiHandler(async (req, { params, user }) => {
     userId: inv.patientId,
     userName: inv.patient?.name || "N/A",
     userEmail: inv.patient?.email || "N/A",
+    notes: inv.notes || "",
     amountDue: inv.amount,
     currency: "USD", // hardcoded for now
     dueDate: inv.dueDate?.toISOString() || "N/A",
@@ -70,9 +72,42 @@ export const GET = withApiHandler(async (req, { params, user }) => {
 
   const totalInvoicePages = Math.ceil(totalInvoiceItems / limit);
 
-  return NextResponse.json({
-    invoicesData,
-    totalInvoiceItems,
-    totalInvoicePages,
+  return formatResponse(true, {
+      invoicesData,
+      totalInvoiceItems,
+      totalInvoicePages,
+    },
+     "Invoices fetched successfully", 200);
+});
+
+// --- POST /api/admin/billing/invoices
+export const POST = withApiHandler(async (req, { params, user }) => {
+
+  if (!user) {
+    return formatResponse(false, "Unauthorized", 'error', 401);
+  }
+
+  const { patientId, amount, invoiceDate, dueDate, companyId, items, notes, status } = await req.json();
+ 
+  const newInvoice = await prisma.patientInvoices.create({
+    data: {
+      company: { connect: { id: companyId } },
+      patient: { connect: { id: patientId } },
+      amount,
+      invoiceDate: new Date(invoiceDate),
+      dueDate: new Date(dueDate),
+      items: items,
+      notes: notes,
+      // {
+      //   create: items.map((item: any) => ({
+      //     description: item.description,
+      //     quantity: item.quantity,
+      //     price: item.price,
+      //   })),
+      // },
+      status,
+    },
   });
+
+  return formatResponse(true, newInvoice, "Invoice created successfully", 201);
 });

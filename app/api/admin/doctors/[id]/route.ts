@@ -1,126 +1,151 @@
-import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
-import { verifyAuth } from "@/lib/verifyAuth";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
-// Helper function to format doctor data for the frontend
+// =======================================================================
+// Reuse the formatter
+// =======================================================================
 async function formatDoctorData(doctor: any) {
-  const userName = doctor.User?.name || 'N/A';
-  const userEmail = doctor.User?.email || 'N/A';
-  const userPhone = doctor.User?.phone || 'N/A';
-  const userProfilePicture = doctor.User?.profilePicture || 'https://placehold.co/100x100/A7F3D0/0D9488?text=DR'; // Default image
-
   return {
-    id: doctor.id, // Doctor model's ID
-    userId: doctor.userId, // Corresponding User ID
-    name: userName,
-    email: userEmail,
-    phone: userPhone,
-    profilePicture: userProfilePicture,
-    specialty: doctor.specialty || 'N/A',
+    id: doctor.id,
+    userId: doctor.userId,
+    name: doctor.User?.name || "N/A",
+    email: doctor.User?.email || "N/A",
+    phone: doctor.User?.phone || "N/A",
+    profilePicture:
+      doctor.User?.profilePicture ||
+      "https://placehold.co/100x100/A7F3D0/0D9488?text=DR",
+    specialty: doctor.specialty || "N/A",
     status: doctor.status,
-    createdAt: doctor.createdAt ? new Date(doctor.createdAt).toLocaleDateString() : 'N/A',
+    createdAt: doctor.createdAt
+      ? new Date(doctor.createdAt).toLocaleDateString()
+      : "N/A",
+    loginCode: doctor.loginCode,
+    staffProfile: doctor.StaffProfile
+      ? {
+          id: doctor.StaffProfile.id,
+          jobTitle: doctor.StaffProfile.jobTitle,
+          department: doctor.StaffProfile.department,
+          employmentStatus: doctor.StaffProfile.employmentStatus,
+        }
+      : null,
   };
 }
 
 // =======================================================================
-// GET: Fetch a single doctor by ID
+// GET: Fetch single doctor
 // =======================================================================
-async function getDoctor(request: Request, { params }: { params: { id: string } }) {
-  
-
-
+async function getDoctor(_req: Request, { params }: { params: { id: string } }) {
   const { id } = params;
 
   const doctor = await prisma.doctor.findUnique({
     where: { id },
     include: {
       User: { select: { id: true, name: true, email: true, phone: true, profilePicture: true } },
+      StaffProfile: true,
     },
   });
 
-  if (!doctor) {
-    return formatResponse(false, null, "Doctor not found", 404);
-  }
+  if (!doctor) return formatResponse(false, null, "Doctor not found", 404);
 
-  const formattedDoctor = await formatDoctorData(doctor);
-  return formatResponse(true, { data: formattedDoctor }, null, 200);
+  const formatted = await formatDoctorData(doctor);
+  return formatResponse(true, formatted, "Doctor fetched successfully", 200);
 }
 
 // =======================================================================
-// PUT: Update an existing doctor by ID
+// PUT: Update doctor (+ user + staff profile)
 // =======================================================================
-async function updateDoctor(request: Request, { params }: { params: { id: string } }) {
-  
-
-
+async function updateDoctor(req: Request, { params }: { params: { id: string } }) {
   const { id } = params;
-  const body = await request.json();
-  const { name, email, phone, profilePicture, specialty, status } = body;
+  const body = await req.json();
+  const { name, email, phone, profilePicture, specialty, status, jobTitle, department, employmentStatus } = body;
 
-  const existingDoctor = await prisma.doctor.findUnique({
+  const doctor = await prisma.doctor.findUnique({
     where: { id },
-    select: { userId: true },
+    include: { User: true, StaffProfile: {
+      select: { id: true, jobTitle: true, department: true, employmentStatus: true }
+    } },
   });
 
-  if (!existingDoctor) {
-    return formatResponse(false, null, "Doctor not found", 404);
-  }
+  if (!doctor) return formatResponse(false, null, "Doctor not found", 404);
 
-  if (existingDoctor.userId) {
-    await prisma.user.update({
-      where: { id: existingDoctor.userId },
-      data: {
-        name: name,
-        email: email,
-        phone: phone,
-        profilePicture: profilePicture,
-      },
+  try {
+    // Update related User
+    if (doctor.userId) {
+      await prisma.user.update({
+        where: { id: doctor.userId },
+        data: { name, email, phone, profilePicture },
+      });
+    }
+
+    // Update Doctor profile
+    const updatedDoctor = await prisma.doctor.update({
+      where: { id },
+      data: { specialty, status, phone, profilePicture },
+      include: { User: true, StaffProfile: {
+        select: { id: true, jobTitle: true, department: true, employmentStatus: true }
+      } },
     });
+
+    // Update StaffProfile(s) if exist
+    if (doctor.StaffProfile && Array.isArray(doctor.StaffProfile)) {
+      for (const staff of doctor.StaffProfile) {
+        await prisma.staffProfile.update({
+          where: { id: staff.id },
+          data: { jobTitle, department, employmentStatus },
+        });
+      }
+    }
+
+    const formatted = await formatDoctorData(updatedDoctor);
+    return formatResponse(true, formatted, "Doctor updated successfully", 200);
+  } catch (err: any) {
+    if (err.code === "P2002" && err.meta?.target?.includes("email")) {
+      return formatResponse(false, null, "Email already exists.", 409);
+    }
+    throw err;
   }
-
-  const updatedDoctor = await prisma.doctor.update({
-    where: { id },
-    data: {
-      specialty: specialty,
-      status: status,
-    },
-    include: {
-      User: { select: { name: true, email: true, phone: true, profilePicture: true } },
-    },
-  });
-
-  const formattedUpdatedDoctor = await formatDoctorData(updatedDoctor);
-  return formatResponse(true, { data: formattedUpdatedDoctor }, null, 200);
 }
 
 // =======================================================================
-// DELETE: Delete a doctor by ID
+// DELETE: Remove doctor (+ user + staffProfile)
 // =======================================================================
-async function deleteDoctor(request: Request, { params }: { params: { id: string } }) {
-  
-
-
+async function deleteDoctor(_req: Request, { params }: { params: { id: string } }) {
   const { id } = params;
 
-  const existingDoctor = await prisma.doctor.findUnique({
+  const doctor = await prisma.doctor.findUnique({
     where: { id },
-    select: { userId: true },
+    include: { StaffProfile: {
+      select: { id: true }
+    } },
   });
 
-  if (!existingDoctor) {
-    return formatResponse(false, null, "Doctor not found", 404);
+  if (!doctor) return formatResponse(false, null, "Doctor not found", 404);
+
+  // Delete staff profiles if exist
+  if (doctor.StaffProfile && Array.isArray(doctor.StaffProfile)) {
+    for (const staff of doctor.StaffProfile) {
+      await prisma.staffProfile.delete({ where: { id: staff.id } });
+    }
   }
 
-  await prisma.doctor.delete({
-    where: { id },
-  });
+  // Delete doctor
+  await prisma.doctor.delete({ where: { id } });
 
-  return formatResponse(true, { message: "Doctor deleted successfully" }, null, 200);
+  // Optionally delete User (only if not tied to other roles)
+  if (doctor.userId) {
+    const userLinks = await prisma.doctor.count({ where: { userId: doctor.userId } });
+    if (userLinks === 0) {
+      await prisma.user.delete({ where: { id: doctor.userId } });
+    }
+  }
+
+  return formatResponse(true, { deletedId: id }, "Doctor deleted successfully", 200);
 }
 
-// Export handlers with standardized wrapper
+// =======================================================================
+// Exports
+// =======================================================================
 export const GET = withApiHandler(getDoctor);
 export const PUT = withApiHandler(updateDoctor);
 export const DELETE = withApiHandler(deleteDoctor);

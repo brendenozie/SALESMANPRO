@@ -61,7 +61,9 @@ async function getAllStaff(req: Request) {
     }
 
     const enrichedStaff = await Promise.all(staffMembers.map((m) => formatStaffData(m)));
+
     return formatResponse(true, enrichedStaff, "Staff fetched successfully", 200);
+
   } catch (err: any) {
     console.error("GET /api/admin/staff error:", err);
     return formatResponse(false, null, err.message || "Internal server error", 500);

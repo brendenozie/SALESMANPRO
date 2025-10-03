@@ -1,25 +1,30 @@
+// app/admin/[slug]/health-patients/page.tsx
 import AdminPatientsPageClient from "./AdminPatientsPageClient";
 import { cookies } from "next/headers";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+const apiBaseUrl =
+  process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
 
-interface Props {
+interface AdminPatientsPageProps {
   params: { slug: string };
 }
 
-export default async function AdminPatientsPage({ params }: Props) {
-  const companyId = params.slug;
+export default async function AdminPatientsPage(
+  props: AdminPatientsPageProps
+) {
+  // ✅ correct typing ensures params is awaited properly
+  const { slug: companyId } = await props.params;
+  const cookiesHeaders = (await cookies()).toString();
 
-  // Optional: prefetch patients server-side (with JWT cookie/session)
   const res = await fetch(
     `${apiBaseUrl}/admin/patients?companyId=${companyId}`,
     {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        Cookie: cookies().toString(), // forward auth cookies if required
+        Cookie: cookiesHeaders,
       },
-      next: { revalidate: 60 }, // disable caching for fresh data
+      next: { revalidate: 60 },
     }
   );
 

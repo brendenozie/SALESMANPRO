@@ -1,36 +1,41 @@
-import { NextResponse, NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
-import { verifyAuth } from "@/lib/verifyAuth";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
-// Helper function to format doctor data for the frontend
+// =======================================================================
+// Helper: Format doctor data for frontend
+// =======================================================================
 async function formatDoctorData(doctor: any) {
-  const userName = doctor.User?.name || 'N/A';
-  const userEmail = doctor.User?.email || 'N/A';
-  const userPhone = doctor.User?.phone || 'N/A';
-  const userProfilePicture = doctor.User?.profilePicture || 'https://placehold.co/100x100/A7F3D0/0D9488?text=DR'; // Default image
-
   return {
-    id: doctor.id, // Doctor model's ID
-    userId: doctor.userId, // Corresponding User ID
-    name: userName,
-    email: userEmail,
-    phone: userPhone,
-    profilePicture: userProfilePicture,
-    specialty: doctor.specialty || 'N/A',
+    id: doctor.id,
+    userId: doctor.userId,
+    name: doctor.User?.name || "N/A",
+    email: doctor.User?.email || "N/A",
+    phone: doctor.User?.phone || "N/A",
+    profilePicture:
+      doctor.User?.profilePicture ||
+      "https://placehold.co/100x100/A7F3D0/0D9488?text=DR",
+    specialty: doctor.specialty || "N/A",
     status: doctor.status,
-    createdAt: doctor.createdAt ? new Date(doctor.createdAt).toLocaleDateString() : 'N/A',
+    createdAt: doctor.createdAt
+      ? new Date(doctor.createdAt).toLocaleDateString()
+      : "N/A",
+    loginCode: doctor.loginCode,
+    staffProfile: doctor.StaffProfile
+      ? {
+          jobTitle: doctor.StaffProfile.jobTitle,
+          department: doctor.StaffProfile.department,
+          employmentStatus: doctor.StaffProfile.employmentStatus,
+        }
+      : null,
   };
 }
 
 // =======================================================================
-// GET: Fetch all doctors
+// GET: Fetch all doctors (with filters + search)
 // =======================================================================
 async function getDoctors(request: Request) {
-  
-
-
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
   const searchTerm = searchParams.get("searchTerm") || "";
@@ -40,54 +45,39 @@ async function getDoctors(request: Request) {
     return formatResponse(false, null, "Missing companyId", 400);
   }
 
-  const whereClause: any = {
-    companyId: companyId,
-  };
-
-  if (filterStatus && filterStatus !== 'All') {
+  const whereClause: any = { companyId };
+  if (filterStatus && filterStatus !== "All") {
     whereClause.status = filterStatus;
   }
 
   let doctors = await prisma.doctor.findMany({
     where: whereClause,
     include: {
-      User: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          phone: true,
-          profilePicture: true,
-        },
-      },
+      User: { select: { id: true, name: true, email: true, phone: true, profilePicture: true } },
+      StaffProfile: true,
     },
-    orderBy: { createdAt: 'asc' },
+    orderBy: { createdAt: "asc" },
   });
 
   if (searchTerm) {
-    const lowerCaseSearchTerm = searchTerm.toLowerCase();
-    doctors = doctors.filter(doctor =>
-      doctor.User?.name?.toLowerCase().includes(lowerCaseSearchTerm) ||
-      doctor.User?.email?.toLowerCase().includes(lowerCaseSearchTerm) ||
-      doctor.User?.phone?.toLowerCase().includes(lowerCaseSearchTerm) ||
-      doctor.specialty?.toLowerCase().includes(lowerCaseSearchTerm)
+    const lower = searchTerm.toLowerCase();
+    doctors = doctors.filter(
+      (d) =>
+        d.User?.name?.toLowerCase().includes(lower) ||
+        d.User?.email?.toLowerCase().includes(lower) ||
+        d.User?.phone?.toLowerCase().includes(lower) ||
+        d.specialty?.toLowerCase().includes(lower)
     );
   }
 
-  const enrichedDoctors = await Promise.all(
-    doctors.map(async (doctor) => formatDoctorData(doctor))
-  );
-
-  return formatResponse(true, { data: enrichedDoctors }, null, 200);
+  const enriched = await Promise.all(doctors.map(formatDoctorData));
+  return formatResponse(true, { data: enriched }, null, 200);
 }
 
 // =======================================================================
-// POST: Create a new doctor
+// POST: Create new doctor (with shared loginCode + StaffProfile)
 // =======================================================================
 async function createDoctor(request: Request) {
-  
-
-
   const body = await request.json();
   const { name, email, phone, profilePicture, specialty, status, companyId } = body;
 
@@ -95,69 +85,76 @@ async function createDoctor(request: Request) {
     return formatResponse(false, null, "Missing required fields: name, email, companyId", 400);
   }
 
-  let user = await prisma.user.findUnique({
-    where: { email: email },
-  });
-
+  // Find or create user
+  let user = await prisma.user.findUnique({ where: { email } });
   if (!user) {
     user = await prisma.user.create({
       data: {
-        name: name,
-        email: email,
-        phone: phone,
-        profilePicture: profilePicture,
-        role: 'EDUCATOR',
+        name,
+        email,
+        phone,
+        profilePicture,
+        role: "DOCTOR", // ✅ set proper role
       },
     });
   } else {
-    if (user.role !== 'EDUCATOR' && user.role !== 'ADMIN') {
+    if (user.role !== "DOCTOR" && user.role !== "ADMIN") {
       user = await prisma.user.update({
         where: { id: user.id },
-        data: { role: 'EDUCATOR' },
+        data: { role: "DOCTOR" },
       });
     }
   }
 
-  let doctor = await prisma.doctor.findFirst({
-    where: { userId: user.id },
-  });
-
-  if (doctor) {
+  // Prevent duplicate doctor
+  const existingDoctor = await prisma.doctor.findFirst({ where: { userId: user.id } });
+  if (existingDoctor) {
     return formatResponse(false, null, "Doctor profile already exists for this user", 409);
   }
 
+  // Generate unique loginCode
   let loginCode: string;
-  let isUnique = false;
+  let unique = false;
   do {
     loginCode = Math.floor(100000 + Math.random() * 900000).toString();
-    const existingAgentWithCode = await prisma.doctor.findUnique({
-      where: { loginCode },
-    });
-    if (!existingAgentWithCode) {
-      isUnique = true;
-    }
-  } while (!isUnique);
+    const existingDoctor = await prisma.doctor.findUnique({ where: { loginCode } });
+    const existingStaff = await prisma.staffProfile.findUnique({ where: { loginCode } });
+    if (!existingDoctor && !existingStaff) unique = true;
+  } while (!unique);
 
+  // Create doctor
   const newDoctor = await prisma.doctor.create({
     data: {
       userId: user.id,
-      companyId: companyId,
-      specialty: specialty,
-      status: status,
-      phone: phone,
-      profilePicture: profilePicture,
-      loginCode: loginCode,
+      companyId,
+      specialty,
+      status,
+      phone,
+      profilePicture,
+      loginCode,
     },
-    include: {
-      User: { select: { name: true, email: true, phone: true, profilePicture: true } },
+    include: { User: true, StaffProfile: true },
+  });
+
+  // Create staff profile (linked)
+  await prisma.staffProfile.create({
+    data: {
+      userId: user.id,
+      companyId,
+      jobTitle: "Doctor",
+      department: "Medical",
+      employmentStatus: "ACTIVE",
+      loginCode,
+      doctorId: newDoctor.id,
     },
   });
 
-  const formattedNewDoctor = await formatDoctorData(newDoctor);
-
-  return formatResponse(true, { data: formattedNewDoctor }, null, 201);
+  const formatted = await formatDoctorData(newDoctor);
+  return formatResponse(true, { data: formatted }, null, 201);
 }
 
-// Export handlers with standardized wrapper
+// =======================================================================
+// Exports
+// =======================================================================
 export const GET = withApiHandler(getDoctors);
 export const POST = withApiHandler(createDoctor);

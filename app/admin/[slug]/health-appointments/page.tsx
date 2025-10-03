@@ -13,13 +13,13 @@ interface Props {
 /**
  * Fetch appointments for a given company
  */
-async function fetchAppointments(companyId: string) {
+async function fetchAppointments(companyId: string, cookieHeader: string) {
   try {
     const res = await fetch(
       `${apiBaseUrl}/admin/appointments?companyId=${companyId}`,
       {
         method: "GET",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", Cookie: cookieHeader },
         next: { revalidate: 60 }, // always fresh
       }
     );
@@ -29,6 +29,7 @@ async function fetchAppointments(companyId: string) {
     }
 
     const json = await res.json();
+    console.log("Fetched appointments:", json);
     return json.data || [];
   } catch (err) {
     console.error("fetchAppointments error:", err);
@@ -39,13 +40,13 @@ async function fetchAppointments(companyId: string) {
 /**
  * Fetch patients for a given company
  */
-async function fetchPatients(companyId: string) {
+async function fetchPatients(companyId: string, cookieHeader: string) {
   try {
     const res = await fetch(
       `${apiBaseUrl}/admin/patients?companyId=${companyId}`,
       {
         method: "GET",
-        headers: { "Content-Type": "application/json", Cookie: cookies().toString() }, // forward auth cookies if required
+        headers: { "Content-Type": "application/json", Cookie: cookieHeader }, // forward auth cookies if required
         next: { revalidate: 60 },
       }
     );
@@ -55,6 +56,7 @@ async function fetchPatients(companyId: string) {
     }
 
     const json = await res.json();
+    console.log("Fetched patients:", json);
     return json.data || [];
   } catch (err) {
     console.error("fetchPatients error:", err);
@@ -65,13 +67,13 @@ async function fetchPatients(companyId: string) {
 /**
  * Fetch doctors for a given company
  */
-async function fetchDoctors(companyId: string) {
+async function fetchDoctors(companyId: string, cookieHeader: string) {
   try {
     const res = await fetch(
       `${apiBaseUrl}/admin/doctors?companyId=${companyId}`,
       {
         method: "GET",
-        headers: { "Content-Type": "application/json", Cookie: cookies().toString() },
+        headers: { "Content-Type": "application/json", Cookie: cookieHeader },
         next: { revalidate: 60 },
       }
     );
@@ -81,7 +83,8 @@ async function fetchDoctors(companyId: string) {
     }
 
     const json = await res.json();
-    return json.data || [];
+    console.log("Fetched doctors:", json);
+    return json.data.data || [];
   } catch (err) {
     console.error("fetchDoctors error:", err);
     return [];
@@ -92,12 +95,13 @@ async function fetchDoctors(companyId: string) {
 export default async function AdminAppointmentsPage({ params }: Props) {
   // Get the companyId from the URL params
   const companyId = params.slug;
+  const cookieHeader = (await cookies()).toString();
 
   // Fetch initial data on the server
   const [appointments, patients, doctors] = await Promise.all([
-    fetchAppointments(companyId),
-    fetchPatients(companyId),
-    fetchDoctors(companyId),
+    fetchAppointments(companyId, cookieHeader),
+    fetchPatients(companyId, cookieHeader),
+    fetchDoctors(companyId, cookieHeader),
   ]);
 
   return (

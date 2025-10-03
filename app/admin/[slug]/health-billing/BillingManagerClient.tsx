@@ -112,12 +112,21 @@ export const BillingManagerClient: React.FC<BillingManagerProps> = ({
   const [editItemsString, setEditItemsString] = useState(''); 
 
   // --- Client-side Refetch Logic (only for search/filter/CRUD) ---
-  const fetchInvoices = useCallback(async () => {
+  const fetchInvoices = async () => {
     setLoading(true);
     setError(null);
     try {
       const statusParam = filterStatus === 'All' ? '' : `&filterStatus=${filterStatus}`;
-      const response = await fetch(`${apiBaseUrl}/admin/billing?companyId=${companyId}&searchTerm=${encodeURIComponent(searchTerm)}${statusParam}`);
+      const response = await fetch(
+        `${apiBaseUrl}/admin/billing/invoices?companyId=${companyId}&searchTerm=${encodeURIComponent(searchTerm)}${statusParam}`,
+        {
+          method: "GET",
+          headers: { 
+            "Content-Type": "application/json", 
+            'credentials': 'include'
+           },
+        }
+      );
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to fetch invoices');
@@ -130,19 +139,19 @@ export const BillingManagerClient: React.FC<BillingManagerProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [companyId, searchTerm, filterStatus]);
+  };//, [companyId, searchTerm, filterStatus]);
 
   // Trigger refetch when search/filter changes (debounced for performance)
-  useEffect(() => {
-    // Skip initial fetch since data is already populated
-    if (invoices.length === 0 && initialInvoices.length > 0 && searchTerm === '' && filterStatus === 'All') return; 
+  // useEffect(() => {
+  //   // Skip initial fetch since data is already populated
+  //   if (invoices.length === 0 && initialInvoices.length > 0 && searchTerm === '' && filterStatus === 'All') return; 
 
-    const handler = setTimeout(() => {
-        fetchInvoices();
-    }, 300); 
+  //   const handler = setTimeout(() => {
+  //       fetchInvoices();
+  //   }, 300); 
     
-    return () => clearTimeout(handler);
-  }, [searchTerm, filterStatus, fetchInvoices]);
+  //   return () => clearTimeout(handler);
+  // }, [searchTerm, filterStatus, fetchInvoices]);
   
    // Handlers for modal interactions
   const handleAddInvoiceClick = () => {
@@ -156,14 +165,14 @@ export const BillingManagerClient: React.FC<BillingManagerProps> = ({
   const handleEdit = (invoice: Invoice) => {
     setSelectedInvoice(invoice);
     // Format dates for input type="date"
-    const formattedInvoiceDate = invoice.date || '';
+    const formattedInvoiceDate = invoice.dueDate || '';
     const formattedDueDate = invoice.dueDate || '';
     setEditInvoiceData({
       ...invoice,
-      date: formattedInvoiceDate,
+      issuedDate: formattedInvoiceDate,
       dueDate: formattedDueDate,
     });
-    setEditItemsString(invoice.items.join(', ')); // Convert array to comma-separated string for editing
+    setEditItemsString(invoice.lineItems);//.create.map(item => item.description).join(', ')); // Convert array to comma-separated string for editing
     setIsEditModalOpen(true);
   };
 
@@ -189,10 +198,11 @@ export const BillingManagerClient: React.FC<BillingManagerProps> = ({
         companyId,
       };
 
-      const response = await fetch(`${apiBaseUrl}/admin/billing`, {
+      const response = await fetch(`${apiBaseUrl}/admin/billing/invoices`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'credentials': 'include'
         },
         body: JSON.stringify(payload),
       });
@@ -222,14 +232,15 @@ export const BillingManagerClient: React.FC<BillingManagerProps> = ({
     try {
       const payload = {
         ...editInvoiceData,
-        amount: editInvoiceData.amount ? parseFloat(editInvoiceData.amount.toString()) : undefined,
+        amountDue: editInvoiceData.amountDue ? parseFloat(editInvoiceData.amountDue.toString()) : undefined,
         items: editItemsString.split(',').map(item => item.trim()).filter(item => item), // Convert string to array
       };
 
-      const response = await fetch(`${apiBaseUrl}/admin/billing/${selectedInvoice.id}`, {
+      const response = await fetch(`${apiBaseUrl}/admin/billing/invoices/${selectedInvoice.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'credentials': 'include'
         },
         body: JSON.stringify(payload),
       });
@@ -257,8 +268,12 @@ export const BillingManagerClient: React.FC<BillingManagerProps> = ({
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${apiBaseUrl}/admin/billing/${selectedInvoice.id}`, {
+      const response = await fetch(`${apiBaseUrl}/admin/billing/invoices/${selectedInvoice.id}`, {
         method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'credentials': 'include'
+        },
       });
 
       if (!response.ok) {
@@ -317,14 +332,12 @@ export const BillingManagerClient: React.FC<BillingManagerProps> = ({
               </button>
             </div>
 
-        {loading && (
+            {loading && (
               <div className="text-center py-8 text-blue-600 dark:text-blue-400">Loading invoices...</div>
             )}
             {error && (
               <div className="text-center py-8 text-red-600 dark:text-red-400">{error}</div>
             )}
-
-
         
             {!loading && !error && (
               <div className="overflow-x-auto">
@@ -350,7 +363,7 @@ export const BillingManagerClient: React.FC<BillingManagerProps> = ({
                         </td>
                       </tr>
                     ) : (
-                      invoices.map((invoice) => (
+                      invoices.length > 0 && invoices.map((invoice) => (
                         <tr key={invoice.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-sm font-medium text-gray-900 dark:text-white">{invoice.id}</div>
@@ -358,15 +371,15 @@ export const BillingManagerClient: React.FC<BillingManagerProps> = ({
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center">
                               <UserIcon className="w-5 h-5 text-gray-500 mr-2" />
-                              <div className="text-sm text-gray-900 dark:text-white">{invoice.patientName}</div>
+                              <div className="text-sm text-gray-900 dark:text-white">{invoice.userName}</div>
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                             <CurrencyDollarIcon className="inline-block w-4 h-4 mr-1 text-green-600 dark:text-green-400" />
-                            {invoice.amount.toFixed(2)}
+                            {invoice.amountDue?.toFixed(2)}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                            {invoice.date}
+                            {invoice.issuedDate || 'N/A'}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                             {invoice.dueDate || 'N/A'}
@@ -530,13 +543,13 @@ export const BillingManagerClient: React.FC<BillingManagerProps> = ({
               <select
                 id="editPatient"
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                value={editInvoiceData.patientId || ''}
-                onChange={(e) => setEditInvoiceData({ ...editInvoiceData, patientId: e.target.value })}
+                value={editInvoiceData.userId || ''}
+                onChange={(e) => setEditInvoiceData({ ...editInvoiceData, userId: e.target.value })}
                 required
               >
                 <option value="">Select Patient</option>
                 {patients.map(p => (
-                  <option key={p.id} value={p.userId}>{p.name}</option>
+                  <option key={p.id} value={p.id}>{p.name}</option>
                 ))}
               </select>
             </div>
@@ -548,8 +561,8 @@ export const BillingManagerClient: React.FC<BillingManagerProps> = ({
                 step="0.01"
                 min="0"
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                value={editInvoiceData.amount || 0}
-                onChange={(e) => setEditInvoiceData({ ...editInvoiceData, amount: parseFloat(e.target.value) || 0 })}
+                value={editInvoiceData.amountDue || 0}
+                onChange={(e) => setEditInvoiceData({ ...editInvoiceData, amountDue: parseFloat(e.target.value) || 0 })}
                 required
               />
             </div>
@@ -559,8 +572,8 @@ export const BillingManagerClient: React.FC<BillingManagerProps> = ({
                 type="date"
                 id="editInvoiceDate"
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                value={editInvoiceData.date || ''}
-                onChange={(e) => setEditInvoiceData({ ...editInvoiceData, date: e.target.value })}
+                value={editInvoiceData.issuedDate || ''}
+                onChange={(e) => setEditInvoiceData({ ...editInvoiceData, issuedDate: e.target.value })}
                 required
               />
             </div>
@@ -634,7 +647,7 @@ export const BillingManagerClient: React.FC<BillingManagerProps> = ({
       <AnimatePresence>
         <Modal isOpen={isDeleteConfirmOpen} onClose={() => setIsDeleteConfirmOpen(false)} title="Confirm Deletion">
           <p className="text-gray-700 dark:text-gray-300 mb-6">
-            Are you sure you want to delete invoice <span className="font-bold">{selectedInvoice?.id}</span> for <span className="font-bold">{selectedInvoice?.patientName}</span>? This action cannot be undone.
+            Are you sure you want to delete invoice <span className="font-bold">{selectedInvoice?.id}</span> for <span className="font-bold">{selectedInvoice?.userName}</span>? This action cannot be undone.
           </p>
           <div className="flex justify-end space-x-3">
             <button
@@ -661,25 +674,26 @@ export const BillingManagerClient: React.FC<BillingManagerProps> = ({
           {selectedInvoice && (
             <div className="space-y-4 text-gray-700 dark:text-gray-300">
               <p><strong>Invoice ID:</strong> {selectedInvoice.id}</p>
-              <p><strong>Patient:</strong> {selectedInvoice.patientName}</p>
-              <p><strong>Amount:</strong> <CurrencyDollarIcon className="inline-block w-4 h-4 mr-1 text-green-600 dark:text-green-400" />{selectedInvoice.amount.toFixed(2)}</p>
-              <p><strong>Invoice Date:</strong> {selectedInvoice.date}</p>
+              <p><strong>Patient:</strong> {selectedInvoice.userName}</p>
+              <p><strong>Amount:</strong> <CurrencyDollarIcon className="inline-block w-4 h-4 mr-1 text-green-600 dark:text-green-400" />{selectedInvoice.amountDue.toFixed(2)}</p>
+              <p><strong>Invoice Date:</strong> {selectedInvoice.issuedDate}</p>
               <p><strong>Due Date:</strong> {selectedInvoice.dueDate || 'N/A'}</p>
               <p><strong>Status:</strong> <span className={`px-2 py-1 rounded-full text-sm font-semibold ${getStatusColor(selectedInvoice.status)}`}>{selectedInvoice.status}</span></p>
+              <p><strong>Notes:</strong> {selectedInvoice.notes || 'N/A'}</p>
               <div>
                 <strong>Items:</strong>
                 <ul className="list-disc list-inside ml-4">
-                  {selectedInvoice.items.length > 0 ? (
+                  {/* {selectedInvoice.items.length > 0 ? (
                     selectedInvoice.items.map((item, index) => (
                       <li key={index}>{item}</li>
                     ))
-                  ) : (
+                  ) : ( */}
                     <li>No items listed.</li>
-                  )}
+                  {/* // )} */}
                 </ul>
               </div>
-              <p><strong>Notes:</strong> {selectedInvoice.notes || 'N/A'}</p>
-              <p><strong>Created At:</strong> {selectedInvoice.createdAt}</p>
+              {/* <p><strong>Notes:</strong> {selectedInvoice.notes || 'N/A'}</p>
+              <p><strong>Created At:</strong> {selectedInvoice.createdAt}</p> */}
             </div>
           )}
         </Modal>

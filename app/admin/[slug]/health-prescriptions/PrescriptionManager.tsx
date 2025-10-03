@@ -148,7 +148,7 @@ export const PrescriptionManager: React.FC<ManagerProps> = ({
   const [editPrescriptionData, setEditPrescriptionData] = useState<Partial<Prescription>>({});
 
   // --- Client-side Refetch Logic (for search/filter/CRUD refresh) ---
-  const fetchPrescriptions = useCallback(async () => {
+  const fetchPrescriptions = async () => {
     setLoading(true);
     setError(null);
     try {
@@ -169,20 +169,20 @@ export const PrescriptionManager: React.FC<ManagerProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [companyId, searchTerm, filterStatus]);
+  };//, [companyId, searchTerm, filterStatus]);
 
   // Trigger refetch when search term or filter status changes (excluding initial load)
-  useEffect(() => {
-    // Skip initial fetch since data is already populated
-    if (prescriptions.length === 0 && initialPrescriptions.length > 0 && searchTerm === '' && filterStatus === 'All') return; 
+  // useEffect(() => {
+  //   // Skip initial fetch since data is already populated
+  //   if (prescriptions.length === 0 && initialPrescriptions.length > 0 && searchTerm === '' && filterStatus === 'All') return; 
     
-    const handler = setTimeout(() => {
-        fetchPrescriptions();
-    }, 300); // Debounce search
+  //   const handler = setTimeout(() => {
+  //       fetchPrescriptions();
+  //   }, 300); // Debounce search
     
-    return () => clearTimeout(handler);
+  //   return () => clearTimeout(handler);
     
-  }, [searchTerm, filterStatus]); 
+  // }, [searchTerm, filterStatus]); 
 
   // --- Handlers & CRUD operations (mostly the same as original, calling fetchPrescriptions to refresh) ---
  
@@ -461,7 +461,7 @@ export const PrescriptionManager: React.FC<ManagerProps> = ({
               >
                 <option value="">Select Patient</option>
                 {patients.map(p => (
-                  <option key={p.id} value={p.userId}>{p.name}</option>
+                  <option key={p.id} value={p.id}>{p.name}</option>
                 ))}
               </select>
             </div>
@@ -593,7 +593,7 @@ export const PrescriptionManager: React.FC<ManagerProps> = ({
               >
                 <option value="">Select Patient</option>
                 {patients.map(p => (
-                  <option key={p.id} value={p.userId}>{p.name}</option>
+                  <option key={p.id} value={p.id}>{p.name}</option>
                 ))}
               </select>
             </div>

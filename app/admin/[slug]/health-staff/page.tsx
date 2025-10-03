@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { StaffManagerClient } from './StaffManagerClient'; // Import the Client Component
-
 import { cookies } from 'next/headers';
 
 // Define the Staff interface (can be moved to a shared types.ts)
@@ -43,8 +42,11 @@ async function getInitialStaffData(companyId: string, searchTerm: string, status
             const errorData = await response.json();
             throw new Error(errorData.error || 'Failed to fetch staff members');
           }
+
           const dataRes = await response.json();
+          console.log("Fetched staff data:", dataRes);
           const data: Staff[] = dataRes.data || [];
+          console.log("Staff data array:", data);
     
     // MOCK DATA: Replace with your actual database/API call
     const mockStaffData: Staff[] = [
@@ -54,7 +56,7 @@ async function getInitialStaffData(companyId: string, searchTerm: string, status
       { id: '4', userId: 'u4', name: 'Diana Prince', email: 'diana@corp.com', jobTitle: 'Software Engineer', department: 'Technology', employmentStatus: 'ACTIVE', createdAt: '2023-03-01' },
     ];
     
-    return data || mockStaffData;
+    return data.length > 0 ? data : mockStaffData;
 
   } catch (error) {
     console.error("Server-side initial data fetch failed:", error);

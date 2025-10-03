@@ -1,13 +1,11 @@
-// app/api/admin/clients/[id]/route.ts
-
+// app/api/admin/patients/[id]/route.ts
 import prisma from "@/server/db/prismadb";
-import { verifyAuth } from "@/lib/verifyAuth";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
 // --- Helper to format patient data ---
-async function formatPatientData(consumer: any) {
-  const user = consumer.user;
+async function formatPatientData(patient: any) {
+  const user = patient.user;
   let lastVisitDate: string | null = null;
 
   if (user?.id) {
@@ -22,7 +20,7 @@ async function formatPatientData(consumer: any) {
   }
 
   return {
-    id: consumer.id,
+    id: patient.id,
     name: user?.name || "N/A",
     email: user?.email || "N/A",
     phone: user?.phone || "",
@@ -36,19 +34,19 @@ async function formatPatientData(consumer: any) {
       : "N/A",
     gender: user?.gender || "Other",
     lastVisit: lastVisitDate || "N/A",
-    createdAt: consumer.createdAt
-      ? new Date(consumer.createdAt).toLocaleDateString()
+    createdAt: patient.createdAt
+      ? new Date(patient.createdAt).toLocaleDateString()
       : "N/A",
+    address: patient.address || null,
+    contactInfo: patient.contactInfo || null,
   };
 }
 
-// --- GET /api/admin/clients/[id] ---
-async function handleGetClient(request: Request, { params }: { params: { id: string } }) {
-  
-
-
+// --- GET /api/admin/patients/[id] ---
+async function handleGetPatient(request: Request, { params }: { params: { id: string } }) {
   const { id } = params;
-  const consumer = await prisma.consumer.findUnique({
+
+  const patient = await prisma.patient.findUnique({
     where: { id },
     include: {
       user: {
@@ -65,31 +63,29 @@ async function handleGetClient(request: Request, { params }: { params: { id: str
     },
   });
 
-  if (!consumer) return formatResponse(false, null, "Patient not found", 404);
+  if (!patient) return formatResponse(false, null, "Patient not found", 404);
 
-  const patient = await formatPatientData(consumer);
-  return formatResponse(true, patient, "Patient fetched successfully", 200);
+  const formatted = await formatPatientData(patient);
+  return formatResponse(true, formatted, "Patient fetched successfully", 200);
 }
 
-// --- PUT /api/admin/clients/[id] ---
-async function handlePutClient(request: Request, { params }: { params: { id: string } }) {
-  
-
-
+// --- PUT /api/admin/patients/[id] ---
+async function handlePutPatient(request: Request, { params }: { params: { id: string } }) {
   const { id } = params;
   const body = await request.json();
-  const { name, email, phone, dob, gender, profilePicture } = body;
+  const { name, email, phone, dob, gender, profilePicture, address, contactInfo } = body;
 
-  const consumer = await prisma.consumer.findUnique({
+  const patient = await prisma.patient.findUnique({
     where: { id },
     select: { userId: true },
   });
 
-  if (!consumer) return formatResponse(false, null, "Patient not found", 404);
+  if (!patient) return formatResponse(false, null, "Patient not found", 404);
 
   try {
+    // Update linked user
     await prisma.user.update({
-      where: { id: consumer.userId },
+      where: { id: patient.userId },
       data: {
         name,
         email,
@@ -100,13 +96,22 @@ async function handlePutClient(request: Request, { params }: { params: { id: str
       },
     });
 
-    const updatedConsumer = await prisma.consumer.findUnique({
+    // Update patient-specific info
+    await prisma.patient.update({
+      where: { id },
+      data: {
+        address: address || null,
+        contactInfo: contactInfo || null,
+      },
+    });
+
+    const updatedPatient = await prisma.patient.findUnique({
       where: { id },
       include: { user: true },
     });
 
-    const updatedPatient = await formatPatientData(updatedConsumer);
-    return formatResponse(true, updatedPatient, "Patient updated successfully", 200);
+    const formatted = await formatPatientData(updatedPatient);
+    return formatResponse(true, formatted, "Patient updated successfully", 200);
   } catch (err: any) {
     if (err.code === "P2002" && err.meta?.target?.includes("email")) {
       return formatResponse(false, null, "Email already exists.", 409);
@@ -115,26 +120,25 @@ async function handlePutClient(request: Request, { params }: { params: { id: str
   }
 }
 
-// --- DELETE /api/admin/clients/[id] ---
-async function handleDeleteClient(request: Request, { params }: { params: { id: string } }) {
-  
-
-
+// --- DELETE /api/admin/patients/[id] ---
+async function handleDeletePatient(request: Request, { params }: { params: { id: string } }) {
   const { id } = params;
-  const consumer = await prisma.consumer.findUnique({
+
+  const patient = await prisma.patient.findUnique({
     where: { id },
     select: { userId: true },
   });
 
-  if (!consumer) return formatResponse(false, null, "Patient not found", 404);
+  if (!patient) return formatResponse(false, null, "Patient not found", 404);
 
-  await prisma.consumer.delete({ where: { id } });
-  await prisma.user.delete({ where: { id: consumer.userId } });
+  // Delete patient record first, then user
+  await prisma.patient.delete({ where: { id } });
+  await prisma.user.delete({ where: { id: patient.userId } });
 
   return formatResponse(true, { deletedId: id }, "Patient deleted successfully", 200);
 }
 
 // --- Export with handler wrapper ---
-export const GET = withApiHandler(handleGetClient);
-export const PUT = withApiHandler(handlePutClient);
-export const DELETE = withApiHandler(handleDeleteClient);
+export const GET = withApiHandler(handleGetPatient);
+export const PUT = withApiHandler(handlePutPatient);
+export const DELETE = withApiHandler(handleDeletePatient);
