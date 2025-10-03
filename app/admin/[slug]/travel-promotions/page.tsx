@@ -120,11 +120,14 @@ export default function AdminPromotionsPage() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${apiBaseUrl}/admin/promotion-discount?companyId=${slug}`);
+      const response = await fetch(
+        `${apiBaseUrl}/admin/promotion-discount?companyId=${slug}`,
+        { method: 'GET', headers: { 'Content-Type': 'application/json', 'Credentials': 'include' } }
+      );
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      const data: PromotionData[] = await response.json();
+      const data: PromotionData[] = (await response.json()).data || [];
       setPromotions(data);
     } catch (err: any) {
       setError(err.message);
@@ -173,6 +176,7 @@ export default function AdminPromotionsPage() {
     try {
       const response = await fetch(`${apiBaseUrl}/admin/promotion-discount/${promotionToDelete.id}`, {
         method: 'DELETE',
+        headers: { 'Content-Type': 'application/json', 'Credentials': 'include' },
       });
 
       if (!response.ok) {

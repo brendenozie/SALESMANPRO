@@ -242,7 +242,7 @@ const TourPackageModal: React.FC<TourPackageModalProps> = ({ pkg, onSave, onClos
                 multiple
                 className="block w-full px-4 py-3 mt-1 transition-colors border border-slate-300 rounded-xl shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:outline-none h-32"
               >
-                {destinations.map((destination: Destination) => (
+                {destinations.length > 0 && destinations.map((destination: Destination) => (
                   <option key={destination.id} value={destination.id}>{destination.name}</option>
                 ))}
               </select>
@@ -326,12 +326,12 @@ export default function AdminPackages() {
     setIsLoading(true);
     try {
       const [packagesRes, destinationsRes] = await Promise.all([
-        fetch(`${apiBaseUrl}/admin/travel-packages?companyId=${slug}`),
-        fetch(`${apiBaseUrl}/admin/destinations?companyId=${slug}`)
+        fetch(`${apiBaseUrl}/admin/travel-packages?companyId=${slug}`, { credentials: 'include' }),
+        fetch(`${apiBaseUrl}/admin/destinations?companyId=${slug}`, { credentials: 'include' }),
       ]);
 
-      const packagesData: TourPackage[] = await packagesRes.json();
-      const destinationsData: Destination[] = await destinationsRes.json();
+      const packagesData: TourPackage[] = (await packagesRes.json()).data || [];
+      const destinationsData: Destination[] = (await destinationsRes.json()).data.data || [];
 
       if (!packagesRes.ok || !destinationsRes.ok) {
         throw new Error('Failed to fetch data');
@@ -368,7 +368,7 @@ export default function AdminPackages() {
     try {
       const response = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Credentials': 'include' },
         body: JSON.stringify(formData),
       });
 
@@ -401,6 +401,7 @@ export default function AdminPackages() {
     try {
       const response = await fetch(`${apiBaseUrl}/admin/travel-packages/${id}`, {
         method: 'DELETE',
+        headers: { 'Content-Type': 'application/json', 'Credentials': 'include' },
       });
 
       if (!response.ok) {

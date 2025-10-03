@@ -14,6 +14,9 @@ import {
   SparklesIcon, // Added for a touch of visual flair
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
+
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
 // --- Type Definitions ---
 export type Inquiry = {
@@ -95,33 +98,28 @@ const generateSampleInquiries = (): Inquiry[] => [
   },
 ];
 
-interface InquiriesPageProps {
-  params: {
-    slug: string;
-  };
-}
 
-export default function InquiriesPage({ params }: InquiriesPageProps) {
-  const { slug } = params; // This will likely be your companyId or admin ID
+export default function InquiriesPage() {
+
+  const { slug: companyId } = useParams<{ slug: string }>();
+
   const [inquiries, setInquiries] = useState<Inquiry[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('All');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
-
   const fetchInquiries = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
       // --- REPLACE WITH YOUR ACTUAL API CALL ---
-      const res = await fetch(`${apiUrl}/admin/inquiries?companyId=${encodeURIComponent(slug)}`, { cache: 'no-store' }); // Adjust endpoint as per your backend
+      const res = await fetch(`${apiUrl}/admin/inquiries?companyId=${encodeURIComponent(companyId)}`, { credentials: 'include' });
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.message || 'Failed to fetch inquiries.');
       }
-      const data: Inquiry[] = (await res.json()).results || (await res.json()).data; // Assuming your API returns results or data key
+      const data: Inquiry[] = (await res.json()).data.results || (await res.json()).data; // Assuming your API returns results or data key
       setInquiries(data.sort((a, b) => new Date(b.receivedAt).getTime() - new Date(a.receivedAt).getTime()));
 
       // --- KEEP FOR LOCAL TESTING IF NO API ---
@@ -134,7 +132,7 @@ export default function InquiriesPage({ params }: InquiriesPageProps) {
     } finally {
       setIsLoading(false);
     }
-  }, [slug, apiUrl]);
+  }, [companyId, apiUrl]);
 
   useEffect(() => {
     fetchInquiries();
@@ -149,6 +147,7 @@ export default function InquiriesPage({ params }: InquiriesPageProps) {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
+          'credentials': 'include',
         },
         body: JSON.stringify({ status: newStatus }),
       });
@@ -161,7 +160,7 @@ export default function InquiriesPage({ params }: InquiriesPageProps) {
         prev.map(inq => (inq.id === id ? { ...inq, status: newStatus } : inq))
       );
       // Re-fetch to ensure data consistency with backend if needed, or remove if optimistic update is sufficient
-      // fetchInquiries();
+      fetchInquiries();
     } catch (err: any) {
       setError(err.message || "Failed to update status.");
     } finally {
@@ -348,7 +347,7 @@ export default function InquiriesPage({ params }: InquiriesPageProps) {
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex items-center justify-end space-x-2">
                           <Link
-                            href={`/admin/${slug}/inquiries/${inquiry.id}`}
+                            href={`/admin/${companyId}/inquiries/${inquiry.id}`}
                             className="text-indigo-600 hover:text-indigo-800 p-2.5 rounded-full hover:bg-indigo-50 transition-all duration-200 transform hover:scale-110"
                             title="View Details"
                           >

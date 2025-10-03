@@ -31,6 +31,7 @@ import {
 import Link from 'next/link';
 import Image from 'next/image'; // For optimized image handling
 import toast, { Toaster } from 'react-hot-toast'; // For notifications
+import { useParams } from 'next/navigation';
 
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
@@ -594,8 +595,10 @@ interface AgentsPageProps {
   };
 }
 
-export default function AgentsPage({ params }: AgentsPageProps) {
-  const { slug } = params;
+export default function AgentsPage() {
+
+  const { slug: companyId } = useParams(); // Company slug from URL
+
   const [agents, setAgents] = useState<AgentProfile[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterActive, setFilterActive] = useState('All'); // 'All', 'true', 'false'
@@ -618,13 +621,16 @@ export default function AgentsPage({ params }: AgentsPageProps) {
     try {
       // TODO: Replace this with an actual fetch to your GET /api/admin/agents endpoint
       // Example:
-      const res = await fetch(`${apiUrl}?companyId=${slug}`);
-      if (!res.ok) {        
+      const res = await fetch(`${apiUrl}?companyId=${companyId}`, {
+        credentials: 'include'
+      });
+      if (!res.ok) {
         const data = generateSampleAgents();
         setAgents(data.sort((a, b) => new Date(b.joinedAt).getTime() - new Date(a.joinedAt).getTime()));
       }
       else{
-        const data: AgentProfile[] = await res.json();
+        const data: AgentProfile[] = (await res.json()).data;
+        console.log("Fetched agents:", data);
         setAgents(data.sort((a, b) => new Date(b.joinedAt).getTime() - new Date(a.joinedAt).getTime()));
       }
 
@@ -668,7 +674,10 @@ export default function AgentsPage({ params }: AgentsPageProps) {
         // Update existing agent (PUT request)
         response = await fetch(`${apiUrl}/${editingAgent.id}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'Credentials': 'include'
+          },
           body: JSON.stringify({
             name: formData.name,
             email: formData.email,
@@ -685,7 +694,7 @@ export default function AgentsPage({ params }: AgentsPageProps) {
         // Add new agent (POST request)
         response = await fetch(apiUrl, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'Credentials': 'include' },
           body: JSON.stringify({
             name: formData.name,
             email: formData.email,
@@ -696,7 +705,7 @@ export default function AgentsPage({ params }: AgentsPageProps) {
             isActive: formData.isActive,
             specialties: formData.specialties,
             regions: formData.regions,
-            companyId: slug, // TODO: Replace with actual company ID logic
+            companyId: companyId, // TODO: Replace with actual company ID logic
           }),
         });
       }
@@ -735,6 +744,7 @@ export default function AgentsPage({ params }: AgentsPageProps) {
     try {
       const response = await fetch(`${apiUrl}/${agentToDelete.id}`, {
         method: 'DELETE',
+        headers: { 'Content-Type': 'application/json', 'Credentials': 'include' },
       });
 
       if (!response.ok) {
@@ -895,7 +905,7 @@ export default function AgentsPage({ params }: AgentsPageProps) {
                 <AgentProfileCard
                   key={agent.id}
                   agent={agent}
-                  adminSlug={slug}
+                  adminSlug={companyId?.toString() || 'company'} // Fallback slug
                   onEdit={handleEditAgent} // Pass the handler to open edit modal
                   onDelete={handleDeleteClick}
                 />

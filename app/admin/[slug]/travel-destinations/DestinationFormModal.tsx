@@ -267,7 +267,7 @@ export function DestinationFormModal({ isOpen, onClose, onSuccess, destination, 
     try {
       const response = await fetch(apiEndpoint, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Credentials': 'include' },
         body: JSON.stringify(formData),
       });
 
@@ -484,6 +484,7 @@ export function DeleteConfirmModal({ isOpen, onClose, onSuccess, destination }: 
     try {
       const response = await fetch(`${apiBaseUrl}/admin/destinations/${destination.id}`, {
         method: 'DELETE',
+        headers: { 'Content-Type': 'application/json', 'Credentials': 'include' },
       });
       if (!response.ok) {
         const errorData = await response.json();

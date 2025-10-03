@@ -3,7 +3,6 @@ import prisma from "@/server/db/prismadb";
 import bcrypt from "bcryptjs";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
-import { verifyAuth } from "@/lib/verifyAuth";
 
 // Define the ROLE enum if not already globally available
 enum ROLE {
@@ -12,18 +11,8 @@ enum ROLE {
   // ... other roles
 }
 
-// Mock authentication/authorization for demonstration
-const authorizeAdmin = async (req: Request) => {
-  // TODO: Replace with real authentication/authorization
-  return { authorized: true, status: 200, message: "authorized" };
-};
-
 // --- GET: Fetch all clients ---
 const getClients = async (req: Request) => {
-  const authResult = await authorizeAdmin(req);
-  if (!authResult.authorized) {
-    return formatResponse(false, null, authResult.message, authResult.status);
-  }
 
   const { searchParams } = new URL(req.url);
   const companyId = searchParams.get("companyId");
@@ -57,11 +46,7 @@ const getClients = async (req: Request) => {
 
 // --- POST: Create a new client ---
 const createClient = async (req: Request) => {
-  const authResult = await authorizeAdmin(req);
-  if (!authResult.authorized) {
-    return formatResponse(false, null, authResult.message, authResult.status);
-  }
-
+  
   const {
     name,
     email,

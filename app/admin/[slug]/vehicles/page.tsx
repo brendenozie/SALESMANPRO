@@ -20,6 +20,9 @@ import {
   ClockIcon,
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
+import { useParams } from "next/navigation";
+
+
 
 // Assuming these components are correctly implemented and styled with Tailwind
 import AddToProductMarketModal from "@/components/AddToProductMarketModal";
@@ -36,8 +39,8 @@ interface VehicleManagementPageProps {
   };
 }
 
-export default function VehicleManagementPage({ params }: VehicleManagementPageProps) {
-  const companyId = params.slug;
+export default function VehicleManagementPage() {
+  const { slug: companyId  } = useParams();
 
   const [vehicles, setVehicles] = useState<MarketListingForm[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -58,13 +61,16 @@ export default function VehicleManagementPage({ params }: VehicleManagementPageP
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/admin/get-store-categories?companyId=${companyId}`, { cache: 'no-store' });
+      const res = await fetch(`${apiUrl}/admin/get-store-categories?companyId=${companyId}`, 
+        { headers: { 'Content-Type': 'application/json', 'Credentials': 'include' } });
+
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.message || "Failed to fetch categories.");
       }
       const resJson = await res.json();
-      const data = resJson.results || resJson.data; // Handle both cases
+      console.log("[VehicleManagementPage] Fetched categories:", resJson);
+      const data = resJson.results || resJson.data.results; // Handle both cases
 
       if (!data) {
         throw new Error('Invalid response structure for categories');
@@ -118,13 +124,14 @@ export default function VehicleManagementPage({ params }: VehicleManagementPageP
   // --- Data Fetching for Locations ---
   const fetchLocations = useCallback(async () => {
     try {
-      const response = await fetch(`${apiUrl}/admin/locations`);
+      const response = await fetch(`${apiUrl}/admin/locations`, { headers: { 'Content-Type': 'application/json', 'Credentials': 'include' } });
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || `HTTP error! Status: ${response.status}`);
       }
       const data = await response.json();
-      setLocations(data.data || []);
+      console.log("[VehicleManagementPage] Fetched locations:", data);
+      setLocations(data.data.data || []);
     } catch (err: any) {
       // setError(`Failed to fetch locations: ${err.message}`); // Only set error if needed for UI
     }
@@ -139,13 +146,14 @@ export default function VehicleManagementPage({ params }: VehicleManagementPageP
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${apiUrl}/admin/my-market-place?companyId=${encodeURIComponent(companyId)}`);
+      const response = await fetch(`${apiUrl}/admin/my-market-place?companyId=${companyId}`, { headers: { 'Content-Type': 'application/json', 'Credentials': 'include' } });
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || `HTTP error! Status: ${response.status}`);
       }
       const json = await response.json();
-      const marketListings = json.results as MarketListingForm[];
+      console.log("[VehicleManagementPage] Fetched marketplace products:", json);
+      const marketListings = json.data.results as MarketListingForm[];
       setVehicles(marketListings);
     } catch (err: any) {
       console.error("[VehicleManagementPage] Failed to fetch marketplace products:", err);
@@ -517,7 +525,7 @@ export default function VehicleManagementPage({ params }: VehicleManagementPageP
           showRequestProductModal={showAddToMarketProductModal}
           setShowRequestProductModal={setShowAddToMarketProductModal}
           categories={categories ?? []}
-          companyId={companyId}
+          companyId={companyId?.toString() || ''}
           locations={locations ?? []}
           marketListItem={selectedVehicle}
           // onSave={handleSaveVehicle}

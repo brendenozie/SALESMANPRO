@@ -5,6 +5,7 @@ import {
   NewspaperIcon, PlusCircleIcon, PencilIcon, TrashIcon, EyeIcon, CloudArrowUpIcon
 } from '@heroicons/react/24/solid';
 import { motion } from 'framer-motion';
+import { useParams } from 'next/navigation';
 
 // --- Type Definitions ---
 interface BlogPost {
@@ -37,6 +38,9 @@ const initialBlogPosts: BlogPost[] = [
 ];
 
 export default function AdminBlog() {
+  const params = useParams();
+  const companyId = params.slug || 'default-slug'; // Fallback slug
+  // In a real app, you would fetch blog posts based on the slug (e.g., destination or category)
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>(initialBlogPosts);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [currentPost, setCurrentPost] = useState<BlogPost | null>(null); // For edit mode

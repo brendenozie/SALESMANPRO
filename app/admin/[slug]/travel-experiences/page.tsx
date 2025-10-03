@@ -20,6 +20,7 @@ import {
   ClockIcon,
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
+import { useParams } from 'next/navigation';
 
 // Assuming these components are correctly implemented and styled with Tailwind
 import AddToProductMarketModal from "@/components/AddToProductMarketModal";
@@ -36,8 +37,9 @@ interface TravelExperiencesManagementPageProps {
   };
 }
 
-export default function TravelExperiencesManagementPage({ params }: TravelExperiencesManagementPageProps) {
-  const companyId = params.slug;
+export default function TravelExperiencesManagementPage() {
+  const { slug } = useParams();
+  const companyId = slug;
 
   const [travelExperiencess, setTravelExperiencess] = useState<MarketListingForm[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -58,13 +60,13 @@ export default function TravelExperiencesManagementPage({ params }: TravelExperi
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/admin/get-store-categories?companyId=${companyId}`, { cache: 'no-store' });
+      const res = await fetch(`${apiUrl}/admin/get-store-categories?companyId=${companyId}`, { credentials: 'include' });
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.message || "Failed to fetch categories.");
       }
-      const resJson = await res.json();
-      const data = resJson.results || resJson.data; // Handle both cases
+      const resJson = (await res.json()).data.results;
+      const data = resJson; //.results || resJson.data; // Handle both cases
 
       if (!data) {
         throw new Error('Invalid response structure for categories');
@@ -120,11 +122,11 @@ export default function TravelExperiencesManagementPage({ params }: TravelExperi
     try {
       const response = await fetch(`${apiUrl}/admin/locations`);
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = (await response.json()).data;
         throw new Error(errorData.error || `HTTP error! Status: ${response.status}`);
       }
-      const data = await response.json();
-      setLocations(data.data || []);
+      const data = (await response.json()).data;
+      setLocations(data || []);
     } catch (err: any) {
       // setError(`Failed to fetch locations: ${err.message}`); // Only set error if needed for UI
     }
@@ -139,12 +141,12 @@ export default function TravelExperiencesManagementPage({ params }: TravelExperi
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${apiUrl}/admin/my-market-place?companyId=${encodeURIComponent(companyId)}`);
+      const response = await fetch(`${apiUrl}/admin/my-market-place?companyId=${companyId}`, { credentials: 'include' });
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || `HTTP error! Status: ${response.status}`);
       }
-      const json = await response.json();
+      const json = (await response.json()).data;
       const marketListings = json.results as MarketListingForm[];
       setTravelExperiencess(marketListings);
     } catch (err: any) {
@@ -517,7 +519,7 @@ export default function TravelExperiencesManagementPage({ params }: TravelExperi
           showRequestProductModal={showAddToMarketProductModal}
           setShowRequestProductModal={setShowAddToMarketProductModal}
           categories={categories ?? []}
-          companyId={companyId}
+          companyId={companyId?.toString() ?? ''}
           locations={locations ?? []}
           marketListItem={selectedTravelExperiences}
           // onSave={handleSaveTravelExperiences}

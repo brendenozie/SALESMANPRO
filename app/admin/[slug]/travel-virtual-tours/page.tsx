@@ -66,11 +66,14 @@ export default function AdminVirtualToursPage() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${apiBaseUrl}/admin/virtual-tours?companyId=${slug}`);
+      const response = await fetch(`${apiBaseUrl}/admin/virtual-tours?companyId=${slug}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json', 'Credentials': 'include' },
+      });
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      const data: VirtualTourData[] = await response.json();
+      const data: VirtualTourData[] = ( await response.json()).data;
       setVirtualTours(data);
     } catch (err: any) {
       setError(err.message);
@@ -120,6 +123,7 @@ export default function AdminVirtualToursPage() {
     try {
       const response = await fetch(`${apiBaseUrl}/admin/virtual-tours/${tourToDelete.id}`, {
         method: 'DELETE',
+        headers: { 'Content-Type': 'application/json', 'Credentials': 'include' },
       });
 
       if (!response.ok) {

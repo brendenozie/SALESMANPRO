@@ -63,12 +63,12 @@ const buildDestinationTree = (destinations: Destination[]): Destination[] => {
   const tree: Destination[] = [];
 
   // First, map all destinations by their ID and initialize children array
-  destinations.forEach(destination => {
+  destinations?.forEach(destination => {
     destinationMap[destination.id] = { ...destination, children: [] };
   });
 
   // Then, build the tree structure by assigning children to their parents
-  destinations.forEach(destination => {
+  destinations?.forEach(destination => {
     if (destination.parentId && destinationMap[destination.parentId]) {
       // This logic assumes a Destination can be a child of another Destination,
       // which is no longer the case per the user's latest request.
@@ -111,24 +111,27 @@ export default function DestinationManagementPage() {
     setError(null);
     try {
       const [destinationsResponse, locationsResponse] = await Promise.all([
-        fetch(`${apiBaseUrl}/admin/destinations?companyId=${slug}`),
-        fetch(`${apiBaseUrl}/admin/locationsv2?companyId=${slug}`)
+        fetch(`${apiBaseUrl}/admin/destinations?companyId=${slug}`,{ credentials: 'include' }),
+        fetch(`${apiBaseUrl}/admin/locationsv2?companyId=${slug}`,{ credentials: 'include' })
       ]);
 
       if (!destinationsResponse.ok) {
-        const errorData = await destinationsResponse.json();
+        const errorData = (await destinationsResponse.json()).data;
         throw new Error(errorData.error || `HTTP error! Status: ${destinationsResponse.status}`);
       }
       if (!locationsResponse.ok) {
-        const errorData = await locationsResponse.json();
+        const errorData = (await locationsResponse.json()).data;
         throw new Error(errorData.error || `HTTP error! Status: ${locationsResponse.status}`);
       }
 
-      const destinationsData = await destinationsResponse.json();
-      const locationsData = await locationsResponse.json();
+      const destinationsData = (await destinationsResponse.json()).data.data;
+      const locationsData = (await locationsResponse.json()).data.data;
+
+      console.log("Fetched Destinations:", destinationsData);
+      console.log("Fetched Locations:", locationsData);
 
       setDestinations(destinationsData || []);
-      setLocations(locationsData.data || []);
+      setLocations(locationsData || []);
     } catch (err: any) {
       setError(`Failed to fetch data: ${err.message}`);
     } finally {

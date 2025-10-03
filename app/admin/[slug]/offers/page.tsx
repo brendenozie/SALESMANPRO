@@ -18,12 +18,14 @@ import {
   TrashIcon,
   CalendarDaysIcon, // For delete button
 } from '@heroicons/react/24/outline';
-import Link from 'next/link'; // Keep Link for potential direct links if needed, though we'll use buttons for modals
+import { useParams } from 'next/navigation';
 
 // Import the new modal components
 import { OfferFormModal } from './OfferFormModal';
 import { OfferDetailsModal } from './OfferDetailsModal';
 
+// Use a proper environment variable for your API base URL
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api'; // Ensure this points to your actual backend API
 
 // --- Type Definitions ---
 // Ensure this type matches your backend API's expected structure for OfferContract
@@ -51,8 +53,8 @@ interface OffersPageProps {
   };
 }
 
-export default function OffersPage({ params }: OffersPageProps) {
-  const { adminSlug } = params;
+export default function OffersPage() {
+  const { slug: adminSlug } = useParams() as { slug: string };
   const [offers, setOffers] = useState<OfferContract[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('All');
@@ -67,20 +69,18 @@ export default function OffersPage({ params }: OffersPageProps) {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [offerToView, setOfferToView] = useState<OfferContract | null>(null);
 
-  // Use a proper environment variable for your API base URL
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api'; // Ensure this points to your actual backend API
-
   const fetchOffers = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
       // Replace with your actual API endpoint for fetching offers
-      const res = await fetch(`${apiUrl}/admin/offers?companyId=${encodeURIComponent(adminSlug)}`, { cache: 'no-store' });
+      const res = await fetch(`${apiUrl}/admin/offers?companyId=${encodeURIComponent(adminSlug)}`, { credentials: 'include' });
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.message || 'Failed to fetch offers.');
       }
-      const data = (await res.json()).results; // Assuming your API returns { results: [...] }
+      const data = (await res.json()).data.results; // Assuming your API returns { data: [...] }
+      console.log("Fetched offers:", data);
       setOffers(data.sort((a: OfferContract, b: OfferContract) => new Date(b.offerDate).getTime() - new Date(a.offerDate).getTime()));
     } catch (err: any) {
       console.error("Error fetching offers:", err);
@@ -125,6 +125,7 @@ export default function OffersPage({ params }: OffersPageProps) {
       // Replace with your actual API endpoint for deleting an offer
       const res = await fetch(`${apiUrl}/admin/offers/${encodeURIComponent(offerToDelete.id)}`, {
         method: 'DELETE',
+        headers: { 'Content-Type': 'application/json', 'credentials': 'include' },
       });
       if (!res.ok) {
         const errorData = await res.json();
@@ -152,7 +153,7 @@ export default function OffersPage({ params }: OffersPageProps) {
         // Replace with your actual API endpoint for updating an offer
         res = await fetch(`${apiUrl}/admin/offers/${encodeURIComponent(offerToEdit.id)}`, {
           method: 'PATCH', // Or PUT, depending on your API
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'credentials': 'include' },
           body: JSON.stringify(formData),
         });
       } else {
@@ -160,7 +161,7 @@ export default function OffersPage({ params }: OffersPageProps) {
         // Replace with your actual API endpoint for creating a new offer
         res = await fetch(`${apiUrl}/admin/offers`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'credentials': 'include' },
           body: JSON.stringify({ ...formData, companyId: adminSlug }), // Ensure companyId is sent for creation
         });
       }
@@ -194,7 +195,7 @@ export default function OffersPage({ params }: OffersPageProps) {
       // Replace with your actual API endpoint for updating offer status
       const res = await fetch(`${apiUrl}/admin/offers/${encodeURIComponent(offerId)}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'credentials': 'include' },
         body: JSON.stringify(payload),
       });
       if (!res.ok) {

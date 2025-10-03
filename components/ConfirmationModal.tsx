@@ -23,6 +23,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   confirmText = 'Confirm',
   cancelText = 'Cancel',
 }) => {
+  if (!isOpen) return null;
   // Since it's being conditionally rendered, we don't need `if (!isOpen)`
   return (
     <AnimatePresence>

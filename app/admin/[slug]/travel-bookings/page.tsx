@@ -205,7 +205,7 @@ const BookingCard = ({ booking, onEdit, onDelete, onUpdateStatus }: {
 };
 
 
-export default function AdminBookingsPage({ params }: AdminBookingsPageProps) {
+export default function AdminBookingsPage() {
   const { slug } = useParams();
 
   const [bookings, setBookings] = useState<TravelBookingData[]>([]);
@@ -221,11 +221,15 @@ export default function AdminBookingsPage({ params }: AdminBookingsPageProps) {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${apiBaseUrl}/admin/travel-bookings?companyId=${slug}`);
+      const response = await fetch(`${apiBaseUrl}/admin/travel-bookings?companyId=${slug}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json', 'Credentials': 'include' }
+      });
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      const data: TravelBookingData[] = await response.json();
+      const data: TravelBookingData[] = (await response.json()).data;
+      console.log("Fetched bookings:", data);
       setBookings(data);
     } catch (err: any) {
       setError(err.message);
@@ -278,6 +282,7 @@ export default function AdminBookingsPage({ params }: AdminBookingsPageProps) {
     try {
       const response = await fetch(`${apiBaseUrl}/admin/travel-bookings/${bookingToDelete.id}`, {
         method: 'DELETE',
+        headers: { 'Content-Type': 'application/json', 'Credentials': 'include' }
       });
 
       if (!response.ok) {
@@ -307,6 +312,7 @@ export default function AdminBookingsPage({ params }: AdminBookingsPageProps) {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'Credentials': 'include'
         },
         body: JSON.stringify({ ...bookingToUpdate, status: newStatus }),
       });

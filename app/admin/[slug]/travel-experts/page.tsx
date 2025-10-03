@@ -70,11 +70,15 @@ export default function AdminExpertsPage() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${apiBaseUrl}/admin/experts?companyId=${slug}`);
+      const response = await fetch(`${apiBaseUrl}/admin/experts?companyId=${slug}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json', 'Credentials': 'include' }
+      } );
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-      const data: ExpertData[] = await response.json();
+      const data: ExpertData[] = (await response.json()).data.data;
+      console.log("Fetched experts:", data);
       setExperts(data);
     } catch (err: any) {
       setError(err.message);
@@ -124,10 +128,11 @@ export default function AdminExpertsPage() {
     try {
       const response = await fetch(`${apiBaseUrl}/admin/experts/${expertToDelete.id}`, {
         method: 'DELETE',
+        headers: { 'Content-Type': 'application/json', 'Credentials': 'include' }
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = (await response.json()).data;
         throw new Error(errorData.message || `Failed to delete expert ${expertToDelete.name}.`);
       }
 

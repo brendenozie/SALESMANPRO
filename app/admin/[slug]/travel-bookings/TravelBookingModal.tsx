@@ -93,18 +93,22 @@ const TravelBookingModal: React.FC<TravelBookingModalProps> = ({ isOpen, onClose
       setError(null);
       try {
         const [clientsRes, tourPackagesRes, destinationsRes] = await Promise.all([
-          fetch(`${apiBaseUrl}/admin/travel-users?companyId=${slug}`),
-          fetch(`${apiBaseUrl}/admin/travel-packages?companyId=${slug}`),
-          fetch(`${apiBaseUrl}/admin/destinations?companyId=${slug}`),
+          fetch(`${apiBaseUrl}/admin/travel-users?companyId=${slug}`, { credentials: 'include' }),
+          fetch(`${apiBaseUrl}/admin/travel-packages?companyId=${slug}`, { credentials: 'include' }),
+          fetch(`${apiBaseUrl}/admin/destinations?companyId=${slug}`, { credentials: 'include' }),
         ]);
 
-        const clientsData = await clientsRes.json();
-        const tourPackagesData = await tourPackagesRes.json();
-        const destinationsData = await destinationsRes.json();
+        const clientsData = ( await clientsRes.json()).data;
+        const tourPackagesData = ( await tourPackagesRes.json()).data;
+        const destinationsData = ( await destinationsRes.json()).data.data;
 
         if (!clientsRes.ok) throw new Error(clientsData.message || 'Failed to fetch clients');
         if (!tourPackagesRes.ok) throw new Error(tourPackagesData.message || 'Failed to fetch tour packages');
         if (!destinationsRes.ok) throw new Error(destinationsData.message || 'Failed to fetch destinations');
+
+        console.log("Fetched clients:", clientsData);
+        console.log("Fetched tour packages:", tourPackagesData);
+        console.log("Fetched destinations:", destinationsData); 
 
         setClients(clientsData.map((c: any) => ({ id: c.id, name: c.name, email: c.email })));
         setTourPackages(tourPackagesData.map((p: any) => ({ id: p.id, name: p.name })));
@@ -179,6 +183,7 @@ const TravelBookingModal: React.FC<TravelBookingModalProps> = ({ isOpen, onClose
         method: method,
         headers: {
           'Content-Type': 'application/json',
+          'Credentials': 'include'
         },
         body: JSON.stringify({
           title,

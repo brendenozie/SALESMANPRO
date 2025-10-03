@@ -16,12 +16,13 @@ import {
   BriefcaseIcon, // For agent icon
   SparklesIcon, // Added for empty state flair
 } from '@heroicons/react/24/outline';
-import Link from 'next/link';
+import { useParams } from 'next/navigation';
 
 // Import the new modal components
 import { ShowingFormModal } from './ShowingFormModal';
 import { ShowingDetailsModal } from './ShowingDetailsModal';
 
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
 // --- Type Definitions ---
 export type Showing = {
@@ -105,8 +106,9 @@ interface ShowingsPageProps {
   };
 }
 
-export default function ShowingsPage({ params }: ShowingsPageProps) {
-  const { slug } = params;
+export default function ShowingsPage() {
+  const { slug: companyId } = useParams() as { slug: string }; // Get the company slug from URL params
+
   const [showings, setShowings] = useState<Showing[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('All');
@@ -121,18 +123,17 @@ export default function ShowingsPage({ params }: ShowingsPageProps) {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showingToView, setShowingToView] = useState<Showing | null>(null);
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
-
   const fetchShowings = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/admin/showings?companyId=${encodeURIComponent(slug)}`, { cache: 'no-store' });
+      const res = await fetch(`${apiUrl}/admin/showings?companyId=${encodeURIComponent(companyId)}`, { credentials: 'include' });
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.message || 'Failed to fetch showings.');
       }
-      const data = (await res.json()).results;
+      const data = (await res.json()).data;
+      console.log("Fetched showings:", data); 
       setShowings(data.sort((a: Showing, b: Showing) => new Date(b.dateTime).getTime() - new Date(a.dateTime).getTime()));
     } catch (err: any) {
       console.error("Error fetching showings:", err);
@@ -140,7 +141,7 @@ export default function ShowingsPage({ params }: ShowingsPageProps) {
     } finally {
       setIsLoading(false);
     }
-  }, [slug, apiUrl]);
+  }, [companyId, apiUrl]);
 
   useEffect(() => {
     fetchShowings();
@@ -176,6 +177,7 @@ export default function ShowingsPage({ params }: ShowingsPageProps) {
     try {
       const res = await fetch(`${apiUrl}/admin/showings/${encodeURIComponent(showingToDelete.id)}`, {
         method: 'DELETE',
+        headers: { 'Content-Type': 'application/json', 'credentials': 'include' },
       });
       if (!res.ok) {
         const errorData = await res.json();
@@ -202,14 +204,14 @@ export default function ShowingsPage({ params }: ShowingsPageProps) {
         // Edit existing showing
         res = await fetch(`${apiUrl}/admin/showings/${encodeURIComponent(showingToEdit.id)}`, {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'credentials': 'include' },
           body: JSON.stringify(formData),
         });
       } else {
         // Create new showing
         res = await fetch(`${apiUrl}/admin/showings`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'credentials': 'include' },
           body: JSON.stringify(formData),
         });
       }
@@ -235,7 +237,7 @@ export default function ShowingsPage({ params }: ShowingsPageProps) {
     try {
       const res = await fetch(`${apiUrl}/admin/showings/${encodeURIComponent(showingId)}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'credentials': 'include' },
         body: JSON.stringify({ status: newStatus }),
       });
       if (!res.ok) {
@@ -285,11 +287,11 @@ export default function ShowingsPage({ params }: ShowingsPageProps) {
         <div className="flex flex-col">
           <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-900 tracking-tight leading-tight flex items-center">
             <CalendarDaysIcon className="h-10 w-10 text-green-600 mr-4 drop-shadow-md" />
-            Property Showings
+             Viewing Schedule 
             <span className="ml-4 text-purple-600 text-xl sm:text-2xl transform rotate-6 animate-bounce-slight">🏠</span>
           </h1>
           <p className="text-lg text-gray-600 mt-3 max-w-2xl">
-            Efficiently manage and track all property viewings and appointments.
+            Efficiently manage and track all viewings and appointments.
           </p>
         </div>
         <button
@@ -534,7 +536,7 @@ export default function ShowingsPage({ params }: ShowingsPageProps) {
         showing={showingToEdit ?? undefined} // Pass the showing for edit mode, undefined if null
         isLoading={isLoading}
         error={error}
-        adminSlug={slug} // Pass slug for companyId
+        adminSlug={companyId} // Pass slug for companyId
       />
 
       {/* View Showing Details Modal */}
