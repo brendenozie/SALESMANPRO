@@ -371,11 +371,13 @@ export default function SponsorsPage() {
   const fetchSponsors = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${apiBaseUrl}/admin/sponsors?companyId=${companyId}`);
+      const response = await fetch(`${apiBaseUrl}/admin/sponsors?companyId=${companyId}`,
+        { credentials: 'include' }
+      );
       if (!response.ok) {
         throw new Error('Failed to fetch sponsors');
       }
-      const fetchedSponsors: Sponsor[] = await response.json();
+      const fetchedSponsors: Sponsor[] = (await response.json()).data || [];
       setSponsors(fetchedSponsors);
     } catch (error) {
       console.log("Failed to fetch sponsors:", error);
@@ -389,7 +391,7 @@ export default function SponsorsPage() {
     try {
       const response = await fetch(`${apiBaseUrl}/admin/sponsors`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Credentials': 'include' },
         body: JSON.stringify({...sponsorData, companyId}),
       });
 
@@ -416,14 +418,14 @@ export default function SponsorsPage() {
     try {
       const response = await fetch(`${apiBaseUrl}/admin/sponsors/${updatedSponsorData.id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Credentials': 'include' },
         body: JSON.stringify(updatedSponsorData),
       });
 
       if (!response.ok) {
         throw new Error('Failed to update sponsor');
       }
-      const updatedSponsor: Sponsor = await response.json();
+      const updatedSponsor: Sponsor = (await response.json()).data;
       setSponsors(prev => prev.map(s => s.id === updatedSponsor.id ? updatedSponsor : s));
       setIsEditModalOpen(false);
     } catch (error) {
@@ -444,6 +446,7 @@ export default function SponsorsPage() {
     try {
       const response = await fetch(`${apiBaseUrl}/admin/sponsors/${selectedSponsor.id}`, {
         method: 'DELETE',
+        headers: { 'Credentials': 'include' }
       });
 
       if (!response.ok) {

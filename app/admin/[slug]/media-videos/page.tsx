@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PlusIcon, PencilIcon, TrashIcon, FilmIcon, ArrowPathIcon, XMarkIcon } from '@heroicons/react/24/solid';
 import Image, { ImageLoaderProps } from 'next/image';
+import { useParams } from 'next/navigation';
 
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
@@ -314,6 +315,9 @@ const ViewAlbumModal: React.FC<ViewAlbumModalProps> = ({ isOpen, onClose, album,
 
 // --- Main Page Component ---
 export default function VideoGalleryPage() {
+
+  const { slug } = useParams(); // Assuming useParams is available in your environment
+  
   const [videoAlbums, setVideoAlbums] = useState<VideoAlbum[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -331,11 +335,16 @@ export default function VideoGalleryPage() {
   const fetchVideoAlbums = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${apiBaseUrl}/video-albums`);
+      const response = await fetch(`${apiBaseUrl}/admin/video-albums`,
+        { method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include', // include cookies for authentication
+        }
+      );
       if (!response.ok) {
         throw new Error('Failed to fetch video albums');
       }
-      const fetchedAlbums: VideoAlbum[] = await response.json();
+      const fetchedAlbums: VideoAlbum[] = (await response.json()).data || [];
       setVideoAlbums(fetchedAlbums);
     } catch (error) {
       console.error("Failed to fetch video albums:", error);
@@ -363,10 +372,10 @@ export default function VideoGalleryPage() {
         status: 'PROCESSING',
       }));
       
-      const response = await fetch(`${apiBaseUrl}/video-albums`, {
+      const response = await fetch(`${apiBaseUrl}/admin/video-albums`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...albumData, videoDetails }),
+        headers: { 'Content-Type': 'application/json', 'Credentials': 'include' },
+        body: JSON.stringify({ ...albumData, videoDetails, companyId: slug }),
       });
 
       if (!response.ok) {
@@ -391,16 +400,16 @@ export default function VideoGalleryPage() {
     if (!selectedAlbum) return;
     setIsSubmitting(true);
     try {
-      const response = await fetch(`${apiBaseUrl}/video-albums/${selectedAlbum.id}`, {
+      const response = await fetch(`${apiBaseUrl}/admin/video-albums/${selectedAlbum.id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Credentials': 'include'  },
         body: JSON.stringify(updatedAlbumData),
       });
 
       if (!response.ok) {
         throw new Error('Failed to update video album');
       }
-      const updatedAlbum: VideoAlbum = await response.json();
+      const updatedAlbum: VideoAlbum = (  await response.json()).data;
       setVideoAlbums(prev => prev.map(a => a.id === updatedAlbum.id ? updatedAlbum : a));
       setIsEditModalOpen(false);
     } catch (error) {
@@ -419,8 +428,9 @@ export default function VideoGalleryPage() {
     if (!selectedAlbum) return;
     setIsSubmitting(true);
     try {
-      const response = await fetch(`${apiBaseUrl}/video-albums/${selectedAlbum.id}`, {
+      const response = await fetch(`${apiBaseUrl}/admin/video-albums/${selectedAlbum.id}`, {
         method: 'DELETE',
+        credentials: 'include',
       });
 
       if (!response.ok) {
@@ -455,8 +465,9 @@ export default function VideoGalleryPage() {
     if (!selectedVideo || !selectedAlbum) return;
     setIsSubmitting(true);
     try {
-      const response = await fetch(`${apiBaseUrl}/videos/${selectedVideo.id}`, {
+      const response = await fetch(`${apiBaseUrl}/admin/videos/${selectedVideo.id}`, {
         method: 'DELETE',
+        credentials: 'include',
       });
 
       if (!response.ok) {

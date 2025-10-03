@@ -12,6 +12,7 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/solid";
 import Image, { ImageLoaderProps } from "next/image";
+import { useParams } from "next/navigation";  
 
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
@@ -308,6 +309,9 @@ const ViewAlbumModal: React.FC<{
    Main Page
    --------------------------- */
 export default function PhotoGalleryPage(): JSX.Element {
+  const params = useParams();
+  const adminSlug = params?.slug || "";
+
   const [albums, setAlbums] = useState<Album[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [submitting, setSubmitting] = useState<boolean>(false);
@@ -329,9 +333,14 @@ export default function PhotoGalleryPage(): JSX.Element {
   const fetchAlbums = useCallback(async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/photo-albums");
+      const res = await fetch(`${apiBaseUrl}/admin/photo-albums`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json", },
+        credentials: "include",  // include cookies for authentication
+      });
       if (!res.ok) throw new Error("Failed to fetch");
-      const data: Album[] = await res.json();
+      const data: Album[] = (await res.json()).data || [];
+      console.log("Fetched albums:", data);
       setAlbums(data);
     } catch (err) {
       console.error(err);
@@ -350,13 +359,13 @@ export default function PhotoGalleryPage(): JSX.Element {
     try {
       // In a real app: upload files to S3 & get URLs. Here we simulate placeholder URLs.
       const photoUrls = files.map((f, i) => `https://placehold.co/800x600/1e293b/d1d5db?text=${encodeURIComponent(albumData.title)}+${i + 1}`);
-      const res = await fetch("/api/photo-albums", {
+      const res = await fetch(`${apiBaseUrl}/admin/photo-albums`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", 'Credentials': 'include' },
         body: JSON.stringify({ ...albumData, photoUrls }),
       });
       if (!res.ok) throw new Error("Failed to add album");
-      const added: Album = await res.json();
+      const added: Album = (  await res.json()).data;
       setAlbums(prev => [...prev, added]);
       setIsUploadOpen(false);
     } catch (err) {
@@ -376,13 +385,13 @@ export default function PhotoGalleryPage(): JSX.Element {
   const handleUpdateAlbum: PhotoAlbumFormEditSubmit = async (updated) => {
     setSubmitting(true);
     try {
-      const res = await fetch(`${apiBaseUrl}/photo-albums/${updated.id}`, {
+      const res = await fetch(`${apiBaseUrl}/admin/photo-albums/${updated.id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", 'Credentials': 'include' },
         body: JSON.stringify(updated),
       });
       if (!res.ok) throw new Error("Failed to update album");
-      const updatedAlbum: Album = await res.json();
+      const updatedAlbum: Album = (await res.json()).data;
       setAlbums(prev => prev.map(a => a.id === updatedAlbum.id ? updatedAlbum : a));
       setIsEditOpen(false);
       setAlbumBeingEdited(null);
@@ -414,7 +423,7 @@ export default function PhotoGalleryPage(): JSX.Element {
     if (!albumToDelete) return;
     setSubmitting(true);
     try {
-      const res = await fetch(`${apiBaseUrl}/photo-albums/${albumToDelete.id}`, { method: "DELETE" });
+      const res = await fetch(`${apiBaseUrl}/admin/photo-albums/${albumToDelete.id}`, { method: "DELETE", credentials: "include" });
       if (!res.ok) throw new Error("Failed to delete");
       setAlbums(prev => prev.filter(a => a.id !== albumToDelete.id));
       setAlbumToDelete(null);
@@ -436,7 +445,7 @@ export default function PhotoGalleryPage(): JSX.Element {
     if (!photoToDelete || !albumBeingViewed) return;
     setSubmitting(true);
     try {
-      const res = await fetch(`${apiBaseUrl}/photos/${photoToDelete.id}`, { method: "DELETE" });
+      const res = await fetch(`${apiBaseUrl}/admin/photos/${photoToDelete.id}`, { method: "DELETE", credentials: "include" });
       if (!res.ok) throw new Error("Failed to delete photo");
       setAlbums(prev => prev.map(a => ({
         ...a,

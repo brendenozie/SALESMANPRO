@@ -5,10 +5,10 @@ import { verifyAuth } from "@/lib/verifyAuth";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-/**
- * @route GET /api/photo-albums
- * @description Fetches all photo albums, optionally filtered by companyId.
- */
+// /**
+//  * @route GET /api/photo-albums
+//  * @description Fetches all photo albums, optionally filtered by companyId.
+//  */
 const getHandler = async (request: Request) => {
   
 
@@ -27,10 +27,10 @@ const getHandler = async (request: Request) => {
   return NextResponse.json(photoAlbums, { status: 200 });
 };
 
-/**
- * @route POST /api/photo-albums
- * @description Creates a new photo album and its associated photos.
- */
+// /**
+//  * @route POST /api/photo-albums
+//  * @description Creates a new photo album and its associated photos.
+//  */
 const postHandler = async (request: Request) => {
   
 

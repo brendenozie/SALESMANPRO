@@ -348,9 +348,13 @@ export default function SchedulePage() {
   async function fetchScheduledContent() {
     setIsLoading(true);
     try {
-      const res = await fetch(`${apiBaseUrl}/admin/content?companyId=${adminSlug}`);
+      const res = await fetch(`${apiBaseUrl}/admin/content?companyId=${adminSlug}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // include cookies for authentication
+      });
       if (!res.ok) throw new Error("Failed to fetch content");
-      const data: ScheduledContent[] = await res.json();
+      const data: ScheduledContent[] = (await res.json()).data || [];
       setScheduledContent(data || []);
     } catch (err) {
       console.error("Failed to fetch scheduled content:", err);
@@ -363,15 +367,25 @@ export default function SchedulePage() {
   async function fetchAlbums() {
     try {
       const [photoRes, videoRes] = await Promise.all([
-        fetch(`${apiBaseUrl}/admin/photo-albums?companyId=${adminSlug}`),
-        fetch(`${apiBaseUrl}/admin/video-albums?companyId=${adminSlug}`),
+        fetch(`${apiBaseUrl}/admin/photos-albums?companyId=${adminSlug}`,
+          { method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include', // include cookies for authentication
+          }
+        ),
+        fetch(`${apiBaseUrl}/admin/videos-albums?companyId=${adminSlug}`,
+          { method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include', // include cookies for authentication
+          }
+        ),
       ]);
       if (photoRes.ok) {
-        const photos: PhotoAlbum[] = await photoRes.json();
+        const photos: PhotoAlbum[] = (await photoRes.json()).data || [];
         setPhotoAlbums(photos || []);
       }
       if (videoRes.ok) {
-        const videos: VideoAlbum[] = await videoRes.json();
+        const videos: VideoAlbum[] = (await videoRes.json()).data || [];
         setVideoAlbums(videos || []);
       }
     } catch (err) {
@@ -387,11 +401,11 @@ export default function SchedulePage() {
       // POST with companyId in query to match other calls
       const res = await fetch(`${apiBaseUrl}/admin/content?companyId=${adminSlug}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "Credentials": "include" },
         body: JSON.stringify({ ...formData, companyId: adminSlug }),
       });
       if (!res.ok) throw new Error("Failed to add schedule item");
-      const added: ScheduledContent = await res.json();
+      const added: ScheduledContent = ( await res.json()).data;
       setScheduledContent(prev => [...prev, added]);
       setIsScheduleModalOpen(false);
     } catch (err) {
@@ -412,6 +426,7 @@ export default function SchedulePage() {
     try {
       const res = await fetch(`${apiBaseUrl}/admin/content/${selectedContent.id}?companyId=${adminSlug}`, {
         method: "DELETE",
+        headers: { "Content-Type": "application/json", "Credentials": "include" },
       });
       if (!res.ok) throw new Error("Failed to delete content");
       setScheduledContent(prev => prev.filter(c => c.id !== selectedContent.id));
@@ -455,7 +470,7 @@ export default function SchedulePage() {
         ) : (
           <motion.div layout className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <AnimatePresence>
-              {scheduledContent.map((content) => {
+              {scheduledContent && scheduledContent.map((content) => {
                 if (content.type === "PhotoAlbum") {
                   return <PhotoAlbumContentCard key={content.id} content={content} onDelete={handleDeleteContent} />;
                 }
