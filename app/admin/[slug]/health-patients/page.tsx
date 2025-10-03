@@ -1,7 +1,7 @@
 import AdminPatientsPageClient from "./AdminPatientsPageClient";
 import { cookies } from "next/headers";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
 
 interface Props {
   params: { slug: string };

@@ -14,7 +14,7 @@ import StoreCard from '@/components/stores/StoreCard';
 import useSWR, { mutate } from 'swr';
 import { cookies } from 'next/headers';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || '';
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || '';
 
 const fetcher = (url: string) => fetch(url).then(async res => {
 
