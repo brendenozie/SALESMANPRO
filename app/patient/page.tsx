@@ -8,6 +8,10 @@ import {
   ClockIcon, CurrencyDollarIcon, TagIcon, PhoneIcon, EnvelopeIcon // Added for clarity
 } from '@heroicons/react/24/solid';
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
+
 // --- Reusable Modal Component ---
 interface ModalProps {
   isOpen: boolean;
@@ -150,7 +154,7 @@ export default function PatientDashboardPage({ params }: { params: { patientSlug
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/patient/profile?patientId=${currentPatientId}`);
+      const response = await fetch(`${apiBaseUrl}/patient/profile?patientId=${currentPatientId}`);
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to fetch patient profile');
@@ -170,7 +174,7 @@ export default function PatientDashboardPage({ params }: { params: { patientSlug
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/patient/profile?patientId=${currentPatientId}`, {
+      const response = await fetch(`${apiBaseUrl}/patient/profile?patientId=${currentPatientId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(editProfileData),
@@ -199,7 +203,7 @@ export default function PatientDashboardPage({ params }: { params: { patientSlug
       if (apptEndDate) query.append('endDate', apptEndDate);
       if (apptStatusFilter !== 'All') query.append('status', apptStatusFilter);
 
-      const response = await fetch(`/api/patient/appointments?${query.toString()}`);
+      const response = await fetch(`${apiBaseUrl}/patient/appointments?${query.toString()}`);
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to fetch appointments');
@@ -220,7 +224,7 @@ export default function PatientDashboardPage({ params }: { params: { patientSlug
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/patient/appointments/${selectedAppointment.id}?patientId=${currentPatientId}`, {
+      const response = await fetch(`${apiBaseUrl}/patient/appointments/${selectedAppointment.id}?patientId=${currentPatientId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: editApptData.status, notes: editApptData.notes }),
@@ -248,7 +252,7 @@ export default function PatientDashboardPage({ params }: { params: { patientSlug
       if (prescriptionSearchTerm) query.append('searchTerm', prescriptionSearchTerm);
       if (prescriptionStatusFilter !== 'All') query.append('status', prescriptionStatusFilter);
 
-      const response = await fetch(`/api/patient/prescriptions?${query.toString()}`);
+      const response = await fetch(`${apiBaseUrl}/patient/prescriptions?${query.toString()}`);
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to fetch prescriptions');
@@ -272,7 +276,7 @@ export default function PatientDashboardPage({ params }: { params: { patientSlug
       if (invoiceSearchTerm) query.append('searchTerm', invoiceSearchTerm);
       if (invoiceStatusFilter !== 'All') query.append('status', invoiceStatusFilter);
 
-      const response = await fetch(`/api/patient/invoices?${query.toString()}`);
+      const response = await fetch(`${apiBaseUrl}/patient/invoices?${query.toString()}`);
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to fetch invoices');

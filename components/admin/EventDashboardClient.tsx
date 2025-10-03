@@ -33,6 +33,8 @@ const cardVariants = {
   },
 };
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
 export default function AdminDashboard({ params }: { params: { adminSlug: string } }) {
   const [dashboardData, setDashboardData] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -43,7 +45,7 @@ export default function AdminDashboard({ params }: { params: { adminSlug: string
       setIsLoading(true);
       setError(null);
       try {
-        const response = await fetch(`/api/admin/${params.adminSlug}/dashboard-summary`);
+        const response = await fetch(`${apiBaseUrl}/admin/${params.adminSlug}/dashboard-summary`);
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.message || `HTTP error! status: ${response.status}`);

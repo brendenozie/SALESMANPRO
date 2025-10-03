@@ -12,6 +12,8 @@ import { useStateContext } from '@/contexts/ContextProvider';
 import Shop from "@/components/site/layouts/GhubaLayout/body/components/shops/Shop";
 // import PricingTable from "../../components/pricingTable";
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
 const HomePage = () => {
   const [categories, setCategories] = useState<any>([]);
   const [productsByCategory, setProductsByCategory] = useState<any>({});
@@ -30,7 +32,7 @@ const HomePage = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch('/api/shop/categories');
+        const response = await fetch(`${apiBaseUrl}/shop/categories`);
         if (!response.ok) throw new Error("Failed to fetch categories.");
         const data = await response.json();
         setCategories(data.categories);
@@ -49,7 +51,7 @@ const HomePage = () => {
       setError(null);
       try {
         const products: { [key: string]: any } = {};
-        const response = await fetch(`/api/shop/productsByCategory?categoryId=${featuredCategories.id}`);
+        const response = await fetch(`${apiBaseUrl}/shop/productsByCategory?categoryId=${featuredCategories.id}`);
         if (!response.ok) throw new Error(`Failed to fetch products for category ${featuredCategories.name}.`);
         const data = await response.json();
         products[String(featuredCategories.name)] = data;
@@ -73,7 +75,7 @@ const HomePage = () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch(`/api/shop/productsByFlag?flag=${flag}`);
+        const response = await fetch(`${apiBaseUrl}/shop/productsByFlag?flag=${flag}`);
         if (!response.ok) throw new Error(`Failed to fetch products for flag ${flag}.`);
         const responsedata = await response.json();
         setState(responsedata.data);

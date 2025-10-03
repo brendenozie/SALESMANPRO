@@ -8,6 +8,8 @@ import {
   ClockIcon, CurrencyDollarIcon, TagIcon, BriefcaseIcon // Added for clarity
 } from '@heroicons/react/24/solid';
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
 // --- Reusable Modal Component ---
 interface ModalProps {
   isOpen: boolean;
@@ -169,7 +171,7 @@ export default function DoctorDashboardPage({ params }: { params: { doctorSlug: 
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/doctor/profile?doctorId=${currentDoctorId}`);
+      const response = await fetch(`${apiBaseUrl}/doctor/profile?doctorId=${currentDoctorId}`);
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to fetch doctor profile');
@@ -189,7 +191,7 @@ export default function DoctorDashboardPage({ params }: { params: { doctorSlug: 
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/doctor/profile?doctorId=${currentDoctorId}`, {
+      const response = await fetch(`${apiBaseUrl}/doctor/profile?doctorId=${currentDoctorId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(editProfileData),
@@ -216,7 +218,7 @@ export default function DoctorDashboardPage({ params }: { params: { doctorSlug: 
       const query = new URLSearchParams({ doctorId: currentDoctorId });
       if (patientSearchTerm) query.append('searchTerm', patientSearchTerm);
 
-      const response = await fetch(`/api/doctor/patients?${query.toString()}`);
+      const response = await fetch(`${apiBaseUrl}/doctor/patients?${query.toString()}`);
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to fetch patients');
@@ -241,7 +243,7 @@ export default function DoctorDashboardPage({ params }: { params: { doctorSlug: 
       if (apptEndDate) query.append('endDate', apptEndDate);
       if (apptStatusFilter !== 'All') query.append('status', apptStatusFilter);
 
-      const response = await fetch(`/api/doctor/appointments?${query.toString()}`);
+      const response = await fetch(`${apiBaseUrl}/doctor/appointments?${query.toString()}`);
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to fetch appointments');
@@ -262,7 +264,7 @@ export default function DoctorDashboardPage({ params }: { params: { doctorSlug: 
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/doctor/appointments/${selectedAppointment.id}?doctorId=${currentDoctorId}`, {
+      const response = await fetch(`${apiBaseUrl}/doctor/appointments/${selectedAppointment.id}?doctorId=${currentDoctorId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: editApptData.status, notes: editApptData.notes }),
@@ -290,7 +292,7 @@ export default function DoctorDashboardPage({ params }: { params: { doctorSlug: 
       if (prescriptionSearchTerm) query.append('searchTerm', prescriptionSearchTerm);
       if (prescriptionStatusFilter !== 'All') query.append('status', prescriptionStatusFilter);
 
-      const response = await fetch(`/api/doctor/prescriptions?${query.toString()}`);
+      const response = await fetch(`${apiBaseUrl}/doctor/prescriptions?${query.toString()}`);
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to fetch prescriptions');
@@ -311,7 +313,7 @@ export default function DoctorDashboardPage({ params }: { params: { doctorSlug: 
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/doctor/prescriptions/${selectedPrescription.id}?doctorId=${currentDoctorId}`, {
+      const response = await fetch(`${apiBaseUrl}/doctor/prescriptions/${selectedPrescription.id}?doctorId=${currentDoctorId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -345,7 +347,7 @@ export default function DoctorDashboardPage({ params }: { params: { doctorSlug: 
       if (productsUsedEndDate) query.append('endDate', productsUsedEndDate);
       if (productsUsedSearchTerm) query.append('searchTerm', productsUsedSearchTerm);
 
-      const response = await fetch(`/api/doctor/products-used?${query.toString()}`);
+      const response = await fetch(`${apiBaseUrl}/doctor/products-used?${query.toString()}`);
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to fetch products used');

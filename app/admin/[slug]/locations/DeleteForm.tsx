@@ -3,6 +3,9 @@
 import { BellAlertIcon } from '@heroicons/react/24/outline';
 import React, { useState, useEffect } from 'react';
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
 // --- Type Definitions ---
 interface Location {
   id: string;
@@ -38,7 +41,7 @@ export function DeleteConfirmModal({ isOpen, onClose, onSuccess, location }: Del
     setError(null);
 
     try {
-      const response = await fetch(`/api/admin/locations/${location.id}`, {
+      const response = await fetch(`${apiBaseUrl}/admin/locations/${location.id}`, {
         method: 'DELETE',
       });
 

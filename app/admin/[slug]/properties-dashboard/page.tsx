@@ -15,6 +15,9 @@ import {
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
 // --- Sample Data Generation (for fallback) ---
 const generateSampleDashboardData = () => ({
   totalProperties: Math.floor(Math.random() * 100) + 50,
@@ -53,7 +56,7 @@ export default function AdminDashboardPage({ params }: AdminDashboardPageProps) 
     // const fetchDashboardData = async () => {
     //   setIsLoading(true);
     //   try {
-    //     const res = await fetch(`/api/admin/${adminSlug}/dashboard-summary`);
+    //     const res = await fetch(`${apiBaseUrl}/admin/${adminSlug}/dashboard-summary`);
     //     if (!res.ok) throw new Error('Failed to fetch dashboard data');
     //     const data = await res.json();
     //     setDashboardData(data);

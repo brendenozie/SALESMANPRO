@@ -17,6 +17,10 @@ import {
 import Image from 'next/image';
 import toast from 'react-hot-toast';
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
+
 // Define the ClientData interface to match the expected API response
 export interface ClientData {
   id?: string; // Optional for new clients
@@ -112,7 +116,7 @@ const ClientModal: React.FC<ClientModalProps> = ({ isOpen, onClose, onSave, clie
     }
 
     const method = client ? 'PUT' : 'POST';
-    const url = client ? `/api/admin/fitness-clients/${client.id}` : `/api/admin/fitness-clients?companyId=${slug}`;
+    const url = client ? `${apiBaseUrl}/admin/fitness-clients/${client.id}` : `${apiBaseUrl}/admin/fitness-clients?companyId=${slug}`;
 
     const toastId = toast.loading(`${client ? 'Updating' : 'Adding'} member...`);
 

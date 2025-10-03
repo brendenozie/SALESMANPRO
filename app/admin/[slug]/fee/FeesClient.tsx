@@ -35,6 +35,8 @@ import {
 // ✨ Import the Chart.js configuration file to ensure components are registered
 import "@/lib/chartConfig"; // Adjust path if your chartConfig.ts is elsewhere
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
 // Define the extended StudentFeeRecord type for the frontend, including calculated fields
 export type StudentFeeRecord = Omit<PrismaStudentFeeRecord, 'appliedFeeItems' | 'payments'> & {
   calculatedTotalFeesDue: number;
@@ -197,7 +199,7 @@ const AddEditFeeRecordModal: React.FC<{
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal title={feeRecord ? "Edit Fee Record" : "New Fee Record"} isOpen={isOpen} onClose={onClose}>
       <div className="bg-gray-800 text-gray-100 p-8 rounded-xl shadow-2xl w-full max-w-md mx-auto">
         <h2 className="text-3xl font-bold text-indigo-400 mb-6 text-center">
           {feeRecord ? "Edit Fee Record Details" : "Create New Fee Record"}
@@ -318,7 +320,7 @@ const LogPaymentModal: React.FC<{
     : feeRecord?.studentId || 'N/A Student';
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal title={`Log Payment for ${studentName}`} isOpen={isOpen} onClose={onClose}>
       <div className="bg-gray-800 text-gray-100 p-8 rounded-xl shadow-2xl w-full max-w-md mx-auto">
         <h2 className="text-3xl font-bold text-indigo-400 mb-6 text-center">
           Log Payment for {studentName}
@@ -405,7 +407,7 @@ const ApplyBatchFeeModal: React.FC<{
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal title="Apply Fees in Batch" isOpen={isOpen} onClose={onClose}>
       <div className="bg-gray-800 text-gray-100 p-8 rounded-xl shadow-2xl w-full max-w-md mx-auto">
         <h2 className="text-3xl font-bold text-indigo-400 mb-6 text-center">
           Apply Fees in Batch
@@ -483,7 +485,7 @@ const DeleteConfirmationModal: React.FC<{
   onConfirm: () => void;
   recordName: string;
 }> = ({ isOpen, onClose, onConfirm, recordName }) => (
-  <Modal isOpen={isOpen} onClose={onClose}>
+  <Modal title="Confirm Deletion" isOpen={isOpen} onClose={onClose}>
     <div className="bg-gray-800 text-gray-100 p-8 rounded-xl shadow-2xl w-full max-w-sm mx-auto text-center">
       <ExclamationTriangleIcon className="h-20 w-20 text-red-500 mx-auto mb-6" />
       <h2 className="text-2xl font-bold text-red-400 mb-4">Confirm Deletion</h2>
@@ -644,7 +646,7 @@ const FeesClient: React.FC<FeesClientProps> = ({ initialFeeRecordsData, initialS
   const refreshData = async () => {
     setIsSubmitting(true);
     try {
-      const feesRes = await fetch(`/api/admin/student-fee-records`, { next: { revalidate: 60 } });
+      const feesRes = await fetch(`${apiBaseUrl}/admin/student-fee-records`, { next: { revalidate: 60 } });
       if (feesRes.ok) {
         const updatedFees: StudentFeeRecord[] = await feesRes.json();
         setFeeRecords(updatedFees);
@@ -652,7 +654,7 @@ const FeesClient: React.FC<FeesClientProps> = ({ initialFeeRecordsData, initialS
         console.error("[FeesClient] Failed to re-fetch fee records.");
       }
 
-      const studentsRes = await fetch(`/api/admin/students`, { next: { revalidate: 60 } });
+      const studentsRes = await fetch(`${apiBaseUrl}/admin/students`, { next: { revalidate: 60 } });
       if (studentsRes.ok) {
         const updatedStudents: Student[] = await studentsRes.json();
         setStudents(updatedStudents);
@@ -660,7 +662,7 @@ const FeesClient: React.FC<FeesClientProps> = ({ initialFeeRecordsData, initialS
         console.error("[FeesClient] Failed to re-fetch students.");
       }
 
-      const feeItemsRes = await fetch(`/api/admin/fee-items`, { next: { revalidate: 60 } });
+      const feeItemsRes = await fetch(`${apiBaseUrl}/admin/fee-items`, { next: { revalidate: 60 } });
       if (feeItemsRes.ok) {
         const updatedFeeItems: FeeItem[] = await feeItemsRes.json();
         setFeeItems(updatedFeeItems);
@@ -693,13 +695,13 @@ const FeesClient: React.FC<FeesClientProps> = ({ initialFeeRecordsData, initialS
     try {
       let response;
       if (editingFeeRecord) {
-        response = await fetch(`/api/admin/student-fee-records/${editingFeeRecord.id}`, {
+        response = await fetch(`${apiBaseUrl}/admin/student-fee-records/${editingFeeRecord.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ dueDate: formData.dueDate, invoiceNumber: formData.invoiceNumber }),
         });
       } else {
-        response = await fetch(`/api/admin/student-fee-records`, {
+        response = await fetch(`${apiBaseUrl}/admin/student-fee-records`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -736,7 +738,7 @@ const FeesClient: React.FC<FeesClientProps> = ({ initialFeeRecordsData, initialS
     const toastId = toast.loading('Logging payment...');
 
     try {
-      const response = await fetch(`/api/admin/student-fee-records/${recordId}/payments`, {
+      const response = await fetch(`${apiBaseUrl}/admin/student-fee-records/${recordId}/payments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payment),
@@ -768,7 +770,7 @@ const FeesClient: React.FC<FeesClientProps> = ({ initialFeeRecordsData, initialS
     const toastId = toast.loading('Deleting fee record...');
 
     try {
-      const response = await fetch(`/api/admin/student-fee-records/${recordToDelete.id}`, { method: 'DELETE' });
+      const response = await fetch(`${apiBaseUrl}/admin/student-fee-records/${recordToDelete.id}`, { method: 'DELETE' });
       if (!response.ok) throw new Error('Failed to delete fee record.');
       await refreshData();
       toast.success('Fee record deleted successfully!', { id: toastId });
@@ -787,7 +789,7 @@ const FeesClient: React.FC<FeesClientProps> = ({ initialFeeRecordsData, initialS
     const toastId = toast.loading('Applying fees in batch...');
 
     try {
-      const response = await fetch(`/api/admin/fee-actions/apply-batch`, {
+      const response = await fetch(`${apiBaseUrl}/admin/fee-actions/apply-batch`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(params),

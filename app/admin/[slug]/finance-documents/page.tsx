@@ -12,6 +12,11 @@ import {
   DocumentIcon,
 } from "@heroicons/react/24/solid";
 
+
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
+
 // Types
 interface Uploader {
   id: string;
@@ -113,7 +118,7 @@ export default function DocumentsPage() {
   const handleDelete = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this document?")) {
       try {
-        const res = await fetch(`/api/documents/${id}`, {
+        const res = await fetch(`${apiBaseUrl}/documents/${id}`, {
           method: "DELETE",
         });
         if (!res.ok) {

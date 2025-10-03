@@ -15,6 +15,11 @@ import {
 } from "@heroicons/react/24/solid";
 import { usePathname } from "next/navigation";
 
+
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
+
 interface GeneralSettings {
   name: string;
   contactEmail: string;
@@ -97,7 +102,7 @@ const SettingsPage = () => {
   const fetchGeneralSettings = async () => {
     setGeneralLoading(true);
     try {
-      const res = await fetch(`/api/settings/company?companyId=${adminSlug}`);
+      const res = await fetch(`${apiBaseUrl}/settings/company?companyId=${adminSlug}`);
       if (res.ok) {
         const data = await res.json();
         setGeneralSettings(data);
@@ -112,7 +117,7 @@ const SettingsPage = () => {
   const fetchUsers = async () => {
     setUsersLoading(true);
     try {
-      const res = await fetch(`/api/settings/users?companyId=${adminSlug}`);
+      const res = await fetch(`${apiBaseUrl}/settings/users?companyId=${adminSlug}`);
       if (res.ok) {
         const data = await res.json();
         setUsers(data);
@@ -127,7 +132,7 @@ const SettingsPage = () => {
   const fetchNotifications = async () => {
     setNotificationsLoading(true);
     try {
-      const res = await fetch(`/api/settings/notifications/${mockUserId}`);
+      const res = await fetch(`${apiBaseUrl}/settings/notifications/${mockUserId}`);
       if (res.ok) {
         const data = await res.json();
         if (data) {
@@ -159,7 +164,7 @@ const SettingsPage = () => {
     e.preventDefault();
     setSaving(true);
     try {
-      await fetch(`/api/settings/company?companyId=${adminSlug}`, {
+      await fetch(`${apiBaseUrl}/settings/company?companyId=${adminSlug}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(generalSettings),
@@ -197,8 +202,8 @@ const SettingsPage = () => {
     setSaving(true);
     try {
       const url = isEditingUser
-        ? `/api/settings/users/${currentUser?.id}`
-        : `/api/settings/users`;
+        ? `${apiBaseUrl}/settings/users/${currentUser?.id}`
+        : `${apiBaseUrl}/settings/users`;
       const method = isEditingUser ? "PUT" : "POST";
       const body = isEditingUser ? userForm : { ...userForm, companyId: adminSlug };
 
@@ -222,7 +227,7 @@ const SettingsPage = () => {
   const handleDeleteUser = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this user?")) {
       try {
-        await fetch(`/api/settings/users/${id}`, { method: "DELETE" });
+        await fetch(`${apiBaseUrl}/settings/users/${id}`, { method: "DELETE" });
         await fetchUsers();
       } catch (error) {
         console.error("Failed to delete user:", error);
@@ -240,7 +245,7 @@ const SettingsPage = () => {
     e.preventDefault();
     setSaving(true);
     try {
-      await fetch(`/api/settings/notifications/${mockUserId}`, {
+      await fetch(`${apiBaseUrl}/settings/notifications/${mockUserId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(notifications),

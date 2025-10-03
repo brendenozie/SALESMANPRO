@@ -5,6 +5,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
+
 // --- Sample Data (Used if API fails or puzzle not found) ---
 const samplePuzzlesData = {
   'shape-match': {
@@ -51,7 +55,7 @@ export default function PuzzleGamePage() {
 
       try {
           // Fetch all courses and find by 'code' (slug)
-          const response = await fetch(`/api/student/courses`);
+          const response = await fetch(`${apiBaseUrl}/student/courses`);
 
           if (response.ok) {
                 // throw new Error(`HTTP error! status: ${response.status}`);

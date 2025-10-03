@@ -17,6 +17,8 @@ import {
 import toast from 'react-hot-toast';
 import { TravelBookingData } from './page';
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
 // Define interfaces for data fetched by the modal
 interface ClientOption {
   id: string;
@@ -91,9 +93,9 @@ const TravelBookingModal: React.FC<TravelBookingModalProps> = ({ isOpen, onClose
       setError(null);
       try {
         const [clientsRes, tourPackagesRes, destinationsRes] = await Promise.all([
-          fetch(`/api/admin/travel-users?companyId=${slug}`),
-          fetch(`/api/admin/travel-packages?companyId=${slug}`),
-          fetch(`/api/admin/destinations?companyId=${slug}`),
+          fetch(`${apiBaseUrl}/admin/travel-users?companyId=${slug}`),
+          fetch(`${apiBaseUrl}/admin/travel-packages?companyId=${slug}`),
+          fetch(`${apiBaseUrl}/admin/destinations?companyId=${slug}`),
         ]);
 
         const clientsData = await clientsRes.json();
@@ -170,7 +172,7 @@ const TravelBookingModal: React.FC<TravelBookingModalProps> = ({ isOpen, onClose
     }
 
     const method = booking ? 'PUT' : 'POST';
-    const url = booking ? `/api/admin/travel-bookings/${booking.id}` : `/api/admin/travel-bookings?companyId=${slug}`;
+    const url = booking ? `${apiBaseUrl}/admin/travel-bookings/${booking.id}` : `${apiBaseUrl}/admin/travel-bookings?companyId=${slug}`;
 
     try {
       const response = await fetch(url, {

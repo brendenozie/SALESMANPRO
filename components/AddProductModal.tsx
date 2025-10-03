@@ -16,6 +16,8 @@ import { STEP_LABELS } from '@/constant/STEP_LABELS';
 import CategoryPicker from './CategoryPicker';
 // import { cookies } from "next/headers";
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
 // Assuming ProductForm, StoreCategory, ProductCategory, BookingSlotType are defined in typings.ts
 import { ProductForm, IStoreCategory } from '@/types/typings'; 
 import PricingDetails from './PricingDetails';
@@ -48,7 +50,7 @@ async function uploadFiles(files: File[], type: 'image' | 'video'): Promise<stri
     const fd = new FormData();
     fd.append('type', type);
     fd.append('file', file);
-    return fetch('/api/upload', 
+    return fetch(`${apiBaseUrl}/upload`, 
       { method: 'POST', body: fd , headers: { Cookie: cookieStore.toString() } })
       .then((res) => {
         if (!res.ok) throw new Error('Upload failed');

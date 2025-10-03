@@ -5,6 +5,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
+
 // --- Sample Data (Used if API fails or song not found) ---
 // This structure mimics what we'd map from your Course model
 const sampleSongsData = {
@@ -71,7 +75,7 @@ export default function SingAlongViewPage() {
         // For now, we'll fetch all courses and find by code.
         // A dedicated API route like /api/courses/by-code/[code] would be more efficient.
         // For this example, we'll use the GET /api/courses and filter.
-        const response = await fetch(`/api/student/courses`); // Fetch all to find by code
+        const response = await fetch(`${apiBaseUrl}/student/courses`); // Fetch all to find by code
 
         if (response.ok) {
           

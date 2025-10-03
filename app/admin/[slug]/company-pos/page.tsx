@@ -15,6 +15,9 @@ import {
   ArrowPathIcon, // For loading spinner
 } from '@heroicons/react/24/outline';
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
 // Framer Motion variants
 const sectionVariants = {
   hidden: { opacity: 0, y: 30 },
@@ -55,7 +58,7 @@ export default function AdminPOS({ adminSlug = 'your-org-slug' }: { adminSlug?: 
       setIsLoadingEvents(true);
       setError(null);
       try {
-        const response = await fetch(`/api/admin/${adminSlug}/events?status=SCHEDULED&fields=id,title,startDateTime`);
+        const response = await fetch(`${apiBaseUrl}/admin/${adminSlug}/events?status=SCHEDULED&fields=id,title,startDateTime`);
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
@@ -87,7 +90,7 @@ export default function AdminPOS({ adminSlug = 'your-org-slug' }: { adminSlug?: 
       try {
         // This endpoint is hypothetical in the API definitions, would need to be implemented
         // GET /api/admin/{adminSlug}/events/{eventId}/tickets
-        const response = await fetch(`/api/admin/${adminSlug}/tickets?eventId=${selectedEventId}`);
+        const response = await fetch(`${apiBaseUrl}/admin/${adminSlug}/tickets?eventId=${selectedEventId}`);
         if (!response.ok) {
           const errorData = await response.json();
           throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
@@ -163,7 +166,7 @@ export default function AdminPOS({ adminSlug = 'your-org-slug' }: { adminSlug?: 
     setError(null);
 
     try {
-      const response = await fetch(`/api/admin/${adminSlug}/pos/sale`, {
+      const response = await fetch(`${apiBaseUrl}/admin/${adminSlug}/pos/sale`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -194,7 +197,7 @@ export default function AdminPOS({ adminSlug = 'your-org-slug' }: { adminSlug?: 
       // Re-fetch events and tickets to update availability
       // Trigger re-fetch of events and tickets
       if (adminSlug) {
-        const eventsResponse = await fetch(`/api/admin/${adminSlug}/events?status=SCHEDULED&fields=id,title,startDateTime`);
+        const eventsResponse = await fetch(`${apiBaseUrl}/admin/${adminSlug}/events?status=SCHEDULED&fields=id,title,startDateTime`);
         if (eventsResponse.ok) {
           const eventsData = await eventsResponse.json();
           setEvents(eventsData.events);

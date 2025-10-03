@@ -16,6 +16,10 @@ import {
   TrashIcon,
 } from "@heroicons/react/24/outline";
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
+
 // --- Types: matches API response exactly ---
 interface Location {
   id: string;             // companyLocation.id
@@ -122,7 +126,7 @@ export default function LocationManagementPage({params}:PageProps) {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/admin/locationsv2?companyId=${params.slug}`,
+      const res = await fetch(`${apiBaseUrl}/admin/locationsv2?companyId=${params.slug}`,
         { 
           integrity: "same-origin",
         }

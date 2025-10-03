@@ -10,6 +10,10 @@ import ConfirmationModal from '@/components/ConfirmationModal';
 import BookingModal, { BookingData } from './BookingModal';
 import toast from 'react-hot-toast';
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
+
 // Define the BookingData interface to match the API response
 // interface BookingData {
   // id: string;
@@ -169,7 +173,7 @@ export default function BookingsPage({ params }: BookingsPageProps) {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/admin/fitness-bookings?companyId=${slug}`);
+      const response = await fetch(`${apiBaseUrl}/admin/fitness-bookings?companyId=${slug}`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -222,7 +226,7 @@ export default function BookingsPage({ params }: BookingsPageProps) {
     const toastId = toast.loading(`Deleting booking "${bookingToDelete.title}"...`);
 
     try {
-      const response = await fetch(`/api/admin/fitness-bookings/${bookingToDelete.id}`, {
+      const response = await fetch(`${apiBaseUrl}/admin/fitness-bookings/${bookingToDelete.id}`, {
         method: 'DELETE',
       });
 

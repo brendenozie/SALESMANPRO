@@ -18,6 +18,8 @@ const tabs = [
   { id: "downloads", label: "Downloads", icon: BookOpenIcon },
 ];
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
 const ActivityOverview: React.FC = () => {
   const { data: session, status } = useSession();
   const [activeTab, setActiveTab] = useState<string>("orders");
@@ -46,7 +48,7 @@ const ActivityOverview: React.FC = () => {
       if (!userId) throw new Error("User not authenticated");
 
       const response = await axios.get(
-        `/api/shop/activity?userId=${userId}&tab=${tabId}`
+        `${apiBaseUrl}/shop/activity?userId=${userId}&tab=${tabId}`
       );
 
       setData((prev) => ({

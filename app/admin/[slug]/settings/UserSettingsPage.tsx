@@ -19,6 +19,9 @@ import { useStoreContext } from '@/contexts/StoreContext';
 
 import { useSession, signOut } from 'next-auth/react';
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
 // Mocking context data for demonstration purposes
 const useMockStoreContext = () => ({
   storeFormData: {
@@ -242,7 +245,7 @@ export default function UserSettingsPage() {
     setLoading(true)
 
     try {
-      const res = await fetch('/api/custom-domain', {
+      const res = await fetch(`${apiBaseUrl}/custom-domain`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ domain: customDomain }),

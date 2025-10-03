@@ -13,6 +13,9 @@ import {
   CalendarDaysIcon
 } from "@heroicons/react/24/outline";
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
 // NOTE: The `OrderItem` type is missing, so we define a robust placeholder structure here.
 // In a real application, this should be imported from "./page".
 interface Order {
@@ -112,7 +115,7 @@ export default function ProductsClient({ initialOrderItems }: ClientProps) {
     try {
         // NOTE: Modified API call to use standard URL structure and removed env var concatenation
         const res = await fetch(
-            `/api/admin/orders/${selectedOrder.order.id}?status=${encodeURIComponent(
+            `${apiBaseUrl}/admin/orders/${selectedOrder.order.id}?status=${encodeURIComponent(
                 status
             )}&riderId=${encodeURIComponent(rider)}`,
             {

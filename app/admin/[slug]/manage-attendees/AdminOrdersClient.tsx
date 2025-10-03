@@ -11,6 +11,10 @@ import {
   ExclamationCircleIcon,
 } from '@heroicons/react/24/outline';
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
+
 // Define the types (you should put these in a shared types file in a real app)
 type Order = any; // Using 'any' for simplicity, but ideally use the full Order type
 type Agent = any; // Using 'any' for simplicity
@@ -88,7 +92,7 @@ export default function AdminOrdersClient({ adminSlug, initialOrders }: AdminOrd
     setError(null);
     try {
       // Use the API route from the Server Component to refresh ALL orders (no filters applied)
-      const response = await fetch(`/api/admin/${adminSlug}/orders`); 
+      const response = await fetch(`${apiBaseUrl}/admin/${adminSlug}/orders`); 
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
@@ -131,7 +135,7 @@ export default function AdminOrdersClient({ adminSlug, initialOrders }: AdminOrd
     setIsLoading(true); // Show loading while updating
     setError(null);
     try {
-      const response = await fetch(`/api/admin/${adminSlug}/orders/${orderId}/status`, {
+      const response = await fetch(`${apiBaseUrl}/admin/${adminSlug}/orders/${orderId}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),
@@ -168,7 +172,7 @@ export default function AdminOrdersClient({ adminSlug, initialOrders }: AdminOrd
     setError(null);
     try {
       // NOTE: Your backend needs an endpoint for single order details: /api/admin/{slug}/orders/{orderId}
-      const response = await fetch(`/api/admin/${adminSlug}/orders/${orderId}`);
+      const response = await fetch(`${apiBaseUrl}/admin/${adminSlug}/orders/${orderId}`);
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
@@ -200,7 +204,7 @@ export default function AdminOrdersClient({ adminSlug, initialOrders }: AdminOrd
       }).toString();
 
       // IMPORTANT: Use the API route designed for data filtering/export
-      const response = await fetch(`/api/admin/${adminSlug}/orders?${query}`); 
+      const response = await fetch(`${apiBaseUrl}/admin/${adminSlug}/orders?${query}`); 
       if (!response.ok) {
         // ... (error handling remains unchanged) ...
         const errorData = await response.json();

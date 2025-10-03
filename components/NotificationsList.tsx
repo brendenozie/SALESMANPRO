@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
 export default function NotificationsList() {
   const [notifications, setNotifications] = useState<any>([]);
 
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
-        const response = await fetch(`/api/notifications`);
+        const response = await fetch(`${apiBaseUrl}/notifications`);
         if (response.ok) {
           const data = await response.json();
           setNotifications(data);

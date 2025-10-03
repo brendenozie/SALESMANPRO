@@ -6,6 +6,8 @@ import { Chart as ChartJS, LinearScale, CategoryScale, PointElement, LineElement
 
 ChartJS.register(LinearScale, CategoryScale, PointElement, LineElement, Title, Tooltip, Legend);
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
 const ProductsPage = () => {
   const [reportType, setReportType] = useState('total-revenue');
   const [revenueData, setRevenueData] = useState<any>([]);
@@ -17,7 +19,7 @@ const ProductsPage = () => {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch(`/api/clients/revenuereport?reportType=${reportType}`);
+        const response = await fetch(`${apiBaseUrl}/clients/revenuereport?reportType=${reportType}`);
         const data = await response.json();
         console.log(data);
         if (data.success) {

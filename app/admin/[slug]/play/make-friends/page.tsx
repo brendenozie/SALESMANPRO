@@ -5,6 +5,10 @@ import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
+
 // --- Sample Data (Used if API fails or returns no data) ---
 const sampleFriendActivities = [
   { id: 'sample-1', slug: 'learn-sharing', title: 'Learn About Sharing (Sample)', icon: '🍎', introAudio: '/audio/sharing-intro.mp3' },
@@ -30,7 +34,7 @@ export default function MakeFriendsPage() {
       setError(null);
       try {
         // Fetch courses from your API, filtering by the playgroup academic level
-        const response = await fetch(`/api/student/courses?academicLevelId=${PLAYGROUP_ACADEMIC_LEVEL_ID}`);
+        const response = await fetch(`${apiBaseUrl}/student/courses?academicLevelId=${PLAYGROUP_ACADEMIC_LEVEL_ID}`);
 
         if (response.ok) {
           // throw new Error(`HTTP error! status: ${response.status}`);

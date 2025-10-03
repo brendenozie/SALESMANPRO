@@ -5,6 +5,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { PlusIcon, PencilIcon, TrashIcon, FilmIcon, ArrowPathIcon, XMarkIcon } from '@heroicons/react/24/solid';
 import Image, { ImageLoaderProps } from 'next/image';
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
+
 // --- Type Definitions ---
 interface Video {
   id: string;
@@ -327,7 +331,7 @@ export default function VideoGalleryPage() {
   const fetchVideoAlbums = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/video-albums');
+      const response = await fetch(`${apiBaseUrl}/video-albums`);
       if (!response.ok) {
         throw new Error('Failed to fetch video albums');
       }
@@ -359,7 +363,7 @@ export default function VideoGalleryPage() {
         status: 'PROCESSING',
       }));
       
-      const response = await fetch('/api/video-albums', {
+      const response = await fetch(`${apiBaseUrl}/video-albums`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...albumData, videoDetails }),
@@ -387,7 +391,7 @@ export default function VideoGalleryPage() {
     if (!selectedAlbum) return;
     setIsSubmitting(true);
     try {
-      const response = await fetch(`/api/video-albums/${selectedAlbum.id}`, {
+      const response = await fetch(`${apiBaseUrl}/video-albums/${selectedAlbum.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedAlbumData),
@@ -415,7 +419,7 @@ export default function VideoGalleryPage() {
     if (!selectedAlbum) return;
     setIsSubmitting(true);
     try {
-      const response = await fetch(`/api/video-albums/${selectedAlbum.id}`, {
+      const response = await fetch(`${apiBaseUrl}/video-albums/${selectedAlbum.id}`, {
         method: 'DELETE',
       });
 
@@ -451,7 +455,7 @@ export default function VideoGalleryPage() {
     if (!selectedVideo || !selectedAlbum) return;
     setIsSubmitting(true);
     try {
-      const response = await fetch(`/api/videos/${selectedVideo.id}`, {
+      const response = await fetch(`${apiBaseUrl}/videos/${selectedVideo.id}`, {
         method: 'DELETE',
       });
 

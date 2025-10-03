@@ -10,6 +10,9 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/solid";
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
 interface PageProps {
   params: {
     slug: string; // companyId
@@ -54,11 +57,13 @@ export default function ClientsPage({ params }: PageProps) {
     status: "ACTIVE",
   });
 
+
+
   const fetchClients = async () => {
     setLoading(true);
     try {
       const res = await fetch(
-        `/api/admin/finance-clients?companyId=${companyId}`
+        `${apiBaseUrl}/admin/finance-clients?companyId=${companyId}`
       );
       const data: { clients: Client[] } = await res.json();
       setClients(data.clients);
@@ -76,8 +81,8 @@ export default function ClientsPage({ params }: PageProps) {
   const handleCreateOrUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const url = isEditing
-      ? `/api/admin/finance-clients/${currentClient?.id}`
-      : `/api/admin/finance-clients?companyId=${companyId}`;
+      ? `${apiBaseUrl}/admin/finance-clients/${currentClient?.id}`
+      : `${apiBaseUrl}/admin/finance-clients?companyId=${companyId}`;
     const method = isEditing ? "PUT" : "POST";
 
     try {
@@ -109,7 +114,7 @@ export default function ClientsPage({ params }: PageProps) {
   const handleDelete = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this client?")) {
       try {
-        const res = await fetch(`/api/admin/finance-clients/${id}`, {
+        const res = await fetch(`${apiBaseUrl}/admin/finance-clients/${id}`, {
           method: "DELETE",
         });
         if (!res.ok) {

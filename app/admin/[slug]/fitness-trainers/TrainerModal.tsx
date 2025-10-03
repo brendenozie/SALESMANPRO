@@ -17,6 +17,10 @@ import {
 import Image from 'next/image';
 import toast from 'react-hot-toast'; // Import react-hot-toast
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
+
 // Define the TrainerData interface to match the expected API response
 export interface TrainerData {
   id?: string; // Optional for new trainers
@@ -119,7 +123,7 @@ const TrainerModal: React.FC<TrainerModalProps> = ({ isOpen, onClose, onSave, tr
     }
 
     const method = trainer ? 'PUT' : 'POST';
-    const url = trainer ? `/api/admin/trainers/${trainer.id}` : `/api/admin/trainers?companyId=${slug}`;
+    const url = trainer ? `${apiBaseUrl}/admin/trainers/${trainer.id}` : `${apiBaseUrl}/admin/trainers?companyId=${slug}`;
 
     const toastId = toast.loading(`${trainer ? 'Updating' : 'Adding'} trainer...`);
 

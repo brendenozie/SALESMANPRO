@@ -10,6 +10,8 @@ import { ILocation, IStoreCategory, MarketListingForm } from '@/types/typings';
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
 
 // --- Sample Data Generation (MOCKUPS FOR FALLBACK) ---
 const generateMockProperties = (): MarketListingForm[] => [
@@ -200,7 +202,7 @@ export default async function PropertyManagementPage({ params }: PropertyPagePro
     const categoriesResult = await fetchData<{ results : IStoreCategory[] }>('admin/get-store-categories', companyId, cookiesHeaders, () => ({ results: [] } ), 'companyId');
 
     // --- 3. Fetch Locations ---
-    // NOTE: The original fetch was to '/api/admin/locations' without companyId. Assuming this is a global list.
+    // NOTE: The original fetch was to `${apiBaseUrl}/admin/locations' without companyId. Assuming this is a global list.
     const locationsResult = await fetchData<ILocation[]>('admin/locations', '', cookiesHeaders, () => [], 'none');
 
 

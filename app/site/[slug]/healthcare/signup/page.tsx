@@ -9,6 +9,9 @@ import {
 } from '@heroicons/react/24/solid';
 import { useRouter } from 'next/navigation'; // For redirection
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
 // Animation variants for the main container and form
 const containerVariants = {
   hidden: { opacity: 0, scale: 0.95 },
@@ -63,7 +66,7 @@ export default function PatientSignupPage() {
     setMessage(null);
 
     try {
-      const response = await fetch('/api/auth/signup/patient', {
+      const response = await fetch(`${apiBaseUrl}/auth/signup/patient`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

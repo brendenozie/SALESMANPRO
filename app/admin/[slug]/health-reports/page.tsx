@@ -10,6 +10,10 @@ import {
   XCircleIcon
 } from '@heroicons/react/24/solid';
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
+
 // --- Reusable Modal Component ---
 interface ModalProps {
   isOpen: boolean;
@@ -200,7 +204,7 @@ export default function AdminReportsPage({ params }: { params: { adminSlug: stri
   // --- Common Data Fetchers for Dropdowns ---
   const fetchPatientsList = useCallback(async () => {
     try {
-      const response = await fetch(`/api/admin/patients?companyId=${companyId}`);
+      const response = await fetch(`${apiBaseUrl}/admin/patients?companyId=${companyId}`);
       if (response.ok) {
         const data = await response.json();
         setPatients(data.map((p: any) => ({ id: p.id, name: p.name, userId: p.userId })));
@@ -210,7 +214,7 @@ export default function AdminReportsPage({ params }: { params: { adminSlug: stri
 
   const fetchDoctorsList = useCallback(async () => {
     try {
-      const response = await fetch(`/api/admin/doctors?companyId=${companyId}`);
+      const response = await fetch(`${apiBaseUrl}/admin/doctors?companyId=${companyId}`);
       if (response.ok) {
         const data = await response.json();
         setDoctors(data);
@@ -220,7 +224,7 @@ export default function AdminReportsPage({ params }: { params: { adminSlug: stri
 
   const fetchProductsList = useCallback(async () => {
     try {
-      const response = await fetch(`/api/admin/products?companyId=${companyId}`); // Assuming you have a /api/admin/products endpoint
+      const response = await fetch(`${apiBaseUrl}/admin/products?companyId=${companyId}`); // Assuming you have a /api/admin/products endpoint
       if (response.ok) {
         const data = await response.json();
         setProducts(data);
@@ -232,7 +236,7 @@ export default function AdminReportsPage({ params }: { params: { adminSlug: stri
 
   const fetchServiceNames = useCallback(async () => {
     try {
-      const response = await fetch(`/api/admin/services?companyId=${companyId}`); // Assuming you have a /api/admin/services endpoint
+      const response = await fetch(`${apiBaseUrl}/admin/services?companyId=${companyId}`); // Assuming you have a /api/admin/services endpoint
       if (response.ok) {
         const data = await response.json();
         const names = Array.from(new Set(data.map((s: any) => s.name).filter(Boolean)));
@@ -261,7 +265,7 @@ export default function AdminReportsPage({ params }: { params: { adminSlug: stri
       if (salesDoctorId) query.append('doctorId', salesDoctorId);
       if (salesPatientId) query.append('patientId', salesPatientId);
 
-      const response = await fetch(`/api/admin/reports/sales?${query.toString()}`);
+      const response = await fetch(`${apiBaseUrl}/admin/reports/sales?${query.toString()}`);
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to fetch sales report');
@@ -284,7 +288,7 @@ export default function AdminReportsPage({ params }: { params: { adminSlug: stri
       if (inventoryCategory && inventoryCategory !== 'All') query.append('category', inventoryCategory);
       if (inventoryStockStatus && inventoryStockStatus !== 'ALL') query.append('stockStatus', inventoryStockStatus);
 
-      const response = await fetch(`/api/admin/reports/inventory?${query.toString()}`);
+      const response = await fetch(`${apiBaseUrl}/admin/reports/inventory?${query.toString()}`);
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to fetch inventory report');
@@ -311,7 +315,7 @@ export default function AdminReportsPage({ params }: { params: { adminSlug: stri
       if (apptServiceName && apptServiceName !== 'All') query.append('serviceName', apptServiceName);
       if (apptStatus && apptStatus !== 'All') query.append('status', apptStatus);
 
-      const response = await fetch(`/api/admin/reports/appointments?${query.toString()}`);
+      const response = await fetch(`${apiBaseUrl}/admin/reports/appointments?${query.toString()}`);
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to fetch appointment report');
@@ -336,7 +340,7 @@ export default function AdminReportsPage({ params }: { params: { adminSlug: stri
       if (staffPerfStaffId) query.append('staffId', staffPerfStaffId);
       if (staffPerfRole && staffPerfRole !== 'ALL') query.append('role', staffPerfRole);
 
-      const response = await fetch(`/api/admin/reports/staff-performance?${query.toString()}`);
+      const response = await fetch(`${apiBaseUrl}/admin/reports/staff-performance?${query.toString()}`);
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to fetch staff performance report');

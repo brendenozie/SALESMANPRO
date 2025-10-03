@@ -17,6 +17,10 @@ import {
 import ExpertModal, { ExpertData } from "./ExpertModal";
 import { useParams } from "next/navigation";
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
+
 const mockUsers = [
   { id: "usr1", name: "Dr. Emily Carter", email: "emily.c@example.com" },
   { id: "usr2", name: "Michael Chen, Esq.", email: "michael.c@example.com" },
@@ -79,7 +83,7 @@ const ExpertManagementPage = () => {
   const fetchExperts = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/admin/experts?companyId=${companyId}`);
+      const res = await fetch(`${apiBaseUrl}/admin/experts?companyId=${companyId}`);
       const data: ExpertData[] = await res.json();
       setExperts(data);
     } catch (error) {
@@ -141,8 +145,8 @@ const ExpertManagementPage = () => {
   //   try {
   //     const res = await fetch(
   //       isEditing
-  //         ? `/api/admin/experts/${currentExpert?.id}`
-  //         : `/api/admin/experts?companyId=${companyId}`,
+  //         ? `${apiBaseUrl}/admin/experts/${currentExpert?.id}`
+  //         : `${apiBaseUrl}/admin/experts?companyId=${companyId}`,
   //       {
   //         method: isEditing ? "PUT" : "POST",
   //         headers: { "Content-Type": "application/json" },
@@ -166,8 +170,8 @@ const ExpertManagementPage = () => {
     try {
       const res = await fetch(
         isEditing
-          ? `/api/admin/experts/${expert.id}`
-          : `/api/admin/experts?companyId=${companyId}`,
+          ? `${apiBaseUrl}/admin/experts/${expert.id}`
+          : `${apiBaseUrl}/admin/experts?companyId=${companyId}`,
         {
           method: isEditing ? "PUT" : "POST",
           headers: { "Content-Type": "application/json" },
@@ -191,7 +195,7 @@ const ExpertManagementPage = () => {
     if (window.confirm("Are you sure you want to delete this expert profile?")) {
       setLoading(true);
       try {
-        const res = await fetch(`/api/admin/experts/${id}`, {
+        const res = await fetch(`${apiBaseUrl}/admin/experts/${id}`, {
           method: "DELETE",
         });
         if (!res.ok) throw new Error("Failed to delete expert");

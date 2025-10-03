@@ -3,6 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import CompanyLocationForm from './CompanyLocationForm';
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
 // Define a type for CompanyLocation (optional but good practice)
 interface CompanyLocation {
   id: string;
@@ -79,7 +82,7 @@ export default function App( { params }: PageProps) {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/admin/company-locations?companyId=${COMPANY_ID}`);
+      const response = await fetch(`${apiBaseUrl}/admin/company-locations?companyId=${COMPANY_ID}`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -96,7 +99,7 @@ export default function App( { params }: PageProps) {
   // Function to fetch all available base locations (for the dropdown)
   const fetchAvailableLocations = async () => {
     try {
-      const response = await fetch('/api/admin/locations'); // Use the generic /api/locations endpoint
+      const response = await fetch(`${apiBaseUrl}/admin/locations`); // Use the generic /api/locations endpoint
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -167,7 +170,7 @@ export default function App( { params }: PageProps) {
         visible: formData.visible,
       };
 
-      const response = await fetch('/api/admin/company-locations', {
+      const response = await fetch(`${apiBaseUrl}/admin/company-locations`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -211,7 +214,7 @@ export default function App( { params }: PageProps) {
         visible: formData.visible,
       };
 
-      const response = await fetch(`/api/admin/company-locations/${selectedCompanyLocation.id}`, {
+      const response = await fetch(`${apiBaseUrl}/admin/company-locations/${selectedCompanyLocation.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -241,7 +244,7 @@ export default function App( { params }: PageProps) {
     setError(null);
 
     try {
-      const response = await fetch(`/api/admin/company-locations/${companyLocationToDeleteId}`, {
+      const response = await fetch(`${apiBaseUrl}/admin/company-locations/${companyLocationToDeleteId}`, {
         method: 'DELETE',
       });
 

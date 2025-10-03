@@ -7,6 +7,8 @@ import { DestinationFormModal, DeleteConfirmModal, Destination } from './Destina
 
 import { useParams } from 'next/navigation';
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
 // --- Types and Interfaces ---
 // Ensure this Destination interface matches your Prisma Destination model exactly
 // interface Destination {
@@ -109,8 +111,8 @@ export default function DestinationManagementPage() {
     setError(null);
     try {
       const [destinationsResponse, locationsResponse] = await Promise.all([
-        fetch(`/api/admin/destinations?companyId=${slug}`),
-        fetch(`/api/admin/locationsv2?companyId=${slug}`)
+        fetch(`${apiBaseUrl}/admin/destinations?companyId=${slug}`),
+        fetch(`${apiBaseUrl}/admin/locationsv2?companyId=${slug}`)
       ]);
 
       if (!destinationsResponse.ok) {

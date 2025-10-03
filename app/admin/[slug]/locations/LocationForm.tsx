@@ -4,6 +4,9 @@ import { CodeBracketIcon, HomeIcon, InformationCircleIcon, LinkIcon, MagnifyingG
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
+
 // --- Helper Functions ---
 const generateSlug = (name: string) => {
   return name
@@ -135,7 +138,7 @@ export function LocationFormModal({
     };
     
     try {
-      const url = isEditMode ? `/api/admin/locations/${location.id}` : '/api/admin/locations';
+      const url = isEditMode ? `${apiBaseUrl}/admin/locations/${location.id}` : `${apiBaseUrl}/admin/locations`;
       const method = isEditMode ? 'PATCH' : 'POST';
 
       const response = await fetch(url, {

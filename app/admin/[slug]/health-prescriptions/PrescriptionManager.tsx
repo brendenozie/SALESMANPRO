@@ -10,6 +10,9 @@ import {
 } from '@heroicons/react/24/solid';
 
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
+
 // Define the Prescription interface based on the expected data from the backend
 interface Prescription {
   id: string;
@@ -152,7 +155,7 @@ export const PrescriptionManager: React.FC<ManagerProps> = ({
       // NOTE: This now handles *re-fetching* after the initial server-side load
       const statusParam = filterStatus === 'All' ? '' : `&filterStatus=${filterStatus}`;
       // In a real app, this should debounce to prevent rapid fire API calls
-      const response = await fetch(`/api/admin/prescriptions?companyId=${companyId}&searchTerm=${encodeURIComponent(searchTerm)}${statusParam}`);
+      const response = await fetch(`${apiBaseUrl}/admin/prescriptions?companyId=${companyId}&searchTerm=${encodeURIComponent(searchTerm)}${statusParam}`);
       
       if (!response.ok) {
         const errorData = await response.json();
@@ -222,7 +225,7 @@ export const PrescriptionManager: React.FC<ManagerProps> = ({
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch('/api/admin/prescriptions', {
+      const response = await fetch(`${apiBaseUrl}/admin/prescriptions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -253,7 +256,7 @@ export const PrescriptionManager: React.FC<ManagerProps> = ({
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/admin/prescriptions/${selectedPrescription.id}`, {
+      const response = await fetch(`${apiBaseUrl}/admin/prescriptions/${selectedPrescription.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -284,7 +287,7 @@ export const PrescriptionManager: React.FC<ManagerProps> = ({
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/admin/prescriptions/${selectedPrescription.id}`, {
+      const response = await fetch(`${apiBaseUrl}/admin/prescriptions/${selectedPrescription.id}`, {
         method: 'DELETE',
       });
 

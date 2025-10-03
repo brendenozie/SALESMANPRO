@@ -11,6 +11,10 @@ import ConfirmationModal from '@/components/ConfirmationModal';
 import LocationModal, { LocationData } from './LocationModal';
 import toast from 'react-hot-toast';
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
+
 // Define the LocationData interface to match the API response
 // interface LocationData {
 //   id: string;
@@ -202,7 +206,7 @@ export default function LocationsPage({ params }: LocationsPageProps) {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/admin/locationsv2?companyId=${slug}`);
+      const response = await fetch(`${apiBaseUrl}/admin/locationsv2?companyId=${slug}`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -261,7 +265,7 @@ export default function LocationsPage({ params }: LocationsPageProps) {
     setLoading(true); // Show loading state for deletion
 
     try {
-      const response = await fetch(`/api/admin/locationsv2/${locationToDelete.id}`, {
+      const response = await fetch(`${apiBaseUrl}/admin/locationsv2/${locationToDelete.id}`, {
         method: 'DELETE',
       });
 

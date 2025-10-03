@@ -23,6 +23,9 @@ import { format } from "date-fns";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
 // Define the UserItem type and enums to make the component self-contained
 interface UserItem {
   id: string;
@@ -127,7 +130,7 @@ export default function UsersClient({
 
     setLoading(true);
     try {
-      const response = await fetch(`/api/admin/users/${selectedUser.id}`, {
+      const response = await fetch(`${apiBaseUrl}/admin/users/${selectedUser.id}`, {
         method: 'DELETE',
       });
 
@@ -151,7 +154,7 @@ export default function UsersClient({
   const handleSaveUser = async (formData: any, userId: string | null) => {
     setLoading(true);
     try {
-      const url = userId ? `/api/admin/users/${userId}` : `/api/admin/users`;
+      const url = userId ? `${apiBaseUrl}/admin/users/${userId}` : `${apiBaseUrl}/admin/users`;
       const method = userId ? 'PUT' : 'POST';
 
       const response = await fetch(url, {
@@ -547,7 +550,7 @@ const AddEditUserModal: React.FC<{
     // Fetch available plans from the server
     const fetchPlans = async () => {
       try {
-        const response = await fetch(`/api/admin/plans?companyId=${companyId}`);
+        const response = await fetch(`${apiBaseUrl}/admin/plans?companyId=${companyId}`);
         if (!response.ok) {
           throw new Error("Failed to fetch plans.");
         }

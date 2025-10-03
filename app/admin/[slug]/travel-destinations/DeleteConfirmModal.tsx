@@ -16,6 +16,8 @@ import {
   HashtagIcon,
 } from '@heroicons/react/24/outline';
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
 // --- Types and Interfaces ---
 // These types are consistent with the Prisma schema and the user's code.
 interface Destination {
@@ -221,7 +223,7 @@ export function DestinationFormModal({ isOpen, onClose, onSuccess, destination, 
         return;
     }
 
-    const apiEndpoint = isEditing ? `/api/admin/destinations/${destination?.id}` : '/api/admin/destinations';
+    const apiEndpoint = isEditing ? `${apiBaseUrl}/admin/destinations/${destination?.id}` : `${apiBaseUrl}/admin/destinations`;
     const method = isEditing ? 'PUT' : 'POST';
 
     try {
@@ -442,7 +444,7 @@ export function DeleteConfirmModal({ isOpen, onClose, onSuccess, destination }: 
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/admin/destinations/${destination.id}`, {
+      const response = await fetch(`${apiBaseUrl}/admin/destinations/${destination.id}`, {
         method: 'DELETE',
       });
       if (!response.ok) {

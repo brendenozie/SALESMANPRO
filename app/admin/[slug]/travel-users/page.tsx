@@ -11,6 +11,8 @@ import ConfirmationModal from '@/components/ConfirmationModal';
 import ClientModal, { ClientData } from './ClientModal';
 import toast from 'react-hot-toast'; // Import react-hot-toast
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
 // Define the ClientData interface
 // interface ClientData {
 //   id: string;
@@ -209,7 +211,7 @@ export default function ClientsPage({ params }: ClientsPageProps) {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/admin/travel-users?companyId=${slug}`);
+      const response = await fetch(`${apiBaseUrl}/admin/travel-users?companyId=${slug}`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -260,7 +262,7 @@ export default function ClientsPage({ params }: ClientsPageProps) {
     const toastId = toast.loading(`Deleting member "${clientToDelete.name}"...`);
 
     try {
-      const response = await fetch(`/api/admin/travel-users/${clientToDelete.id}`, {
+      const response = await fetch(`${apiBaseUrl}/admin/travel-users/${clientToDelete.id}`, {
         method: 'DELETE',
       });
 

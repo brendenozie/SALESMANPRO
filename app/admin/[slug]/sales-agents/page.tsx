@@ -32,6 +32,10 @@ import Link from 'next/link';
 import Image from 'next/image'; // For optimized image handling
 import toast, { Toaster } from 'react-hot-toast'; // For notifications
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
+
 // Mocking the image loader - Keep if not fully in Next.js Image optimization
 const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
   return `${src}?w=${width}&q=${quality || 75}`;
@@ -606,7 +610,7 @@ export default function AgentsPage({ params }: AgentsPageProps) {
   const [agentToDelete, setAgentToDelete] = useState<AgentProfile | null>(null);
 
   // In a real application, apiUrl would be used to fetch and mutate data
-  const apiUrl = '/api/admin/sales-agents'; // Base URL for your API routes
+  const apiUrl = `${apiBaseUrl}/admin/sales-agents`; // Base URL for your API routes
 
   const fetchAgents = useCallback(async () => {
     setIsLoading(true);

@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { InboxIcon, PaperAirplaneIcon, CheckCircleIcon } from '@heroicons/react/24/solid'; // Updated icons
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
 /**
  * Intuitive, Engaging, and Visually Appealing Newsletter Signup Section
  * Encourages user subscription with a modern design and clear feedback.
@@ -19,7 +21,7 @@ export default function NewsletterSignup() {
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate network delay
     // In a real application, you would integrate with your subscription API here
-    // e.g., const response = await fetch('/api/subscribe', { method: 'POST', body: JSON.stringify({ email }) });
+    // e.g., const response = await fetch(`${apiBaseUrl}/subscribe', { method: 'POST', body: JSON.stringify({ email }) });
     // if (response.ok) { setSubmitted(true); } else { /* handle error */ }
     setSubmitted(true);
     setLoading(false); // Stop loading

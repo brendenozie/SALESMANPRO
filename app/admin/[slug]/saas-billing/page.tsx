@@ -210,7 +210,7 @@ export default async function BillingPage({ params, searchParams }: PageProps) {
 //       currency: "USD",
 //       dueDate,
 //       status: status as "Paid" | "Unpaid" | "Overdue",
-//       downloadUrl: `/api/invoices/${companyId}/inv-${i}.pdf`, // Dummy URL
+//       downloadUrl: `${apiBaseUrl}/invoices/${companyId}/inv-${i}.pdf`, // Dummy URL
 //       periodStart,
 //       periodEnd,
 //       issuedDate,

@@ -22,6 +22,8 @@ import ShippingAddress from '../@/components/shippingAddress';
 // Updated to 4 steps: Billing, Shipping Address, Payment & Promo, Review
 const steps = ["Billing", "Shipping", "Payment", "Review"];
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
 const ProgressIndicator = ({ currentStep }) => (
   <div className="flex mb-6">
     {steps.map((label, i) => (
@@ -176,7 +178,7 @@ const CheckoutPage = () => {
         paymentOption:formData.paymentMethod,
         totalPrice: parseFloat(total.toFixed(2)),
       };
-      const res = await fetch('/api/shop/orders', { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.NEXT_PUBLIC_API_SECRET_KEY }, body: JSON.stringify(orderPayload) });
+      const res = await fetch(`${apiBaseUrl}/shop/orders`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.NEXT_PUBLIC_API_SECRET_KEY }, body: JSON.stringify(orderPayload) });
       if (!res.ok) throw new Error();
       
       clearCart();

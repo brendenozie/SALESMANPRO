@@ -24,6 +24,8 @@ import { formatCreditCardNumber, formatExpirationDate, formatCVC } from '@/data/
 
 const steps = ['Billing', 'Shipping', 'Payment & Promo', 'Review'];
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
 export default function CheckoutPage() {
   const store = useStore();
   const router = useRouter();
@@ -161,7 +163,7 @@ export default function CheckoutPage() {
         totalPrice: parseFloat(total.toFixed(2)),
       };
   
-      const res = await fetch('/api/shop/orders', {
+      const res = await fetch(`${apiBaseUrl}/shop/orders`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

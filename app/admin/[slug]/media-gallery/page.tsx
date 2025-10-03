@@ -13,6 +13,10 @@ import {
 } from "@heroicons/react/24/solid";
 import Image, { ImageLoaderProps } from "next/image";
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
+
 /* ---------------------------
    Types
    --------------------------- */
@@ -372,7 +376,7 @@ export default function PhotoGalleryPage(): JSX.Element {
   const handleUpdateAlbum: PhotoAlbumFormEditSubmit = async (updated) => {
     setSubmitting(true);
     try {
-      const res = await fetch(`/api/photo-albums/${updated.id}`, {
+      const res = await fetch(`${apiBaseUrl}/photo-albums/${updated.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updated),
@@ -410,7 +414,7 @@ export default function PhotoGalleryPage(): JSX.Element {
     if (!albumToDelete) return;
     setSubmitting(true);
     try {
-      const res = await fetch(`/api/photo-albums/${albumToDelete.id}`, { method: "DELETE" });
+      const res = await fetch(`${apiBaseUrl}/photo-albums/${albumToDelete.id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to delete");
       setAlbums(prev => prev.filter(a => a.id !== albumToDelete.id));
       setAlbumToDelete(null);
@@ -432,7 +436,7 @@ export default function PhotoGalleryPage(): JSX.Element {
     if (!photoToDelete || !albumBeingViewed) return;
     setSubmitting(true);
     try {
-      const res = await fetch(`/api/photos/${photoToDelete.id}`, { method: "DELETE" });
+      const res = await fetch(`${apiBaseUrl}/photos/${photoToDelete.id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to delete photo");
       setAlbums(prev => prev.map(a => ({
         ...a,

@@ -5,6 +5,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { BellAlertIcon, CalendarDateRangeIcon, CalendarDaysIcon, PencilIcon, PlusCircleIcon, TrashIcon, UserIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import Head from 'next/head'; // For setting page title/meta tags
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
+
 // Define the Program interface to match the API response
 interface Program {
   id: string;
@@ -148,7 +152,7 @@ const AddProgramModal = ({ isOpen, onClose, onAddProgram, slug }: {
     if (isOpen) {
       const fetchEducators = async () => {
         try {
-          const res = await fetch(`/api/admin/educators?id=${slug}`); // Assuming an API to get educators
+          const res = await fetch(`${apiBaseUrl}/admin/educators?id=${slug}`); // Assuming an API to get educators
           if (!res.ok) {
             throw new Error('Failed to fetch instructors');
           }
@@ -169,7 +173,7 @@ const AddProgramModal = ({ isOpen, onClose, onAddProgram, slug }: {
     setError(null);
 
     try {
-      const res = await fetch(`/api/admin/fitness-programs?id=${slug}`, {
+      const res = await fetch(`${apiBaseUrl}/admin/fitness-programs?id=${slug}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -404,7 +408,7 @@ export default function ProgramsPage({ params }: ProgramsProps) {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/admin/fitness-programs?id=${slug}`);
+      const response = await fetch(`${apiBaseUrl}/admin/fitness-programs?id=${slug}`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }

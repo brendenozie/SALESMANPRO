@@ -17,6 +17,10 @@ import {
 import Image, { ImageLoaderProps } from 'next/image';
 import { useParams } from 'next/navigation';
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
+
 // --- Type Definitions ---
 type SponsorStatus = 'ACTIVE' | 'PENDING' | 'INACTIVE';
 
@@ -367,7 +371,7 @@ export default function SponsorsPage() {
   const fetchSponsors = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/admin/sponsors?companyId=${companyId}`);
+      const response = await fetch(`${apiBaseUrl}/admin/sponsors?companyId=${companyId}`);
       if (!response.ok) {
         throw new Error('Failed to fetch sponsors');
       }
@@ -383,7 +387,7 @@ export default function SponsorsPage() {
   const handleAddSponsor = async (sponsorData: Omit<Sponsor, 'id' | 'companyId'> & { id?: string }) => {
     setIsSubmitting(true);
     try {
-      const response = await fetch('/api/admin/sponsors', {
+      const response = await fetch(`${apiBaseUrl}/admin/sponsors`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({...sponsorData, companyId}),
@@ -410,7 +414,7 @@ export default function SponsorsPage() {
   const handleUpdateSponsor = async (updatedSponsorData: Omit<Sponsor, 'id' | 'companyId'> & { id?: string }) => {
     setIsSubmitting(true);
     try {
-      const response = await fetch(`/api/admin/sponsors/${updatedSponsorData.id}`, {
+      const response = await fetch(`${apiBaseUrl}/admin/sponsors/${updatedSponsorData.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updatedSponsorData),
@@ -438,7 +442,7 @@ export default function SponsorsPage() {
     if (!selectedSponsor) return;
     setIsSubmitting(true);
     try {
-      const response = await fetch(`/api/admin/sponsors/${selectedSponsor.id}`, {
+      const response = await fetch(`${apiBaseUrl}/admin/sponsors/${selectedSponsor.id}`, {
         method: 'DELETE',
       });
 

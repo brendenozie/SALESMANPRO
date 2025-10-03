@@ -8,6 +8,8 @@ import NewsletterSection from '@/components/site/NewsletterSection/NewsletterSec
 import { useStore } from '@/contexts/StoreContext';
 import { useStateContext } from '@/contexts/ContextProvider';
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
 export default function ProfilePage() {
   const store = useStore();
   const { user, orders: initialOrders } = useStateContext();
@@ -30,7 +32,7 @@ export default function ProfilePage() {
     e.preventDefault();
     setMessage('');
     try {
-      const res = await fetch('/api/user/update', {
+      const res = await fetch(`${apiBaseUrl}/user/update`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, phone }),

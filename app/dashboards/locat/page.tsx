@@ -7,6 +7,9 @@ import { DeleteConfirmModal } from './DeleteForm';
 import { PlusIcon } from '@heroicons/react/24/solid';
 import { BuildingLibraryIcon, ChevronDoubleDownIcon, ChevronDoubleUpIcon, GlobeAltIcon, MapIcon, PencilSquareIcon, PlusCircleIcon, SquaresPlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
 // --- Types and Interfaces (for better type safety) ---
 interface Location {
   id: string;
@@ -69,7 +72,7 @@ export default function LocationManagementPage({ params }: PageProps) {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch('/api/admin/locations');
+      const response = await fetch(`${apiBaseUrl}/admin/locations`);
       if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
       const data = await response.json();
       setLocations(data.data || []);

@@ -1,5 +1,7 @@
 import { useState } from 'react';
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
 export default function AddNotificationForm() {
   const [title, setTitle] = useState('');
   const [message, setMessage] = useState('');
@@ -8,7 +10,7 @@ export default function AddNotificationForm() {
   const handleSubmit = async (e :any) => {
     e.preventDefault();
     try {
-      const response = await fetch('/api/notifications', {
+      const response = await fetch(`${apiBaseUrl}/notifications`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

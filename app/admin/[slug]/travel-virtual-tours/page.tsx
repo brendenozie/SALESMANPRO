@@ -12,6 +12,8 @@ import VirtualTourModal, { VirtualTourData } from './VirtualTourModal';
 import VideoPlayerModal from './VideoPlayerModal';
 import toast from 'react-hot-toast';
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
 // Define the VirtualTourData interface to match the API response
 // interface VirtualTourData {
 //   id: string;
@@ -64,7 +66,7 @@ export default function AdminVirtualToursPage() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/admin/virtual-tours?companyId=${slug}`);
+      const response = await fetch(`${apiBaseUrl}/admin/virtual-tours?companyId=${slug}`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -116,7 +118,7 @@ export default function AdminVirtualToursPage() {
     const toastId = toast.loading(`Deleting tour "${tourToDelete.title}"...`);
     
     try {
-      const response = await fetch(`/api/admin/virtual-tours/${tourToDelete.id}`, {
+      const response = await fetch(`${apiBaseUrl}/admin/virtual-tours/${tourToDelete.id}`, {
         method: 'DELETE',
       });
 

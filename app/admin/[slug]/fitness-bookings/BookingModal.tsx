@@ -16,6 +16,10 @@ import {
 } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
+
 // Define interfaces for data fetched by the modal
 interface ClientOption {
   id: string;
@@ -156,9 +160,9 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, onSave, bo
       setLoadingForm(true);
       try {
         const [clientsRes, educatorsRes, locationsRes] = await Promise.all([
-          fetch(`/api/admin/fitness-clients?companyId=${slug}`),
-          fetch(`/api/admin/trainers?companyId=${slug}`),
-          fetch(`/api/admin/locationsv2?companyId=${slug}`),
+          fetch(`${apiBaseUrl}/admin/fitness-clients?companyId=${slug}`),
+          fetch(`${apiBaseUrl}/admin/trainers?companyId=${slug}`),
+          fetch(`${apiBaseUrl}/admin/locationsv2?companyId=${slug}`),
         ]);
 
         const clientsData = await clientsRes.json();
@@ -215,7 +219,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, onSave, bo
     }
 
     const method = booking ? 'PUT' : 'POST';
-    const url = booking ? `/api/admin/fitness-bookings/${booking.id}` : `/api/admin/fitness-bookings?companyId=${slug}`;
+    const url = booking ? `${apiBaseUrl}/admin/fitness-bookings/${booking.id}` : `${apiBaseUrl}/admin/fitness-bookings?companyId=${slug}`;
 
     const toastId = toast.loading(booking ? 'Updating booking...' : 'Creating booking...');
 

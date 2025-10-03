@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import ClientLayout from '@/components/ClientLayout';
 import UserNav from '@/components/UserNav';
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
 const ProductRequestsPage = () => {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -12,7 +14,7 @@ const ProductRequestsPage = () => {
       try {
         setLoading(true);
         setError('');
-        const response = await fetch(`/api/clients/productrequests?clientId=63f7c9e2d91b1b2a5e80b013`); // Replace with actual client ID
+        const response = await fetch(`${apiBaseUrl}/clients/productrequests?clientId=63f7c9e2d91b1b2a5e80b013`); // Replace with actual client ID
         if (!response.ok) {
           throw new Error('Failed to fetch product requests.');
         }

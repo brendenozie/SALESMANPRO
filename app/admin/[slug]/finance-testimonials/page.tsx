@@ -14,6 +14,11 @@ import {
 } from "@heroicons/react/24/solid";
 import { useParams } from "next/navigation";
 
+
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
+
 // ---- Types ----
 interface Testimonial {
   id: string;
@@ -49,7 +54,7 @@ const TestimonialsPage = () => {
   const fetchTestimonials = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/admin/testimonials?companyId=${companyId}`);
+      const res = await fetch(`${apiBaseUrl}/admin/testimonials?companyId=${companyId}`);
       if (!res.ok) throw new Error("Failed to fetch testimonials");
       const data = await res.json();
       setTestimonials(data.testimonials);
@@ -97,7 +102,7 @@ const TestimonialsPage = () => {
 
     try {
       const url = isEditing
-        ? `/api/admin/testimonials/${currentTestimonial?.id}`
+        ? `${apiBaseUrl}/admin/testimonials/${currentTestimonial?.id}`
         : "/api/admin/testimonials";
       const method = isEditing ? "PUT" : "POST";
 
@@ -122,7 +127,7 @@ const TestimonialsPage = () => {
   const updateTestimonialStatus = async (id: string, newStatus: Testimonial["status"]) => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/admin/testimonials/${id}`, {
+      const res = await fetch(`${apiBaseUrl}/admin/testimonials/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: newStatus }),
@@ -140,7 +145,7 @@ const TestimonialsPage = () => {
     if (window.confirm("Are you sure you want to delete this testimonial?")) {
       setLoading(true);
       try {
-        const res = await fetch(`/api/admin/testimonials/${id}`, { method: "DELETE" });
+        const res = await fetch(`${apiBaseUrl}/admin/testimonials/${id}`, { method: "DELETE" });
         if (!res.ok) throw new Error("Failed to delete testimonial");
         await fetchTestimonials();
       } catch (error) {

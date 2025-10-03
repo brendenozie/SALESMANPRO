@@ -8,6 +8,8 @@ import Image from 'next/image';
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
 // Define the PromotionData interface
 export interface PromotionData {
   id?: string;
@@ -91,7 +93,7 @@ const PromotionModal: React.FC<PromotionModalProps> = ({ isOpen, onClose, onSave
     }
 
     const method = promotion ? 'PUT' : 'POST';
-    const url = promotion ? `/api/admin/promotion-discount/${promotion.id}` : `/api/admin/promotion-discount?companyId=${slug}`;
+    const url = promotion ? `${apiBaseUrl}/admin/promotion-discount/${promotion.id}` : `${apiBaseUrl}/admin/promotion-discount?companyId=${slug}`;
     
     const toastId = toast.loading(`${promotion ? 'Updating' : 'Creating'} promotion...`);
 

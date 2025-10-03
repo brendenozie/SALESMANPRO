@@ -7,6 +7,8 @@ import {
 import { useSession } from "next-auth/react";
 import axios from "axios";
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
 const ProfileSettings = () => {
   const [isEditing, setIsEditing] = useState(false);
   const { data: session } = useSession();
@@ -29,7 +31,7 @@ const ProfileSettings = () => {
   const handleUpdateProfile = async () => {
     try {
       const role = session?.user?.role?.toLowerCase() || "consumer"; // fallback to consumer
-      const endpoint = `/api/shop/${role}/updateProfile`;
+      const endpoint = `${apiBaseUrl}/shop/${role}/updateProfile`;
 
       const response = await axios.put(endpoint, profile);
       alert(response.data.message);

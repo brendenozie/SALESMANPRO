@@ -8,6 +8,9 @@ import {
 } from '@heroicons/react/24/solid'; // Added more specific icons
 import toast from 'react-hot-toast'; // Using react-hot-toast
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
 // Define the UserData interface to match the expected output
 interface UserData {
   id: string;
@@ -82,7 +85,7 @@ const CreateUserModal: React.FC<CreateUserModalProps> = ({ isOpen, onClose, onUs
     const toastId = toast.loading('Creating new user...');
 
     try {
-      const response = await fetch(`/api/admin/travel-users?companyId=${slug}`, {
+      const response = await fetch(`${apiBaseUrl}/admin/travel-users?companyId=${slug}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

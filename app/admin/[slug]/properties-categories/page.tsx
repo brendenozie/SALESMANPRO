@@ -5,6 +5,10 @@ import { notFound } from 'next/navigation'; // Useful if adminSlug is invalid
 import Link from 'next/link';
 import { HomeIcon, PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline'; // Assuming you have Heroicons installed
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
+
 // Type definition for a Category
 interface Category {
   id: string;
@@ -41,7 +45,7 @@ export default function PropertiesCategoriesPage({ params }: CategoriesPageProps
   //   const fetchCategories = async () => {
   //     try {
   //       // Replace with your actual API endpoint
-  //       const response = await fetch(`/api/admin/${adminSlug}/categories`);
+  //       const response = await fetch(`${apiBaseUrl}/admin/${adminSlug}/categories`);
   //       if (!response.ok) {
   //         throw new Error('Failed to fetch categories');
   //       }

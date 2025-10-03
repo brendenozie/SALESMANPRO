@@ -9,6 +9,10 @@ import {
 import { useParams } from 'next/navigation';
 import Image from 'next/image';
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
+
 // Define the SettingsData interface to match the API response
 interface SettingsData {
   id: string;
@@ -69,7 +73,7 @@ export default function SettingsPage({ params }: SettingsPageProps) {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/admin/${adminSlug}/settings`);
+      const response = await fetch(`${apiBaseUrl}/admin/${adminSlug}/settings`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -108,7 +112,7 @@ export default function SettingsPage({ params }: SettingsPageProps) {
     setSaveSuccess(false);
 
     try {
-      const response = await fetch(`/api/admin/${adminSlug}/settings`, {
+      const response = await fetch(`${apiBaseUrl}/admin/${adminSlug}/settings`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

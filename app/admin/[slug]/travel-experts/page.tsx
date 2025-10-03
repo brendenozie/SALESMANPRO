@@ -12,6 +12,8 @@ import ExpertModal, { ExpertData } from './ExpertModal';
 // import { toast } from 'react-toastify'; // Use a toast library for better feedback
 // import 'react-toastify/dist/ReactToastify.css'; // Don't forget to import the CSS
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
 // Define the ExpertData interface to match the API response
 // interface ExpertData {
 //   id: string;
@@ -68,7 +70,7 @@ export default function AdminExpertsPage() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/admin/experts?companyId=${slug}`);
+      const response = await fetch(`${apiBaseUrl}/admin/experts?companyId=${slug}`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -120,7 +122,7 @@ export default function AdminExpertsPage() {
     // toast.info('Deleting expert...');
     
     try {
-      const response = await fetch(`/api/admin/experts/${expertToDelete.id}`, {
+      const response = await fetch(`${apiBaseUrl}/admin/experts/${expertToDelete.id}`, {
         method: 'DELETE',
       });
 

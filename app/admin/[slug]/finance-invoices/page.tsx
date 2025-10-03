@@ -15,6 +15,11 @@ import {
   ArrowPathIcon,
 } from "@heroicons/react/24/solid";
 
+
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
+
 // --- Types ---
 interface Client {
   id: string;
@@ -109,7 +114,7 @@ export default function InvoicesPage({ params }: PageProps) {
   const fetchInvoices = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/admin/finance-invoices?companyId=${companyId}`);
+      const res = await fetch(`${apiBaseUrl}/admin/finance-invoices?companyId=${companyId}`);
       const data = await res.json();
       setInvoices(data.invoices);
     } catch (err) {
@@ -126,7 +131,7 @@ export default function InvoicesPage({ params }: PageProps) {
   // --- Fetch Clients ---
   const fetchClients = async () => {
     try {
-      const res = await fetch(`/api/admin/finance-clients?companyId=${companyId}`);
+      const res = await fetch(`${apiBaseUrl}/admin/finance-clients?companyId=${companyId}`);
       const data = await res.json();
       setClients(data.clients);
     } catch (err) {
@@ -183,8 +188,8 @@ export default function InvoicesPage({ params }: PageProps) {
     try {
       const res = await fetch(
         isEditing
-          ? `/api/admin/finance-invoices/${currentInvoice?.id}`
-          : `/api/admin/finance-invoices`,
+          ? `${apiBaseUrl}/admin/finance-invoices/${currentInvoice?.id}`
+          : `${apiBaseUrl}/admin/finance-invoices`,
         {
           method: isEditing ? "PUT" : "POST",
           headers: { "Content-Type": "application/json" },
@@ -209,7 +214,7 @@ export default function InvoicesPage({ params }: PageProps) {
 
     setLoading(true);
     try {
-      const res = await fetch(`/api/admin/finance-invoices/${id}`, { method: "DELETE" });
+      const res = await fetch(`${apiBaseUrl}/admin/finance-invoices/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to delete invoice");
       await fetchInvoices();
     } catch (err) {
@@ -222,7 +227,7 @@ export default function InvoicesPage({ params }: PageProps) {
   // --- Download Invoice ---
   const handleDownload = (id: string) => {
     console.log(`Downloading invoice ${id}...`);
-    // window.open(`/api/admin/finance-invoices/download/${id}`, "_blank");
+    // window.open(`${apiBaseUrl}/admin/finance-invoices/download/${id}`, "_blank");
   };
 
   return (

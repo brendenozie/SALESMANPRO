@@ -23,6 +23,9 @@ import interactionPlugin from '@fullcalendar/interaction';
 import { EventInput } from '@fullcalendar/core'; // Import EventInput type
 import toast from 'react-hot-toast'; // Import react-hot-toast
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
 // --- Type Definitions (Centralized & Unified) ---
 // Ensure these match your backend and the data passed from the server component
 export interface AppointmentItem {
@@ -214,7 +217,7 @@ export default function AdminAppointmentsClient({ initialAppointments, initialOr
         // Mock API call for order item status update - REPLACE WITH YOUR REAL API
         console.log(`Simulating API call to update OrderItem ${selectedItem.id} to status: ${newStatus}, Rider: ${rider}`);
         const res = await fetch(
-          `/api/admin/orders/${selectedItem.id}/status`, // Example API endpoint
+          `${apiBaseUrl}/admin/orders/${selectedItem.id}/status`, // Example API endpoint
           {
             method: "PUT",
             headers: { 'Content-Type': 'application/json' },

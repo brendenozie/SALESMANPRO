@@ -10,6 +10,10 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/solid";
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
+
 interface PageProps {
   params: {
     slug: string; // companyId
@@ -73,7 +77,7 @@ export default function CasesPage({ params }: PageProps) {
   const fetchCases = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/admin/cases?companyId=${companyId}`);
+      const res = await fetch(`${apiBaseUrl}/admin/cases?companyId=${companyId}`);
       const data: Case[] = await res.json();
       setCases(data);
     } catch (error) {
@@ -86,12 +90,12 @@ export default function CasesPage({ params }: PageProps) {
   const fetchClientsAndUsers = async () => {
     try {
       const clientsRes = await fetch(
-        `/api/admin/finance-clients?companyId=${companyId}`
+        `${apiBaseUrl}/admin/finance-clients?companyId=${companyId}`
       );
       const clientsData: { clients: Client[] } = await clientsRes.json();
       setClients(clientsData.clients);
 
-      const usersRes = await fetch(`/api/admin/experts?companyId=${companyId}`);
+      const usersRes = await fetch(`${apiBaseUrl}/admin/experts?companyId=${companyId}`);
       const usersData: User[] = await usersRes.json();
       setUsers(usersData);
     } catch (error) {
@@ -107,7 +111,7 @@ export default function CasesPage({ params }: PageProps) {
   const handleCreateOrUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const url = isEditing
-      ? `/api/admin/cases/${currentCase?.id}`
+      ? `${apiBaseUrl}/admin/cases/${currentCase?.id}`
       : "/api/admin/cases";
     const method = isEditing ? "PUT" : "POST";
 
@@ -147,7 +151,7 @@ export default function CasesPage({ params }: PageProps) {
   const handleDelete = async (id: string) => {
     if (window.confirm("Are you sure you want to delete this case?")) {
       try {
-        const res = await fetch(`/api/cases/${id}`, {
+        const res = await fetch(`${apiBaseUrl}/cases/${id}`, {
           method: "DELETE",
         });
         if (!res.ok) {

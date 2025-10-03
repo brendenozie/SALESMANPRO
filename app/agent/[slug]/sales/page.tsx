@@ -7,6 +7,8 @@ import UserNav from "@/components/AdminNav";
 
 ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement);
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
 type Sale = {
   id: string;
   productName: string;
@@ -29,7 +31,7 @@ const SalesSummaryPage = ({ salesData }: Props) => {
   const [filteredSales, setFilteredSales] = useState<Sale[]>(salesData);
 
   const fetchSalesData = async () => {
-    const url = `/api/agent/sales?startDate=${startDate}&endDate=${endDate}&salesAgentId=${salesAgentId}`;
+    const url = `${apiBaseUrl}/agent/sales?startDate=${startDate}&endDate=${endDate}&salesAgentId=${salesAgentId}`;
     const response = await fetch(url);
     const data = await response.json();
     setFilteredSales(data);

@@ -23,6 +23,8 @@ import {
 // Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
 const TargetPage = ({ salesAgentId }: { salesAgentId: string }) => {
   const [targets, setTargets] = useState<any>([]);
   const [loading, setLoading] = useState(true);
@@ -32,7 +34,7 @@ const TargetPage = ({ salesAgentId }: { salesAgentId: string }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`/api/agent/targets?salesAgentId=${salesAgentId}`);
+        const response = await fetch(`${apiBaseUrl}/agent/targets?salesAgentId=${salesAgentId}`);
         const data = await response.json();
 
         setTargets(data);

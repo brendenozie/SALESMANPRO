@@ -18,6 +18,8 @@ const loader = ({ src, width, quality }: { src: string; width: number; quality?:
 // Define the PromotionData interface
 
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
 // Function to get the color for the status badge
 const getStatusColor = (status: PromotionData['status']) => {
   switch (status) {
@@ -118,7 +120,7 @@ export default function AdminPromotionsPage() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/admin/promotion-discount?companyId=${slug}`);
+      const response = await fetch(`${apiBaseUrl}/admin/promotion-discount?companyId=${slug}`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -169,7 +171,7 @@ export default function AdminPromotionsPage() {
     const toastId = toast.loading(`Deleting promotion "${promotionToDelete.name}"...`);
 
     try {
-      const response = await fetch(`/api/admin/promotion-discount/${promotionToDelete.id}`, {
+      const response = await fetch(`${apiBaseUrl}/admin/promotion-discount/${promotionToDelete.id}`, {
         method: 'DELETE',
       });
 

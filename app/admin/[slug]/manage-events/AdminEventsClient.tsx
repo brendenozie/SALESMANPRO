@@ -21,6 +21,11 @@ import {
   IEvent
 } from '@/types/typings';
 
+
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
+
 type Agent = {
   id: string;
   name: string;
@@ -99,7 +104,7 @@ export default function AdminEventsClient({ slug, allOrganizers, allEvents }: Ad
         companyId: slug,
       }).toString();
 
-      const response = await fetch(`/api/admin/events?${query}`);
+      const response = await fetch(`${apiBaseUrl}/admin/events?${query}`);
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -154,7 +159,7 @@ export default function AdminEventsClient({ slug, allOrganizers, allEvents }: Ad
     setError(null);
     setSuccessMessage(null);
     try {
-      const response = await fetch(`/api/admin/events/${id}`, {
+      const response = await fetch(`${apiBaseUrl}/admin/events/${id}`, {
         method: 'DELETE',
       });
       if (!response.ok) {
@@ -180,7 +185,7 @@ export default function AdminEventsClient({ slug, allOrganizers, allEvents }: Ad
     setError(null); // Clear errors specific to the modal save operation
     try {
       const method = eventData.id ? 'PUT' : 'POST';
-      const url = eventData.id ? `/api/admin/events/${eventData.id}` : `/api/admin/events`;
+      const url = eventData.id ? `${apiBaseUrl}/admin/events/${eventData.id}` : `${apiBaseUrl}/admin/events`;
 
       // Assign a placeholder organizerId. In a real app, this would come from auth context. organizerId: 'admin_user_placeholder_id'
       const payload = { ...eventData, companyId: slug, };

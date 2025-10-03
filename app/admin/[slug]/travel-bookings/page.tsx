@@ -23,6 +23,8 @@ import ConfirmationModal from '@/components/ConfirmationModal';
 import TravelBookingModal from './TravelBookingModal';
 import toast from 'react-hot-toast'; // Replaced native alerts with a modern toast library
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
 // Define the TravelBookingData interface to match the API response
 export interface TravelBookingData {
   id: string;
@@ -219,7 +221,7 @@ export default function AdminBookingsPage({ params }: AdminBookingsPageProps) {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/admin/travel-bookings?companyId=${slug}`);
+      const response = await fetch(`${apiBaseUrl}/admin/travel-bookings?companyId=${slug}`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -274,7 +276,7 @@ export default function AdminBookingsPage({ params }: AdminBookingsPageProps) {
     const toastId = toast.loading(`Deleting booking "${bookingToDelete.title}"...`);
 
     try {
-      const response = await fetch(`/api/admin/travel-bookings/${bookingToDelete.id}`, {
+      const response = await fetch(`${apiBaseUrl}/admin/travel-bookings/${bookingToDelete.id}`, {
         method: 'DELETE',
       });
 
@@ -301,7 +303,7 @@ export default function AdminBookingsPage({ params }: AdminBookingsPageProps) {
 
     const toastId = toast.loading(`Updating status for "${bookingToUpdate.title}"...`);
     try {
-      const response = await fetch(`/api/admin/travel-bookings/${id}`, {
+      const response = await fetch(`${apiBaseUrl}/admin/travel-bookings/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

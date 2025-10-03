@@ -4,6 +4,10 @@ import React, { useState, useEffect } from 'react';
 import DonorForm from './DonorForm'; // Adjust path as needed
 import Modal from '@/components/Modal'; // Your existing Modal component
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
+
 // Assume these types are defined globally or imported
 interface User { id: string; name: string | null; email: string; }
 interface Company { id: string; name: string; }
@@ -58,14 +62,14 @@ const DonorManagementPage = ({ donationsData, donorsData, projectsData, campaign
       let response;
       if (editingDonor) {
         // Logic to update existing donor
-        response = await fetch(`/api/admin/donors/${editingDonor.id}`, {
+        response = await fetch(`${apiBaseUrl}/admin/donors/${editingDonor.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formData),
         });
       } else {
         // Logic to create new donor
-        response = await fetch('/api/admin/donors', {
+        response = await fetch(`${apiBaseUrl}/admin/donors`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formData),

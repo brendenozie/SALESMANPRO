@@ -13,6 +13,10 @@ import {
   ArrowPathIcon,
 } from '@heroicons/react/24/outline';
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
+
 // Define Data Types
 type Event = {
   id: string;
@@ -84,7 +88,7 @@ export default function AdminCheckinClient({ adminSlug, initialEvents }: Props) 
         search: searchTerm,
       }).toString();
       
-      const response = await fetch(`/api/admin/${adminSlug}/events/${selectedEventId}/check-in-attendees?${query}`);
+      const response = await fetch(`${apiBaseUrl}/admin/${adminSlug}/events/${selectedEventId}/check-in-attendees?${query}`);
       
       if (!response.ok) {
         const errorData = await response.json();
@@ -138,7 +142,7 @@ export default function AdminCheckinClient({ adminSlug, initialEvents }: Props) 
     setError(null);
     try {
       const newStatus = currentCheckedInStatus ? "REGISTERED" : "ATTENDED";
-      const response = await fetch(`/api/admin/${adminSlug}/check-in/${registrationId}`, {
+      const response = await fetch(`${apiBaseUrl}/admin/${adminSlug}/check-in/${registrationId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),

@@ -7,6 +7,8 @@ import { BriefcaseIcon, GlobeAltIcon, EnvelopeIcon, PhoneIcon, ChatBubbleBottomC
 import Image from 'next/image';
 import toast from 'react-hot-toast';
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
 // Define the ExpertData interface to match the expected API response
 export interface ExpertData {
   id?: string;
@@ -126,9 +128,9 @@ const ExpertModal: React.FC<ExpertModalProps> = ({ isOpen, onClose, onSave, expe
     }
 
     const method = expert ? 'PUT' : 'POST';
-    // Note: The URL for updating an expert would typically be `/api/admin/experts/${expert.id}`,
+    // Note: The URL for updating an expert would typically be `${apiBaseUrl}/admin/experts/${expert.id}`,
     // but based on your POST example, this PUT route needs to be implemented separately.
-    const url = expert ? `/api/admin/experts/${expert.id}` : `/api/admin/experts?companyId=${slug}`;
+    const url = expert ? `${apiBaseUrl}/admin/experts/${expert.id}` : `${apiBaseUrl}/admin/experts?companyId=${slug}`;
     const toastId = toast.loading(expert ? 'Updating expert...' : 'Adding new expert...');
 
     try {

@@ -20,12 +20,12 @@ import {
   HomeModernIcon,
   ShoppingBagIcon
 } from '@heroicons/react/24/outline';
-import ProfileSettings from '../@/components/profileSettings';
-import ActivityOverview from '../@/components/activityOverview';
-import ShippingAddress from '../@/components/shippingAddress';
-import SecurityOverview from '../@/components/security';
-import CommunicationSupport from '../@/components/communicationSupport';
-import AchievementsBadges from '../@/components/AchievementsBadges';
+import ProfileSettings from '@/components/profileSettings';
+import ActivityOverview from '@/components/activityOverview';
+import ShippingAddress from '@/components/shippingAddress';
+import SecurityOverview from '@/components/security';
+import CommunicationSupport from '@/components/communicationSupport';
+import AchievementsBadges from '@/components/AchievementsBadges';
 import { useStateContext } from '@/contexts/ContextProvider.js';
 import { useSession, signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
@@ -47,6 +47,9 @@ const sampleOrders = [
   { id: 'ORD-003', item: 'Gaming Mouse', date: '2025-01-25', status: 'Processing' },
 ];
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
 const ProfilePage: React.FC = () => {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -60,7 +63,7 @@ const ProfilePage: React.FC = () => {
 
   useEffect(() => {
     if (status === 'authenticated' && userId) {
-      axios.get(`/api/shop/user/stats`, { params: { userId } })
+      axios.get(`${apiBaseUrl}/shop/user/stats`, { params: { userId } })
         .then(res => setStats(res.data.body))
         .catch(err => console.error(err));
     }

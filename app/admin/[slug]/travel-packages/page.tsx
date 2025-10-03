@@ -12,6 +12,8 @@ import ConfirmationModal from '@/components/ConfirmationModal';
 
 import { useParams } from 'next/navigation';
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
 // Define the data structure for a Tour Package
 interface TourPackage {
   id: string;
@@ -324,8 +326,8 @@ export default function AdminPackages() {
     setIsLoading(true);
     try {
       const [packagesRes, destinationsRes] = await Promise.all([
-        fetch(`/api/admin/travel-packages?companyId=${slug}`),
-        fetch(`/api/admin/destinations?companyId=${slug}`)
+        fetch(`${apiBaseUrl}/admin/travel-packages?companyId=${slug}`),
+        fetch(`${apiBaseUrl}/admin/destinations?companyId=${slug}`)
       ]);
 
       const packagesData: TourPackage[] = await packagesRes.json();
@@ -357,7 +359,7 @@ export default function AdminPackages() {
     setIsModalOpen(false);
     const isEditing = !!formData.id;
     const method = isEditing ? 'PUT' : 'POST';
-    const url = isEditing ? `/api/admin/travel-packages/${formData.id}` : '/api/admin/travel-packages';
+    const url = isEditing ? `${apiBaseUrl}/admin/travel-packages/${formData.id}` : `${apiBaseUrl}/admin/travel-packages`;
     const actionText = isEditing ? 'updating' : 'creating';
     const successText = isEditing ? 'updated' : 'added';
 
@@ -397,7 +399,7 @@ export default function AdminPackages() {
     const toastId = toast.loading(`Deleting package "${name}"...`);
 
     try {
-      const response = await fetch(`/api/admin/travel-packages/${id}`, {
+      const response = await fetch(`${apiBaseUrl}/admin/travel-packages/${id}`, {
         method: 'DELETE',
       });
 

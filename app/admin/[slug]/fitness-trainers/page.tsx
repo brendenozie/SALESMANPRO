@@ -11,6 +11,10 @@ import ConfirmationModal from '@/components/ConfirmationModal';
 import TrainerModal, { TrainerData } from './TrainerModal';
 import toast from 'react-hot-toast';
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
+
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
 
 
@@ -149,7 +153,7 @@ export default function TrainersPage({ params }: TrainersPageProps) {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/admin/trainers?companyId=${slug}`);
+      const response = await fetch(`${apiBaseUrl}/admin/trainers?companyId=${slug}`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -200,7 +204,7 @@ export default function TrainersPage({ params }: TrainersPageProps) {
     const toastId = toast.loading(`Deleting trainer "${trainerToDelete.name}"...`);
 
     try {
-      const response = await fetch(`/api/admin/trainers/${trainerToDelete.id}`, {
+      const response = await fetch(`${apiBaseUrl}/admin/trainers/${trainerToDelete.id}`, {
         method: 'DELETE',
       });
 

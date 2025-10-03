@@ -10,6 +10,8 @@ import load from "../../../assets/load.png";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
 // Custom product search hook
 function useProductSearch({ searchTerm, filters }) {
   const [products, setProducts] = useState([]);
@@ -37,7 +39,7 @@ function useProductSearch({ searchTerm, filters }) {
       filters.category.forEach(c => params.append('category', c));
       filters.subCategory.forEach(s => params.append('subCategory', s));
 
-      const res = await fetch(`/api/shop/products?${params}`);
+      const res = await fetch(`${apiBaseUrl}/shop/products?${params}`);
       if (!res.ok) throw new Error('Failed to fetch products');
       const data = await res.json();
       setProducts(prev => pageNum === 1 ? data.products : [...prev, ...data.products]);

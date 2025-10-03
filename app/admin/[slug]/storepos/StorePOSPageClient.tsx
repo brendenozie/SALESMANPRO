@@ -28,6 +28,10 @@ import {
 } from 'chart.js';
 import { MarketListingForm, IStoreCategory } from '@/types/typings';
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
+
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 // --- Type Definitions (aligned with frontend needs, will be populated from API) ---
@@ -235,7 +239,7 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
       // setProducts(fetchedProducts);
       // In a real app:
       // try {
-      //   const response = await fetch(`/api/products?companyId=${companyId}`);
+      //   const response = await fetch(`${apiBaseUrl}/products?companyId=${companyId}`);
       //   if (!response.ok) throw new Error('Failed to fetch products');
       //   const data = await response.json();
       //   setProducts(data);
@@ -260,7 +264,7 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
       // In a real app:
       // try {
       //   // Assuming an endpoint like /api/auth/me or /api/users/{currentUserId}
-      //   const response = await fetch(`/api/users/current`); // Or get current user ID from auth context
+      //   const response = await fetch(`${apiBaseUrl}/users/current`); // Or get current user ID from auth context
       //   if (!response.ok) throw new Error('Failed to fetch agent info');
       //   const data = await response.json();
       //   setCurrentAgent(data);
@@ -283,7 +287,7 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
       setCompanyInfo(fetchedCompany);
       // In a real app:
       // try {
-      //   const response = await fetch(`/api/companies/${companyId}`);
+      //   const response = await fetch(`${apiBaseUrl}/companies/${companyId}`);
       //   if (!response.ok) throw new Error('Failed to fetch company info');
       //   const data = await response.json();
       //   setCompanyInfo(data);
@@ -434,7 +438,7 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
     // Simulate API call to /api/customer-orders
     try {
       // In a real app:
-      // const response = await fetch('/api/customer-orders', {
+      // const response = await fetch(`${apiBaseUrl}/customer-orders', {
       //   method: 'POST',
       //   headers: { 'Content-Type': 'application/json' },
       //   body: JSON.stringify(orderPayload),
@@ -717,7 +721,7 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
       </div>
 
       {/* Confirmation Modal */}
-      <Modal isOpen={showConfirmationModal} onClose={() => setShowConfirmationModal(false)}>
+      <Modal title="Confirm Payment" isOpen={showConfirmationModal} onClose={() => setShowConfirmationModal(false)}>
         <div className="bg-gray-800 text-gray-100 p-8 rounded-xl shadow-2xl w-full max-w-sm mx-auto text-center">
           {paymentStatus === 'success' ? (
             <>
@@ -748,7 +752,7 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
       </Modal>
 
       {/* Payment Processing Modal (Simple) */}
-      <Modal isOpen={showPaymentModal} onClose={() => setShowPaymentModal(false)}>
+      <Modal title="Processing Payment" isOpen={showPaymentModal} onClose={() => setShowPaymentModal(false)}>
         <div className="bg-gray-800 text-gray-100 p-8 rounded-xl shadow-2xl w-full max-w-sm mx-auto text-center">
           <CreditCardIcon className="h-20 w-20 text-indigo-400 mx-auto mb-6 animate-pulse" />
           <h2 className="text-3xl font-bold text-indigo-400 mb-4">Processing Payment...</h2>

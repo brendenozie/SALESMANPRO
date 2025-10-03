@@ -6,6 +6,10 @@ import { XMarkIcon } from '@heroicons/react/24/solid';
 import Image from 'next/image';
 import toast from 'react-hot-toast';
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
+
 // Define the LocationData interface to match the expected API response
 export interface LocationData {
   id?: string; // Optional for new locations
@@ -115,7 +119,7 @@ const LocationModal: React.FC<LocationModalProps> = ({ isOpen, onClose, onSave, 
     }
 
     const method = location ? 'PUT' : 'POST';
-    const url = location ? `/api/admin/locationsv2/${location.id}` : `/api/admin/locationsv2?companyId=${slug}`;
+    const url = location ? `${apiBaseUrl}/admin/locationsv2/${location.id}` : `${apiBaseUrl}/admin/locationsv2?companyId=${slug}`;
 
     try {
       const response = await fetch(url, {

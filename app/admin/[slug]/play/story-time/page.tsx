@@ -5,6 +5,10 @@ import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
+
 // --- Sample Data (Used if API fails or returns no data) ---
 // This structure mimics what we'd map from your Course model
 const sampleStories = [
@@ -49,7 +53,7 @@ export default function StoryTimePage() {
       setError(null);
       try {
         // Fetch courses from your API, filtering by the playgroup academic level
-        const response = await fetch(`/api/courses?academicLevelId=${PLAYGROUP_ACADEMIC_LEVEL_ID}`);
+        const response = await fetch(`${apiBaseUrl}/courses?academicLevelId=${PLAYGROUP_ACADEMIC_LEVEL_ID}`);
 
         if (response.ok) {
           // throw new Error(`HTTP error! status: ${response.status}`);

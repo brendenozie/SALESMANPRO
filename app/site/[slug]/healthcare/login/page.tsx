@@ -8,6 +8,9 @@ import {
   XMarkIcon
 } from '@heroicons/react/24/solid';
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
 // Animation variants for the main container and form
 const containerVariants = {
   hidden: { opacity: 0, scale: 0.95 },
@@ -61,7 +64,7 @@ export default function LoginPage() {
     // In a real application, you would send the email, password, and role to your backend.
     // The backend would then validate based on the role (e.g., check 'loginCode' for doctor/staff/admin).
     try {
-      const response = await fetch('/api/auth/login', { // This endpoint needs to be implemented
+      const response = await fetch(`${apiBaseUrl}/auth/login`, { // This endpoint needs to be implemented
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

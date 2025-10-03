@@ -12,6 +12,9 @@ import {
   ArrowPathIcon,
 } from '@heroicons/react/24/outline';
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
 const sectionVariants = {
   hidden: { opacity: 0, y: 30 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: "easeOut" } },
@@ -61,7 +64,7 @@ export default function AdminTicketsClient({ slug, initialTickets }: AdminTicket
   const handleDelete = async (id: string) => {
     if (!window.confirm("Are you sure you want to delete this ticket type?")) return;
     try {
-      const response = await fetch(`/api/admin/${slug}/tickets/${id}`, { method: 'DELETE' });
+      const response = await fetch(`${apiBaseUrl}/admin/${slug}/tickets/${id}`, { method: 'DELETE' });
       if (!response.ok) throw new Error("Failed to delete");
       setTickets(prev => prev.filter(t => t.id !== id));
     } catch (err: any) {
@@ -74,8 +77,8 @@ export default function AdminTicketsClient({ slug, initialTickets }: AdminTicket
     try {
       const method = ticketData.id ? 'PUT' : 'POST';
       const url = ticketData.id
-        ? `/api/admin/${slug}/tickets/${ticketData.id}`
-        : `/api/admin/${slug}/tickets`;
+        ? `${apiBaseUrl}/admin/${slug}/tickets/${ticketData.id}`
+        : `${apiBaseUrl}/admin/${slug}/tickets`;
 
       const response = await fetch(url, {
         method,

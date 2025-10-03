@@ -5,6 +5,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
+
 // --- Sample Data (Used if API fails or story not found) ---
 // This structure mimics what we'd map from your Course and CourseMaterial models
 const sampleStoryData = {
@@ -68,7 +72,7 @@ export default function StoryViewPage() {
       setCurrentStoryData(null); // Clear previous data
 
       try {
-        const response = await fetch(`/api/courses/${storyId}`);
+        const response = await fetch(`${apiBaseUrl}/courses/${storyId}`);
 
         if (response.ok) {
           // throw new Error(`HTTP error! status: ${response.status}`);

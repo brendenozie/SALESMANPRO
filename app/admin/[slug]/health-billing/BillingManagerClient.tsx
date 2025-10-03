@@ -10,6 +10,10 @@ import {
 } from '@heroicons/react/24/solid';
 import { Invoice, PatientOption } from './page';
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
+
 // Animation variants (from original file)
 const fadeIn = {
   hidden: { opacity: 0, y: 50 },
@@ -113,7 +117,7 @@ export const BillingManagerClient: React.FC<BillingManagerProps> = ({
     setError(null);
     try {
       const statusParam = filterStatus === 'All' ? '' : `&filterStatus=${filterStatus}`;
-      const response = await fetch(`/api/admin/billing?companyId=${companyId}&searchTerm=${encodeURIComponent(searchTerm)}${statusParam}`);
+      const response = await fetch(`${apiBaseUrl}/admin/billing?companyId=${companyId}&searchTerm=${encodeURIComponent(searchTerm)}${statusParam}`);
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to fetch invoices');
@@ -185,7 +189,7 @@ export const BillingManagerClient: React.FC<BillingManagerProps> = ({
         companyId,
       };
 
-      const response = await fetch('/api/admin/billing', {
+      const response = await fetch(`${apiBaseUrl}/admin/billing`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -222,7 +226,7 @@ export const BillingManagerClient: React.FC<BillingManagerProps> = ({
         items: editItemsString.split(',').map(item => item.trim()).filter(item => item), // Convert string to array
       };
 
-      const response = await fetch(`/api/admin/billing/${selectedInvoice.id}`, {
+      const response = await fetch(`${apiBaseUrl}/admin/billing/${selectedInvoice.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -253,7 +257,7 @@ export const BillingManagerClient: React.FC<BillingManagerProps> = ({
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/admin/billing/${selectedInvoice.id}`, {
+      const response = await fetch(`${apiBaseUrl}/admin/billing/${selectedInvoice.id}`, {
         method: 'DELETE',
       });
 

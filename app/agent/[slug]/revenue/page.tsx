@@ -15,6 +15,8 @@ import UserNav from "@/components/AdminNav";
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
 const RevenueMonitoringPage = () => {
   const [salesAgentId, setSalesAgentId] = useState("63f7c9e2d91b1b2a5e80b016");
   const [startDate, setStartDate] = useState("");
@@ -29,7 +31,7 @@ const RevenueMonitoringPage = () => {
 
     try {
       const response = await fetch(
-        `/api/agent/revenue?salesAgentId=${salesAgentId}&startDate=${startDate}&endDate=${endDate}`
+        `${apiBaseUrl}/agent/revenue?salesAgentId=${salesAgentId}&startDate=${startDate}&endDate=${endDate}`
       );
       const data = await response.json();
 

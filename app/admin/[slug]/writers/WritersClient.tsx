@@ -32,6 +32,9 @@ import {
 } from "@heroicons/react/24/outline";
 import Modal from "@/components/Modal"; // Assuming you have a generic Modal component
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
 // ✨ Register Chart.js components
 ChartJS.register(
   CategoryScale,
@@ -568,7 +571,7 @@ const WritersClient: React.FC<ClientProps> = ({ writersData, companyId }) => {
     const toastId = toast.loading(editingWriter ? 'Updating writer...' : 'Adding writer...');
 
     try {
-      const endpoint = editingWriter ? `/api/admin/writers/${editingWriter.id}` : '/api/admin/writers';
+      const endpoint = editingWriter ? `${apiBaseUrl}/admin/writers/${editingWriter.id}` : `${apiBaseUrl}/admin/writers`;
       const method = editingWriter ? 'PUT' : 'POST';
       
       const bodyToSend = {
@@ -599,7 +602,7 @@ const WritersClient: React.FC<ClientProps> = ({ writersData, companyId }) => {
       }
 
       // Re-fetch logic (simplified, assuming this route hits the same data endpoint)
-      const freshDataRes = await fetch(`/api/admin/writers?companyId=${companyId}`, { next: { revalidate: 60 } });
+      const freshDataRes = await fetch(`${apiBaseUrl}/admin/writers?companyId=${companyId}`, { next: { revalidate: 60 } });
       const updatedWriters: Writer[] = await freshDataRes.json();
       
       setWriters(updatedWriters);
@@ -624,7 +627,7 @@ const WritersClient: React.FC<ClientProps> = ({ writersData, companyId }) => {
     const toastId = toast.loading('Deleting writer...');
 
     try {
-      const response = await fetch(`/api/admin/writers/${writerToDelete}`, { method: 'DELETE' });
+      const response = await fetch(`${apiBaseUrl}/admin/writers/${writerToDelete}`, { method: 'DELETE' });
       if (!response.ok) throw new Error('Failed to delete writer.');
       setWriters(writers.filter((w) => w.id !== writerToDelete));
       toast.success('Writer deleted successfully! 🗑️', { id: toastId });

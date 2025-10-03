@@ -40,7 +40,7 @@ async function uploadFiles(
     const fd = new FormData();
     fd.append('type', type);
     fd.append('file', file);
-    return fetch('/api/upload', { method: 'POST', body: fd })
+    return fetch(`${apiUrl}/upload`, { method: 'POST', body: fd })
       .then((res) => {
         if (!res.ok) throw new Error(`${type} upload failed`);
         return res.json();

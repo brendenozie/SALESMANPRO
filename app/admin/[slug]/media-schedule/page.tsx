@@ -18,6 +18,10 @@ import { StaticImageData } from "next/image";
  * Type Definitions
  */
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
+
 interface ImageLoaderProps {
   src: string | StaticImageData;
   width: number;
@@ -344,7 +348,7 @@ export default function SchedulePage() {
   async function fetchScheduledContent() {
     setIsLoading(true);
     try {
-      const res = await fetch(`/api/admin/content?companyId=${adminSlug}`);
+      const res = await fetch(`${apiBaseUrl}/admin/content?companyId=${adminSlug}`);
       if (!res.ok) throw new Error("Failed to fetch content");
       const data: ScheduledContent[] = await res.json();
       setScheduledContent(data || []);
@@ -359,8 +363,8 @@ export default function SchedulePage() {
   async function fetchAlbums() {
     try {
       const [photoRes, videoRes] = await Promise.all([
-        fetch(`/api/admin/photo-albums?companyId=${adminSlug}`),
-        fetch(`/api/admin/video-albums?companyId=${adminSlug}`),
+        fetch(`${apiBaseUrl}/admin/photo-albums?companyId=${adminSlug}`),
+        fetch(`${apiBaseUrl}/admin/video-albums?companyId=${adminSlug}`),
       ]);
       if (photoRes.ok) {
         const photos: PhotoAlbum[] = await photoRes.json();
@@ -381,7 +385,7 @@ export default function SchedulePage() {
     setIsSubmitting(true);
     try {
       // POST with companyId in query to match other calls
-      const res = await fetch(`/api/admin/content?companyId=${adminSlug}`, {
+      const res = await fetch(`${apiBaseUrl}/admin/content?companyId=${adminSlug}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...formData, companyId: adminSlug }),
@@ -406,7 +410,7 @@ export default function SchedulePage() {
     if (!selectedContent) return;
     setIsSubmitting(true);
     try {
-      const res = await fetch(`/api/admin/content/${selectedContent.id}?companyId=${adminSlug}`, {
+      const res = await fetch(`${apiBaseUrl}/admin/content/${selectedContent.id}?companyId=${adminSlug}`, {
         method: "DELETE",
       });
       if (!res.ok) throw new Error("Failed to delete content");

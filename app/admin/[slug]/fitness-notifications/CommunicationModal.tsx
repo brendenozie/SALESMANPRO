@@ -5,6 +5,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { XMarkIcon, EnvelopeIcon, PhoneIcon, BellIcon, ChatBubbleLeftRightIcon, CheckCircleIcon, ExclamationCircleIcon, ClockIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
+
 // Define interfaces for data fetched by the modal
 interface ClientOption {
   id: string;
@@ -62,7 +66,7 @@ const CommunicationModal: React.FC<CommunicationModalProps> = ({ isOpen, onClose
     const fetchClients = async () => {
       setLoadingForm(true);
       try {
-        const response = await fetch(`/api/admin/fitness-clients?companyId=${slug}`);
+        const response = await fetch(`${apiBaseUrl}/admin/fitness-clients?companyId=${slug}`);
         const data = await response.json();
         if (!response.ok) throw new Error(data.message || 'Failed to fetch clients.');
         setClients(data.map((c: any) => ({ id: c.id, name: c.name, email: c.email })));
@@ -121,7 +125,7 @@ const CommunicationModal: React.FC<CommunicationModalProps> = ({ isOpen, onClose
     }
 
     const method = communication ? 'PUT' : 'POST';
-    const url = communication ? `/api/admin/communications/${communication.id}` : `/api/admin/communications?companyId=${slug}`;
+    const url = communication ? `${apiBaseUrl}/admin/communications/${communication.id}` : `${apiBaseUrl}/admin/communications?companyId=${slug}`;
 
     try {
       const response = await fetch(url, {

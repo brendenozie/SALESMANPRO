@@ -5,6 +5,9 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { HomeIcon, PlusIcon, PencilIcon, TrashIcon, MapPinIcon } from '@heroicons/react/24/outline'; // Assuming Heroicons
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
 // Type definition for a Location
 interface Location {
   id: string;
@@ -44,7 +47,7 @@ export default function PropertiesLocationsPage({ params }: LocationsPageProps) 
   //   const fetchLocations = async () => {
   //     try {
   //       // Replace with your actual API endpoint
-  //       const response = await fetch(`/api/admin/${slug}/locations`);
+  //       const response = await fetch(`${apiBaseUrl}/admin/${slug}/locations`);
   //       if (!response.ok) {
   //         throw new Error('Failed to fetch locations');
   //       }

@@ -6,6 +6,8 @@ import { XMarkIcon } from '@heroicons/react/24/solid';
 import Image from 'next/image';
 import toast from 'react-hot-toast';
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
 // Define the VirtualTourData interface to match the expected API response
 export interface VirtualTourData {
   id?: string;
@@ -81,7 +83,7 @@ const VirtualTourModal: React.FC<VirtualTourModalProps> = ({ isOpen, onClose, on
     }
 
     const method = tour ? 'PUT' : 'POST';
-    const url = tour ? `/api/admin/virtual-tours/${tour.id}` : `/api/admin/virtual-tours?companyId=${slug}`;
+    const url = tour ? `${apiBaseUrl}/admin/virtual-tours/${tour.id}` : `${apiBaseUrl}/admin/virtual-tours?companyId=${slug}`;
 
     const toastId = toast.loading(`${tour ? 'Updating' : 'Adding'} tour...`);
 

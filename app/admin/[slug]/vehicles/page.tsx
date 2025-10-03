@@ -118,7 +118,7 @@ export default function VehicleManagementPage({ params }: VehicleManagementPageP
   // --- Data Fetching for Locations ---
   const fetchLocations = useCallback(async () => {
     try {
-      const response = await fetch('/api/admin/locations');
+      const response = await fetch(`${apiUrl}/admin/locations`);
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || `HTTP error! Status: ${response.status}`);

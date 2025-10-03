@@ -20,8 +20,9 @@ import { useStoreContext } from "@/contexts/StoreContext";
 import ServiceListingForm from "./components/ServiceListingForm"; 
 import { MarketListingForm } from "@/types/typings"; 
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
 
-  const apiUrl = '/api'; // Define your API base URL here
+
 // --- Props & Helper Definitions (Retained/Refined) ---
 
 interface Props {

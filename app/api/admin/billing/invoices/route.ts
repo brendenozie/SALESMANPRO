@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
 // --- GET /api/admin/[slug]/billing/invoices
 export const GET = withApiHandler(async (req, { params, user }) => {
   const companyId = params.slug;
@@ -57,7 +59,7 @@ export const GET = withApiHandler(async (req, { params, user }) => {
     status:
       (inv.status.charAt(0).toUpperCase() +
         inv.status.slice(1).toLowerCase()) as "Paid" | "Unpaid" | "Overdue",
-    downloadUrl: `/api/invoices/${companyId}/${inv.id}.pdf`,
+    downloadUrl: `${apiBaseUrl}/invoices/${companyId}/${inv.id}.pdf`,
     periodStart: new Date(
       new Date(inv.invoiceDate).getTime() - 30 * 24 * 60 * 60 * 1000
     ).toISOString(),

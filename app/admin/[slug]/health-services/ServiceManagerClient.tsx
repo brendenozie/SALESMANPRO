@@ -10,6 +10,9 @@ import {
 } from '@heroicons/react/24/solid';
 
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
+
 // (Service interface, fadeIn, modalVariants, and getStatusColor utility should be defined or imported here)
 // Copying Service interface from the original page.tsx for completeness:
 interface Service {
@@ -120,7 +123,7 @@ export const ServiceManagerClient: React.FC<ServiceManagerProps> = ({ initialSer
     try {
       // API call remains the same, but now it's only triggered by user interaction
       const statusParam = filterStatus === 'All' ? '' : `&filterStatus=${filterStatus}`;
-      const response = await fetch(`/api/admin/health-services?companyId=${companyId}&searchTerm=${encodeURIComponent(searchTerm)}${statusParam}`);
+      const response = await fetch(`${apiBaseUrl}/admin/health-services?companyId=${companyId}&searchTerm=${encodeURIComponent(searchTerm)}${statusParam}`);
       
       // ... (Error handling and data parsing)
       if (!response.ok) {
@@ -177,7 +180,7 @@ export const ServiceManagerClient: React.FC<ServiceManagerProps> = ({ initialSer
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch('/api/admin/health-services', {
+        const response = await fetch(`${apiBaseUrl}/admin/health-services`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -208,7 +211,7 @@ export const ServiceManagerClient: React.FC<ServiceManagerProps> = ({ initialSer
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch(`/api/admin/health-services/${selectedService.id}`, {
+        const response = await fetch(`${apiBaseUrl}/admin/health-services/${selectedService.id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -239,7 +242,7 @@ export const ServiceManagerClient: React.FC<ServiceManagerProps> = ({ initialSer
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch(`/api/admin/health-services/${selectedService.id}`, {
+        const response = await fetch(`${apiBaseUrl}/admin/health-services/${selectedService.id}`, {
           method: 'DELETE',
         });
   

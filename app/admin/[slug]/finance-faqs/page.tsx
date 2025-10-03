@@ -12,6 +12,11 @@ import {
 } from "@heroicons/react/24/solid";
 import { useParams } from "next/navigation";
 
+
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
+
 // Types
 interface FAQ {
   id: string;
@@ -43,7 +48,7 @@ const FAQsPage = () => {
   const fetchFaqs = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/admin/faqs?companyId=${companyId}`);
+      const res = await fetch(`${apiBaseUrl}/admin/faqs?companyId=${companyId}`);
       const data: { faqs: FAQ[] } = await res.json();
       setFaqs(data.faqs);
     } catch (error) {
@@ -93,8 +98,8 @@ const FAQsPage = () => {
 
     try {
       const url = isEditing
-        ? `/api/admin/faqs/${currentFAQ?.id}`
-        : `/api/admin/faqs?companyId=${companyId}`;
+        ? `${apiBaseUrl}/admin/faqs/${currentFAQ?.id}`
+        : `${apiBaseUrl}/admin/faqs?companyId=${companyId}`;
       const method = isEditing ? "PUT" : "POST";
 
       const res = await fetch(url, {
@@ -118,7 +123,7 @@ const FAQsPage = () => {
     if (window.confirm("Are you sure you want to delete this FAQ?")) {
       setLoading(true);
       try {
-        const res = await fetch(`/api/admin/faqs/${id}`, { method: "DELETE" });
+        const res = await fetch(`${apiBaseUrl}/admin/faqs/${id}`, { method: "DELETE" });
         if (!res.ok) throw new Error("Failed to delete FAQ");
         await fetchFaqs();
       } catch (error) {

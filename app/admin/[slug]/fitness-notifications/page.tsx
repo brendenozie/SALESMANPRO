@@ -10,6 +10,10 @@ import toast from 'react-hot-toast'; // Import react-hot-toast
 import ConfirmationModal from '@/components/ConfirmationModal'; // Re-used ConfirmationModal
 import CommunicationModal, { CommunicationData } from './CommunicationModal'; // Re-used CommunicationModal
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
+
 // Define the CommunicationData interface to match the API response
 // interface CommunicationData {
 //   id: string;
@@ -142,7 +146,7 @@ export default function CommunicationsPage({ params }: CommunicationsPageProps) 
   const fetchCommunications = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/admin/communications?companyId=${slug}`);
+      const response = await fetch(`${apiBaseUrl}/admin/communications?companyId=${slug}`);
       if (!response.ok) {
         throw new Error('Failed to fetch communications.');
       }
@@ -192,7 +196,7 @@ export default function CommunicationsPage({ params }: CommunicationsPageProps) 
     const toastId = toast.loading('Deleting message...');
 
     try {
-      const response = await fetch(`/api/admin/communications/${communicationToDelete.id}`, {
+      const response = await fetch(`${apiBaseUrl}/admin/communications/${communicationToDelete.id}`, {
         method: 'DELETE',
       });
 

@@ -16,6 +16,10 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/solid";
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
+
 // ---------- Types ----------
 type AppointmentStatus = "SCHEDULED" | "CONFIRMED" | "CANCELLED" | "COMPLETED";
 
@@ -128,7 +132,7 @@ export default function AppointmentsPage({ params }: PageProps) {
   const fetchAppointments = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/admin/finance-appointments?companyId=${companyId}`);
+      const res = await fetch(`${apiBaseUrl}/admin/finance-appointments?companyId=${companyId}`);
       if (!res.ok) throw new Error("Failed to fetch appointments");
       const data: Appointment[] = await res.json();
       setAppointments(data);
@@ -142,8 +146,8 @@ export default function AppointmentsPage({ params }: PageProps) {
   const fetchClientsAndUsers = async () => {
     try {
       const [clientsRes, usersRes] = await Promise.all([
-        fetch(`/api/admin/finance-clients?companyId=${companyId}`),
-        fetch(`/api/admin/finance-experts?companyId=${companyId}`),
+        fetch(`${apiBaseUrl}/admin/finance-clients?companyId=${companyId}`),
+        fetch(`${apiBaseUrl}/admin/finance-experts?companyId=${companyId}`),
       ]);
       if (!clientsRes.ok || !usersRes.ok)
         throw new Error("Failed to fetch clients or users");
@@ -211,7 +215,7 @@ export default function AppointmentsPage({ params }: PageProps) {
     try {
       const res = await fetch(
         isEditing
-          ? `/api/admin/finance-appointments/${currentAppointment?.id}`
+          ? `${apiBaseUrl}/admin/finance-appointments/${currentAppointment?.id}`
           : "/api/admin/finance-appointments",
         {
           method: isEditing ? "PUT" : "POST",
@@ -235,7 +239,7 @@ export default function AppointmentsPage({ params }: PageProps) {
     if (window.confirm("Are you sure you want to delete this appointment?")) {
       setLoading(true);
       try {
-        const res = await fetch(`/api/admin/finance-appointments/${id}`, {
+        const res = await fetch(`${apiBaseUrl}/admin/finance-appointments/${id}`, {
           method: "DELETE",
         });
         if (!res.ok) throw new Error("Failed to delete appointment");

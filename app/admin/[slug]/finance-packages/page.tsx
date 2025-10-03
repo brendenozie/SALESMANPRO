@@ -13,6 +13,11 @@ import {
   StarIcon,
 } from "@heroicons/react/24/solid";
 
+
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
+
 const packageStatusOptions = ["ACTIVE", "INACTIVE", "FEATURED"] as const;
 
 type PackageStatus = (typeof packageStatusOptions)[number];
@@ -64,7 +69,7 @@ const PackagesPage = ({ params }: PageProps) => {
   const fetchPackages = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/admin/packages?companyId=${companyId}`);
+      const res = await fetch(`${apiBaseUrl}/admin/packages?companyId=${companyId}`);
       const data = await res.json();
       setPackages(data.packages as ServicePackage[]);
     } catch (error) {
@@ -153,8 +158,8 @@ const PackagesPage = ({ params }: PageProps) => {
     try {
       const res = await fetch(
         isEditing
-          ? `/api/admin/packages/${currentPackage?.id}`
-          : `/api/admin/packages`,
+          ? `${apiBaseUrl}/admin/packages/${currentPackage?.id}`
+          : `${apiBaseUrl}/admin/packages`,
         {
           method: isEditing ? "PUT" : "POST",
           headers: { "Content-Type": "application/json" },
@@ -177,7 +182,7 @@ const PackagesPage = ({ params }: PageProps) => {
     if (window.confirm("Are you sure you want to delete this package?")) {
       setLoading(true);
       try {
-        const res = await fetch(`/api/admin/packages/${id}`, {
+        const res = await fetch(`${apiBaseUrl}/admin/packages/${id}`, {
           method: "DELETE",
         });
         if (!res.ok) throw new Error("Failed to delete package");

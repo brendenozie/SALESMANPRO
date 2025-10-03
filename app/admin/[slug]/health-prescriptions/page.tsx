@@ -3,6 +3,10 @@
 import React from 'react';
 import { PrescriptionManager } from './PrescriptionManager'; // Import the Client Component
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
+
 // Define interfaces (should be moved to a types.ts file in a real app)
 interface Prescription {
   id: string;
@@ -71,7 +75,7 @@ async function getDoctorOptions(companyId: string): Promise<DoctorOption[]> {
 //     setError(null);
 //     try {
 //       const statusParam = filterStatus === 'All' ? '' : `&filterStatus=${filterStatus}`;
-//       const response = await fetch(`/api/admin/prescriptions?companyId=${companyId}&searchTerm=${encodeURIComponent(searchTerm)}${statusParam}`);
+//       const response = await fetch(`${apiBaseUrl}/admin/prescriptions?companyId=${companyId}&searchTerm=${encodeURIComponent(searchTerm)}${statusParam}`);
 //       if (!response.ok) {
 //         const errorData = await response.json();
 //         throw new Error(errorData.error || 'Failed to fetch prescriptions');

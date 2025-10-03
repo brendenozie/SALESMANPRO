@@ -11,6 +11,10 @@ import {
   ExclamationCircleIcon,
 } from '@heroicons/react/24/outline';
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
+
 // Define the types (important for clarity, matching the server component)
 type Order = {
   id: string;
@@ -106,7 +110,7 @@ export default function AdminOrdersClient({ adminSlug, initialOrders, allOrganiz
     setError(null);
     try {
       // Endpoint used by the client for a full refresh
-      const response = await fetch(`/api/admin/${adminSlug}/orders`);
+      const response = await fetch(`${apiBaseUrl}/admin/${adminSlug}/orders`);
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
@@ -150,7 +154,7 @@ export default function AdminOrdersClient({ adminSlug, initialOrders, allOrganiz
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/admin/${adminSlug}/orders/${orderId}/status`, {
+      const response = await fetch(`${apiBaseUrl}/admin/${adminSlug}/orders/${orderId}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),
@@ -183,7 +187,7 @@ export default function AdminOrdersClient({ adminSlug, initialOrders, allOrganiz
     setError(null);
     try {
       // Fetch detailed order data
-      const response = await fetch(`/api/admin/${adminSlug}/orders/${orderId}`);
+      const response = await fetch(`${apiBaseUrl}/admin/${adminSlug}/orders/${orderId}`);
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
@@ -213,7 +217,7 @@ export default function AdminOrdersClient({ adminSlug, initialOrders, allOrganiz
         export: 'csv'
       }).toString();
 
-      const response = await fetch(`/api/admin/${adminSlug}/orders?${query}`);
+      const response = await fetch(`${apiBaseUrl}/admin/${adminSlug}/orders?${query}`);
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || `HTTP error! status: ${response.status}`);

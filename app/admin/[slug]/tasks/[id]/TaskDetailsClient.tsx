@@ -4,6 +4,9 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import Link from "next/link";
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+
 type Task = {
   id: string;
   taskName: string;
@@ -14,6 +17,7 @@ type Task = {
   status: "pending" | "completed" | "ongoing";
 };
 
+
 type Props = {
   task: Task;
 };
@@ -23,14 +27,14 @@ const TaskDetailsClient = ({ task }: Props) => {
   const [selectedStatus, setSelectedStatus] = useState(task.status);
 
   const onUpdateStatus = async (id: string, newStatus: Task["status"]) => {
-    await fetch(`/api/update-task-status`, {
+    await fetch(`${apiBaseUrl}/update-task-status`, {
       method: "POST",
       body: JSON.stringify({ id, status: newStatus }),
     });
   };
 
   const onDeleteTask = async (id: string) => {
-    const res = await fetch(`/api/delete-task`, {
+    const res = await fetch(`${apiBaseUrl}/delete-task`, {
       method: "DELETE",
       body: JSON.stringify({ id }),
     });
