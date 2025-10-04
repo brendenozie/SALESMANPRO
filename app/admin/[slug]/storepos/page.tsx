@@ -2,6 +2,7 @@
 import React from "react";
 import StorePOSPageClient, { Product } from "./StorePOSPageClient"; // Import Product type
 import { MarketListingForm, IStoreCategory } from "@/types/typings";
+import { cookies } from "next/headers";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -16,6 +17,12 @@ interface PageProps {
  */
 export default async function PosPage({ params }: PageProps) {
   const companyId = params.slug;
+  const cookieHeaders = (await cookies()).toString();
+  const userName = (await cookies()).get("username")?.value || "Guest";
+  // console.log("Current userName from cookies:", userName);
+
+  //get user from session cookie
+  // Fetch initial data: categories and products
 
   let initialCategories: IStoreCategory[] = [];
   let initialProducts: MarketListingForm[] = [];
@@ -25,9 +32,11 @@ export default async function PosPage({ params }: PageProps) {
     // Correcting the API path to match your provided route: /api/store-categories
     const categoriesRes = await fetch(`${apiUrl}/admin/pos-categories?companyId=${companyId}`, {
       next: { revalidate: 60 },
+      headers: { cookie: cookieHeaders }, // Forward cookies for authentication
     });
     if (categoriesRes.ok) {
-      const categoriesData = await categoriesRes.json();
+      const categoriesData = (await categoriesRes.json()).data;
+      console.log("Fetched categories data:", categoriesData);
       initialCategories = categoriesData.categories || []; // Ensure it's an array
     } else {
       console.error(`Failed to fetch categories: ${categoriesRes.status} ${categoriesRes.statusText}`);
@@ -41,9 +50,11 @@ export default async function PosPage({ params }: PageProps) {
     // Correcting the API path to match your provided route: /api/marketplace-list
     const productsRes = await fetch(`${apiUrl}/admin/pos-marketplace-listings?companyId=${companyId}`, {
       next: { revalidate: 60 },
+      headers: { cookie: cookieHeaders }, // Forward cookies for authentication
     });
     if (productsRes.ok) {
-      const productsData = await productsRes.json();
+      const productsData = (await productsRes.json()).data;
+      console.log("Fetched products data:", productsData);
       // Map marketplace listings to the Product type expected by StorePOSPageClient
       initialProducts = productsData.results ;
         
@@ -67,6 +78,7 @@ export default async function PosPage({ params }: PageProps) {
       companyId={companyId}
       initialCategories={initialCategories}
       initialProducts={initialProducts}
+      userName={userName}
     />
   );
 }

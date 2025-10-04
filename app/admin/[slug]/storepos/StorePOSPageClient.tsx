@@ -203,9 +203,10 @@ interface StorePOSPageClientProps {
   initialProducts?: MarketListingForm[]; // If you pre-fetch on the server
   initialCategories?: IStoreCategory[]; // If you pre-fetch on the server
   companyId: string; // The company ID is essential for fetching relevant data
+  userName: string; // Current user's name for display
 }
 
-const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, initialProducts, initialCategories }) => {
+const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, initialProducts, initialCategories, userName }) => {
   // --- State Variables (now initialized as empty, will be populated by API calls) ---
   const [products, setProducts] = useState<MarketListingForm[]>(initialProducts || []);
   const [categories, setCategories] = useState<IStoreCategory[]>(initialCategories || []);
@@ -217,7 +218,12 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
   const [paymentStatus, setPaymentStatus] = useState<'success' | 'failed' | null>(null);
 
   // State for Agent and Company Info
-  const [currentAgent, setCurrentAgent] = useState<Agent | null>(null);
+  const [currentAgent, setCurrentAgent] = useState<Agent | null>({
+    id: 'agent-001',
+    name: `${userName}`,
+    dailySalesCount: 15,
+    dailySalesValue: 1250.75,
+  });
   const [companyInfo, setCompanyInfo] = useState<CompanyInfo | null>(null);
 
   const currencySymbol = useMemo(() => companyInfo?.currency === 'KES' ? 'KSh' : '$', [companyInfo]);
