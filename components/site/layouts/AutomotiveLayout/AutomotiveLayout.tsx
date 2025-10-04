@@ -7,7 +7,7 @@ import Header from "./header/Header";
 import Footer from "./footer/Footer";
 import Image from "next/image";
 import Link from "next/link";
-import { StoreForm } from "../../../../types/typings";
+import { StoreForm } from "@/types/typings";
 
 interface AutomotiveLayoutProps {
   params: { storeFormData: StoreForm };

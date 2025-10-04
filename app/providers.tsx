@@ -2,8 +2,8 @@
 "use client";
 
 import { ReactNode } from "react";
-import { ContextProvider } from "../contexts/ContextProvider";
-import { ThemeProvider } from "../contexts/ThemeContext";
+import { ContextProvider } from "@/contexts/ContextProvider";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import { SessionProvider } from "next-auth/react";
 import { Toaster } from "react-hot-toast";
 

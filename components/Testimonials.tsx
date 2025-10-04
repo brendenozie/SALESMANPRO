@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { testimonialsData } from "../data/testimonialsData";
+import { testimonialsData } from "@/data/testimonialsData";
 import Image from "next/image"; // Use Next.js Image component for optimization
 
 // Mocking the image loader for demonstration purposes

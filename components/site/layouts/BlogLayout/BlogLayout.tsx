@@ -6,7 +6,7 @@ import Header from "./header/Header";
 import Footer from "./footer/Footer";
 import Link from "next/link";
 import Image from "next/image";
-import { StoreForm } from "../../../../types/typings";
+import { StoreForm } from "@/types/typings";
 
 interface BlogLayoutProps {
   params: { storeFormData: StoreForm };

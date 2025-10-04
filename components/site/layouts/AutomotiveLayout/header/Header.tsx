@@ -12,7 +12,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { useStateContext } from "@/contexts/ContextProvider";
 import { useRouter } from "next/navigation";
-import { StoreForm } from "../../../../../types/typings";
+import { StoreForm } from "@/types/typings";
 
 interface HeaderProps {
   storeFormData: StoreForm;

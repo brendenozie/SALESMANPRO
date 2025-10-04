@@ -14,10 +14,10 @@ import {
   ArrowLeftIcon,
   BuildingLibraryIcon
 } from '@heroicons/react/24/outline';
-import { formatCreditCardNumber, formatExpirationDate, formatCVC } from "../../../../../data/cardFormatter";
+import { formatCreditCardNumber, formatExpirationDate, formatCVC } from "@/data/cardFormatter";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import ShippingAddress from '../@/components/shippingAddress';
+import ShippingAddress from '@/components/shippingAddress';
 
 // Updated to 4 steps: Billing, Shipping Address, Payment & Promo, Review
 const steps = ["Billing", "Shipping", "Payment", "Review"];

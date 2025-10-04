@@ -11,7 +11,7 @@ import { PrismaClient } from "@prisma/client";
 import { useRouter } from "next/navigation";
 import { useStateContext } from "@/contexts/ContextProvider";
 import { motion } from "framer-motion";
-import load from "../../../assets/load.png";
+import load from "@/assets/load.png";
 import Image from "next/image";
 import PropTypes from "prop-types";
 

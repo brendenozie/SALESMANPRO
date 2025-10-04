@@ -1,5 +1,5 @@
 
-import { PolicyType, SectionType, SocialChannel, StoreForm } from "../types/typings";
+import { PolicyType, SectionType, SocialChannel, StoreForm } from "@/types/typings";
 
 const now = new Date();
 const in3Days = new Date(now.getTime() + 3 * 24 * 3600 * 1000).toISOString();

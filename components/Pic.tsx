@@ -3,7 +3,7 @@ import React, { useRef } from "react";
 import { motion as Motion } from "framer-motion";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/solid";
 import Picard from "./Picard"; // Assuming this is a component that renders the cards
-import { picardData } from "../constant/Data"; // Assuming this is your data source
+import { picardData } from "@/constant/Data"; // Assuming this is your data source
 
 const Pic = () => {
   const scrollContainer = useRef<HTMLDivElement>(null);

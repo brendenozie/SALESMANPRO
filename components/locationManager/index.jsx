@@ -3,9 +3,9 @@
 import React, { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { MapPinIcon, XMarkIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
 import usePlacesAutocomplete, { getGeocode, getLatLng } from "use-places-autocomplete";
-import { useStateContext } from "../../contexts/ContextProvider";
+import { useStateContext } from "@/contexts/ContextProvider";
 
-// const LazyMap = lazy(() => import("../lazyMap"));
+// const LazyMap = lazy(() => import("@/lazyMap"));
 
 const LocationModal = () => {
   const { isOpen, onClose, onUpdate } = useStateContext();

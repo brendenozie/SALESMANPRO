@@ -1,4 +1,4 @@
-// import { IExerciseCategory } from "../types/typings";
+// import { IExerciseCategory } from "@/types/typings";
 import React from "react";
 import { GetServerSidePropsContext } from "next";
 import { Session } from "next-auth";

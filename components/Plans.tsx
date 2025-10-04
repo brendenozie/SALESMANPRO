@@ -1,7 +1,7 @@
 import React from "react";
-import whiteTick from "../assets/whiteTick.png";
-import fit1 from "../assets/fit1.png";
-import { ISubscritption } from "../types/typings";
+import whiteTick from "@/assets/whiteTick.png";
+import fit1 from "@/assets/fit1.png";
+import { ISubscritption } from "@/types/typings";
 
 type Props = {
   subscriptions: ISubscritption[];

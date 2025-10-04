@@ -3,7 +3,7 @@ import React, { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { Bars4Icon, XMarkIcon } from "@heroicons/react/24/solid";
-import fit1 from "../assets/fit1.png"; // Assuming this is the logo
+import fit1 from "@/assets/fit1.png"; // Assuming this is the logo
 import { useOnClickOutside } from "usehooks-ts";
 import classNames from "classnames";
 import { motion as Motion } from "framer-motion";

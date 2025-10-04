@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import banner from "../assets/banner.png";
+import banner from "@/assets/banner.png";
 import { motion as Motion } from "framer-motion";
 
 const loaderProp = ({ src }: any) => {

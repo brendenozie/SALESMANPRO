@@ -2,7 +2,7 @@
 import "./globals.css";
 
 import Providers from "./providers";
-import siteMetadata from "../data/siteMetadata";
+import siteMetadata from "@/data/siteMetadata";
 import { Metadata } from "next";
 import { getAuthSession } from "@/lib/auth";   
 

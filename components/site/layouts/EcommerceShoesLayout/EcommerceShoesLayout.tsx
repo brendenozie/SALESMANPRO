@@ -2,7 +2,7 @@
 import React, { ReactNode, useState } from "react";
 import Header from "./header/Header";
 import Footer from "./footer/Footer";
-import { StoreForm } from "../../../../types/typings";
+import { StoreForm } from "@/types/typings";
 
 interface EcommerceShoesHeaderLayoutProps {
   params: { storeFormData: StoreForm };

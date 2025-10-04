@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Bars4Icon } from "@heroicons/react/24/solid";
-import { Navdata } from "../constant/Data";
+import { Navdata } from "@/constant/Data";
 import NavHor from "./NavHor";
 import NavVer from "./NavVer";
 import { useOnClickOutside } from "usehooks-ts";

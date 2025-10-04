@@ -1,4 +1,4 @@
-import cloudinary from "../../../server/cloudinary";
+import cloudinary from "@/server/cloudinary";
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
 import { NextApiRequest } from "next";
