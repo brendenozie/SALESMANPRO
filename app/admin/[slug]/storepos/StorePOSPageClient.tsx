@@ -71,6 +71,7 @@ interface ReceiptDetails {
   totalDiscountAmount: number;
   totalTax: number;
   finalTotal: number;
+  agentId: string;
   agentName: string;
   transactionId: string;
   date: string;
@@ -204,9 +205,10 @@ interface StorePOSPageClientProps {
   initialCategories?: IStoreCategory[]; // If you pre-fetch on the server
   companyId: string; // The company ID is essential for fetching relevant data
   userName: string; // Current user's name for display
+  userId: string | null; // Current user's ID for potential use
 }
 
-const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, initialProducts, initialCategories, userName }) => {
+const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, initialProducts, initialCategories, userName, userId }) => {
   // --- State Variables (now initialized as empty, will be populated by API calls) ---
   const [products, setProducts] = useState<MarketListingForm[]>(initialProducts || []);
   const [categories, setCategories] = useState<IStoreCategory[]>(initialCategories || []);
@@ -261,8 +263,8 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
       console.log("Fetching current agent info");
       await new Promise(resolve => setTimeout(resolve, 300)); // Simulate network delay
       const fetchedAgent: Agent = {
-        id: 'agent-001',
-        name: 'Alice Smith',
+        id: userId || 'agent-001',
+        name: userName || 'Alice Smith',
         dailySalesCount: 15,
         dailySalesValue: 1250.75,
       };
@@ -466,6 +468,7 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
           totalDiscountAmount,
           totalTax,
           finalTotal,
+          agentId: currentAgent?.id || 'N/A',
           agentName: currentAgent?.name || 'N/A',
           transactionId: orderPayload.paymentDetails.transactionId,
           date: now.toLocaleDateString(),

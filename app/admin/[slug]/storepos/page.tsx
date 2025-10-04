@@ -3,6 +3,7 @@ import React from "react";
 import StorePOSPageClient, { Product } from "./StorePOSPageClient"; // Import Product type
 import { MarketListingForm, IStoreCategory } from "@/types/typings";
 import { cookies } from "next/headers";
+import { getAuthSession } from "@/lib/auth";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -16,9 +17,11 @@ interface PageProps {
  * Server Component: Fetches initial data for the POS.
  */
 export default async function PosPage({ params }: PageProps) {
+  const session = await getAuthSession();
+  
   const companyId = params.slug;
   const cookieHeaders = (await cookies()).toString();
-  const userName = (await cookies()).get("username")?.value || "Guest";
+  const userName = session?.user?.name || "Guest";
   // console.log("Current userName from cookies:", userName);
 
   //get user from session cookie
@@ -78,6 +81,7 @@ export default async function PosPage({ params }: PageProps) {
       companyId={companyId}
       initialCategories={initialCategories}
       initialProducts={initialProducts}
+      userId={session?.user?.id || null}
       userName={userName}
     />
   );
