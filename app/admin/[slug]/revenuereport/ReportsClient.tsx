@@ -75,19 +75,19 @@ const ReportsClient: React.FC = () => {
       ] = await Promise.all([
         axios.get<{data: { orders: OrdersByStatusResponse[]}}>(
           "/api/admin/reports/order-by-status",
-          { params, headers: { 'Cache-Control': 'no-store', initial: true } }
+          { params, headers: { 'Credentials': 'include', initial: true } }
         ),
         axios.get<{data: SalesAgentRevenueResponse[]}>(
           "/api/admin/reports/sales-agent-revenue",
-          { params, headers: { 'Cache-Control': 'no-store', initial: true } }
+          { params, headers: { 'Credentials': 'include', initial: true } }
         ),
         axios.get<{data: BestSellingProductsResponse[]}>(
           "/api/admin/reports/best-selling-products",
-          { params, headers: { 'Cache-Control': 'no-store', initial: true } }
+          { params, headers: { 'Credentials': 'include', initial: true } }
         ),
         axios.get<{data: TotalRevenueResponse}>(
           "/api/admin/reports/total-revenue",
-          { params, headers: { 'Cache-Control': 'no-store', initial: true } }
+          { params, headers: { 'Credentials': 'include', initial: true } }
         ),
       ]);
 

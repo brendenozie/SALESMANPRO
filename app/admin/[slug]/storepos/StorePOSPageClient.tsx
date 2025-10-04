@@ -564,7 +564,7 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
               filteredProducts.map(product => (
                 <div
                   key={product.id}
-                  className="bg-gray-700 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1 flex flex-col overflow-hidden border border-gray-600"
+                  className="bg-gray-700 max-h-80 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1 flex flex-col overflow-hidden border border-gray-600"
                 >
                   <img
                     src={product.images && product?.images?.length > 0 ? product.images[0] : `https://placehold.co/100x100/4B5563/ffffff?text=${product && product?.name || 'No+Image'}` }
