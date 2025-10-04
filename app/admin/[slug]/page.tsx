@@ -148,9 +148,10 @@ export default async function AdminDashboardPage({ params }: { params: { slug: s
   if (!dashboardData || fetchError) {
     console.warn("Using fallback data for general dashboard.");
     dashboardData = {
+      slug: companyId,
       clientData: { newClients: 0 }, inventoryData: { lowStock: 0 },
       agentData: { topAgent: '', topAgentSales: 0 }, communicationData: { today: 0 },
-      orderData: { completedToday: 0 }, salesData: { todaySales: 0, monthlyTargetProgress: 0, leadsConverted: 0, demosConducted: 0, commissionEarned: 0, },
+      orderData: { completedToday: 0 }, salesData: { todaySales: 0, monthlyTargetProgress: 0,  },//leadsConverted: 0, demosConducted: 0, commissionEarned: 0,
       taskData: { tasks: [] },
     };
   }
