@@ -4,7 +4,6 @@ import { z } from "zod";
 import nodemailer from "nodemailer";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
-import { verifyAuth } from "@/lib/verifyAuth";
 
 // Zod schema
 const orderSchema = z.object({
@@ -57,8 +56,6 @@ function generateTrackingNumber() {
 
 // POST /api/orders
 async function createOrder(req: Request) {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
   const body = await req.json();
   const parsed = orderSchema.safeParse(body);
@@ -144,8 +141,6 @@ async function getOrders(req: Request) {
 
 // PUT /api/orders
 async function updateOrder(req: Request) {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
   const body = await req.json();
   const { id, status, deliveryStatus } = body;
@@ -181,8 +176,6 @@ async function updateOrder(req: Request) {
 
 // DELETE /api/orders (soft delete)
 async function deleteOrder(req: Request) {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
   const { id } = await req.json();
   if (!id) {

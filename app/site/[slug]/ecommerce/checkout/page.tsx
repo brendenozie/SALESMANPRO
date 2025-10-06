@@ -168,6 +168,7 @@ export default function CheckoutPage() {
         headers: {
           'Content-Type': 'application/json',
           'x-api-key': process.env.NEXT_PUBLIC_API_SECRET_KEY!,
+          'Credentials': 'include',
         },
         body: JSON.stringify(payload),
       });

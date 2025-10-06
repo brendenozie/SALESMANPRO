@@ -225,9 +225,9 @@ export default function EcomDashboardClient(props: Props) {
             initial={{ opacity: 0, y: -20 }} 
             animate={{ opacity: 1, y: 0 }} 
             transition={{ duration: 0.5 }}
-            className="mb-10 lg:mb-14 text-center p-6 bg-white/50 dark:bg-gray-800/50 backdrop-blur-md "
+            className="mb-4 lg:mb-6  py-6 bg-white/50 dark:bg-gray-800/50 backdrop-blur-md "
         >
-          <h1 className="text-4xl sm:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-orange-500 dark:from-indigo-400 dark:to-orange-300 leading-tight tracking-tighter">
+          <h1 className="text-2xl sm:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-orange-500 dark:from-indigo-400 dark:to-orange-300 leading-tight tracking-tighter">
             Dashboard
           </h1>
           <p className="text-xl text-gray-600 dark:text-gray-300 mt-3 font-light">
@@ -300,11 +300,111 @@ export default function EcomDashboardClient(props: Props) {
               className="p-6 sm:p-8 rounded-3xl shadow-xl bg-gradient-to-br from-purple-100/60 to-indigo-100/60 dark:from-purple-900/60 dark:to-indigo-950/60 border border-purple-300/50 dark:border-indigo-700/50 backdrop-blur-sm"
             >
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-3xl font-bold text-gray-900 dark:text-white">Marketing Campaigns</h3>
-                <a href={`/admin/${props.slug}/salescampaigns`} className="py-2 px-5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-full shadow-lg transition-all duration-300 transform hover:scale-105">
-                  Manage All
-                </a>
-              </div>
+  <h3 className="text-3xl font-bold text-gray-900 dark:text-white">Recent / Active Orders</h3>
+  <a
+    href={`/admin/${props.slug}/orders`}
+    className="py-2 px-5 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-full shadow-lg transition-all duration-300 transform hover:scale-105"
+  >
+    View All
+  </a>
+</div>
+
+<div className="space-y-4">
+  {[
+    {
+      id: 'ORD-001',
+      customerName: 'John Doe',
+      orderDesc: '2x Smartwatch, 1x Fitness Band',
+      progress: 80,
+      color: 'bg-green-500',
+      status: 'On Delivery',
+    },
+    {
+      id: 'ORD-002',
+      customerName: 'Mary Wanjiru',
+      orderDesc: '1x Wireless Earbuds, 1x Phone Case',
+      progress: 45,
+      color: 'bg-yellow-500',
+      status: 'Processing',
+    },
+    {
+      id: 'ORD-003',
+      customerName: 'Alex Kiptoo',
+      orderDesc: '1x Laptop Stand',
+      progress: 100,
+      color: 'bg-blue-500',
+      status: 'Delivered',
+    },
+  ].map((order, i) => (
+    <motion.div
+      key={order.id}
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: i * 0.1 + 0.8 }}
+    >
+      <a href={`/orders/${order.id}`} className="block">
+        <div
+          className={`p-4 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-4 bg-white/70 dark:bg-gray-700/70 border border-gray-200 dark:border-gray-600`}
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-6 h-6 text-indigo-500 flex-shrink-0"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M3 3h18l-1.68 9.39a2 2 0 01-1.98 1.61H6.66a2 2 0 01-1.98-1.61L3 3zm0 0l1.5 9h15L21 3M5 21h2a2 2 0 002-2v-1H5v3zm10-3v1a2 2 0 002 2h2v-3h-4z"
+            />
+          </svg>
+
+          <div className="flex-1">
+            <h4 className="text-lg font-bold text-gray-800 dark:text-white">
+              {order.customerName}
+            </h4>
+            <p className="text-sm text-gray-600 dark:text-gray-300">
+              {order.orderDesc}
+            </p>
+            <div className="mt-2 w-full h-1 rounded-full bg-gray-300 overflow-hidden">
+              <div
+                className={`${order.color} h-full transition-all duration-500`}
+                style={{ width: `${order.progress}%` }}
+              ></div>
+            </div>
+          </div>
+
+          <div className="text-right">
+            <span className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 block">
+              {order.status}
+            </span>
+            <span className="text-xs text-gray-500 dark:text-gray-400">{order.progress}%</span>
+          </div>
+        </div>
+      </a>
+    </motion.div>
+  ))}
+</div>
+
+            </motion.div>
+          </div>
+
+          {/* Sidebar / Today's Plan Section - Elegant and focused */}
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="w-full lg:w-1/3 p-6 sm:p-8 space-y-6 bg-gradient-to-b from-white/70 to-gray-100/70 dark:from-gray-800/70 dark:to-gray-900/70 rounded-3xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50 backdrop-blur-md"
+          >
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-3xl font-extrabold text-gray-800 dark:text-white">Marketing Campaigns</h3>
+              <a href={`/admin/${props.slug}/tasks`} className="py-2 px-5 text-sm font-medium bg-orange-600 text-white rounded-full shadow-lg hover:bg-orange-700 transition-all duration-300 transform hover:scale-105">
+                Manage
+              </a>
+            </div>
+            
               <div className="space-y-4">
                 {[
                   { id: '1', campaignName: 'Holiday Sales Drive', campaignDesc: 'Boost holiday sales by focusing on discounted products.', progress: 75, color: 'bg-green-500' },
@@ -328,16 +428,7 @@ export default function EcomDashboardClient(props: Props) {
                   </motion.div>
                 ))}
               </div>
-            </motion.div>
-          </div>
 
-          {/* Sidebar / Today's Plan Section - Elegant and focused */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="w-full lg:w-1/3 p-6 sm:p-8 space-y-6 bg-gradient-to-b from-white/70 to-gray-100/70 dark:from-gray-800/70 dark:to-gray-900/70 rounded-3xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50 backdrop-blur-md"
-          >
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-3xl font-extrabold text-gray-800 dark:text-white">Today's Focus</h3>
               <a href={`/admin/${props.slug}/tasks`} className="py-2 px-5 text-sm font-medium bg-orange-600 text-white rounded-full shadow-lg hover:bg-orange-700 transition-all duration-300 transform hover:scale-105">

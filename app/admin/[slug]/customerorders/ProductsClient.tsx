@@ -12,6 +12,7 @@ import {
   ArrowPathIcon,
   CalendarDaysIcon
 } from "@heroicons/react/24/outline";
+import { MarketListingForm } from "@/types/typings";
 
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
@@ -30,18 +31,27 @@ interface Order {
     } | null;
 }
 
-interface MarketplaceListing {
-    title: string;
-    // Add other relevant fields if available, e.g., imageUrl
-}
+
 
 export interface OrderItem {
+  id: string;
+  price: number;
+  quantity: number;
+  status?:string;
+  marketplaceListing?: MarketListingForm | null;
+  order?: {
     id: string;
-    productId: string;
-    quantity: number;
-    price: number;
-    order: Order;
-    marketplaceListing: MarketplaceListing | null;
+    totalAmount?: number;
+    status?: string;
+    rider?: string;
+    createdAt?: string;
+    name?: string;
+    email?:string;
+    phone?:string;
+    consumer?: {
+      name?: string;
+    };
+  };
 }
 
 interface ClientProps {
@@ -115,7 +125,7 @@ export default function ProductsClient({ initialOrderItems }: ClientProps) {
     try {
         // NOTE: Modified API call to use standard URL structure and removed env var concatenation
         const res = await fetch(
-            `${apiBaseUrl}/admin/orders/${selectedOrder.order.id}?status=${encodeURIComponent(
+            `${apiBaseUrl}/admin/orders/${selectedOrder?.order?.id}?status=${encodeURIComponent(
                 status
             )}&riderId=${encodeURIComponent(rider)}`,
             {
@@ -133,17 +143,18 @@ export default function ProductsClient({ initialOrderItems }: ClientProps) {
         // Optimistically update UI
         setOrderItems((prev) =>
             prev.map((item) =>
-                item.id === selectedOrder.id
+                item.id === selectedOrder.id && item.order && item.order.id
                     ? {
                         ...item,
                         order: {
                             ...item.order,
+                            id: item.order.id, // Ensure id is always present and of type string
                             status,
                             rider, // Assumes rider ID is what's stored here
                         },
                     }
                     : item
-            )
+            ) as OrderItem[]
         );
 
         alert("Order updated successfully!");
@@ -172,7 +183,7 @@ export default function ProductsClient({ initialOrderItems }: ClientProps) {
   // --- Summary Data ---
   const summary = useMemo(() => {
     const totalOrders = orderItems.length;
-    const pending = orderItems.filter(item => item.order.status === 'PENDING').length;
+    const pending = orderItems.filter(item => item.order?.status === 'PENDING').length;
     const totalRevenue = orderItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     return { totalOrders, pending, totalRevenue };
   }, [orderItems]);
@@ -233,7 +244,7 @@ export default function ProductsClient({ initialOrderItems }: ClientProps) {
                         {/* Status Badge & Title */}
                         <div className="flex justify-between items-start mb-3 border-b border-gray-100 pb-3">
                             <h2 className="text-xl font-extrabold text-gray-900 leading-tight">
-                                {item.marketplaceListing?.title || "Unknown Product"}
+                                {item.marketplaceListing?.name || "Unknown Product"}
                             </h2>
                             <StatusBadge status={item.order?.status} />
                         </div>
@@ -279,7 +290,7 @@ export default function ProductsClient({ initialOrderItems }: ClientProps) {
             {/* Order Summary */}
             <div className="bg-indigo-50 p-4 rounded-xl mb-6 border border-indigo-200">
                 <p className="text-lg font-bold mb-2">
-                    {selectedOrder.marketplaceListing?.title || "Product Details"}
+                    {selectedOrder.marketplaceListing?.name || "Product Details"}
                 </p>
                 <div className="grid grid-cols-2 gap-2 text-sm">
                     <p><strong>Customer:</strong> {selectedOrder.order?.consumer?.name || selectedOrder.order?.name}</p>
