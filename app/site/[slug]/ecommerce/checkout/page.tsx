@@ -207,7 +207,7 @@ export default function CheckoutPage() {
         delivery: formData.shippingMethod !== 'pickupatshop',
         totalPrice: parseFloat(total.toFixed(2)),
       };
-
+      console.log("Submitting order with payload:", payload);
       const res = await fetch(`${apiBaseUrl}/shop/orders`, {
         method: 'POST',
         headers: {
