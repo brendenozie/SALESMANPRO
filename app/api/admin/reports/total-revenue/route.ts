@@ -8,6 +8,7 @@ import { withApiHandler } from "@/lib/hooks/withApiHandler";
 async function getTotalRevenue(req: Request) {
   
   try {
+    
     const { searchParams } = new URL(req.url);
     const startDate = searchParams.get("startDate");
     const endDate = searchParams.get("endDate");

@@ -5,11 +5,12 @@ import { verifyAuth } from "@/lib/verifyAuth";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
-const getBestSellingProducts = async (req: NextRequest) => {
+const getBestSellingProducts = async (req: Request) => {
   const auth = await verifyAuth(req);
   if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
-  const { searchParams } = req.nextUrl;
+  const { searchParams } = new URL(req.url);
+
   const startDate = searchParams.get("startDate");
   const endDate = searchParams.get("endDate");
   const companyId = searchParams.get("companyId");
@@ -44,7 +45,9 @@ const getBestSellingProducts = async (req: NextRequest) => {
     take: parseInt(limit),
   });
 
-  const listingIds = bestSellingProducts.map((item) => item.marketplaceListingId);
+  const listingIds = bestSellingProducts
+    .map((item) => item.marketplaceListingId)
+    .filter((id): id is string => typeof id === "string" && id !== null);
 
   const listings = await prisma.marketplaceListings.findMany({
     where: { id: { in: listingIds } },
@@ -54,7 +57,7 @@ const getBestSellingProducts = async (req: NextRequest) => {
   const listingMap = new Map(listings.map((l) => [l.id, l.name || "Unknown Product"]));
 
   const formattedProducts = bestSellingProducts.map((item) => ({
-    name: listingMap.get(item?.marketplaceListingId) || "Unknown Product",
+    name: listingMap.get(item?.marketplaceListingId || "") || "Unknown Product",
     totalSold: item._sum.quantity || 0,
   }));
 

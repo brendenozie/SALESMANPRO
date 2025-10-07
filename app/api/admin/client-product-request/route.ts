@@ -33,7 +33,7 @@ async function getRequests(req: Request) {
       productId: request.productId,
       productName: request.product?.name || "Unknown Product",
       quantityRequested: request.quantity,
-      salesAgentId: request.requester?.id || null,
+      salesAgentId: request.requester?.id || "",
       salesAgentName: request.requester?.name || "Unassigned",
       status: request.status || "Pending",
       requestedAt: request.createdAt?.toISOString(),

@@ -1,14 +1,13 @@
 // app/api/admin/reports/top-customers/route.ts
-import { NextRequest } from "next/server";
+
 import prisma from "@/server/db/prismadb";
-import { verifyAuth } from "@/lib/verifyAuth";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-async function getTopCustomers(req: NextRequest) {
+async function getTopCustomers(req: Request) {
   
+  const { searchParams } = new URL(req.url);
 
-  const { searchParams } = req.nextUrl;
   const startDate = searchParams.get("startDate");
   const endDate = searchParams.get("endDate");
   const agentId = searchParams.get("agentId");
@@ -25,7 +24,7 @@ async function getTopCustomers(req: NextRequest) {
       take: limit,
       where: {
         ...(agentId && { agentId }),
-        orders: {
+      orders : {
           some: {
             createdAt: {
               gte: startDate ? new Date(startDate) : undefined,

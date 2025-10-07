@@ -7,6 +7,8 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { ApexOptions } from "apexcharts"; // Ensure ApexOptions is imported
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "";
+
 // Dynamically import ApexCharts for SSR safety
 const ApexCharts = dynamic(() => import("react-apexcharts"), { ssr: false });
 
@@ -74,19 +76,19 @@ const ReportsClient: React.FC = () => {
         totalRes,
       ] = await Promise.all([
         axios.get<{data: { orders: OrdersByStatusResponse[]}}>(
-          "/api/admin/reports/order-by-status",
+          `${apiBaseUrl}/admin/reports/order-by-status`,
           { params, headers: { 'Credentials': 'include', initial: true } }
         ),
         axios.get<{data: SalesAgentRevenueResponse[]}>(
-          "/api/admin/reports/sales-agent-revenue",
+          `${apiBaseUrl}/admin/reports/sales-agent-revenue`,
           { params, headers: { 'Credentials': 'include', initial: true } }
         ),
         axios.get<{data: BestSellingProductsResponse[]}>(
-          "/api/admin/reports/best-selling-products",
+          `${apiBaseUrl}/admin/reports/best-selling-products`,
           { params, headers: { 'Credentials': 'include', initial: true } }
         ),
         axios.get<{data: TotalRevenueResponse}>(
-          "/api/admin/reports/total-revenue",
+          `${apiBaseUrl}/admin/reports/total-revenue`,
           { params, headers: { 'Credentials': 'include', initial: true } }
         ),
       ]);

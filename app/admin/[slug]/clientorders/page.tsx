@@ -2,6 +2,7 @@
 
 import React from "react";
 import ProductRequestsClient from "./ProductRequestsClient";
+import { cookies }  from "next/headers";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -26,15 +27,23 @@ interface PageProps {
  */
 export default async function ProductRequestsPage(_: PageProps) {
   let requestsData: ProductRequest[] = [];
+  const cookieStore = (await cookies()).toString();
 
   try {
     const res = await fetch(
-      `${apiUrl}/admin/clientproductrequests`,
-      { next: { revalidate: 60 } } // SSR on every request
+      `${apiUrl}/admin/client-product-request`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: cookieStore, // Forward cookies for authentication
+        },
+        next: { revalidate: 60 }, // SSR on every request
+      }
     );
 
     if (res.ok) {
-      const json = (await res.json()) as { requests: ProductRequest[] };
+      const json = (await res.json()).data as { requests: ProductRequest[] };
       requestsData = json.requests;
     } else {
       console.error(

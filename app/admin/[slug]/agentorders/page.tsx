@@ -2,6 +2,7 @@
 
 import React from "react";
 import ProductRequestsClient from "./ProductRequestsClient";
+import { cookies } from "next/headers";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -28,17 +29,24 @@ interface PageProps {
  */
 export default async function ProductRequestsPage({ params }: PageProps) {
   // You can extract companyId from params.slug if the endpoint needs it:
-  // const companyId = params.slug;
+  const companyId = params.slug;
+  const cookieHeaders = (await cookies()).toString();
 
   let requestsData: ProductRequest[] = [];
 
   try {
-    const res = await fetch(`${apiUrl}/admin/agentproductrequests`, {
+    const res = await fetch(`${apiUrl}/admin/agent-product-request`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: cookieHeaders, // Forward cookies for authentication
+      },
+      // Revalidate this page every 60 seconds
       next: { revalidate: 60 },
     });
 
     if (res.ok) {
-      const json = (await res.json()) as { requests: ProductRequest[] };
+      const json = (await res.json()).data  as { requests: ProductRequest[] };
       requestsData = json.requests;
     } else {
       console.error(
