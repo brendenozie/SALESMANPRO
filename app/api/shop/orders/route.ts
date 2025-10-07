@@ -106,7 +106,7 @@ async function createOrder(req: Request) {
     return formatResponse(true, order);
   } catch (err: any) {
     console.error("Error creating order:", err);
-    return formatResponse(false, null, "Internal Server Error", 500);
+    return formatResponse(false, null, err.message, 500);
   }
 }
 

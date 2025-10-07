@@ -95,6 +95,7 @@ const LocationPicker: React.FC<{ onAddressSelect: (address: string, coords: { la
     try {
       const payload = { userId, latitude: selectedLocation.lat, longitude: selectedLocation.lng, address, description:address };
       const response = await axios.post(`${API_ENDPOINT}/shop/setLocation`, payload);
+      console.log("Save address response:", response.data);
       setSavedAddress(response.data.body || payload);
     } catch (err) {
       console.error("Error saving address:", err);
@@ -135,6 +136,7 @@ const LocationPicker: React.FC<{ onAddressSelect: (address: string, coords: { la
     if (!userId) return;
     try {
       const { data } = await axios.get(`${API_ENDPOINT}/shop/getLocation`, { params: { userId } });
+      console.log("Fetch saved address response:", data);
       if (data.body && data.body.address) {
         const addr = data.body;
         setSavedAddress(addr);
