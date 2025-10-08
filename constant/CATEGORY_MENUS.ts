@@ -73,6 +73,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       icon: UsersIcon,
       subItems: [
         { label: "Sales Agents", href: `/admin/${adminSlug}/agents` },
+        { label: "Riders", href: `/admin/${adminSlug}/riders` },
         { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
       ],
     },
@@ -107,6 +108,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       icon: UsersIcon,
       subItems: [
         { label: "Sales Agents", href: `/admin/${adminSlug}/agents` },
+        { label: "Riders", href: `/admin/${adminSlug}/riders` },
         { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
       ],
     },
@@ -199,6 +201,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       icon: UsersIcon,
       subItems: [
         { label: "Sales Agents", href: `/admin/${adminSlug}/agents` },
+        { label: "Riders", href: `/admin/${adminSlug}/riders` },
         { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
       ],
     },
