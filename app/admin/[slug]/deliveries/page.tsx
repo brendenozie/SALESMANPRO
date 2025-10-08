@@ -22,6 +22,7 @@ import {
   ClockIcon,
 } from '@heroicons/react/24/outline';
 import toast, { Toaster } from 'react-hot-toast';
+import { useParams } from 'next/navigation';
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
@@ -252,8 +253,9 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({ isOpe
 
 // --- Main DeliveriesPage Component (with API Logic) ---
 interface DeliveriesPageProps { params: { companyId: string; }; }
-export default function DeliveriesPage({ params }: DeliveriesPageProps) {
-  const { companyId } = params;
+
+export default function DeliveriesPage() {
+  const { slug : companyId } = useParams();
 
   // --- State Management ---
   const [deliveries, setDeliveries] = useState<Delivery[]>([]);
@@ -284,13 +286,14 @@ export default function DeliveriesPage({ params }: DeliveriesPageProps) {
     setIsLoading(true);
     setError(null);
     try {
+      const safeCompanyId = Array.isArray(companyId) ? companyId[0] : (companyId ?? '');
       const deliveryParams = new URLSearchParams({
-        companyId,
+        companyId: safeCompanyId,
         searchTerm: debouncedSearchTerm,
         status: filterStatus,
       }).toString();
       
-      const riderParams = new URLSearchParams({ companyId }).toString();
+      const riderParams = new URLSearchParams({ companyId: safeCompanyId }).toString();
 
       // Fetch deliveries and riders in parallel
       const [deliveriesRes, ridersRes] = await Promise.all([

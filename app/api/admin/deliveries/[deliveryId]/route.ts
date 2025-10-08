@@ -26,7 +26,11 @@ export const PUT = withApiHandler(async (request, context) => {
   // Prepare data for the update payload
   const dataToUpdate: Prisma.DeliveryUpdateInput = {};
   if (body.status) dataToUpdate.status = body.status as DeliveryStatus;
-  if (body.riderId !== undefined) dataToUpdate.riderId = body.riderId || null;
+  if (body.riderId !== undefined) {
+    dataToUpdate.rider = body.riderId
+      ? { connect: { id: body.riderId } }
+      : { disconnect: true };
+  }
   if (body.pickupAddress) dataToUpdate.pickupAddress = body.pickupAddress;
   if (body.deliveryAddress) dataToUpdate.deliveryAddress = body.deliveryAddress;
   if (body.packageDescription) dataToUpdate.packageDescription = body.packageDescription;
