@@ -368,6 +368,7 @@ model Company {
   Destination  Destination[]
   TourPackage  TourPackage[]
   // @@index([slug])
+  Delivery     Delivery[]
 
   @@index([userId])
 }
@@ -1291,6 +1292,8 @@ model User {
 
   BillingTransactions BillingTransaction[]
   PatientInvoices     PatientInvoices[]    @relation("PatientInvoices")
+
+  assignedDeliveries Delivery[] @relation("RiderDeliveries")
 
   Video Video[]
 
@@ -5093,4 +5096,39 @@ model CompanySettings {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// Add this new model to your schema.prisma file
+
+enum DeliveryStatus {
+  Pending
+  InProgress
+  Delivered
+  Cancelled
+}
+
+model Delivery {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  companyId String  @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id])
+
+  trackingNumber String         @unique
+  status         DeliveryStatus @default(Pending)
+
+  // Relation to the User model for the rider
+  riderId String? @db.ObjectId
+  rider   User?   @relation("RiderDeliveries", fields: [riderId], references: [id])
+
+  pickupAddress      String
+  deliveryAddress    String
+  packageDescription String?
+  weightKg           Float?
+  deliveryFee        Float?
+
+  createdAt    DateTime @default(now())
+  scheduledFor DateTime
+
+  @@index([companyId])
+  @@index([riderId])
+  @@index([status])
 }

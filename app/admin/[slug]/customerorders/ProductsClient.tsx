@@ -29,12 +29,14 @@ export interface OrderItem {
   price: number;
   quantity: number;
   status?: string;
-  marketplaceListing?: MarketListingForm | null;
+  marketplaceListing?: MarketListingForm | null;  
+  riderId?: string; // Rider ID
   order?: {
     id: string;
     totalAmount?: number;
     status?: string;
     rider?: string; // Rider ID
+    riderId?: string; // Rider ID
     createdAt?: string;
     name?: string;
     email?: string;
@@ -109,7 +111,7 @@ export default function ProductsClient({ initialOrderItems, initialRiders }: Cli
 
     try {
         const res = await fetch(
-            `${apiBaseUrl}/admin/orders/${selectedOrder?.order?.id}?status=${encodeURIComponent(
+            `${apiBaseUrl}/admin/orders/${selectedOrder?.id}?status=${encodeURIComponent(
                 status
             )}&riderId=${encodeURIComponent(riderId)}`, // Send riderId
             { method: "PUT" }
@@ -152,7 +154,7 @@ export default function ProductsClient({ initialOrderItems, initialRiders }: Cli
   const openModal = (item: OrderItem) => {
     setSelectedOrder(item);
     setStatus(item.order?.status || "PENDING");
-    setRiderId(item.order?.rider || ""); // Set initial rider ID from the order data
+    setRiderId(item.riderId || item.order?.rider || item.order?.riderId || ""); // Set initial rider ID from the order data
   };
 
   const closeModal = () => {
@@ -162,7 +164,7 @@ export default function ProductsClient({ initialOrderItems, initialRiders }: Cli
   };
 
   const summary = useMemo(() => {
-    // ... (no changes to this function)
+
     const totalOrders = orderItems.length;
     const pending = orderItems.filter(item => item.order?.status === 'PENDING').length;
     const totalRevenue = orderItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -171,7 +173,7 @@ export default function ProductsClient({ initialOrderItems, initialRiders }: Cli
 
   return (
     <div className="min-h-screen bg-gray-50 p-6 sm:p-10">
-      {/* ... (HEADER and SUMMARY CARDS are unchanged) ... */}
+      
       <header className="max-w-7xl mx-auto mb-10 border-b border-gray-200 pb-6">
         <h1 className="text-4xl font-extrabold text-gray-900 leading-tight flex items-center gap-3">
           Order Fulfillment Dashboard <TruckIcon className="h-8 w-8 text-indigo-600" />

@@ -21,11 +21,13 @@ export interface OrderItem {
   quantity: number;
   status?: string;
   marketplaceListing?: MarketListingForm | null;
+  riderId?: string; // Rider ID
   order?: {
     id: string;
     totalAmount?: number;
     status?: string;
     rider?: string; // This will store the Rider's ID
+    riderId?: string; // This will store the Rider's ID
     createdAt?: string;
     name?: string;
     email?: string;
@@ -72,6 +74,7 @@ export default async function ProductsPage({ params }: Props) {
     // Process orders response
     if (ordersResponse.ok) {
       const jsonRes = (await ordersResponse.json()).data;
+      console.log("Fetched order items:", jsonRes);
       const json: { orderItems: OrderItem[] } = jsonRes;
       orderItems = json.orderItems || [];
     } else {
