@@ -1,3 +1,4 @@
+// app/admin/products/ProductsClient.tsx
 "use client";
 
 import React, { useState, useMemo } from "react";
@@ -10,44 +11,34 @@ import {
   CurrencyDollarIcon,
   UsersIcon,
   ArrowPathIcon,
-  CalendarDaysIcon
+  CalendarDaysIcon,
+  UserCircleIcon,
 } from "@heroicons/react/24/outline";
 import { MarketListingForm } from "@/types/typings";
 
-
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
 
-// NOTE: The `OrderItem` type is missing, so we define a robust placeholder structure here.
-// In a real application, this should be imported from "./page".
-interface Order {
-    id: string;
-    status: string;
-    rider: string | null;
-    name: string | null;
-    email: string | null;
-    createdAt: string;
-    consumer: {
-        name: string;
-    } | null;
+// --- Type Definitions (Imported or defined from page.tsx) ---
+interface RiderInfo {
+  id: string;
+  name: string;
 }
-
-
 
 export interface OrderItem {
   id: string;
   price: number;
   quantity: number;
-  status?:string;
+  status?: string;
   marketplaceListing?: MarketListingForm | null;
   order?: {
     id: string;
     totalAmount?: number;
     status?: string;
-    rider?: string;
+    rider?: string; // Rider ID
     createdAt?: string;
     name?: string;
-    email?:string;
-    phone?:string;
+    email?: string;
+    phone?: string;
     consumer?: {
       name?: string;
     };
@@ -56,16 +47,15 @@ export interface OrderItem {
 
 interface ClientProps {
   initialOrderItems: OrderItem[];
+  initialRiders: RiderInfo[]; // New prop for the list of riders
 }
 
 // ---------------------------------------------
 // I. HELPER COMPONENTS
 // ---------------------------------------------
 
-/**
- * Renders a color-coded badge for order status.
- */
 const StatusBadge: React.FC<{ status?: string }> = ({ status }) => {
+    // ... (no changes to this component)
     let Icon;
     let text = status || "UNKNOWN";
     let classes = "";
@@ -80,7 +70,6 @@ const StatusBadge: React.FC<{ status?: string }> = ({ status }) => {
             classes = "text-yellow-700 bg-yellow-100 border-yellow-300";
             break;
         case "OUT_FOR_DELIVERY":
-        case "IN_PROGRESS":
             Icon = TruckIcon;
             classes = "text-blue-700 bg-blue-100 border-blue-300";
             break;
@@ -101,39 +90,31 @@ const StatusBadge: React.FC<{ status?: string }> = ({ status }) => {
 // II. MAIN COMPONENT & LOGIC
 // ---------------------------------------------
 
-export default function ProductsClient({ initialOrderItems }: ClientProps) {
+export default function ProductsClient({ initialOrderItems, initialRiders }: ClientProps) {
   const [orderItems, setOrderItems] = useState<OrderItem[]>(initialOrderItems);
+  const [riders] = useState<RiderInfo[]>(initialRiders); // State for riders
   const [loading, setLoading] = useState<boolean>(false);
-  const [error] = useState<string>(""); // Kept for future error display logic
+  const [error] = useState<string>(""); 
   const [selectedOrder, setSelectedOrder] = useState<OrderItem | null>(null);
-  const [status, setStatus] = useState<string>("PENDING");
-  const [rider, setRider] = useState<string>("");
   
-  // Available status options for the dropdown
-  const statusOptions = [
-    "PENDING",
-    "IN_PROGRESS",
-    "OUT_FOR_DELIVERY",
-    "COMPLETED",
-    "CANCELLED",
-  ];
+  // Modal form state
+  const [status, setStatus] = useState<string>("PENDING");
+  const [riderId, setRiderId] = useState<string>(""); // Now explicitly rider ID
+  
+  const statusOptions = ["PENDING", "OUT_FOR_DELIVERY", "COMPLETED", "CANCELLED"];
 
   const updateOrder = async () => {
     if (!selectedOrder) return;
     setLoading(true);
 
     try {
-        // NOTE: Modified API call to use standard URL structure and removed env var concatenation
         const res = await fetch(
             `${apiBaseUrl}/admin/orders/${selectedOrder?.order?.id}?status=${encodeURIComponent(
                 status
-            )}&riderId=${encodeURIComponent(rider)}`,
-            {
-                method: "PUT",
-            }
+            )}&riderId=${encodeURIComponent(riderId)}`, // Send riderId
+            { method: "PUT" }
         );
         
-        // Assuming the API returns the updated OrderItem structure upon success
         const data = await res.json();
         
         if (!res.ok || !data.success) {
@@ -148,21 +129,21 @@ export default function ProductsClient({ initialOrderItems }: ClientProps) {
                         ...item,
                         order: {
                             ...item.order,
-                            id: item.order.id, // Ensure id is always present and of type string
+                            id: item.order.id,
                             status,
-                            rider, // Assumes rider ID is what's stored here
+                            rider: riderId, // Update the rider ID in the local state
                         },
                     }
                     : item
             ) as OrderItem[]
         );
 
-        alert("Order updated successfully!");
+        // toast.success("Order updated successfully!");
         closeModal();
 
     } catch (e) {
         console.error("Update failed:", e);
-        alert(`Failed to update order: ${(e as Error).message}`);
+        // toast.error(`Failed to update order: ${(e as Error).message}`);
     } finally {
         setLoading(false);
     }
@@ -171,28 +152,26 @@ export default function ProductsClient({ initialOrderItems }: ClientProps) {
   const openModal = (item: OrderItem) => {
     setSelectedOrder(item);
     setStatus(item.order?.status || "PENDING");
-    setRider(item.order?.rider || ""); // Use the rider ID/name from the order
+    setRiderId(item.order?.rider || ""); // Set initial rider ID from the order data
   };
 
   const closeModal = () => {
     setSelectedOrder(null);
     setStatus("PENDING");
-    setRider("");
+    setRiderId("");
   };
 
-  // --- Summary Data ---
   const summary = useMemo(() => {
+    // ... (no changes to this function)
     const totalOrders = orderItems.length;
     const pending = orderItems.filter(item => item.order?.status === 'PENDING').length;
     const totalRevenue = orderItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     return { totalOrders, pending, totalRevenue };
   }, [orderItems]);
 
-
   return (
     <div className="min-h-screen bg-gray-50 p-6 sm:p-10">
-        
-      {/* HEADER */}
+      {/* ... (HEADER and SUMMARY CARDS are unchanged) ... */}
       <header className="max-w-7xl mx-auto mb-10 border-b border-gray-200 pb-6">
         <h1 className="text-4xl font-extrabold text-gray-900 leading-tight flex items-center gap-3">
           Order Fulfillment Dashboard <TruckIcon className="h-8 w-8 text-indigo-600" />
@@ -201,8 +180,6 @@ export default function ProductsClient({ initialOrderItems }: ClientProps) {
           Monitor and update real-time fulfillment status and assignments.
         </p>
       </header>
-
-      {/* SUMMARY CARDS */}
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
         <div className="p-6 bg-white rounded-xl shadow-lg border-l-4 border-indigo-500">
           <p className="text-sm text-gray-500 font-medium flex items-center"><ShoppingCartIcon className="w-4 h-4 mr-1"/> Total Order Items</p>
@@ -218,7 +195,7 @@ export default function ProductsClient({ initialOrderItems }: ClientProps) {
         </div>
       </div>
       
-      {/* MAIN CONTENT / LIST */}
+      {/* ... (MAIN CONTENT / LIST is unchanged) ... */}
       <div className="max-w-7xl mx-auto">
         {loading ? (
             <div className="flex justify-center items-center h-64">
@@ -274,12 +251,12 @@ export default function ProductsClient({ initialOrderItems }: ClientProps) {
         )}
       </div>
 
-      {/* MODAL (Visually Appealing & Intuitive) */}
+
+      {/* MODAL (Updated with Rider Dropdown) */}
       {selectedOrder && (
         <div className="fixed inset-0 bg-gray-900 bg-opacity-70 backdrop-blur-sm z-50 flex justify-center items-center p-4">
           <div className="bg-white rounded-2xl p-8 w-full max-w-lg text-gray-900 shadow-2xl relative">
             
-            {/* Modal Header */}
             <div className="flex justify-between items-start border-b border-gray-200 pb-3 mb-5">
                 <h2 className="text-2xl font-extrabold text-indigo-600">Fulfillment Update</h2>
                 <button onClick={closeModal} className="text-gray-400 hover:text-gray-700 transition">
@@ -287,9 +264,8 @@ export default function ProductsClient({ initialOrderItems }: ClientProps) {
                 </button>
             </div>
             
-            {/* Order Summary */}
             <div className="bg-indigo-50 p-4 rounded-xl mb-6 border border-indigo-200">
-                <p className="text-lg font-bold mb-2">
+                 <p className="text-lg font-bold mb-2">
                     {selectedOrder.marketplaceListing?.name || "Product Details"}
                 </p>
                 <div className="grid grid-cols-2 gap-2 text-sm">
@@ -299,7 +275,6 @@ export default function ProductsClient({ initialOrderItems }: ClientProps) {
                 </div>
             </div>
 
-            {/* Status Update Form */}
             <div className="mt-4 space-y-5">
               <div className="relative">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -310,33 +285,41 @@ export default function ProductsClient({ initialOrderItems }: ClientProps) {
                   value={status}
                   onChange={(e) => setStatus(e.target.value)}
                 >
-                  {statusOptions.map(opt => (
-                    <option key={opt} value={opt}>
-                      {opt.replace(/_/g, ' ')}
-                    </option>
-                  ))}
+                  {statusOptions.map(opt => (<option key={opt} value={opt}>{opt.replace(/_/g, ' ')}</option>))}
                 </select>
                 <div className="pointer-events-none absolute inset-y-0 right-0 top-6 flex items-center px-2 text-gray-700">
                     <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
                 </div>
               </div>
 
+              {/************************************/}
+              {/* ***** UPDATED RIDER SELECT ***** */}
+              {/************************************/}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Assign Rider / Tracker ID
+                  Assign Rider
                 </label>
-                <input
-                  type="text"
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
-                  placeholder="Enter rider name or tracking ID"
-                  value={rider}
-                  onChange={(e) => setRider(e.target.value)}
-                />
+                <div className="relative">
+                    <UserCircleIcon className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <select
+                        className="w-full p-3 pl-10 border border-gray-300 rounded-lg appearance-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+                        value={riderId}
+                        onChange={(e) => setRiderId(e.target.value)}
+                    >
+                        <option value="">-- Unassigned --</option>
+                        {riders.map(r => (
+                            <option key={r.id} value={r.id}>{r.name}</option>
+                        ))}
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                        <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                    </div>
+                </div>
               </div>
             </div>
 
-            {/* Action Buttons */}
             <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-100">
+              {/* ... (no changes to action buttons) ... */}
               <button
                 onClick={closeModal}
                 className="px-5 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition"

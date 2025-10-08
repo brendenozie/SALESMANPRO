@@ -9,6 +9,7 @@ import { ListingStatus, Product } from "@prisma/client";
 type VehicleData = {
   id: string;
   plateNumber: string;
+  companyId: string;
   make: string;
   model: string;
   type: 'Motorbike' | 'Car' | 'Van' | 'Bicycle' | 'Lorry';
@@ -73,6 +74,7 @@ const formatProductAsVehicle = (product: Product): VehicleData => {
     id: product.id,
     plateNumber: product.vin || 'N/A', // Using `vin` field for plate number
     make: product.make || '',
+    companyId: product.companyId || '',
     model: product.model || '',
     type: (product.type as VehicleData['type']) || 'Car',
     year: product.year || new Date().getFullYear(),
@@ -147,12 +149,13 @@ export const GET = withApiHandler(async (request, context) => {
  * Creates a new vehicle (as a Product) in the database.
  */
 export const POST = withApiHandler(async (request, context) => {
-  const companyId = context.user?.companyId;
+  
   const body: Omit<VehicleData, 'id'> = await request.json();
   const { 
     plateNumber, make, model, type, year, 
     assignedRiderId, assignedRiderName, status, 
-    mileageKm, lastServiceDate 
+    mileageKm, lastServiceDate ,
+    companyId
   } = body;
   
   if (!companyId) {

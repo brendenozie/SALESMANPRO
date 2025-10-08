@@ -7,69 +7,96 @@ import { cookies } from "next/headers";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
+// --- Type Definitions ---
+
+// Represents a user with the RIDER role
+export interface RiderInfo {
+  id: string;
+  name: string;
+}
+
 export interface OrderItem {
   id: string;
   price: number;
   quantity: number;
-  status?:string;
+  status?: string;
   marketplaceListing?: MarketListingForm | null;
   order?: {
     id: string;
     totalAmount?: number;
     status?: string;
-    rider?: string;
+    rider?: string; // This will store the Rider's ID
     createdAt?: string;
     name?: string;
-    email?:string;
-    phone?:string;
+    email?: string;
+    phone?: string;
     consumer?: {
       name?: string;
     };
   };
 }
 
-
 interface Props {
   params: {
-    slug: string; // companyId
+    slug: string; // This is the companyId
   };
 }
 
 /**
- * Server Component: fetches all order items (for a hardcoded sellerId)
- * and passes them into the client side as initial props.
+ * Server Component: Fetches all order items AND available riders for the company
+ * and passes them to the client component as initial props.
  */
 export default async function ProductsPage({ params }: Props) {
-
   const companyId = params.slug;
   const cookieStore = (await cookies()).toString();
+
   let orderItems: OrderItem[] = [];
+  let riders: RiderInfo[] = [];
 
   try {
-    const res = await fetch(
-      `${apiUrl}/admin/orders?companyId=${encodeURIComponent(companyId)}`,
-        { method: "GET",
-          headers: {
-            'Cookie': cookieStore || '',
-          },
-        next: { revalidate: 60 }
-      } // SSR on every request
-    );
-    if (res.ok) {
-      const jsonRes = (await res.json()).data;
-      console.log("Fetched order items:", jsonRes);
-      const json:{ orderItems: OrderItem[] } = jsonRes;
+    // Fetch both orders and riders concurrently for better performance
+    const [ordersResponse, ridersResponse] = await Promise.all([
+      fetch(`${apiUrl}/admin/orders?companyId=${encodeURIComponent(companyId)}`, {
+        method: "GET",
+        headers: { Cookie: cookieStore || "" },
+        next: { revalidate: 60 },
+      }),
+      // Fetch from the riders API endpoint we created previously
+      fetch(`${apiUrl}/admin/riders?companyId=${encodeURIComponent(companyId)}`, {
+        method: "GET",
+        headers: { Cookie: cookieStore || "" },
+        next: { revalidate: 3600 }, // Riders list doesn't change as often
+      }),
+    ]);
+
+    // Process orders response
+    if (ordersResponse.ok) {
+      const jsonRes = (await ordersResponse.json()).data;
+      const json: { orderItems: OrderItem[] } = jsonRes;
       orderItems = json.orderItems || [];
     } else {
       console.error(
         "[ProductsPage] Failed to fetch order items →",
-        res.status,
-        res.statusText
+        ordersResponse.status,
+        ordersResponse.statusText
       );
     }
+    
+    // Process riders response
+    if (ridersResponse.ok) {
+        const jsonRes = (await ridersResponse.json());
+        riders = jsonRes.data || [];
+    } else {
+        console.error(
+            "[ProductsPage] Failed to fetch riders →",
+            ridersResponse.status,
+            ridersResponse.statusText
+        );
+    }
+
   } catch (err: any) {
-    console.error("[ProductsPage] Error fetching order items →", err.message);
+    console.error("[ProductsPage] Error during data fetching →", err.message);
   }
 
-  return <ProductsClient initialOrderItems={orderItems} />;
+  return <ProductsClient initialOrderItems={orderItems} initialRiders={riders} />;
 }
