@@ -257,11 +257,11 @@ const RiderProfileCard: React.FC<RiderProfileCardProps> = ({ rider, adminSlug, o
       <div className="grid grid-cols-2 gap-y-2 gap-x-4 mb-4 text-sm bg-gray-50 p-3 rounded-lg border border-gray-100">
         <div className="flex flex-col">
           <span className="text-gray-500 font-medium">Total Deliveries:</span>
-          <span className="text-indigo-600 text-lg font-bold">{rider.totalDeliveries}</span>
+          <span className="text-indigo-600 text-lg font-bold">{rider.totalDeliveries || 0}</span>
         </div>
         <div className="flex flex-col">
           <span className="text-gray-500 font-medium">Successful Deliveries:</span>
-          <span className="text-green-600 text-lg font-bold">{rider.successfulDeliveries}</span>
+          <span className="text-green-600 text-lg font-bold">{rider.successfulDeliveries || 0}</span>
         </div>
       </div>
 
@@ -606,26 +606,31 @@ export default function RidersPage({ params }: RidersPageProps) { // Renamed
     const toastId = toast.loading(editingRider ? 'Updating rider...' : 'Adding rider...');
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 1200));
+      // await new Promise(resolve => setTimeout(resolve, 1200));
+
+      const res = await fetch(`${apiUrl}/admin/riders`, {
+        method: editingRider ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ ...formData, 
+          phoneNumber: formData.phone, 
+          companyId }),
+      });
+
+      if (!res.ok) throw new Error(`Error ${editingRider ? 'updating' : 'adding'} rider: ${res.statusText}`);
+
+      const savedRider = (await res.json()).data;
 
       if (editingRider) {
-        // Update existing rider
-        setRiders(prevRiders => prevRiders.map(rider =>
-          rider.id === editingRider.id ? { ...rider, ...formData } as RiderProfile : rider
-        ));
+        // Update existing rider in state
+        setRiders(prev => prev.map(r => r.id === savedRider.id ? savedRider : r));
         toast.success('Rider updated successfully!', { id: toastId });
       } else {
-        // Add new rider
-        const newRider: RiderProfile = {
-          id: `RDR${Date.now()}`, // Simple unique ID for simulation
-          joinedAt: new Date().toISOString(),
-          totalDeliveries: 0,
-          successfulDeliveries: 0,
-          ...formData,
-        } as RiderProfile;
-        setRiders(prevRiders => [newRider, ...prevRiders]);
+        // Add new rider to state
+        setRiders(prev => [savedRider, ...prev]);
         toast.success('Rider added successfully!', { id: toastId });
       }
+      
       setShowAddEditModal(false);
     } catch (error: any) {
       console.error("Error saving rider:", error);
@@ -706,10 +711,10 @@ export default function RidersPage({ params }: RidersPageProps) { // Renamed
 
       {/* Summary Cards (Updated titles and icons) */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <RiderSummaryCard title="Total Riders" value={totalRiders} icon={UsersIcon} colorClass="bg-gradient-to-br from-blue-500 to-blue-700" />
-        <RiderSummaryCard title="Active Riders" value={activeRiders} icon={CheckCircleIcon} colorClass="bg-gradient-to-br from-green-500 to-green-700" />
-        <RiderSummaryCard title="Total Deliveries" value={totalDeliveriesOverall} icon={TruckIcon} colorClass="bg-gradient-to-br from-purple-500 to-purple-700" /> {/* Updated Icon/Title */}
-        <RiderSummaryCard title="Successful Deliveries" value={successfulDeliveriesOverall} icon={BoltIcon} colorClass="bg-gradient-to-br from-yellow-500 to-yellow-700" /> {/* Updated Icon/Title */}
+        <RiderSummaryCard title="Total Riders" value={totalRiders || 0} icon={UsersIcon} colorClass="bg-gradient-to-br from-blue-500 to-blue-700" />
+        <RiderSummaryCard title="Active Riders" value={activeRiders || 0} icon={CheckCircleIcon} colorClass="bg-gradient-to-br from-green-500 to-green-700" />
+        <RiderSummaryCard title="Total Deliveries" value={totalDeliveriesOverall || 0} icon={TruckIcon} colorClass="bg-gradient-to-br from-purple-500 to-purple-700" /> {/* Updated Icon/Title */}
+        <RiderSummaryCard title="Successful Deliveries" value={successfulDeliveriesOverall || 0} icon={BoltIcon} colorClass="bg-gradient-to-br from-yellow-500 to-yellow-700" /> {/* Updated Icon/Title */}
       </div>
 
       {/* Loading and Error Indicators (Kept same) */}

@@ -16,7 +16,10 @@ export const GET = withApiHandler(async (request, context) => {
   }
 
   const salesAgents = await prisma.salesAgent.findMany({
-    where: { companyId },
+    where: { 
+      companyId,
+      user: { role: 'RIDER' }
+    },
     include: {
       user: true,
       transactions: { orderBy: { date: "desc" } },
@@ -94,7 +97,7 @@ export const POST = withAuthAndRateLimit(async (request) => {
       email,
       password: hashedPassword,
       image: profileImageUrl || null,
-      role: "AGENT",
+      role: "RIDER",
       salesAgentProfile: {
         create: {
           companyId,

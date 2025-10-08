@@ -285,11 +285,11 @@ const AgentProfileCard: React.FC<AgentProfileCardProps> = ({ agent, adminSlug, o
       <div className="grid grid-cols-2 gap-y-2 gap-x-4 mb-4 text-sm bg-gray-50 p-3 rounded-lg border border-gray-100">
         <div className="flex flex-col">
           <span className="text-gray-500 font-medium">Total Listings:</span>
-          <span className="text-indigo-600 text-lg font-bold">{agent.totalListings}</span>
+          <span className="text-indigo-600 text-lg font-bold">{agent.totalListings || 0}</span>
         </div>
         <div className="flex flex-col">
           <span className="text-gray-500 font-medium">Closed Deals:</span>
-          <span className="text-green-600 text-lg font-bold">{agent.closedDeals}</span>
+          <span className="text-green-600 text-lg font-bold">{agent.closedDeals || 0}</span>
         </div>
       </div>
 
@@ -610,7 +610,7 @@ export default function AgentsPage({ params }: AgentsPageProps) {
     setError(null);
     try {
       // Simulate API call with a delay
-      const res = await fetch(`${apiUrl}/admin/agents?companyId=${companyId}`, { method: 'GET' });
+      const res = await fetch(`${apiUrl}/admin/agents?companyId=${companyId}`, { method: 'GET', credentials: 'include' });
       if (!res.ok) throw new Error(`Error fetching agents: ${res.statusText}`);
       const rawData = await res.json();
       let data = Array.isArray(rawData.data) ? rawData.data.map((agent: any) => ({
@@ -652,27 +652,27 @@ export default function AgentsPage({ params }: AgentsPageProps) {
 
     try {
       // Simulate API call for saving/updating
-      await new Promise(resolve => setTimeout(resolve, 1200)); // Simulate network latency
-
+      // await new Promise(resolve => setTimeout(resolve, 1200)); // Simulate network latency
+      const res = await fetch(`${apiUrl}/admin/agents`, {
+        method: editingAgent ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ ...formData, 
+          phoneNumber: formData.phone, 
+          companyId }),
+      });
+      if (!res.ok) throw new Error(`Error ${editingAgent ? 'updating' : 'adding'} agent: ${res.statusText}`);
+      const savedAgent = (  await res.json()).data;
       if (editingAgent) {
-        // Update existing agent
-        setAgents(prevAgents => prevAgents.map(agent =>
-          agent.id === editingAgent.id ? { ...agent, ...formData } as AgentProfile : agent
-        ));
+        // Update existing agent in state
+        setAgents(prev => prev.map(a => a.id === savedAgent.id ? savedAgent : a));
         toast.success('Agent updated successfully!', { id: toastId });
       } else {
-        // Add new agent
-        const newAgent: AgentProfile = {
-          id: `AGT${Date.now()}`, // Simple unique ID for simulation
-          joinedAt: new Date().toISOString(),
-          totalListings: 0, // New agents start with 0
-          closedDeals: 0,   // New agents start with 0
-          ...formData,
-        } as AgentProfile; // Cast to AgentProfile, assuming all required fields are present
-        setAgents(prevAgents => [newAgent, ...prevAgents]);
+        // Add new agent to state
+        setAgents(prev => [savedAgent, ...prev]);
         toast.success('Agent added successfully!', { id: toastId });
       }
-      setShowAddEditModal(false); // Close modal on success
+      
     } catch (error: any) {
       console.error("Error saving agent:", error);
       toast.error(error.message || `Failed to ${editingAgent ? 'update' : 'add'} agent.`, { id: toastId });
@@ -753,10 +753,10 @@ export default function AgentsPage({ params }: AgentsPageProps) {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <AgentSummaryCard title="Total Agents" value={totalAgents} icon={UsersIcon} colorClass="bg-gradient-to-br from-blue-500 to-blue-700" />
-        <AgentSummaryCard title="Active Agents" value={activeAgents} icon={CheckCircleIcon} colorClass="bg-gradient-to-br from-green-500 to-green-700" />
-        <AgentSummaryCard title="Total Listings" value={totalListingsOverall} icon={BuildingOffice2Icon} colorClass="bg-gradient-to-br from-purple-500 to-purple-700" />
-        <AgentSummaryCard title="Closed Deals" value={totalClosedDealsOverall} icon={CurrencyDollarIcon} colorClass="bg-gradient-to-br from-yellow-500 to-yellow-700" />
+        <AgentSummaryCard title="Total Agents" value={totalAgents || 0} icon={UsersIcon} colorClass="bg-gradient-to-br from-blue-500 to-blue-700" />
+        <AgentSummaryCard title="Active Agents" value={activeAgents || 0} icon={CheckCircleIcon} colorClass="bg-gradient-to-br from-green-500 to-green-700" />
+        <AgentSummaryCard title="Total Listings" value={totalListingsOverall || 0} icon={BuildingOffice2Icon} colorClass="bg-gradient-to-br from-purple-500 to-purple-700" />
+        <AgentSummaryCard title="Closed Deals" value={totalClosedDealsOverall || 0} icon={CurrencyDollarIcon} colorClass="bg-gradient-to-br from-yellow-500 to-yellow-700" />
       </div>
 
       {/* Loading and Error Indicators */}

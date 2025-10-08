@@ -61,6 +61,7 @@ enum ROLE {
   EXPERT
   STAFF_MEMBER
   SERVICE_PROVIDER
+  RIDER
 }
 
 enum StudentLevelStatus {
