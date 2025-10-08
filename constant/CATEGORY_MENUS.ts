@@ -49,6 +49,7 @@ import {
   BellIcon,
   CurrencyDollarIcon,
   PencilSquareIcon,
+  TruckIcon,
   // CarIcon,
 } from "@heroicons/react/24/outline";
 
@@ -84,7 +85,13 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
         { label: "Agent Orders", href: `/admin/${adminSlug}/agentorders` },
         { label: "Client Orders", href: `/admin/${adminSlug}/clientorders` },
         { label: "Marketplace", href: `/admin/${adminSlug}/customerorders` },
+        { label: "Delivery", href: `/admin/${adminSlug}/deliveries` },
       ],
+    },
+    {
+      label: "Vehicles",
+      href: `/admin/${adminSlug}/deliveries-vehicles`,
+      icon: TruckIcon
     },
     { label: "Reports", href: `/admin/${adminSlug}/revenuereport`, icon: ChartBarIcon },
     { label: "Messages", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleBottomCenterTextIcon },
@@ -110,6 +117,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
         { label: "Sales Agents", href: `/admin/${adminSlug}/agents` },
         { label: "Riders", href: `/admin/${adminSlug}/riders` },
         { label: "Clients", href: `/admin/${adminSlug}/storeclients` },
+        // { label: "Suppliers", href: `/admin/${adminSlug}/suppliers` },
       ],
     },
     {
@@ -119,7 +127,13 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
         { label: "Agent Orders", href: `/admin/${adminSlug}/agentorders` },
         { label: "Client Orders", href: `/admin/${adminSlug}/clientorders` },
         { label: "Marketplace", href: `/admin/${adminSlug}/customerorders` },
+        { label: "Delivery", href: `/admin/${adminSlug}/deliveries` },
       ],
+    },
+    {
+      label: "Vehicles",
+      href: `/admin/${adminSlug}/deliveries-vehicles`,
+      icon: TruckIcon
     },
     { label: "Reports", href: `/admin/${adminSlug}/revenuereport`, icon: ChartBarIcon },
     { label: "Messages", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleBottomCenterTextIcon },
@@ -212,7 +226,13 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
         { label: "Agent Orders", href: `/admin/${adminSlug}/agentorders` },
         { label: "Client Orders", href: `/admin/${adminSlug}/clientorders` },
         { label: "Marketplace", href: `/admin/${adminSlug}/customerorders` },
+        { label: "Delivery", href: `/admin/${adminSlug}/deliveries` },
       ],
+    },
+    {
+      label: "Vehicles",
+      href: `/admin/${adminSlug}/deliveries-vehicles`,
+      icon: TruckIcon
     },
     { label: "Reports", href: `/admin/${adminSlug}/revenuereport`, icon: ChartBarIcon },
     { label: "Messages", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleBottomCenterTextIcon },
@@ -772,6 +792,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       { label: "Agent Orders", href: `/admin/${adminSlug}/agentorders` },
       { label: "Client Orders", href: `/admin/${adminSlug}/clientorders` },
       { label: "Marketplace", href: `/admin/${adminSlug}/customerorders` },
+        { label: "Delivery", href: `/admin/${adminSlug}/deliveries` },
     ],
   },
   { label: "Reports", href: `/admin/${adminSlug}/revenuereport`, icon: ChartBarIcon },
