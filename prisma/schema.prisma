@@ -5144,12 +5144,12 @@ model Delivery {
   riderId String? @db.ObjectId
   rider   User?   @relation("RiderDeliveries", fields: [riderId], references: [id])
 
-  customerName    String
-  customerContact String
-  customerEmail   String
+  customerName    String?
+  customerContact String?
+  customerEmail   String?
 
-  pickupAddress   String
-  deliveryAddress String
+  pickupAddress   String?
+  deliveryAddress String?
   latlngPickup    String? // e.g., "37.7749,-122.4194"
   latlngDelivery  String? // e.g., "37.7749,-122.4194"
 
@@ -5168,11 +5168,11 @@ model Delivery {
   packageDescription String?
   weightKg           Float?
   deliveryFee        Float?
-  tip                Float?   @default(0.0)
-  totalAmount        Float
+  tip                Float?    @default(0.0)
+  totalAmount        Float?
   notes              String?
   // scheduledFor is the date and time when the delivery is scheduled to occur
-  scheduledFor       DateTime
+  scheduledFor       DateTime?
 
   createdAt     DateTime        @default(now())
   CustomerOrder CustomerOrder[]

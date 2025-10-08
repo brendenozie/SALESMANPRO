@@ -60,7 +60,7 @@ export type Delivery = {
   trackingNumber: string;
   riderId: string | null;
   riderName: string | 'Unassigned';
-  status: 'Pending' | 'In Progress' | 'Delivered' | 'Cancelled';
+  status: 'Pending' | 'InProgress' | 'Delivered' | 'Cancelled';
   pickupAddress: string;
   deliveryAddress: string;
   packageDescription: string;
@@ -87,7 +87,7 @@ const generateSampleDeliveries = (): Delivery[] => [
     trackingNumber: 'TN-543210',
     riderId: 'RDR001',
     riderName: 'Aisha Hassan',
-    status: 'In Progress',
+    status: 'InProgress',
     pickupAddress: '123 Tech Hub Ave, Kilimani',
     deliveryAddress: '45 Green St, Westlands',
     packageDescription: 'Electronics, high-value',
@@ -174,7 +174,7 @@ const DeliverySummaryCard: React.FC<SummaryCardProps> = ({ title, value, icon: I
 const getStatusStyles = (status: Delivery['status']) => {
   switch (status) {
     case 'Delivered': return { text: 'text-green-800', bg: 'bg-green-100', icon: ClipboardDocumentCheckIcon };
-    case 'In Progress': return { text: 'text-blue-800', bg: 'bg-blue-100', icon: ClipboardDocumentListIcon };
+    case 'InProgress': return { text: 'text-blue-800', bg: 'bg-blue-100', icon: ClipboardDocumentListIcon };
     case 'Pending': return { text: 'text-yellow-800', bg: 'bg-yellow-100', icon: ClockIcon };
     case 'Cancelled': return { text: 'text-red-800', bg: 'bg-red-100', icon: ExclamationTriangleIcon };
     default: return { text: 'text-gray-800', bg: 'bg-gray-100', icon: TagIcon };
@@ -251,7 +251,7 @@ const AddEditDeliveryModal: React.FC<AddEditDeliveryModalProps> = ({ isOpen, onC
   const handleRiderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const riderId = e.target.value;
     const selectedRider = riders.find(r => r.id === riderId);
-    setFormData((prev) => ({ ...prev, riderId: riderId === '' ? null : riderId, riderName: selectedRider ? selectedRider.name : 'Unassigned', status: (riderId !== '' && prev.status === 'Pending') ? 'In Progress' : (prev.status || 'Pending'), }));
+    setFormData((prev) => ({ ...prev, riderId: riderId === '' ? null : riderId, riderName: selectedRider ? selectedRider.name : 'Unassigned', status: (riderId !== '' && prev.status === 'Pending') ? 'InProgress' : (prev.status || 'Pending'), }));
   }
 
   const handleOrderSelection = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -344,7 +344,7 @@ const AddEditDeliveryModal: React.FC<AddEditDeliveryModalProps> = ({ isOpen, onC
               <label htmlFor="deliveryFee" className="block text-sm font-medium text-gray-700 mb-1">Delivery Fee</label>
               <div className="relative"><div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><span className="text-gray-500 font-bold">Ksh</span></div><input type="number" id="deliveryFee" name="deliveryFee" value={formData.deliveryFee || 0} onChange={handleChange} min="0" step="50" placeholder="e.g., 400" className="w-full p-3 pl-14 rounded-lg bg-gray-50 border border-gray-300 text-gray-900 focus:ring-indigo-500 focus:border-indigo-500" /></div>
             </div>
-            <div className='md:col-span-2'><label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">Delivery Status</label><div className="relative"><div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><TagIcon className="h-5 w-5 text-gray-400" /></div><select id="status" name="status" value={formData.status || 'Pending'} onChange={handleChange} className="w-full p-3 pl-10 rounded-lg bg-gray-50 border border-gray-300 text-gray-900 focus:ring-indigo-500 focus:border-indigo-500"><option value="Pending">Pending</option><option value="In Progress">In Progress</option><option value="Delivered">Delivered</option><option value="Cancelled">Cancelled</option></select></div></div>
+            <div className='md:col-span-2'><label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">Delivery Status</label><div className="relative"><div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><TagIcon className="h-5 w-5 text-gray-400" /></div><select id="status" name="status" value={formData.status || 'Pending'} onChange={handleChange} className="w-full p-3 pl-10 rounded-lg bg-gray-50 border border-gray-300 text-gray-900 focus:ring-indigo-500 focus:border-indigo-500"><option value="Pending">Pending</option><option value="InProgress">In Progress</option><option value="Delivered">Delivered</option><option value="Cancelled">Cancelled</option></select></div></div>
             <div className="md:col-span-2"><label htmlFor="packageDescription" className="block text-sm font-medium text-gray-700 mb-1">Package Description</label><div className="relative"><textarea id="packageDescription" name="packageDescription" value={formData.packageDescription || ""} onChange={handleChange} placeholder="e.g., Documents for signing, fragile electronics, bulk food supplies." rows={3} className="w-full p-3 rounded-lg bg-gray-50 border border-gray-300 text-gray-900 focus:ring-indigo-500 focus:border-indigo-500" required></textarea></div></div>
           </div>
           <div className="flex justify-end space-x-4 pt-4 border-t border-gray-100"><button type="button" onClick={onClose} className="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg shadow-sm hover:bg-gray-300 transition font-semibold" disabled={isSubmitting}>Cancel</button><button type="submit" className="px-6 py-3 bg-indigo-600 text-white rounded-lg shadow-md hover:bg-indigo-700 transition font-semibold flex items-center disabled:opacity-50 disabled:cursor-not-allowed" disabled={isSubmitting}>{isSubmitting ? <ArrowPathIcon className="h-5 w-5 mr-2 animate-spin" /> : <CheckCircleIcon className="h-5 w-5 mr-2" />}{isSubmitting ? "Saving..." : (isEdit ? "Save Changes" : "Create Delivery")}</button></div>
@@ -581,7 +581,7 @@ export default function DeliveriesPage() {
 
   // Summary calculations based on fetched data
   const totalDeliveries = deliveries.length;
-  const inProgress = useMemo(() => deliveries.filter(d => d.status === 'In Progress').length, [deliveries]);
+  const inProgress = useMemo(() => deliveries.filter(d => d.status === 'InProgress').length, [deliveries]);
   const delivered = useMemo(() => deliveries.filter(d => d.status === 'Delivered').length, [deliveries]);
   const pending = useMemo(() => deliveries.filter(d => d.status === 'Pending').length, [deliveries]);
 

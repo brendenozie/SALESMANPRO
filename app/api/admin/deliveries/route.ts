@@ -50,6 +50,22 @@ export const GET = withApiHandler(async (request, context) => {
       scheduledFor: 'desc',
     },
   });
+  // const deliveries = await prisma.delivery.findMany({
+  //     where: whereClause,
+  //     include: {
+  //       orders: {
+  //         include: {
+  //           consumer: true,
+  //           items: {
+  //             include: {
+  //               marketplaceListing: true,
+  //             },
+  //           },
+  //         },
+  //       },
+  //     },
+  //     orderBy: { createdAt: "desc" },
+  //   });
 
   // Map the data to match the frontend's expected 'Delivery' type
   const formattedDeliveries = deliveries.map((d) => ({
@@ -78,7 +94,8 @@ export const POST = withApiHandler(async (request, context) => {
     weightKg,
     deliveryFee,
     scheduledFor,
-    orderId,
+    orderIds,
+    riderName,
     ...rest
   } = body;
 
@@ -86,18 +103,45 @@ export const POST = withApiHandler(async (request, context) => {
     return formatResponse(false, null, "Missing required fields.", 400);
   }
 
-  if (orderId) {
-    const order = await prisma.customerOrder.findUnique({
-      where: { id: orderId },
-      include: { items: { include: { marketplaceListing: true } } }
-    });
-    if (order) {
-      rest.pickupAddress = order.shippingAddress || rest.pickupAddress;
-      rest.deliveryAddress = order.shippingAddress || rest.deliveryAddress;
-      rest.packageDescription = order.items?.map(i => i.marketplaceListing?.name).join(', ') || rest.packageDescription;
-      rest.deliveryFee = order.deliveryFee || rest.deliveryFee;
+    let pickup = pickupAddress;
+    let drop = deliveryAddress;
+    let desc = packageDescription;
+    let fee = deliveryFee;
+
+  // Auto-populate fields from first linked order (if any)
+    if (orderIds.length > 0) {
+      const primaryOrder = await prisma.customerOrder.findUnique({
+        where: { id: orderIds[0] },
+        include: {
+          // consumer: true,
+          items: { include: { marketplaceListing: true } },
+        },
+      });
+
+      if (primaryOrder) {
+        pickup = pickup || primaryOrder.shippingAddress || rest.pickupAddress || "";
+        drop = drop || primaryOrder.shippingAddress || rest.deliveryAddress || "";
+        const titles = primaryOrder.items
+          ?.map((i) => i.marketplaceListing?.name ||  rest.packageDescription || "")
+          .filter(Boolean)
+          .join(", ");
+        desc = desc || titles || "Multiple items";
+        fee = fee || Math.round((primaryOrder.totalFinalPrice || 0) * 0.05);
+      }
     }
-  }
+
+  // if (orderId) {
+  //   const order = await prisma.customerOrder.findUnique({
+  //     where: { id: orderId },
+  //     include: { items: { include: { marketplaceListing: true } } }
+  //   });
+  //   if (order) {
+  //     rest.pickupAddress = order.shippingAddress || rest.pickupAddress;
+  //     rest.deliveryAddress = order.shippingAddress || rest.deliveryAddress;
+  //     rest.packageDescription = order.items?.map(i => i.marketplaceListing?.name).join(', ') || rest.packageDescription;
+  //     rest.deliveryFee = order.deliveryFee || rest.deliveryFee;
+  //   }
+  // }
   
   try {
     const newDelivery = await prisma.delivery.create({
@@ -106,13 +150,26 @@ export const POST = withApiHandler(async (request, context) => {
         trackingNumber,
         riderId: riderId || null,
         status: status as DeliveryStatus,
-        pickupAddress,
-        deliveryAddress,
-        packageDescription,
-        weightKg: parseFloat(weightKg),
-        deliveryFee: parseFloat(deliveryFee),
-        scheduledFor: new Date(scheduledFor),
-        orderId: orderId || null,
+        // pickupAddress,
+        // deliveryAddress,
+        // packageDescription,
+        // weightKg: parseFloat(weightKg),
+        // deliveryFee: parseFloat(deliveryFee),
+        pickupAddress: pickup,
+        deliveryAddress: drop,
+        packageDescription: desc,
+        weightKg: Number(weightKg) || 0,
+        deliveryFee: Number(fee) || 0,
+        scheduledFor: scheduledFor ? new Date(scheduledFor) : new Date(),
+        // scheduledFor: new Date(scheduledFor),
+        // orderId: orderId || null,
+        // scheduledFor: scheduledFor ? new Date(scheduledFor) : undefined,
+        // reset and re-link orders
+        // orders: {
+        //   set: [], // clear old links
+        //   connect: orderIds.map((id: string) => ({ id })),
+        // },
+        CustomerOrder: orderIds.length > 0 ? { connect: orderIds.map((id: string) => ({ id })) } : undefined,
         ...rest,
       },
       include: {
