@@ -1,4 +1,3 @@
-// app/admin/[adminSlug]/deliveries/DeliveriesClient.tsx
 'use client';
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
@@ -32,6 +31,30 @@ type RiderInfo = {
   name: string;
 };
 
+export type Order = {
+  id: string;
+  status?: string;
+  consumer?: {
+    name?: string;
+    email?: string;
+    phone?: string;
+    address?: string;
+  } | null;
+  pickupAddress?: string | null;
+  deliveryAddress?: string | null;
+  items?: Array<{
+    id?: string;
+    price?: number;
+    quantity?: number;
+    marketplaceListing?: { title?: string } | null;
+    title?: string;
+  }>;
+  totalAmount?: number;
+  createdAt?: string;
+  // fallback fields (some APIs might return nested shapes)
+  orderItems?: any;
+};
+
 export type Delivery = {
   id: string;
   trackingNumber: string;
@@ -45,11 +68,13 @@ export type Delivery = {
   deliveryFee: number;
   createdAt: string;
   scheduledFor: string;
+  // NEW: multiple orders support
+  orderIds?: string[]; // array of linked order IDs
+  // Optionally include order summary in API response (if backend returns)
+  orders?: Order[]; 
 };
 
-
 // --- Dummy Data (Riders and Deliveries) ---
-
 const DUMMY_RIDERS: RiderInfo[] = [
   { id: 'RDR001', name: 'Aisha Hassan' },
   { id: 'RDR002', name: 'David Kimani' },
@@ -70,6 +95,7 @@ const generateSampleDeliveries = (): Delivery[] => [
     deliveryFee: 500,
     createdAt: new Date('2024-10-01T10:00:00Z').toISOString(),
     scheduledFor: new Date('2024-10-02T14:00:00Z').toISOString(),
+    orderIds: ['ORD001', 'ORD002'],
   },
   {
     id: 'DEL002',
@@ -84,6 +110,7 @@ const generateSampleDeliveries = (): Delivery[] => [
     deliveryFee: 350,
     createdAt: new Date('2024-10-02T11:30:00Z').toISOString(),
     scheduledFor: new Date('2024-10-02T12:30:00Z').toISOString(),
+    orderIds: ['ORD010'],
   },
   {
     id: 'DEL003',
@@ -98,6 +125,7 @@ const generateSampleDeliveries = (): Delivery[] => [
     deliveryFee: 1200,
     createdAt: new Date('2024-10-02T15:00:00Z').toISOString(),
     scheduledFor: new Date('2024-10-03T09:00:00Z').toISOString(),
+    orderIds: [],
   },
   {
     id: 'DEL004',
@@ -112,11 +140,11 @@ const generateSampleDeliveries = (): Delivery[] => [
     deliveryFee: 400,
     createdAt: new Date('2024-10-01T14:00:00Z').toISOString(),
     scheduledFor: new Date('2024-10-02T09:00:00Z').toISOString(),
+    orderIds: ['ORD099'],
   },
 ];
 
 // --- Helper & Reusable Components (No changes needed) ---
-
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -153,24 +181,71 @@ const getStatusStyles = (status: Delivery['status']) => {
   }
 };
 
-// --- Add/Edit Delivery Modal Component (No changes needed) ---
-interface AddEditDeliveryModalProps { isOpen: boolean; onClose: () => void; delivery?: Delivery | null; riders: RiderInfo[]; onSave: (deliveryData: Partial<Delivery>) => Promise<void>; isSubmitting: boolean; }
-const AddEditDeliveryModal: React.FC<AddEditDeliveryModalProps> = ({ isOpen, onClose, delivery, riders, onSave, isSubmitting }) => {
+// --- Add/Edit Delivery Modal Component (UPDATED for multiple orders) ---
+interface AddEditDeliveryModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  delivery?: Delivery | null;
+  riders: RiderInfo[];
+  orders: Order[]; // pass available orders here
+  onSave: (deliveryData: Partial<Delivery>) => Promise<void>;
+  isSubmitting: boolean;
+}
+const AddEditDeliveryModal: React.FC<AddEditDeliveryModalProps> = ({ isOpen, onClose, delivery, riders, orders, onSave, isSubmitting }) => {
   const [formData, setFormData] = useState<Partial<Delivery>>({});
 
   useEffect(() => {
     if (delivery) {
-      setFormData({ ...delivery, scheduledFor: delivery.scheduledFor ? new Date(delivery.scheduledFor).toISOString().substring(0, 16) : '', riderId: delivery.riderId || '', });
+      setFormData({
+        ...delivery,
+        scheduledFor: delivery.scheduledFor ? new Date(delivery.scheduledFor).toISOString().substring(0, 16) : '',
+        orderIds: delivery.orderIds || [],
+        riderId: delivery.riderId || '',
+      });
     } else {
       setFormData({
-        trackingNumber: `TN-${Math.floor(100000 + Math.random() * 900000)}`, riderId: '', status: 'Pending', pickupAddress: '', deliveryAddress: '', packageDescription: '', weightKg: 1.0, deliveryFee: 100, scheduledFor: new Date(Date.now() + 3600000).toISOString().substring(0, 16),
+        trackingNumber: `TN-${Math.floor(100000 + Math.random() * 900000)}`,
+        riderId: '',
+        status: 'Pending',
+        pickupAddress: '',
+        deliveryAddress: '',
+        packageDescription: '',
+        weightKg: 1.0,
+        deliveryFee: 100,
+        scheduledFor: new Date(Date.now() + 3600000).toISOString().substring(0, 16),
+        orderIds: [],
       });
     }
   }, [delivery, isOpen]);
 
+  // Helper: Build aggregate description and addresses when orders are selected
+  const buildAggregateFromOrders = (selectedOrderIds: string[] | undefined) => {
+    if (!selectedOrderIds || selectedOrderIds.length === 0) return {};
+    const selectedOrders = orders.filter(o => selectedOrderIds.includes(o.id));
+    if (selectedOrders.length === 0) return {};
+
+    // Choose first as primary fallback for addresses/fee
+    const primary = selectedOrders[0];
+
+    // Aggregate description from item titles or marketplaceListing titles
+    const itemTitles = selectedOrders.flatMap(o => (o.items || []).map(it => it.marketplaceListing?.title || it.title || '').filter(Boolean));
+    const uniqueTitles = Array.from(new Set(itemTitles)).slice(0, 6); // limit to avoid blowup
+    const packageDescription = uniqueTitles.length > 0 ? uniqueTitles.join(', ') : (primary?.items?.map(i => i.title).filter(Boolean).join(', ') || '');
+
+    // Sum up some metrics if desired (e.g., total fee heuristic)
+    const totalAmount = selectedOrders.reduce((acc, o) => acc + (o.totalAmount || 0), 0);
+
+    return {
+      pickupAddress: primary.pickupAddress || primary.consumer?.address || '',
+      deliveryAddress: primary.deliveryAddress || primary.consumer?.address || '',
+      packageDescription,
+      deliveryFeeHint: totalAmount > 0 ? Math.round(totalAmount * 0.05) : undefined, // example: 5% of total as suggestion (you can customize)
+    };
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: (name === 'weightKg' || name === 'deliveryFee') ? parseFloat(value) : value, }));
+    setFormData((prev) => ({ ...prev, [name]: (name === 'weightKg' || name === 'deliveryFee') ? parseFloat(value) : value }));
   };
 
   const handleRiderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -178,6 +253,23 @@ const AddEditDeliveryModal: React.FC<AddEditDeliveryModalProps> = ({ isOpen, onC
     const selectedRider = riders.find(r => r.id === riderId);
     setFormData((prev) => ({ ...prev, riderId: riderId === '' ? null : riderId, riderName: selectedRider ? selectedRider.name : 'Unassigned', status: (riderId !== '' && prev.status === 'Pending') ? 'In Progress' : (prev.status || 'Pending'), }));
   }
+
+  const handleOrderSelection = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    // multi-select gives options with selected property; build array of selected values
+    const selectedOptions = Array.from(e.target.selectedOptions).map(opt => opt.value);
+    setFormData((prev) => {
+      const aggregated = buildAggregateFromOrders(selectedOptions);
+      // If fields are empty, auto-populate with aggregated values but don't override fields the user already typed in
+      return {
+        ...prev,
+        orderIds: selectedOptions,
+        pickupAddress: (prev.pickupAddress && prev.pickupAddress !== '') ? prev.pickupAddress : (aggregated.pickupAddress || prev.pickupAddress),
+        deliveryAddress: (prev.deliveryAddress && prev.deliveryAddress !== '') ? prev.deliveryAddress : (aggregated.deliveryAddress || prev.deliveryAddress),
+        packageDescription: (prev.packageDescription && prev.packageDescription !== '') ? prev.packageDescription : (aggregated.packageDescription || prev.packageDescription),
+        deliveryFee: prev.deliveryFee && prev.deliveryFee > 0 ? prev.deliveryFee : (aggregated.deliveryFeeHint || prev.deliveryFee),
+      };
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -187,11 +279,16 @@ const AddEditDeliveryModal: React.FC<AddEditDeliveryModalProps> = ({ isOpen, onC
     }
     const riderAssignment = riders.find(r => r.id === formData.riderId);
     const dataToSave: Partial<Delivery> = {
-      ...formData, riderId: formData.riderId || null, riderName: riderAssignment ? riderAssignment.name : 'Unassigned', scheduledFor: formData.scheduledFor ? new Date(formData.scheduledFor).toISOString() : new Date().toISOString(), createdAt: delivery ? delivery.createdAt : new Date().toISOString(),
+      ...formData,
+      riderId: formData.riderId || null,
+      riderName: riderAssignment ? riderAssignment.name : 'Unassigned',
+      scheduledFor: formData.scheduledFor ? new Date(formData.scheduledFor).toISOString() : new Date().toISOString(),
+      createdAt: delivery ? delivery.createdAt : new Date().toISOString(),
+      orderIds: formData.orderIds || [],
     };
     await onSave(dataToSave);
   };
-  
+
   const isEdit = !!delivery;
 
   return (
@@ -204,6 +301,25 @@ const AddEditDeliveryModal: React.FC<AddEditDeliveryModalProps> = ({ isOpen, onC
               <label htmlFor="trackingNumber" className="block text-sm font-medium text-gray-700 mb-1">Tracking Number</label>
               <input type="text" id="trackingNumber" name="trackingNumber" value={formData.trackingNumber || ''} readOnly className="w-full p-3 rounded-lg bg-gray-100 border border-gray-300 text-gray-600 font-mono text-lg cursor-not-allowed" />
             </div>
+
+            {/* Link multiple orders */}
+            <div className="md:col-span-2">
+              <label htmlFor="orderIds" className="block text-sm font-medium text-gray-700 mb-1">Link Orders (optional)</label>
+              <div className="relative">
+                <select id="orderIds" name="orderIds" value={formData.orderIds || []} onChange={handleOrderSelection} multiple size={4} className="w-full p-3 rounded-lg bg-gray-50 border border-gray-300 text-gray-900 focus:ring-indigo-500 focus:border-indigo-500">
+                  {orders.length === 0 ? (
+                    <option disabled>No orders available</option>
+                  ) : (
+                    orders.map(o => {
+                      const label = `#${o.id} — ${o.consumer?.name || 'No Name'}${o.status ? ` — ${o.status}` : ''}`;
+                      return <option key={o.id} value={o.id}>{label}</option>;
+                    })
+                  )}
+                </select>
+                <p className="text-xs mt-2 text-gray-500">You can select multiple orders to group into a single delivery.</p>
+              </div>
+            </div>
+
             <div>
               <label htmlFor="pickupAddress" className="block text-sm font-medium text-gray-700 mb-1">Pickup Address</label>
               <div className="relative"><div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><MapPinIcon className="h-5 w-5 text-gray-400" /></div><input type="text" id="pickupAddress" name="pickupAddress" value={formData.pickupAddress || ""} onChange={handleChange} placeholder="e.g., 100 Industrial Area" className="w-full p-3 pl-10 rounded-lg bg-gray-50 border border-gray-300 text-gray-900 focus:ring-indigo-500 focus:border-indigo-500" required /></div>
@@ -238,12 +354,49 @@ const AddEditDeliveryModal: React.FC<AddEditDeliveryModalProps> = ({ isOpen, onC
   );
 };
 
-// --- Delivery Row & Delete Modal (No changes needed) ---
-interface DeliveryRowProps { delivery: Delivery; onEdit: (delivery: Delivery) => void; onDelete: (delivery: Delivery) => void; }
-const DeliveryRow: React.FC<DeliveryRowProps> = ({ delivery, onEdit, onDelete }) => {
+// --- Delivery Row & Delete Modal (UPDATED to show linked orders) ---
+interface DeliveryRowProps { delivery: Delivery; onEdit: (delivery: Delivery) => void; onDelete: (delivery: Delivery) => void; ordersMap?: Record<string, Order>; }
+const DeliveryRow: React.FC<DeliveryRowProps> = ({ delivery, onEdit, onDelete, ordersMap = {} }) => {
   const { text: statusTextClass, bg: statusBgClass, icon: StatusIcon } = getStatusStyles(delivery.status);
   const formatDateTime = (isoString: string) => new Date(isoString).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) + ' ' + new Date(isoString).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  return (<tr className="bg-white border-b hover:bg-gray-50 transition-colors"><td className="px-6 py-4 font-semibold text-gray-900 whitespace-nowrap">{delivery.trackingNumber}</td><td className="px-6 py-4"><div className="flex items-center space-x-2"><StatusIcon className={`h-5 w-5 ${statusTextClass}`} /><span className={`px-3 py-1 text-xs font-semibold rounded-full ${statusBgClass} ${statusTextClass}`}>{delivery.status}</span></div></td><td className="px-6 py-4 text-gray-700 max-w-xs truncate" title={delivery.pickupAddress}><span className="font-medium text-gray-900">P/U:</span> {delivery.pickupAddress}</td><td className="px-6 py-4 text-gray-700 max-w-xs truncate" title={delivery.deliveryAddress}><span className="font-medium text-gray-900">D/O:</span> {delivery.deliveryAddress}</td><td className="px-6 py-4 text-gray-700"><div className="flex items-center space-x-1"><TruckIcon className="h-4 w-4 text-indigo-500" /><span className={delivery.riderId ? "font-medium text-indigo-700" : "text-gray-500 italic"}>{delivery.riderName}</span></div></td><td className="px-6 py-4 text-gray-700"><span className="font-semibold text-sm">Ksh {delivery.deliveryFee.toLocaleString()}</span></td><td className="px-6 py-4 text-gray-700 text-sm">{formatDateTime(delivery.scheduledFor)}</td><td className="px-6 py-4 space-x-3 whitespace-nowrap"><button onClick={() => onEdit(delivery)} className="text-indigo-600 hover:text-indigo-900 transition-colors" title="Edit Delivery"><PencilSquareIcon className="h-5 w-5 inline" /></button><button onClick={() => onDelete(delivery)} className="text-red-600 hover:text-red-900 transition-colors" title="Delete Delivery"><TrashIcon className="h-5 w-5 inline" /></button></td></tr>);
+
+  return (
+    <tr className="bg-white border-b hover:bg-gray-50 transition-colors">
+      <td className="px-6 py-4 font-semibold text-gray-900 whitespace-nowrap">{delivery.trackingNumber}</td>
+      <td className="px-6 py-4">
+        <div className="flex items-center space-x-2"><StatusIcon className={`h-5 w-5 ${statusTextClass}`} /><span className={`px-3 py-1 text-xs font-semibold rounded-full ${statusBgClass} ${statusTextClass}`}>{delivery.status}</span></div>
+      </td>
+      <td className="px-6 py-4 text-gray-700 max-w-xs truncate" title={delivery.pickupAddress}><span className="font-medium text-gray-900">P/U:</span> {delivery.pickupAddress}</td>
+      <td className="px-6 py-4 text-gray-700 max-w-xs truncate" title={delivery.deliveryAddress}><span className="font-medium text-gray-900">D/O:</span> {delivery.deliveryAddress}</td>
+
+      {/* Linked Orders column */}
+      <td className="px-6 py-4 text-gray-700">
+        {delivery.orderIds && delivery.orderIds.length > 0 ? (
+          <div className="flex flex-wrap gap-2">
+            {delivery.orderIds.slice(0, 3).map(oid => {
+              const order = ordersMap[oid];
+              return (
+                <span key={oid} className="px-2 py-1 bg-indigo-50 text-indigo-700 rounded-full text-xs font-medium border border-indigo-100">
+                  #{oid}{order?.consumer?.name ? ` — ${order.consumer.name}` : ''}
+                </span>
+              );
+            })}
+            {delivery.orderIds.length > 3 && <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium">+{delivery.orderIds.length - 3}</span>}
+          </div>
+        ) : (
+          <span className="text-gray-400 italic text-sm">No Order</span>
+        )}
+      </td>
+
+      <td className="px-6 py-4 text-gray-700"><div className="flex items-center space-x-1"><TruckIcon className="h-4 w-4 text-indigo-500" /><span className={delivery.riderId ? "font-medium text-indigo-700" : "text-gray-500 italic"}>{delivery.riderName}</span></div></td>
+      <td className="px-6 py-4 text-gray-700"><span className="font-semibold text-sm">Ksh {delivery.deliveryFee.toLocaleString()}</span></td>
+      <td className="px-6 py-4 text-gray-700 text-sm">{formatDateTime(delivery.scheduledFor)}</td>
+      <td className="px-6 py-4 space-x-3 whitespace-nowrap">
+        <button onClick={() => onEdit(delivery)} className="text-indigo-600 hover:text-indigo-900 transition-colors" title="Edit Delivery"><PencilSquareIcon className="h-5 w-5 inline" /></button>
+        <button onClick={() => onDelete(delivery)} className="text-red-600 hover:text-red-900 transition-colors" title="Delete Delivery"><TrashIcon className="h-5 w-5 inline" /></button>
+      </td>
+    </tr>
+  );
 };
 
 interface DeleteConfirmationModalProps { isOpen: boolean; onClose: () => void; onConfirm: () => void; riderName: string; isSubmitting: boolean; }
@@ -252,14 +405,14 @@ const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({ isOpe
 );
 
 // --- Main DeliveriesPage Component (with API Logic) ---
-interface DeliveriesPageProps { params: { companyId: string; }; }
-
 export default function DeliveriesPage() {
   const { slug : companyId } = useParams();
 
   // --- State Management ---
   const [deliveries, setDeliveries] = useState<Delivery[]>([]);
   const [riders, setRiders] = useState<RiderInfo[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [ordersMap, setOrdersMap] = useState<Record<string, Order>>({});
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('All');
@@ -292,11 +445,12 @@ export default function DeliveriesPage() {
         searchTerm: debouncedSearchTerm,
         status: filterStatus,
       }).toString();
-      
-      const riderParams = new URLSearchParams({ companyId: safeCompanyId }).toString();
 
-      // Fetch deliveries and riders in parallel
-      const [deliveriesRes, ridersRes] = await Promise.all([
+      const riderParams = new URLSearchParams({ companyId: safeCompanyId }).toString();
+      const ordersParams = new URLSearchParams({ companyId: safeCompanyId }).toString();
+
+      // Fetch deliveries, riders and orders in parallel
+      const [deliveriesRes, ridersRes, ordersRes] = await Promise.all([
         fetch(`${apiUrl}/admin/deliveries?${deliveryParams}`, {
           method: 'GET',
           headers: { 'Content-Type': 'application/json',
@@ -309,19 +463,42 @@ export default function DeliveriesPage() {
             'Credentials': 'include'
             }
         }),
+        fetch(`${apiUrl}/admin/orders?${ordersParams}`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json',
+            'Credentials': 'include'
+          }
+        }),
       ]);
 
       if (!deliveriesRes.ok) throw new Error('Failed to fetch deliveries.');
       if (!ridersRes.ok) throw new Error('Failed to fetch riders.');
+      if (!ordersRes.ok) throw new Error('Failed to fetch orders.');
 
-      const deliveriesData = (await deliveriesRes.json());
-      const ridersData = (await ridersRes.json());
+      const deliveriesData = await deliveriesRes.json();
+      const ridersData = await ridersRes.json();
+      const ordersData = await ordersRes.json();
 
-      console.log('Fetched Deliveries:', deliveriesData);
-      console.log('Fetched Riders:', ridersData);
+      // Your API returns { data: [ ... ] } for orders etc.
+      const fetchedDeliveries: Delivery[] = deliveriesData.data || [];
+      const fetchedRiders: RiderInfo[] = ridersData.data || [];
+      // const fetchedOrders: Order[] = ordersData.data || [];
+      
+      const json: { orderItems: Order[] } = ordersData.data || [];
+      let orderItems = json.orderItems || [];
 
-      setDeliveries(deliveriesData.data || []);
-      setRiders(ridersData.data || []);
+      // Build quick lookup map for orders to show labels in the table
+      const map: Record<string, Order> = {};
+      orderItems.forEach(o => { if (o && o.id) map[o.id] = o; });
+
+      setDeliveries(fetchedDeliveries);
+      setRiders(fetchedRiders);
+      setOrders(orderItems);
+      setOrdersMap(map);
+
+      console.log('Fetched Deliveries:', fetchedDeliveries);
+      console.log('Fetched Riders:', fetchedRiders);
+      console.log('Fetched Orders:', orderItems);
 
     } catch (err: any) {
       setError(err.message || 'An unexpected error occurred.');
@@ -345,19 +522,28 @@ export default function DeliveriesPage() {
     setIsSubmitting(true);
     const isEdit = !!editingDelivery;
     const toastId = toast.loading(isEdit ? 'Updating delivery...' : 'Creating delivery...');
-    
+
     try {
       const url = isEdit ? `${apiUrl}/admin/deliveries/${editingDelivery.id}` : `${apiUrl}/admin/deliveries`;
       const method = isEdit ? 'PUT' : 'POST';
 
+      // ensure companyId passed
+      const safeCompanyId = Array.isArray(companyId) ? companyId[0] : (companyId ?? '');
+
+      const body = {
+        ...formData,
+        orderIds: formData.orderIds || [],
+        companyId: safeCompanyId,
+      };
+
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json', 'Credentials': 'include' },
-        body: JSON.stringify({ ...formData, companyId }),
+        body: JSON.stringify(body),
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.message || 'Failed to save delivery.');
       }
 
@@ -375,12 +561,12 @@ export default function DeliveriesPage() {
     if (!deliveryToDelete) return;
     setIsSubmitting(true);
     const toastId = toast.loading(`Deleting delivery ${deliveryToDelete.trackingNumber}...`);
-    
+
     try {
       const response = await fetch(`${apiUrl}/admin/deliveries/${deliveryToDelete.id}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json', 'Credentials': 'include' } });
       if (!response.ok) {
         const errorData = (await response.json()).data;
-        throw new Error(errorData.message || 'Failed to delete.');
+        throw new Error(errorData?.message || 'Failed to delete.');
       }
       toast.success(`Delivery deleted successfully!`, { id: toastId });
       setShowDeleteConfirmModal(false);
@@ -450,18 +636,19 @@ export default function DeliveriesPage() {
               <thead className="text-xs text-gray-700 uppercase bg-gray-100">
                 <tr>
                   <th scope="col" className="px-6 py-3">Tracking #</th><th scope="col" className="px-6 py-3">Status</th><th scope="col" className="px-6 py-3">Pickup Location</th><th scope="col" className="px-6 py-3">Delivery Location</th>
+                  <th scope="col" className="px-6 py-3">Linked Orders</th>
                   <th scope="col" className="px-6 py-3">Assigned Rider</th><th scope="col" className="px-6 py-3">Fee</th><th scope="col" className="px-6 py-3">Scheduled</th><th scope="col" className="px-6 py-3">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {deliveries.map((delivery) => (<DeliveryRow key={delivery.id} delivery={delivery} onEdit={handleEditDelivery} onDelete={handleDeleteClick} />))}
+                {deliveries.map((delivery) => (<DeliveryRow key={delivery.id} delivery={delivery} onEdit={handleEditDelivery} onDelete={handleDeleteClick} ordersMap={ordersMap} />))}
               </tbody>
             </table>
           </div>
         )}
       </section>
 
-      <AddEditDeliveryModal isOpen={showAddEditModal} onClose={() => setShowAddEditModal(false)} delivery={editingDelivery} riders={riders} onSave={handleSaveDelivery} isSubmitting={isSubmitting} />
+      <AddEditDeliveryModal isOpen={showAddEditModal} onClose={() => setShowAddEditModal(false)} delivery={editingDelivery} riders={riders} orders={orders} onSave={handleSaveDelivery} isSubmitting={isSubmitting} />
       {deliveryToDelete && (<DeleteConfirmationModal isOpen={showDeleteConfirmModal} onClose={() => setShowDeleteConfirmModal(false)} onConfirm={confirmDelete} riderName={`Delivery ${deliveryToDelete.trackingNumber}`} isSubmitting={isSubmitting}/>)}
     </div>
   );

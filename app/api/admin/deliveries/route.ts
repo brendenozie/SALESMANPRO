@@ -78,10 +78,25 @@ export const POST = withApiHandler(async (request, context) => {
     weightKg,
     deliveryFee,
     scheduledFor,
+    orderId,
+    ...rest
   } = body;
 
   if (!companyId || !pickupAddress || !deliveryAddress || !trackingNumber) {
     return formatResponse(false, null, "Missing required fields.", 400);
+  }
+
+  if (orderId) {
+    const order = await prisma.customerOrder.findUnique({
+      where: { id: orderId },
+      include: { items: { include: { marketplaceListing: true } } }
+    });
+    if (order) {
+      rest.pickupAddress = order.shippingAddress || rest.pickupAddress;
+      rest.deliveryAddress = order.shippingAddress || rest.deliveryAddress;
+      rest.packageDescription = order.items?.map(i => i.marketplaceListing?.name).join(', ') || rest.packageDescription;
+      rest.deliveryFee = order.deliveryFee || rest.deliveryFee;
+    }
   }
   
   try {
@@ -97,6 +112,8 @@ export const POST = withApiHandler(async (request, context) => {
         weightKg: parseFloat(weightKg),
         deliveryFee: parseFloat(deliveryFee),
         scheduledFor: new Date(scheduledFor),
+        orderId: orderId || null,
+        ...rest,
       },
       include: {
         rider: { select: { name: true } }

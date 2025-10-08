@@ -2059,8 +2059,8 @@ model ConsumerInventoryLog {
 }
 
 model CustomerOrder {
-  id                    String      @id @default(auto()) @map("_id") @db.ObjectId
-  consumerId            String      @db.ObjectId
+  id                    String        @id @default(auto()) @map("_id") @db.ObjectId
+  consumerId            String        @db.ObjectId
   name                  String?
   email                 String?
   phone                 String?
@@ -2071,9 +2071,31 @@ model CustomerOrder {
   paymentOption         String?
   items                 OrderItem[] // Relationship to multiple order items
   totalPrice            Float
-  orderSource           OrderSource @default(WEBSITE)
-  status                OrderStatus @default(PENDING)
-  delivery              Boolean?    @default(false)
+  totalTax              Float?
+  totalDiscount         Float?
+  totalShipping         Float?
+  totalFinalPrice       Float
+  paymentStatus         PaymentStatus @default(PENDING) // Enum: PENDING, COMPLETED, FAILED
+  paymentMethod         String? // e.g., "Credit Card", "PayPal", "Bank Transfer"
+  transactionId         String? // ID from payment gateway
+  transactionDate       DateTime?     @default(now())
+  transactionReference  String? // Reference number from payment gateway
+  emailReceiptSent      Boolean?      @default(false)
+  // Billing details
+  billingAddress        Json? // Billing address details
+  // Order details
+  notes                 String?
+  specialInstructions   String?
+  giftMessage           String?
+  isGift                Boolean?      @default(false)
+  giftWrap              Boolean?      @default(false)
+  deliveryDate          DateTime? // Requested delivery date
+  deliveryTimeSlot      String? // e.g., "Morning", "Afternoon", "Evening"
+  deliveryInstructions  String?
+  deliveryFee           Float? // Additional delivery fee if applicable
+  orderSource           OrderSource   @default(WEBSITE)
+  status                OrderStatus   @default(PENDING)
+  delivery              Boolean?      @default(false)
   trackingNumber        String? // Optional tracking number
   estimatedArrival      DateTime? // Estimated delivery time
   deliveryStatus        String? // "Order Placed", "Processing", "Shipped", etc.
@@ -2081,13 +2103,16 @@ model CustomerOrder {
   deliveryPersonContact String? // Delivery person's contact info
   shippingAddress       Json? // Shipping address
   shippingMethod        String? // Shipping method (e.g., standard, express)
-  createdAt             DateTime?   @default(now())
-  updatedAt             DateTime?   @updatedAt
+  createdAt             DateTime?     @default(now())
+  updatedAt             DateTime?     @updatedAt
   deletedAt             DateTime?
   Payment               Payment[]
-  Company               Company?    @relation(fields: [companyId], references: [id])
-  companyId             String?     @db.ObjectId
-  notes                 String?
+
+  Company   Company? @relation(fields: [companyId], references: [id])
+  companyId String?  @db.ObjectId
+
+  deliveryId String?   @db.ObjectId
+  Delivery   Delivery? @relation(fields: [deliveryId], references: [id])
 
   @@index([consumerId])
   @@index([companyId])
@@ -5119,14 +5144,38 @@ model Delivery {
   riderId String? @db.ObjectId
   rider   User?   @relation("RiderDeliveries", fields: [riderId], references: [id])
 
-  pickupAddress      String
-  deliveryAddress    String
+  customerName    String
+  customerContact String
+  customerEmail   String
+
+  pickupAddress   String
+  deliveryAddress String
+  latlngPickup    String? // e.g., "37.7749,-122.4194"
+  latlngDelivery  String? // e.g., "37.7749,-122.4194"
+
+  deliveryInstructions String?
+
+  // Optional fields for package details
+  packageType        String?
+  packageWeightKg    Float?
+  packageDimensions  String? // e.g., "10x5x8 cm"
+  packageQuantity    Int?    @default(1)
+  // Optional fields for better tracking and management
+  packageValue       Float? // Value of the package for insurance purposes
+  packageInsurance   Float? // Insurance value for the package
+  packageTrackingUrl String? // URL for tracking the package
+
   packageDescription String?
   weightKg           Float?
   deliveryFee        Float?
+  tip                Float?   @default(0.0)
+  totalAmount        Float
+  notes              String?
+  // scheduledFor is the date and time when the delivery is scheduled to occur
+  scheduledFor       DateTime
 
-  createdAt    DateTime @default(now())
-  scheduledFor DateTime
+  createdAt     DateTime        @default(now())
+  CustomerOrder CustomerOrder[]
 
   @@index([companyId])
   @@index([riderId])
