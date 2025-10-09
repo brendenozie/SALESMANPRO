@@ -39,7 +39,9 @@ const getOrdersByStatus = async (req: Request) => {
     where: whereClause,
   });
 
-  return formatResponse(true, ordersByStatus, "Orders by status fetched successfully", 200);
+  const responseData = { orders: ordersByStatus };
+
+  return formatResponse(true, responseData, "Orders by status fetched successfully", 200);
 };
 
 export const GET = withApiHandler(getOrdersByStatus);
