@@ -84,7 +84,7 @@ const MetricCard: React.FC<MetricCardProps> = ({ title, value, icon: Icon, trend
                 <div className="text-right">
                     {trend !== 0 && (
                         <span className={`flex items-center text-sm font-medium ${trendColor}`}>
-                            <trendIcon className="w-4 h-4 mr-1" />
+                            {React.createElement(trendIcon, { className: "w-4 h-4 mr-1" })}
                             {Math.abs(trend)}%
                         </span>
                     )}
@@ -154,19 +154,22 @@ const CaseDistributionChart: React.FC = () => {
                 
                 {/* Mock Donut Chart - Using simple circles for visual representation */}
                 <div className="relative w-32 h-32 flex items-center justify-center">
-                    <div className="absolute inset-0 rounded-full" style={{
-                        background: `conic-gradient(
-                            var(--tw-case-1) 0% 45%,
-                            var(--tw-case-2) 45% 75%,
-                            var(--tw-case-3) 75% 90%,
-                            var(--tw-case-4) 90% 100%
-                        )`,
-                        // Mocking Tailwind colors for use in style property (Not ideal, but necessary for single-file, non-external chart)
-                        '--tw-case-1': '#FBBF24', // Yellow 45%
-                        '--tw-case-2': '#EF4444', // Red 30%
-                        '--tw-case-3': '#3B82F6', // Blue 15%
-                        '--tw-case-4': '#6B7280', // Gray 10%
-                    }}></div>
+                    <div
+                        className="absolute inset-0 rounded-full"
+                        style={{
+                            background: `conic-gradient(
+                                var(--tw-case-1) 0% 45%,
+                                var(--tw-case-2) 45% 75%,
+                                var(--tw-case-3) 75% 90%,
+                                var(--tw-case-4) 90% 100%
+                            )`,
+                            // @ts-ignore: Custom CSS variables for conic-gradient
+                            '--tw-case-1': '#FBBF24', // Yellow 45%
+                            '--tw-case-2': '#EF4444', // Red 30%
+                            '--tw-case-3': '#3B82F6', // Blue 15%
+                            '--tw-case-4': '#6B7280', // Gray 10%
+                        } as React.CSSProperties}
+                    ></div>
                     <div className="w-20 h-20 bg-gray-800 rounded-full text-white text-lg font-bold flex items-center justify-center border-4 border-gray-700">
                         100
                     </div>

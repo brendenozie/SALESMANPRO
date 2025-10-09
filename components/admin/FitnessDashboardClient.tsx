@@ -105,17 +105,16 @@ const MockClassAttendance: React.FC = () => {
         <div className="flex flex-col md:flex-row items-center justify-around h-56 py-4">
             {/* Mock Donut Chart */}
             <div className="relative w-36 h-36 flex items-center justify-center">
-                <div className="absolute inset-0 rounded-full" style={{
-                    background: `conic-gradient(
-                        var(--tw-class-1) 0% 45%,
-                        var(--tw-class-2) 45% 75%,
-                        var(--tw-class-3) 75% 100%
-                    )`,
-                    // Mocking Tailwind colors
-                    '--tw-class-1': '#EC4899', // Pink 45%
-                    '--tw-class-2': '#A855F7', // Purple 30%
-                    '--tw-class-3': '#0EA5E9', // Sky 25%
-                }}></div>
+                <div
+                    className="absolute inset-0 rounded-full"
+                    style={{
+                        background: `conic-gradient(
+                            #EC4899 0% 45%,
+                            #A855F7 45% 75%,
+                            #0EA5E9 75% 100%
+                        )`
+                    }}
+                ></div>
                 <div className="w-24 h-24 bg-gray-900 rounded-full text-white text-sm flex flex-col items-center justify-center border-4 border-gray-700 shadow-inner">
                     <span className='font-bold text-2xl text-pink-400'>100%</span>
                 </div>
