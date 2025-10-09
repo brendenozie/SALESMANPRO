@@ -30,12 +30,14 @@ import StudentDashboard, { StudentDashboardData } from '@/components/admin/Stude
 import PrincipalDashboard, { PrincipalDashboardData } from '@/components/admin/PrincipalDashboard';
 import UncategorizedDashboard from '@/components/admin/AdminDashClient'; // Assuming this is a generic fallback
 import PlaygroupDashboard from '@/components/admin/PlaygroupDashboard';
+import { cookies } from 'next/headers';
 
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminDashboardPage({ params }: { params: { slug: string } }) {
   const session = await getAuthSession();
+  const cookiesHeader = (await cookies()).toString();
   
   if (!session) {
     redirect('/login'); // Redirect to login if no session
@@ -87,10 +89,10 @@ export default async function AdminDashboardPage({ params }: { params: { slug: s
     if (userRole === 'STUDENT') {
       const studentRes = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/dashboard/student?userId=${encodeURIComponent(currentUserId)}`,
-        { cache: 'no-store' }
+        { cache: 'no-store', headers: { cookie: cookiesHeader } }
       );
       if (studentRes.ok) {
-        studentDashboardData = (await studentRes.json()) as StudentDashboardData;
+        studentDashboardData = (await studentRes.json()).data as StudentDashboardData;
       } else {
         console.error(`[AdminDashboardPage] Failed to fetch student dashboard data: ${studentRes.status} ${studentRes.statusText}`);
         fetchError = true;
@@ -128,10 +130,12 @@ export default async function AdminDashboardPage({ params }: { params: { slug: s
     }else {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/${companyId}`,
-        { cache: 'no-store' }
+        { cache: 'no-store', headers: { cookie: cookiesHeader } }
       );
       if (res.ok) {
-        dashboardData = (await res.json()) as DashboardData;
+        let dashRes = (await res.json()).data
+        console.log("Fetched dashboard data:", dashRes);
+        dashboardData = dashRes as DashboardData;
       } else {
         console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
         fetchError = true;
@@ -147,13 +151,6 @@ export default async function AdminDashboardPage({ params }: { params: { slug: s
   // 4. Fallback Data (if fetch failed) - Keep existing fallbacks and add new ones
   if (!dashboardData || fetchError) {
     console.warn("Using fallback data for general dashboard.");
-    dashboardData = {
-      slug: companyId,
-      clientData: { newClients: 0 }, inventoryData: { lowStock: 0 },
-      agentData: { topAgent: '', topAgentSales: 0 }, communicationData: { today: 0 },
-      orderData: { completedToday: 0 }, salesData: { todaySales: 0, monthlyTargetProgress: 0,  },//leadsConverted: 0, demosConducted: 0, commissionEarned: 0,
-      taskData: { tasks: [] },
-    };
   }
 
   if (userRole === 'STUDENT' && !studentDashboardData) {

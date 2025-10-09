@@ -2,131 +2,155 @@ import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
+// Helper function to get the start of a specific day
+const getStartOfDay = (date: Date) => {
+  const newDate = new Date(date);
+  newDate.setHours(0, 0, 0, 0);
+  return newDate;
+};
+
 export const GET = withApiHandler(
   async (_request, { params }) => {
     const { slug } = params;
 
     try {
-      // --- New clients today
+      // --- Get Company Info for currency ---
+      const company = await prisma.company.findUnique({
+        where: { slug },
+        select: { currency: true, name: true },
+      });
+      const currency = company?.currency || 'KES';
+      const companyName = company?.name || 'Your Company';
+
+      const todayStart = getStartOfDay(new Date());
+
+      // --- Dashboard KPIs ---
       const newClients = await prisma.client.count({
-        where: {
-          createdAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) },
-          companyId: slug,
-        },
+        where: { createdAt: { gte: todayStart }, companyId: slug },
       });
 
-      // --- Low stock items
       const lowStock = await prisma.inventoryItem.count({
-        where: {
-          quantity: { lte: 5 },
-          companyId: slug,
-        },
+        where: { quantity: { lte: 5 }, companyId: slug },
       });
 
-      // --- Top agent by sales
-      const agents = await prisma.salesAgent.findMany({
-        where: { companyId: slug },
-        include: {
-          AgentInventory: {
-            include: { AgentInventoryLog: true },
-          },
-          user : true
-        },
-      });
-
-      const agentSalesData = agents.map((agent) => {
-        const totalSales = agent.AgentInventory.reduce(
-          (sum, inventory) =>
-            sum +
-            inventory.AgentInventoryLog.reduce(
-              (logSum, log) => logSum + log.totalPrice,
-              0
-            ),
-          0
-        );
-        return { name: agent.user.name, totalSales };
-      });
-
-      const topAgentData =
-        agentSalesData.sort((a, b) => b.totalSales - a.totalSales)[0] || {
-          name: "",
-          totalSales: 0,
-        };
-
-      // --- Communications today
       const communicationsToday = await prisma.conversation.count({
-        where: {
-          createdAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) },
-          companyId: slug,
-        },
+        where: { createdAt: { gte: todayStart }, companyId: slug },
       });
 
-      // --- Pending orders
       const pendingOrders = await prisma.customerOrder.count({
         where: { status: "PENDING", companyId: slug },
       });
 
-      // --- Pending requests
       const pendingRequests = await prisma.request.count({
         where: { status: "PENDING", companyId: slug },
       });
+      
+      const pendingActions = pendingOrders + pendingRequests;
 
-      // --- Sales + commission today
+      // --- Top Agent by Sales ---
+      const agents = await prisma.salesAgent.findMany({
+        where: { companyId: slug },
+        include: { user: true, AgentInventory: { include: { AgentInventoryLog: true } } },
+      });
+      const agentSalesData = agents.map((agent) => {
+        const totalSales = agent.AgentInventory.reduce((sum, inv) => 
+            sum + inv.AgentInventoryLog.reduce((logSum, log) => logSum + log.totalPrice, 0), 0);
+        return { name: agent.user.name, totalSales };
+      }).sort((a, b) => b.totalSales - a.totalSales);
+      
+      const topAgentData = agentSalesData[0] || { name: "N/A", totalSales: 0 };
+
+      // --- Sales + Commission Today ---
       const todaySales = await prisma.agentInventoryLog.aggregate({
-        where: { createdAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) } },
+        where: { createdAt: { gte: todayStart } },
         _sum: { totalPrice: true },
       });
 
       const commissionEarned = await prisma.commission.aggregate({
-        where: { createdAt: { gte: new Date(new Date().setHours(0, 0, 0, 0)) } },
+        where: { createdAt: { gte: todayStart } },
         _sum: { commissionEarned: true },
       });
 
-      // --- Monthly target progress
-      const monthlyTarget = 50000;
+      // --- Monthly Target Progress ---
+      const monthlyTarget = 50000; // This could be fetched dynamically from a Target model
+      const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
       const monthlySales = await prisma.agentInventoryLog.aggregate({
-        where: {
-          createdAt: {
-            gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
-          },
-        },
+        where: { createdAt: { gte: monthStart } },
         _sum: { totalPrice: true },
       });
+      const monthlyTargetProgress = ((monthlySales._sum.totalPrice || 0) / monthlyTarget) * 100;
 
-      const monthlyTargetProgress =
-        ((monthlySales._sum.totalPrice || 0) / monthlyTarget) * 100;
-
-      // --- Pending tasks
-      const tasks = await prisma.task.findMany({
+      // --- Data for UI Lists ---
+      const pendingTasks = await prisma.task.findMany({
         where: { status: "PENDING", companyId: slug },
         orderBy: { dueDate: "asc" },
+        take: 3,
       });
 
-      // --- Final response
-      const response = {
-        clientData: { newClients },
-        inventoryData: { lowStock },
-        agentData: {
-          topAgent: topAgentData.name,
-          topAgentSales: topAgentData.totalSales,
-        },
-        communicationData: { today: communicationsToday },
-        orderData: { pendingOrders },
-        requestData: { pendingRequests },
-        salesData: {
-          todaySales: todaySales._sum.totalPrice || 0,
-          monthlyTargetProgress: monthlyTargetProgress || 0,
-          leadsConverted: 2, // placeholder
-          demosConducted: 5, // placeholder
-          commissionEarned: commissionEarned._sum.commissionEarned || 0,
-        },
-        taskData: { tasks },
-      };
+      const recentOrders = await prisma.customerOrder.findMany({
+        where: { companyId: slug },
+        orderBy: { createdAt: 'desc' },
+        take: 3,
+        select: { id: true, name: true, status: true, totalPrice: true },
+      });
 
-      return formatResponse(true, response);
+      const activePromotions = await prisma.promotion.findMany({
+        where: { 
+          companyId: slug,
+          endsAt: { gte: new Date() }
+        },
+        orderBy: { endsAt: 'asc' },
+        take: 3,
+        select: { id: true, title: true, description: true, badgeText: true }
+      });
+      
+      // --- Data for Sales Chart (Last 7 Days) ---
+      const salesLast7Days = await Promise.all(
+        Array.from({ length: 7 }).map(async (_, i) => {
+          const date = new Date();
+          date.setDate(date.getDate() - i);
+          const dayStart = getStartOfDay(date);
+          const dayEnd = new Date(dayStart);
+          dayEnd.setHours(23, 59, 59, 999);
+
+          const dailySale = await prisma.agentInventoryLog.aggregate({
+            where: { createdAt: { gte: dayStart, lte: dayEnd } },
+            _sum: { totalPrice: true },
+          });
+
+          return {
+            name: date.toLocaleDateString('en-US', { weekday: 'short' }),
+            total: dailySale._sum.totalPrice || 0,
+          };
+        })
+      ).then(data => data.reverse());
+
+
+      // --- Final Response ---
+      return formatResponse(true, {
+        companyName,
+        currency,
+        newClients,
+        lowStock,
+        topAgent: topAgentData,
+        communicationsToday,
+        pendingOrders,
+        pendingRequests,
+        pendingActions,
+        todaySales: todaySales._sum.totalPrice || 0,
+        commissionEarned: commissionEarned._sum.commissionEarned || 0,
+        monthlySales: monthlySales._sum.totalPrice || 0,
+        monthlyTarget,
+        monthlyTargetProgress,
+        pendingTasks,
+        recentOrders,
+        activePromotions,
+        salesLast7Days,
+      });
+
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
-      throw error; // handled by withApiHandler -> handlePrismaError
+      throw error;
     }
   },
   { requireAuth: true }

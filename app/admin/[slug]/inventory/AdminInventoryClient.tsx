@@ -156,7 +156,7 @@ export default function AdminInventoryClient({
                       {product.name}
                     </h3>
                     <span className="text-xs bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full uppercase font-semibold tracking-wide">
-                      {product.category.displayName}
+                      {product.category?.displayName || ''}
                     </span>
                   </div>
                   {/* Optional: Add a short description if available in InventoryItem */}
