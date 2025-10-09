@@ -7,7 +7,7 @@ import { DeliveryStatus, Prisma } from "@prisma/client";
 
 /**
  * GET /api/deliveries
- * Fetches and filters the list of deliveries for a company.
+ * Fetches and filters the list of deliveries for a company, including linked orders for table display.
  */
 export const GET = withApiHandler(async (request, context) => {
   const { searchParams } = new URL(request.url);
@@ -20,7 +20,6 @@ export const GET = withApiHandler(async (request, context) => {
   const searchTerm = searchParams.get("searchTerm") || "";
   const status = searchParams.get("status");
 
-  // Build the Prisma `where` clause for filtering and searching
   const where: Prisma.DeliveryWhereInput = {
     companyId,
   };
@@ -36,6 +35,8 @@ export const GET = withApiHandler(async (request, context) => {
       { deliveryAddress: { contains: searchTerm, mode: 'insensitive' } },
       { packageDescription: { contains: searchTerm, mode: 'insensitive' } },
       { rider: { name: { contains: searchTerm, mode: 'insensitive' } } },
+      // Allow searching by linked customer name
+      { CustomerOrder: { some: { name: { contains: searchTerm, mode: 'insensitive' } } } }
     ];
   }
 
@@ -45,29 +46,34 @@ export const GET = withApiHandler(async (request, context) => {
       rider: {
         select: { id: true, name: true },
       },
+      // *** NEW: Include the linked CustomerOrders and nested item data for the frontend table ***
+      CustomerOrder: { 
+        select: {
+          id: true,
+          name: true,
+          totalFinalPrice: true,
+          items: {
+            select: {
+              id: true,
+              quantity: true,
+              price: true,
+              marketplaceListing: {
+                select: {
+                  name: true,
+                  locationName: true,
+                  contactName: true,
+                },
+              },
+            },
+          },
+        },
+      },
     },
     orderBy: {
       scheduledFor: 'desc',
     },
   });
-  // const deliveries = await prisma.delivery.findMany({
-  //     where: whereClause,
-  //     include: {
-  //       orders: {
-  //         include: {
-  //           consumer: true,
-  //           items: {
-  //             include: {
-  //               marketplaceListing: true,
-  //             },
-  //           },
-  //         },
-  //       },
-  //     },
-  //     orderBy: { createdAt: "desc" },
-  //   });
 
-  // Map the data to match the frontend's expected 'Delivery' type
   const formattedDeliveries = deliveries.map((d) => ({
     ...d,
     riderName: d.rider?.name || 'Unassigned',
@@ -79,7 +85,7 @@ export const GET = withApiHandler(async (request, context) => {
 
 /**
  * POST /api/deliveries
- * Creates a new delivery record.
+ * Creates a new delivery record and auto-populates fields from linked CustomerOrders.
  */
 export const POST = withApiHandler(async (request, context) => {
   const body = await request.json();
@@ -94,82 +100,119 @@ export const POST = withApiHandler(async (request, context) => {
     weightKg,
     deliveryFee,
     scheduledFor,
-    orderIds,
+    // orderIds is assumed to be an array of OrderItem IDs from the frontend modal
+    orderIds = [], 
     riderName,
     ...rest
   } = body;
 
-  if (!companyId || !pickupAddress || !deliveryAddress || !trackingNumber) {
+  if (!companyId || !trackingNumber) {
     return formatResponse(false, null, "Missing required fields.", 400);
   }
 
-    let pickup = pickupAddress;
-    let drop = deliveryAddress;
-    let desc = packageDescription;
-    let fee = deliveryFee;
+  let finalPickup = pickupAddress;
+  let finalDrop = deliveryAddress;
+  let finalDesc = packageDescription;
+  let finalFee = deliveryFee;
+  let finalWeight = Number(weightKg) || 0;
+  let customerOrderIds: string[] = [];
+  let packageValue = rest.packageValue;
+  let customerName = rest.customerName;
 
-  // Auto-populate fields from first linked order (if any)
-    if (orderIds.length > 0) {
-      const primaryOrder = await prisma.customerOrder.findUnique({
-        where: { id: orderIds[0] },
-        include: {
-          // consumer: true,
-          items: { include: { marketplaceListing: true } },
-        },
-      });
+  // --- 1. Process linked OrderItem IDs to derive CustomerOrder IDs and auto-populate data ---
+  if (orderIds.length > 0) {
+    // 1a. Find the parent CustomerOrder ID for each OrderItem ID
+    const orderItems = await prisma.orderItem.findMany({
+        where: { id: { in: orderIds } },
+        select: { orderId: true, quantity: true, price: true, marketplaceListingId: true }
+    });
+    
+    // Get unique CustomerOrder IDs to link to the Delivery record
+    customerOrderIds = Array.from(new Set(orderItems.map(item => item.orderId)));
+    
+    // 1b. Auto-populate fields from the first linked OrderItem (for pickup details)
+    const primaryOrderItem = await prisma.orderItem.findUnique({
+        where: { id: orderIds[0] }, 
+        include: { 
+            marketplaceListing: { 
+                select: { name: true, locationName: true, contactName: true } 
+            } 
+        }
+    });
 
-      if (primaryOrder) {
-        pickup = pickup || primaryOrder.shippingAddress || rest.pickupAddress || "";
-        drop = drop || primaryOrder.shippingAddress || rest.deliveryAddress || "";
-        const titles = primaryOrder.items
-          ?.map((i) => i.marketplaceListing?.name ||  rest.packageDescription || "")
-          .filter(Boolean)
-          .join(", ");
-        desc = desc || titles || "Multiple items";
-        fee = fee || Math.round((primaryOrder.totalFinalPrice || 0) * 0.05);
-      }
+    if (primaryOrderItem && primaryOrderItem.marketplaceListing) {
+        // *** Pickup Address: Use marketplace listing location (seller) ***
+        finalPickup = pickupAddress || primaryOrderItem.marketplaceListing.locationName || "";
+        // If customerName is not set, use the pickup contact name (seller name) as a fallback hint
+        customerName = customerName || primaryOrderItem.marketplaceListing.contactName; 
     }
 
-  // if (orderId) {
-  //   const order = await prisma.customerOrder.findUnique({
-  //     where: { id: orderId },
-  //     include: { items: { include: { marketplaceListing: true } } }
-  //   });
-  //   if (order) {
-  //     rest.pickupAddress = order.shippingAddress || rest.pickupAddress;
-  //     rest.deliveryAddress = order.shippingAddress || rest.deliveryAddress;
-  //     rest.packageDescription = order.items?.map(i => i.marketplaceListing?.name).join(', ') || rest.packageDescription;
-  //     rest.deliveryFee = order.deliveryFee || rest.deliveryFee;
-  //   }
-  // }
-  
+    // 1c. Aggregate item data
+    // const totalItemValue = orderItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+    // const totalItemWeight = orderItems.length > 0 ? orderItems.reduce((acc, item) => acc + (item.quantity * 1.5), 0) : 0; // Heuristic: 1.5kg per item quantity
+    
+    // packageValue = packageValue || totalItemValue;
+    // finalWeight = finalWeight > 0 ? finalWeight : totalItemWeight;
+
+    const totalItemValue = orderItems.reduce((acc, item) => acc + ((item.price ?? 0) * (item.quantity ?? 0)), 0);
+    const totalItemWeight = orderItems.length > 0 ? orderItems.reduce((acc, item) => acc + ((item.quantity ?? 1) * 1.5), 0) : 0; 
+    
+    packageValue = packageValue ?? totalItemValue;
+    finalWeight = finalWeight > 0 ? finalWeight : totalItemWeight;
+  }
+
+  // --- 2. Auto-populate from the primary CustomerOrder (for delivery details) ---
+  if (customerOrderIds.length > 0) {
+    const primaryCustomerOrder = await prisma.customerOrder.findUnique({
+        where: { id: customerOrderIds[0] }, 
+        include: { items: { include: { marketplaceListing: { select: { name: true } } } } },
+    });
+
+    if (primaryCustomerOrder) {
+        // *** Delivery Address: Use CustomerOrder shippingAddress ***
+        const shippingAddressObject = primaryCustomerOrder.shippingAddress as any;
+        const deliveryAddressFromOrder = shippingAddressObject?.display_name || shippingAddressObject?.address_line_1 || null;
+        finalDrop = deliveryAddress || deliveryAddressFromOrder || "";
+        
+        // Auto-populate package description
+        const titles = primaryCustomerOrder.items
+            ?.map((i) => (i.marketplaceListing as any)?.name)
+            .filter(Boolean)
+            .join(", ");
+        finalDesc = packageDescription || titles || "Multiple items";
+        
+        // Auto-populate fee and name if not manually set
+        // finalFee = deliveryFee || primaryCustomerOrder.totalShipping || Math.round((primaryCustomerOrder.totalFinalPrice || 0) * 0.05);
+        
+        finalFee = deliveryFee || primaryCustomerOrder.totalShipping || Math.round((primaryCustomerOrder.totalFinalPrice ?? 0) * 0.05); // Use 0 if totalFinalPrice is null
+        customerName = customerName || primaryCustomerOrder.name;
+    }
+  }
+
+  // Final check for required addresses if not linked
+  if (!finalPickup || !finalDrop) {
+    return formatResponse(false, null, "Pickup Address and Delivery Address are required.", 400);
+  }
+ 
+  // --- 3. Create the Delivery record ---
   try {
     const newDelivery = await prisma.delivery.create({
       data: {
         companyId,
         trackingNumber,
         riderId: riderId || null,
+        riderName: riderName || null,
         status: status as DeliveryStatus,
-        // pickupAddress,
-        // deliveryAddress,
-        // packageDescription,
-        // weightKg: parseFloat(weightKg),
-        // deliveryFee: parseFloat(deliveryFee),
-        pickupAddress: pickup,
-        deliveryAddress: drop,
-        packageDescription: desc,
-        weightKg: Number(weightKg) || 0,
-        deliveryFee: Number(fee) || 0,
+        pickupAddress: finalPickup,
+        deliveryAddress: finalDrop,
+        packageDescription: finalDesc,
+        weightKg: finalWeight,
+        deliveryFee: Number(finalFee) || 0,
+        packageValue: Number(packageValue) || 0,
+        customerName: customerName,
         scheduledFor: scheduledFor ? new Date(scheduledFor) : new Date(),
-        // scheduledFor: new Date(scheduledFor),
-        // orderId: orderId || null,
-        // scheduledFor: scheduledFor ? new Date(scheduledFor) : undefined,
-        // reset and re-link orders
-        // orders: {
-        //   set: [], // clear old links
-        //   connect: orderIds.map((id: string) => ({ id })),
-        // },
-        CustomerOrder: orderIds.length > 0 ? { connect: orderIds.map((id: string) => ({ id })) } : undefined,
+        // Link to the parent CustomerOrder records
+        CustomerOrder: customerOrderIds.length > 0 ? { connect: customerOrderIds.map((id: string) => ({ id })) } : undefined,
         ...rest,
       },
       include: {
@@ -184,9 +227,10 @@ export const POST = withApiHandler(async (request, context) => {
 
     return formatResponse(true, formattedDelivery, "Delivery created successfully.", 201);
   } catch (error: any) {
-    if (error.code === 'P2002') { // Prisma unique constraint violation
+    if (error.code === 'P2002') { 
       return formatResponse(false, null, "A delivery with this tracking number already exists.", 409);
     }
+    console.error("Delivery creation error:", error);
     return formatResponse(false, null, "Failed to create delivery.", 500);
   }
 });

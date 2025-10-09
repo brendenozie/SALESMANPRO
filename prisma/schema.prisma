@@ -2059,22 +2059,18 @@ model ConsumerInventoryLog {
 }
 
 model CustomerOrder {
-  id                    String        @id @default(auto()) @map("_id") @db.ObjectId
-  consumerId            String        @db.ObjectId
-  name                  String?
-  email                 String?
-  phone                 String?
-  cardNumber            String?
-  cardExpiry            String?
-  cvv                   String?
-  promoCode             String?
-  paymentOption         String?
-  items                 OrderItem[] // Relationship to multiple order items
-  totalPrice            Float
-  totalTax              Float?
-  totalDiscount         Float?
-  totalShipping         Float?
-  totalFinalPrice       Float
+  id            String      @id @default(auto()) @map("_id") @db.ObjectId
+  consumerId    String      @db.ObjectId
+  name          String?
+  email         String?
+  phone         String?
+  cardNumber    String?
+  cardExpiry    String?
+  cvv           String?
+  promoCode     String?
+  paymentOption String?
+  items         OrderItem[] // Relationship to multiple order items
+
   paymentStatus         PaymentStatus @default(PENDING) // Enum: PENDING, COMPLETED, FAILED
   paymentMethod         String? // e.g., "Credit Card", "PayPal", "Bank Transfer"
   transactionId         String? // ID from payment gateway
@@ -2113,6 +2109,12 @@ model CustomerOrder {
 
   deliveryId String?   @db.ObjectId
   Delivery   Delivery? @relation(fields: [deliveryId], references: [id])
+
+  totalPrice      Float? // Made optional
+  totalTax        Float?
+  totalDiscount   Float?
+  totalShipping   Float?
+  totalFinalPrice Float? // 💡 UPDATE: MUST be changed from Float to Float?
 
   @@index([consumerId])
   @@index([companyId])
@@ -5141,8 +5143,9 @@ model Delivery {
   status         DeliveryStatus @default(Pending)
 
   // Relation to the User model for the rider
-  riderId String? @db.ObjectId
-  rider   User?   @relation("RiderDeliveries", fields: [riderId], references: [id])
+  riderId   String? @db.ObjectId
+  riderName String?
+  rider     User?   @relation("RiderDeliveries", fields: [riderId], references: [id])
 
   customerName    String?
   customerContact String?
