@@ -1122,6 +1122,12 @@ model Message {
 
   createdAt DateTime? @default(now()) // Timestamp when the message was sent
 
+  // NEW: For read receipts
+  readBy Json? // Stores { userId: string, readAt: DateTime }[]
+
+  // NEW: For emoji reactions
+  reactions Json? // Stores { emoji: string, userIds: string[] }[]
+
   // Indexes for efficient querying
   @@index([conversationId])
   @@index([senderId])
