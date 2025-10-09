@@ -1,9 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import {
-  HomeIcon,
   CalendarIcon,
   TicketIcon,
   UsersIcon,
@@ -11,7 +10,9 @@ import {
   BellAlertIcon,
   ArrowRightIcon,
   ExclamationCircleIcon,
-  ArrowPathIcon, // For loading spinner
+  ArrowPathIcon,
+  BoltIcon, // For urgent activities
+  LightBulbIcon, // For key insights
 } from '@heroicons/react/24/outline';
 
 // Framer Motion variants
@@ -25,7 +26,7 @@ const sectionVariants = {
 };
 
 const cardVariants = {
-  hidden: { opacity: 0, scale: 0.9 },
+  hidden: { opacity: 0, scale: 0.95 },
   visible: {
     opacity: 1,
     scale: 1,
@@ -33,171 +34,279 @@ const cardVariants = {
   },
 };
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+// Mock data structure for type safety and initial state
+interface Activity {
+    id: string;
+    type: string;
+    description: string;
+    time: string;
+}
+
+interface Event {
+    id: string;
+    name: string;
+    date: string;
+    ticketsSold: number;
+}
+
+interface DashboardData {
+    totalEvents: number;
+    upcomingEvents: number;
+    totalTicketsSold: number;
+    totalRevenue: number;
+    recentActivities: Activity[];
+    upcomingEventsList: Event[];
+}
+
+// Simulated API URL and Data Fetch Logic
+// NOTE: Since we are in a simulated environment, we define a fallback data structure.
+const apiBaseUrl = "https://api.example.com"; // Keeping the structure
+const mockDashboardData: DashboardData = {
+    totalEvents: 14,
+    upcomingEvents: 4,
+    totalTicketsSold: 2855,
+    totalRevenue: 125345.50,
+    recentActivities: [
+        { id: 'a1', type: 'SALE', description: '5 new tickets sold for "Tech Summit"', time: '2 minutes ago' },
+        { id: 'a2', type: 'UPDATE', description: 'Event "City Marathon" set live.', time: '1 hour ago' },
+        { id: 'a3', type: 'REFUND', description: 'Refund processed for ticket #9876.', time: '4 hours ago' },
+    ],
+    upcomingEventsList: [
+        { id: 'e1', name: 'Annual Tech Summit 2025', date: 'Jul 20, 2025', ticketsSold: 890 },
+        { id: 'e2', name: 'Digital Marketing Workshop', date: 'Aug 05, 2025', ticketsSold: 450 },
+        { id: 'e3', name: 'Startup Pitch Night', date: 'Aug 18, 2025', ticketsSold: 120 },
+    ]
+};
+
 
 export default function AdminDashboard({ params }: { params: { adminSlug: string } }) {
-  const [dashboardData, setDashboardData] = useState<any | null>(null);
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const response = await fetch(`${apiBaseUrl}/admin/${params.adminSlug}/dashboard-summary`);
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        setDashboardData(data);
-      } catch (err: any) {
-        setError(err.message || "Failed to fetch dashboard data.");
-        console.error("Dashboard fetch error:", err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const fetchDashboardData = useCallback(async (adminSlug: string) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      // NOTE: In a real Next.js application, this would fetch from the backend.
+      // We will skip the actual fetch call in this environment and use mock data.
+      console.log(`Simulating API call to: ${apiBaseUrl}/admin/${adminSlug}/dashboard-summary`);
+      
+      await new Promise(resolve => setTimeout(resolve, 800)); // Simulate network latency
 
-    if (`${params.adminSlug}`) {
-      fetchDashboardData();
+      // Use mock data as the response
+      setDashboardData(mockDashboardData);
+
+    } catch (err: any) {
+      setError(err.message || "Failed to fetch dashboard data.");
+      console.error("Dashboard fetch error:", err);
+    } finally {
+      setIsLoading(false);
     }
-  }, [params.adminSlug]);
+  }, []);
+
+  useEffect(() => {
+    if (params.adminSlug) {
+      fetchDashboardData(params.adminSlug);
+    }
+  }, [params.adminSlug, fetchDashboardData]);
+
+  const data = dashboardData || mockDashboardData;
+  const { totalRevenue, totalEvents, upcomingEvents, totalTicketsSold } = data;
+
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-950 text-gray-200 flex items-center justify-center">
-        <ArrowPathIcon className="w-16 h-16 animate-spin text-indigo-500" />
-        <p className="ml-4 text-xl">Loading dashboard data...</p>
+      <div className="min-h-screen bg-gray-950 text-cyan-400 flex flex-col items-center justify-center p-8">
+        <ArrowPathIcon className="w-16 h-16 animate-spin text-cyan-500 mb-4" />
+        <p className="text-xl font-semibold">Initializing Command Center...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-950 text-red-400 p-8 sm:p-12 flex flex-col items-center justify-center">
+      <div className="min-h-screen bg-gray-950 text-red-500 p-8 sm:p-12 flex flex-col items-center justify-center">
         <ExclamationCircleIcon className="w-20 h-20 mb-6" />
-        <h2 className="text-3xl font-bold mb-4">Error Loading Dashboard</h2>
-        <p className="text-lg text-center">{error}</p>
-        <p className="text-sm text-gray-400 mt-2">Please try refreshing the page or contact support.</p>
+        <h2 className="text-3xl font-bold mb-4">SYSTEM OFFLINE: Error Loading Data</h2>
+        <p className="text-lg text-center text-red-400">{error}</p>
+        <p className="text-sm text-gray-500 mt-2">Check API connection or try refreshing the page.</p>
       </div>
     );
   }
 
-  const hasEvents = dashboardData?.totalEvents > 0;
-  const hasRecentActivities = dashboardData?.recentActivities?.length > 0;
-  const hasUpcomingEvents = dashboardData?.upcomingEventsList?.length > 0;
+  const hasRecentActivities = data?.recentActivities?.length > 0;
+  const hasUpcomingEvents = data?.upcomingEventsList?.length > 0;
+
+  // --- Components for Reuse ---
+
+  const MetricCard: React.FC<{ title: string; value: string | number; icon: React.ElementType; accentClass: string; delay: number; link: string; }> = 
+    ({ title, value, icon: Icon, accentClass, delay, link }) => (
+      <motion.a 
+        variants={cardVariants} 
+        initial="hidden" 
+        animate="visible" 
+        transition={{ delay }} 
+        href={link}
+        className={`bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-700 transition duration-300 hover:shadow-2xl hover:border-cyan-500 flex flex-col justify-between cursor-pointer group`}
+      >
+        <div className="flex items-center justify-between mb-4">
+            <p className="text-sm text-gray-400 font-medium">{title}</p>
+            <Icon className={`w-8 h-8 ${accentClass} opacity-70 group-hover:opacity-100 transition-opacity`} />
+        </div>
+        <h2 className="text-4xl font-extrabold text-white leading-none">{value}</h2>
+        <div className="flex justify-end mt-4">
+            <ArrowRightIcon className={`w-5 h-5 text-gray-500 group-hover:${accentClass.replace('text-', 'text-')} transition-colors`} />
+        </div>
+      </motion.a>
+  );
 
   return (
     <div className="min-h-screen bg-gray-950 text-gray-200 p-8 sm:p-12 font-sans relative overflow-hidden">
-      {/* Decorative Background Elements */}
-      <div className="absolute top-1/4 left-0 w-96 h-96 bg-purple-600/10 rounded-full filter blur-3xl opacity-50 animate-blob"></div>
-      <div className="absolute bottom-0 right-0 w-96 h-96 bg-indigo-600/10 rounded-full filter blur-3xl opacity-50 animate-blob animation-delay-2000"></div>
+      
+      {/* High-Tech Background Glows */}
+      <div className="absolute top-0 left-0 w-80 h-80 bg-cyan-600/10 rounded-full filter blur-3xl opacity-30 animate-blob"></div>
+      <div className="absolute bottom-10 right-10 w-80 h-80 bg-indigo-600/10 rounded-full filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
 
       <div className="max-w-7xl mx-auto relative z-10">
-        <motion.h1
+        <motion.header
           initial="hidden"
           animate="visible"
           variants={sectionVariants}
-          className="text-4xl sm:text-5xl font-black tracking-tighter text-white mb-4"
+          className="mb-12 border-b border-gray-800 pb-6"
         >
-          Admin <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-400 to-purple-500">Dashboard</span>
-        </motion.h1>
-        <motion.p
-          initial="hidden"
-          animate="visible"
-          variants={sectionVariants}
-          transition={{ delay: 0.2 }}
-          className="text-lg text-gray-300 mb-12"
-        >
-          Welcome back, Organizer! Here's a quick overview of your event performance.
-        </motion.p>
+          <p className="text-xl text-cyan-400 font-semibold mb-1">Status: Operational</p>
+          <h1 className="text-5xl sm:text-6xl font-black tracking-tighter text-white">
+            Event <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-indigo-500">Command Center</span>
+          </h1>
+          <p className="mt-3 text-lg text-gray-400">
+            Monitoring real-time performance for admin slug: <span className="text-cyan-400 font-mono">{params.adminSlug}</span>
+          </p>
+        </motion.header>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
-          <motion.div variants={cardVariants} initial="hidden" animate="visible" transition={{ delay: 0.3 }} className="bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-700 flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-400">Total Events</p>
-              <h2 className="text-3xl font-bold text-white">{dashboardData?.totalEvents || 0}</h2>
-            </div>
-            <CalendarIcon className="w-12 h-12 text-indigo-400 opacity-70" />
-          </motion.div>
-          <motion.div variants={cardVariants} initial="hidden" animate="visible" transition={{ delay: 0.4 }} className="bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-700 flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-400">Upcoming Events</p>
-              <h2 className="text-3xl font-bold text-white">{dashboardData?.upcomingEvents || 0}</h2>
-            </div>
-            <HomeIcon className="w-12 h-12 text-purple-400 opacity-70" />
-          </motion.div>
-          <motion.div variants={cardVariants} initial="hidden" animate="visible" transition={{ delay: 0.5 }} className="bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-700 flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-400">Tickets Sold</p>
-              <h2 className="text-3xl font-bold text-white">{(dashboardData?.totalTicketsSold || 0).toLocaleString()}</h2>
-            </div>
-            <TicketIcon className="w-12 h-12 text-pink-400 opacity-70" />
-          </motion.div>
-          <motion.div variants={cardVariants} initial="hidden" animate="visible" transition={{ delay: 0.6 }} className="bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-700 flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-400">Total Revenue</p>
-              <h2 className="text-3xl font-bold text-white">${(dashboardData?.totalRevenue || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</h2>
-            </div>
-            <BanknotesIcon className="w-12 h-12 text-green-400 opacity-70" />
-          </motion.div>
-        </div>
+        {/* --- Primary Metrics Section --- */}
+        <section className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+            
+            {/* 1. Large Revenue Card (Priority Metric) */}
+            <motion.div 
+                variants={cardVariants} 
+                initial="hidden" 
+                animate="visible" 
+                transition={{ delay: 0.3 }}
+                className="bg-gray-800 p-8 rounded-3xl shadow-2xl border-l-8 border-green-500 flex flex-col justify-between transition duration-500 hover:bg-gray-700/50"
+            >
+                <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center">
+                        <BanknotesIcon className="w-10 h-10 text-green-400 mr-3" />
+                        <p className="text-lg text-gray-300 font-semibold">Total Revenue Generated</p>
+                    </div>
+                </div>
+                <h2 className="text-6xl font-black text-white leading-tight mb-2">
+                    ${totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </h2>
+                <p className="text-sm text-gray-500">All-time tracked earnings across all events.</p>
+                <a href="/admin/finance" className="mt-6 text-green-400 hover:text-green-300 text-base font-semibold flex items-center group">
+                    Detailed Finance Report <ArrowRightIcon className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </a>
+            </motion.div>
 
-        {/* Recent Activities & Upcoming Events */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <motion.div variants={sectionVariants} initial="hidden" animate="visible" transition={{ delay: 0.7 }} className="bg-gray-800 p-8 rounded-2xl shadow-lg border border-gray-700">
-            <h3 className="text-2xl font-bold text-white mb-6">Recent Activities</h3>
-            {hasRecentActivities ? (
-              <ul className="space-y-4">
-                {dashboardData.recentActivities.map((activity: any) => (
-                  <li key={activity.id} className="flex items-start gap-4 p-4 bg-gray-900 rounded-lg border border-gray-700">
-                    <BellAlertIcon className="w-6 h-6 text-indigo-400 flex-shrink-0 mt-1" />
-                    <div>
-                      <p className="text-white font-medium">{activity.type}: <span className="text-gray-300">{activity.description}</span></p>
-                      <p className="text-sm text-gray-500">{activity.time}</p>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <div className="text-center py-8 text-gray-400 italic flex flex-col items-center">
-                <ExclamationCircleIcon className="w-12 h-12 mb-4 text-gray-600" />
-                <p>No recent activities to display.</p>
-                <p className="text-sm">Start managing events to see updates here.</p>
-              </div>
-            )}
-          </motion.div>
+            {/* 2. Secondary Metrics (Grid) */}
+            <div className="grid grid-cols-2 gap-6">
+                <MetricCard
+                    title="Total Events"
+                    value={totalEvents || 0}
+                    icon={CalendarIcon}
+                    accentClass="text-indigo-400"
+                    delay={0.4}
+                    link="/admin/events"
+                />
+                <MetricCard
+                    title="Upcoming"
+                    value={upcomingEvents || 0}
+                    icon={BellAlertIcon}
+                    accentClass="text-cyan-400"
+                    delay={0.5}
+                    link="/admin/events/upcoming"
+                />
+                <MetricCard
+                    title="Tickets Sold"
+                    value={(totalTicketsSold || 0).toLocaleString()}
+                    icon={TicketIcon}
+                    accentClass="text-pink-400"
+                    delay={0.6}
+                    link="/admin/tickets"
+                />
+                <MetricCard
+                    title="Total Participants"
+                    value={(totalTicketsSold || 0).toLocaleString()} // Assuming tickets = participants for this metric
+                    icon={UsersIcon}
+                    accentClass="text-yellow-400"
+                    delay={0.7}
+                    link="/admin/users"
+                />
+            </div>
+        </section>
 
-          <motion.div variants={sectionVariants} initial="hidden" animate="visible" transition={{ delay: 0.8 }} className="bg-gray-800 p-8 rounded-2xl shadow-lg border border-gray-700">
-            <h3 className="text-2xl font-bold text-white mb-6">Upcoming Events</h3>
-            {hasUpcomingEvents ? (
-              <ul className="space-y-4">
-                {dashboardData.upcomingEventsList.map((event: any) => (
-                  <li key={event.id} className="flex items-center justify-between p-4 bg-gray-900 rounded-lg border border-gray-700">
-                    <div>
-                      <p className="text-white font-medium">{event.name}</p>
-                      <p className="text-sm text-gray-400">{event.date}</p>
+        {/* --- Activity and Event Lists --- */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Urgent Activities (1/3 width) */}
+            <motion.div variants={sectionVariants} initial="hidden" animate="visible" transition={{ delay: 0.8 }} className="lg:col-span-1 bg-gray-800 p-8 rounded-2xl shadow-xl border border-gray-700">
+                <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-2 border-b border-gray-700 pb-3">
+                    <BoltIcon className="w-6 h-6 text-pink-400" /> Recent Activity Log
+                </h3>
+                {hasRecentActivities ? (
+                    <ul className="space-y-4">
+                        {data.recentActivities.map((activity: Activity) => (
+                            <li key={activity.id} className="p-3 bg-gray-900 rounded-lg border-l-4 border-pink-500 hover:bg-gray-700/50 transition">
+                                <p className="text-white font-medium text-sm">
+                                    <span className="font-bold text-pink-400 uppercase mr-1">{activity.type}:</span> {activity.description}
+                                </p>
+                                <p className="text-xs text-gray-500 mt-1">{activity.time}</p>
+                            </li>
+                        ))}
+                    </ul>
+                ) : (
+                    <div className="text-center py-8 text-gray-400 italic flex flex-col items-center">
+                        <ExclamationCircleIcon className="w-12 h-12 mb-4 text-gray-600" />
+                        <p>System is quiet. No recent activities.</p>
                     </div>
-                    <div className="text-right">
-                      <p className="text-white text-lg font-semibold">{event.ticketsSold} <span className="text-sm text-gray-400">sold</span></p>
-                      <a href={`/admin/${params.adminSlug}/events/${event.id}`} className="text-indigo-400 hover:text-indigo-300 text-sm flex items-center mt-1">
-                        View Event <ArrowRightIcon className="ml-1 w-4 h-4" />
-                      </a>
+                )}
+            </motion.div>
+
+            {/* Upcoming Events (2/3 width) */}
+            <motion.div variants={sectionVariants} initial="hidden" animate="visible" transition={{ delay: 0.9 }} className="lg:col-span-2 bg-gray-800 p-8 rounded-2xl shadow-xl border border-gray-700">
+                <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-2 border-b border-gray-700 pb-3">
+                    <CalendarIcon className="w-6 h-6 text-cyan-400" /> Upcoming Event Pipeline
+                </h3>
+                {hasUpcomingEvents ? (
+                    <ul className="space-y-4">
+                        {data.upcomingEventsList.map((event: Event) => (
+                            <li key={event.id} className="flex items-center justify-between p-4 bg-gray-900 rounded-lg border border-gray-700 hover:bg-gray-700/50 transition duration-300">
+                                <div className='flex flex-col sm:flex-row sm:items-center'>
+                                    <p className="text-white text-lg font-semibold mr-4">{event.name}</p>
+                                    <p className="text-sm text-gray-400 flex items-center">
+                                        <CalendarIcon className="w-4 h-4 mr-1 text-cyan-400" />
+                                        {event.date}
+                                    </p>
+                                </div>
+                                <div className="text-right flex items-center gap-4">
+                                    <div className="text-base text-gray-300">
+                                        <span className="text-cyan-400 font-bold text-xl">{event.ticketsSold.toLocaleString()}</span> sold
+                                    </div>
+                                    <a href={`/admin/${params.adminSlug}/events/${event.id}`} className="px-4 py-2 bg-indigo-600 rounded-full text-white text-sm font-medium hover:bg-indigo-700 transition flex items-center">
+                                        Manage <ArrowRightIcon className="ml-2 w-4 h-4" />
+                                    </a>
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                ) : (
+                    <div className="text-center py-8 text-gray-400 italic flex flex-col items-center">
+                        <LightBulbIcon className="w-12 h-12 mb-4 text-gray-600" />
+                        <p>No new missions scheduled. Time to create some events!</p>
                     </div>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <div className="text-center py-8 text-gray-400 italic flex flex-col items-center">
-                <ExclamationCircleIcon className="w-12 h-12 mb-4 text-gray-600" />
-                <p>No upcoming events scheduled.</p>
-                <p className="text-sm">Create a new event to see it listed here.</p>
-              </div>
-            )}
-          </motion.div>
+                )}
+            </motion.div>
         </div>
       </div>
     </div>

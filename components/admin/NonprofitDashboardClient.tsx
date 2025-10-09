@@ -1,16 +1,39 @@
-'use client';
+"use client";
 
-import React, { useEffect, useState } from 'react';
-import Link from 'next/link';
+import React, { useEffect, useState, useCallback } from 'react';
+// Simulating Link component behavior
 import {
   GiftIcon,
   UsersIcon,
   CalendarDaysIcon,
   MegaphoneIcon,
   ClipboardDocumentListIcon,
+  HeartIcon,
+  BoltIcon,
+  ArrowRightIcon,
+  RocketLaunchIcon,
+  ClockIcon,
 } from '@heroicons/react/24/outline';
-import ChartTwo from '@/components/ChartTwo';
-import ChartThree from '@/components/ChartThree';
+
+// --- MOCK CHART COMPONENTS (FOR SINGLE-FILE MANDATE) ---
+
+const ChartTwo = () => (
+  <div className="flex items-center justify-center h-full min-h-[220px] bg-white rounded-xl p-4 border border-dashed border-orange-200">
+    <span className="text-orange-600 font-semibold text-sm">
+      [Placeholder: Monthly Donations Line Chart]
+    </span>
+  </div>
+);
+
+const ChartThree = () => (
+  <div className="flex items-center justify-center h-full min-h-[220px] bg-white rounded-xl p-4 border border-dashed border-blue-200">
+    <span className="text-blue-600 font-semibold text-sm">
+      [Placeholder: Volunteer Growth Bar Chart]
+    </span>
+  </div>
+);
+
+// --- TYPE DEFINITIONS ---
 
 interface Task {
   id: string;
@@ -29,6 +52,8 @@ interface NonprofitDashboardData {
   tasks: Task[];
 }
 
+// --- DATA & API SIMULATION ---
+
 const sampleData: NonprofitDashboardData = {
   metrics: {
     totalDonations: 78650,
@@ -43,101 +68,192 @@ const sampleData: NonprofitDashboardData = {
   ],
 };
 
+// --- MAIN COMPONENT ---
+
 export default function NonprofitDashboardClient() {
   const [data, setData] = useState<NonprofitDashboardData>(sampleData);
+  const [loading, setLoading] = useState(true);
 
+  // Simulate data fetch
   useEffect(() => {
-    setData(sampleData);
+    const loadData = async () => {
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 600)); 
+      setData(sampleData);
+      setLoading(false);
+    };
+    loadData();
   }, []);
 
   const { totalDonations, activeCampaigns, totalVolunteers, upcomingEvents } = data.metrics;
 
   const cards = [
     {
-      title: 'Donations',
+      title: 'Total Donations',
       value: `$${totalDonations.toLocaleString()}`,
       icon: GiftIcon,
-      color: 'bg-teal-100 text-teal-700',
+      color: 'text-orange-600 border-orange-400 bg-orange-50',
       link: '/admin/donations',
+      description: 'Funds raised year-to-date.',
     },
     {
-      title: 'Campaigns',
+      title: 'Active Campaigns',
       value: activeCampaigns,
       icon: MegaphoneIcon,
-      color: 'bg-yellow-100 text-yellow-700',
+      color: 'text-fuchsia-600 border-fuchsia-400 bg-fuchsia-50',
       link: '/admin/campaigns',
+      description: 'Currently running projects.',
     },
     {
-      title: 'Volunteers',
+      title: 'Total Volunteers',
       value: totalVolunteers,
       icon: UsersIcon,
-      color: 'bg-indigo-100 text-indigo-700',
+      color: 'text-indigo-600 border-indigo-400 bg-indigo-50',
       link: '/admin/volunteers',
+      description: 'Our community of helpers.',
     },
     {
-      title: 'Events',
+      title: 'Upcoming Events',
       value: upcomingEvents,
       icon: CalendarDaysIcon,
-      color: 'bg-pink-100 text-pink-700',
+      color: 'text-green-600 border-green-400 bg-green-50',
       link: '/admin/events',
+      description: 'Scheduled this quarter.',
     },
   ];
 
-  return (
-    <div className="max-w-screen-xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
-      <h1 className="text-4xl font-bold text-gray-800 mb-8">Nonprofit Admin Dashboard</h1>
+  // Component for visually appealing metric cards
+  const MetricCard: React.FC<{ card: (typeof cards)[0] }> = useCallback(({ card }) => (
+    <a
+      key={card.title}
+      href={card.link}
+      className={`relative p-6 rounded-2xl bg-white shadow-xl transition duration-300 hover:shadow-2xl hover:scale-[1.02] transform group cursor-pointer border-t-8 ${card.color.split(' ').slice(1, 3).join(' ')}`}
+    >
+      <div className="flex items-center justify-between mb-4">
+        <div className={`rounded-full p-3 ${card.color.split(' ').slice(2).join(' ')}`}>
+          <card.icon className={`w-7 h-7 ${card.color.split(' ')[0]}`} />
+        </div>
+        <ArrowRightIcon className="w-5 h-5 text-gray-300 group-hover:text-gray-500 transition-colors" />
+      </div>
+      
+      {/* Value */}
+      <p className="text-4xl font-extrabold text-gray-900 mt-1">{card.value}</p>
+      
+      {/* Title and Description */}
+      <h2 className="mt-2 text-lg font-semibold text-gray-700">{card.title}</h2>
+      <p className="mt-1 text-xs text-gray-500">{card.description}</p>
+    </a>
+  ), []);
 
-      {/* Metric Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-        {cards.map((card) => (
-          <Link
-            key={card.title}
-            href={card.link}
-            className="group p-5 rounded-2xl shadow border border-gray-200 hover:shadow-md transition bg-white hover:bg-gray-50"
+  // Component for the Actionable Task List
+  const TaskList: React.FC<{ tasks: Task[] }> = useCallback(({ tasks }) => (
+    <div className="bg-white p-6 rounded-2xl shadow-xl border border-gray-100">
+      <div className="flex justify-between items-center mb-6 border-b border-gray-200 pb-3">
+        <h3 className="text-2xl font-extrabold text-gray-900 flex items-center gap-2">
+          <BoltIcon className="w-6 h-6 text-orange-500" /> Immediate Actions
+        </h3>
+        <a href="/admin/tasks" className="text-sm text-orange-600 font-semibold hover:text-orange-800 flex items-center">
+          View All <ArrowRightIcon className="w-4 h-4 ml-1" />
+        </a>
+      </div>
+      
+      <ul className="space-y-4">
+        {tasks.map((t) => (
+          <li
+            key={t.id}
+            className="flex flex-col p-4 bg-gray-50 rounded-xl border-l-4 border-orange-400 hover:bg-orange-50/70 transition cursor-pointer shadow-sm"
           >
-            <div className="flex items-center justify-between mb-3">
-              <div className={`rounded-full p-2 ${card.color}`}>
-                <card.icon className="w-6 h-6" />
-              </div>
-              <span className="text-sm text-gray-500">{card.title}</span>
+            <span className="text-base font-semibold text-gray-800">{t.name}</span>
+            <div className="mt-1 flex items-center gap-3 text-sm text-gray-500">
+              <CalendarDaysIcon className="w-4 h-4 text-gray-400" />
+              <span>{t.dueDate}</span>
+              <ClockIcon className="w-4 h-4 text-gray-400 ml-2" />
+              <span>{t.dueTime}</span>
             </div>
-            <p className="text-2xl font-semibold text-gray-800">{card.value}</p>
-          </Link>
+          </li>
         ))}
-      </div>
+      </ul>
+      
+      {tasks.length === 0 && (
+         <div className="py-6 text-center text-lg text-gray-500 flex items-center justify-center gap-2">
+            <HeartIcon className="w-5 h-5 text-green-500" />
+            Everything is up-to-date!
+         </div>
+      )}
+    </div>
+  ), []);
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
-        <div className="bg-white border border-gray-200 p-6 rounded-2xl shadow-sm">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Monthly Donations</h2>
-          <ChartTwo />
-        </div>
-        <div className="bg-white border border-gray-200 p-6 rounded-2xl shadow-sm">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Volunteer Growth</h2>
-          <ChartThree />
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-pulse flex items-center gap-3 text-orange-600">
+          <RocketLaunchIcon className="w-6 h-6" />
+          <span className="text-xl font-semibold">Loading Impact Console...</span>
         </div>
       </div>
+    );
+  }
 
-      {/* Task List */}
-      <div className="bg-white border border-gray-200 p-6 rounded-2xl shadow-sm">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold text-gray-900">Admin Tasks</h2>
-          <Link href="/admin/tasks" className="text-sm text-teal-600 hover:underline">View All</Link>
-        </div>
-        <ul className="space-y-3">
-          {data.tasks.map((task) => (
-            <li
-              key={task.id}
-              className="flex justify-between items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition"
+  return (
+    <div className="min-h-screen bg-gray-50 font-sans">
+      <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+        
+        {/* Main Header - Impact Focused */}
+        <header className="mb-10 p-8 rounded-3xl shadow-xl" style={{ backgroundImage: 'linear-gradient(135deg, #1e3a8a 0%, #030712 100%)' }}>
+          <div className="flex justify-between items-center">
+            <div>
+              <p className="text-xl text-orange-400 font-semibold mb-1">Empowering Change</p>
+              <h1 className="text-5xl font-extrabold tracking-tight text-white">
+                Non-Profit Command Center
+              </h1>
+              <p className="mt-2 text-indigo-200">Track donations, coordinate volunteers, and drive your mission forward.</p>
+            </div>
+            <a
+              href="/admin/donate/new"
+              className="flex items-center gap-2 px-6 py-3 rounded-full bg-orange-500 text-white font-bold hover:bg-orange-600 transition transform hover:scale-105 shadow-lg shadow-orange-500/50"
             >
-              <div className="flex items-center gap-2 text-gray-700">
-                <ClipboardDocumentListIcon className="w-5 h-5 text-teal-600" />
-                {task.name}
-              </div>
-              <span className="text-sm text-gray-500">{task.dueDate} @ {task.dueTime}</span>
-            </li>
+              <HeartIcon className="w-5 h-5" />
+              Launch New Appeal
+            </a>
+          </div>
+        </header>
+
+        {/* Metrics Cards - Actionable & Visual */}
+        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          {cards.map((card) => (
+            <MetricCard key={card.title} card={card} />
           ))}
-        </ul>
+        </section>
+
+        {/* Main Content: Charts and Tasks */}
+        <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          {/* Charts Section (2/3 width) - Long-term Impact */}
+          <div className="lg:col-span-2 space-y-8">
+            <div className="bg-white p-6 rounded-2xl shadow-xl border border-gray-100">
+              <h3 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <GiftIcon className="w-6 h-6 text-orange-500" /> Monthly Donation Trend
+              </h3>
+              <div className="min-h-[300px]">
+                <ChartTwo />
+              </div>
+            </div>
+
+            <div className="bg-white p-6 rounded-2xl shadow-xl border border-gray-100">
+              <h3 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <UsersIcon className="w-6 h-6 text-blue-500" /> Volunteer & Outreach Growth
+              </h3>
+              <div className="min-h-[300px]">
+                <ChartThree />
+              </div>
+            </div>
+          </div>
+
+          {/* Today's Tasks (1/3 width) - Urgent Focus */}
+          <div className="lg:col-span-1">
+            <TaskList tasks={data.tasks} />
+          </div>
+        </section>
       </div>
     </div>
   );

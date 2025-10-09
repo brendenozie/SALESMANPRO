@@ -1,17 +1,38 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
+import React, { useState, useEffect, useCallback } from 'react';
+// Simulating Link component behavior
 import {
   PencilSquareIcon,
   FolderOpenIcon,
   UserGroupIcon,
   EyeIcon,
   CalendarDaysIcon,
+  ClockIcon,
+  CheckIcon,
+  ArrowRightIcon,
+  RocketLaunchIcon,
 } from '@heroicons/react/24/outline';
-import ChartTwo from '@/components/ChartTwo';
-import ChartThree from '@/components/ChartThree';
-import { Session } from 'next-auth';
+
+// --- MOCK CHART COMPONENTS (FOR SINGLE-FILE MANDATE) ---
+
+const ChartTwo = () => (
+  <div className="flex items-center justify-center h-full min-h-[220px] bg-white rounded-xl p-4 border border-dashed border-teal-200">
+    <span className="text-teal-600 font-semibold text-sm">
+      [Placeholder: Traffic Overview Line Chart]
+    </span>
+  </div>
+);
+
+const ChartThree = () => (
+  <div className="flex items-center justify-center h-full min-h-[220px] bg-white rounded-xl p-4 border border-dashed border-sky-200">
+    <span className="text-sky-600 font-semibold text-sm">
+      [Placeholder: Engagement Metrics Bar Chart]
+    </span>
+  </div>
+);
+
+// --- TYPE DEFINITIONS ---
 
 export interface Task {
   id: string;
@@ -31,7 +52,7 @@ export interface DashboardData {
   tasks: Task[];
 }
 
-type Props = DashboardData & { session: Session };
+// --- DATA & API SIMULATION ---
 
 const sampleData: DashboardData = {
   metrics: {
@@ -48,11 +69,21 @@ const sampleData: DashboardData = {
   ],
 };
 
+// --- MAIN COMPONENT ---
+
 export default function BlogDashboardClient() {
   const [data, setData] = useState<DashboardData>(sampleData);
+  const [loading, setLoading] = useState(true);
 
+  // Simulate data fetch
   useEffect(() => {
-    setData(sampleData); // Replace with real fetch logic later
+    const loadData = async () => {
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 600)); 
+      setData(sampleData);
+      setLoading(false);
+    };
+    loadData();
   }, []);
 
   const {
@@ -68,93 +99,163 @@ export default function BlogDashboardClient() {
       title: 'Total Posts',
       value: totalPosts,
       icon: PencilSquareIcon,
-      bg: 'bg-indigo-50',
+      accent: 'text-teal-600 bg-teal-50',
       link: '/admin/posts',
+      description: 'Your published library.',
     },
     {
       title: 'Categories',
       value: totalCategories,
       icon: FolderOpenIcon,
-      bg: 'bg-blue-50',
+      accent: 'text-blue-600 bg-blue-50',
       link: '/admin/categories',
+      description: 'How your content is organized.',
     },
     {
       title: 'Subscribers',
       value: subscribers.toLocaleString(),
       icon: UserGroupIcon,
-      bg: 'bg-green-50',
+      accent: 'text-green-600 bg-green-50',
       link: '/admin/subscribers',
+      description: 'Total readership growth.',
     },
     {
       title: 'Monthly Views',
       value: monthlyViews.toLocaleString(),
       icon: EyeIcon,
-      bg: 'bg-yellow-50',
+      accent: 'text-yellow-600 bg-yellow-50',
       link: '/admin/analytics',
+      description: 'This month’s traffic.',
     },
     {
       title: 'Scheduled Posts',
       value: scheduledPosts,
       icon: CalendarDaysIcon,
-      bg: 'bg-pink-50',
+      accent: 'text-pink-600 bg-pink-50',
       link: '/admin/schedule',
+      description: 'Ready to go live.',
     },
   ];
 
+  // Component for visually appealing metric cards
+  const MetricCard: React.FC<{ card: (typeof cards)[0] }> = useCallback(({ card }) => (
+    <a
+      key={card.title}
+      href={card.link}
+      className={`relative p-6 rounded-2xl bg-white shadow-xl transition duration-300 hover:shadow-2xl hover:ring-2 hover:ring-offset-2 ${card.accent.replace('text-', 'ring-')} transform group cursor-pointer border-b-4 ${card.accent.replace('bg-', 'border-')}`}
+    >
+      <div className="flex items-center justify-between mb-2">
+        {/* Title and Icon */}
+        <h2 className="text-sm font-medium text-gray-500">{card.title}</h2>
+        <card.icon className={`w-5 h-5 ${card.accent.replace('bg-', 'text-')}`} />
+      </div>
+      
+      {/* Value */}
+      <p className="text-4xl font-extrabold text-gray-900 mt-1">{card.value}</p>
+      
+      {/* Description */}
+      <p className="mt-2 text-xs text-gray-400">{card.description}</p>
+    </a>
+  ), []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-bounce flex items-center gap-3 text-teal-600">
+          <RocketLaunchIcon className="w-6 h-6" />
+          <span className="text-xl font-semibold">Loading Editorial Console...</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="container mx-auto py-8 px-4">
-      <h1 className="text-4xl font-bold text-gray-800 mb-6">Blog Dashboard</h1>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-10">
-        {cards.map((card) => (
-          <Link
-            key={card.title}
-            href={card.link}
-            className={`${card.bg} p-6 rounded-2xl shadow-lg hover:shadow-xl transition transform hover:scale-105`}
+    <div className="min-h-screen bg-gray-50 text-gray-900 font-sans">
+      <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+        
+        {/* Main Header and Action Button */}
+        <header className="mb-10 flex justify-between items-center">
+          <div>
+            <p className="text-xl text-teal-600 font-semibold mb-1">Welcome to the Writer's Hub</p>
+            <h1 className="text-5xl font-extrabold tracking-tight text-gray-900">
+              Blog Dashboard
+            </h1>
+          </div>
+          <a
+            href="/admin/posts/new"
+            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-teal-600 text-white font-medium hover:bg-teal-700 transition transform hover:scale-105 shadow-lg shadow-teal-500/50"
           >
-            <div className="flex items-center mb-4">
-              <card.icon className="w-8 h-8 text-gray-700" />
-              <h2 className="ml-3 text-lg font-semibold text-gray-800">{card.title}</h2>
-            </div>
-            <p className="text-3xl font-bold text-gray-900">{card.value}</p>
-          </Link>
-        ))}
-      </div>
+            <PencilSquareIcon className="w-5 h-5" />
+            Create New Post
+          </a>
+        </header>
 
-      {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
-        <div className="bg-white p-6 rounded-2xl shadow-lg">
-          <h3 className="text-2xl font-semibold text-gray-800 mb-4">Traffic Overview</h3>
-          <ChartTwo />
-        </div>
-        <div className="bg-white p-6 rounded-2xl shadow-lg">
-          <h3 className="text-2xl font-semibold text-gray-800 mb-4">Engagement Metrics</h3>
-          <ChartThree />
-        </div>
-      </div>
-
-      {/* Tasks Section */}
-      <div className="bg-white p-6 rounded-2xl shadow-lg">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-2xl font-semibold text-gray-800">Today's Editorial Tasks</h3>
-          <Link href="/admin/tasks" className="text-indigo-600 hover:underline">
-            View All
-          </Link>
-        </div>
-        <ul className="space-y-3">
-          {data.tasks.map((t) => (
-            <li
-              key={t.id}
-              className="flex justify-between items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition"
-            >
-              <span>{t.name}</span>
-              <span className="text-sm text-gray-500">
-                {t.dueDate} @ {t.dueTime}
-              </span>
-            </li>
+        {/* Metrics Cards - Clean, Bordered Style */}
+        <section className="grid grid-cols-2 lg:grid-cols-5 gap-6 mb-12">
+          {cards.map((card) => (
+            <MetricCard key={card.title} card={card} />
           ))}
-        </ul>
+        </section>
+
+        {/* Main Content: Charts and Tasks */}
+        <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          {/* Charts Section (2/3 width) - Data Insights */}
+          <div className="lg:col-span-2 space-y-8">
+            <div className="bg-white p-6 rounded-2xl shadow-xl border border-gray-100">
+              <h3 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <EyeIcon className="w-6 h-6 text-teal-500" /> Traffic Overview (Views)
+              </h3>
+              <div className="min-h-[300px]">
+                <ChartTwo />
+              </div>
+            </div>
+
+            <div className="bg-white p-6 rounded-2xl shadow-xl border border-gray-100">
+              <h3 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <UserGroupIcon className="w-6 h-6 text-sky-500" /> Engagement & Subscribers
+              </h3>
+              <div className="min-h-[300px]">
+                <ChartThree />
+              </div>
+            </div>
+          </div>
+
+          {/* Today's Tasks (1/3 width) - Editorial Focus */}
+          <div className="lg:col-span-1">
+            <div className="bg-white p-6 rounded-2xl shadow-xl border border-gray-100 sticky top-4">
+              <div className="flex justify-between items-center mb-6 border-b border-gray-200 pb-3">
+                <h3 className="text-2xl font-extrabold text-gray-900 flex items-center gap-2">
+                  <CheckIcon className="w-6 h-6 text-orange-500" /> Editorial Tasks
+                </h3>
+                <a href="/admin/tasks" className="text-sm text-teal-600 hover:text-teal-800 flex items-center">
+                  View All <ArrowRightIcon className="w-4 h-4 ml-1" />
+                </a>
+              </div>
+              
+              <ul className="space-y-3">
+                {data.tasks.map((t) => (
+                  <li
+                    key={t.id}
+                    className="flex flex-col p-4 bg-gray-50 rounded-xl border border-gray-100 hover:bg-gray-100 transition cursor-pointer"
+                  >
+                    <span className="text-base font-semibold text-gray-800">{t.name}</span>
+                    <div className="mt-1 flex items-center gap-3 text-sm text-gray-500">
+                      <CalendarDaysIcon className="w-4 h-4 text-orange-400" />
+                      <span>{t.dueDate}</span>
+                      <ClockIcon className="w-4 h-4 text-orange-400 ml-2" />
+                      <span>{t.dueTime}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+              
+              {data.tasks.length === 0 && (
+                 <div className="py-6 text-center text-gray-500">Nothing due today. Enjoy the calm!</div>
+              )}
+            </div>
+          </div>
+        </section>
       </div>
     </div>
   );

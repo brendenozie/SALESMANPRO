@@ -6,19 +6,26 @@ import {
   CheckCircleIcon,
   XMarkIcon,
   ClockIcon,
-  PencilSquareIcon,
   CalendarDaysIcon,
   ShoppingCartIcon,
-  UserCircleIcon,
   ArrowPathIcon,
-  InformationCircleIcon,
   ChevronDownIcon,
   MagnifyingGlassIcon,
-  ArrowRightOnRectangleIcon, // New icon for the drawer close button
+  UserCircleIcon,
+  TagIcon,
+  CurrencyDollarIcon,
+  TruckIcon,
+  ClipboardDocumentCheckIcon,
+  ArrowRightOnRectangleIcon,
+  PhoneIcon,
+  EnvelopeIcon,
+  ArrowLongRightIcon,
+  InformationCircleIcon, // New: For subtle movement cue
 } from "@heroicons/react/24/outline";
 import { useStoreContext } from "@/contexts/StoreContext";
 
-// --- Type Definitions (Reused from your original code) ---
+// --- Type Definitions (Reused) ---
+// ... (Your original type definitions for AppointmentItem and OrderItem)
 export interface AppointmentItem {
   id: string;
   service: string;
@@ -39,6 +46,7 @@ export interface OrderItem {
   status?: string; 
   date?: string;
   timeSlot?: string;
+  consumer?: { name?: string; email?: string; phone?: string }; 
   marketplaceListing?: { id?: string; title?: string; name?: string };
   order?: { id?: string; status?: string; rider?: string; createdAt?: string; name?: string; title?: string; email?: string; phone?: string; consumer?: { name?: string; email?: string; phone?: string } };
 }
@@ -50,56 +58,128 @@ interface Props {
   initialOrderItems: OrderItem[];
 }
 
-// --- Status Badge Component (More visually polished) ---
+// --- CONSTANTS & UTILS ---
+const ALL_STATUSES = [
+  "SCHEDULED", "COMPLETED", "CANCELLED", 
+  "PENDING", "PROCESSING", "DELIVERED", "REJECTED", 
+];
 
-// Utility for status color/icon
 const getStatusProps = (status: string) => {
   switch (status.toUpperCase()) {
     case "SCHEDULED":
     case "PENDING":
     case "PROCESSING":
       return { 
-        colorClass: "bg-yellow-50 dark:bg-yellow-900 border border-yellow-200 text-yellow-700 dark:text-yellow-300", 
+        colorClass: "bg-yellow-50 dark:bg-yellow-900 border-yellow-400 text-yellow-800 dark:text-yellow-300", 
+        headerClass: "border-yellow-500 bg-yellow-400/20 dark:bg-yellow-900/50",
         icon: ClockIcon 
       };
     case "COMPLETED":
     case "DELIVERED":
       return { 
-        colorClass: "bg-green-50 dark:bg-green-900 border border-green-200 text-green-700 dark:text-green-300", 
+        colorClass: "bg-green-50 dark:bg-green-900 border-green-400 text-green-800 dark:text-green-300", 
+        headerClass: "border-green-500 bg-green-400/20 dark:bg-green-900/50",
         icon: CheckCircleIcon 
       };
     case "CANCELLED":
     case "REJECTED":
     case "FAILED":
       return { 
-        colorClass: "bg-red-50 dark:bg-red-900 border border-red-200 text-red-700 dark:text-red-300", 
+        colorClass: "bg-red-50 dark:bg-red-900 border-red-400 text-red-800 dark:text-red-300", 
+        headerClass: "border-red-500 bg-red-400/20 dark:bg-red-900/50",
         icon: XMarkIcon 
       };
     default:
       return { 
-        colorClass: "bg-gray-50 dark:bg-gray-700 border border-gray-200 text-gray-700 dark:text-gray-300", 
+        colorClass: "bg-gray-50 dark:bg-gray-700 border-gray-400 text-gray-700 dark:text-gray-300", 
+        headerClass: "border-gray-500 bg-gray-400/20 dark:bg-gray-700/50",
         icon: InformationCircleIcon 
       };
   }
 };
 
+// --- Status Badge Component ---
 const StatusBadge: React.FC<{ status: string }> = React.memo(({ status }) => {
   const { colorClass, icon: Icon } = getStatusProps(status);
-  
-  // Use a slight shadow and reduced opacity for a more sophisticated look
   return (
-    <motion.span
-      className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold shadow-sm ${colorClass} min-w-[100px] justify-center`}
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ type: "spring", stiffness: 200, damping: 10 }}
-    >
-      <Icon className="w-4 h-4" /> {status}
-    </motion.span>
+    <span className={`inline-flex items-center gap-1 px-3 py-0.5 rounded-full text-xs font-semibold border ${colorClass} min-w-[100px] justify-center shadow-sm`}>
+      <Icon className="w-3.5 h-3.5" /> <span className="truncate">{status.toUpperCase()}</span>
+    </span>
   );
 });
 
 StatusBadge.displayName = 'StatusBadge';
+
+// --- Detail Row Component for Panel ---
+interface DetailRowProps {
+    icon: React.ElementType;
+    label: string;
+    value: string | number | undefined;
+    color?: string;
+}
+
+const DetailRow: React.FC<DetailRowProps> = ({ icon: Icon, label, value, color }) => (
+    <div className="flex items-center p-3 rounded-xl bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-150 border border-gray-100 dark:border-gray-700">
+        <Icon className={`w-5 h-5 mr-3 flex-shrink-0 ${color || 'text-gray-500 dark:text-gray-400'}`} />
+        <div className="flex-grow flex justify-between items-center text-sm">
+            <span className="font-medium text-gray-900 dark:text-gray-100">{label}:</span>
+            <span className="text-gray-700 dark:text-gray-300 font-medium text-right truncate ml-4">{value || 'N/A'}</span>
+        </div>
+    </div>
+);
+
+
+// --- Item Card Component (The core visual element) ---
+const ItemCard: React.FC<{ item: UnifiedItem, openModal: (item: UnifiedItem) => void }> = React.memo(({ item, openModal }) => {
+    const itemType = 'service' in item ? 'Appointment' : 'Order';
+    const IconComponent = 'service' in item ? CalendarDaysIcon : ShoppingCartIcon;
+    const itemName = 'service' in item ? item.service : (item.marketplaceListing?.name ||item.marketplaceListing?.title || item.name || "Order Item");
+    const clientName = 'service' in item ? item.client.name : (item.name || item.order?.consumer?.name || item.order?.name || "N/A");
+    const status = 'service' in item ? item.status : (item.status || item.order?.status || "UNKNOWN");
+    const colorClass = itemType === 'Appointment' ? 'border-indigo-500' : 'border-green-500';
+
+    const dateDisplay = item.date && item.timeSlot ? 
+        new Date(`${item.date}T${item.timeSlot.replace(' AM', 'AM').replace(' PM', 'PM')}`).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) 
+        : 'N/A';
+
+    return (
+        <motion.div
+            layout // Enable layout animation for smooth sorting/filtering
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, x: -50 }}
+            whileHover={{ scale: 1.03, boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)' }}
+            whileTap={{ scale: 0.98 }}
+            className={`p-4 bg-white dark:bg-gray-800 rounded-xl shadow-lg border-l-4 ${colorClass} cursor-pointer transition-all duration-200`}
+            onClick={() => openModal(item)}
+        >
+            <div className="flex justify-between items-center mb-2">
+                <span className={`text-xs font-semibold flex items-center gap-1 ${itemType === 'Appointment' ? 'text-indigo-600 dark:text-indigo-400' : 'text-green-600 dark:text-green-400'}`}>
+                    <IconComponent className="w-4 h-4" /> {itemType}
+                </span>
+                <StatusBadge status={status} />
+            </div>
+            
+            <h3 className="text-md font-bold text-gray-900 dark:text-gray-100 truncate mb-1" title={itemName}>
+                {itemName}
+            </h3>
+
+            <p className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1.5 mb-2">
+                <UserCircleIcon className="w-4 h-4 text-gray-400" />
+                {clientName}
+            </p>
+
+            <div className="flex justify-between items-center border-t border-gray-100 dark:border-gray-700 pt-2">
+                <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+                    {item.date}
+                </span>
+                <span className="text-sm font-bold text-gray-800 dark:text-gray-200">
+                    {dateDisplay}
+                </span>
+            </div>
+        </motion.div>
+    );
+});
 
 
 export default function AdminAppointmentsClient({ initialAppointments, initialOrderItems }: Props) {
@@ -112,14 +192,12 @@ export default function AdminAppointmentsClient({ initialAppointments, initialOr
   const [message, setMessage] = useState<string>("");
   const [isSuccess, setIsSuccess] = useState<boolean | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterStatus, setFilterStatus] = useState<string | "ALL">("ALL");
-
+  
   const { storeFormData } = useStoreContext();
-  // Using theme colors for a captivating, branded look
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#0d9488'; 
   const secondaryColor = storeFormData?.themeSettings?.secondaryColor || '#f97316'; 
 
-  // --- Data Initialization & Sorting (retained) ---
+  // --- Data Initialization & Sorting ---
   useEffect(() => {
     const combined = [...initialAppointments, ...initialOrderItems].sort((a, b) => {
         const dateA = a.date && a.timeSlot ? new Date(`${a.date}T${a.timeSlot.replace(' AM', 'AM').replace(' PM', 'PM')}`) : new Date(0);
@@ -131,30 +209,43 @@ export default function AdminAppointmentsClient({ initialAppointments, initialOr
     setUnifiedItems(combined);
   }, [initialAppointments, initialOrderItems]);
 
-  // --- Memoized Filtered Data (retained) ---
-  const filteredItems = useMemo(() => {
-    return unifiedItems.filter(item => {
+  // --- Filtered & Grouped Data (Key for Kanban View) ---
+  const groupedItems = useMemo(() => {
+    const filtered = unifiedItems.filter(item => {
       const searchMatch = searchTerm.toLowerCase();
       const clientName = 'service' in item ? item.client.name : (item.name || item.order?.consumer?.name || item.order?.name || "");
-      const itemName = 'service' in item ? item.service : (item.marketplaceListing?.name || item.name || "");
+      const itemName = 'service' in item ? item.service : (item.marketplaceListing?.title || item.name || "");
       
-      const isSearchMatch = clientName.toLowerCase().includes(searchMatch) || itemName.toLowerCase().includes(searchMatch) || item.id.includes(searchMatch);
-
-      if (!isSearchMatch) return false;
-
-      if (filterStatus === "ALL") return true;
-
-      const currentStatus = 'service' in item ? item.status : (item.status || item.order?.status || "UNKNOWN");
-      return currentStatus.toUpperCase() === filterStatus;
+      return clientName.toLowerCase().includes(searchMatch) || itemName.toLowerCase().includes(searchMatch) || item.id.includes(searchMatch);
     });
-  }, [unifiedItems, searchTerm, filterStatus]);
 
-  // --- Helper Functions (retained) ---
+    // Determine the columns based on a unified workflow
+    const columns = {
+        TO_DO: filtered.filter(item => {
+            const status = 'service' in item ? item.status : (item.status || "PENDING");
+            return status.toUpperCase() === "SCHEDULED" || status.toUpperCase() === "PENDING";
+        }),
+        IN_PROGRESS: filtered.filter(item => {
+            const status = 'service' in item ? item.status : (item.status || "PENDING");
+            return status.toUpperCase() === "PROCESSING";
+        }),
+        COMPLETED: filtered.filter(item => {
+            const status = 'service' in item ? item.status : (item.status || "PENDING");
+            return status.toUpperCase() === "COMPLETED" || status.toUpperCase() === "DELIVERED";
+        }),
+        CANCELED: filtered.filter(item => {
+            const status = 'service' in item ? item.status : (item.status || "PENDING");
+            return status.toUpperCase() === "CANCELLED" || status.toUpperCase() === "REJECTED";
+        }),
+    };
+    return columns;
+  }, [unifiedItems, searchTerm]);
+
+  // --- Helper Functions (Simplified) ---
   const formatDateTime = useCallback((dateString: string, timeString: string) => {
     try {
         const dateTime = new Date(`${dateString}T${timeString.replace(' AM', 'AM').replace(' PM', 'PM')}`);
-        // Concise and clear date format
-        return dateTime.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + ' @ ' + 
+        return dateTime.toLocaleDateString('en-US', { month: 'long', day: 'numeric' }) + ', ' + 
                dateTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
     } catch (e) {
         return `${dateString} @ ${timeString}`;
@@ -176,7 +267,7 @@ export default function AdminAppointmentsClient({ initialAppointments, initialOr
 
   const closeModal = () => {
     setIsModalOpen(false);
-    setTimeout(() => setSelectedItem(null), 300); 
+    setTimeout(() => setSelectedItem(null), 400); 
     setNewStatus("");
     setRider("");
   };
@@ -187,6 +278,7 @@ export default function AdminAppointmentsClient({ initialAppointments, initialOr
     setIsLoading(true);
     setMessage("");
     setIsSuccess(null);
+    const prevStatus = newStatus;
 
     try {
         await new Promise(resolve => setTimeout(resolve, 800)); 
@@ -206,52 +298,45 @@ export default function AdminAppointmentsClient({ initialAppointments, initialOr
             return item;
         }));
 
-        const successMessage = 'service' in selectedItem
-            ? `Appointment "${'service' in selectedItem ? selectedItem.service : ''}" status updated to "${newStatus}"!`
-            : `Order for "${'price' in selectedItem ? (selectedItem.marketplaceListing?.name || selectedItem.name) : ''}" updated to "${newStatus}"!`;
-            
+        const successMessage = `Item ID ${selectedItem.id.substring(0, 8)} status updated to "${newStatus}"!`;
         setMessage(successMessage);
         setIsSuccess(true);
-        // Note: Do not close the modal here. Let the user see the confirmation, then manually close or add a timer.
-        // For this demo, we'll keep the previous close on success:
-        closeModal(); 
+        setTimeout(closeModal, 1500); 
     } catch (error: any) {
         console.error("Failed to update status:", error);
         setIsSuccess(false);
-        setMessage(`Error: ${error.message || "Failed to update status. Please try again."}`);
-    } finally {
+        setMessage(`Error: Failed to update status. Rolled back to "${prevStatus}".`);
         setIsLoading(false);
-    }
+    } 
   };
 
-  // Modal variants for a sophisticated slide-out drawer
+  // Modal variants
   const detailPanelVariants = {
     hidden: { opacity: 0, x: "100%" },
-    visible: { opacity: 1, x: 0, transition: { type: "spring", stiffness: 300, damping: 30, ease: "easeOut" } },
-    exit: { opacity: 0, x: "100%", transition: { duration: 0.2, ease: "easeIn" } },
+    visible: { opacity: 1, x: 0, transition: { type: "spring", stiffness: 200, damping: 25 } },
+    exit: { opacity: 0, x: "100%", transition: { duration: 0.3 } },
   };
 
-  // Status Filter Options (Unified)
-  const statusOptions = [
-    "ALL",
-    "SCHEDULED", "COMPLETED", "CANCELLED", 
-    "PENDING", "PROCESSING", "DELIVERED", "REJECTED", 
-  ];
-  
-  // Custom scrollbar class for a cleaner look
-  const customScrollbarClass = "scrollbar-thin scrollbar-thumb-gray-400 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent";
+  // Status map for modal status buttons
+  const statusUpdateMap = {
+    TO_DO: ["SCHEDULED", "PENDING", "PROCESSING"],
+    IN_PROGRESS: ["PROCESSING", "COMPLETED", "DELIVERED", "CANCELLED"],
+    COMPLETED: ["COMPLETED", "DELIVERED"],
+    CANCELED: ["CANCELLED", "REJECTED"],
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 py-10 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 py-10 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-full mx-auto">
+        
         {/* Header Section */}
-        <header className="mb-8">
+        <header className="mb-8 max-w-7xl mx-auto">
           <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white">
-            <span className="bg-clip-text text-transparent" style={{ backgroundColor: `${primaryColor}` }}>
-              Schedule & Delivery Dashboard
+            <span className="bg-clip-text text-transparent" style={{ backgroundImage: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})` }}>
+              Unified Command Center
             </span>
           </h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-2">Effortlessly manage all client appointments and marketplace orders in a single view.</p>
+          <p className="text-gray-500 dark:text-gray-400 mt-2">Visually manage your workflow: Appointments (Indigo) & Orders (Green).</p>
         </header>
 
         {/* Global Message/Notification */}
@@ -261,131 +346,74 @@ export default function AdminAppointmentsClient({ initialAppointments, initialOr
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className={`mb-6 p-4 rounded-xl shadow-lg text-center font-medium ${
+              transition={{ duration: 0.3 }}
+              className={`mb-6 p-4 rounded-xl shadow-lg text-center font-medium max-w-7xl mx-auto flex items-center justify-center gap-3 ${
                 isSuccess ? 'bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100' : 'bg-red-100 text-red-800 dark:bg-red-700 dark:text-red-100'
               }`}
             >
+              {isSuccess ? <CheckCircleIcon className="w-5 h-5" /> : <XMarkIcon className="w-5 h-5" />}
               {message}
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Controls: Search & Filters */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-6 sticky top-0 z-10 bg-gray-50 dark:bg-gray-950 pt-2 pb-4 border-b border-gray-100 dark:border-gray-800">
-          <div className="flex-grow relative shadow-sm">
+        {/* Controls: Search */}
+        <div className="max-w-7xl mx-auto mb-6 sticky top-0 z-20 bg-gray-100 dark:bg-gray-950 pt-2 pb-4">
+          <div className="flex-grow relative shadow-md">
             <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
               type="text"
-              placeholder="Search by client, item, or ID..."
+              placeholder="Search all items by client, service, or ID..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-950 transition-shadow"
+              className="w-full pl-10 pr-4 py-2.5 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-4 focus:ring-opacity-50 transition-shadow"
               style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
             />
           </div>
-          
-          <div className="relative inline-block text-left min-w-[150px] shadow-sm">
-            <ChevronDownIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
-            <select
-                onChange={(e) => setFilterStatus(e.target.value)}
-                value={filterStatus}
-                className="w-full pl-4 pr-10 py-2 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 appearance-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-950 cursor-pointer transition-shadow"
-                style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
-            >
-                <option value="ALL">All Statuses ({unifiedItems.length})</option>
-                {statusOptions.filter(s => s !== "ALL").map(s => (
-                    <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1).toLowerCase()}</option>
-                ))}
-            </select>
-          </div>
         </div>
 
-        {/* Main Data Table */}
-        <div className="bg-white dark:bg-gray-800 shadow-2xl rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700">
-          
-          {/* Empty State / Loading State (retained but simplified) */}
-          {filteredItems.length === 0 && !isLoading ? (
-             <div className="flex flex-col items-center justify-center p-12 text-center min-h-[400px]">
-                <CalendarDaysIcon className="w-20 h-20 text-gray-300 dark:text-gray-600 mb-4" />
-                <p className="text-xl font-semibold text-gray-600 dark:text-gray-300">No results found.</p>
-             </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-100 dark:divide-gray-700">
-                <thead className="bg-gray-50 dark:bg-gray-700 sticky top-[68px] z-[5] shadow-sm"> 
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider min-w-[100px]">Type</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider min-w-[200px]">Service/Item</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Client</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider min-w-[180px]">Date/Time</th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider min-w-[150px]">Status</th>
-                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider min-w-[100px]">Details</th>
-                  </tr>
-                </thead>
-                <motion.tbody
-                  className="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700"
-                  initial="hidden"
-                  animate="visible"
-                  variants={{
-                    hidden: { opacity: 0 },
-                    visible: { opacity: 1, transition: { staggerChildren: 0.05 } },
-                  }}
-                >
-                  <AnimatePresence>
-                  {filteredItems.map((item) => {
-                    const itemType = 'service' in item ? 'Appointment' : 'Order';
-                    const IconComponent = 'service' in item ? CalendarDaysIcon : ShoppingCartIcon;
-                    const itemName = 'service' in item ? item.service : (item.marketplaceListing?.name || item.marketplaceListing?.title || item.name || "Order Item");
-                    const clientName = 'service' in item ? item.client.name : (item.name || item.order?.consumer?.name || item.order?.name || "N/A");
-                    const status = 'service' in item ? item.status : (item.status || item.order?.status || "UNKNOWN");
 
-                    return (
-                        <motion.tr
-                            key={item.id}
-                            className="group hover:bg-gray-50 dark:hover:bg-gray-700 transition duration-150 ease-in-out cursor-pointer"
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, x: -50 }}
-                            onClick={() => openModal(item)}
-                        >
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">
-                                <span className="flex items-center gap-2">
-                                    <IconComponent className={`w-5 h-5 ${itemType === 'Appointment' ? 'text-indigo-500' : 'text-green-500'}`} />
-                                    {itemType}
-                                </span>
-                            </td>
-                            <td className="px-6 py-4 text-sm text-gray-800 dark:text-gray-200 font-semibold truncate max-w-xs">{itemName}</td>
-                            <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{clientName}</td>
-                            <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
-                                {formatDateTime(item.date || '', item.timeSlot || '')}
-                            </td>
-                            <td className="px-6 py-4 text-sm text-center">
-                                <StatusBadge status={status} />
-                            </td>
-                            <td className="px-6 py-4 text-center">
-                                <motion.button
-                                    onClick={(e: React.MouseEvent) => { e.stopPropagation(); openModal(item); }}
-                                    className="p-2 rounded-full text-white shadow-md transition-colors"
-                                    style={{ backgroundColor: primaryColor }}
-                                    whileHover={{ scale: 1.1, backgroundColor: secondaryColor }}
-                                    whileTap={{ scale: 0.9 }}
-                                    aria-label="View Details"
-                                >
-                                    <PencilSquareIcon className="w-5 h-5" />
-                                </motion.button>
-                            </td>
-                        </motion.tr>
-                    );
-                  })}
-                  </AnimatePresence>
-                </motion.tbody>
-              </table>
+        {/* Kanban Board Layout */}
+        <div className="flex overflow-x-auto gap-6 pb-4 pt-1 max-w-full">
+          {Object.entries(groupedItems).map(([columnName, items]) => (
+            <div key={columnName} className="flex-shrink-0 w-80">
+              {/* Column Header */}
+              <motion.div 
+                className={`flex justify-between items-center p-3 mb-4 rounded-xl shadow-lg border-l-4 font-bold text-lg dark:text-gray-100 border-b-2`}
+                style={{
+                    borderColor: getStatusProps(columnName).headerClass.includes('yellow') ? '#fbbf24' : 
+                                 getStatusProps(columnName).headerClass.includes('green') ? '#10b981' :
+                                 getStatusProps(columnName).headerClass.includes('red') ? '#f87171' : 
+                                 '#9ca3af' ,
+                    backgroundColor: getStatusProps(columnName).headerClass.split(' ')[1] 
+                }}
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+              >
+                <span>{columnName.replace('_', ' ')}</span>
+                <span className="text-sm font-semibold p-1 rounded-full bg-white dark:bg-gray-700 min-w-[30px] text-center">{items.length}</span>
+              </motion.div>
+              
+              {/* Card List */}
+              <motion.div layout className="space-y-4 min-h-[500px]">
+                <AnimatePresence>
+                  {items.map((item) => (
+                    <ItemCard key={item.id} item={item} openModal={openModal} />
+                  ))}
+                </AnimatePresence>
+                {items.length === 0 && (
+                    <div className="p-4 text-center text-sm text-gray-400 dark:text-gray-600 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl">
+                        No items in this column.
+                    </div>
+                )}
+              </motion.div>
             </div>
-          )}
+          ))}
         </div>
       </div>
 
-      {/* Appointment/Order Detail Panel (The engaging part) */}
+      {/* Appointment/Order Detail Panel (Slide-out drawer) */}
       <AnimatePresence>
         {isModalOpen && selectedItem && (
           <motion.div
@@ -395,132 +423,166 @@ export default function AdminAppointmentsClient({ initialAppointments, initialOr
             exit={{ opacity: 0 }}
           >
             {/* Backdrop */}
-            <div className="absolute inset-0 bg-black bg-opacity-60" onClick={closeModal} />
+            <div className="absolute inset-0 bg-black bg-opacity-70" onClick={closeModal} />
 
-            {/* Panel (Slide-out) */}
+            {/* Panel */}
             <motion.div
-              className="fixed right-0 top-0 h-full w-full max-w-lg bg-white dark:bg-gray-800 shadow-2xl z-50 overflow-y-auto flex flex-col"
+              className="fixed right-0 top-0 h-full w-full max-w-lg bg-white dark:bg-gray-900 shadow-2xl z-50 overflow-y-auto flex flex-col"
               variants={detailPanelVariants}
               initial="hidden"
               animate="visible"
               exit="exit"
             >
-              <div className="flex-shrink-0 p-6 border-b border-gray-200 dark:border-gray-700 sticky top-0 bg-white dark:bg-gray-800 z-10">
-                {/* Panel Header */}
+              <div className="flex-shrink-0 p-6 border-b border-gray-200 dark:border-gray-800 sticky top-0 bg-white dark:bg-gray-900 z-10 shadow-md">
                 <div className="flex justify-between items-start">
                     <div>
-                        <h3 className="text-2xl font-extrabold text-gray-900 dark:text-gray-100">
-                            {'service' in selectedItem ? selectedItem.service : (selectedItem.marketplaceListing?.name || selectedItem.name || "Order Details")}
+                        <h3 className="text-3xl font-extrabold text-gray-900 dark:text-gray-100 mb-1">
+                            {'service' in selectedItem ? selectedItem.service : (selectedItem.marketplaceListing?.title || selectedItem.name || "Order Details")}
                         </h3>
-                        <div className="mt-2"><StatusBadge status={newStatus} /></div>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
+                            <TagIcon className="w-4 h-4" /> ID: {selectedItem.id}
+                        </p>
                     </div>
-                    {/* Close Button (Icon change for better contrast) */}
                     <button
                         onClick={closeModal}
-                        className="text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
+                        className="text-gray-500 dark:text-gray-400 hover:text-red-500 transition-colors p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
                         aria-label="Close detail panel"
                     >
-                        <ArrowRightOnRectangleIcon className="w-7 h-7" />
+                        <ArrowRightOnRectangleIcon className="w-7 h-7 transform rotate-180" />
                     </button>
                 </div>
               </div>
 
               {/* Modal Details (Scrollable Content) */}
-              <div className={`p-6 flex-grow overflow-y-auto ${customScrollbarClass}`}>
-                    <h4 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4 border-b pb-2 border-gray-100 dark:border-gray-700">Client & Schedule Details</h4>
-                    <div className="space-y-3 text-sm text-gray-700 dark:text-gray-300 mb-6">
-                        <div className="flex justify-between"><span className="font-semibold text-gray-900 dark:text-gray-100">Type:</span> <span>{'service' in selectedItem ? 'Appointment' : 'Order'}</span></div>
-                        <div className="flex justify-between"><span className="font-semibold text-gray-900 dark:text-gray-100">Scheduled:</span> <span>{formatDateTime(selectedItem.date || '', selectedItem.timeSlot || '')}</span></div>
-                        <div className="flex justify-between"><span className="font-semibold text-gray-900 dark:text-gray-100">Client:</span> <span>{'service' in selectedItem ? selectedItem.client.name : (selectedItem.name || selectedItem.order?.consumer?.name || selectedItem.order?.name || "N/A")}</span></div>
-                        <div className="flex justify-between"><span className="font-semibold text-gray-900 dark:text-gray-100">Email:</span> <span>{'service' in selectedItem ? selectedItem.client.email : (selectedItem.email || selectedItem.order?.consumer?.email || selectedItem.order?.email || "N/A")}</span></div>
-                        <div className="flex justify-between"><span className="font-semibold text-gray-900 dark:text-gray-100">Phone:</span> <span>{'service' in selectedItem ? selectedItem.client.phone : (selectedItem.phone || selectedItem.order?.consumer?.phone || selectedItem.order?.phone || "N/A")}</span></div>
+              <div className="p-6 flex-grow overflow-y-auto space-y-8">
+                
+                {/* Status Card */}
+                <motion.div 
+                    className={`p-5 rounded-xl shadow-lg border-l-4 ${getStatusProps(newStatus).colorClass.split(' ')[2]}`} 
+                    style={{ backgroundColor: getStatusProps(newStatus).colorClass.split(' ')[0] }}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                >
+                    <div className="flex justify-between items-center">
+                        <h4 className="text-lg font-bold text-gray-900 dark:text-gray-100">Current Status:</h4>
+                        <motion.div key={newStatus} initial={{ scale: 0.8 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 500, damping: 30 }}>
+                            <StatusBadge status={newStatus} />
+                        </motion.div>
                     </div>
+                </motion.div>
 
-                    <h4 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-4 border-b pb-2 border-gray-100 dark:border-gray-700">Order/Item Specifics</h4>
-                    <div className="space-y-3 text-sm text-gray-700 dark:text-gray-300 mb-6">
-                        {'price' in selectedItem && (<div className="flex justify-between"><span className="font-semibold text-gray-900 dark:text-gray-100">Price:</span> <span>${selectedItem.price?.toFixed(2) || '0.00'}</span></div>)}
-                        {'quantity' in selectedItem && (<div className="flex justify-between"><span className="font-semibold text-gray-900 dark:text-gray-100">Quantity:</span> <span>{selectedItem.quantity}</span></div>)}
-                        {'order' in selectedItem && selectedItem.order && (
-                            <>
-                                <div className="flex justify-between"><span className="font-semibold text-gray-900 dark:text-gray-100">Order ID:</span> <span>{selectedItem.order.id || 'N/A'}</span></div>
-                                <div className="flex justify-between"><span className="font-semibold text-gray-900 dark:text-gray-100">Rider:</span> <span>{selectedItem.order.rider || 'N/A'}</span></div>
-                            </>
-                        )}
+                {/* Client Details */}
+                <div className="space-y-3">
+                    <h4 className="text-xl font-bold text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-800 pb-2 flex items-center gap-2">
+                        <UserCircleIcon className="w-6 h-6 text-indigo-400" /> Client Info
+                    </h4>
+                    <DetailRow icon={UserCircleIcon} label="Name" value={'service' in selectedItem ? selectedItem.client.name : (selectedItem.name || selectedItem.order?.consumer?.name || selectedItem.order?.name)} />
+                    <DetailRow icon={EnvelopeIcon} label="Email" value={'service' in selectedItem ? selectedItem.client.email : (selectedItem.email || selectedItem.order?.consumer?.email || selectedItem.order?.email)} />
+                    <DetailRow icon={PhoneIcon} label="Phone" value={'service' in selectedItem ? selectedItem.client.phone : (selectedItem.phone || selectedItem.order?.consumer?.phone || selectedItem.order?.phone)} />
+                </div>
+
+                {/* Schedule/Order Details */}
+                <div className="space-y-3">
+                    <h4 className="text-xl font-bold text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-800 pb-2 flex items-center gap-2">
+                        <CalendarDaysIcon className="w-6 h-6 text-green-400" /> Schedule & Items
+                    </h4>
+                    <DetailRow icon={ClockIcon} label="Time" value={formatDateTime(selectedItem.date || '', selectedItem.timeSlot || '')} />
+                    {'price' in selectedItem && (<DetailRow icon={CurrencyDollarIcon} label="Price" value={`$${selectedItem.price?.toFixed(2) || '0.00'}`} color="text-green-500" />)}
+                    {'quantity' in selectedItem && (<DetailRow icon={InformationCircleIcon} label="Quantity" value={selectedItem.quantity} />)}
+                </div>
+
+                {/* Delivery/Notes */}
+                {('order' in selectedItem || 'notes' in selectedItem) && (
+                    <div className="space-y-3">
+                        <h4 className="text-xl font-bold text-gray-900 dark:text-gray-100 border-b border-gray-200 dark:border-gray-800 pb-2 flex items-center gap-2">
+                            <TruckIcon className="w-6 h-6 text-yellow-400" /> Logistics
+                        </h4>
+                        {'price' in selectedItem && selectedItem.order && (<DetailRow icon={TruckIcon} label="Assigned Rider" value={selectedItem.order.rider} />)}
                         {'notes' in selectedItem && selectedItem.notes && (
-                            <div>
-                                <span className="font-semibold text-gray-900 dark:text-gray-100 block mb-1">Notes:</span> 
-                                <p className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg italic">{selectedItem.notes}</p>
+                            <div className="p-4 bg-gray-100 dark:bg-gray-800 rounded-xl text-gray-800 dark:text-gray-200 italic text-sm border border-gray-200 dark:border-gray-700">
+                                <span className="font-semibold text-gray-900 dark:text-gray-100 block mb-1 flex items-center gap-1">
+                                    <ClipboardDocumentCheckIcon className="w-4 h-4" /> Notes:
+                                </span> 
+                                <p>{selectedItem.notes}</p>
                             </div>
                         )}
                     </div>
+                )}
               </div>
 
               {/* Status Update Section (Sticky Footer) */}
-              <div className="flex-shrink-0 p-6 border-t border-gray-200 dark:border-gray-700 sticky bottom-0 bg-white dark:bg-gray-800 z-10">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Update Status
+              <div className="flex-shrink-0 p-6 border-t border-gray-200 dark:border-gray-800 sticky bottom-0 bg-white dark:bg-gray-900 z-10 shadow-t-xl">
+                <label className="block text-lg font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
+                    Change Status <ArrowLongRightIcon className="w-5 h-5 ml-2" />
+                </label>
+                
+                <div className="flex flex-wrap gap-2 mb-4">
+                    {/* Status Buttons */}
+                    {ALL_STATUSES.map((s) => (
+                        <motion.button
+                            key={s}
+                            onClick={() => setNewStatus(s)}
+                            className={`flex-1 py-2 px-3 rounded-lg text-sm font-semibold transition-all duration-200 shadow-md min-w-[100px] ${
+                                newStatus.toUpperCase() === s.toUpperCase()
+                                    ? `text-white shadow-xl`
+                                    : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 border border-gray-200 dark:border-gray-600"
+                            }`}
+                            style={{ backgroundColor: newStatus.toUpperCase() === s.toUpperCase() ? primaryColor : '' }}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            disabled={isLoading}
+                        >
+                            {s}
+                        </motion.button>
+                    ))}
+                </div>
+
+                {/* Rider Input for Orders */}
+                {('price' in selectedItem) && (
+                    <label className="block mb-4">
+                        <span className="text-gray-700 dark:text-gray-300 text-sm font-medium flex items-center gap-2 mb-1">
+                            <TruckIcon className="w-4 h-4" /> Assign Rider (Optional)
+                        </span>
+                        <input
+                            type="text"
+                            value={rider}
+                            onChange={(e) => setRider(e.target.value)}
+                            className="mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-600 p-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-4 focus:ring-opacity-50 transition-shadow shadow-inner"
+                            style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
+                            placeholder="Rider ID or Name"
+                            disabled={isLoading}
+                        />
                     </label>
-                    <div className="flex flex-wrap gap-2 mb-4">
-                        {/* Status Buttons with Primary Color Accent */}
-                        {('service' in selectedItem ? ["Scheduled", "Completed", "Cancelled"] : ["PENDING", "PROCESSING", "DELIVERED", "REJECTED", "CANCELLED"]).map((s) => (
-                            <motion.button
-                                key={s}
-                                onClick={() => setNewStatus(s)}
-                                className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all duration-200 shadow-sm ${
-                                    newStatus.toUpperCase() === s.toUpperCase()
-                                        ? `text-white shadow-lg`
-                                        : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
-                                }`}
-                                style={{ backgroundColor: newStatus.toUpperCase() === s.toUpperCase() ? primaryColor : '' }}
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                disabled={isLoading}
-                            >
-                                {s}
-                            </motion.button>
-                        ))}
-                    </div>
+                )}
 
-                    {/* Rider Input for Orders */}
-                    {'price' in selectedItem && (
-                        <label className="block mb-4">
-                            <span className="text-gray-700 dark:text-gray-300 text-sm font-medium">Assign Rider (ID/Name)</span>
-                            <input
-                                type="text"
-                                value={rider}
-                                onChange={(e) => setRider(e.target.value)}
-                                className="mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-600 p-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-shadow"
-                                style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
-                                placeholder="e.g., Rider ID or Name"
-                                disabled={isLoading}
-                            />
-                        </label>
-                    )}
-
-                    {/* Modal Action Buttons */}
-                    <div className="flex justify-end gap-3 mt-4">
-                        <button
-                            onClick={closeModal}
-                            className="px-6 py-3 rounded-lg text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors shadow-sm"
-                            disabled={isLoading}
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            onClick={handleUpdateStatus}
-                            className="px-6 py-3 rounded-lg text-white font-semibold transition-colors shadow-lg flex items-center justify-center min-w-[150px]"
-                            style={{ backgroundColor: primaryColor }}
-                            // whileHover={{ scale: 1.02 }}
-                            // whileTap={{ scale: 0.98 }}
-                            disabled={isLoading}
-                        >
-                            {isLoading ? (
-                                <ArrowPathIcon className="w-5 h-5 text-white animate-spin" />
-                            ) : (
-                                'Save Changes'
-                            )}
-                        </button>
-                    </div>
+                {/* Modal Action Buttons */}
+                <div className="flex justify-end gap-3 mt-6">
+                    <button
+                        onClick={closeModal}
+                        className="px-6 py-3 rounded-lg text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors shadow-md"
+                        disabled={isLoading}
+                    >
+                        Close
+                    </button>
+                    <motion.button
+                        onClick={handleUpdateStatus}
+                        className="px-6 py-3 rounded-lg text-white font-semibold transition-all shadow-xl flex items-center justify-center min-w-[150px]"
+                        style={{ backgroundColor: primaryColor }}
+                        whileHover={{ scale: 1.02, filter: 'brightness(1.1)' }}
+                        whileTap={{ scale: 0.98 }}
+                        disabled={isLoading}
+                    >
+                        {isLoading ? (
+                            <ArrowPathIcon className="w-5 h-5 text-white animate-spin" />
+                        ) : (
+                            <>
+                              <ArrowPathIcon className="w-5 h-5 mr-2" />
+                              Update Status
+                            </>
+                        )}
+                    </motion.button>
+                </div>
               </div>
             </motion.div>
           </motion.div>

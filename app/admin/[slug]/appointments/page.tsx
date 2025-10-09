@@ -1,7 +1,11 @@
 // app/[slug]/appointments/page.tsx
 import React from "react";
-import AdminAppointmentsClient, { AppointmentItem, OrderItem } from "./AdminAppointementsClient"; // Updated import to include OrderItem type
+import AdminAppointmentsClient, {
+  AppointmentItem,
+  OrderItem,
+} from "./AdminAppointementsClient"; // ✅ fixed import
 import { cookies } from "next/headers";
+
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface Props {
@@ -10,12 +14,14 @@ interface Props {
   };
 }
 
-// Sample data for appointments
+// ──────────────────────────────────────────────
+// Sample (Fallback) Data
+// ──────────────────────────────────────────────
 const sampleAppointments: AppointmentItem[] = [
   {
     id: "apt_001",
     service: "Dental Checkup",
-    date: "2025-07-25", // Changed date to be in the future for better demo
+    date: "2025-07-25",
     timeSlot: "10:00 AM",
     client: {
       name: "Alice Johnson",
@@ -28,49 +34,22 @@ const sampleAppointments: AppointmentItem[] = [
   {
     id: "apt_002",
     service: "Therapy Session",
-    date: "2025-07-26", // Changed date
+    date: "2025-07-26",
     timeSlot: "02:30 PM",
     client: {
       name: "Bob Smith",
       email: "bob.smith@example.com",
       phone: "+254798765432",
     },
-    status: "Scheduled", // Changed to Scheduled for demo
-    notes: "Follow-up in two weeks",
-  },
-  {
-    id: "apt_003",
-    service: "Consultation",
-    date: "2025-07-27", // Changed date
-    timeSlot: "11:15 AM",
-    client: {
-      name: "Carol Lee",
-      email: "carol.lee@example.com",
-      phone: "+254701234567",
-    },
-    status: "Cancelled",
-    notes: "Client requested reschedule",
-  },
-  {
-    id: "apt_004",
-    service: "Yoga Class",
-    date: "2025-07-25",
-    timeSlot: "09:00 AM",
-    client: {
-      name: "David Green",
-      email: "david.green@example.com",
-      phone: "+254722334455",
-    },
     status: "Scheduled",
-    notes: "Beginner session",
+    notes: "Follow-up in two weeks",
   },
 ];
 
-// Sample data for order items that might have a date/time
 const sampleOrderItems: OrderItem[] = [
   {
     id: "ord_item_001",
-    price: 50.00,
+    price: 50.0,
     name: "Home Cleaning Service",
     quantity: 1,
     status: "PENDING",
@@ -87,64 +66,36 @@ const sampleOrderItems: OrderItem[] = [
       phone: "+254733445566",
     },
   },
-  {
-    id: "ord_item_002",
-    price: 120.00,
-    name: "Plumbing Repair",
-    quantity: 1,
-    status: "PROCESSING",
-    date: "2025-07-26",
-    timeSlot: "09:30 AM",
-    marketplaceListing: {
-      title: "Emergency Plumbing",
-    },
-    order: {
-      id: "order_abc_456",
-      status: "PROCESSING",
-      rider: "Rider101",
-      name: "Frank Black",
-      email: "frank.black@example.com",
-      phone: "+254744556677",
-    },
-  },
-  {
-    id: "ord_item_003",
-    price: 75.00,
-    name: "Car Wash & Detailing",
-    quantity: 1,
-    status: "DELIVERED",
-    date: "2025-07-24", // Past date to show completed
-    timeSlot: "03:00 PM",
-    marketplaceListing: {
-      title: "Premium Car Detailing",
-    },
-    order: {
-      id: "order_def_789",
-      status: "DELIVERED",
-      rider: "Rider102",
-      name: "Grace Hall",
-      email: "grace.hall@example.com",
-      phone: "+254755667788",
-    },
-  },
 ];
 
+// ──────────────────────────────────────────────
+// Page Component
+// ──────────────────────────────────────────────
 export default async function AppointmentsPage({ params }: Props) {
   const companyId = params.slug;
-  let orderItems: OrderItem[] = [];
-  const cookieHeader = await cookies().toString();
+  const cookieStore = cookies();
+  const cookieHeader = cookieStore.toString();
 
-  // In a real application, you would fetch both appointments and order items
-  // based on the companyId from your API.
+  let fetchedAppointments: AppointmentItem[] = [];
+  let fetchedOrderItems: OrderItem[] = [];
+
   try {
+    // Fetch order items (or appointments depending on API structure)
     const res = await fetch(
       `${apiUrl}/admin/orders?companyId=${encodeURIComponent(companyId)}`,
-      { next: { revalidate: 60 }, headers: { cookie: cookieHeader } } // SSR on every request
+      {
+        next: { revalidate: 60 },
+        headers: { cookie: cookieHeader },
+      }
     );
+
     if (res.ok) {
-      const json = (await res.json()) as { data: { orderItems: OrderItem[] } };
-      // Filter orderItems to include only those with date/timeSlot if necessary
-      orderItems = json.data.orderItems.filter(item => item.date && item.timeSlot) || [];
+      const json = await res.json();
+      fetchedOrderItems =
+        json?.data?.orderItems?.filter(
+          (item: OrderItem) => item.date && item.timeSlot
+        ) || [];
+      console.log("✅ Fetched order items:", fetchedOrderItems);
     } else {
       console.error(
         "[AppointmentsPage] Failed to fetch order items →",
@@ -153,15 +104,36 @@ export default async function AppointmentsPage({ params }: Props) {
       );
     }
   } catch (err: any) {
-    console.error("[AppointmentsPage] Error fetching order items →", err.message);
+    console.error(
+      "[AppointmentsPage] Error fetching order items →",
+      err.message
+    );
   }
 
-  // Combine sample data with fetched data for demonstration purposes
-  const initialAppointments = sampleAppointments;
-  const combinedInitialOrderItems = [...sampleOrderItems, ...orderItems]; // Combine fetched with sample
+  // ──────────────────────────────────────────────
+  // Fallback Logic
+  // ──────────────────────────────────────────────
+  const hasFetchedData =
+    fetchedAppointments.length > 0 || fetchedOrderItems.length > 0;
 
-  console.log("Initial Appointments:", initialAppointments);
-  console.log("Initial Order Items (with date/time):", combinedInitialOrderItems);
+  const initialAppointments = hasFetchedData
+    ? fetchedAppointments
+    : sampleAppointments;
 
-  return <AdminAppointmentsClient initialAppointments={initialAppointments} initialOrderItems={combinedInitialOrderItems} />;
+  const initialOrderItems = hasFetchedData
+    ? fetchedOrderItems
+    : sampleOrderItems;
+
+  console.log(
+    hasFetchedData
+      ? "✅ Using fetched data"
+      : "⚠️ Using sample fallback data for demo"
+  );
+
+  return (
+    <AdminAppointmentsClient
+      initialAppointments={initialAppointments}
+      initialOrderItems={initialOrderItems}
+    />
+  );
 }

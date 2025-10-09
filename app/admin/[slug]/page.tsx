@@ -1,3 +1,4 @@
+
 // app/admin/[slug]/page.tsx
 import { redirect } from 'next/navigation';
 import { getAuthSession } from '../../../lib/auth';

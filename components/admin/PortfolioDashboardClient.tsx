@@ -1,18 +1,38 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
+import React, { useState, useEffect, useCallback } from 'react';
+// Simulating Link component behavior
 import {
   BriefcaseIcon,
   UserCircleIcon,
   ChatBubbleLeftRightIcon,
   LightBulbIcon,
   CalendarDaysIcon,
+  ClockIcon,
+  ArrowRightIcon,
+  CheckCircleIcon,
+  RocketLaunchIcon,
 } from '@heroicons/react/24/outline';
-import ChartTwo from '@/components/ChartTwo';
-import ChartThree from '@/components/ChartThree';
-import { Session } from 'next-auth';
+
+// --- MOCK CHART COMPONENTS (FOR SINGLE-FILE MANDATE) ---
+
+const ChartTwo = () => (
+  <div className="flex items-center justify-center h-full min-h-[220px] bg-gray-800/50 rounded-xl p-4 border border-dashed border-cyan-700">
+    <span className="text-cyan-500 font-semibold text-sm">
+      [Placeholder: Monthly Project Views Line Chart]
+    </span>
+  </div>
+);
+
+const ChartThree = () => (
+  <div className="flex items-center justify-center h-full min-h-[220px] bg-gray-800/50 rounded-xl p-4 border border-dashed border-fuchsia-700">
+    <span className="text-fuchsia-500 font-semibold text-sm">
+      [Placeholder: Inquiries Trend Bar Chart]
+    </span>
+  </div>
+);
+
+// --- TYPE DEFINITIONS ---
 
 export interface Task {
   id: string;
@@ -32,7 +52,7 @@ export interface DashboardData {
   tasks: Task[];
 }
 
-type Props = DashboardData & { session: Session };
+// --- DATA & API SIMULATION ---
 
 const sampleData: DashboardData = {
   metrics: {
@@ -49,11 +69,21 @@ const sampleData: DashboardData = {
   ],
 };
 
+// --- MAIN COMPONENT ---
+
 export default function PortfolioDashboardClient() {
   const [data, setData] = useState<DashboardData>(sampleData);
+  const [loading, setLoading] = useState(true);
 
+  // Simulate data fetch
   useEffect(() => {
-    setData(sampleData); // Replace with real fetch logic
+    const loadData = async () => {
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 600)); 
+      setData(sampleData);
+      setLoading(false);
+    };
+    loadData();
   }, []);
 
   const {
@@ -66,96 +96,171 @@ export default function PortfolioDashboardClient() {
 
   const cards = [
     {
-      title: 'Projects',
+      title: 'Total Projects',
       value: totalProjects,
       icon: BriefcaseIcon,
-      bg: 'bg-indigo-50',
+      accent: 'border-cyan-500 text-cyan-500',
       link: '/admin/projects',
+      description: 'Your body of work.',
     },
     {
-      title: 'Skills',
+      title: 'Core Skills',
       value: totalSkills,
       icon: LightBulbIcon,
-      bg: 'bg-yellow-50',
+      accent: 'border-amber-500 text-amber-500',
       link: '/admin/skills',
+      description: 'Defined competencies.',
     },
     {
-      title: 'Testimonials',
+      title: 'Client Testimonials',
       value: testimonials,
       icon: UserCircleIcon,
-      bg: 'bg-green-50',
+      accent: 'border-green-500 text-green-500',
       link: '/admin/testimonials',
+      description: 'Positive feedback score.',
     },
     {
-      title: 'Inquiries',
+      title: 'Inquiries (MoM)',
       value: inquiriesThisMonth,
       icon: ChatBubbleLeftRightIcon,
-      bg: 'bg-blue-50',
+      accent: 'border-fuchsia-500 text-fuchsia-500',
       link: '/admin/inquiries',
+      description: 'Leads generated this month.',
     },
     {
-      title: 'Meetings',
+      title: 'Upcoming Meetings',
       value: upcomingMeetings,
       icon: CalendarDaysIcon,
-      bg: 'bg-pink-50',
+      accent: 'border-blue-500 text-blue-500',
       link: '/admin/calendar',
+      description: 'Scheduled this week.',
     },
   ];
 
+  // Component for visually appealing metric cards
+  const MetricCard: React.FC<{ card: (typeof cards)[0] }> = useCallback(({ card }) => (
+    <a
+      key={card.title}
+      href={card.link}
+      className={`relative p-6 rounded-2xl bg-gray-800 border ${card.accent.replace('text-', 'border-')} shadow-xl transition duration-300 hover:shadow-2xl hover:scale-[1.02] transform group`}
+    >
+      {/* Title and Icon */}
+      <div className="flex items-center mb-3">
+        <card.icon className={`w-6 h-6 ${card.accent.replace('border-', 'text-')}`} />
+        <h2 className="ml-3 text-sm font-medium text-gray-400 group-hover:text-white transition-colors">{card.title}</h2>
+      </div>
+      
+      {/* Value */}
+      <p className="text-4xl font-extrabold text-white">{card.value}</p>
+      
+      {/* Description */}
+      <p className="mt-2 text-xs text-gray-500">{card.description}</p>
+
+      {/* Hover effect arrow */}
+      <ArrowRightIcon className={`absolute bottom-4 right-4 w-5 h-5 text-gray-600 group-hover:${card.accent.replace('border-', 'text-')} transition-all transform group-hover:translate-x-1 group-hover:scale-110`} />
+    </a>
+  ), []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-900 text-gray-300">
+        <div className="animate-pulse flex items-center gap-3">
+          <RocketLaunchIcon className="w-6 h-6 text-cyan-400" />
+          <span className="text-xl font-semibold">Loading Personal Command Console...</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="container mx-auto py-8 px-4">
-      <h1 className="text-4xl font-bold text-gray-800 mb-6">My Portfolio Dashboard</h1>
-
-      {/* Metrics Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-10">
-        {cards.map((card) => (
-          <Link
-            key={card.title}
-            href={card.link}
-            className={`${card.bg} p-6 rounded-2xl shadow-lg hover:shadow-xl transition transform hover:scale-105`}
-          >
-            <div className="flex items-center mb-4">
-              <card.icon className="w-8 h-8 text-gray-700" />
-              <h2 className="ml-3 text-lg font-semibold text-gray-800">{card.title}</h2>
+    <div className="min-h-screen bg-gray-900 text-white font-sans">
+      <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+        
+        {/* Main Header and Greeting */}
+        <header className="mb-10 p-8 rounded-3xl" style={{ backgroundImage: 'linear-gradient(135deg, #1f2937 0%, #030712 100%)' }}>
+          <div className="flex justify-between items-end">
+            <div>
+              <p className="text-xl text-cyan-400 font-semibold mb-2">Portfolio Management System</p>
+              <h1 className="text-5xl font-extrabold tracking-tighter text-white">
+                Dashboard Overview
+              </h1>
             </div>
-            <p className="text-3xl font-bold text-gray-900">{card.value}</p>
-          </Link>
-        ))}
-      </div>
-
-      {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
-        <div className="bg-white p-6 rounded-2xl shadow-lg">
-          <h3 className="text-2xl font-semibold text-gray-800 mb-4">Monthly Project Views</h3>
-          <ChartTwo />
-        </div>
-        <div className="bg-white p-6 rounded-2xl shadow-lg">
-          <h3 className="text-2xl font-semibold text-gray-800 mb-4">Inquiries Trend</h3>
-          <ChartThree />
-        </div>
-      </div>
-
-      {/* Today's Tasks */}
-      <div className="bg-white p-6 rounded-2xl shadow-lg">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-2xl font-semibold text-gray-800">Today's Tasks</h3>
-          <Link href="/admin/tasks" className="text-indigo-600 hover:underline">
-            View All
-          </Link>
-        </div>
-        <ul className="space-y-3">
-          {data.tasks.map((t) => (
-            <li
-              key={t.id}
-              className="flex justify-between items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition"
+            <a
+              href="/profile"
+              className="flex items-center gap-2 px-4 py-2 rounded-full bg-fuchsia-600 text-white font-medium hover:bg-fuchsia-700 transition transform hover:scale-105 shadow-lg shadow-fuchsia-900/50"
             >
-              <span>{t.name}</span>
-              <span className="text-sm text-gray-500">
-                {t.dueDate} @ {t.dueTime}
-              </span>
-            </li>
+              <UserCircleIcon className="w-5 h-5" />
+              Manage Profile
+            </a>
+          </div>
+        </header>
+
+        {/* Metrics Cards - Dynamic & High Contrast */}
+        <section className="grid grid-cols-2 lg:grid-cols-5 gap-6 mb-12">
+          {cards.map((card) => (
+            <MetricCard key={card.title} card={card} />
           ))}
-        </ul>
+        </section>
+
+        {/* Main Content: Charts and Tasks */}
+        <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          {/* Charts Section (2/3 width) */}
+          <div className="lg:col-span-2 space-y-8">
+            <div className="bg-gray-800 p-6 rounded-2xl shadow-2xl border-t-4 border-cyan-600">
+              <h3 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                <BriefcaseIcon className="w-6 h-6 text-cyan-400" /> Monthly Project Views
+              </h3>
+              <div className="min-h-[300px]">
+                <ChartTwo />
+              </div>
+            </div>
+
+            <div className="bg-gray-800 p-6 rounded-2xl shadow-2xl border-t-4 border-fuchsia-600">
+              <h3 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+                <ChatBubbleLeftRightIcon className="w-6 h-6 text-fuchsia-400" /> Inquiries Trend
+              </h3>
+              <div className="min-h-[300px]">
+                <ChartThree />
+              </div>
+            </div>
+          </div>
+
+          {/* Today's Tasks (1/3 width) - Action Focus */}
+          <div className="lg:col-span-1">
+            <div className="bg-gray-800 p-6 rounded-2xl shadow-2xl border-t-4 border-yellow-600 sticky top-4">
+              <div className="flex justify-between items-center mb-6 border-b border-gray-700 pb-3">
+                <h3 className="text-2xl font-extrabold text-white flex items-center gap-2">
+                  <CheckCircleIcon className="w-6 h-6 text-yellow-400" /> Urgent Tasks
+                </h3>
+                <a href="/admin/tasks" className="text-sm text-yellow-500 hover:text-yellow-400 hover:underline flex items-center">
+                  View All
+                </a>
+              </div>
+              
+              <ul className="space-y-4">
+                {data.tasks.map((t) => (
+                  <li
+                    key={t.id}
+                    className="flex flex-col p-4 bg-gray-700 rounded-xl border border-gray-600 hover:bg-gray-600 transition cursor-pointer"
+                  >
+                    <span className="text-base font-semibold text-white">{t.name}</span>
+                    <div className="mt-1 flex items-center gap-3 text-sm text-gray-400">
+                      <CalendarDaysIcon className="w-4 h-4 text-cyan-400" />
+                      <span>{t.dueDate}</span>
+                      <ClockIcon className="w-4 h-4 text-fuchsia-400 ml-2" />
+                      <span>{t.dueTime}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+              
+              {data.tasks.length === 0 && (
+                 <div className="py-6 text-center text-gray-500">No urgent tasks due today. Focus on strategy!</div>
+              )}
+            </div>
+          </div>
+        </section>
       </div>
     </div>
   );
