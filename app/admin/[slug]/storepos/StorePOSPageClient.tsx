@@ -62,6 +62,7 @@ export type CompanyInfo = {
   address: string;
   phone: string;
   currency: string;
+  taxRate?: number; // Optional, in case you want to fetch and display tax rate
 };
 
 // --- Receipt Generation Helper ---
@@ -218,6 +219,7 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState<'success' | 'failed' | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
   // State for Agent and Company Info
   const [currentAgent, setCurrentAgent] = useState<Agent | null>({
@@ -311,13 +313,23 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
   }, [companyId]); // Dependency array: re-run if companyId changes
 
   // Filtered products for search
+  // const filteredProducts = useMemo(() => {
+  //   if (!searchTerm) return products;
+  //   return products.filter(product =>
+  //     product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //     product.description?.toLowerCase().includes(searchTerm.toLowerCase())
+  //   );
+  // }, [products, searchTerm]);
+
   const filteredProducts = useMemo(() => {
-    if (!searchTerm) return products;
-    return products.filter(product =>
-      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.description?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [products, searchTerm]);
+  return products.filter(product => {
+    const matchesCategory = selectedCategory === 'all' || product.productCategoryId === selectedCategory;
+    const matchesSearch = !searchTerm || 
+                          product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          product.description?.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
+}, [products, searchTerm, selectedCategory]);
 
   // Cart calculations
   const subtotal = useMemo(() => {
@@ -328,11 +340,18 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
     return (subtotal * discountPercentage) / 100;
   }, [subtotal, discountPercentage]);
 
-  const totalTax = useMemo(() => {
-    // Example: 8% tax on subtotal after discount
-    const taxableAmount = subtotal - totalDiscountAmount;
-    return taxableAmount * 0.08;
-  }, [subtotal, totalDiscountAmount]);
+  // const totalTax = useMemo(() => {
+  //   // Example: 8% tax on subtotal after discount
+  //   const taxableAmount = subtotal - totalDiscountAmount;
+  //   return taxableAmount * 0.08;
+  // }, [subtotal, totalDiscountAmount]);
+
+  // Assuming companyInfo now includes a taxRate property
+const totalTax = useMemo(() => {
+  const taxRate = companyInfo?.taxRate || 0.08; // Fallback to 8%
+  const taxableAmount = subtotal - totalDiscountAmount;
+  return taxableAmount * taxRate;
+}, [subtotal, totalDiscountAmount, companyInfo]);
 
   const finalTotal = useMemo(() => {
     return subtotal - totalDiscountAmount + totalTax;
@@ -362,6 +381,8 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
   //     }
   //   });
   // }, []);
+
+  
   const handleAddToCart = useCallback((product: MarketListingForm) => {
     setCart(prevCart => {
       const existingItem = prevCart.find(item => item.id === product.id);
@@ -549,6 +570,15 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
                 <XMarkIcon className="h-6 w-6" />
               </button>
             )}
+          </div>
+
+          <div className="flex items-center space-x-2 mb-4 overflow-x-auto pb-2">
+            <button onClick={() => setSelectedCategory('all')} className={`px-4 py-2 rounded-lg ${selectedCategory === 'all' ? 'bg-purple-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}>All</button>
+            {categories.map(cat => (
+              <button key={cat.categoryId || cat.category?.id || cat.id} onClick={() => setSelectedCategory(cat.categoryId || cat.category?.id || cat.id)} className={`px-4 py-2 rounded-lg ${selectedCategory === cat.categoryId ? 'bg-purple-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}>
+                {cat.displayName}
+              </button>
+            ))}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 overflow-y-auto flex-grow pr-2 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900">
