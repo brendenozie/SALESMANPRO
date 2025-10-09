@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import {
   MagnifyingGlassIcon,
   ShoppingCartIcon,
@@ -13,6 +13,7 @@ import {
   CheckCircleIcon,
   PrinterIcon,
   ClipboardDocumentCheckIcon,
+  ChevronLeftIcon,
 } from '@heroicons/react/24/outline';
 import Modal from '@/components/Modal'; // Assuming you have a reusable Modal component
 
@@ -31,6 +32,24 @@ import { MarketListingForm, IStoreCategory } from '@/types/typings';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
 
+
+/** usePersistentState - uses sessionStorage (session-lifetime) */
+function usePersistentState<T>(key: string, initial: T) {
+  const [state, setState] = useState<T>(() => {
+    try {
+      const raw = sessionStorage.getItem(key);
+      return raw ? (JSON.parse(raw) as T) : initial;
+    } catch {
+      return initial;
+    }
+  });
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(key, JSON.stringify(state));
+    } catch {}
+  }, [key, state]);
+  return [state, setState] as const;
+};
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -62,7 +81,7 @@ export type CompanyInfo = {
   address: string;
   phone: string;
   currency: string;
-  taxRate?: number; // Optional, in case you want to fetch and display tax rate
+  taxRate?: number; // Optional, default to 0.08 if not provided
 };
 
 // --- Receipt Generation Helper ---
@@ -81,7 +100,69 @@ interface ReceiptDetails {
   storeAddress: string;
   storePhone: string;
   currencySymbol: string; // Added for dynamic currency display
+};
+
+/** useRipple - material-like ripple effect for clickable elements */
+function useRipple() {
+  const containerRef = useRef<HTMLElement | null>(null);
+
+  const createRipple = (e: React.MouseEvent<HTMLElement> | React.TouchEvent<HTMLElement>) => {
+    const target = containerRef.current || (e.currentTarget as HTMLElement);
+    if (!target) return;
+    const rect = target.getBoundingClientRect();
+    const circle = document.createElement('span');
+
+    // coordinates
+    const clientX = 'touches' in e && e.touches?.length ? e.touches[0].clientX : (e as React.MouseEvent).clientX;
+    const clientY = 'touches' in e && e.touches?.length ? e.touches[0].clientY : (e as React.MouseEvent).clientY;
+    const x = clientX - rect.left;
+    const y = clientY - rect.top;
+
+    const size = Math.max(rect.width, rect.height) * 1.2;
+    circle.style.width = circle.style.height = `${size}px`;
+    circle.style.left = `${x - size / 2}px`;
+    circle.style.top = `${y - size / 2}px`;
+    circle.className = 'ripple animate-ripple absolute rounded-full opacity-30 pointer-events-none';
+    circle.style.background = 'rgba(255,255,255,0.12)';
+
+    target.appendChild(circle);
+    setTimeout(() => {
+      circle.remove();
+    }, 600);
+  };
+
+  return { containerRef, createRipple };
 }
+
+/* ---------------------- Small CSS-in-JSX for keyframes & scrollbar (kept inside file) ---------------------- */
+const InlineStyles = () => (
+  <style>{`
+    @keyframes ripple {
+      from { transform: scale(0); opacity: 0.4; }
+      to   { transform: scale(1.8); opacity: 0; }
+    }
+    .animate-ripple { animation: ripple 600ms cubic-bezier(.22,.9,.35,1) forwards; }
+    @keyframes slow-spin { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }
+    .animate-spin-slow { animation: slow-spin 3s linear infinite; }
+
+    /* micro bounce */
+    @keyframes tiny-bounce { 0% { transform: translateY(0) } 50% { transform: translateY(-4px) } 100% { transform: translateY(0) } }
+    .animate-bounce-slow { animation: tiny-bounce 1.6s ease-in-out infinite; }
+
+    /* skeleton shimmer */
+    .skeleton { background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.03) 75%); background-size: 200% 100%; animation: shimmer 1.4s linear infinite; }
+    @keyframes shimmer { from { background-position: 200% 0 } to { background-position: -200% 0 } }
+
+    /* nice thin scrollbar for webkit */
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(148,0,211,0.16); border-radius: 10px; border: 2px solid transparent; background-clip: padding-box; }
+
+    /* utility for glass look */
+    .glass { background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border: 1px solid rgba(255,255,255,0.03); backdrop-filter: blur(6px); }
+  `}</style>
+);
+
 
 const generateReceiptHtml = (details: ReceiptDetails): string => {
   const itemsHtml = details.cart.map(item => `
@@ -218,8 +299,12 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
   const [discountPercentage, setDiscountPercentage] = useState(0);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showMobileCart, setShowMobileCart] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState<'success' | 'failed' | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  // persistent category (session)
+  const [selectedCategory, setSelectedCategory] = usePersistentState<string>('pos:selectedCategory', 'all');
+
+  const ripple = useRipple();
 
   // State for Agent and Company Info
   const [currentAgent, setCurrentAgent] = useState<Agent | null>({
@@ -231,6 +316,49 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
   const [companyInfo, setCompanyInfo] = useState<CompanyInfo | null>(null);
 
   const currencySymbol = useMemo(() => companyInfo?.currency === 'KES' ? 'KSh' : '$', [companyInfo]);
+
+    /* ------------------- Mobile Cart swipe handling ------------------- */
+  const mobileCartRef = useRef<HTMLDivElement | null>(null);
+  const touchStartY = useRef<number | null>(null);
+  const currentTranslate = useRef<number>(0);
+
+  useEffect(() => {
+    const el = mobileCartRef.current;
+    if (!el) return;
+    const start = (e: TouchEvent) => {
+      touchStartY.current = e.touches[0].clientY;
+    };
+    const move = (e: TouchEvent) => {
+      if (touchStartY.current == null) return;
+      const delta = e.touches[0].clientY - touchStartY.current;
+      if (delta > 0) {
+        currentTranslate.current = delta;
+        el.style.transform = `translateY(${delta}px)`;
+        el.style.transition = 'transform 0s';
+      }
+    };
+    const end = () => {
+      if (touchStartY.current == null) return;
+      const delta = currentTranslate.current;
+      el.style.transition = '';
+      el.style.transform = '';
+      if (delta > 120) {
+        setShowMobileCart(false);
+      }
+      touchStartY.current = null;
+      currentTranslate.current = 0;
+    };
+
+    el.addEventListener('touchstart', start, { passive: true });
+    el.addEventListener('touchmove', move, { passive: true });
+    el.addEventListener('touchend', end);
+    return () => {
+      el.removeEventListener('touchstart', start as any);
+      el.removeEventListener('touchmove', move as any);
+      el.removeEventListener('touchend', end as any);
+    };
+  }, [showMobileCart]);
+
 
   // --- useEffect to fetch data on component mount ---
   useEffect(() => {
@@ -312,50 +440,6 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
     fetchCompanyInfo();
   }, [companyId]); // Dependency array: re-run if companyId changes
 
-  // Filtered products for search
-  // const filteredProducts = useMemo(() => {
-  //   if (!searchTerm) return products;
-  //   return products.filter(product =>
-  //     product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  //     product.description?.toLowerCase().includes(searchTerm.toLowerCase())
-  //   );
-  // }, [products, searchTerm]);
-
-  const filteredProducts = useMemo(() => {
-  return products.filter(product => {
-    const matchesCategory = selectedCategory === 'all' || product.productCategoryId === selectedCategory;
-    const matchesSearch = !searchTerm || 
-                          product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          product.description?.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
-}, [products, searchTerm, selectedCategory]);
-
-  // Cart calculations
-  const subtotal = useMemo(() => {
-    return cart.reduce((sum, item) => sum + item.subtotal, 0);
-  }, [cart]);
-
-  const totalDiscountAmount = useMemo(() => {
-    return (subtotal * discountPercentage) / 100;
-  }, [subtotal, discountPercentage]);
-
-  // const totalTax = useMemo(() => {
-  //   // Example: 8% tax on subtotal after discount
-  //   const taxableAmount = subtotal - totalDiscountAmount;
-  //   return taxableAmount * 0.08;
-  // }, [subtotal, totalDiscountAmount]);
-
-  // Assuming companyInfo now includes a taxRate property
-const totalTax = useMemo(() => {
-  const taxRate = companyInfo?.taxRate || 0.08; // Fallback to 8%
-  const taxableAmount = subtotal - totalDiscountAmount;
-  return taxableAmount * taxRate;
-}, [subtotal, totalDiscountAmount, companyInfo]);
-
-  const finalTotal = useMemo(() => {
-    return subtotal - totalDiscountAmount + totalTax;
-  }, [subtotal, totalDiscountAmount, totalTax]);
 
   // --- Cart Actions ---
   // const handleAddToCart = useCallback((product: MarketListingForm) => {
@@ -381,8 +465,6 @@ const totalTax = useMemo(() => {
   //     }
   //   });
   // }, []);
-
-  
   const handleAddToCart = useCallback((product: MarketListingForm) => {
     setCart(prevCart => {
       const existingItem = prevCart.find(item => item.id === product.id);
@@ -439,6 +521,45 @@ const totalTax = useMemo(() => {
       setDiscountPercentage(0);
     }
   }, []);
+
+  
+
+  // Cart calculations
+  const subtotal = useMemo(() => {
+    return cart.reduce((sum, item) => sum + item.subtotal, 0);
+  }, [cart]);
+
+  const totalDiscountAmount = useMemo(() => {
+    return (subtotal * discountPercentage) / 100;
+  }, [subtotal, discountPercentage]);
+
+  // const totalTax = useMemo(() => {
+  //   // Example: 8% tax on subtotal after discount
+  //   const taxableAmount = subtotal - totalDiscountAmount;
+  //   return taxableAmount * 0.08;
+  // }, [subtotal, totalDiscountAmount]);
+
+  const totalTax = useMemo(() => {
+    const taxRate = companyInfo?.taxRate ?? 0.08;
+    const taxable = subtotal - totalDiscountAmount;
+    return taxable * taxRate;
+  }, [subtotal, totalDiscountAmount, companyInfo]);
+
+    /* ------------------- filtering & derived values ------------------- */
+  const filteredProducts = useMemo(() => {
+    return products.filter(p => {
+      const catId = (p as any).productCategoryId || (p as any).categoryId || 'all';
+      const matchesCategory = selectedCategory === 'all' || catId === selectedCategory;
+      const matchesSearch =
+        !searchTerm ||
+        p.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (p.description || '').toLowerCase().includes(searchTerm.toLowerCase());
+      return matchesCategory && matchesSearch;
+    });
+  }, [products, searchTerm, selectedCategory]);
+  
+  const finalTotal = useMemo(() => subtotal - totalDiscountAmount + totalTax, [subtotal, totalDiscountAmount, totalTax]);
+  
 
   const finalizeSale = useCallback(async () => {
     setPaymentStatus(null); // Reset status
@@ -541,6 +662,141 @@ const totalTax = useMemo(() => {
     finalizeSale(); // Call finalizeSale directly when showing payment modal
   }, [cart.length, finalizeSale]);
 
+  
+  /* ------------------- small helpers ------------------- */
+  const itemCount = cart.reduce((s, i) => s + i.quantity, 0);
+
+  /* ------------------- Render pieces ------------------- */
+
+  // Cart Summary used in both desktop and mobile overlay
+  const CartSummary = (
+    <div className="lg:col-span-1 bg-gray-800 glass p-6 rounded-2xl shadow-2xl border border-gray-700 flex flex-col h-full">
+      <div className="flex items-center justify-between mb-6 border-b border-gray-700 pb-4">
+        <h2 className="text-3xl font-bold text-purple-300 flex items-center">
+          <ShoppingCartIcon className="h-8 w-8 mr-3 text-purple-400" /> Cart ({cart.length})
+        </h2>
+        <button
+          onClick={handleClearCart}
+          className="text-red-400 hover:text-red-300 transition-colors text-sm font-medium"
+          disabled={cart.length === 0}
+        >
+          Clear
+        </button>
+      </div>
+
+      {cart.length === 0 ? (
+        <div className="flex-grow flex items-center justify-center text-gray-400 text-lg">
+          <p className="text-center">Your cart is empty. Add products to begin.</p>
+        </div>
+      ) : (
+        <div className="flex-grow overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-purple-800 scrollbar-track-gray-900 mb-6">
+          {cart.map(item => (
+            <div key={item.id} className="flex items-center justify-between bg-gray-700 p-4 rounded-xl shadow-lg mb-3 border border-gray-600 transition-all duration-300 hover:bg-gray-600">
+              <div className="flex items-center flex-grow">
+                <img
+                  src={(item.images && item.images[0]) || `https://placehold.co/50x50/4B5563/ffffff?text=Img`}
+                  alt={item.name}
+                  className="h-12 w-12 rounded-lg object-cover mr-4 ring-2 ring-purple-500/50"
+                  onError={(e) => { (e.currentTarget as HTMLImageElement).src = `https://placehold.co/50x50/4B5563/ffffff?text=Img`; }}
+                />
+                <div className="flex-grow min-w-0">
+                  <h3 className="text-base font-semibold text-white truncate">{item.name}</h3>
+                  <p className="text-sm font-mono text-green-400">{currencySymbol} {(item.finalPrice ?? 0).toFixed(2)}</p>
+                </div>
+              </div>
+              <div className="flex items-center space-x-2 ml-4">
+                <button
+                  onClick={() => handleQuantityChange(item.id, -1)}
+                  className="bg-purple-800 text-white p-1 rounded-full hover:bg-purple-700 transition-colors disabled:opacity-50"
+                  aria-label={`Decrease quantity of ${item.name}`}
+                  disabled={item.quantity <= 1}
+                >
+                  <MinusIcon className="h-4 w-4" />
+                </button>
+                <span className="text-lg font-extrabold text-white w-6 text-center">{item.quantity}</span>
+                <button
+                  onClick={() => handleQuantityChange(item.id, 1)}
+                  className="bg-purple-800 text-white p-1 rounded-full hover:bg-purple-700 transition-colors"
+                  aria-label={`Increase quantity of ${item.name}`}
+                >
+                  <PlusIcon className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => handleRemoveFromCart(item.id)}
+                  className="text-red-400 hover:text-red-300 ml-2 p-1 rounded-full hover:bg-gray-600"
+                  aria-label={`Remove ${item.name} from cart`}
+                >
+                  <XMarkIcon className="h-5 w-5" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Discount Input */}
+      <div className="mb-4 p-4 bg-gray-700 rounded-xl shadow-inner border border-gray-600">
+        <label htmlFor="discount" className="block text-pink-400 text-sm font-bold mb-2 flex items-center">
+          <ReceiptPercentIcon className="h-5 w-5 mr-2" /> Discount (%)
+        </label>
+        <input
+          type="number"
+          id="discount"
+          value={discountPercentage}
+          onChange={(e) => setDiscountPercentage(Math.max(0, Math.min(100, parseFloat(e.target.value) || 0)))}
+          className="w-full p-3 rounded-lg bg-gray-600 border border-gray-500 text-white font-mono text-xl focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all"
+          min={0}
+          max={100}
+          step={1}
+          aria-label="Discount percentage"
+        />
+        <p className="text-xs text-gray-400 mt-1">Saves: <span className="text-pink-400 font-bold">{currencySymbol} {totalDiscountAmount.toFixed(2)}</span></p>
+      </div>
+
+      {/* Order Summary */}
+      <div className="space-y-3 mb-6 border-t border-gray-700 pt-4">
+        <div className="flex justify-between text-lg">
+          <span className="text-gray-300">Subtotal:</span>
+          <span className="font-semibold text-white">{currencySymbol} {subtotal.toFixed(2)}</span>
+        </div>
+        <div className="flex justify-between text-lg">
+          <span className="text-gray-300">Discount:</span>
+          <span className="font-semibold text-pink-400">- {currencySymbol} {totalDiscountAmount.toFixed(2)}</span>
+        </div>
+        <div className="flex justify-between text-lg">
+          <span className="text-gray-300">Tax ({((companyInfo?.taxRate || 0.08) * 100).toFixed(0)}%):</span>
+          <span className="font-semibold text-white">{currencySymbol} {totalTax.toFixed(2)}</span>
+        </div>
+        <div className="flex justify-between text-4xl font-extrabold border-t-2 border-green-500 pt-4 mt-4">
+          <span className="text-purple-300">TOTAL:</span>
+          <span className="text-green-400">{currencySymbol} {finalTotal.toFixed(2)}</span>
+        </div>
+      </div>
+
+      {/* Agent Info & Checkout Button */}
+      <div className="mt-auto pt-4 border-t border-gray-700">
+        {currentAgent ? (
+          <div className="bg-gray-700 p-3 rounded-xl shadow-inner flex items-center mb-4 border border-gray-600">
+            <UserCircleIcon className="h-7 w-7 text-blue-400 mr-3" />
+            <div>
+              <p className="text-sm text-gray-400">Agent: <span className="text-white font-semibold">{currentAgent.name}</span></p>
+              <p className="text-xs text-gray-500">Sales: {currentAgent.dailySalesCount} | {currencySymbol} {currentAgent.dailySalesValue.toFixed(2)}</p>
+            </div>
+          </div>
+        ) : null}
+        <button
+          onClick={(e) => { ripple.createRipple(e); handleProcessPayment(); }}
+          ref={ripple.containerRef as any}
+          className="w-full relative overflow-hidden bg-gradient-to-r from-green-500 to-teal-500 text-white py-4 rounded-xl text-2xl font-bold shadow-2xl hover:from-green-600 hover:to-teal-600 transition-all duration-300 transform hover:scale-[1.01] flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={cart.length === 0 || !currentAgent || !companyInfo}
+        >
+          <CreditCardIcon className="h-7 w-7 mr-3" /> Pay Now
+        </button>
+      </div>
+    </div>
+  );
+
+  
   // --- Render ---
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-100 font-inter p-6 lg:p-10">
@@ -572,13 +828,26 @@ const totalTax = useMemo(() => {
             )}
           </div>
 
-          <div className="flex items-center space-x-2 mb-4 overflow-x-auto pb-2">
-            <button onClick={() => setSelectedCategory('all')} className={`px-4 py-2 rounded-lg ${selectedCategory === 'all' ? 'bg-purple-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}>All</button>
-            {categories.map(cat => (
-              <button key={cat.categoryId || cat.category?.id || cat.id} onClick={() => setSelectedCategory(cat.categoryId || cat.category?.id || cat.id)} className={`px-4 py-2 rounded-lg ${selectedCategory === cat.categoryId ? 'bg-purple-600 text-white' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}>
-                {cat.displayName}
-              </button>
-            ))}
+          {/* Category Pills */}
+          <div className="flex space-x-3 mb-4 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide snap-x snap-mandatory">
+            <button
+              onClick={() => setSelectedCategory('all')}
+              className={`snap-start flex-shrink-0 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ${selectedCategory === 'all' ? 'bg-pink-600 text-white shadow-lg shadow-pink-500/40 scale-105' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}
+            >
+              All Products
+            </button>
+            {categories.map((cat) => {
+              const id = (cat as any).categoryId || (cat as any).id;
+              return (
+                <button
+                  key={id}
+                  onClick={() => setSelectedCategory(id)}
+                  className={`snap-start flex-shrink-0 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ${selectedCategory === id ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/40 scale-105' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}
+                >
+                  {cat.displayName}
+                </button>
+              );
+            })}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 overflow-y-auto flex-grow pr-2 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900">
@@ -630,134 +899,61 @@ const totalTax = useMemo(() => {
         </div>
 
         {/* Right Column: Cart & Checkout */}
-        <div className="lg:col-span-1 bg-gray-800 p-6 rounded-2xl shadow-2xl border border-gray-700 flex flex-col">
-          <div className="flex items-center justify-between mb-6 border-b border-gray-700 pb-4">
-            <h2 className="text-3xl font-bold text-purple-300 flex items-center">
-              <ShoppingCartIcon className="h-8 w-8 mr-3 text-purple-400" /> Cart
-            </h2>
-            <button
-              onClick={handleClearCart}
-              className="text-red-400 hover:text-red-300 transition-colors text-sm font-medium"
-              disabled={cart.length === 0}
-            >
-              Clear Cart
-            </button>
-          </div>
+        
+        <div className="hidden lg:block">{CartSummary}</div>
 
-          {cart.length === 0 ? (
-            <div className="flex-grow flex items-center justify-center text-gray-400 text-lg">
-              Your cart is empty. Add some products!
-            </div>
-          ) : (
-            <div className="flex-grow overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900 mb-6">
-              {cart.map(item => (
-                <div key={item.id} className="flex items-center justify-between bg-gray-700 p-4 rounded-lg shadow-md mb-3 border border-gray-600">
-                  <div className="flex items-center flex-grow">
-                    <img
-                      src={item.images ? item.images[0] : `https://placehold.co/50x50/4B5563/ffffff?text=Img`}
-                      alt={item.name}
-                      className="h-12 w-12 rounded-md object-cover mr-4"
-                      onError={(e) => { e.currentTarget.src = `https://placehold.co/50x50/4B5563/ffffff?text=Img`; }}
-                    />
-                    <div className="flex-grow">
-                      <h3 className="text-lg font-semibold text-white truncate">{item.name}</h3>
-                      <p className="text-sm text-gray-400">{currencySymbol} {item.finalPrice?.toFixed(2)} / item</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center space-x-2 ml-4">
-                    <button
-                      onClick={() => handleQuantityChange(item.id, -1)}
-                      className="bg-gray-600 text-white p-1.5 rounded-full hover:bg-gray-500 transition-colors"
-                      aria-label={`Decrease quantity of ${item.name}`}
-                    >
-                      <MinusIcon className="h-4 w-4" />
-                    </button>
-                    <span className="text-lg font-bold text-purple-300 w-6 text-center">{item.quantity}</span>
-                    <button
-                      onClick={() => handleQuantityChange(item.id, 1)}
-                      className="bg-gray-600 text-white p-1.5 rounded-full hover:bg-gray-500 transition-colors"
-                      aria-label={`Increase quantity of ${item.name}`}
-                    >
-                      <PlusIcon className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => handleRemoveFromCart(item.id)}
-                      className="text-red-400 hover:text-red-300 ml-2"
-                      aria-label={`Remove ${item.name} from cart`}
-                    >
-                      <XMarkIcon className="h-5 w-5" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Discount Input */}
-          <div className="mb-6 p-4 bg-gray-700 rounded-lg shadow-inner border border-gray-600">
-            <label htmlFor="discount" className="block text-gray-300 text-sm font-semibold mb-2 flex items-center">
-              <ReceiptPercentIcon className="h-5 w-5 mr-2 text-pink-400" /> Apply Discount (%)
-            </label>
-            <input
-              type="number"
-              id="discount"
-              value={discountPercentage}
-              onChange={(e) => setDiscountPercentage(Math.max(0, Math.min(100, parseFloat(e.target.value) || 0)))}
-              className="w-full p-3 rounded-lg bg-gray-600 border border-gray-500 text-white focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-              min="0"
-              max="100"
-              step="1"
-              aria-label="Discount percentage"
-            />
-            <p className="text-xs text-gray-400 mt-1">Discount applied: {currencySymbol} {totalDiscountAmount.toFixed(2)}</p>
-          </div>
-
-          {/* Order Summary */}
-          <div className="space-y-3 mb-6 border-t border-gray-700 pt-4">
-            <div className="flex justify-between text-lg">
-              <span className="text-gray-300">Subtotal:</span>
-              <span className="font-semibold text-white">{currencySymbol} {subtotal.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between text-lg">
-              <span className="text-gray-300">Discount ({discountPercentage}%):</span>
-              <span className="font-semibold text-pink-400">- {currencySymbol} {totalDiscountAmount.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between text-lg">
-              <span className="text-gray-300">Tax (8%):</span>
-              <span className="font-semibold text-white">{currencySymbol} {totalTax.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between text-4xl font-extrabold border-t-2 border-purple-500 pt-4 mt-4">
-              <span className="text-purple-300">TOTAL:</span>
-              <span className="text-green-400">{currencySymbol} {finalTotal.toFixed(2)}</span>
-            </div>
-          </div>
-
-          {/* Agent Info & Checkout Button */}
-          <div className="mt-auto pt-4 border-t border-gray-700">
-            {currentAgent ? (
-              <div className="bg-gray-700 p-4 rounded-lg shadow-inner flex items-center mb-4 border border-gray-600">
-                <UserCircleIcon className="h-8 w-8 text-blue-400 mr-3" />
-                <div>
-                  <p className="text-sm text-gray-300">Serving Agent:</p>
-                  <p className="text-lg font-semibold text-white">{currentAgent.name}</p>
-                  <p className="text-xs text-gray-400">Sales Today: {currentAgent.dailySalesCount} ({currencySymbol} {currentAgent.dailySalesValue.toFixed(2)})</p>
-                </div>
-              </div>
-            ) : (
-              <div className="bg-gray-700 p-4 rounded-lg shadow-inner flex items-center mb-4 border border-gray-600 text-gray-400">
-                Loading agent info...
-              </div>
-            )}
-            <button
-              onClick={handleProcessPayment}
-              className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-4 rounded-xl text-2xl font-bold shadow-xl hover:from-purple-700 hover:to-indigo-700 transition-all duration-300 transform hover:scale-105 flex items-center justify-center"
-              disabled={cart.length === 0 || !currentAgent || !companyInfo} // Disable if cart is empty or data not loaded
-            >
-              <CreditCardIcon className="h-7 w-7 mr-3" /> Process Payment
-            </button>
-          </div>
-        </div>
       </div>
+
+
+      {/* Mobile floating cart button */}
+            <div className="lg:hidden fixed bottom-6 right-6 z-50">
+              <button
+                onClick={() => setShowMobileCart(true)}
+                className={`relative bg-gradient-to-r from-pink-500 to-red-500 text-white p-5 rounded-full shadow-2xl transition-transform duration-300 transform ${itemCount > 0 ? 'animate-bounce-slow' : ''}`}
+                aria-label="Open cart"
+                onMouseDown={(e) => ripple.createRipple(e as any)}
+                ref={ripple.containerRef as any}
+              >
+                <ShoppingCartIcon className="h-7 w-7" />
+                {itemCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-green-500 text-xs font-bold px-2 py-1 rounded-full ring-2 ring-gray-900">
+                    {itemCount}
+                  </span>
+                )}
+              </button>
+            </div>
+      
+            {/* Mobile full-screen cart overlay */}
+            <div
+              className={`fixed inset-0 z-[60] transform transition-transform duration-500 ease-in-out lg:hidden ${showMobileCart ? 'translate-x-0' : 'translate-x-full'} bg-gray-900/95 backdrop-blur-sm p-4 overflow-y-auto`}
+              aria-hidden={!showMobileCart}
+            >
+              <div ref={mobileCartRef} className="max-w-[900px] mx-auto h-full">
+                <div className="flex items-center justify-between mb-4 border-b border-gray-700 pb-4 sticky top-0 bg-gray-900 z-10">
+                  <button
+                    onClick={() => setShowMobileCart(false)}
+                    className="text-white p-2 rounded-full bg-gray-700 hover:bg-gray-600 transition-colors"
+                    aria-label="Close cart"
+                  >
+                    <ChevronLeftIcon className="h-6 w-6" />
+                  </button>
+                  <h2 className="text-3xl font-bold text-purple-300 flex items-center">
+                    <ShoppingCartIcon className="h-8 w-8 mr-3 text-purple-400" /> Checkout
+                  </h2>
+                  <button
+                    onClick={handleClearCart}
+                    className="text-red-400 hover:text-red-300 transition-colors text-base font-medium"
+                    disabled={cart.length === 0}
+                  >
+                    Clear
+                  </button>
+                </div>
+      
+                <div className="h-[calc(100vh-6rem)]">
+                  {CartSummary}
+                </div>
+              </div>
+            </div>
 
       {/* Confirmation Modal */}
       <Modal title="Confirm Payment" isOpen={showConfirmationModal} onClose={() => setShowConfirmationModal(false)}>
@@ -805,6 +1001,9 @@ const totalTax = useMemo(() => {
           </button>
         </div>
       </Modal>
+
+      
+
     </div>
   );
 };
