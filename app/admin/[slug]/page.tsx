@@ -22,7 +22,7 @@ import RestaurantDashboardClient from '@/components/admin/RestaurantDashboardCli
 import SaaSDashboardClient from '@/components/admin/SaaSDashboardClient';
 import TravelDashboardClient from '@/components/admin/TravelDashboardClient';
 import MarketplaceDashboard from '@/components/admin/MarketplaceDashboard';
-import ServiceProviderDashboard from '@/components/admin/ServiceProviderDashboard';
+import ServiceProviderDashboard, { ServiceProviderDashboardData } from '@/components/admin/ServiceProviderDashboard';
 import BookingAppointmentsDashboard from '@/components/admin/BookingAppointmentsDashboard';
 
 // Specific educational dashboards
@@ -80,6 +80,7 @@ export default async function AdminDashboardPage({ params }: { params: { slug: s
 
   // 3. Fetch Dashboard Metrics based on Role and Category
   let dashboardData: DashboardData | null = null; // General dashboard data
+  let serviceDashboardData: ServiceProviderDashboardData | null = null; // General dashboard data
   let principalDashboardData: PrincipalDashboardData | null = null; // For Principal/Head Teacher
   let studentDashboardData: StudentDashboardData | null = null; // For Students
   let tutorDashboardData: TutorDashboardData | null = null; // For Tutors/Teachers/Lecturers
@@ -129,21 +130,251 @@ export default async function AdminDashboardPage({ params }: { params: { slug: s
           fetchError = true;
         }
       }
-    }else {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/${companyId}`,
-        { cache: 'no-store', headers: { cookie: cookiesHeader } }
-      );
-      if (res.ok) {
-        let dashRes = (await res.json()).data
-        console.log("Fetched dashboard data:", dashRes);
-        dashboardData = dashRes as DashboardData;
-      } else {
-        console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
-        fetchError = true;
-      }
-    }
+    } else {
+      if (categoryKey === 'service provider') {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/serviceprovider/${companyId}`,
+          { cache: 'no-store', headers: { cookie: cookiesHeader } }
+        );
 
+            if (res.ok) {
+              let dashRes = (await res.json()).data
+              console.log("Fetched dashboard data:", dashRes);
+              serviceDashboardData = dashRes as ServiceProviderDashboardData;
+            } else {
+              console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
+              fetchError = true;
+            }
+      }
+      else if (categoryKey === 'ecommerce') {
+
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/ecommerce/${companyId}`,
+          { cache: 'no-store', headers: { cookie: cookiesHeader } }
+        );
+        if (res.ok) {
+          let dashRes = (await res.json()).data
+          console.log("Fetched dashboard data:", dashRes);
+          dashboardData = dashRes as DashboardData;
+        } else {
+          console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
+          fetchError = true;
+        }
+      }
+      else if (categoryKey === 'e-commerce' || categoryKey === 'shoes store' || categoryKey === 'directory & listings' || categoryKey === 'marketplace' ) {
+
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/e-commerce/${companyId}`,
+          { cache: 'no-store', headers: { cookie: cookiesHeader } }
+        );
+        if (res.ok) {
+          let dashRes = (await res.json()).data
+          console.log("Fetched dashboard data:", dashRes);
+          dashboardData = dashRes as DashboardData;
+        }
+        else {
+          console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
+          fetchError = true;
+        }
+    }
+      else if (categoryKey === 'real estate') {
+
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/ecommerce/${companyId}`,
+          { cache: 'no-store', headers: { cookie: cookiesHeader } }
+        );
+        if (res.ok) {
+          let dashRes = (await res.json()).data
+          console.log("Fetched dashboard data:", dashRes);
+          dashboardData = dashRes as DashboardData;
+        } else {
+          console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
+          fetchError = true;
+        }
+      }
+      else if (categoryKey === 'booking & appointments') {
+
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/ecommerce/${companyId}`,
+          { cache: 'no-store', headers: { cookie: cookiesHeader } }
+        );
+        if (res.ok) {
+          let dashRes = (await res.json()).data
+          console.log("Fetched dashboard data:", dashRes);
+          dashboardData = dashRes as DashboardData;
+        } else {
+          console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
+          fetchError = true;
+        }
+      }
+      else if (categoryKey === 'portfolio & personal branding') {
+
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/ecommerce/${companyId}`,
+          { cache: 'no-store', headers: { cookie: cookiesHeader } }
+        );
+        if (res.ok) {
+          let dashRes = (await res.json()).data
+          console.log("Fetched dashboard data:", dashRes);
+          dashboardData = dashRes as DashboardData;
+        } else {
+          console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
+          fetchError = true;
+        }
+      }      
+      else if (categoryKey === 'blog & content') {
+
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/ecommerce/${companyId}`,
+          { cache: 'no-store', headers: { cookie: cookiesHeader } }
+        );
+        if (res.ok) {
+          let dashRes = (await res.json()).data
+          console.log("Fetched dashboard data:", dashRes);
+          dashboardData = dashRes as DashboardData;
+        } else {
+          console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
+          fetchError = true;
+        }
+      }
+      else if (categoryKey === 'nonprofit & community') {
+
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/ecommerce/${companyId}`,
+          { cache: 'no-store', headers: { cookie: cookiesHeader } }
+        );
+        if (res.ok) {
+          let dashRes = (await res.json()).data
+          console.log("Fetched dashboard data:", dashRes);
+          dashboardData = dashRes as DashboardData;
+        } else {
+          console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
+          fetchError = true;
+        }
+      }      
+      else if (categoryKey === 'restaurant & food delivery') {
+
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/ecommerce/${companyId}`,
+          { cache: 'no-store', headers: { cookie: cookiesHeader } }
+        );
+        if (res.ok) {
+          let dashRes = (await res.json()).data
+          console.log("Fetched dashboard data:", dashRes);
+          dashboardData = dashRes as DashboardData;
+        } else {
+          console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
+          fetchError = true;
+        }
+      }     
+      else if (categoryKey === 'event & ticketing') {
+
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/ecommerce/${companyId}`,
+          { cache: 'no-store', headers: { cookie: cookiesHeader } }
+        );
+        if (res.ok) {
+          let dashRes = (await res.json()).data
+          console.log("Fetched dashboard data:", dashRes);
+          dashboardData = dashRes as DashboardData;
+        } else {
+          console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
+          fetchError = true;
+        }
+      }
+      
+      else if (categoryKey === 'healthcare & clinics') {
+
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/ecommerce/${companyId}`,
+          { cache: 'no-store', headers: { cookie: cookiesHeader } }
+        );
+        if (res.ok) {
+          let dashRes = (await res.json()).data
+          console.log("Fetched dashboard data:", dashRes);
+          dashboardData = dashRes as DashboardData;
+        } else {
+          console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
+          fetchError = true;
+        }
+      }
+      
+      else if (categoryKey === 'media & entertainment') {
+
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/ecommerce/${companyId}`,
+          { cache: 'no-store', headers: { cookie: cookiesHeader } }
+        );
+        if (res.ok) {
+          let dashRes = (await res.json()).data
+          console.log("Fetched dashboard data:", dashRes);
+          dashboardData = dashRes as DashboardData;
+        } else {
+          console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
+          fetchError = true;
+        }
+      }
+      else if (categoryKey === 'finance & legal') {
+
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/ecommerce/${companyId}`,
+          { cache: 'no-store', headers: { cookie: cookiesHeader } }
+        );
+        if (res.ok) {
+          let dashRes = (await res.json()).data
+          console.log("Fetched dashboard data:", dashRes);
+          dashboardData = dashRes as DashboardData;
+        } else {
+          console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
+          fetchError = true;
+        }
+      }
+      else if (categoryKey === 'automotive') {
+
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/ecommerce/${companyId}`,
+          { cache: 'no-store', headers: { cookie: cookiesHeader } }
+        );
+        if (res.ok) {
+          let dashRes = (await res.json()).data
+          console.log("Fetched dashboard data:", dashRes);
+          dashboardData = dashRes as DashboardData;
+        } else {
+          console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
+          fetchError = true;
+        }
+      }
+      else if (categoryKey === 'travel & tourism') {
+
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/ecommerce/${companyId}`,
+          { cache: 'no-store', headers: { cookie: cookiesHeader } }
+        );
+        if (res.ok) {
+          let dashRes = (await res.json()).data
+          console.log("Fetched dashboard data:", dashRes);
+          dashboardData = dashRes as DashboardData;
+        } else {
+          console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
+          fetchError = true;
+        }
+      }
+      else if (categoryKey === 'fitness & wellness') {
+
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/ecommerce/${companyId}`,
+          { cache: 'no-store', headers: { cookie: cookiesHeader } }
+        );
+        if (res.ok) {
+          let dashRes = (await res.json()).data
+          console.log("Fetched dashboard data:", dashRes);
+          dashboardData = dashRes as DashboardData;
+        } else {
+          console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
+          fetchError = true;
+        }
+      }
+  }
 
   } catch (err: any) {
     console.error("AdminDashboardPage-fetch error:", err.message);
@@ -277,7 +508,7 @@ export default async function AdminDashboardPage({ params }: { params: { slug: s
       case 'real estate':
         return <RealEstateDashboardClient />;
       case 'service provider':
-        return <ServiceProviderDashboard />;
+        return <ServiceProviderDashboard data={serviceDashboardData as ServiceProviderDashboardData} />;
       case 'booking & appointments':
         return <BookingAppointmentsDashboard />;
       case 'portfolio & personal branding':
