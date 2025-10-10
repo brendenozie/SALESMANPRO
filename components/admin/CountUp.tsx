@@ -26,7 +26,7 @@ export default function CountUp({ from = 0, to, duration = 1.5, format }: Props)
       ease: 'easeOut',
       onUpdate(value) {
         // Ensure the value is formatted correctly before setting textContent
-        node.textContent = format ? format(value) : value.toFixed(0);
+        node.textContent = format ? format(value) : value?.toFixed(0);
       },
     });
 

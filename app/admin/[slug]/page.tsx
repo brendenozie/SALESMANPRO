@@ -39,6 +39,7 @@ export const dynamic = 'force-dynamic';
 export default async function AdminDashboardPage({ params }: { params: { slug: string } }) {
   const session = await getAuthSession();
   const cookiesHeader = (await cookies()).toString();
+  const slug = (await params).slug;
   
   if (!session) {
     redirect('/login'); // Redirect to login if no session
@@ -58,7 +59,7 @@ export default async function AdminDashboardPage({ params }: { params: { slug: s
     redirect('/'); // Redirect if not authorized
   }
 
-  const companyId = userRole === 'STUDENT' || userRole === 'EDUCATOR'  || userRole === 'JUNIOR'  || userRole === 'SENIOR' ? session.user.id : params.slug; // Use user ID for student/educator, company ID for admin
+  const companyId = userRole === 'STUDENT' || userRole === 'EDUCATOR'  || userRole === 'JUNIOR'  || userRole === 'SENIOR' ? session.user.id : slug ;// params.slug; // Use user ID for student/educator, company ID for admin
 
 
   const currentUserId = session.user.id; // Get current user ID from session
@@ -268,11 +269,11 @@ export default async function AdminDashboardPage({ params }: { params: { slug: s
     // Fallback for other roles (e.g., ADMIN, or other business categories)
     switch (categoryKey) {
       case 'e-commerce':
-        return <EcomDashboardClient {...(dashboardData as DashboardData)} />;
+        return <EcomDashboardClient {...({...dashboardData, slug: companyId  }) as DashboardData} />;
       case 'ecommerce':
-        return <EcomDashboardClient {...(dashboardData as DashboardData)} />;
+        return <EcomDashboardClient {...({...dashboardData, slug: companyId  }) as DashboardData} />;
       case 'shoes store':
-        return <EcomDashboardClient {...(dashboardData as DashboardData)} />;
+        return <EcomDashboardClient {...({...dashboardData, slug: companyId  }) as DashboardData} />;
       case 'real estate':
         return <RealEstateDashboardClient />;
       case 'service provider':

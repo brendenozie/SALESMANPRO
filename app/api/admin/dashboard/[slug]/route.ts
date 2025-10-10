@@ -13,7 +13,13 @@ export const GET = withApiHandler(
   async (_request, { params }) => {
     const { slug } = params;
 
+    console.log(params);
+    
+      console.log(`the company slug ${slug}`);
+
     try {
+
+
       // --- Get Company Info for currency ---
       const company = await prisma.company.findUnique({
         where: { slug },
