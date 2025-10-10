@@ -11,30 +11,22 @@ import {
   ArrowRightIcon,
   ExclamationCircleIcon,
   ArrowPathIcon,
-  BoltIcon, // For urgent activities
-  LightBulbIcon, // For key insights
+  BoltIcon,
+  LightBulbIcon,
 } from '@heroicons/react/24/outline';
 
 // Framer Motion variants
 const sectionVariants = {
   hidden: { opacity: 0, y: 30 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.7, ease: "easeOut" },
-  },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: "easeOut" } },
 };
 
 const cardVariants = {
   hidden: { opacity: 0, scale: 0.95 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    transition: { duration: 0.5, ease: "easeOut" },
-  },
+  visible: { opacity: 1, scale: 1, transition: { duration: 0.5, ease: "easeOut" } },
 };
 
-// Mock data structure for type safety and initial state
+// Data structure for type safety and initial state
 interface Activity {
     id: string;
     type: string;
@@ -58,27 +50,6 @@ interface DashboardData {
     upcomingEventsList: Event[];
 }
 
-// Simulated API URL and Data Fetch Logic
-// NOTE: Since we are in a simulated environment, we define a fallback data structure.
-const apiBaseUrl = "https://api.example.com"; // Keeping the structure
-const mockDashboardData: DashboardData = {
-    totalEvents: 14,
-    upcomingEvents: 4,
-    totalTicketsSold: 2855,
-    totalRevenue: 125345.50,
-    recentActivities: [
-        { id: 'a1', type: 'SALE', description: '5 new tickets sold for "Tech Summit"', time: '2 minutes ago' },
-        { id: 'a2', type: 'UPDATE', description: 'Event "City Marathon" set live.', time: '1 hour ago' },
-        { id: 'a3', type: 'REFUND', description: 'Refund processed for ticket #9876.', time: '4 hours ago' },
-    ],
-    upcomingEventsList: [
-        { id: 'e1', name: 'Annual Tech Summit 2025', date: 'Jul 20, 2025', ticketsSold: 890 },
-        { id: 'e2', name: 'Digital Marketing Workshop', date: 'Aug 05, 2025', ticketsSold: 450 },
-        { id: 'e3', name: 'Startup Pitch Night', date: 'Aug 18, 2025', ticketsSold: 120 },
-    ]
-};
-
-
 export default function AdminDashboard({ params }: { params: { adminSlug: string } }) {
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -88,17 +59,16 @@ export default function AdminDashboard({ params }: { params: { adminSlug: string
     setIsLoading(true);
     setError(null);
     try {
-      // NOTE: In a real Next.js application, this would fetch from the backend.
-      // We will skip the actual fetch call in this environment and use mock data.
-      console.log(`Simulating API call to: ${apiBaseUrl}/admin/${adminSlug}/dashboard-summary`);
-      
-      await new Promise(resolve => setTimeout(resolve, 800)); // Simulate network latency
+      const response = await fetch(`/api/admin/dashboard/${adminSlug}`);
+      const result = await response.json();
 
-      // Use mock data as the response
-      setDashboardData(mockDashboardData);
+      if (!response.ok || !result.success) {
+          throw new Error(result.data?.message || 'Failed to fetch dashboard data');
+      }
+      setDashboardData(result.data);
 
     } catch (err: any) {
-      setError(err.message || "Failed to fetch dashboard data.");
+      setError(err.message);
       console.error("Dashboard fetch error:", err);
     } finally {
       setIsLoading(false);
@@ -111,10 +81,6 @@ export default function AdminDashboard({ params }: { params: { adminSlug: string
     }
   }, [params.adminSlug, fetchDashboardData]);
 
-  const data = dashboardData || mockDashboardData;
-  const { totalRevenue, totalEvents, upcomingEvents, totalTicketsSold } = data;
-
-
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-950 text-cyan-400 flex flex-col items-center justify-center p-8">
@@ -124,19 +90,20 @@ export default function AdminDashboard({ params }: { params: { adminSlug: string
     );
   }
 
-  if (error) {
+  if (error || !dashboardData) {
     return (
       <div className="min-h-screen bg-gray-950 text-red-500 p-8 sm:p-12 flex flex-col items-center justify-center">
         <ExclamationCircleIcon className="w-20 h-20 mb-6" />
         <h2 className="text-3xl font-bold mb-4">SYSTEM OFFLINE: Error Loading Data</h2>
-        <p className="text-lg text-center text-red-400">{error}</p>
+        <p className="text-lg text-center text-red-400">{error || "Could not retrieve dashboard data."}</p>
         <p className="text-sm text-gray-500 mt-2">Check API connection or try refreshing the page.</p>
       </div>
     );
   }
 
-  const hasRecentActivities = data?.recentActivities?.length > 0;
-  const hasUpcomingEvents = data?.upcomingEventsList?.length > 0;
+  const { totalRevenue, totalEvents, upcomingEvents, totalTicketsSold, recentActivities, upcomingEventsList } = dashboardData;
+  const hasRecentActivities = recentActivities?.length > 0;
+  const hasUpcomingEvents = upcomingEventsList?.length > 0;
 
   // --- Components for Reuse ---
 
@@ -164,7 +131,6 @@ export default function AdminDashboard({ params }: { params: { adminSlug: string
   return (
     <div className="min-h-screen bg-gray-950 text-gray-200 p-8 sm:p-12 font-sans relative overflow-hidden">
       
-      {/* High-Tech Background Glows */}
       <div className="absolute top-0 left-0 w-80 h-80 bg-cyan-600/10 rounded-full filter blur-3xl opacity-30 animate-blob"></div>
       <div className="absolute bottom-10 right-10 w-80 h-80 bg-indigo-600/10 rounded-full filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
 
@@ -184,10 +150,8 @@ export default function AdminDashboard({ params }: { params: { adminSlug: string
           </p>
         </motion.header>
 
-        {/* --- Primary Metrics Section --- */}
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
             
-            {/* 1. Large Revenue Card (Priority Metric) */}
             <motion.div 
                 variants={cardVariants} 
                 initial="hidden" 
@@ -210,53 +174,22 @@ export default function AdminDashboard({ params }: { params: { adminSlug: string
                 </a>
             </motion.div>
 
-            {/* 2. Secondary Metrics (Grid) */}
             <div className="grid grid-cols-2 gap-6">
-                <MetricCard
-                    title="Total Events"
-                    value={totalEvents || 0}
-                    icon={CalendarIcon}
-                    accentClass="text-indigo-400"
-                    delay={0.4}
-                    link="/admin/events"
-                />
-                <MetricCard
-                    title="Upcoming"
-                    value={upcomingEvents || 0}
-                    icon={BellAlertIcon}
-                    accentClass="text-cyan-400"
-                    delay={0.5}
-                    link="/admin/events/upcoming"
-                />
-                <MetricCard
-                    title="Tickets Sold"
-                    value={(totalTicketsSold || 0).toLocaleString()}
-                    icon={TicketIcon}
-                    accentClass="text-pink-400"
-                    delay={0.6}
-                    link="/admin/tickets"
-                />
-                <MetricCard
-                    title="Total Participants"
-                    value={(totalTicketsSold || 0).toLocaleString()} // Assuming tickets = participants for this metric
-                    icon={UsersIcon}
-                    accentClass="text-yellow-400"
-                    delay={0.7}
-                    link="/admin/users"
-                />
+                <MetricCard title="Total Events" value={totalEvents || 0} icon={CalendarIcon} accentClass="text-indigo-400" delay={0.4} link="/admin/events" />
+                <MetricCard title="Upcoming" value={upcomingEvents || 0} icon={BellAlertIcon} accentClass="text-cyan-400" delay={0.5} link="/admin/events/upcoming" />
+                <MetricCard title="Tickets Sold" value={(totalTicketsSold || 0).toLocaleString()} icon={TicketIcon} accentClass="text-pink-400" delay={0.6} link="/admin/tickets" />
+                <MetricCard title="Total Participants" value={(totalTicketsSold || 0).toLocaleString()} icon={UsersIcon} accentClass="text-yellow-400" delay={0.7} link="/admin/users" />
             </div>
         </section>
 
-        {/* --- Activity and Event Lists --- */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Urgent Activities (1/3 width) */}
             <motion.div variants={sectionVariants} initial="hidden" animate="visible" transition={{ delay: 0.8 }} className="lg:col-span-1 bg-gray-800 p-8 rounded-2xl shadow-xl border border-gray-700">
                 <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-2 border-b border-gray-700 pb-3">
                     <BoltIcon className="w-6 h-6 text-pink-400" /> Recent Activity Log
                 </h3>
                 {hasRecentActivities ? (
                     <ul className="space-y-4">
-                        {data.recentActivities.map((activity: Activity) => (
+                        {recentActivities.map((activity: Activity) => (
                             <li key={activity.id} className="p-3 bg-gray-900 rounded-lg border-l-4 border-pink-500 hover:bg-gray-700/50 transition">
                                 <p className="text-white font-medium text-sm">
                                     <span className="font-bold text-pink-400 uppercase mr-1">{activity.type}:</span> {activity.description}
@@ -273,14 +206,13 @@ export default function AdminDashboard({ params }: { params: { adminSlug: string
                 )}
             </motion.div>
 
-            {/* Upcoming Events (2/3 width) */}
             <motion.div variants={sectionVariants} initial="hidden" animate="visible" transition={{ delay: 0.9 }} className="lg:col-span-2 bg-gray-800 p-8 rounded-2xl shadow-xl border border-gray-700">
                 <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-2 border-b border-gray-700 pb-3">
                     <CalendarIcon className="w-6 h-6 text-cyan-400" /> Upcoming Event Pipeline
                 </h3>
                 {hasUpcomingEvents ? (
                     <ul className="space-y-4">
-                        {data.upcomingEventsList.map((event: Event) => (
+                        {upcomingEventsList.map((event: Event) => (
                             <li key={event.id} className="flex items-center justify-between p-4 bg-gray-900 rounded-lg border border-gray-700 hover:bg-gray-700/50 transition duration-300">
                                 <div className='flex flex-col sm:flex-row sm:items-center'>
                                     <p className="text-white text-lg font-semibold mr-4">{event.name}</p>

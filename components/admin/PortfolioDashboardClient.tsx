@@ -12,23 +12,30 @@ import {
   ArrowRightIcon,
   CheckCircleIcon,
   RocketLaunchIcon,
+  ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
 
 // --- MOCK CHART COMPONENTS (FOR SINGLE-FILE MANDATE) ---
 
-const ChartTwo = () => (
-  <div className="flex items-center justify-center h-full min-h-[220px] bg-gray-800/50 rounded-xl p-4 border border-dashed border-cyan-700">
+const ChartTwo: React.FC<{data: any}> = ({ data }) => (
+  <div className="flex flex-col items-center justify-center h-full min-h-[220px] bg-gray-800/50 rounded-xl p-4 border border-dashed border-cyan-700">
     <span className="text-cyan-500 font-semibold text-sm">
       [Placeholder: Monthly Project Views Line Chart]
     </span>
+     <pre className="mt-2 text-xs text-cyan-500/80 dark:text-cyan-500/50 bg-gray-900 p-2 rounded">
+      {JSON.stringify(data, null, 2)}
+    </pre>
   </div>
 );
 
-const ChartThree = () => (
-  <div className="flex items-center justify-center h-full min-h-[220px] bg-gray-800/50 rounded-xl p-4 border border-dashed border-fuchsia-700">
+const ChartThree: React.FC<{data: any}> = ({ data }) => (
+  <div className="flex flex-col items-center justify-center h-full min-h-[220px] bg-gray-800/50 rounded-xl p-4 border border-dashed border-fuchsia-700">
     <span className="text-fuchsia-500 font-semibold text-sm">
       [Placeholder: Inquiries Trend Bar Chart]
     </span>
+    <pre className="mt-2 text-xs text-fuchsia-500/80 dark:text-fuchsia-500/50 bg-gray-900 p-2 rounded">
+      {JSON.stringify(data, null, 2)}
+    </pre>
   </div>
 );
 
@@ -50,92 +57,48 @@ export interface DashboardData {
     upcomingMeetings: number;
   };
   tasks: Task[];
+  charts: {
+    monthlyProjectViews: any;
+    inquiriesTrend: any;
+  }
 }
-
-// --- DATA & API SIMULATION ---
-
-const sampleData: DashboardData = {
-  metrics: {
-    totalProjects: 24,
-    totalSkills: 18,
-    testimonials: 15,
-    inquiriesThisMonth: 42,
-    upcomingMeetings: 3,
-  },
-  tasks: [
-    { id: 't1', name: 'Follow up with brand partner', dueDate: '2025-06-18', dueTime: '10:00 AM' },
-    { id: 't2', name: 'Review new portfolio submissions', dueDate: '2025-06-18', dueTime: '1:00 PM' },
-    { id: 't3', name: 'Update LinkedIn highlights', dueDate: '2025-06-19', dueTime: '4:00 PM' },
-  ],
-};
 
 // --- MAIN COMPONENT ---
 
 export default function PortfolioDashboardClient() {
-  const [data, setData] = useState<DashboardData>(sampleData);
+  const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Simulate data fetch
+  // Fetch data from the API
   useEffect(() => {
     const loadData = async () => {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 600)); 
-      setData(sampleData);
-      setLoading(false);
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await fetch('/api/portfolio/dashboard');
+            const result = await response.json();
+
+            if (!response.ok || !result.success) {
+                throw new Error(result.data?.message || 'Failed to fetch dashboard data');
+            }
+            setData(result.data);
+        } catch(e: any) {
+            setError(e.message);
+        } finally {
+            setLoading(false);
+        }
     };
     loadData();
   }, []);
 
-  const {
-    totalProjects,
-    totalSkills,
-    testimonials,
-    inquiriesThisMonth,
-    upcomingMeetings,
-  } = data.metrics;
-
-  const cards = [
-    {
-      title: 'Total Projects',
-      value: totalProjects,
-      icon: BriefcaseIcon,
-      accent: 'border-cyan-500 text-cyan-500',
-      link: '/admin/projects',
-      description: 'Your body of work.',
-    },
-    {
-      title: 'Core Skills',
-      value: totalSkills,
-      icon: LightBulbIcon,
-      accent: 'border-amber-500 text-amber-500',
-      link: '/admin/skills',
-      description: 'Defined competencies.',
-    },
-    {
-      title: 'Client Testimonials',
-      value: testimonials,
-      icon: UserCircleIcon,
-      accent: 'border-green-500 text-green-500',
-      link: '/admin/testimonials',
-      description: 'Positive feedback score.',
-    },
-    {
-      title: 'Inquiries (MoM)',
-      value: inquiriesThisMonth,
-      icon: ChatBubbleLeftRightIcon,
-      accent: 'border-fuchsia-500 text-fuchsia-500',
-      link: '/admin/inquiries',
-      description: 'Leads generated this month.',
-    },
-    {
-      title: 'Upcoming Meetings',
-      value: upcomingMeetings,
-      icon: CalendarDaysIcon,
-      accent: 'border-blue-500 text-blue-500',
-      link: '/admin/calendar',
-      description: 'Scheduled this week.',
-    },
-  ];
+  const cards = data ? [
+    { title: 'Total Projects', value: data.metrics.totalProjects, icon: BriefcaseIcon, accent: 'border-cyan-500 text-cyan-500', link: '/admin/projects', description: 'Your body of work.' },
+    { title: 'Core Skills', value: data.metrics.totalSkills, icon: LightBulbIcon, accent: 'border-amber-500 text-amber-500', link: '/admin/skills', description: 'Defined competencies.' },
+    { title: 'Client Testimonials', value: data.metrics.testimonials, icon: UserCircleIcon, accent: 'border-green-500 text-green-500', link: '/admin/testimonials', description: 'Positive feedback score.' },
+    { title: 'Inquiries (MoM)', value: data.metrics.inquiriesThisMonth, icon: ChatBubbleLeftRightIcon, accent: 'border-fuchsia-500 text-fuchsia-500', link: '/admin/inquiries', description: 'Leads generated this month.'},
+    { title: 'Upcoming Meetings', value: data.metrics.upcomingMeetings, icon: CalendarDaysIcon, accent: 'border-blue-500 text-blue-500', link: '/admin/calendar', description: 'Scheduled this week.' },
+  ] : [];
 
   // Component for visually appealing metric cards
   const MetricCard: React.FC<{ card: (typeof cards)[0] }> = useCallback(({ card }) => (
@@ -144,19 +107,12 @@ export default function PortfolioDashboardClient() {
       href={card.link}
       className={`relative p-6 rounded-2xl bg-gray-800 border ${card.accent.replace('text-', 'border-')} shadow-xl transition duration-300 hover:shadow-2xl hover:scale-[1.02] transform group`}
     >
-      {/* Title and Icon */}
       <div className="flex items-center mb-3">
         <card.icon className={`w-6 h-6 ${card.accent.replace('border-', 'text-')}`} />
         <h2 className="ml-3 text-sm font-medium text-gray-400 group-hover:text-white transition-colors">{card.title}</h2>
       </div>
-      
-      {/* Value */}
       <p className="text-4xl font-extrabold text-white">{card.value}</p>
-      
-      {/* Description */}
       <p className="mt-2 text-xs text-gray-500">{card.description}</p>
-
-      {/* Hover effect arrow */}
       <ArrowRightIcon className={`absolute bottom-4 right-4 w-5 h-5 text-gray-600 group-hover:${card.accent.replace('border-', 'text-')} transition-all transform group-hover:translate-x-1 group-hover:scale-110`} />
     </a>
   ), []);
@@ -172,11 +128,22 @@ export default function PortfolioDashboardClient() {
     );
   }
 
+  if (error || !data) {
+     return (
+      <div className="min-h-screen flex items-center justify-center bg-red-900/10 text-red-400">
+        <div className="text-center p-8 bg-gray-800 rounded-xl shadow-lg">
+            <ExclamationTriangleIcon className="w-10 h-10 mx-auto mb-4 text-red-500" />
+            <h2 className="font-bold text-lg text-white mb-2">Could Not Load Dashboard</h2>
+            <p className="text-sm text-gray-400">{error || "An unknown error occurred."}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-900 text-white font-sans">
       <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
         
-        {/* Main Header and Greeting */}
         <header className="mb-10 p-8 rounded-3xl" style={{ backgroundImage: 'linear-gradient(135deg, #1f2937 0%, #030712 100%)' }}>
           <div className="flex justify-between items-end">
             <div>
@@ -195,24 +162,21 @@ export default function PortfolioDashboardClient() {
           </div>
         </header>
 
-        {/* Metrics Cards - Dynamic & High Contrast */}
         <section className="grid grid-cols-2 lg:grid-cols-5 gap-6 mb-12">
           {cards.map((card) => (
             <MetricCard key={card.title} card={card} />
           ))}
         </section>
 
-        {/* Main Content: Charts and Tasks */}
         <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
-          {/* Charts Section (2/3 width) */}
           <div className="lg:col-span-2 space-y-8">
             <div className="bg-gray-800 p-6 rounded-2xl shadow-2xl border-t-4 border-cyan-600">
               <h3 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
                 <BriefcaseIcon className="w-6 h-6 text-cyan-400" /> Monthly Project Views
               </h3>
               <div className="min-h-[300px]">
-                <ChartTwo />
+                <ChartTwo data={data.charts.monthlyProjectViews} />
               </div>
             </div>
 
@@ -221,12 +185,11 @@ export default function PortfolioDashboardClient() {
                 <ChatBubbleLeftRightIcon className="w-6 h-6 text-fuchsia-400" /> Inquiries Trend
               </h3>
               <div className="min-h-[300px]">
-                <ChartThree />
+                <ChartThree data={data.charts.inquiriesTrend} />
               </div>
             </div>
           </div>
 
-          {/* Today's Tasks (1/3 width) - Action Focus */}
           <div className="lg:col-span-1">
             <div className="bg-gray-800 p-6 rounded-2xl shadow-2xl border-t-4 border-yellow-600 sticky top-4">
               <div className="flex justify-between items-center mb-6 border-b border-gray-700 pb-3">

@@ -7,29 +7,35 @@ import {
   UsersIcon,
   CalendarDaysIcon,
   MegaphoneIcon,
-  ClipboardDocumentListIcon,
   HeartIcon,
   BoltIcon,
   ArrowRightIcon,
   RocketLaunchIcon,
   ClockIcon,
+  ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
 
 // --- MOCK CHART COMPONENTS (FOR SINGLE-FILE MANDATE) ---
 
-const ChartTwo = () => (
-  <div className="flex items-center justify-center h-full min-h-[220px] bg-white rounded-xl p-4 border border-dashed border-orange-200">
+const ChartTwo: React.FC<{ data: any }> = ({ data }) => (
+  <div className="flex flex-col items-center justify-center h-full min-h-[220px] bg-white rounded-xl p-4 border border-dashed border-orange-200">
     <span className="text-orange-600 font-semibold text-sm">
       [Placeholder: Monthly Donations Line Chart]
     </span>
+    <pre className="mt-2 text-xs text-orange-500/80 bg-gray-50 p-2 rounded w-full text-left">
+      {JSON.stringify(data, null, 2)}
+    </pre>
   </div>
 );
 
-const ChartThree = () => (
-  <div className="flex items-center justify-center h-full min-h-[220px] bg-white rounded-xl p-4 border border-dashed border-blue-200">
+const ChartThree: React.FC<{ data: any }> = ({ data }) => (
+  <div className="flex flex-col items-center justify-center h-full min-h-[220px] bg-white rounded-xl p-4 border border-dashed border-blue-200">
     <span className="text-blue-600 font-semibold text-sm">
       [Placeholder: Volunteer Growth Bar Chart]
     </span>
+     <pre className="mt-2 text-xs text-blue-500/80 bg-gray-50 p-2 rounded w-full text-left">
+      {JSON.stringify(data, null, 2)}
+    </pre>
   </div>
 );
 
@@ -50,96 +56,61 @@ interface NonprofitDashboardData {
     upcomingEvents: number;
   };
   tasks: Task[];
+  charts: {
+    monthlyDonations: any;
+    volunteerGrowth: any;
+  }
 }
-
-// --- DATA & API SIMULATION ---
-
-const sampleData: NonprofitDashboardData = {
-  metrics: {
-    totalDonations: 78650,
-    activeCampaigns: 5,
-    totalVolunteers: 92,
-    upcomingEvents: 3,
-  },
-  tasks: [
-    { id: '1', name: 'Call new volunteer: Emily', dueDate: '2025-06-18', dueTime: '10:00 AM' },
-    { id: '2', name: 'Review Campaign Proposal: CleanWater4All', dueDate: '2025-06-18', dueTime: '2:00 PM' },
-    { id: '3', name: 'Follow-up on Saturday’s food drive', dueDate: '2025-06-19', dueTime: '4:00 PM' },
-  ],
-};
 
 // --- MAIN COMPONENT ---
 
 export default function NonprofitDashboardClient() {
-  const [data, setData] = useState<NonprofitDashboardData>(sampleData);
+  const [data, setData] = useState<NonprofitDashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Simulate data fetch
+  // Fetch data from the API
   useEffect(() => {
     const loadData = async () => {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 600)); 
-      setData(sampleData);
-      setLoading(false);
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await fetch('/api/nonprofit/dashboard');
+        const result = await response.json();
+        if (!response.ok || !result.success) {
+          throw new Error(result.data?.message || 'Failed to fetch dashboard data');
+        }
+        setData(result.data);
+      } catch (e: any) {
+        setError(e.message);
+      } finally {
+        setLoading(false);
+      }
     };
     loadData();
   }, []);
 
-  const { totalDonations, activeCampaigns, totalVolunteers, upcomingEvents } = data.metrics;
-
-  const cards = [
-    {
-      title: 'Total Donations',
-      value: `$${totalDonations.toLocaleString()}`,
-      icon: GiftIcon,
-      color: 'text-orange-600 border-orange-400 bg-orange-50',
-      link: '/admin/donations',
-      description: 'Funds raised year-to-date.',
-    },
-    {
-      title: 'Active Campaigns',
-      value: activeCampaigns,
-      icon: MegaphoneIcon,
-      color: 'text-fuchsia-600 border-fuchsia-400 bg-fuchsia-50',
-      link: '/admin/campaigns',
-      description: 'Currently running projects.',
-    },
-    {
-      title: 'Total Volunteers',
-      value: totalVolunteers,
-      icon: UsersIcon,
-      color: 'text-indigo-600 border-indigo-400 bg-indigo-50',
-      link: '/admin/volunteers',
-      description: 'Our community of helpers.',
-    },
-    {
-      title: 'Upcoming Events',
-      value: upcomingEvents,
-      icon: CalendarDaysIcon,
-      color: 'text-green-600 border-green-400 bg-green-50',
-      link: '/admin/events',
-      description: 'Scheduled this quarter.',
-    },
-  ];
+  const cards = data ? [
+    { title: 'Total Donations', value: `$${data.metrics.totalDonations.toLocaleString()}`, icon: GiftIcon, color: 'text-orange-600 border-orange-400 bg-orange-50', link: '/admin/donations', description: 'Funds raised year-to-date.' },
+    { title: 'Active Campaigns', value: data.metrics.activeCampaigns, icon: MegaphoneIcon, color: 'text-fuchsia-600 border-fuchsia-400 bg-fuchsia-50', link: '/admin/campaigns', description: 'Currently running projects.' },
+    { title: 'Total Volunteers', value: data.metrics.totalVolunteers, icon: UsersIcon, color: 'text-indigo-600 border-indigo-400 bg-indigo-50', link: '/admin/volunteers', description: 'Our community of helpers.' },
+    { title: 'Upcoming Events', value: data.metrics.upcomingEvents, icon: CalendarDaysIcon, color: 'text-green-600 border-green-400 bg-green-50', link: '/admin/events', description: 'Scheduled this quarter.' },
+  ] : [];
 
   // Component for visually appealing metric cards
   const MetricCard: React.FC<{ card: (typeof cards)[0] }> = useCallback(({ card }) => (
     <a
       key={card.title}
       href={card.link}
-      className={`relative p-6 rounded-2xl bg-white shadow-xl transition duration-300 hover:shadow-2xl hover:scale-[1.02] transform group cursor-pointer border-t-8 ${card.color.split(' ').slice(1, 3).join(' ')}`}
+      className={`relative p-6 rounded-2xl bg-white shadow-xl transition duration-300 hover:shadow-2xl hover:scale-[1.02] transform group cursor-pointer border-t-8 ${card.color.split(' ')[1]}`}
     >
       <div className="flex items-center justify-between mb-4">
-        <div className={`rounded-full p-3 ${card.color.split(' ').slice(2).join(' ')}`}>
+        <div className={`rounded-full p-3 ${card.color.split(' ')[2]}`}>
           <card.icon className={`w-7 h-7 ${card.color.split(' ')[0]}`} />
         </div>
         <ArrowRightIcon className="w-5 h-5 text-gray-300 group-hover:text-gray-500 transition-colors" />
       </div>
-      
-      {/* Value */}
       <p className="text-4xl font-extrabold text-gray-900 mt-1">{card.value}</p>
-      
-      {/* Title and Description */}
       <h2 className="mt-2 text-lg font-semibold text-gray-700">{card.title}</h2>
       <p className="mt-1 text-xs text-gray-500">{card.description}</p>
     </a>
@@ -156,13 +127,9 @@ export default function NonprofitDashboardClient() {
           View All <ArrowRightIcon className="w-4 h-4 ml-1" />
         </a>
       </div>
-      
       <ul className="space-y-4">
         {tasks.map((t) => (
-          <li
-            key={t.id}
-            className="flex flex-col p-4 bg-gray-50 rounded-xl border-l-4 border-orange-400 hover:bg-orange-50/70 transition cursor-pointer shadow-sm"
-          >
+          <li key={t.id} className="flex flex-col p-4 bg-gray-50 rounded-xl border-l-4 border-orange-400 hover:bg-orange-50/70 transition cursor-pointer shadow-sm">
             <span className="text-base font-semibold text-gray-800">{t.name}</span>
             <div className="mt-1 flex items-center gap-3 text-sm text-gray-500">
               <CalendarDaysIcon className="w-4 h-4 text-gray-400" />
@@ -173,7 +140,6 @@ export default function NonprofitDashboardClient() {
           </li>
         ))}
       </ul>
-      
       {tasks.length === 0 && (
          <div className="py-6 text-center text-lg text-gray-500 flex items-center justify-center gap-2">
             <HeartIcon className="w-5 h-5 text-green-500" />
@@ -194,11 +160,22 @@ export default function NonprofitDashboardClient() {
     );
   }
 
+  if (error || !data) {
+     return (
+      <div className="min-h-screen flex items-center justify-center bg-red-50">
+        <div className="text-center p-8 bg-white rounded-xl shadow-lg border border-red-200">
+            <ExclamationTriangleIcon className="w-10 h-10 mx-auto mb-4 text-red-500" />
+            <h2 className="font-bold text-lg text-gray-800 mb-2">Could Not Load Dashboard</h2>
+            <p className="text-sm text-gray-500">{error || "An unknown error occurred."}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 font-sans">
       <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
         
-        {/* Main Header - Impact Focused */}
         <header className="mb-10 p-8 rounded-3xl shadow-xl" style={{ backgroundImage: 'linear-gradient(135deg, #1e3a8a 0%, #030712 100%)' }}>
           <div className="flex justify-between items-center">
             <div>
@@ -218,24 +195,21 @@ export default function NonprofitDashboardClient() {
           </div>
         </header>
 
-        {/* Metrics Cards - Actionable & Visual */}
         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           {cards.map((card) => (
             <MetricCard key={card.title} card={card} />
           ))}
         </section>
 
-        {/* Main Content: Charts and Tasks */}
         <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
-          {/* Charts Section (2/3 width) - Long-term Impact */}
           <div className="lg:col-span-2 space-y-8">
             <div className="bg-white p-6 rounded-2xl shadow-xl border border-gray-100">
               <h3 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
                 <GiftIcon className="w-6 h-6 text-orange-500" /> Monthly Donation Trend
               </h3>
               <div className="min-h-[300px]">
-                <ChartTwo />
+                <ChartTwo data={data.charts.monthlyDonations} />
               </div>
             </div>
 
@@ -244,12 +218,11 @@ export default function NonprofitDashboardClient() {
                 <UsersIcon className="w-6 h-6 text-blue-500" /> Volunteer & Outreach Growth
               </h3>
               <div className="min-h-[300px]">
-                <ChartThree />
+                <ChartThree data={data.charts.volunteerGrowth} />
               </div>
             </div>
           </div>
 
-          {/* Today's Tasks (1/3 width) - Urgent Focus */}
           <div className="lg:col-span-1">
             <TaskList tasks={data.tasks} />
           </div>

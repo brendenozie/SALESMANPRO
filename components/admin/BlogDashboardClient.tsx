@@ -12,23 +12,30 @@ import {
   CheckIcon,
   ArrowRightIcon,
   RocketLaunchIcon,
+  ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
 
 // --- MOCK CHART COMPONENTS (FOR SINGLE-FILE MANDATE) ---
 
-const ChartTwo = () => (
-  <div className="flex items-center justify-center h-full min-h-[220px] bg-white rounded-xl p-4 border border-dashed border-teal-200">
+const ChartTwo: React.FC<{ data: any }> = ({ data }) => (
+  <div className="flex flex-col items-center justify-center h-full min-h-[220px] bg-white rounded-xl p-4 border border-dashed border-teal-200">
     <span className="text-teal-600 font-semibold text-sm">
       [Placeholder: Traffic Overview Line Chart]
     </span>
+     <pre className="mt-2 text-xs text-teal-500/80 bg-gray-50 p-2 rounded w-full text-left">
+      {JSON.stringify(data, null, 2)}
+    </pre>
   </div>
 );
 
-const ChartThree = () => (
-  <div className="flex items-center justify-center h-full min-h-[220px] bg-white rounded-xl p-4 border border-dashed border-sky-200">
+const ChartThree: React.FC<{ data: any }> = ({ data }) => (
+  <div className="flex flex-col items-center justify-center h-full min-h-[220px] bg-white rounded-xl p-4 border border-dashed border-sky-200">
     <span className="text-sky-600 font-semibold text-sm">
       [Placeholder: Engagement Metrics Bar Chart]
     </span>
+    <pre className="mt-2 text-xs text-sky-500/80 bg-gray-50 p-2 rounded w-full text-left">
+      {JSON.stringify(data, null, 2)}
+    </pre>
   </div>
 );
 
@@ -50,110 +57,61 @@ export interface DashboardData {
     scheduledPosts: number;
   };
   tasks: Task[];
+  charts: {
+    trafficOverview: any;
+    engagementMetrics: any;
+  }
 }
-
-// --- DATA & API SIMULATION ---
-
-const sampleData: DashboardData = {
-  metrics: {
-    totalPosts: 128,
-    totalCategories: 12,
-    subscribers: 5400,
-    monthlyViews: 23450,
-    scheduledPosts: 5,
-  },
-  tasks: [
-    { id: 't1', name: 'Write post: "Top 10 SEO Tips"', dueDate: '2025-06-18', dueTime: '11:00 AM' },
-    { id: 't2', name: 'Review guest post submission', dueDate: '2025-06-18', dueTime: '3:00 PM' },
-    { id: 't3', name: 'Update featured image for blog #24', dueDate: '2025-06-19', dueTime: '10:00 AM' },
-  ],
-};
 
 // --- MAIN COMPONENT ---
 
 export default function BlogDashboardClient() {
-  const [data, setData] = useState<DashboardData>(sampleData);
+  const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Simulate data fetch
+  // Fetch data from the API
   useEffect(() => {
     const loadData = async () => {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 600)); 
-      setData(sampleData);
-      setLoading(false);
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await fetch('/api/blog/dashboard');
+        const result = await response.json();
+
+        if (!response.ok || !result.success) {
+          throw new Error(result.data?.message || 'Failed to fetch dashboard data');
+        }
+        setData(result.data);
+      } catch (e: any) {
+        setError(e.message);
+      } finally {
+        setLoading(false);
+      }
     };
     loadData();
   }, []);
 
-  const {
-    totalPosts,
-    totalCategories,
-    subscribers,
-    monthlyViews,
-    scheduledPosts,
-  } = data.metrics;
-
-  const cards = [
-    {
-      title: 'Total Posts',
-      value: totalPosts,
-      icon: PencilSquareIcon,
-      accent: 'text-teal-600 bg-teal-50',
-      link: '/admin/posts',
-      description: 'Your published library.',
-    },
-    {
-      title: 'Categories',
-      value: totalCategories,
-      icon: FolderOpenIcon,
-      accent: 'text-blue-600 bg-blue-50',
-      link: '/admin/categories',
-      description: 'How your content is organized.',
-    },
-    {
-      title: 'Subscribers',
-      value: subscribers.toLocaleString(),
-      icon: UserGroupIcon,
-      accent: 'text-green-600 bg-green-50',
-      link: '/admin/subscribers',
-      description: 'Total readership growth.',
-    },
-    {
-      title: 'Monthly Views',
-      value: monthlyViews.toLocaleString(),
-      icon: EyeIcon,
-      accent: 'text-yellow-600 bg-yellow-50',
-      link: '/admin/analytics',
-      description: 'This month’s traffic.',
-    },
-    {
-      title: 'Scheduled Posts',
-      value: scheduledPosts,
-      icon: CalendarDaysIcon,
-      accent: 'text-pink-600 bg-pink-50',
-      link: '/admin/schedule',
-      description: 'Ready to go live.',
-    },
-  ];
+  const cards = data ? [
+    { title: 'Total Posts', value: data.metrics.totalPosts, icon: PencilSquareIcon, accent: 'text-teal-600 bg-teal-50 border-teal-500', link: '/admin/posts', description: 'Your published library.' },
+    { title: 'Categories', value: data.metrics.totalCategories, icon: FolderOpenIcon, accent: 'text-blue-600 bg-blue-50 border-blue-500', link: '/admin/categories', description: 'Content organization.' },
+    { title: 'Subscribers', value: data.metrics.subscribers.toLocaleString(), icon: UserGroupIcon, accent: 'text-green-600 bg-green-50 border-green-500', link: '/admin/subscribers', description: 'Total readership growth.' },
+    { title: 'Monthly Views', value: data.metrics.monthlyViews.toLocaleString(), icon: EyeIcon, accent: 'text-yellow-600 bg-yellow-50 border-yellow-500', link: '/admin/analytics', description: 'This month’s traffic.' },
+    { title: 'Scheduled Posts', value: data.metrics.scheduledPosts, icon: CalendarDaysIcon, accent: 'text-pink-600 bg-pink-50 border-pink-500', link: '/admin/schedule', description: 'Ready to go live.' },
+  ] : [];
 
   // Component for visually appealing metric cards
   const MetricCard: React.FC<{ card: (typeof cards)[0] }> = useCallback(({ card }) => (
     <a
       key={card.title}
       href={card.link}
-      className={`relative p-6 rounded-2xl bg-white shadow-xl transition duration-300 hover:shadow-2xl hover:ring-2 hover:ring-offset-2 ${card.accent.replace('text-', 'ring-')} transform group cursor-pointer border-b-4 ${card.accent.replace('bg-', 'border-')}`}
+      className={`relative p-6 rounded-2xl bg-white shadow-xl transition duration-300 hover:shadow-2xl hover:ring-2 hover:ring-offset-2 ${card.accent.replace('text-', 'ring-').replace('bg-', 'ring-')} transform group cursor-pointer border-b-4 ${card.accent.split(' ')[2]}`}
     >
       <div className="flex items-center justify-between mb-2">
-        {/* Title and Icon */}
         <h2 className="text-sm font-medium text-gray-500">{card.title}</h2>
-        <card.icon className={`w-5 h-5 ${card.accent.replace('bg-', 'text-')}`} />
+        <card.icon className={`w-5 h-5 ${card.accent.split(' ')[0]}`} />
       </div>
-      
-      {/* Value */}
       <p className="text-4xl font-extrabold text-gray-900 mt-1">{card.value}</p>
-      
-      {/* Description */}
       <p className="mt-2 text-xs text-gray-400">{card.description}</p>
     </a>
   ), []);
@@ -169,11 +127,22 @@ export default function BlogDashboardClient() {
     );
   }
 
+  if (error || !data) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-red-50">
+        <div className="text-center p-8 bg-white rounded-xl shadow-lg border border-red-200">
+            <ExclamationTriangleIcon className="w-10 h-10 mx-auto mb-4 text-red-500" />
+            <h2 className="font-bold text-lg text-gray-800 mb-2">Could Not Load Dashboard</h2>
+            <p className="text-sm text-gray-500">{error || "An unknown error occurred."}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900 font-sans">
       <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
         
-        {/* Main Header and Action Button */}
         <header className="mb-10 flex justify-between items-center">
           <div>
             <p className="text-xl text-teal-600 font-semibold mb-1">Welcome to the Writer's Hub</p>
@@ -190,24 +159,21 @@ export default function BlogDashboardClient() {
           </a>
         </header>
 
-        {/* Metrics Cards - Clean, Bordered Style */}
         <section className="grid grid-cols-2 lg:grid-cols-5 gap-6 mb-12">
           {cards.map((card) => (
             <MetricCard key={card.title} card={card} />
           ))}
         </section>
 
-        {/* Main Content: Charts and Tasks */}
         <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
-          {/* Charts Section (2/3 width) - Data Insights */}
           <div className="lg:col-span-2 space-y-8">
             <div className="bg-white p-6 rounded-2xl shadow-xl border border-gray-100">
               <h3 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
                 <EyeIcon className="w-6 h-6 text-teal-500" /> Traffic Overview (Views)
               </h3>
               <div className="min-h-[300px]">
-                <ChartTwo />
+                <ChartTwo data={data.charts.trafficOverview} />
               </div>
             </div>
 
@@ -216,12 +182,11 @@ export default function BlogDashboardClient() {
                 <UserGroupIcon className="w-6 h-6 text-sky-500" /> Engagement & Subscribers
               </h3>
               <div className="min-h-[300px]">
-                <ChartThree />
+                <ChartThree data={data.charts.engagementMetrics} />
               </div>
             </div>
           </div>
 
-          {/* Today's Tasks (1/3 width) - Editorial Focus */}
           <div className="lg:col-span-1">
             <div className="bg-white p-6 rounded-2xl shadow-xl border border-gray-100 sticky top-4">
               <div className="flex justify-between items-center mb-6 border-b border-gray-200 pb-3">
