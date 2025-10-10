@@ -253,4 +253,4 @@ export const GET = withApiHandler(
   { requireAuth: true }
 );
 
-export default GET;
+// export default GET;

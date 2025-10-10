@@ -13,6 +13,9 @@ import {
   ArrowTrendingUpIcon, 
   EyeIcon,
 } from '@heroicons/react/24/outline';
+import { useParams } from 'next/navigation';
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
 // --- MOCK CHART COMPONENTS (FOR SINGLE-FILE MANDATE) ---
 // In a real app, these would take the chart data as props
@@ -67,9 +70,11 @@ type ChartData = {
 
 // --- DATA & API SIMULATION ---
 // Assuming you get companyId from page props or a context
-const COMPANY_ID = "your-company-id"; // Replace with dynamic company ID
+// const COMPANY_ID = "your-company-id"; // Replace with dynamic company ID
 
 export default function BookingAppointmentsDashboard(): JSX.Element {
+  const { slug: companyId } = useParams();
+
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<StatCardData[]>([]);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -83,7 +88,7 @@ export default function BookingAppointmentsDashboard(): JSX.Element {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch(`/api/dashboard/${COMPANY_ID}`);
+        const response = await fetch(`${apiBaseUrl}/admin/dashboard/booking/${companyId}`, { method: 'GET', credentials: 'include' });
         const result = await response.json();
 
         if (!response.ok || !result.success) {
