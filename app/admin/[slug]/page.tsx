@@ -1,16 +1,14 @@
-
-// app/admin/[slug]/page.tsx
 import { redirect } from 'next/navigation';
 import { getAuthSession } from '../../../lib/auth';
 import prisma from '@/server/db/prismadb';
 import { normalizeCategory } from '@/utils/normalizeCategory';
+import { cookies } from 'next/headers';
 
-// Import all dashboard client components
+// Dashboard client imports
 import EcomDashboardClient, { DashboardData } from '@/components/admin/EcomDashboardClient';
 import RealEstateDashboardClient from '@/components/admin/RealEstateDashboardClient';
 import AutomotiveDashboardClient from '@/components/admin/AutomotiveDashboardClient';
 import BlogDashboardClient from '@/components/admin/BlogDashboardClient';
-// import DirectoryDashboardClient from '@/components/admin/DirectoryDashboardClient';
 import EventDashboardClient from '@/components/admin/EventDashboardClient';
 import FinanceDashboardClient from '@/components/admin/FinanceDashboardClient';
 import FitnessDashboardClient from '@/components/admin/FitnessDashboardClient';
@@ -21,529 +19,342 @@ import PortfolioDashboardClient from '@/components/admin/PortfolioDashboardClien
 import RestaurantDashboardClient from '@/components/admin/RestaurantDashboardClient';
 import SaaSDashboardClient from '@/components/admin/SaaSDashboardClient';
 import TravelDashboardClient from '@/components/admin/TravelDashboardClient';
-// import MarketplaceDashboard from '@/components/admin/MarketplaceDashboard';
 import ServiceProviderDashboard, { ServiceProviderDashboardData } from '@/components/admin/ServiceProviderDashboard';
 import BookingAppointmentsDashboard from '@/components/admin/BookingAppointmentsDashboard';
-
-// Specific educational dashboards
 import TutorDashboard, { TutorDashboardData } from '@/components/admin/TutorDashboard';
 import StudentDashboard, { StudentDashboardData } from '@/components/admin/StudentDashboard';
 import PrincipalDashboard, { PrincipalDashboardData } from '@/components/admin/PrincipalDashboard';
-import UncategorizedDashboard from '@/components/admin/AdminDashClient'; // Assuming this is a generic fallback
+import UncategorizedDashboard from '@/components/admin/AdminDashClient';
 import PlaygroupDashboard from '@/components/admin/PlaygroupDashboard';
-import { cookies } from 'next/headers';
-
 
 export const dynamic = 'force-dynamic';
+
+// Role and category mappings
+const allowedRoles = [
+  'ADMIN', 'STUDENT', 'EDUCATOR', 'CONSUMER', 'JUNIOR', 'SENIOR',
+  'TEACHER', 'LECTURER', 'TUTOR', 'HEAD_TEACHER', 'PRINCIPAL', 'HEAD_OF_SCHOOL',
+  'SCHOOL_HEAD', 'EDUCATIONAL_ADMIN', 'EDUCATIONAL_LEADER', 'EDUCATIONAL_MANAGER',
+  'EDUCATIONAL_COORDINATOR', 'EDUCATIONAL_DIRECTOR', 'EDUCATIONAL_SUPERVISOR',
+  'EDUCATIONAL_ADMINISTRATOR', 'EDUCATIONAL_OFFICER'
+];
+
+const dashboardCategoryMapping: Record<string, string> = {
+  'e-commerce': 'EcomDashboardClient',
+  'ecommerce': 'EcomDashboardClient',
+  'shoes store': 'EcomDashboardClient',
+  'real estate': 'RealEstateDashboardClient',
+  'service provider': 'ServiceProviderDashboard',
+  'booking & appointments': 'BookingAppointmentsDashboard',
+  'portfolio & personal branding': 'PortfolioDashboardClient',
+  'blog & content': 'BlogDashboardClient',
+  'directory & listings': 'EcomDashboardClient',
+  'nonprofit & community': 'NonprofitDashboardClient',
+  'restaurant & food delivery': 'RestaurantDashboardClient',
+  'event & ticketing': 'EventDashboardClient',
+  'healthcare & clinics': 'HealthcareDashboardClient',
+  'saas & web apps': 'SaaSDashboardClient',
+  'dashboards': 'SaaSDashboardClient',
+  'media & entertainment': 'MediaDashboardClient',
+  'finance & legal': 'FinanceDashboardClient',
+  'automotive': 'AutomotiveDashboardClient',
+  'travel & tourism': 'TravelDashboardClient',
+  'fitness & wellness': 'FitnessDashboardClient',
+  'marketplace': 'EcomDashboardClient'
+};
+
+const educatorRoles = [
+  'EDUCATOR', 'TEACHER', 'LECTURER', 'TUTOR', 'HEAD_TEACHER', 'PRINCIPAL',
+  'HEAD_OF_SCHOOL', 'SCHOOL_HEAD', 'EDUCATIONAL_ADMIN', 'EDUCATIONAL_LEADER',
+  'EDUCATIONAL_MANAGER', 'EDUCATIONAL_COORDINATOR', 'EDUCATIONAL_DIRECTOR',
+  'EDUCATIONAL_SUPERVISOR', 'EDUCATIONAL_ADMINISTRATOR', 'EDUCATIONAL_OFFICER'
+];
+
+// Fallback Data
+const fallbackStudentDashboardData: StudentDashboardData = {
+  studentStats: [
+    { title: 'Courses Enrolled', value: '5', description: 'Total active courses', color: 'bg-blue-50' },
+    { title: 'Assignments Due', value: '3', description: 'Upcoming deadlines', color: 'bg-red-50' },
+    { title: 'Average Grade', value: 'B+', description: 'Overall academic performance', color: 'bg-green-50' },
+    { title: 'Completed Lessons', value: '45', description: 'Lessons finished this week', color: 'bg-purple-50' },
+  ],
+  enrolledCourses: [
+    { id: 'mock-c1', title: 'Mathematics I', progress: 75 },
+    { id: 'mock-c2', title: 'Physics Basics', progress: 50 },
+  ],
+  recentGrades: [
+    { subject: 'Math', score: 88, date: '2025-06-28' },
+    { subject: 'English', score: 92, date: '2025-06-25' },
+  ],
+  upcomingAssignments: [
+    { id: 'mock-a1', title: 'Algebra Homework', dueDate: '2025-07-05', course: 'Mathematics I' },
+    { id: 'mock-a2', title: 'Physics Lab Report', dueDate: '2025-07-08', course: 'Physics Basics' },
+  ],
+};
+
+const fallbackPrincipalDashboardData: PrincipalDashboardData = {
+  principalStats: [
+    { title: 'Total Students', value: '1,245', description: 'Enrolled across all grades', color: 'bg-blue-50' },
+    { title: 'Total Teachers', value: '86', description: 'Full-time and part-time staff', color: 'bg-green-50' },
+    { title: 'Upcoming Events', value: '3', description: 'Key events this week', color: 'bg-purple-50' },
+    { title: 'Pending Approvals', value: '12', description: 'Administrative actions required', color: 'bg-yellow-50' },
+  ],
+  quickActions: [
+    { label: 'Teacher Reports', href: `/admin/fallback-company-id/reports` },
+    { label: 'Student Discipline', href: '#' },
+    { label: 'Exam Timetables', href: `/admin/fallback-company-id/events` },
+    { label: 'School Announcements', href: `/admin/fallback-company-id/messages` },
+  ],
+  announcements: [
+    { id: 1, text: '📢 Midterm exams begin next Monday.', type: 'info' },
+    { id: 2, text: '🧪 Science fair projects due Friday. Submit early!', type: 'warning' },
+    { id: 3, text: '📌 New cafeteria schedule published. Check details.', type: 'info' },
+  ],
+  recentStaffMessages: [
+    { id: 'mock1', name: 'Mrs. Owino', message: 'Submitted report on 10A performance.', time: '10:30 AM' },
+    { id: 'mock2', name: 'Mr. Kiptoo', message: 'Requesting projector for staff meeting.', time: 'Yesterday' },
+    { id: 'mock3', name: 'Ms. Cherono', message: 'New student registration complete.', time: '2 hours ago' },
+  ],
+  performanceOverviewData: {
+    series: [{ name: "Student Performance", data: [85, 88, 90, 87, 89, 91, 92] }, { name: "Teacher Effectiveness", data: [78, 80, 82, 85, 83, 86, 88] }],
+    categories: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"],
+  },
+  attendanceInsightsData: {
+    series: [45, 30, 15, 10],
+    labels: ["Students", "Teachers", "Staff", "Other"],
+  },
+};
+
+const fallbackTutorDashboardData: TutorDashboardData = {
+  tutorStats: [
+    { title: 'Courses Assigned', value: '3', description: 'Currently teaching', color: 'bg-blue-50' },
+    { title: 'Total Students', value: '120', description: 'Across all courses', color: 'bg-green-50' },
+    { title: 'Pending Grading', value: '15', description: 'Assignments to review', color: 'bg-red-50' },
+    { title: 'Upcoming Classes', value: '4', description: 'Scheduled this week', color: 'bg-purple-50' },
+  ],
+  coursesTaught: [
+    { id: 'mock-tc1', title: 'Advanced Algebra', totalStudents: 40 },
+    { id: 'mock-tc2', title: 'Introduction to Biology', totalStudents: 50 },
+  ],
+  recentSubmissions: [
+    { studentName: 'Alice Smith', assignment: 'Essay on Photosynthesis', status: 'Submitted', submissionDate: '2025-07-01' },
+    { studentName: 'Bob Johnson', assignment: 'Math Problem Set 5', status: 'Submitted', submissionDate: '2025-06-30' },
+  ],
+  pendingGrading: [
+    { id: 'pg1', assignment: 'Physics Quiz', student: 'Charlie Brown' },
+    { id: 'pg2', assignment: 'Chemistry Lab Report', student: 'Diana Prince' },
+  ],
+};
+
+// Utility for API endpoints
+function getDashboardApiUrl(categoryKey: string, companyId: string) {
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+  if (categoryKey === 'service provider') return `${baseUrl}/admin/dashboard/serviceprovider/${companyId}`;
+  if (
+    [
+      'ecommerce', 'e-commerce', 'shoes store', 'directory & listings', 'marketplace',
+      'real estate', 'booking & appointments', 'portfolio & personal branding', 'blog & content',
+      'nonprofit & community', 'restaurant & food delivery', 'event & ticketing',
+      'healthcare & clinics', 'media & entertainment', 'finance & legal', 'automotive',
+      'travel & tourism', 'fitness & wellness'
+    ].includes(categoryKey)
+  ) return `${baseUrl}/admin/dashboard/ecommerce/${companyId}`;
+  return null;
+}
 
 export default async function AdminDashboardPage({ params }: { params: { slug: string } }) {
   const session = await getAuthSession();
   const cookiesHeader = (await cookies()).toString();
-  const slug = (await params).slug;
-  
-  if (!session) {
-    redirect('/login'); // Redirect to login if no session
-  }
+  const { slug } = params;
 
-  const userRole = session.user?.role?.toUpperCase() || 'ADMIN'; // Default to ADMIN if role is not set
+  if (!session) redirect('/login');
+  const userRole = session.user?.role?.toUpperCase() || 'ADMIN';
+  if (!session?.user?.id || !allowedRoles.includes(userRole))
+    redirect('/');
 
-  // 1. Authentication and Authorization Check
-  // Allow 'ADMIN', 'STUDENT', and 'EDUCATOR' roles to access admin dashboards
-  if (!session?.user?.id ||
-      (session.user.role?.toLowerCase() !== 'admin' &&
-       session.user.role?.toLowerCase() !== 'student' &&
-       session.user.role?.toLowerCase() !== 'educator'&&
-       session.user.role?.toLowerCase() !== 'consumer'&&
-       session.user.role?.toLowerCase() !== 'junior'&&
-       session.user.role?.toLowerCase() !== 'senior')) {
-    redirect('/'); // Redirect if not authorized
-  }
+  // Determine companyId
+  const companyId =
+    ['STUDENT', 'EDUCATOR', 'JUNIOR', 'SENIOR'].includes(userRole)
+      ? session.user.id
+      : slug;
 
-  const companyId = userRole === 'STUDENT' || userRole === 'EDUCATOR'  || userRole === 'JUNIOR'  || userRole === 'SENIOR' ? session.user.id : slug ;// params.slug; // Use user ID for student/educator, company ID for admin
+  const currentUserId = session.user.id;
 
-
-  const currentUserId = session.user.id; // Get current user ID from session
-
-  // 2. Fetch company category
+  // Fetch company category
   const company = await prisma.company.findUnique({
     where: { id: companyId },
     select: { category: true },
   });
 
-  if (userRole !== 'STUDENT' && !company && userRole !== 'EDUCATOR' && userRole !== 'JUNIOR' && userRole !== 'SENIOR') {
-    // If company not found, redirect to a generic dashboard or error page
-    // console.error(`Company with ID ${companyId} not found.`);
-    redirect('/dashboard'); // Or show a 404 page
+  if (
+    userRole !== 'STUDENT' &&
+    !company &&
+    !['EDUCATOR', 'JUNIOR', 'SENIOR'].includes(userRole)
+  ) {
+    redirect('/dashboard');
   }
 
-  const categoryKey = normalizeCategory(company?.category || userRole); // Normalize category for consistent handling
+  const categoryKey = normalizeCategory(company?.category || userRole);
 
-  // 3. Fetch Dashboard Metrics based on Role and Category
-  let dashboardData: DashboardData | null = null; // General dashboard data
-  let serviceDashboardData: ServiceProviderDashboardData | null = null; // General dashboard data
-  let principalDashboardData: PrincipalDashboardData | null = null; // For Principal/Head Teacher
-  let studentDashboardData: StudentDashboardData | null = null; // For Students
-  let tutorDashboardData: TutorDashboardData | null = null; // For Tutors/Teachers/Lecturers
-  let fetchError: boolean = false;
+  let dashboardData: DashboardData | null = null;
+  let serviceDashboardData: ServiceProviderDashboardData | null = null;
+  let principalDashboardData: PrincipalDashboardData | null = null;
+  let studentDashboardData: StudentDashboardData | null = null;
+  let tutorDashboardData: TutorDashboardData | null = null;
 
-  try {
+  // Data fetchers for role/category
+  if (userRole === 'JUNIOR') {
+    return <PlaygroupDashboard />;
+  }
 
-    // Fetch role-specific data
-    if (userRole === 'STUDENT') {
-      const studentRes = await fetch(
+  if (userRole === 'STUDENT') {
+    try {
+      const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/dashboard/student?userId=${encodeURIComponent(currentUserId)}`,
         { cache: 'no-store', headers: { cookie: cookiesHeader } }
       );
-      if (studentRes.ok) {
-        studentDashboardData = (await studentRes.json()).data as StudentDashboardData;
+      if (res.ok) {
+        studentDashboardData = (await res.json()).data as StudentDashboardData;
       } else {
-        console.error(`[AdminDashboardPage] Failed to fetch student dashboard data: ${studentRes.status} ${studentRes.statusText}`);
-        fetchError = true;
+        studentDashboardData = fallbackStudentDashboardData;
       }
-    } else if (userRole === 'EDUCATOR' || userRole === 'TEACHER' || userRole === 'LECTURER' || userRole === 'TUTOR' || userRole === 'HEAD_TEACHER' || 
-        userRole == 'PRINCIPAL' || userRole === 'HEAD_OF_SCHOOL' || userRole === 'SCHOOL_HEAD' || userRole === 'EDUCATIONAL_ADMIN' || userRole === 'EDUCATIONAL_LEADER' ||
-        userRole === 'EDUCATIONAL_MANAGER' || userRole === 'EDUCATIONAL_COORDINATOR' || userRole === 'EDUCATIONAL_DIRECTOR' || userRole === 'EDUCATIONAL_SUPERVISOR' || userRole === 'EDUCATIONAL_ADMINISTRATOR' ||
-        userRole === 'EDUCATIONAL_OFFICER' || userRole === 'EDUCATIONAL_OFFICER' || userRole === 'CONSUMER' && company?.category == 'educational & online courses'
-    ) {
-      // Check if this educator is a Principal/Head Teacher based on company category
-      if (categoryKey === 'educational & online courses' || categoryKey === 'head teacher'  || categoryKey === 'consumer' || categoryKey === 'school head') {
-        const principalRes = await fetch(
+    } catch {
+      studentDashboardData = fallbackStudentDashboardData;
+    }
+    return (
+      <StudentDashboard
+        {...studentDashboardData}
+        companyId={companyId}
+        currentUserId={currentUserId}
+      />
+    );
+  }
+
+  // Principal/Head Teacher roles and categories
+  const isPrincipalLike =
+    ['educational & online courses', 'head teacher', 'school head'].includes(categoryKey) ||
+    [
+      'PRINCIPAL', 'HEAD_OF_SCHOOL', 'SCHOOL_HEAD', 'EDUCATIONAL_ADMIN', 'EDUCATIONAL_LEADER',
+      'EDUCATIONAL_MANAGER', 'EDUCATIONAL_COORDINATOR', 'EDUCATIONAL_DIRECTOR',
+      'EDUCATIONAL_SUPERVISOR', 'EDUCATIONAL_ADMINISTRATOR', 'EDUCATIONAL_OFFICER'
+    ].includes(userRole);
+
+  if (
+    educatorRoles.includes(userRole) ||
+    (userRole === 'CONSUMER' && ['educational & online courses', 'head teacher', 'school head'].includes(categoryKey))
+  ) {
+    if (isPrincipalLike) {
+      try {
+        const res = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/dashboard/principal?userId=${encodeURIComponent(currentUserId)}`,
           { cache: 'no-store' }
         );
-        if (principalRes.ok) {
-          principalDashboardData = (await principalRes.json()) as PrincipalDashboardData;
+        if (res.ok) {
+          principalDashboardData = (await res.json()) as PrincipalDashboardData;
         } else {
-          console.error(`[AdminDashboardPage] Failed to fetch principal dashboard data: ${principalRes.status} ${principalRes.statusText}`);
-          fetchError = true;
+          principalDashboardData = fallbackPrincipalDashboardData;
         }
-      } else {
-        // Otherwise, fetch general tutor/teacher data
-        const tutorRes = await fetch(
+      } catch {
+        principalDashboardData = fallbackPrincipalDashboardData;
+      }
+      return (
+        <PrincipalDashboard
+          {...principalDashboardData}
+          companyId={companyId}
+          currentUserId={currentUserId}
+        />
+      );
+    } else {
+      try {
+        const res = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/dashboard/tutor?userId=${encodeURIComponent(currentUserId)}`,
           { cache: 'no-store' }
         );
-        if (tutorRes.ok) {
-          tutorDashboardData = (await tutorRes.json()) as TutorDashboardData;
-        } else {
-          console.error(`[AdminDashboardPage] Failed to fetch tutor dashboard data: ${tutorRes.status} ${tutorRes.statusText}`);
-          fetchError = true;
-        }
-      }
-    } else {
-      if (categoryKey === 'service provider') {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/serviceprovider/${companyId}`,
-          { cache: 'no-store', headers: { cookie: cookiesHeader } }
-        );
-
-            if (res.ok) {
-              let dashRes = (await res.json()).data
-              console.log("Fetched dashboard data:", dashRes);
-              serviceDashboardData = dashRes as ServiceProviderDashboardData;
-            } else {
-              console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
-              fetchError = true;
-            }
-      }
-      else if (categoryKey === 'ecommerce') {
-
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/ecommerce/${companyId}`,
-          { cache: 'no-store', headers: { cookie: cookiesHeader } }
-        );
         if (res.ok) {
-          let dashRes = (await res.json()).data
-          console.log("Fetched dashboard data:", dashRes);
-          dashboardData = dashRes as DashboardData;
+          tutorDashboardData = (await res.json()) as TutorDashboardData;
         } else {
-          console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
-          fetchError = true;
+          tutorDashboardData = fallbackTutorDashboardData;
         }
+      } catch {
+        tutorDashboardData = fallbackTutorDashboardData;
       }
-      else if (categoryKey === 'e-commerce' || categoryKey === 'shoes store' || categoryKey === 'directory & listings' || categoryKey === 'marketplace' ) {
-
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/e-commerce/${companyId}`,
-          { cache: 'no-store', headers: { cookie: cookiesHeader } }
-        );
-        if (res.ok) {
-          let dashRes = (await res.json()).data
-          console.log("Fetched dashboard data:", dashRes);
-          dashboardData = dashRes as DashboardData;
-        }
-        else {
-          console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
-          fetchError = true;
-        }
+      return (
+        <TutorDashboard
+          {...tutorDashboardData}
+          companyId={companyId}
+          currentUserId={currentUserId}
+        />
+      );
     }
-      else if (categoryKey === 'real estate') {
-
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/ecommerce/${companyId}`,
-          { cache: 'no-store', headers: { cookie: cookiesHeader } }
-        );
-        if (res.ok) {
-          let dashRes = (await res.json()).data
-          console.log("Fetched dashboard data:", dashRes);
-          dashboardData = dashRes as DashboardData;
-        } else {
-          console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
-          fetchError = true;
-        }
-      }
-      else if (categoryKey === 'booking & appointments') {
-
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/ecommerce/${companyId}`,
-          { cache: 'no-store', headers: { cookie: cookiesHeader } }
-        );
-        if (res.ok) {
-          let dashRes = (await res.json()).data
-          console.log("Fetched dashboard data:", dashRes);
-          dashboardData = dashRes as DashboardData;
-        } else {
-          console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
-          fetchError = true;
-        }
-      }
-      else if (categoryKey === 'portfolio & personal branding') {
-
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/ecommerce/${companyId}`,
-          { cache: 'no-store', headers: { cookie: cookiesHeader } }
-        );
-        if (res.ok) {
-          let dashRes = (await res.json()).data
-          console.log("Fetched dashboard data:", dashRes);
-          dashboardData = dashRes as DashboardData;
-        } else {
-          console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
-          fetchError = true;
-        }
-      }      
-      else if (categoryKey === 'blog & content') {
-
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/ecommerce/${companyId}`,
-          { cache: 'no-store', headers: { cookie: cookiesHeader } }
-        );
-        if (res.ok) {
-          let dashRes = (await res.json()).data
-          console.log("Fetched dashboard data:", dashRes);
-          dashboardData = dashRes as DashboardData;
-        } else {
-          console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
-          fetchError = true;
-        }
-      }
-      else if (categoryKey === 'nonprofit & community') {
-
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/ecommerce/${companyId}`,
-          { cache: 'no-store', headers: { cookie: cookiesHeader } }
-        );
-        if (res.ok) {
-          let dashRes = (await res.json()).data
-          console.log("Fetched dashboard data:", dashRes);
-          dashboardData = dashRes as DashboardData;
-        } else {
-          console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
-          fetchError = true;
-        }
-      }      
-      else if (categoryKey === 'restaurant & food delivery') {
-
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/ecommerce/${companyId}`,
-          { cache: 'no-store', headers: { cookie: cookiesHeader } }
-        );
-        if (res.ok) {
-          let dashRes = (await res.json()).data
-          console.log("Fetched dashboard data:", dashRes);
-          dashboardData = dashRes as DashboardData;
-        } else {
-          console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
-          fetchError = true;
-        }
-      }     
-      else if (categoryKey === 'event & ticketing') {
-
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/ecommerce/${companyId}`,
-          { cache: 'no-store', headers: { cookie: cookiesHeader } }
-        );
-        if (res.ok) {
-          let dashRes = (await res.json()).data
-          console.log("Fetched dashboard data:", dashRes);
-          dashboardData = dashRes as DashboardData;
-        } else {
-          console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
-          fetchError = true;
-        }
-      }
-      
-      else if (categoryKey === 'healthcare & clinics') {
-
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/ecommerce/${companyId}`,
-          { cache: 'no-store', headers: { cookie: cookiesHeader } }
-        );
-        if (res.ok) {
-          let dashRes = (await res.json()).data
-          console.log("Fetched dashboard data:", dashRes);
-          dashboardData = dashRes as DashboardData;
-        } else {
-          console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
-          fetchError = true;
-        }
-      }
-      
-      else if (categoryKey === 'media & entertainment') {
-
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/ecommerce/${companyId}`,
-          { cache: 'no-store', headers: { cookie: cookiesHeader } }
-        );
-        if (res.ok) {
-          let dashRes = (await res.json()).data
-          console.log("Fetched dashboard data:", dashRes);
-          dashboardData = dashRes as DashboardData;
-        } else {
-          console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
-          fetchError = true;
-        }
-      }
-      else if (categoryKey === 'finance & legal') {
-
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/ecommerce/${companyId}`,
-          { cache: 'no-store', headers: { cookie: cookiesHeader } }
-        );
-        if (res.ok) {
-          let dashRes = (await res.json()).data
-          console.log("Fetched dashboard data:", dashRes);
-          dashboardData = dashRes as DashboardData;
-        } else {
-          console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
-          fetchError = true;
-        }
-      }
-      else if (categoryKey === 'automotive') {
-
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/ecommerce/${companyId}`,
-          { cache: 'no-store', headers: { cookie: cookiesHeader } }
-        );
-        if (res.ok) {
-          let dashRes = (await res.json()).data
-          console.log("Fetched dashboard data:", dashRes);
-          dashboardData = dashRes as DashboardData;
-        } else {
-          console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
-          fetchError = true;
-        }
-      }
-      else if (categoryKey === 'travel & tourism') {
-
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/ecommerce/${companyId}`,
-          { cache: 'no-store', headers: { cookie: cookiesHeader } }
-        );
-        if (res.ok) {
-          let dashRes = (await res.json()).data
-          console.log("Fetched dashboard data:", dashRes);
-          dashboardData = dashRes as DashboardData;
-        } else {
-          console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
-          fetchError = true;
-        }
-      }
-      else if (categoryKey === 'fitness & wellness') {
-
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/ecommerce/${companyId}`,
-          { cache: 'no-store', headers: { cookie: cookiesHeader } }
-        );
-        if (res.ok) {
-          let dashRes = (await res.json()).data
-          console.log("Fetched dashboard data:", dashRes);
-          dashboardData = dashRes as DashboardData;
-        } else {
-          console.error(`[AdminDashboardPage] Failed to fetch general dashboard data: ${res.status} ${res.statusText}`);
-          fetchError = true;
-        }
-      }
   }
 
-  } catch (err: any) {
-    console.error("AdminDashboardPage-fetch error:", err.message);
-    fetchError = true;
+  // Other business categories
+  const dashboardComponentName = dashboardCategoryMapping[categoryKey];
+  let dashboardCategoryData: any = null;
+
+  // ServiceProviderDashboard
+  if (categoryKey === 'service provider') {
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/admin/dashboard/serviceprovider/${companyId}`,
+        { cache: 'no-store', headers: { cookie: cookiesHeader } }
+      );
+      if (res.ok) {
+        serviceDashboardData = (await res.json()).data as ServiceProviderDashboardData;
+      }
+    } catch {
+      // Leave serviceDashboardData as null
+    }
+    return (
+      <ServiceProviderDashboard
+        data={serviceDashboardData as ServiceProviderDashboardData}
+      />
+    );
   }
 
-  // 4. Fallback Data (if fetch failed) - Keep existing fallbacks and add new ones
-  if (!dashboardData || fetchError) {
-    console.warn("Using fallback data for general dashboard.");
-  }
-
-  if (userRole === 'STUDENT' && !studentDashboardData) {
-    console.warn("Using fallback data for Student Dashboard.");
-    studentDashboardData = {
-      studentStats: [
-        { title: 'Courses Enrolled', value: '5', description: 'Total active courses', color: 'bg-blue-50' },
-        { title: 'Assignments Due', value: '3', description: 'Upcoming deadlines', color: 'bg-red-50' },
-        { title: 'Average Grade', value: 'B+', description: 'Overall academic performance', color: 'bg-green-50' },
-        { title: 'Completed Lessons', value: '45', description: 'Lessons finished this week', color: 'bg-purple-50' },
-      ],
-      enrolledCourses: [
-        { id: 'mock-c1', title: 'Mathematics I', progress: 75 },
-        { id: 'mock-c2', title: 'Physics Basics', progress: 50 },
-      ],
-      recentGrades: [
-        { subject: 'Math', score: 88, date: '2025-06-28' },
-        { subject: 'English', score: 92, date: '2025-06-25' },
-      ],
-      upcomingAssignments: [
-        { id: 'mock-a1', title: 'Algebra Homework', dueDate: '2025-07-05', course: 'Mathematics I' },
-        { id: 'mock-a2', title: 'Physics Lab Report', dueDate: '2025-07-08', course: 'Physics Basics' },
-      ],
+  // Generic mapping for categories
+  if (dashboardComponentName) {
+    const apiUrl = getDashboardApiUrl(categoryKey, companyId);
+    if (apiUrl) {
+      try {
+        const res = await fetch(apiUrl, {
+          cache: 'no-store',
+          headers: { cookie: cookiesHeader },
+        });
+        if (res.ok) {
+          dashboardCategoryData = (await res.json()).data;
+        }
+      } catch {
+        dashboardCategoryData = null;
+      }
+    }
+    // Dashboard component mapping
+    const dashboardComponents: Record<string, React.ComponentType<any>> = {
+      EcomDashboardClient,
+      RealEstateDashboardClient,
+      ServiceProviderDashboard,
+      BookingAppointmentsDashboard,
+      PortfolioDashboardClient,
+      BlogDashboardClient,
+      NonprofitDashboardClient,
+      RestaurantDashboardClient,
+      EventDashboardClient,
+      HealthcareDashboardClient,
+      SaaSDashboardClient,
+      MediaDashboardClient,
+      FinanceDashboardClient,
+      AutomotiveDashboardClient,
+      TravelDashboardClient,
+      FitnessDashboardClient,
     };
+
+    const DashboardComponent = dashboardComponents[dashboardComponentName];
+    return (
+      <DashboardComponent
+        {...(dashboardCategoryData ? { ...dashboardCategoryData, slug: companyId } : {})}
+      />
+    );
   }
 
-  if (userRole === 'EDUCATOR' && !principalDashboardData && !tutorDashboardData || userRole === 'CONSUMER' && (categoryKey === 'educational & online courses' || categoryKey === 'head teacher' || categoryKey === 'school head')) {
-    // Fallback for Principal Dashboard (if applicable and failed)
-    if (categoryKey === 'educational & online courses' || categoryKey === 'head teacher' || categoryKey === 'school head') {
-      console.warn("Using fallback data for Principal Dashboard.");
-      principalDashboardData = {
-        principalStats: [
-          { title: 'Total Students', value: '1,245', description: 'Enrolled across all grades', color: 'bg-blue-50' },
-          { title: 'Total Teachers', value: '86', description: 'Full-time and part-time staff', color: 'bg-green-50' },
-          { title: 'Upcoming Events', value: '3', description: 'Key events this week', color: 'bg-purple-50' },
-          { title: 'Pending Approvals', value: '12', description: 'Administrative actions required', color: 'bg-yellow-50' },
-        ],
-        quickActions: [
-          { label: 'Teacher Reports', href: `/admin/${companyId}/reports` },
-          { label: 'Student Discipline', href: '#' },
-          { label: 'Exam Timetables', href: `/admin/${companyId}/events` },
-          { label: 'School Announcements', href: `/admin/${companyId}/messages` },
-        ],
-        announcements: [
-          { id: 1, text: '📢 Midterm exams begin next Monday.', type: 'info' },
-          { id: 2, text: '🧪 Science fair projects due Friday. Submit early!', type: 'warning' },
-          { id: 3, text: '📌 New cafeteria schedule published. Check details.', type: 'info' },
-        ],
-        recentStaffMessages: [
-          { id: 'mock1', name: 'Mrs. Owino', message: 'Submitted report on 10A performance.', time: '10:30 AM' },
-          { id: 'mock2', name: 'Mr. Kiptoo', message: 'Requesting projector for staff meeting.', time: 'Yesterday' },
-          { id: 'mock3', name: 'Ms. Cherono', message: 'New student registration complete.', time: '2 hours ago' },
-        ],
-        performanceOverviewData: {
-          series: [{ name: "Student Performance", data: [85, 88, 90, 87, 89, 91, 92] }, { name: "Teacher Effectiveness", data: [78, 80, 82, 85, 83, 86, 88] }],
-          categories: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"],
-        },
-        attendanceInsightsData: {
-          series: [45, 30, 15, 10],
-          labels: ["Students", "Teachers", "Staff", "Other"],
-        },
-      };
-    } else { // Fallback for Tutor Dashboard (if applicable and failed)
-      console.warn("Using fallback data for Tutor Dashboard.");
-      tutorDashboardData = {
-        tutorStats: [
-          { title: 'Courses Assigned', value: '3', description: 'Currently teaching', color: 'bg-blue-50' },
-          { title: 'Total Students', value: '120', description: 'Across all courses', color: 'bg-green-50' },
-          { title: 'Pending Grading', value: '15', description: 'Assignments to review', color: 'bg-red-50' },
-          { title: 'Upcoming Classes', value: '4', description: 'Scheduled this week', color: 'bg-purple-50' },
-        ],
-        coursesTaught: [
-          { id: 'mock-tc1', title: 'Advanced Algebra', totalStudents: 40 },
-          { id: 'mock-tc2', title: 'Introduction to Biology', totalStudents: 50 },
-        ],
-        recentSubmissions: [
-          { studentName: 'Alice Smith', assignment: 'Essay on Photosynthesis', status: 'Submitted', submissionDate: '2025-07-01' },
-          { studentName: 'Bob Johnson', assignment: 'Math Problem Set 5', status: 'Submitted', submissionDate: '2025-06-30' },
-        ],
-        pendingGrading: [
-          { id: 'pg1', assignment: 'Physics Quiz', student: 'Charlie Brown' },
-          { id: 'pg2', assignment: 'Chemistry Lab Report', student: 'Diana Prince' },
-        ],
-      };
-    }
-  }
-
-  // 5. Render appropriate client component based on user role and category
-  if (userRole === 'JUNIOR') {
-    return <PlaygroupDashboard/>
-  } 
-  else if (userRole === 'EDUCATOR') {    
-
-    return <StudentDashboard {...(studentDashboardData as StudentDashboardData)} 
-                      companyId={companyId} currentUserId={currentUserId} />;
-
-  } else if (userRole === 'EDUCATOR' || userRole === 'TEACHER' || userRole === 'LECTURER' || userRole === 'TUTOR' || userRole === 'HEAD_TEACHER' ||
-      userRole == 'PRINCIPAL' || userRole === 'HEAD_OF_SCHOOL' || userRole === 'SCHOOL_HEAD' || userRole === 'EDUCATIONAL_ADMIN' || userRole === 'EDUCATIONAL_LEADER' ||
-      userRole === 'EDUCATIONAL_MANAGER' || userRole === 'EDUCATIONAL_COORDINATOR' || userRole === 'EDUCATIONAL_DIRECTOR' || userRole === 'EDUCATIONAL_SUPERVISOR' || userRole === 'EDUCATIONAL_ADMINISTRATOR' ||
-      userRole === 'EDUCATIONAL_OFFICER' || userRole === 'EDUCATIONAL_OFFICER' || userRole === 'CONSUMER' && (categoryKey === 'educational & online courses' || categoryKey === 'head teacher' || categoryKey === 'school head')
-  ) {
-    if (categoryKey === 'educational & online courses' || categoryKey === 'head teacher' || categoryKey === 'school head' || userRole === 'PRINCIPAL' || userRole === 'HEAD_OF_SCHOOL' || userRole === 'SCHOOL_HEAD'
-        || userRole === 'EDUCATIONAL_ADMIN' || userRole === 'EDUCATIONAL_LEADER' || userRole === 'EDUCATIONAL_MANAGER' || userRole === 'EDUCATIONAL_COORDINATOR' || 
-        userRole === 'EDUCATIONAL_DIRECTOR' || userRole === 'EDUCATIONAL_SUPERVISOR' || userRole === 'EDUCATIONAL_ADMINISTRATOR' || userRole === 'EDUCATIONAL_OFFICER' || 
-        userRole === 'CONSUMER' && (categoryKey === 'educational & online courses' || categoryKey === 'head teacher' || 
-          categoryKey === 'school head')
-    ) {
-      return <PrincipalDashboard {...(principalDashboardData as PrincipalDashboardData)} companyId={companyId} currentUserId={currentUserId} />;
-    } else {
-      // Default for other educators (teachers, lecturers, tutors)
-      return <TutorDashboard {...(tutorDashboardData as TutorDashboardData)} companyId={companyId} currentUserId={currentUserId} />;
-    }
-  } else {
-    // Fallback for other roles (e.g., ADMIN, or other business categories)
-    switch (categoryKey) {
-      case 'e-commerce':
-        return <EcomDashboardClient {...({...dashboardData, slug: companyId  }) as DashboardData} />;
-      case 'ecommerce':
-        return <EcomDashboardClient {...({...dashboardData, slug: companyId  }) as DashboardData} />;
-      case 'shoes store':
-        return <EcomDashboardClient {...({...dashboardData, slug: companyId  }) as DashboardData} />;
-      case 'real estate':
-        return <RealEstateDashboardClient />;
-      case 'service provider':
-        return <ServiceProviderDashboard data={serviceDashboardData as ServiceProviderDashboardData} />;
-      case 'booking & appointments':
-        return <BookingAppointmentsDashboard />;
-      case 'portfolio & personal branding':
-        return <PortfolioDashboardClient />;
-      case 'blog & content':
-        return <BlogDashboardClient />;
-      case 'directory & listings':
-        return <EcomDashboardClient {...({...dashboardData, slug: companyId  }) as DashboardData} />//DirectoryDashboardClient />;
-      case 'nonprofit & community':
-        return <NonprofitDashboardClient />;
-      case 'restaurant & food delivery':
-        return <RestaurantDashboardClient />;
-      case 'event & ticketing':
-        return <EventDashboardClient/>;
-      case 'healthcare & clinics':
-        return <HealthcareDashboardClient/>;
-      case 'saas & web apps':
-        return <SaaSDashboardClient />;
-      case 'dashboards':
-        return <SaaSDashboardClient />;
-      case 'media & entertainment':
-        return <MediaDashboardClient />;
-      case 'finance & legal':
-        return <FinanceDashboardClient />;
-      case 'automotive':
-        return <AutomotiveDashboardClient />;
-      case 'travel & tourism':
-        return <TravelDashboardClient />;
-      case 'fitness & wellness':
-        return <FitnessDashboardClient />;
-      case 'marketplace':
-        return <EcomDashboardClient {...({...dashboardData, slug: companyId  }) as DashboardData}  /> //MarketplaceDashboard />;
-        
-      default:
-        return <UncategorizedDashboard />;
-    }
-  }
+  // Default fallback
+  return <UncategorizedDashboard />;
 }
