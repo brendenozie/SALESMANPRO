@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 // Assuming useStoreContext provides data for the site; if not, remove or adjust.
 import { useStoreContext } from "@/contexts/StoreContext";
+import { StoreForm } from "@/types/typings";
 
 // Import all your transformed child components
 import HeroSection from "./components/heroSection";
@@ -20,13 +21,12 @@ import ContactSection from "./components/ContactSection";
 const darkBackground = "#0A192F"; // Main background for sections, navbar, footer
 
 
-export default function FinancSite() {
-  // Using the context, but also providing local 'store' for demo purposes
-  // In a real app, you'd likely fetch this data or get it from a CMS.
+export default function FinanceSite({ pageData }: { pageData: StoreForm }) {
+  // Using context for global theme settings only
   const { storeFormData } = useStoreContext(); 
 
-  // Combined data source (prioritize storeFormData if available, else use hardcoded 'store')
-  const siteData = storeFormData && Object.keys(storeFormData).length > 0 ? storeFormData : {
+  // Use pageData for all content, with fallback to hardcoded data
+  const siteData = pageData && Object.keys(pageData).length > 0 ? pageData : {
     name: "CapitalEdge",
     slug: "capitaledge",
     bannerUrl: "/images/finance-hero.webp", // Ensure this path is correct and image exists

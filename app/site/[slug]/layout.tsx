@@ -1,4 +1,5 @@
-// app/[slug]/layout.tsx
+// app/site/[slug]/layout.tsx
+// LEAN LAYOUT: Only fetches essential data for the app shell (header/footer)
 import { notFound } from 'next/navigation';
 import { ReactNode, Suspense } from 'react';
 import { headers } from 'next/headers';
@@ -6,6 +7,7 @@ import prisma from '@/server/db/prismadb';
 import { StoreContextProvider } from '@/contexts/StoreContext';
 import categoryHeaderFooterLayoutMap from '@/components/site/layouts/categoryHeaderFooterLayoutMap';
 import { transformCompanyToStoreForm } from '@/utils/transformPrismaToStoreForm';
+import LoadingSpinner from '@/components/site/LoadingSpinner';
 import type { Metadata } from "next";
 
 // Cache the page and its data for 60 seconds (ISR)
@@ -65,7 +67,7 @@ export default async function StoreLayout({
   if (requestedHost) {
     raw = await prisma.company.findUnique({
       where: { domain: requestedHost },
-      include: baseInclude(),
+      include: leanShellInclude(),
     });
   }
 
@@ -73,7 +75,7 @@ export default async function StoreLayout({
   if (!raw && requestedSubdomain) {
     raw = await prisma.company.findUnique({
       where: { slug: requestedSubdomain },
-      include: baseInclude(),
+      include: leanShellInclude(),
     });
   }
 
@@ -81,7 +83,7 @@ export default async function StoreLayout({
   if (!raw) {
     raw = await prisma.company.findUnique({
       where: { slug: params.slug },
-      include: baseInclude(),
+      include: leanShellInclude(),
     });
   }
 
@@ -90,11 +92,6 @@ export default async function StoreLayout({
   }
 
   const storeFormData = transformCompanyToStoreForm(raw);
-
-  console.log("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
-  console.log(raw);
-  console.log("qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq");
-  console.log(storeFormData);
 
   const type = normalizeHeaderFooterCategory(storeFormData.category || 'other');
   const LayoutComponent = categoryHeaderFooterLayoutMap[type] ?? categoryHeaderFooterLayoutMap['default'];
@@ -105,75 +102,57 @@ export default async function StoreLayout({
   return (
     <StoreContextProvider initialStore={storeFormData} userRole="ADMIN" userId={userId}>
       <div className="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
-        <Suspense fallback={<div>Loading...</div> /* Consider a Skeleton UI */}>
-          <LayoutComponent params={{ storeFormData }}>{children}</LayoutComponent>
-        </Suspense>
+        {/* Header/Footer wrapper with shell data */}
+        <LayoutComponent params={{ storeFormData }}>
+          {/* Wrap children in Suspense to enable streaming */}
+          <Suspense fallback={<LoadingSpinner />}>
+            {children}
+          </Suspense>
+        </LayoutComponent>
       </div>
     </StoreContextProvider>
   );
 }
 
-function baseInclude() {
+/**
+ * LEAN SHELL INCLUDE: Only fetch data needed for header, footer, and global theme
+ * Page-specific data (listings, testimonials, blogs, etc.) will be fetched in page.tsx
+ */
+function leanShellInclude() {
   return {
-      socialLinks: true,
-      blogs: { orderBy: { publishedAt: "desc" as const } },
-      policies: true,
-      faqs: { orderBy: { order: "asc" as const } },
-      testimonials: { orderBy: { order: "asc" as const } },
-      heroSlides: { orderBy: { order: "asc" as const } },
-      promotions: {
-        select:{
-          title: true,
-          description: true,
-          startsAt: true,
-          endsAt: true,
-          badgeText: true,
-          price: true,
-          ctaText: true,
-          ctaLink: true,
-          bannerUrl: true,
-
-          // New fields for richer site promotion
-          featureImage1: true,
-          featureImage2: true,
-          featureImage3: true,
-
-          perks: true, // e.g. [{ icon: "SparklesIcon", label: "Uncompromising Quality" }]
-          trustLogos: true, // e.g. ["/logos/google.svg", "/logos/microsoft.svg"]
-        }
-      },
-      SEO: true,
-      AnalyticsConfig: true,
-      PaymentSettings: true,
-      ShippingSettings: true,
-      PageSection: { orderBy: { order: "asc" as const } },
-      appPromos: true,
-      Collection: { orderBy: { order: "asc" as const } },
-      Announcement: { orderBy: { publishedAt: "desc" as const } },
-      marketplaceListings: {
-        // where: { status: ListingStatus.ACTIVE },
-        take: 20,
-        select: {
-          id: true, name: true, description: true, finalPrice: true, sellingPrice: true, images: true, isAvailable: true, isFeatured: true, category: true,
-        },
-      },
-      StoreCategory: { orderBy: { sortOrder: "asc" as const }, include: { category: { select: { id: true, name: true, slug: true, image: true, icon: true } } } },
-      Writer: { include: { user: { select: { id: true, name: true, image: true } } } },
-      Expert: { include: { user: { select: { id: true, name: true, image: true } } } },
-      Doctor: { include: { User: { select: { id: true, name: true, image: true } } } },
-      salesAgents: { include: { user: { select: { id: true, name: true, image: true } } } },
-      Podcast: true,
-      courses: true,
-      events:true,
-      Package:true,
-      Project:true,
-      services: true,
-      CoreValues:true,
-      CompanyLocation: { include: { location: true } },
-      Destination: true,
-      TourPackage: true,
-      educators: { include: { user: { select: { id: true, name: true, image: true } } } },
-    };    
+    // Essential for theme and branding
+    SEO: true,
+    AnalyticsConfig: true,
+    
+    // Navigation categories (needed for header menu)
+    StoreCategory: { 
+      orderBy: { sortOrder: "asc" as const }, 
+      include: { 
+        category: { 
+          select: { id: true, name: true, slug: true, image: true, icon: true } 
+        } 
+      } 
+    },
+    
+    // Latest announcement (often shown in header/banner)
+    Announcement: { 
+      orderBy: { publishedAt: "desc" as const },
+      take: 1, // Only get the latest one
+    },
+    
+    // Social links for footer
+    socialLinks: true,
+    
+    // Policies for footer
+    policies: true,
+    
+    // Company locations for footer/contact
+    CompanyLocation: { 
+      include: { 
+        location: true 
+      } 
+    },
+  };
 }
 
 function normalizeHeaderFooterCategory(raw: string) {

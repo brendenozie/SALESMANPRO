@@ -352,15 +352,14 @@ const sampleStoreData : StoreForm = {
 //──────────────────────────────────────────────────────────────────────────────
 // Main RealEstateSite Component
 //──────────────────────────────────────────────────────────────────────────────
-export default function RealEstateSite() {
+export default function RealEstateSite({ pageData }: { pageData: StoreForm }) {
 
   const router = useRouter();
-  const { storeFormData } = useStoreContext(); // Assuming this is where dynamic store data might come from
+  const { storeFormData } = useStoreContext(); // Use for global theme settings only
 
-  // Prioritize dynamic data from context, fall back to sample data
-  // const storeData = sampleStoreData;
-  const storeData = storeFormData && Object.keys(storeFormData).length > 0
-    ? storeFormData
+  // Use pageData for all content, fall back to sample data if needed
+  const storeData = pageData && Object.keys(pageData).length > 0
+    ? pageData
     : sampleStoreData;
 
   // Destructure data using the potentially updated storeData
