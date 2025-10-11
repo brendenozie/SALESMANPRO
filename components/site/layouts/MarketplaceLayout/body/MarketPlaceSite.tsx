@@ -46,9 +46,12 @@ const loader = ({ src, width, quality }: { src: string; width: number; quality?:
 
 
 
-export default function MarketplaceSite() {
+export default function MarketPlaceSite({ pageData }: { pageData: StoreForm }) {
 
-  const { storeFormData } = useStoreContext();
+  const { storeFormData } = useStoreContext(); // Use for global theme settings only
+  
+  // Use pageData for all content
+  const siteData = pageData || storeFormData;
   
   const router = useRouter();
   const [categories, setCategories] = useState<any[]>([]);
@@ -67,7 +70,7 @@ export default function MarketplaceSite() {
   return (
     <div>
       
-       <HeroBanner storeFormData={storeFormData} />
+       <HeroBanner storeFormData={siteData} />
 
        <CategoryCarousel storeFormData={storeFormData}  />
 

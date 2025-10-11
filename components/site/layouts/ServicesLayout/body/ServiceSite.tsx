@@ -13,6 +13,7 @@ import FAQSection from "../components/FAQSection";
 import CleaningTipsSection from "../components/CleaningTipsSection";
 import GetStartedSection from "../components/GetStartedSection";
 import BookingFormSection from "../components/BookingFormSection";
+import { StoreForm } from "@/types/typings";
 
 const loader = ({
   src,
@@ -25,13 +26,15 @@ const loader = ({
 }) => `${src}?w=${width}&q=${quality || 75}`;
 
 
-export default function ServiceSite() {
+export default function ServiceSite({ pageData }: { pageData: StoreForm }) {
   
-  const { storeFormData } = useStoreContext();
-  // storeFormData should be the same shape you constructed in StoreLayout
+  const { storeFormData } = useStoreContext(); // Use for global theme settings only
+  
+  // Use pageData for all content
+  const siteData = pageData || storeFormData;
 
-  // If there's any chance `storeFormData` is not yet loaded, guard early:
-  if (!storeFormData) {
+  // If there's any chance data is not yet loaded, guard early:
+  if (!siteData) {
     return (
       <div className="flex items-center justify-center h-64">
         <p className="text-gray-600">Loading...</p>
@@ -42,7 +45,7 @@ export default function ServiceSite() {
   return (
     <>
       {/* Hero Section */}
-      <HeroSection storeFormData={storeFormData} />
+      <HeroSection storeFormData={siteData} />
 
       <AboutSection />
 

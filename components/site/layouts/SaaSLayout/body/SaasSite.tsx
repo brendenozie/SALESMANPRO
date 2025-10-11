@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 // Assuming useStoreContext might still be used elsewhere, keeping it,
 // but for the sake of this component, we'll define store data directly.
 import { useStoreContext } from "@/contexts/StoreContext";
+import { StoreForm } from "@/types/typings";
 
 // Import all enhanced child components
 import EnhancedHeroSection from "./components/EnhancedHeroSection";
@@ -230,20 +231,22 @@ const loader = ({
   quality?: number;
 }) => `${src}?w=${width}&q=${quality || 75}`;
 
-export default function SaasSite() {
+export default function SaaSSite({ pageData }: { pageData: StoreForm }) {
   const router = useRouter();
-  // Using useStoreContext if it's meant for global state/data management,
-  // but for the sake of explicit data for these sections, we use siteStoreData.
-  // const { storeFormData } = useStoreContext(); // Keeping for context if needed elsewhere
+  // Using useStoreContext for global theme settings only
+  const { storeFormData } = useStoreContext();
+  
+  // Use pageData or fallback to siteStoreData
+  const siteData = pageData || siteStoreData;
 
   const handleSignup = (planId?: string) => {
     // Modify this if your signup page handles specific plan IDs
     if (planId && planId !== "enterprise") {
-      router.push(`/${siteStoreData.slug}/signup?plan=${planId}`);
+      router.push(`/${siteData.slug}/signup?plan=${planId}`);
     } else if (planId === "enterprise") {
-      router.push(`/${siteStoreData.slug}/contact`); // Direct to contact for enterprise
+      router.push(`/${siteData.slug}/contact`); // Direct to contact for enterprise
     } else {
-      router.push(`/${siteStoreData.slug}/signup`);
+      router.push(`/${siteData.slug}/signup`);
     }
   };
 

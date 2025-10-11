@@ -7,11 +7,12 @@ import WhyDineWithUs from "../components/WhyDineWithUs";
 import Testimonials from "../components/Testimonials";
 import RestaurantGallery from "../components/RestaurantGallery";
 import RestaurantFAQs from "../components/RestaurantFAQs";
+import { StoreForm } from "@/types/typings";
 
 //----------------------------------------------
 // RestaurantSite component, now using StoreContext
 //----------------------------------------------
-export default function RestaurantSite() {
+export default function RestaurentSite({ pageData }: { pageData: StoreForm }) {
 
   return (
       <div className="relative bg-cream min-h-screen text-gray-900">

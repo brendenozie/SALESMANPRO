@@ -9,12 +9,13 @@ import TestimonialsSection from "./components/TestimonialsSection";
 import PopularBlogsSection from "./components/PopularBlogsSection";
 import CtaSection from "./components/CtaSection";
 import FAQSection from "./components/FAQSection";
+import { StoreForm } from "@/types/typings";
 
 
 //----------------------------------------------
 // Main CoursesSite component (client side)
 //----------------------------------------------
-export default function CoursesSite() {
+export default function CoursesSite({ pageData }: { pageData: StoreForm }) {
   
   return (
     <div className="space-y-32 font-sans">

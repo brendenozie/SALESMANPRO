@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useStoreContext } from "@/contexts/StoreContext";
+import { StoreForm } from "@/types/typings";
 import FeaturedVehicleSection from "./components/FeaturedVehicleSection";
 import HeroSection from "./components/HeroSection";
 import TrendingLocations from "./components/TrendingLocationsSection";
@@ -53,19 +54,21 @@ const tours = [
 
 
 
-export default function AutomotiveSite() {
-  const { storeFormData } = useStoreContext();
+export default function AutomotiveSite({ pageData }: { pageData: StoreForm }) {
+  const { storeFormData } = useStoreContext(); // Use for global theme settings only
   const [promos, setPromos] = useState<any[]>([]);
   const [vehicles, setVehicles] = useState<VehicleCardProps[]>([]);
   const [testimonials, setTestimonials] = useState<any[]>([]);
 
+  // Use pageData for all content
+  const siteData = pageData || storeFormData;
   
-  // marketplaceListings from storeFormData → map to VehicleCardProps
-  const listings = storeFormData?.marketplaceListings || [];
+  // marketplaceListings from siteData → map to VehicleCardProps
+  const listings = siteData?.marketplaceListings || [];
 
   useEffect(() => {
-    // Pull promotions from storeFormData.promotions
-    setPromos(storeFormData?.promotions || []);
+    // Pull promotions from siteData.promotions
+    setPromos(siteData?.promotions || []);
 
 
     // const formattedVehicles: VehicleCardProps[] = listings.map((listing: any) => ({

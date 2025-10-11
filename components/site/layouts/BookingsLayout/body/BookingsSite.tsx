@@ -11,8 +11,9 @@ import MassageFeatures from './components/MessagesSection';
 import TestimonialsSection from './components/TestimonialsSection';
 import CtaSection from './components/CtaSection';
 import FAQsSection from './components/FAQsSection';
+import { StoreForm } from '@/types/typings';
 
-export default function BookingsSite() {
+export default function BookingsSite({ pageData }: { pageData: StoreForm }) {
 
   return (
     <>

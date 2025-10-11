@@ -20,18 +20,18 @@ import TestimonialsSection from './components/TestimonialsSection';
 import FAQSection from './components/FAQSection';
 import CtaSection from './components/CtaSection';
 import ContactSection from './components/ContactSection';
-import { MarketListingForm } from '@/types/typings';
+import { MarketListingForm, StoreForm } from '@/types/typings';
 
 // Loader for next/image
 const loader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality || 75}`;
 
-export default function PortfolioSite() {
+export default function PortfolioSite({ pageData }: { pageData: StoreForm }) {
 
   //   const router = useRouter();
   // const { storeFormData } = useStoreContext();
   // const {
   //   projects
-  // } = storeFormData;
+  // } = pageData;
 
   return (
     <div className=" font-sans text-gray-800">

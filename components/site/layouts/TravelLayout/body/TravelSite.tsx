@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useStoreContext } from "@/contexts/StoreContext";
+import { StoreForm } from "@/types/typings";
 import Testimonials from "./components/TestimonialsSection";
 import Hero from "./components/HeroSection";
 import FilterBar from "./components/FilterBarSection";
@@ -308,9 +309,12 @@ interface TravelSiteProps {
 // const travelTypes = ["Adventure", "Relaxation", "Cultural", "Family"];
 // const regions = ["Europe", "Asia", "South America", "Africa", "Oceania"];
 
-export default function TravelSite() {
+export default function TravelSite({ pageData }: { pageData: StoreForm }) {
   const router = useRouter();
-  const { storeFormData } = useStoreContext();
+  const { storeFormData } = useStoreContext(); // Use for global theme settings only
+
+  // Use pageData for all content
+  const siteData = pageData || storeFormData;
 
   const [categories, setCategories] = useState<any[]>([]);
   const [featured, setFeatured] = useState<any[]>([]);
@@ -318,11 +322,11 @@ export default function TravelSite() {
   const [faqs, setFaqs] = useState<any[]>([]);
 
   useEffect(() => {
-    setCategories(storeFormData?.StoreCategory || []);
-    setFeatured(storeFormData?.marketplaceListings || []);
-    setTestimonials(storeFormData?.testimonials || []);
-    setFaqs(storeFormData?.faqs || []);
-  }, [storeFormData]);
+    setCategories(siteData?.StoreCategory || []);
+    setFeatured(siteData?.marketplaceListings || []);
+    setTestimonials(siteData?.testimonials || []);
+    setFaqs(siteData?.faqs || []);
+  }, [siteData]);
 
   // State for the search form is now managed here
   const [filters, setFilters] = useState<any>({
