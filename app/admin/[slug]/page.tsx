@@ -90,10 +90,85 @@ const educatorRoles = [
 
 // --- Fallback Data Utility ---
 function getFallbackDashboardData(type: 'student' | 'principal' | 'tutor') {
-  if (type === 'student') { /* ...same as previous fallback... */ }
-  if (type === 'principal') { /* ...same as previous fallback... */ }
-  return { /* ...same as previous fallback... */ };
+  if (type === 'student') {
+    return {
+      studentStats: [
+        { title: 'Courses Enrolled', value: '5', description: 'Total active courses', color: 'bg-blue-50' },
+        { title: 'Assignments Due', value: '3', description: 'Upcoming deadlines', color: 'bg-red-50' },
+        { title: 'Average Grade', value: 'B+', description: 'Overall academic performance', color: 'bg-green-50' },
+        { title: 'Completed Lessons', value: '45', description: 'Lessons finished this week', color: 'bg-purple-50' },
+      ],
+      enrolledCourses: [
+        { id: 'mock-c1', title: 'Mathematics I', progress: 75 },
+        { id: 'mock-c2', title: 'Physics Basics', progress: 50 },
+      ],
+      recentGrades: [
+        { subject: 'Math', score: 88, date: '2025-06-28' },
+        { subject: 'English', score: 92, date: '2025-06-25' },
+      ],
+      upcomingAssignments: [
+        { id: 'mock-a1', title: 'Algebra Homework', dueDate: '2025-07-05', course: 'Mathematics I' },
+        { id: 'mock-a2', title: 'Physics Lab Report', dueDate: '2025-07-08', course: 'Physics Basics' },
+      ],
+    };
+  }
+  if (type === 'principal') {
+    return {
+      principalStats: [
+        { title: 'Total Students', value: '1,245', description: 'Enrolled across all grades', color: 'bg-blue-50' },
+        { title: 'Total Teachers', value: '86', description: 'Full-time and part-time staff', color: 'bg-green-50' },
+        { title: 'Upcoming Events', value: '3', description: 'Key events this week', color: 'bg-purple-50' },
+        { title: 'Pending Approvals', value: '12', description: 'Administrative actions required', color: 'bg-yellow-50' },
+      ],
+      quickActions: [
+        { label: 'Teacher Reports', href: `/admin/fallback-company-id/reports` },
+        { label: 'Student Discipline', href: '#' },
+        { label: 'Exam Timetables', href: `/admin/fallback-company-id/events` },
+        { label: 'School Announcements', href: `/admin/fallback-company-id/messages` },
+      ],
+      announcements: [
+        { id: 1, text: '📢 Midterm exams begin next Monday.', type: 'info' },
+        { id: 2, text: '🧪 Science fair projects due Friday. Submit early!', type: 'warning' },
+        { id: 3, text: '📌 New cafeteria schedule published. Check details.', type: 'info' },
+      ],
+      recentStaffMessages: [
+        { id: 'mock1', name: 'Mrs. Owino', message: 'Submitted report on 10A performance.', time: '10:30 AM' },
+        { id: 'mock2', name: 'Mr. Kiptoo', message: 'Requesting projector for staff meeting.', time: 'Yesterday' },
+        { id: 'mock3', name: 'Ms. Cherono', message: 'New student registration complete.', time: '2 hours ago' },
+      ],
+      performanceOverviewData: {
+        series: [{ name: "Student Performance", data: [85, 88, 90, 87, 89, 91, 92] }, { name: "Teacher Effectiveness", data: [78, 80, 82, 85, 83, 86, 88] }],
+        categories: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"],
+      },
+      attendanceInsightsData: {
+        series: [45, 30, 15, 10],
+        labels: ["Students", "Teachers", "Staff", "Other"],
+      },
+    };
+  }
+  // Tutor
+  return {
+    tutorStats: [
+      { title: 'Courses Assigned', value: '3', description: 'Currently teaching', color: 'bg-blue-50' },
+      { title: 'Total Students', value: '120', description: 'Across all courses', color: 'bg-green-50' },
+      { title: 'Pending Grading', value: '15', description: 'Assignments to review', color: 'bg-red-50' },
+      { title: 'Upcoming Classes', value: '4', description: 'Scheduled this week', color: 'bg-purple-50' },
+    ],
+    coursesTaught: [
+      { id: 'mock-tc1', title: 'Advanced Algebra', totalStudents: 40 },
+      { id: 'mock-tc2', title: 'Introduction to Biology', totalStudents: 50 },
+    ],
+    recentSubmissions: [
+      { studentName: 'Alice Smith', assignment: 'Essay on Photosynthesis', status: 'Submitted', submissionDate: '2025-07-01' },
+      { studentName: 'Bob Johnson', assignment: 'Math Problem Set 5', status: 'Submitted', submissionDate: '2025-06-30' },
+    ],
+    pendingGrading: [
+      { id: 'pg1', assignment: 'Physics Quiz', student: 'Charlie Brown' },
+      { id: 'pg2', assignment: 'Chemistry Lab Report', student: 'Diana Prince' },
+    ],
+  };
 }
+
 
 // --- Centralized Error Handling ---
 function logError(message: string, error?: unknown) {
