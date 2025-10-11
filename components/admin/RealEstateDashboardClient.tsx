@@ -14,6 +14,9 @@ import {
   ArrowPathIcon,
   ExclamationCircleIcon,
 } from '@heroicons/react/24/outline';
+import { useParams } from 'next/navigation';
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
 // --- INTERFACES ---
 interface Session {
@@ -52,19 +55,24 @@ const ChartThree = () => (
 
 // --- MAIN COMPONENT ---
 export default function RealEstateDashboardClient() {
+  const { slug : companyId } = useParams();
   const [data, setData] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
   // Mocking session data for display purposes. Authentication is handled by the API.
-  const session: Session = { user: { name: "Brenden Ozie", email: "brenden@agency.com" } };
+  const session: Session = { user: { name: "", email: "bl@agency.com" } };
 
   useEffect(() => {
     const fetchData = async () => {
         setIsLoading(true);
         setError(null);
         try {
-            const response = await fetch('/api/real-estate/dashboard');
+            const response = await fetch(`${apiBaseUrl}/admin/dashboard/real-estate?companyId=${companyId}`, {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+            });
             const result = await response.json();
             if (!response.ok || !result.success) {
                 throw new Error(result.data?.message || "Failed to fetch dashboard data.");

@@ -14,6 +14,9 @@ import {
   BoltIcon,
   LightBulbIcon,
 } from '@heroicons/react/24/outline';
+import { useParams } from 'next/navigation';
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
 // Framer Motion variants
 const sectionVariants = {
@@ -50,21 +53,29 @@ interface DashboardData {
     upcomingEventsList: Event[];
 }
 
-export default function AdminDashboard({ params }: { params: { adminSlug: string } }) {
+export default function AdminDashboard() {
+  const {slug:companyId} = useParams();
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchDashboardData = useCallback(async (adminSlug: string) => {
+  const fetchDashboardData = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/api/admin/dashboard/${adminSlug}`);
+      const response = await fetch(`${apiBaseUrl}/admin/dashboard/events/${companyId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Credentials': 'include',
+        },
+      });
       const result = await response.json();
 
       if (!response.ok || !result.success) {
           throw new Error(result.data?.message || 'Failed to fetch dashboard data');
       }
+
       setDashboardData(result.data);
 
     } catch (err: any) {
@@ -76,10 +87,10 @@ export default function AdminDashboard({ params }: { params: { adminSlug: string
   }, []);
 
   useEffect(() => {
-    if (params.adminSlug) {
-      fetchDashboardData(params.adminSlug);
+    if (companyId) {
+      fetchDashboardData();
     }
-  }, [params.adminSlug, fetchDashboardData]);
+  }, [companyId, fetchDashboardData]);
 
   if (isLoading) {
     return (
@@ -146,7 +157,7 @@ export default function AdminDashboard({ params }: { params: { adminSlug: string
             Event <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-indigo-500">Command Center</span>
           </h1>
           <p className="mt-3 text-lg text-gray-400">
-            Monitoring real-time performance for admin slug: <span className="text-cyan-400 font-mono">{params.adminSlug}</span>
+            Monitoring real-time performance for admin 
           </p>
         </motion.header>
 
@@ -225,7 +236,7 @@ export default function AdminDashboard({ params }: { params: { adminSlug: string
                                     <div className="text-base text-gray-300">
                                         <span className="text-cyan-400 font-bold text-xl">{event.ticketsSold.toLocaleString()}</span> sold
                                     </div>
-                                    <a href={`/admin/${params.adminSlug}/events/${event.id}`} className="px-4 py-2 bg-indigo-600 rounded-full text-white text-sm font-medium hover:bg-indigo-700 transition flex items-center">
+                                    <a href={`/admin/${companyId}/events/${event.id}`} className="px-4 py-2 bg-indigo-600 rounded-full text-white text-sm font-medium hover:bg-indigo-700 transition flex items-center">
                                         Manage <ArrowRightIcon className="ml-2 w-4 h-4" />
                                     </a>
                                 </div>

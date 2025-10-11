@@ -14,6 +14,9 @@ import {
   ArrowPathIcon,
   ExclamationCircleIcon
 } from '@heroicons/react/24/outline';
+import { useParams } from 'next/navigation';
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
 
 // --- TYPE DEFINITIONS ---
@@ -149,6 +152,7 @@ const VehicleCategoriesChart: React.FC<{ data: { type: string, count: number }[]
 
 // --- MAIN DASHBOARD COMPONENT ---
 export default function AutomotiveDashboardClient() {
+    const { slug: companyId } = useParams();
   const [data, setData] = useState<AutomotiveDashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -158,7 +162,13 @@ export default function AutomotiveDashboardClient() {
         setIsLoading(true);
         setError(null);
         try {
-            const response = await fetch('/api/automotive/dashboard');
+            const response = await fetch(`${apiBaseUrl}/admin/dashboard/automotive/${companyId}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+            });
             const result = await response.json();
             if (!response.ok || !result.success) {
                 throw new Error(result.data?.message || "Failed to fetch dashboard data.");

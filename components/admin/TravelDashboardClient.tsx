@@ -14,6 +14,9 @@ import {
   ArrowPathIcon,
   ExclamationCircleIcon
 } from '@heroicons/react/24/outline';
+import { useParams } from 'next/navigation';
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
 // --- TYPE DEFINITIONS ---
 interface UpcomingTour {
@@ -85,6 +88,7 @@ const MetricCard: React.FC<MetricCardProps> = ({ title, value, icon: Icon, link,
 
 // --- MAIN DASHBOARD COMPONENT ---
 export default function TravelDashboard() {
+  const { slug: companyId } = useParams();
   const [data, setData] = useState<TravelDashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -94,7 +98,14 @@ export default function TravelDashboard() {
         setIsLoading(true);
         setError(null);
         try {
-            const response = await fetch('/api/travel/dashboard');
+            const response = await fetch(`${apiBaseUrl}/admin/dashboard/travel/${companyId}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+            });
+            
             const result = await response.json();
             if (!response.ok || !result.success) {
                 throw new Error(result.data?.message || "Failed to fetch dashboard data.");

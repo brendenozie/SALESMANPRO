@@ -17,6 +17,10 @@ import {
   ArrowPathIcon
 } from '@heroicons/react/24/outline';
 
+import { useParams } from 'next/navigation';
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+
 interface Task {
   id: string;
   name: string;
@@ -110,6 +114,7 @@ const ViewerTrendsChart: React.FC = () => {
 
 // --- Main Dashboard Component ---
 export default function MediaDashboardClient() {
+  const { slug: companyId } = useParams();
   const [data, setData] = useState<MediaDashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -119,11 +124,18 @@ export default function MediaDashboardClient() {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await fetch('/api/media/dashboard');
+        const response = await fetch(`${apiBaseUrl}/admin/dashboard/media?companyId=${companyId}`, {
+          headers: {
+            'Content-Type': 'application/json',
+            'Credentials': 'include'
+          }
+        });
         const result = await response.json();
+
         if (!response.ok || !result.success) {
           throw new Error(result.data?.message || "Failed to fetch dashboard data.");
         }
+        
         setData(result.data);
       } catch (err: any) {
         setError(err.message);
@@ -154,14 +166,14 @@ export default function MediaDashboardClient() {
   }
 
   const { totalVideos, totalArticles, activeSubscribers, revenueThisMonth, premieresScheduled } = data.metrics;
-  const adminSlug = 'content-manager'; // Placeholder
+  // const adminSlug = 'content-manager'; // Placeholder
 
   const cards: Metric[] = [
-    { title: 'Total Videos', value: totalVideos, icon: FilmIcon, trend: 8.5, link: `/admin/${adminSlug}/videos` },
-    { title: 'Active Subscribers', value: activeSubscribers, icon: UserGroupIcon, trend: 12.3, link: `/admin/${adminSlug}/subscribers` },
-    { title: 'Monthly Revenue', value: `$${revenueThisMonth.toLocaleString()}`, icon: CurrencyDollarIcon, trend: 5.2, link: `/admin/${adminSlug}/revenue` },
-    { title: 'Scheduled Premieres', value: premieresScheduled, icon: PlayCircleIcon, trend: 0, link: `/admin/${adminSlug}/premieres` },
-    { title: 'Total Articles', value: totalArticles, icon: DocumentTextIcon, trend: -1.1, link: `/admin/${adminSlug}/articles` },
+    { title: 'Total Videos', value: totalVideos, icon: FilmIcon, trend: 8.5, link: `/admin/${companyId}/videos` },
+    { title: 'Active Subscribers', value: activeSubscribers, icon: UserGroupIcon, trend: 12.3, link: `/admin/${companyId}/subscribers` },
+    { title: 'Monthly Revenue', value: `$${revenueThisMonth.toLocaleString()}`, icon: CurrencyDollarIcon, trend: 5.2, link: `/admin/${companyId}/revenue` },
+    { title: 'Scheduled Premieres', value: premieresScheduled, icon: PlayCircleIcon, trend: 0, link: `/admin/${companyId}/premieres` },
+    { title: 'Total Articles', value: totalArticles, icon: DocumentTextIcon, trend: -1.1, link: `/admin/${companyId}/articles` },
   ];
 
   return (
@@ -187,7 +199,7 @@ export default function MediaDashboardClient() {
               <h2 className="text-xl font-bold text-white flex items-center gap-2">
                 <CalendarDaysIcon className='w-6 h-6 text-orange-400'/> Editorial Pipeline
               </h2>
-              <a href={`/admin/${adminSlug}/tasks`} className="text-sm text-cyan-400 hover:text-cyan-300 transition-colors">View All</a>
+              <a href={`/admin/${companyId}/tasks`} className="text-sm text-cyan-400 hover:text-cyan-300 transition-colors">View All</a>
             </div>
             {data.tasks.length > 0 ? (
                 <ul className="space-y-4">

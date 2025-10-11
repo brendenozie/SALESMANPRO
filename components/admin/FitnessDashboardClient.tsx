@@ -13,6 +13,9 @@ import {
   ArrowPathIcon,
   ExclamationCircleIcon
 } from "@heroicons/react/24/outline";
+import { useParams } from 'next/navigation';
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
 // --- INTERFACES ---
 interface FitnessStats {
@@ -192,6 +195,7 @@ const MembershipGoalTracker: React.FC<GoalTrackerProps> = ({ target, achieved, d
 
 // --- MAIN DASHBOARD COMPONENT ---
 export default function FitnessDashboard() {
+    const { slug: companyId } = useParams();
   const [data, setData] = useState<FitnessDashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -201,7 +205,13 @@ export default function FitnessDashboard() {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await fetch('/api/fitness/dashboard');
+        const response = await fetch(`${apiBaseUrl}/admin/dashboard/fitness/${companyId}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+        });
         const result = await response.json();
         if (!response.ok || !result.success) {
           throw new Error(result.data?.message || "Failed to fetch dashboard data.");

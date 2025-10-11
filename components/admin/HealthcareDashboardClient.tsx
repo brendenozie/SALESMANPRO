@@ -13,6 +13,9 @@ import {
   ArrowRightIcon,
   ArrowPathIcon,
 } from '@heroicons/react/24/outline';
+import { useParams } from 'next/navigation';
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
 // --- TYPE DEFINITIONS ---
 interface DashboardCardProps {
@@ -121,19 +124,19 @@ const ActivityLog: React.FC<{ activities: Activity[] }> = ({ activities }) => (
 );
 
 // --- Main Dashboard Component ---
-export default function HealthcareSystemOverview({ params }: { params: { adminSlug: string } }) {
-  const { adminSlug } = params;
+export default function HealthcareSystemOverview() {
+  const { slug: companyId } = useParams();
   const [data, setData] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (adminSlug) {
+    if (companyId) {
       const fetchData = async () => {
         setIsLoading(true);
         setError(null);
         try {
-          const response = await fetch(`/api/healthcare/dashboard/${adminSlug}`);
+          const response = await fetch(`${apiBaseUrl}/admin/dashboard/healthcare/${companyId}`);
           const result = await response.json();
           if (!response.ok || !result.success) {
             throw new Error(result.data?.message || "Failed to fetch dashboard data.");
@@ -147,7 +150,7 @@ export default function HealthcareSystemOverview({ params }: { params: { adminSl
       };
       fetchData();
     }
-  }, [adminSlug]);
+  }, [companyId]);
   
   if (isLoading) {
     return (
@@ -169,13 +172,13 @@ export default function HealthcareSystemOverview({ params }: { params: { adminSl
   }
 
   const dashboardStats = [
-    { icon: UsersIcon, title: 'Total Active Patients', value: data.metrics.totalActivePatients.toLocaleString(), description: 'Currently registered and active.', accentColor: 'text-teal-600', link: `/admin/${adminSlug}/patients`, delay: 0.2 },
-    { icon: CalendarDaysIcon, title: 'Appointments Today', value: data.metrics.upcomingAppointments.toLocaleString(), description: 'Scheduled for today.', accentColor: 'text-blue-600', link: `/admin/${adminSlug}/appointments`, delay: 0.3 },
-    { icon: ClipboardDocumentListIcon, title: 'Unsigned Documents', value: data.metrics.unsignedDocuments.toLocaleString(), description: 'Prescriptions pending sign-off.', accentColor: 'text-orange-600', link: `/admin/${adminSlug}/documents`, delay: 0.4 },
-    { icon: AcademicCapIcon, title: 'Active Physicians', value: data.metrics.activePhysicians.toLocaleString(), description: 'Doctors currently on shift.', accentColor: 'text-indigo-600', link: `/admin/${adminSlug}/doctors`, delay: 0.5 },
+    { icon: UsersIcon, title: 'Total Active Patients', value: data.metrics.totalActivePatients.toLocaleString(), description: 'Currently registered and active.', accentColor: 'text-teal-600', link: `/admin/${companyId}/patients`, delay: 0.2 },
+    { icon: CalendarDaysIcon, title: 'Appointments Today', value: data.metrics.upcomingAppointments.toLocaleString(), description: 'Scheduled for today.', accentColor: 'text-blue-600', link: `/admin/${companyId}/appointments`, delay: 0.3 },
+    { icon: ClipboardDocumentListIcon, title: 'Unsigned Documents', value: data.metrics.unsignedDocuments.toLocaleString(), description: 'Prescriptions pending sign-off.', accentColor: 'text-orange-600', link: `/admin/${companyId}/documents`, delay: 0.4 },
+    { icon: AcademicCapIcon, title: 'Active Physicians', value: data.metrics.activePhysicians.toLocaleString(), description: 'Doctors currently on shift.', accentColor: 'text-indigo-600', link: `/admin/${companyId}/doctors`, delay: 0.5 },
   ];
-  
-  const financialStat = { icon: CurrencyDollarIcon, title: 'Today\'s Gross Revenue', value: `$${data.metrics.todaysRevenue.toLocaleString()}`, description: 'Billed and confirmed revenue.', accentColor: 'text-green-600', link: `/admin/${adminSlug}/billing`, delay: 0.6 };
+
+  const financialStat = { icon: CurrencyDollarIcon, title: 'Today\'s Gross Revenue', value: `$${data.metrics.todaysRevenue.toLocaleString()}`, description: 'Billed and confirmed revenue.', accentColor: 'text-green-600', link: `/admin/${companyId}/billing`, delay: 0.6 };
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans p-8">
@@ -185,7 +188,7 @@ export default function HealthcareSystemOverview({ params }: { params: { adminSl
             Clinical <span className="text-teal-600">System Overview</span>
           </h1>
           <p className="text-lg text-gray-500 mt-2">
-            Monitoring facility operations for <span className="font-semibold text-gray-700">{adminSlug}</span>.
+            Monitoring facility operations.
           </p>
         </motion.header>
 

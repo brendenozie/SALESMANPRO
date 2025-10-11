@@ -10,7 +10,7 @@ import EcomDashboardClient, { DashboardData } from '@/components/admin/EcomDashb
 import RealEstateDashboardClient from '@/components/admin/RealEstateDashboardClient';
 import AutomotiveDashboardClient from '@/components/admin/AutomotiveDashboardClient';
 import BlogDashboardClient from '@/components/admin/BlogDashboardClient';
-import DirectoryDashboardClient from '@/components/admin/DirectoryDashboardClient';
+// import DirectoryDashboardClient from '@/components/admin/DirectoryDashboardClient';
 import EventDashboardClient from '@/components/admin/EventDashboardClient';
 import FinanceDashboardClient from '@/components/admin/FinanceDashboardClient';
 import FitnessDashboardClient from '@/components/admin/FitnessDashboardClient';
@@ -21,7 +21,7 @@ import PortfolioDashboardClient from '@/components/admin/PortfolioDashboardClien
 import RestaurantDashboardClient from '@/components/admin/RestaurantDashboardClient';
 import SaaSDashboardClient from '@/components/admin/SaaSDashboardClient';
 import TravelDashboardClient from '@/components/admin/TravelDashboardClient';
-import MarketplaceDashboard from '@/components/admin/MarketplaceDashboard';
+// import MarketplaceDashboard from '@/components/admin/MarketplaceDashboard';
 import ServiceProviderDashboard, { ServiceProviderDashboardData } from '@/components/admin/ServiceProviderDashboard';
 import BookingAppointmentsDashboard from '@/components/admin/BookingAppointmentsDashboard';
 
@@ -516,15 +516,15 @@ export default async function AdminDashboardPage({ params }: { params: { slug: s
       case 'blog & content':
         return <BlogDashboardClient />;
       case 'directory & listings':
-        return <DirectoryDashboardClient />;
+        return <EcomDashboardClient {...({...dashboardData, slug: companyId  }) as DashboardData} />//DirectoryDashboardClient />;
       case 'nonprofit & community':
         return <NonprofitDashboardClient />;
       case 'restaurant & food delivery':
         return <RestaurantDashboardClient />;
       case 'event & ticketing':
-        return <EventDashboardClient  params= { {adminSlug : companyId} }/>;
+        return <EventDashboardClient/>;
       case 'healthcare & clinics':
-        return <HealthcareDashboardClient params= { {adminSlug : companyId} }/>;
+        return <HealthcareDashboardClient/>;
       case 'saas & web apps':
         return <SaaSDashboardClient />;
       case 'dashboards':
@@ -540,7 +540,7 @@ export default async function AdminDashboardPage({ params }: { params: { slug: s
       case 'fitness & wellness':
         return <FitnessDashboardClient />;
       case 'marketplace':
-        return <MarketplaceDashboard />;
+        return <EcomDashboardClient {...({...dashboardData, slug: companyId  }) as DashboardData}  /> //MarketplaceDashboard />;
         
       default:
         return <UncategorizedDashboard />;

@@ -14,6 +14,9 @@ import {
   RocketLaunchIcon,
   ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
+import { useParams } from 'next/navigation';
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
 // --- MOCK CHART COMPONENTS (FOR SINGLE-FILE MANDATE) ---
 
@@ -66,6 +69,8 @@ export interface DashboardData {
 // --- MAIN COMPONENT ---
 
 export default function PortfolioDashboardClient() {
+  const { slug: companyId } = useParams();
+
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -76,7 +81,13 @@ export default function PortfolioDashboardClient() {
         setLoading(true);
         setError(null);
         try {
-            const response = await fetch('/api/portfolio/dashboard');
+            const response = await fetch(`${apiBaseUrl}/admin/dashboard/portfolio/${companyId}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Credentials': 'include',
+                  },
+            });
             const result = await response.json();
 
             if (!response.ok || !result.success) {

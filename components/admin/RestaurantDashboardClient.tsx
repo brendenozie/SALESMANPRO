@@ -14,6 +14,9 @@ import {
   TicketIcon,
   ExclamationTriangleIcon,
 } from '@heroicons/react/24/outline';
+import { useParams } from 'next/navigation';
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
 // --- MOCK CHART COMPONENTS (FOR SINGLE-FILE MANDATE) ---
 
@@ -65,6 +68,7 @@ interface RestaurantDashboardData {
 // --- MAIN COMPONENT ---
 
 export default function RestaurantDashboardClient() {
+  const { slug: companyId } = useParams();
   const [data, setData] = useState<RestaurantDashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -75,7 +79,13 @@ export default function RestaurantDashboardClient() {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch('/api/restaurant/dashboard');
+        const response = await fetch(`${apiBaseUrl}/admin/dashboard/restaurent/${companyId}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Credentials': 'include',
+          },
+        });
         const result = await response.json();
         if (!response.ok || !result.success) {
           throw new Error(result.data?.message || 'Failed to fetch dashboard data');
