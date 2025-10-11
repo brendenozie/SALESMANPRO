@@ -2,8 +2,9 @@ import React from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { HomeIcon, InboxIcon } from "@heroicons/react/24/outline";
+import { StoreForm } from "@/types/typings";
 
-export default function ErrorPage({ status = 404, message = "Page Not Found" }) {
+export default function DefaultSite({ pageData, status = 404, message = "Page Not Found" }: { pageData: StoreForm; status?: number; message?: string }) {
   const router = useRouter();
   const defaultMessages: Record<number, string> = {
     404: "Oops! We can't find that page.",

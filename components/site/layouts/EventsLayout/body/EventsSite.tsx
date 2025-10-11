@@ -10,6 +10,7 @@ import TestimonialsSection from "./components/TestimonialsSection";
 import PricingSection from "./components/PricingSection";
 import FAQSection from "./components/FAQSection";
 import CallToActionSection from "./components/CallToActionSection";
+import { StoreForm } from "@/types/typings";
 
 //----------------------------------------------
 // Image loader (same as elsewhere)
@@ -27,7 +28,7 @@ const loader = ({
 //----------------------------------------------
 // EventsSite component, using StoreContext
 //----------------------------------------------
-export default function EventsSite() {
+export default function EventsSite({ pageData }: { pageData: StoreForm }) {
 
   return (
     <div className="font-sans">

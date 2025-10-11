@@ -9,8 +9,9 @@ import StaffWritersSection from './components/StaffWritersSection';
 import LatestNewsSection from './components/LatestNewsSection';
 import CtaSection from './components/CtaSection';
 import FeaturedCategoriesSection from './components/FeaturedCategoriesSection';
+import { StoreForm } from '@/types/typings';
 
-export default function BlogSite() {
+export default function BlogSite({ pageData }: { pageData: StoreForm }) {
   
   return (
     <>

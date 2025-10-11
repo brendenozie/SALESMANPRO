@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowUpCircleIcon } from "@heroicons/react/24/solid"; // Added for scroll-to-top
 import { useStoreContext } from "@/contexts/StoreContext";
+import { StoreForm } from "@/types/typings";
 
 // Import your enhanced child components
 import MediaHeroSection from "./components/HeroSection";
@@ -72,26 +73,25 @@ const mockStoreData : any= {
 // --- End Mock Data ---
 
 
-export default function MediaSite() {
+export default function MediaSite({ pageData }: { pageData: StoreForm }) {
   const router = useRouter();
-  const { storeFormData } = useStoreContext();
+  const { storeFormData } = useStoreContext(); // Use for global theme settings only
 
-  // State to hold data, falling back to mockData if context data isn't ready
+  // State to hold data, using pageData with fallback to mockData
   const [dataReady, setDataReady] = useState(false);
   const [displayData, setDisplayData] = useState<typeof mockStoreData | null>(null);
   const [showScrollToTop, setShowScrollToTop] = useState(false);
 
   useEffect(() => {
-    // Simulate loading/fetching storeFormData if it's not immediately available
-    // In a real app, storeFormData would likely come from an async fetch
-    if (storeFormData && Object.keys(storeFormData).length > 0) {
-      setDisplayData(storeFormData as unknown as typeof mockStoreData); // Cast if context type is less specific
+    // Use pageData for all content
+    if (pageData && Object.keys(pageData).length > 0) {
+      setDisplayData(pageData as unknown as typeof mockStoreData); // Cast if context type is less specific
     } else {
-      // Use mock data if context isn't ready or empty, for consistent display
+      // Use mock data if pageData isn't ready or empty, for consistent display
       setDisplayData(mockStoreData);
     }
     setDataReady(true);
-  }, [storeFormData]); // Dependency array ensures effect runs when storeFormData changes
+  }, [pageData]); // Dependency array ensures effect runs when pageData changes
 
   // Scroll-to-top button logic
   useEffect(() => {

@@ -4,6 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { StoreForm } from '@/types/typings';
 
 // Import all your stunning components
 import AboutSection from './components/AboutSection';
@@ -65,11 +66,14 @@ const defaultContactInfo = {
 };
 
 
-export default function HealthCareSite() {
-  const { storeFormData } = useStoreContext();
+export default function HealthCareSite({ pageData }: { pageData: StoreForm }) {
+  const { storeFormData } = useStoreContext(); // Use for global theme settings only
   const router = useRouter();
 
-  // Extracting data from storeFormData or using defaults
+  // Use pageData for all content
+  const siteData = pageData || storeFormData;
+
+  // Extracting data from siteData or using defaults
   const {
     name = defaultStoreName,
     slug = defaultStoreSlug,
@@ -88,7 +92,7 @@ export default function HealthCareSite() {
     address: addressFromStore,
     openingHours: openingHoursFromStore,
     geoLocation,
-  } = storeFormData as any;
+  } = siteData as any;
 
   // Combine tagline and description, prioritizing tagline
   const description = tagline || formDescription || "Your trusted partner in health and wellness. Providing compassionate and comprehensive care for the whole family.";

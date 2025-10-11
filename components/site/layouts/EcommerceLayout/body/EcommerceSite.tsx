@@ -19,11 +19,12 @@ import AllProducts from './components/AllProducts';
 import { StoreForm } from '@/types/typings';
 import { useStoreContext } from '@/contexts/StoreContext';
 
-// type EcommerceSiteProps = {
-//   storeData: StoreForm;
-// };
+type EcommerceSiteProps = {
+  pageData: StoreForm;
+};
 
-export default function EcommerceSite() {
+export default function EcommerceSite({ pageData }: EcommerceSiteProps) {
+  // Still use context for global theme/settings, but use pageData for content
   const { storeFormData } = useStoreContext();
 
   const {
@@ -32,7 +33,7 @@ export default function EcommerceSite() {
     testimonials = [],
     awards = [],
     promotions = [],
-  } = storeFormData || {};
+  } = pageData;
 
   const products = marketplaceListings.length;
   const customers = 0; // Or from your `storeData`
@@ -41,11 +42,11 @@ export default function EcommerceSite() {
 
   return (
     <>
-      <HeroSlider storeFormData={storeFormData} />
-      <CategorySection  storeFormData={storeFormData} />
+      <HeroSlider storeFormData={pageData} />
+      <CategorySection  storeFormData={pageData} />
       <PromoSection promotions={promotions} />
       <PopularProducts />
-      <MetricsSection storeFormData={storeFormData} />
+      <MetricsSection storeFormData={pageData} />
       <DailyBestSells />
       <SleepTapeAd />
       <Trending />

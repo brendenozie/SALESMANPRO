@@ -11,8 +11,9 @@ import ProgramsCausesSection from './components/ProgramsCausesSection';
 import TestimonialsNewsSection from './components/TestimonialsNewsSection';
 import EventsUpdatesSection from './components/EventsUpdatesSection';
 import NewsSection from './components/NewsSection';
+import { StoreForm } from '@/types/typings';
 
-export default function NonProfitApp() {
+export default function NonProfitSite({ pageData }: { pageData: StoreForm }) {
   return (
       <main className="min-h-screen bg-gray-100 font-sans">
         {/* Hero Section */}

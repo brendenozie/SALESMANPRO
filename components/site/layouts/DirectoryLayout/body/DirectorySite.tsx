@@ -12,19 +12,20 @@ import TestimonialsSection from './components/TestimonialsSection';
 import CtaSection from './components/CtaSection';
 import FeaturedListingsOverviewSection from './components/FeaturedListingsOverviewSection';
 import FAQSection from './components/FAQSection';
+import { StoreForm } from '@/types/typings';
 
 // Dynamic loader for optimized images
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
 
-export default function DirectorySite() {
-  const { storeFormData } = useStoreContext();
+export default function DirectorySite({ pageData }: { pageData: StoreForm }) {
+  const { storeFormData } = useStoreContext(); // Use for global theme settings only
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
 
   const handleSearch = () => {
-    // router.push(`/${storeFormData.slug}/search?q=${encodeURIComponent(searchTerm)}`);
+    // router.push(`/${pageData.slug}/search?q=${encodeURIComponent(searchTerm)}`);
   };
 
   return (

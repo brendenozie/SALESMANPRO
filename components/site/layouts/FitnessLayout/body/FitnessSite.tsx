@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 // Assuming useStoreContext provides a way to get global data,
 // but for this example, we'll use local dummy data.
 import { useStoreContext } from "@/contexts/StoreContext";
+import { StoreForm } from "@/types/typings";
 
 // Import your enhanced components
 import TestimonialsSection from "./components/TestimonialsSection"; // Renamed for clarity
@@ -406,40 +407,39 @@ const DUMMY_DATA = {
 };
 
 
-export default function FitnessSite() {
+export default function FitnessSite({ pageData }: { pageData: StoreForm }) {
     const router = useRouter();
-    // In a real application, useStoreContext would likely fetch this data from an API
-    // For this example, we'll directly use DUMMY_DATA
-    const { storeFormData } = useStoreContext();
+    // Use pageData prop instead of context for content data
+    const { storeFormData } = useStoreContext(); // Keep for global theme settings
 
-    // Use local state, initialized with DUMMY_DATA
-    const [pageData, setPageData] = useState(DUMMY_DATA);
+    // Use pageData for all content
+    const siteData = pageData || DUMMY_DATA;
 
 
 
     return (
         <div className="">
             {/* Hero Section */}
-            <HeroSection storeFormData={storeFormData || undefined} onSearch={()=>{}} />
+            <HeroSection storeFormData={siteData || undefined} onSearch={()=>{}} />
 
             {/* Filter Bar */}
             <FilterBar
-                storeFormData={storeFormData || {}}
+                storeFormData={siteData || {}}
                 onSearch={()=>{}}
             />
 
             {/* Listings Grid */}
-            <ListingsGrid courses={storeFormData?.courses}/>
+            <ListingsGrid courses={siteData?.courses}/>
 
             {/* Trending Locations */}
             <LocationsSection  />
 
             {/* Virtual Tours */}
             <VirtualTours videos={[]} />
-            {/* storeFormData?.virtualTours */}
+            {/* siteData?.virtualTours */}
 
             {/* Experts Section */}
-            <ExpertsSection educators={storeFormData?.Educator} />
+            <ExpertsSection educators={siteData?.Educator} />
 
             {/* Insights Section */}
             <MarketInsights blogs={storeFormData?.blogs} />
