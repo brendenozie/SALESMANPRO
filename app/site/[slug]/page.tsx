@@ -25,13 +25,13 @@ import DirectorySite from '@/components/site/layouts/DirectoryLayout/body/Direct
 import NonProfitSite from '@/components/site/layouts/NonprofitLayout/body/NonProfitSite';
 import EventsSite from '@/components/site/layouts/EventsLayout/body/EventsSite';
 import HealthCareSite from '@/components/site/layouts/HealthcareLayout/body/HealthCareSite';
-import SaaSSite from '@/components/site/layouts/SaaSLayout/body/SaaSSite';
 import MediaSite from '@/components/site/layouts/MediaLayout/body/MediaSite';
 import TravelSite from '@/components/site/layouts/TravelLayout/body/TravelSite';
 import MarketPlaceSite from '@/components/site/layouts/MarketplaceLayout/body/MarketPlaceSite';
 import RestaurentSite from '@/components/site/layouts/RestaurantLayout/body/RestaurentSite';
 import DefaultSite from '@/components/site/layouts/DefaultLayout/body/DefaultSite';
 import { StoreForm } from '@/types/typings';
+import SaaSSite from '@/components/site/layouts/SaaSLayout/body/SaasSite';
 
 // Map component names to actual components
 const componentMap: Record<string, React.ComponentType<{ pageData: StoreForm }>> = {
@@ -108,17 +108,22 @@ export default async function StorePage({ params }: { params: { slug: string } }
  * PAGE DATA INCLUDE: Fetch all page-specific data
  * This includes listings, testimonials, blogs, courses, etc.
  */
+
+/**
+ * PAGE DATA INCLUDE: Fetch all page-specific data
+ * This includes listings, testimonials, blogs, courses, etc.
+ */
 function pageDataInclude() {
   return {
-    // Basic company info
-    name: true,
-    slug: true,
-    description: true,
-    category: true,
-    bannerUrl: true,
-    logoUrl: true,
+    // REMOVED Basic company info. Prisma fetches these scalar fields by default.
+    // name: true,
+    // slug: true,
+    // description: true,
+    // category: true,
+    // bannerUrl: true,
+    // logoUrl: true,
     
-    // Page content data
+    // Page content data (These are all relations and are correct)
     blogs: { orderBy: { publishedAt: "desc" as const } },
     faqs: { orderBy: { order: "asc" as const } },
     testimonials: { orderBy: { order: "asc" as const } },
@@ -185,6 +190,86 @@ function pageDataInclude() {
     // Settings (needed for some page functionality)
     PaymentSettings: true,
     ShippingSettings: true,
-    themeSettings: true,
+    // themeSettings: true,
   };
 }
+// function pageDataInclude() {
+//   return {
+//     // Basic company info
+//     name: true,
+//     slug: true,
+//     description: true,
+//     category: true,
+//     bannerUrl: true,
+//     logoUrl: true,
+    
+//     // Page content data
+//     blogs: { orderBy: { publishedAt: "desc" as const } },
+//     faqs: { orderBy: { order: "asc" as const } },
+//     testimonials: { orderBy: { order: "asc" as const } },
+//     heroSlides: { orderBy: { order: "asc" as const } },
+//     promotions: {
+//       select:{
+//         title: true,
+//         description: true,
+//         startsAt: true,
+//         endsAt: true,
+//         badgeText: true,
+//         price: true,
+//         ctaText: true,
+//         ctaLink: true,
+//         bannerUrl: true,
+//         featureImage1: true,
+//         featureImage2: true,
+//         featureImage3: true,
+//         perks: true,
+//         trustLogos: true,
+//       }
+//     },
+//     PageSection: { orderBy: { order: "asc" as const } },
+//     appPromos: true,
+//     Collection: { orderBy: { order: "asc" as const } },
+    
+//     // Listings and products
+//     marketplaceListings: {
+//       take: 50, // Fetch more for page content
+//       select: {
+//         id: true, 
+//         name: true, 
+//         description: true, 
+//         finalPrice: true, 
+//         sellingPrice: true, 
+//         images: true, 
+//         isAvailable: true, 
+//         isFeatured: true, 
+//         category: true,
+//       },
+//     },
+    
+//     // People/experts
+//     Writer: { include: { user: { select: { id: true, name: true, image: true } } } },
+//     Expert: { include: { user: { select: { id: true, name: true, image: true } } } },
+//     Doctor: { include: { User: { select: { id: true, name: true, image: true } } } },
+//     salesAgents: { include: { user: { select: { id: true, name: true, image: true } } } },
+//     educators: { include: { user: { select: { id: true, name: true, image: true } } } },
+    
+//     // Content
+//     Podcast: true,
+//     courses: true,
+//     events: true,
+//     Package: true,
+//     Project: true,
+//     services: true,
+//     CoreValues: true,
+    
+//     // Locations
+//     CompanyLocation: { include: { location: true } },
+//     Destination: true,
+//     TourPackage: true,
+    
+//     // Settings (needed for some page functionality)
+//     PaymentSettings: true,
+//     ShippingSettings: true,
+//     themeSettings: true,
+//   };
+// }

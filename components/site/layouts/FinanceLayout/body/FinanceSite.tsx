@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 // Assuming useStoreContext provides data for the site; if not, remove or adjust.
 import { useStoreContext } from "@/contexts/StoreContext";

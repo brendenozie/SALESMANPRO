@@ -22,7 +22,7 @@ export function transformCompanyToStoreForm(raw: any): StoreForm {
   openingHours: typeof raw.openingHours === 'string'
     ? JSON.parse(raw.openingHours)
     : raw.openingHours,
-  socialLinks: raw.socialLinks.map((s: any) => ({
+  socialLinks: raw.socialLinks?.map((s: any) => ({
     id: s.id,
     channel: s.channel,
     url: s.url,

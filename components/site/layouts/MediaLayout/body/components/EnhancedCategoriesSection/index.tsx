@@ -29,9 +29,9 @@ const textVariants = {
 export default function EnhancedCategoriesSection({ categories, slug }: EnhancedCategoriesSectionProps) {
   const router = useRouter();
 
-  const isShowSubcategories = categories.length < 4;
+  const isShowSubcategories = categories?.length < 4;
   const itemsToDisplay = isShowSubcategories
-    ? categories.flatMap(cat => cat.subcategories).slice(0, 8)
+    ? categories?.flatMap(cat => cat.subcategories).slice(0, 8)
     : categories;
 
   // Function to determine the image source
@@ -69,7 +69,7 @@ export default function EnhancedCategoriesSection({ categories, slug }: Enhanced
         </motion.h2>
 
         <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {itemsToDisplay.map((item, index) => {
+          {itemsToDisplay?.map((item, index) => {
             const name = getName(item);
             const imageUrl = getImageUrl(item);
             const itemSlug = getSlug(item);

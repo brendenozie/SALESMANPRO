@@ -239,7 +239,7 @@ export default function ListingsSection( {listings, slug }: any) {
           whileInView="visible"
           viewport={{ once: true, amount: 0.2 }}
         >
-          {listings.map((listing : any) => (
+          {listings?.map((listing : any) => (
             <motion.div key={listing.id} variants={itemVariants}>
               <ListingCard listing={listing} />
             </motion.div>

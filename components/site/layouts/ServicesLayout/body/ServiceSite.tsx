@@ -1,3 +1,4 @@
+"use client";
 // File: components/site/layouts/ServicesLayout/ServiceSite.tsx
 
 import React, {  } from "react";
