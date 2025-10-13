@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useEffect, useMemo, useState, useCallback, Suspense } from 'react';
+import React, { ReactNode, useEffect, useMemo, useState, useCallback, Suspense } from 'react';
 import dynamic from 'next/dynamic';
-import Modal from './Modal';
+// import Modal from './Modal';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeftIcon,
@@ -17,6 +17,71 @@ import { STEP_LABELS } from '@/constant/STEP_LABELS';
 import CategoryPicker from './CategoryPicker';
 import PricingDetails from './PricingDetails';
 import { ProductForm, IStoreCategory } from '@/types/typings';
+
+// "use client";
+// import { motion, AnimatePresence } from "framer-motion";
+// import { ReactNode, useEffect } from "react";
+
+interface ModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  title?: string;
+  children: ReactNode;
+}
+
+function Modal({ isOpen, onClose, children }: ModalProps) {
+  // Disable background scroll when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = ""; // reset
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <>
+          {/* Background Overlay */}
+          <motion.div
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+          />
+
+          {/* Modal Container */}
+          <motion.div
+            className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-0 sm:p-6 overflow-y-auto"
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.98 }}
+            transition={{ type: "spring", stiffness: 250, damping: 25 }}
+          >
+            {/* Inner Container (NO overflow-hidden to allow sticky footer) */}
+            <div
+              className="
+                w-full sm:w-auto
+                sm:max-w-[90vw] 
+                flex flex-col 
+                bg-transparent
+                sm:max-h-full
+              "
+            >
+              {children}
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+}
+
 
 // NOTE: keep API constants consistent with your app's env
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
@@ -371,123 +436,140 @@ export default function AddProductModal({
   const progress = Math.round((step / Math.max(1, lastStepIndex)) * 100);
 
   return (
-    <Modal isOpen={showRequestProductModal} onClose={() => setShowRequestProductModal(false)} title="">
-      <div className="relative w-full max-w-5xl h-[90vh] bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+   <Modal isOpen={showRequestProductModal} onClose={() => setShowRequestProductModal(false)} title="">
+  <div className="relative w-full max-w-5xl h-[90vh] bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col">
 
-        {/* Loading overlay */}
-        <AnimatePresence>
-          {loading && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 z-40 bg-white/70 backdrop-blur flex items-center justify-center">
-              <div className="animate-pulse text-gray-700">Saving…</div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Top bar: close + progress */}
-        <div className="flex items-center justify-between px-4 py-3 border-b">
-          <div className="flex items-center gap-3">
-            <button aria-label="close" onClick={() => setShowRequestProductModal(false)} className="p-2 rounded-md hover:bg-gray-100">
-              <XMarkIcon className="h-5 w-5 text-gray-700" />
-            </button>
-            <div>
-              <div className="text-sm font-semibold">Add product</div>
-              <div className="text-xs text-gray-500">Step {step} of {lastStepIndex}</div>
-            </div>
-          </div>
-          <div className="w-64">
-            <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" style={{ width: `${progress}%` }} />
-            </div>
-          </div>
-        </div>
-
-        <motion.div className="flex-grow overflow-hidden flex flex-col" variants={containerVar} initial="hidden" animate="show">
-          <div className="flex-grow overflow-auto p-4">
-            <Stepper step={step} stepsForCategory={stepsForCategory} STEP_LABELS={STEP_LABELS} />
-
-            <motion.div
-              key={step}
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ type: 'spring', stiffness: 240, damping: 30 }}
-              drag="x"
-              dragConstraints={{ left: 0, right: 0 }}
-              onDragEnd={handleDragEnd}
-              className="mt-4"
-            >
-
-              {/* Step 1: Category picker */}
-              {step === 1 ? (
-                <CategoryPicker
-                  formData={{ category: formData.category, subCategory: formData.subCategory, brand: formData.brand }}
-                  categories={categories}
-                  filteredBrands={formData.category?.allBrands || []}
-                  onCategoryChange={handleCategoryChange}
-                  onSubCategoryChange={(s) => updateField('subCategory', s as any)}
-                  onBrandChange={(b) => updateField('brand', b as any)}
-                />
-              ) : currentDynamicStep === 7 ? (
-                // PricingDetails stays the same shape
-                <PricingDetails<ProductForm>
-                  formData={formData}
-                  setFormData={updateField as any}
-                  costField="costPrice"
-                  revenueField="sellingPrice"
-                  discountField="discount"
-                  finalField="finalPrice"
-                  marginField="profitMargin"
-                />
-              ) : FormComponent ? (
-                <Suspense fallback={<div className="p-6 text-center text-gray-500">Loading step…</div>}>
-                  <FormComponent
-                    formData={formData}
-                    setFormData={updateField as any}
-                    handleInputChange={handleInputChange}
-                    filteredSubCategories={formData.category?.subcategories || []}
-                    filteredBrands={formData.category?.allBrands || []}
-                    imageFiles={imageFiles}
-                    setImageFiles={setImageFiles}
-                    imagePreviews={imagePreviews}
-                    setImagePreviews={setImagePreviews}
-                  />
-                </Suspense>
-              ) : (
-                <div className="p-6 text-sm text-gray-600">No form available for this step.</div>
-              )}
-
-            </motion.div>
-          </div>
-
-          {/* Sticky Footer */}
-          <div className="border-t bg-white p-4 sticky bottom-0 left-0 right-0 z-30 flex flex-col sm:flex-row items-center justify-between gap-3">
-            <div className="hidden sm:flex items-center gap-2 text-gray-500 text-xs">Progress: {progress}%</div>
-            <div className="flex w-full sm:w-auto justify-between sm:justify-end gap-3">
-              {!isFirstStep && (
-                <button onClick={goPrev} className="w-full sm:w-auto px-4 py-2 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center gap-2 text-gray-700">
-                  <ArrowLeftIcon className="h-4 w-4" />
-                  <span className="sm:hidden">Back</span>
-                </button>
-              )}
-              {!isLastStep && (
-                <button onClick={goNext} className="w-full sm:w-auto px-4 py-2 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white flex items-center justify-center gap-2">
-                  <span className="sm:hidden">Next</span>
-                  <ArrowRightIcon className="h-4 w-4" />
-                </button>
-              )}
-              {isLastStep && (
-                <button onClick={handleSave} className="w-full sm:w-auto px-4 py-2 rounded-full bg-green-600 hover:bg-green-700 text-white flex items-center justify-center gap-2">
-                  Save
-                  <CheckCircleIcon className="h-4 w-4" />
-                </button>
-              )}
-            </div>
-          </div>
+    {/* Loading Overlay */}
+    <AnimatePresence>
+      {loading && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="absolute inset-0 z-40 bg-white/70 backdrop-blur flex items-center justify-center"
+        >
+          <div className="animate-pulse text-gray-700">Saving…</div>
         </motion.div>
+      )}
+    </AnimatePresence>
 
-        {/* Toast */} 
-        {toast && <Toast msg={toast} onClose={() => setToast(null)} />}
+    {/* Top Bar */}
+    <div className="shrink-0 flex items-center justify-between px-4 py-3 border-b">
+      <div className="flex items-center gap-3">
+        <button aria-label="close" onClick={() => setShowRequestProductModal(false)} className="p-2 rounded-md hover:bg-gray-100">
+          <XMarkIcon className="h-5 w-5 text-gray-700" />
+        </button>
+        <div>
+          <div className="text-sm font-semibold">Add product</div>
+          <div className="text-xs text-gray-500">Step {step} of {lastStepIndex}</div>
+        </div>
       </div>
-    </Modal>
+      <div className="w-64">
+        <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+          <div className="h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" style={{ width: `${progress}%` }} />
+        </div>
+      </div>
+    </div>
+
+    {/* Scrollable Content */}
+    <motion.div
+      className="flex-1 overflow-y-auto px-4 py-4"
+      variants={containerVar}
+      initial="hidden"
+      animate="show"
+    >
+      <Stepper step={step} stepsForCategory={stepsForCategory} STEP_LABELS={STEP_LABELS} />
+
+      <motion.div
+        key={step}
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: -20 }}
+        transition={{ type: "spring", stiffness: 240, damping: 30 }}
+        drag="x"
+        dragConstraints={{ left: 0, right: 0 }}
+        onDragEnd={handleDragEnd}
+        className="mt-4"
+      >
+        {step === 1 ? (
+          <CategoryPicker
+            formData={{ category: formData.category, subCategory: formData.subCategory, brand: formData.brand }}
+            categories={categories}
+            filteredBrands={formData.category?.allBrands || []}
+            onCategoryChange={handleCategoryChange}
+            onSubCategoryChange={(s) => updateField("subCategory", s as any)}
+            onBrandChange={(b) => updateField("brand", b as any)}
+          />
+        ) : currentDynamicStep === 7 ? (
+          <PricingDetails<ProductForm>
+            formData={formData}
+            setFormData={updateField as any}
+            costField="costPrice"
+            revenueField="sellingPrice"
+            discountField="discount"
+            finalField="finalPrice"
+            marginField="profitMargin"
+          />
+        ) : FormComponent ? (
+          <Suspense fallback={<div className="p-6 text-center text-gray-500">Loading step…</div>}>
+            <FormComponent
+              formData={formData}
+              setFormData={updateField as any}
+              handleInputChange={handleInputChange}
+              filteredSubCategories={formData.category?.subcategories || []}
+              filteredBrands={formData.category?.allBrands || []}
+              imageFiles={imageFiles}
+              setImageFiles={setImageFiles}
+              imagePreviews={imagePreviews}
+              setImagePreviews={setImagePreviews}
+            />
+          </Suspense>
+        ) : (
+          <div className="p-6 text-sm text-gray-600">No form available for this step.</div>
+        )}
+      </motion.div>
+    </motion.div>
+
+    {/* Sticky Footer */}
+    <div className="shrink-0 border-t bg-white/90 backdrop-blur-sm p-4 sticky bottom-0 left-0 right-0 z-30 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div className="hidden sm:flex items-center gap-2 text-gray-500 text-xs">
+        Progress: {progress}%
+      </div>
+      <div className="flex w-full sm:w-auto justify-between sm:justify-end gap-3">
+        {!isFirstStep && (
+          <button
+            onClick={goPrev}
+            className="w-full sm:w-auto px-4 py-2 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center gap-2 text-gray-700"
+          >
+            <ArrowLeftIcon className="h-4 w-4" />
+            <span className="sm:hidden">Back</span>
+          </button>
+        )}
+        {!isLastStep && (
+          <button
+            onClick={goNext}
+            className="w-full sm:w-auto px-4 py-2 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white flex items-center justify-center gap-2"
+          >
+            <span className="sm:hidden">Next</span>
+            <ArrowRightIcon className="h-4 w-4" />
+          </button>
+        )}
+        {isLastStep && (
+          <button
+            onClick={handleSave}
+            className="w-full sm:w-auto px-4 py-2 rounded-full bg-green-600 hover:bg-green-700 text-white flex items-center justify-center gap-2"
+          >
+            Save
+            <CheckCircleIcon className="h-4 w-4" />
+          </button>
+        )}
+      </div>
+    </div>
+
+    {/* Toast */}
+    {toast && <Toast msg={toast} onClose={() => setToast(null)} />}
+  </div>
+</Modal>
+
   );
 }
