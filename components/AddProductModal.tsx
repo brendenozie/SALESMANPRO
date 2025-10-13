@@ -1,7 +1,6 @@
 "use client";
 
 import React, { ReactNode, useEffect, useMemo, useState, useCallback, Suspense } from 'react';
-import dynamic from 'next/dynamic';
 import Modal from './Modal';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -17,7 +16,6 @@ import { STEP_LABELS } from '@/constant/STEP_LABELS';
 import CategoryPicker from './CategoryPicker';
 import PricingDetails from './PricingDetails';
 import { ProductForm, IStoreCategory } from '@/types/typings';
-
 
 
 // NOTE: keep API constants consistent with your app's env
