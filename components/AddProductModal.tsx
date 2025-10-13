@@ -2,7 +2,7 @@
 
 import React, { ReactNode, useEffect, useMemo, useState, useCallback, Suspense } from 'react';
 import dynamic from 'next/dynamic';
-// import Modal from './Modal';
+import Modal from './Modal';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeftIcon,
@@ -18,69 +18,6 @@ import CategoryPicker from './CategoryPicker';
 import PricingDetails from './PricingDetails';
 import { ProductForm, IStoreCategory } from '@/types/typings';
 
-// "use client";
-// import { motion, AnimatePresence } from "framer-motion";
-// import { ReactNode, useEffect } from "react";
-
-interface ModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  title?: string;
-  children: ReactNode;
-}
-
-function Modal({ isOpen, onClose, children }: ModalProps) {
-  // Disable background scroll when modal opens
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = ""; // reset
-    }
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isOpen]);
-
-  return (
-    <AnimatePresence>
-      {isOpen && (
-        <>
-          {/* Background Overlay */}
-          <motion.div
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-          />
-
-          {/* Modal Container */}
-          <motion.div
-            className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-0 sm:p-6 overflow-y-auto"
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.98 }}
-            transition={{ type: "spring", stiffness: 250, damping: 25 }}
-          >
-            {/* Inner Container (NO overflow-hidden to allow sticky footer) */}
-            <div
-              className="
-                w-full sm:w-auto
-                sm:max-w-[90vw] 
-                flex flex-col 
-                bg-transparent
-                sm:max-h-full
-              "
-            >
-              {children}
-            </div>
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
-  );
-}
 
 
 // NOTE: keep API constants consistent with your app's env

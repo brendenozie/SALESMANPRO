@@ -60,119 +60,62 @@ const desktopVariants: Variants = {
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
-  title: string;
+  title?: string;
   children: ReactNode;
-  contentClassName?: string;
-  closeOnBackdropClick?: boolean;
 }
 
-const Modal: React.FC<ModalProps> = ({
-  isOpen,
-  onClose,
-  title,
-  children,
-  contentClassName = `
-    bg-white shadow-xl 
-    rounded-none sm:rounded-2xl lg:rounded-3xl 
-    w-full h-full sm:w-auto 
-    sm:max-w-[70vw] lg:max-w-[60vw] xl:max-w-[50vw]
-    max-h-[90vh]
-    backdrop-blur-sm 
-    overflow-hidden
-  `,
-  closeOnBackdropClick = true,
-}) => {
-  const isMobile = useIsMobile();
-
-  // Escape key + body scroll lock
+function Modal({ isOpen, onClose, children }: ModalProps) {
+  // Disable background scroll when modal opens
   useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
-    };
-
     if (isOpen) {
       document.body.style.overflow = "hidden";
-      document.addEventListener("keydown", handleKeyDown);
     } else {
-      document.body.style.overflow = "unset";
+      document.body.style.overflow = ""; // reset
     }
-
     return () => {
-      document.body.style.overflow = "unset";
-      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "";
     };
-  }, [isOpen, onClose]);
-
-  const handleBackdropClick = () => {
-    if (closeOnBackdropClick) onClose();
-  };
-
-  const selectedVariants = isMobile ? mobileVariants : desktopVariants;
+  }, [isOpen]);
 
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-[1000] p-0 sm:p-4"
-          onClick={handleBackdropClick}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
-        >
+        <>
+          {/* Background Overlay */}
           <motion.div
-            className={`relative mx-auto ${isMobile ? "mt-auto" : "my-auto"} ${contentClassName}`}
-            onClick={(e: React.MouseEvent) => e.stopPropagation()}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            variants={selectedVariants}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="modal-title"
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+          />
+
+          {/* Modal Container */}
+          <motion.div
+            className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-0 sm:p-6 overflow-y-auto"
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.98 }}
+            transition={{ type: "spring", stiffness: 250, damping: 25 }}
           >
-            {/* --- Mobile Drag Indicator --- */}
-            {isMobile && (
-              <div className="w-full flex justify-center pt-2">
-                <div className="w-12 h-1.5 bg-gray-300 rounded-full" />
-              </div>
-            )}
-
-            {/* --- Header --- */}
-            <div className="p-5 border-b border-gray-100 flex justify-between items-center shrink-0">
-              <h2 id="modal-title" className="text-xl font-semibold text-gray-800">
-                {title}
-              </h2>
-              <button
-                onClick={onClose}
-                className="text-gray-400 hover:text-gray-600 w-8 h-8 flex items-center justify-center transition duration-150 rounded-full hover:bg-gray-100"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  fill="none"
-                  strokeWidth={2}
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-
-            {/* --- Body --- */}
+            {/* Inner Container (NO overflow-hidden to allow sticky footer) */}
             <div
-              className={`p-0 text-gray-700 overflow-y-auto ${
-                isMobile ? "h-[calc(100vh-85px)] pb-safe pt-safe" : ""
-              }`}
+              className="
+                w-full sm:w-auto
+                sm:max-w-[90vw] 
+                flex flex-col 
+                bg-transparent
+                sm:max-h-full
+              "
             >
               {children}
             </div>
           </motion.div>
-        </motion.div>
+        </>
       )}
     </AnimatePresence>
   );
-};
+}
+
 
 export default Modal;
