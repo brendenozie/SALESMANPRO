@@ -306,7 +306,7 @@ const SubcategoryStep: React.FC<{
       <h3 className="text-lg font-semibold text-gray-700 mb-2">2. Choose a Subcategory</h3>
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        {subcategories.map((sub) => (
+        {subcategories?.map((sub) => (
           <SelectableButton
             key={sub.id}
             id={sub.id}

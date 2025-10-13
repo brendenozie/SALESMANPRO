@@ -1,5 +1,7 @@
 // File: components/MediaUploader.tsx
-import React, { useState, useEffect } from "react";
+"use client";
+
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Modal from "./Modal";
 import { useDropzone, Accept } from "react-dropzone";
 import { motion } from "framer-motion";
@@ -14,6 +16,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { ArrowUpTrayIcon } from "@heroicons/react/24/solid";
 
+/* ---------- Types ---------- */
 interface BookItem {
   title: string;
   author: string;
@@ -22,8 +25,16 @@ interface BookItem {
   bookFile: File | null;          // raw File for the actual PDF/EPUB/etc.
 }
 
+// ───────────────────────────────
+// Max file sizes in bytes
+// ───────────────────────────────
+const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_VIDEO_SIZE = 100 * 1024 * 1024; // 100MB
+const MAX_BOOK_COVER_SIZE = 5 * 1024 * 1024; // 5MB
+const MAX_BOOK_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+
 interface MediaUploaderProps {
-  // We now expect the parent to maintain raw File arrays (and preview URLs):
+  // Parent maintains raw File arrays and preview URLs
   imageFiles: File[];
   setImageFiles: React.Dispatch<React.SetStateAction<File[]>>;
   imagePreviews: string[];
@@ -36,9 +47,529 @@ interface MediaUploaderProps {
 
   books: BookItem[];
   setBooks: React.Dispatch<React.SetStateAction<BookItem[]>>;
-  
 }
 
+/* ---------- Hook: usePreviewManager ---------- */
+/**
+ * Centralizes creation and revocation of object URLs.
+ * - createPreviews(files) -> string[] (objectURLs)
+ * - revoke(url) / revokeMany(urls)
+ * - revokeAll() to cleanup on unmount
+ */
+function usePreviewManager() {
+  const created = useRef<Set<string>>(new Set());
+
+  const createPreviews = useCallback((files: File[]) => {
+    const urls = files.map((f) => {
+      const u = URL.createObjectURL(f);
+      created.current.add(u);
+      return u;
+    });
+    return urls;
+  }, []);
+
+  const revoke = useCallback((url: string | undefined | null) => {
+    if (!url) return;
+    try {
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      /* ignore */
+    }
+    created.current.delete(url);
+  }, []);
+
+  const revokeMany = useCallback((urls: (string | undefined | null)[]) => {
+    urls.forEach((u) => {
+      if (u) {
+        try {
+          URL.revokeObjectURL(u);
+        } catch (e) {
+          /* ignore */
+        }
+        created.current.delete(u);
+      }
+    });
+  }, []);
+
+  const revokeAll = useCallback(() => {
+    created.current.forEach((u) => {
+      try {
+        URL.revokeObjectURL(u);
+      } catch (e) {
+        /* ignore */
+      }
+    });
+    created.current.clear();
+  }, []);
+
+  useEffect(() => {
+    // cleanup on unmount
+    return () => {
+      revokeAll();
+    };
+  }, [revokeAll]);
+
+  return { createPreviews, revoke, revokeMany, revokeAll };
+}
+
+
+
+/* ---------- Small motion presets ---------- */
+const tileMotion = {
+  initial: { opacity: 0, scale: 0.98 },
+  animate: { opacity: 1, scale: 1 },
+  whileHover: { scale: 1.02 },
+  transition: { duration: 0.16 },
+};
+
+/* ---------- Internal Components (kept inside single file) ---------- */
+
+const TabSwitcher: React.FC<{
+  selected: "images" | "videos" | "books";
+  setSelected: (t: "images" | "videos" | "books") => void;
+}> = ({ selected, setSelected }) => {
+  const btnBase =
+    "flex items-center space-x-2 pb-2 px-1 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-200";
+
+  return (
+    <div className="flex space-x-4 border-b border-gray-200 mb-4">
+      <button
+        className={`${btnBase} ${selected === "images" ? "border-b-2 border-orange-500 text-orange-500" : "text-gray-500 hover:text-orange-500"}`}
+        onClick={() => setSelected("images")}
+      >
+        <PhotoIcon className="w-6 h-6" />
+        <span>Images</span>
+      </button>
+      <button
+        className={`${btnBase} ${selected === "videos" ? "border-b-2 border-orange-500 text-orange-500" : "text-gray-500 hover:text-orange-500"}`}
+        onClick={() => setSelected("videos")}
+      >
+        <VideoCameraIcon className="w-6 h-6" />
+        <span>Videos</span>
+      </button>
+      <button
+        className={`${btnBase} ${selected === "books" ? "border-b-2 border-orange-500 text-orange-500" : "text-gray-500 hover:text-orange-500"}`}
+        onClick={() => setSelected("books")}
+      >
+        <BookOpenIcon className="w-6 h-6" />
+        <span>Books</span>
+      </button>
+    </div>
+  );
+};
+
+/* ---------- ImagesTab ---------- */
+const ImagesTab: React.FC<{
+  imageFiles: File[];
+  setImageFiles: React.Dispatch<React.SetStateAction<File[]>>;
+  imagePreviews: string[];
+  setImagePreviews: React.Dispatch<React.SetStateAction<string[]>>;
+  previewManager: ReturnType<typeof usePreviewManager>;
+}> = ({ imageFiles, setImageFiles, imagePreviews, setImagePreviews, previewManager }) => {
+
+  
+  const onDrop = useCallback(
+    (acceptedFiles: File[]) => {
+      if (!acceptedFiles.length) return;
+
+      // Append raw files
+      setImageFiles((prev) => [...prev, ...acceptedFiles]);
+
+      // Generate previews via manager and append
+      const newPreviews = previewManager.createPreviews(acceptedFiles);
+      setImagePreviews((prev) => [...prev, ...newPreviews]);
+    },
+    [setImageFiles, setImagePreviews, previewManager]
+  );
+
+  const { getRootProps, getInputProps } = useDropzone({
+    accept: { "image/*": [] } as Accept,
+    multiple: true,
+    onDrop,
+  });
+
+  const removeImageAt = (idx: number) => {
+    setImageFiles((prev) => prev.filter((_, i) => i !== idx));
+    setImagePreviews((prev) => {
+      const url = prev[idx];
+      previewManager.revoke(url);
+      return prev.filter((_, i) => i !== idx);
+    });
+  };
+
+  return (
+    <div className="space-y-6">
+      <div
+        {...getRootProps()}
+        className="border-2 border-dashed border-gray-300 p-8 rounded-xl cursor-pointer bg-white/60 backdrop-blur-sm hover:bg-white transition-all flex flex-col items-center justify-center"
+      >
+        <input {...getInputProps()} />
+        <ArrowUpTrayIcon className="w-12 h-12 text-gray-400 mb-2" />
+        <p className="text-gray-500">
+          Drag & drop images here, or{" "}
+          <span className="text-orange-500 font-semibold">click to select</span>
+        </p>
+      </div>
+
+      {imagePreviews && imagePreviews.length > 0 && (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+          {imagePreviews.map((url, idx) => (
+            <motion.div key={url + idx} {...tileMotion} className="rounded-lg overflow-hidden">
+              <div className="relative group overflow-hidden rounded-lg shadow-sm">
+                <img
+                  src={url}
+                  alt={`Preview ${idx}`}
+                  className="h-28 w-full object-cover rounded-lg transition-transform duration-200 group-hover:scale-105 aspect-square"
+                />
+                <button
+                  className="absolute top-2 right-2 bg-red-600 text-white p-1 rounded-full opacity-90 hover:opacity-100 transition-all"
+                  onClick={() => removeImageAt(idx)}
+                >
+                  <XMarkIcon className="w-4 h-4" />
+                </button>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+/* ---------- VideosTab ---------- */
+const VideosTab: React.FC<{
+  videoFiles: File[];
+  setVideoFiles: React.Dispatch<React.SetStateAction<File[]>>;
+  videoPreviews: string[];
+  setVideoPreviews: React.Dispatch<React.SetStateAction<string[]>>;
+  previewManager: ReturnType<typeof usePreviewManager>;
+}> = ({ videoFiles, setVideoFiles, videoPreviews, setVideoPreviews, previewManager }) => {
+
+  const onDrop = useCallback(
+    (acceptedFiles: File[]) => {
+      if (!acceptedFiles.length) return;
+      setVideoFiles((prev) => [...prev, ...acceptedFiles]);
+      const newPreviews = previewManager.createPreviews(acceptedFiles);
+      setVideoPreviews((prev) => [...prev, ...newPreviews]);
+    },
+    [setVideoFiles, setVideoPreviews, previewManager]
+  );
+
+  const { getRootProps, getInputProps } = useDropzone({
+    accept: { "video/*": [] } as Accept,
+    multiple: true,
+    onDrop,
+  });
+  
+
+  const removeVideoAt = (idx: number) => {
+    setVideoFiles((prev) => prev.filter((_, i) => i !== idx));
+    setVideoPreviews((prev) => {
+      const url = prev[idx];
+      previewManager.revoke(url);
+      return prev.filter((_, i) => i !== idx);
+    });
+  };
+
+  return (
+    <div className="space-y-6">
+      <div
+        {...getRootProps()}
+        className="border-2 border-dashed border-gray-300 p-8 rounded-xl cursor-pointer bg-white/60 backdrop-blur-sm hover:bg-white transition-all flex flex-col items-center justify-center"
+      >
+        <input {...getInputProps()} />
+        <ArrowUpTrayIcon className="w-12 h-12 text-gray-400 mb-2" />
+        <p className="text-gray-500">
+          Drag & drop videos here, or{" "}
+          <span className="text-orange-500 font-semibold">click to select</span>
+        </p>
+      </div>
+
+      {videoPreviews && videoPreviews.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+          {videoPreviews.map((url, idx) => (
+            <motion.div key={url + idx} {...tileMotion}>
+              <div className="relative group rounded-lg shadow-sm overflow-hidden">
+                <video
+                  src={url}
+                  className="h-40 w-full object-cover rounded-lg aspect-video"
+                  controls
+                />
+                <button
+                  className="absolute top-2 right-2 bg-red-600 text-white p-1 rounded-full opacity-90 hover:opacity-100 transition-all"
+                  onClick={() => removeVideoAt(idx)}
+                >
+                  <XMarkIcon className="w-4 h-4" />
+                </button>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+/* ---------- BookModal (internal) ---------- */
+const BookModal: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (book: BookItem) => void;
+  previewManager: ReturnType<typeof usePreviewManager>;
+}> = ({ isOpen, onClose, onSave, previewManager }) => {
+  const [title, setTitle] = useState("");
+  const [author, setAuthor] = useState("");
+  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [coverPreview, setCoverPreview] = useState<string | null>(null);
+  const [bookFile, setBookFile] = useState<File | null>(null);
+
+  useEffect(() => {
+    if (!isOpen) {
+      // clear when closing
+      setTitle("");
+      setAuthor("");
+      if (coverPreview) {
+        previewManager.revoke(coverPreview);
+        setCoverPreview(null);
+      }
+      setCoverFile(null);
+      setBookFile(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
+
+  // dropzone for cover inside modal
+  const { getRootProps, getInputProps } = useDropzone({
+    accept: { "image/*": [] } as Accept,
+    multiple: false,
+    onDrop: (acceptedFiles) => {
+      if (!acceptedFiles.length) return;
+      const f = acceptedFiles[0];
+      // revoke previous preview if exists
+      if (coverPreview) previewManager.revoke(coverPreview);
+      const u = previewManager.createPreviews([f])[0];
+      setCoverFile(f);
+      setCoverPreview(u);
+    },
+  });
+
+  const handleBookFileSelect: React.ChangeEventHandler<HTMLInputElement> = (e) => {
+    if (!e.target.files || e.target.files.length === 0) {
+      setBookFile(null);
+      return;
+    }
+    setBookFile(e.target.files[0]);
+  };
+
+  const handleSave = () => {
+    if (!title.trim() || !author.trim()) {
+      // keep UI simple — no toast here but you may add validation UI as needed
+      return;
+    }
+
+    onSave({
+      title: title.trim(),
+      author: author.trim(),
+      coverFile,
+      coverPreview,
+      bookFile,
+    });
+
+    // Reset local modal state (onClose will also clear)
+    setTitle("");
+    setAuthor("");
+    setCoverFile(null);
+    setCoverPreview(null);
+    setBookFile(null);
+    onClose();
+  };
+
+  // subtle motion for modal content
+  const contentMotion = {
+    initial: { opacity: 0, scale: 0.96 },
+    animate: { opacity: 1, scale: 1 },
+    exit: { opacity: 0, scale: 0.98 },
+    transition: { duration: 0.16 },
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose}>
+      <motion.div
+        {...contentMotion}
+        className="bg-white/80 backdrop-blur-md p-6 rounded-xl w-full max-w-md mx-auto shadow-2xl"
+      >
+        <h3 className="text-xl font-semibold text-gray-800 mb-4">Add New Book</h3>
+        <div className="space-y-4">
+          <div>
+            <label htmlFor="bookTitle" className="block text-sm font-medium text-gray-700">
+              Title
+            </label>
+            <input
+              type="text"
+              id="bookTitle"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="e.g. The Great Gatsby"
+              className="mt-1 block w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-200"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="bookAuthor" className="block text-sm font-medium text-gray-700">
+              Author
+            </label>
+            <input
+              type="text"
+              id="bookAuthor"
+              value={author}
+              onChange={(e) => setAuthor(e.target.value)}
+              placeholder="e.g. F. Scott Fitzgerald"
+              className="mt-1 block w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-200"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Cover Image (optional)
+            </label>
+            <div
+              {...getRootProps()}
+              className="border-2 border-dashed border-gray-300 p-4 rounded-lg cursor-pointer bg-white/60 backdrop-blur-sm hover:bg-white transition-all flex items-center justify-center"
+            >
+              <input {...getInputProps()} />
+              {coverPreview ? (
+                <img
+                  src={coverPreview}
+                  alt="Cover Preview"
+                  className="h-24 object-cover rounded-lg"
+                />
+              ) : (
+                <div className="flex flex-col items-center">
+                  <CameraIcon className="w-8 h-8 text-gray-400 mb-1" />
+                  <p className="text-gray-500 text-sm">
+                    Drag & drop an image, or{" "}
+                    <span className="text-orange-500 font-semibold">click to select</span>
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor="bookFile" className="block text-sm font-medium text-gray-700">
+              Book File (PDF, EPUB, etc.)
+            </label>
+            <input
+              type="file"
+              id="bookFile"
+              accept=".pdf,.epub,.mobi,.txt,.doc,.docx"
+              onChange={handleBookFileSelect}
+              className="mt-1 block w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-200"
+            />
+            {bookFile && <p className="text-gray-500 text-sm mt-1">{bookFile.name}</p>}
+          </div>
+        </div>
+
+        <div className="mt-6 flex justify-end space-x-4">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSave}
+            className="inline-flex items-center space-x-1 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-md"
+          >
+            <CheckIcon className="w-5 h-5" />
+            <span>Save Book</span>
+          </button>
+        </div>
+      </motion.div>
+    </Modal>
+  );
+};
+
+/* ---------- BooksTab ---------- */
+const BooksTab: React.FC<{
+  books: BookItem[];
+  setBooks: React.Dispatch<React.SetStateAction<BookItem[]>>;
+  previewManager: ReturnType<typeof usePreviewManager>;
+}> = ({ books, setBooks, previewManager }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const removeBookAt = (idx: number) => {
+    setBooks((prev) => {
+      const copy = [...prev];
+      const candidate = copy[idx];
+      if (candidate?.coverPreview) previewManager.revoke(candidate.coverPreview);
+      copy.splice(idx, 1);
+      return copy;
+    });
+  };
+
+  const handleSaveBook = (book: BookItem) => {
+    setBooks((prev) => [...prev, book]);
+  };
+
+  return (
+    <div className="space-y-6">
+      <button
+        onClick={() => setIsModalOpen(true)}
+        className="inline-flex items-center space-x-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg shadow"
+      >
+        <PlusIcon className="w-5 h-5" />
+        <span>Add New Book</span>
+      </button>
+
+      {books && books.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          {books.map((book, idx) => (
+            <motion.div key={book.title + idx} {...tileMotion}>
+              <div className="relative bg-gray-50 rounded-lg shadow-sm overflow-hidden">
+                {book.coverPreview ? (
+                  <img src={book.coverPreview} alt={book.title} className="h-32 w-full object-cover" />
+                ) : (
+                  <div className="h-32 w-full bg-gray-200 flex items-center justify-center">
+                    <BookOpenIcon className="w-12 h-12 text-gray-400" />
+                  </div>
+                )}
+
+                <div className="p-3">
+                  <h4 className="text-gray-800 font-semibold">{book.title}</h4>
+                  <p className="text-gray-600 text-sm">{book.author}</p>
+                  {book.bookFile && (
+                    <p className="text-gray-500 text-xs mt-1">{book.bookFile.name}</p>
+                  )}
+                </div>
+
+                <button
+                  className="absolute top-2 right-2 bg-red-600 text-white p-1 rounded-full opacity-90 hover:opacity-100 transition-all"
+                  onClick={() => removeBookAt(idx)}
+                >
+                  <XMarkIcon className="w-4 h-4" />
+                </button>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      ) : (
+        <p className="text-gray-500">No books added yet.</p>
+      )}
+
+      <BookModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSave={handleSaveBook}
+        previewManager={previewManager}
+      />
+    </div>
+  );
+};
+
+/* ---------- Main Component: MediaUploader ---------- */
 const MediaUploader: React.FC<MediaUploaderProps> = ({
   imageFiles,
   setImageFiles,
@@ -51,546 +582,61 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
   books,
   setBooks,
 }) => {
-  // Tab state
   const [selectedTab, setSelectedTab] = useState<"images" | "videos" | "books">("images");
+  const previewManager = usePreviewManager();
 
-  // Modal for adding a new book
-  const [isBookModalOpen, setIsBookModalOpen] = useState(false);
-  const [newBookTitle, setNewBookTitle] = useState("");
-  const [newBookAuthor, setNewBookAuthor] = useState("");
+  // If parent passed initial previews that were created outside of this component,
+  // we don't want to double revoke them — so we only track previews we created.
+  // The hook safely revokes what it created. Still, when removing items we also
+  // call previewManager.revoke(url) — if it wasn't created by this hook, revoke is safe (no-op if URL already revoked).
 
-  const [newBookCoverFile, setNewBookCoverFile] = useState<File | null>(null);
-  const [newBookCoverPreview, setNewBookCoverPreview] = useState<string | null>(null);
-
-  const [newBookFile, setNewBookFile] = useState<File | null>(null);
-
-
-  // ───────────────────────────────
-  // 1) Drop Images (no immediate upload)
-  // ───────────────────────────────
-  const {
-    getRootProps: getImageRootProps,
-    getInputProps: getImageInputProps,
-  } = useDropzone({
-    accept: { "image/*": [] } as Accept,
-    multiple: true,
-    onDrop: (acceptedFiles) => {
-      if (!acceptedFiles.length) return;
-
-      // 1. Append raw File objects to state
-      setImageFiles((prev) => [...prev, ...acceptedFiles]);
-
-      // 2. Generate object URLs for previews
-      const newPreviews = acceptedFiles.map((f) => URL.createObjectURL(f));
-      setImagePreviews((prev) => [...prev, ...newPreviews]);
-    },
-  });
-
-  // ───────────────────────────────
-  // 2) Drop Videos (no immediate upload)
-  // ───────────────────────────────
-  const {
-    getRootProps: getVideoRootProps,
-    getInputProps: getVideoInputProps,
-  } = useDropzone({
-    accept: { "video/*": [] } as Accept,
-    multiple: true,
-    onDrop: (acceptedFiles) => {
-      if (!acceptedFiles.length) return;
-
-      // 1. Append raw File objects to state
-      setVideoFiles((prev) => [...prev, ...acceptedFiles]);
-
-      // 2. Generate object URLs for previews
-      const newPreviews = acceptedFiles.map((f) => URL.createObjectURL(f));
-      setVideoPreviews((prev) => [...prev, ...newPreviews]);
-    },
-  });
-
-  // ───────────────────────────────
-  // 3) Drop Book Cover (inside modal)
-  // ───────────────────────────────
-  const {
-    getRootProps: getCoverRootProps,
-    getInputProps: getCoverInputProps,
-  } = useDropzone({
-    accept: { "image/*": [] } as Accept,
-    multiple: false,
-    onDrop: (acceptedFiles) => {
-      if (!acceptedFiles.length) return;
-      const file = acceptedFiles[0];
-
-      // 1. Keep raw File for later upload
-      setNewBookCoverFile(file);
-
-      // 2. Generate object URL for preview
-      const preview = URL.createObjectURL(file);
-      setNewBookCoverPreview(preview);
-    },
-  });
-
-  // ───────────────────────────────
-  // 4) Cleanup object URLs on unmount
-  // ───────────────────────────────
+  // Unified cleanup for book cover previews stored inside books
   useEffect(() => {
     return () => {
-      // Revoke all previews when unmounting
-      if(imagePreviews && imagePreviews.length > 0){
-        imagePreviews.forEach((url) => URL.revokeObjectURL(url));
-      }
-
-      if(videoPreviews && videoPreviews.length > 0){
-        videoPreviews.forEach((url) => URL.revokeObjectURL(url));
-      }
-
-      if(books && books.length > 0){
+      // Revoke book cover previews (they might not be owned by previewManager)
+      if (books && books.length > 0) {
         books.forEach((b) => {
-          if (b.coverPreview) URL.revokeObjectURL(b.coverPreview);
+          if (b.coverPreview) {
+            try {
+              URL.revokeObjectURL(b.coverPreview);
+            } catch (e) {
+              // ignore
+            }
+          }
         });
       }
-
-      if (newBookCoverPreview) URL.revokeObjectURL(newBookCoverPreview);
+      // previewManager.revokeAll() will run on unmount from its own effect
     };
-  }, [
-    imagePreviews,
-    videoPreviews,
-    books,
-    newBookCoverPreview,
-  ]);
-
-  // ───────────────────────────────
-  // (2) Simple <input type="file"> for Book File (PDF/EPUB/etc.)
-  // ───────────────────────────────
-  // You could also use `useDropzone` with accept: { "application/pdf": [], "application/epub+zip": [] }
-  // but for simplicity here, I’ll show a plain input that accepts any file:
-  const handleBookFileSelect: React.ChangeEventHandler<HTMLInputElement> = (e) => {
-    if (!e.target.files || e.target.files.length === 0) {
-      setNewBookFile(null);
-      return;
-    }
-    setNewBookFile(e.target.files[0]);
-  };
-
-   // ───────────────────────────────
-  // (3) Revoke object URLs on unmount to avoid memory leaks
-  // ───────────────────────────────
-  useEffect(() => {
-    return () => {
-      if (newBookCoverPreview) {
-        URL.revokeObjectURL(newBookCoverPreview);
-      }
-      if(books && books.length > 0){
-        books.forEach((b) => {
-          if (b.coverPreview) URL.revokeObjectURL(b.coverPreview);
-        });
-      }
-    };
-
-  }, [books, newBookCoverPreview]);
-
-
-  // ───────────────────────────────
-  // (4) Handler to remove a BookItem
-  // ───────────────────────────────
-  const removeBookAt = (idx: number) => {
-    setBooks((prev) => {
-      const copy = [...prev];
-      if (copy[idx].coverPreview) {
-        URL.revokeObjectURL(copy[idx].coverPreview!);
-      }
-      copy.splice(idx, 1);
-      return copy;
-    });
-  };
-
-   // ───────────────────────────────
-  // (5) Save New Book (no upload here—just keep the File objects)
-  // ───────────────────────────────
-  const saveNewBook = () => {
-    if (!newBookTitle.trim() || !newBookAuthor.trim()) {
-      return;
-    }
-
-    setBooks((prev) => [
-      ...prev,
-      {
-        title: newBookTitle.trim(),
-        author: newBookAuthor.trim(),
-        coverFile: newBookCoverFile,
-        coverPreview: newBookCoverPreview,
-        bookFile: newBookFile,
-      },
-    ]);
-
-    // Reset modal state
-    setNewBookTitle("");
-    setNewBookAuthor("");
-    setNewBookCoverFile(null);
-    setNewBookCoverPreview(null);
-    setNewBookFile(null);
-    setIsBookModalOpen(false);
-  };
-
-  // ───────────────────────────────
-  // 5) Handlers to remove items
-  // ───────────────────────────────
-  const removeImageAt = (idx: number) => {
-    // 1) Remove raw File
-    setImageFiles((prev) => prev.filter((_, i) => i !== idx));
-    // 2) Revoke & remove preview URL
-    setImagePreviews((prev) => {
-      URL.revokeObjectURL(prev[idx]);
-      return prev.filter((_, i) => i !== idx);
-    });
-  };
-
-  const removeVideoAt = (idx: number) => {
-    setVideoFiles((prev) => prev.filter((_, i) => i !== idx));
-    setVideoPreviews((prev) => {
-      URL.revokeObjectURL(prev[idx]);
-      return prev.filter((_, i) => i !== idx);
-    });
-  };
-
-  // const removeBookAt = (idx: number) => {
-  //   setBooks((prev) => {
-  //     const copy = [...prev];
-  //     if (copy[idx].coverPreview) URL.revokeObjectURL(copy[idx].coverPreview!);
-  //     copy.splice(idx, 1);
-  //     return copy;
-  //   });
-  // };
-
-  // ───────────────────────────────
-  // 6) Save new book from modal (no S3 yet)
-  // ───────────────────────────────
-  // const saveNewBook = () => {
-  //   if (!newBookTitle.trim() || !newBookAuthor.trim()) return;
-
-  //   setBooks((prev) => [
-  //     ...prev,
-  //     {
-  //       title: newBookTitle.trim(),
-  //       author: newBookAuthor.trim(),
-  //       coverFile: newBookCoverFile,
-  //       coverPreview: newBookCoverPreview,
-  //     },
-  //   ]);
-
-  //   // Clear modal state
-  //   setNewBookTitle("");
-  //   setNewBookAuthor("");
-  //   setNewBookCoverFile(null);
-  //   setNewBookCoverPreview(null);
-  //   setIsBookModalOpen(false);
-  // };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // run only on unmount
 
   return (
     <div className="p-6 bg-white shadow-lg rounded-2xl border border-gray-200 space-y-6">
-      {/* ── Tabs ── */}
-      <div className="flex space-x-4 border-b border-gray-200 mb-4">
-        <button
-          className={`flex items-center space-x-2 pb-2 ${
-            selectedTab === "images"
-              ? "border-b-2 border-orange-500 text-orange-500"
-              : "text-gray-500 hover:text-orange-500"
-          }`}
-          onClick={() => setSelectedTab("images")}
-        >
-          <PhotoIcon className="w-6 h-6" />
-          <span>Images</span>
-        </button>
-        <button
-          className={`flex items-center space-x-2 pb-2 ${
-            selectedTab === "videos"
-              ? "border-b-2 border-orange-500 text-orange-500"
-              : "text-gray-500 hover:text-orange-500"
-          }`}
-          onClick={() => setSelectedTab("videos")}
-        >
-          <VideoCameraIcon className="w-6 h-6" />
-          <span>Videos</span>
-        </button>
-        <button
-          className={`flex items-center space-x-2 pb-2 ${
-            selectedTab === "books"
-              ? "border-b-2 border-orange-500 text-orange-500"
-              : "text-gray-500 hover:text-orange-500"
-          }`}
-          onClick={() => setSelectedTab("books")}
-        >
-          <BookOpenIcon className="w-6 h-6" />
-          <span>Books</span>
-        </button>
-      </div>
+      <TabSwitcher selected={selectedTab} setSelected={setSelectedTab} />
 
-      {/* ── Images Tab ── */}
       {selectedTab === "images" && (
-        <div className="space-y-6">
-          <div
-            {...getImageRootProps()}
-            className="border-2 border-dashed border-gray-300 p-8 rounded-xl cursor-pointer bg-gray-50 hover:bg-gray-100 transition-all flex flex-col items-center justify-center"
-          >
-            <input {...getImageInputProps()} />
-            <ArrowUpTrayIcon className="w-12 h-12 text-gray-400 mb-2" />
-            <p className="text-gray-500">
-              Drag & drop images here, or{" "}
-              <span className="text-orange-500 font-semibold">click to select</span>
-            </p>
-          </div>
-
-          {imagePreviews && imagePreviews.length > 0 && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-              {imagePreviews && imagePreviews.length > 0 &&imagePreviews.map((url, idx) => (
-                <motion.div
-                  key={idx}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                >
-                  <div className="relative group overflow-hidden rounded-lg shadow-lg">
-                    <img
-                      src={url}
-                      alt={`Preview ${idx}`}
-                      className="h-24 w-full object-cover rounded-lg transition-transform duration-200 group-hover:scale-105"
-                    />
-                    <button
-                      className="absolute top-1 right-1 bg-red-600 text-white p-1 rounded-full opacity-80 hover:opacity-100 transition-all"
-                      onClick={() => removeImageAt(idx)}
-                    >
-                      <XMarkIcon className="w-4 h-4" />
-                    </button>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          )}
-        </div>
+        <ImagesTab
+          imageFiles={imageFiles}
+          setImageFiles={setImageFiles}
+          imagePreviews={imagePreviews}
+          setImagePreviews={setImagePreviews}
+          previewManager={previewManager}
+        />
       )}
 
-      {/* ── Videos Tab ── */}
       {selectedTab === "videos" && (
-        <div className="space-y-6">
-          <div
-            {...getVideoRootProps()}
-            className="border-2 border-dashed border-gray-300 p-8 rounded-xl cursor-pointer bg-gray-50 hover:bg-gray-100 transition-all flex flex-col items-center justify-center"
-          >
-            <input {...getVideoInputProps()} />
-            <ArrowUpTrayIcon className="w-12 h-12 text-gray-400 mb-2" />
-            <p className="text-gray-500">
-              Drag & drop videos here, or{" "}
-              <span className="text-orange-500 font-semibold">click to select</span>
-            </p>
-          </div>
-
-          {videoPreviews.length > 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-              {videoPreviews.map((url, idx) => (
-                <motion.div
-                  key={idx}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                >
-                  <div className="relative group rounded-lg shadow-lg overflow-hidden">
-                    <video
-                      src={url}
-                      className="h-32 w-full object-cover rounded-lg"
-                      controls
-                    />
-                    <button
-                      className="absolute top-1 right-1 bg-red-600 text-white p-1 rounded-full opacity-80 hover:opacity-100 transition-all"
-                      onClick={() => removeVideoAt(idx)}
-                    >
-                      <XMarkIcon className="w-4 h-4" />
-                    </button>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          )}
-        </div>
+        <VideosTab
+          videoFiles={videoFiles}
+          setVideoFiles={setVideoFiles}
+          videoPreviews={videoPreviews}
+          setVideoPreviews={setVideoPreviews}
+          previewManager={previewManager}
+        />
       )}
 
-      {/* ── Books Tab ── */}
       {selectedTab === "books" && (
-        <div className="space-y-6">
-          <button
-            onClick={() => setIsBookModalOpen(true)}
-            className="inline-flex items-center space-x-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg shadow"
-          >
-            <PlusIcon className="w-5 h-5" />
-            <span>Add New Book</span>
-          </button>
-
-          {books.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {books.map((book, idx) => (
-                <motion.div
-                  key={idx}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                >
-                  <div className="relative bg-gray-50 rounded-lg shadow-lg overflow-hidden">
-                    {book.coverPreview ? (
-                      <img
-                        src={book.coverPreview}
-                        alt={book.title}
-                        className="h-32 w-full object-cover"
-                      />
-                    ) : (
-                      <div className="h-32 w-full bg-gray-200 flex items-center justify-center">
-                        <BookOpenIcon className="w-12 h-12 text-gray-400" />
-                      </div>
-                    )}
-                    <div className="p-3">
-                      <h4 className="text-gray-800 font-semibold">{book.title}</h4>
-                      <p className="text-gray-600 text-sm">{book.author}</p>
-                      {book.bookFile && (
-                        <p className="text-gray-500 text-xs mt-1">
-                          {book.bookFile.name}
-                        </p>
-                      )}
-                    </div>
-                    <button
-                      className="absolute top-2 right-2 bg-red-600 text-white p-1 rounded-full opacity-80 hover:opacity-100 transition-all"
-                      onClick={() => removeBookAt(idx)}
-                    >
-                      <XMarkIcon className="w-4 h-4" />
-                    </button>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-gray-500">No books added yet.</p>
-          )}
-        </div>
+        <BooksTab books={books} setBooks={setBooks} previewManager={previewManager} />
       )}
-
-      {/* ── Book Modal ── */}
-      {isBookModalOpen && (
-        <Modal onClose={() => setIsBookModalOpen(false)}>
-          <div className="bg-white p-6 rounded-xl w-full max-w-md mx-auto">
-            <h3 className="text-xl font-semibold text-gray-800 mb-4">Add New Book</h3>
-            <div className="space-y-4">
-              {/* Title */}
-              <div>
-                <label htmlFor="bookTitle" className="block text-sm font-medium text-gray-700">
-                  Title
-                </label>
-                <input
-                  type="text"
-                  id="bookTitle"
-                  value={newBookTitle}
-                  onChange={(e) => setNewBookTitle(e.target.value)}
-                  placeholder="e.g. The Great Gatsby"
-                  className="mt-1 block w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              {/* Author */}
-              <div>
-                <label htmlFor="bookAuthor" className="block text-sm font-medium text-gray-700">
-                  Author
-                </label>
-                <input
-                  type="text"
-                  id="bookAuthor"
-                  value={newBookAuthor}
-                  onChange={(e) => setNewBookAuthor(e.target.value)}
-                  placeholder="e.g. F. Scott Fitzgerald"
-                  className="mt-1 block w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              {/* Cover Image Dropzone */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Cover Image (optional)
-                </label>
-                <div
-                  {...getCoverRootProps()}
-                  className="border-2 border-dashed border-gray-300 p-4 rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-all flex items-center justify-center"
-                >
-                  <input {...getCoverInputProps()} />
-                  {newBookCoverPreview ? (
-                    <img
-                      src={newBookCoverPreview}
-                      alt="Cover Preview"
-                      className="h-24 object-cover rounded-lg"
-                    />
-                  ) : (
-                    <div className="flex flex-col items-center">
-                      <CameraIcon className="w-8 h-8 text-gray-400 mb-1" />
-                      <p className="text-gray-500 text-sm">
-                        Drag & drop an image, or{" "}
-                        <span className="text-orange-500 font-semibold">click to select</span>
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-              {/* Book File Input */}
-              <div>
-                <label htmlFor="bookFile" className="block text-sm font-medium text-gray-700">
-                  Book File (PDF, EPUB, etc.)
-                </label>
-                <input
-                  type="file"
-                  id="bookFile"
-                  accept=".pdf,.epub,.mobi,.txt,.doc,.docx"
-                  onChange={handleBookFileSelect}
-                  className="mt-1 block w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                {newBookFile && (
-                  <p className="text-gray-500 text-sm mt-1">{newBookFile.name}</p>
-                )}
-              </div>
-            </div>
-            <div className="mt-6 flex justify-end space-x-4">
-              <button
-                onClick={() => setIsBookModalOpen(false)}
-                className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={saveNewBook}
-                className="inline-flex items-center space-x-1 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-md"
-              >
-                <CheckIcon className="w-5 h-5" />
-                <span>Save Book</span>
-              </button>
-            </div>
-          </div>
-        </Modal>
-      )}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-      
-
-      
     </div>
   );
 };
