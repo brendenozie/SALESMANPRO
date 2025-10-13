@@ -1,46 +1,102 @@
-'use client';
+"use client";
 
 import React, {
-  useState,
+  useCallback,
   useEffect,
   useMemo,
-  useCallback,
-} from 'react';
-import Modal from './Modal';
-import { motion } from 'framer-motion';
+  useState,
+  Suspense,
+} from "react";
+import Modal from "./Modal";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
   CheckCircleIcon,
-} from '@heroicons/react/24/outline';
-import Stepper from './Stepper';
-import { CATEGORY_STEPS } from '@/constant/CATEGORY_STEPS';
-import { FORM_COMPONENTS } from '@/constant/FORM_COMPONENTS';
-import { STEP_LABELS } from '@/constant/STEP_LABELS';
-import CategoryPicker from './CategoryPicker';
-import {
-  MarketListingForm,
-  ProductForm,
-  IStoreCategory,
-  ILocation
-} from '@/types/typings';
-import PricingDetails from './PricingDetails';
-import LocationPicker from './LocationPicker';
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
+import Stepper from "./Stepper";
+import { CATEGORY_STEPS } from "@/constant/CATEGORY_STEPS";
+import { FORM_COMPONENTS } from "@/constant/FORM_COMPONENTS";
+import { STEP_LABELS } from "@/constant/STEP_LABELS";
+import CategoryPicker from "./CategoryPicker";
+import PricingDetails from "./PricingDetails";
+import LocationPicker from "./LocationPicker";
+import { MarketListingForm, ProductForm, IStoreCategory, ILocation } from "@/types/typings";
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+////////////////////////////////////////////////////////////////////////////////
+// Constants & API
+////////////////////////////////////////////////////////////////////////////////
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
-// -----------------------------------------------------------------------------
-// 1) File upload helper
-// -----------------------------------------------------------------------------
-async function uploadFiles(
-  files: File[],
-  type: 'image' | 'video' | 'file'
-): Promise<string[]> {
+////////////////////////////////////////////////////////////////////////////////
+// Small utilities reused from the product modal design
+////////////////////////////////////////////////////////////////////////////////
+function useDebouncedCallback<T extends (...a: any[]) => void>(fn: T, wait = 1000) {
+  const t = React.useRef<number | null>(null);
+  return React.useCallback((...args: Parameters<T>) => {
+    if (t.current) window.clearTimeout(t.current);
+    t.current = window.setTimeout(() => fn(...args), wait);
+  }, [fn, wait]);
+}
+
+function Toast({ msg, onClose }: { msg: string; onClose?: () => void }) {
+  useEffect(() => {
+    const id = setTimeout(() => onClose && onClose(), 3000);
+    return () => clearTimeout(id);
+  }, [onClose]);
+  return (
+    <div className="fixed bottom-6 right-6 z-[9999] bg-gray-900 text-white px-4 py-2 rounded-lg shadow-lg">
+      {msg}
+    </div>
+  );
+}
+
+function useAutoSaveDraft(key: string, data: any, enabled = true) {
+  const [status, setStatus] = useState<"saved" | "saving" | "idle">("idle");
+  const save = useCallback((payload: any) => {
+    if (!enabled) return;
+    setStatus("saving");
+    try {
+      localStorage.setItem(key, JSON.stringify(payload));
+      setStatus("saved");
+    } catch (e) {
+      setStatus("idle");
+    }
+  }, [key, enabled]);
+
+  const debouncedSave = useDebouncedCallback(save, 1200);
+
+  useEffect(() => {
+    if (!enabled) return;
+    debouncedSave(data);
+  }, [data, debouncedSave, enabled]);
+
+  const restore = useCallback(() => {
+    try {
+      const raw = localStorage.getItem(key);
+      if (!raw) return null;
+      return JSON.parse(raw);
+    } catch (e) {
+      return null;
+    }
+  }, [key]);
+
+  const clear = useCallback(() => localStorage.removeItem(key), [key]);
+
+  return { status, restore, clear };
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Upload helpers
+////////////////////////////////////////////////////////////////////////////////
+async function uploadFiles(files: File[], type: "image" | "video" | "file"): Promise<string[]> {
+  if (!files?.length) return [];
   const promises = files.map((file) => {
     const fd = new FormData();
-    fd.append('type', type);
-    fd.append('file', file);
-    return fetch(`${apiUrl}/upload`, { method: 'POST', body: fd })
+    fd.append("type", type);
+    fd.append("file", file);
+    return fetch(`${API_URL}/upload`, { method: "POST", body: fd })
       .then((res) => {
         if (!res.ok) throw new Error(`${type} upload failed`);
         return res.json();
@@ -50,58 +106,47 @@ async function uploadFiles(
   return Promise.all(promises);
 }
 
-// -----------------------------------------------------------------------------
-// 2) product → listing converter
-// -----------------------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+// Converters / Payload builders
+////////////////////////////////////////////////////////////////////////////////
 function productToListingForm(
   p?: ProductForm | null | undefined,
-  categories?: IStoreCategory[],
+  categories?: IStoreCategory[] | undefined,
   companyId?: string | undefined
 ): MarketListingForm {
-  const cat = (categories && categories.find(c => c.categoryId === p?.productCategoryId)) ?? null;
+  // Keep this converter forgiving; copy a sensible default mapping from product fields
+  // to market listing fields. Most fields are 1:1.
+  const cat = (categories && categories.find((c) => c.categoryId === p?.productCategoryId)) ?? null;
 
   return {
-    // identifiers & metadata
-    id: '',
-    productId: p?.id ?? '',
-    sellerType: 'ADMIN',
+    id: "",
+    productId: p?.id ?? "",
+    sellerType: "ADMIN",
     companyId: p?.companyId ?? companyId,
-    propertyTypeId: p?.propertyTypeId || '',
-    commissionRateId: '',
+    propertyTypeId: p?.propertyTypeId || "",
+    commissionRateId: "",
 
-    // titles & descriptions
-    name: p?.name ?? '',
-    description: p?.description || undefined,
-    longDescription: p?.longDescription || undefined,
+    name: p?.name ?? "",
+    description: p?.description ?? undefined,
+    longDescription: p?.longDescription ?? undefined,
 
-    // categorization
-    productCategoryId: p?.productCategoryId || '',
-    category: p?.category ?? null,
-    subCategory: p?.subCategory || cat?.subcategories || {},
-    subCategoryName: p?.subCategoryName ?? '',
+    productCategoryId: p?.productCategoryId ?? "",
+    category: p?.category ?? cat ?? null,
+    subCategory: p?.subCategory || (cat?.subcategories ?? {}) || null,
+    subCategoryName: p?.subCategoryName ?? "",
     tags: p?.tags ?? [],
 
-    // visual media (filled later)
-    // images/videos are handled in payload builder
-    // pricing & inventory
     quantity: p?.quantity ?? 0,
-
-    // buyingPrice: p?.costPrice,
-    // sellingPrice: p?.sellingPrice,
     buyingPrice: p?.sellingPrice ?? 0,
     sellingPrice: p?.sellingPrice ?? 0,
-
     discount: p?.discount ?? 0,
     finalPrice: p?.finalPrice ?? 0,
     profitMargin: p?.profitMargin ?? 0,
     pricingTiers: p?.pricingTiers ?? [],
 
-    // deal dates
     startDealDate: p?.startDealDate?.toString() || null,
     endDealDate: p?.endDealDate?.toString() || null,
-    // startDealDate: p?.startDealDate ? (isNaN(new Date(p.startDealDate).getTime()) ? null : new Date(p.startDealDate))  : null,
-    // endDealDate: p?.endDealDate ? (isNaN(new Date(p.endDealDate).getTime()) ? null : new Date(p.endDealDate))  : null,
-    // availability flags
+
     isAvailable: p?.isAvailable ?? false,
     isOnOffer: p?.isOnOffer ?? false,
     isFlashDeal: p?.isFlashDeal ?? false,
@@ -109,125 +154,107 @@ function productToListingForm(
     isDiscounted: p?.isDiscounted ?? false,
     isFeatured: p?.isFeatured ?? false,
 
-    // delivery & payment
-    delivery: p?.deliveryMethod === 'DELIVERY',
-    paymentOption: p?.paymentOption || 'AT SHOP',
+    delivery: p?.deliveryMethod === "DELIVERY",
+    paymentOption: (p as any)?.paymentOption || "AT SHOP",
     showOnGhuba: true,
 
-    // contact & location
-    contactName: p?.contactName ?? '',
-    contact: p?.contact ?? '',
-    email: p?.email,
-    locationName: p?.locationName ?? '',
-
+    contactName: p?.contactName ?? "",
+    contact: p?.contact ?? "",
+    email: p?.email ?? undefined,
+    locationName: p?.locationName ?? "",
     location: p?.location ? JSON.parse(JSON.stringify(p.location)) : null,
-
-    locationId: p?.locationId,
+    locationId: (p as any)?.locationId ?? undefined,
     latitude: p?.latitude ?? 0.0,
     longitude: p?.longitude ?? 0.0,
 
-    // core product fields
-    model: p?.model ?? '',
+    model: p?.model ?? "",
     color: p?.color ?? [],
     size: p?.size ?? [],
     weight: p?.weight ?? [],
-    condition: p?.condition ?? '',
-    dimensions: p?.dimensions ?? '',
+    condition: p?.condition ?? "",
+    dimensions: p?.dimensions ?? "",
     material: p?.material ?? [],
 
-    // vehicle-specific
-    make: p?.make ?? '',
-    trim: p?.trim ?? '',
-    type: p?.type ?? '',
-    mileage: p?.mileage ?? '',
-    engineType: p?.engineType ?? '',
+    make: p?.make ?? "",
+    trim: p?.trim ?? "",
+    type: p?.type ?? "",
+    mileage: p?.mileage ?? "",
+    engineType: p?.engineType ?? "",
     engineSize: p?.engineSize ?? 0,
-    horsepower: p?.horsepower ?? 0,
-    torque: p?.torque ?? 0,
-    fuelType: p?.fuelType ?? '',
-    fuelEconomy: p?.fuelEconomy ?? '',
-    transmission: p?.transmission ?? '',
-    drivetrain: p?.drivetrain ?? '',
-    vin: p?.vin ?? '',
-    logbookStatus: p?.logbookStatus ?? '',
-    serviceHistory: p?.serviceHistory ?? '',
+    horsepower: (p as any)?.horsepower ?? 0,
+    torque: (p as any)?.torque ?? 0,
+    fuelType: (p as any)?.fuelType ?? "",
+    fuelEconomy: (p as any)?.fuelEconomy ?? "",
+
+    transmission: p?.transmission ?? "",
+    drivetrain: p?.drivetrain ?? "",
+    vin: p?.vin ?? "",
+    logbookStatus: p?.logbookStatus ?? "",
+    serviceHistory: p?.serviceHistory ?? "",
     negotiable: p?.negotiable ?? false,
     financingAvailable: p?.financingAvailable ?? false,
     tradeIn: p?.tradeIn ?? false,
     features: p?.features ?? [],
 
-    // bookable/service-specific
     hourlyRate: p?.hourlyRate,
     minimumHours: p?.minimumHours,
     minNoticePeriod: p?.minNoticePeriod,
     maxBookingAhead: p?.maxBookingAhead,
     totalCapacity: p?.totalCapacity,
-    currentBookedCount: p?.currentBookedCount,
+    currentBookedCount: (p as any)?.currentBookedCount,
     providerRating: p?.providerRating,
     bookingSlots: p?.bookingSlots,
     requiredClientInfo: p?.requiredClientInfo,
     fulfillmentStatus: p?.fulfillmentStatus,
     deliveryMethod: p?.deliveryMethod,
 
-    // property-specific
     bedrooms: p?.bedrooms ?? [],
     studios: p?.studios ?? [],
     bathrooms: p?.bathrooms ?? 0,
-    area: p?.area ?? '',
-    serviceSchedule: p?.serviceSchedule ?? '',
+    area: p?.area ?? "",
+    serviceSchedule: p?.serviceSchedule ?? "",
     availabilityStart: p?.availabilityStart || null,
     availabilityEnd: p?.availabilityEnd || null,
     amenities: p?.amenities ?? [],
 
-    // bookable consumables
-    ingredients: p?.ingredients ?? '',
-    usageInstructions: p?.usageInstructions ?? '',
+    ingredients: p?.ingredients ?? "",
+    usageInstructions: p?.usageInstructions ?? "",
     expirationDate: p?.expirationDate?.toString() || null,
 
-    // textiles & appliances
-    fabricComposition: p?.fabricComposition ?? '',
-    careInstructions: p?.careInstructions ?? '',
-    energyRating: p?.energyRating ?? '',
-    warrantyPeriod: p?.warrantyPeriod ?? '',
-    applianceDimensions: p?.applianceDimensions,
+    fabricComposition: p?.fabricComposition ?? "",
+    careInstructions: p?.careInstructions ?? "",
+    energyRating: p?.energyRating ?? "",
+    warrantyPeriod: p?.warrantyPeriod ?? "",
+    applianceDimensions: (p as any)?.applianceDimensions,
 
-    // commission
-    // commissionType: '',
-    // commissionRate: 0,
     commissionStartDate: null,
     commissionEndDate: null,
 
-    // misc
-    author: p?.author ?? '',
-    publisher: p?.publisher ?? '',
-    isbn: p?.isbn ?? '',
-    tax: p?.tax,
-    shippingCost: p?.shippingCost,
+    author: p?.author ?? "",
+    publisher: p?.publisher ?? "",
+    isbn: p?.isbn ?? "",
+    tax: (p as any)?.tax,
+    shippingCost: (p as any)?.shippingCost,
 
-    // status & grouping
-    status: 'ACTIVE',
+    status: "ACTIVE",
     collectionId: p?.collectionId,
-    year: p?.year,
+    year: p?.year ?? (new Date()).getFullYear(),
 
-    brand: null,
-    option: [],
+    brand: (p as any)?.brand ?? null,
+    option: (p as any)?.option ?? [],
 
-    previousOwners: null,
-    tireCondition: '',
-    accidentalHistory: false,
+    previousOwners: (p as any)?.previousOwners ?? null,
+    tireCondition: (p as any)?.tireCondition ?? "",
+    accidentalHistory: (p as any)?.accidentalHistory ?? false,
 
-    digitalUrl: '',
-    autoDeliver: false,
+    digitalUrl: (p as any)?.digitalUrl ?? "",
+    autoDeliver: (p as any)?.autoDeliver ?? false,
     duration: undefined,
-    
-    images: [],
-    
-  };
+
+    images: p?.images ?? [],
+  } as MarketListingForm;
 }
 
-// -----------------------------------------------------------------------------
-// 3) Build payload for API
-// -----------------------------------------------------------------------------
 function buildListingPayload(
   f: MarketListingForm,
   imageUrls: string[],
@@ -288,10 +315,10 @@ function buildListingPayload(
     mileage: f.mileage || null,
     engineType: f.engineType || null,
     engineSize: f.engineSize,
-    horsepower: f.horsepower,
-    torque: f.torque,
-    fuelType: f.fuelType || null,
-    fuelEconomy: f.fuelEconomy || null,
+    horsepower: (f as any).horsepower,
+    torque: (f as any).torque,
+    fuelType: (f as any).fuelType || null,
+    fuelEconomy: (f as any).fuelEconomy || null,
     transmission: f.transmission || null,
     drivetrain: f.drivetrain || null,
     vin: f.vin || null,
@@ -341,17 +368,12 @@ function buildListingPayload(
     status: f.status,
     collectionId: f.collectionId || null,
     year: f.year,
-    //   productTypeId: f.productTypeId || null,
-    //   commissionType: f.commissionType,
-    //   commissionRate: f.commissionRate,
-    //   commissionStartDate: f.commissionStartDate,
-    //   commissionEndDate: f.commissionEndDate,
   };
 }
 
-// -----------------------------------------------------------------------------
-// 4) useMarketListingForm hook
-// -----------------------------------------------------------------------------
+////////////////////////////////////////////////////////////////////////////////
+// Hook: market listing form state (keeps logic similar to product modal)
+////////////////////////////////////////////////////////////////////////////////
 function useMarketListingForm(
   product?: ProductForm | undefined | null,
   marketListItem?: MarketListingForm | undefined | null,
@@ -362,37 +384,27 @@ function useMarketListingForm(
     const raw: Partial<MarketListingForm> = marketListItem || {};
     const p: ProductForm | null = product ?? null;
 
-    let initialCategory: IStoreCategory | null = null;
-    const initialProductCategoryId = raw.productCategoryId || '';
+    // If editing a market list item, prefer its values; otherwise convert from product
+    const base = marketListItem ? { ...productToListingForm(p ?? undefined, categories), ...marketListItem, companyId } : productToListingForm(p ?? undefined, categories);
 
-    if (initialProductCategoryId) {
-      initialCategory = categories &&
-        categories.find(
-          (cat) => cat.categoryId === initialProductCategoryId
-        ) || null;
-    }
-
-    // merge raw (edit-mode) or p (new-listing) with defaults
-    return {
-      // (repeat every property exactly as in productToListingForm,
-      // but first taking raw.* then falling back to p.* then to literal defaults)
-      // ...for brevity, assume same structure & order as above converter...
-      ...(
-        marketListItem ? { ...productToListingForm(p ?? undefined, categories), ...marketListItem, companyId: companyId } : productToListingForm(p ?? undefined, categories)
-      ),
-    } as MarketListingForm;
+    return base as MarketListingForm;
   }, [product, marketListItem, companyId, categories]);
 
   const [formData, setFormData] = useState<MarketListingForm>(getInitial);
 
-  // recalc prices
+  // recalc prices when core numeric fields change
   useEffect(() => {
-    const { buyingPrice, sellingPrice, discount } = formData;
-    const finalPrice = sellingPrice - (sellingPrice * (discount ?? 0)) / 100;
-
-    const profitMargin =
-      buyingPrice > 0 ? ((finalPrice - buyingPrice) / buyingPrice) * 100 : 0;
-    setFormData((f) => ({ ...f, finalPrice, profitMargin }));
+    const buyingPrice = formData.buyingPrice ?? 0;
+    const sellingPrice = formData.sellingPrice ?? 0;
+    const discount = formData.discount ?? 0;
+    const finalPrice = Math.max(sellingPrice - (sellingPrice * discount) / 100, 0);
+    const profitMargin = buyingPrice > 0 ? ((finalPrice - buyingPrice) / buyingPrice) * 100 : 0;
+    // only update if changed to avoid infinite rerender loops
+    setFormData((f) => {
+      if (f.finalPrice === finalPrice && f.profitMargin === profitMargin) return f;
+      return { ...f, finalPrice, profitMargin };
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formData.buyingPrice, formData.sellingPrice, formData.discount]);
 
   const updateField = useCallback(
@@ -402,292 +414,278 @@ function useMarketListingForm(
     []
   );
 
+  // keep form in sync if initial props change
   useEffect(() => {
     setFormData(getInitial());
   }, [getInitial]);
 
-  return { formData, updateField };
+  return { formData, updateField, setFormData };
 }
 
-// -----------------------------------------------------------------------------
-// 5) Main Component
-// -----------------------------------------------------------------------------
-export default function AddToProductMarketModal({
+////////////////////////////////////////////////////////////////////////////////
+// Main Component
+////////////////////////////////////////////////////////////////////////////////
+export default function ProductMarketModal({
   showRequestProductModal,
   setShowRequestProductModal,
   product,
   marketListItem,
   companyId,
   categories,
-  locations
+  locations,
 }: AddToProductMarketModalProps) {
-  const { formData, updateField } = useMarketListingForm(
+  const { formData, updateField, setFormData } = useMarketListingForm(
     product,
     marketListItem,
     companyId,
     categories
   );
 
-  // Load from product
-  const handleLoadFromProduct = () => {
-    const initial = productToListingForm(product, categories);
-    Object.entries(initial).forEach(([key, val]) =>
-      updateField(key as keyof MarketListingForm, val as any)
-    );
-  };
-
-  // UI state
+  // local UI state
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [videoFiles, setVideoFiles] = useState<File[]>([]);
-  const [step, setStep] = useState(1);
+  const [imagePreviews, setImagePreviews] = useState<string[]>(formData.images || []);
+  const [step, setStep] = useState<number>(1);
   const [loading, setLoading] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
 
-  const categoryKey = formData.category?.displayName?.trim() || '';
+  // draft autosave
+  const draftKey = useMemo(() => `market-listing-draft-${companyId}-${product?.id || "new"}`, [companyId, product?.id]);
+  const { status: autosaveStatus, restore, clear } = useAutoSaveDraft(draftKey, formData, true);
 
-  const stepsForCategory = useMemo(
-    () => CATEGORY_STEPS[categoryKey] || [1],
-    [categoryKey]
-  );
+  useEffect(() => {
+    // restore draft if create flow and draft exists
+    if (!product && !marketListItem) {
+      const draft = restore();
+      if (draft) {
+        setFormData((d: any) => ({ ...d, ...draft }));
+        setToast("Restored unsaved draft");
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  const currentDynamicStep = stepsForCategory[step - 1] || 1;
-
-  const FormComponent = useMemo(
-    () => FORM_COMPONENTS[currentDynamicStep] || FORM_COMPONENTS[1],
-    [currentDynamicStep]
-  );
-
+  // dynamic steps
+  const categoryKey = (formData.category as any)?.displayName?.trim?.() || (formData.category as any)?.name || "";
+  const stepsForCategory = useMemo(() => CATEGORY_STEPS[categoryKey] || [1, 2, 3], [categoryKey]);
   const lastStepIndex = stepsForCategory.length;
   const isFirstStep = step === 1;
   const isLastStep = step === lastStepIndex;
+  const currentDynamicStep = stepsForCategory[step - 1] || 1;
 
-  // input handlers (same as you had)
+  const FormComponent = useMemo(() => FORM_COMPONENTS[currentDynamicStep] ?? null, [currentDynamicStep]);
+
+  // handle input generically
   const handleInputChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-      const { name, value, type } = e.target;
-      let updatedValue: any = value;
+      const target = e.target as HTMLInputElement;
+      const { name, type } = target;
+      let val: any = target.value;
 
-      // Handle checkboxes first
-      if (type === 'checkbox') {
-        updatedValue = (e.target as HTMLInputElement).checked;
+      if (type === "checkbox") {
+        val = target.checked;
       } else if (
         [
-          'discount',
-          'buyingPrice',
-          'sellingPrice',
-          'finalPrice',
-          'profitMargin',
-          'quantity',
-          'engineSize',
-          'horsepower',
-          'torque',
-          'previousOwners',
-          'year',
-          'bathrooms', // Note: bathrooms is String? in your schema, but you're trying to parse it as a number here. Ensure consistency.
-          'hourlyRate',
-          'minimumHours',
-          'totalCapacity',
-          'currentBookedCount',
-          'providerRating',
-          'tax',
-          'shippingCost',
-          // 'commissionRate', // This field does not exist in your MarketListingForm or model.
+          "discount",
+          "buyingPrice",
+          "sellingPrice",
+          "finalPrice",
+          "profitMargin",
+          "quantity",
+          "engineSize",
+          "horsepower",
+          "torque",
+          "previousOwners",
+          "year",
+          "bathrooms",
+          "hourlyRate",
+          "minimumHours",
+          "totalCapacity",
+          "currentBookedCount",
+          "providerRating",
+          "tax",
+          "shippingCost",
         ].includes(name)
       ) {
-        // For numeric fields, parse and handle empty values
-        const parsedNumber = parseFloat(value);
-        if (isNaN(parsedNumber)) {
-          // If parsing fails and value is empty, set to undefined. Otherwise, keep the parsed number (which might be 0 if parseFloat("") returned NaN and then || 0)
-          updatedValue = value === '' ? undefined : 0; // Or handle NaN specifically if needed
-        } else {
-          updatedValue = parsedNumber;
-        }
-      } else if (value === '') {
-        // For other fields, if empty, set to undefined
-        updatedValue = undefined;
+        const parsed = parseFloat(val as string);
+        if (isNaN(parsed)) val = undefined;
+        else val = parsed;
+      } else if (val === "") {
+        val = undefined;
       }
 
-      // Safely update the form data using updateField
-      // TypeScript might need a bit more help here if 'name' is truly 'any'
-      // A more robust approach would be to map input names to their expected types.
-      updateField(name as keyof MarketListingForm, updatedValue as MarketListingForm[keyof MarketListingForm]);
+      updateField(name as keyof MarketListingForm, val as any);
     },
     [updateField]
   );
 
-  // const handleInputChange = useCallback(
-  //   (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-  //     const { name, value, type } = e.target;
-  //     let parsed: any = value;
-  //     if (
-  //       [
-  //         'discount',
-  //         'buyingPrice',
-  //         'sellingPrice',
-  //         'finalPrice',
-  //         'profitMargin',
-  //         'quantity',
-  //         'engineSize',
-  //         'horsepower',
-  //         'torque',
-  //         'previousOwners',
-  //         'year',
-  //         'bathrooms',
-  //         'bedrooms',
-  //         'studios',
-  //         'hourlyRate',
-  //         'minimumHours',
-  //         'totalCapacity',
-  //         'currentBookedCount',
-  //         'providerRating',
-  //         'tax',
-  //         'shippingCost',
-  //         'commissionRate',
-  //       ].includes(name)
-  //     ) {
-  //       parsed = parseFloat(value) || 0;
-  //     } else if (type === 'checkbox') {
-  //       parsed = (e.target as HTMLInputElement).checked;
-  //     } else if (value === '') {
-  //       parsed = undefined;
-  //     }
-  //     updateField(name as any, parsed);
-  //   },
-  //   [updateField]
-  // );
-
   const handleCategoryChange = useCallback(
     (cat: IStoreCategory | null) => {
-      updateField('category', cat);
-      updateField('productCategoryId', cat?.categoryId || '');
-      updateField('subCategory', cat?.subcategories || {});
-      updateField('subCategoryName', '');
+      updateField("category", cat as any);
+      updateField("productCategoryId", (cat as any)?.categoryId || "");
+      updateField("subCategory", (cat as any)?.subcategories || {});
+      updateField("subCategoryName", "");
     },
     [updateField]
   );
 
   const handleSubCategoryChange = useCallback(
     (sub: any) => {
-      updateField('subCategory', sub);
-      updateField('subCategoryName', sub?.name || '');
+      updateField("subCategory", sub);
+      updateField("subCategoryName", sub?.name || "");
     },
     [updateField]
   );
-  const handleBrandChange = useCallback(
-    (b: string) => updateField('brand', b),
-    [updateField]
-  );
+
+  const handleBrandChange = useCallback((b: string) => updateField("brand", b), [updateField]);
 
   const handleLocationSelect = useCallback((locationId: string | null, locationDetails?: ILocation | null) => {
-    updateField('locationId', locationId);
+    updateField("locationId", locationId ?? undefined);
+    updateField("location", locationDetails ? JSON.stringify(locationDetails) : null);
+    updateField("locationName", locationDetails?.name || "");
+    updateField("latitude", locationDetails?.latitude ?? 0);
+    updateField("longitude", locationDetails?.longitude ?? 0);
+  }, [updateField]);
 
-    // updateField('location', locationDetails || null);
-    updateField('location', locationDetails ? JSON.stringify(locationDetails) : null);
+  // load from product
+  const handleLoadFromProduct = useCallback(() => {
+    const initial = productToListingForm(product ?? undefined, categories, companyId);
+    Object.entries(initial).forEach(([key, val]) =>
+      updateField(key as keyof MarketListingForm, val as any)
+    );
+    setToast("Loaded data from product");
+  }, [product, categories, companyId, updateField]);
 
+  // drag to go back (mobile)
+  const handleDragEnd = (_: any, info: any) => {
+    if (info.offset.x > 80 && !isFirstStep) setStep((s) => Math.max(1, s - 1));
+  };
 
-    // updateField('locationName', locationDetails?.name || '');
-    // updateField('latitude', locationDetails?.latitude ?? null);
-    // updateField('longitude', locationDetails?.longitude ?? null);
-    // You might also want to store city, country etc. directly if needed for quick access
-    // updateField('city', locationDetails?.city);
-    // updateField('country', locationDetails?.country);
-  }, []);
+  // preview images when files selected
+  useEffect(() => {
+    if (!imageFiles.length) return;
+    const urls = imageFiles.map((f) => URL.createObjectURL(f));
+    setImagePreviews((p) => [...p, ...urls]);
+    // revoke on unmount
+    return () => {
+      urls.forEach((u) => URL.revokeObjectURL(u));
+    };
+  }, [imageFiles]);
 
-  // final submit
-  const handleCreateListing = async () => {
-    if (!window.confirm('Create listing?')) return;
+  // Save / submit
+  const handleCreateListing = useCallback(async () => {
+    if (!window.confirm("Create listing?")) return;
     setLoading(true);
     try {
       const [imageUrls, videoUrls] = await Promise.all([
-        uploadFiles(imageFiles, 'image'),
-        uploadFiles(videoFiles, 'video'),
+        uploadFiles(imageFiles, "image"),
+        uploadFiles(videoFiles, "video"),
       ]);
 
       const payload = buildListingPayload(
         {
           ...formData,
-          category:formData.category.displayName || formData.category.name,
+          category: (formData.category as any)?.displayName || (formData.category as any)?.name || formData.category,
           companyId: companyId,
-
-        },
-        imageUrls,
+        } as MarketListingForm,
+        imageUrls.length ? imageUrls : formData.images || [],
         videoUrls
       );
 
-      const res = await fetch(`${apiUrl}/admin/post-market-list`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch(`${API_URL}/admin/post-market-list`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
+        credentials: "include",
       });
-      if (!res.ok) throw new Error((await res.json()).message || res.statusText);
 
-      alert('Listing created!');
+      if (!res.ok) {
+        const json = await res.json().catch(() => null);
+        throw new Error(json?.message || res.statusText || "Failed to create listing");
+      }
+
+      setToast("Listing created!");
+      clear();
       setShowRequestProductModal(false);
     } catch (err: any) {
       console.error(err);
-      alert(`Error: ${err.message}`);
+      setToast(err?.message || "Error creating listing");
     } finally {
       setLoading(false);
     }
+  }, [imageFiles, videoFiles, formData, companyId, clear, setShowRequestProductModal]);
+
+  // progress %
+  const progress = Math.round((step / Math.max(1, lastStepIndex)) * 100);
+
+  // small animation container variants
+  const containerVar = {
+    hidden: { opacity: 0, y: 12 },
+    show: { opacity: 1, y: 0, transition: { when: "beforeChildren", staggerChildren: 0.02 } },
   };
 
   return (
-    <Modal
-      title='Add to Marketplace'
-      isOpen={showRequestProductModal}
-      onClose={() => setShowRequestProductModal(false)}
-    >
-      <div className="relative p-6 bg-white rounded-xl shadow-lg text-gray-900 w-full max-w-4xl h-[90vh] flex flex-col">
-        {loading && (
-          <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-10">
-            <span>Uploading…</span>
-          </div>
-        )}
+    <Modal isOpen={showRequestProductModal} onClose={() => setShowRequestProductModal(false)} title="">
+      <div className="relative w-full max-w-5xl h-[90vh] bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col">
 
-        {/* Header */}
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold">
-            {marketListItem ? 'Edit Listing' : 'New Listing'}
-          </h2>
-          {!product && (
-            <button
-              type="button"
-              onClick={handleLoadFromProduct}
-              className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300 text-sm"
+        {/* Loading overlay */}
+        <AnimatePresence>
+          {loading && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 z-40 bg-white/70 backdrop-blur flex items-center justify-center"
             >
-              Load from product
-            </button>
+              <div className="animate-pulse text-gray-700">Uploading…</div>
+            </motion.div>
           )}
+        </AnimatePresence>
+
+        {/* Top Bar */}
+        <div className="shrink-0 flex items-center justify-between px-4 py-3 border-b">
+          <div className="flex items-center gap-3">
+            <button aria-label="close" onClick={() => setShowRequestProductModal(false)} className="p-2 rounded-md hover:bg-gray-100">
+              <XMarkIcon className="h-5 w-5 text-gray-700" />
+            </button>
+            <div>
+              <div className="text-sm font-semibold">{marketListItem ? "Edit Listing" : "Add to Marketplace"}</div>
+              <div className="text-xs text-gray-500">Step {step} of {lastStepIndex}</div>
+            </div>
+          </div>
+          <div className="w-64">
+            <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" style={{ width: `${progress}%` }} />
+            </div>
+          </div>
         </div>
 
-        {/* Steps & Form */}
-        <motion.div
-          key={step}
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: 20 }}
-          className="flex-grow overflow-y-auto"
-        >
-          <Stepper
-            step={step}
-            stepsForCategory={stepsForCategory}
-            STEP_LABELS={STEP_LABELS}
-          />
-          <div className="flex-grow overflow-y-auto p-4">
+        {/* Scrollable Content */}
+        <motion.div className="flex-1 overflow-y-auto px-4 py-4" variants={containerVar} initial="hidden" animate="show">
+          <Stepper step={step} stepsForCategory={stepsForCategory} STEP_LABELS={STEP_LABELS} />
+
+          <motion.div
+            key={step}
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ type: "spring", stiffness: 240, damping: 30 }}
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            onDragEnd={handleDragEnd}
+            className="mt-4"
+          >
             {step === 1 ? (
               <CategoryPicker
-                formData={{
-                  category: formData.category,
-                  subCategory: formData.subCategory,
-                  brand: formData.brand,
-                }}
+                formData={{ category: formData.category, subCategory: formData.subCategory, brand: formData.brand }}
                 categories={categories}
-                filteredBrands={formData.category?.allBrands || []}
+                filteredBrands={(formData.category as any)?.allBrands || []}
                 onCategoryChange={handleCategoryChange}
                 onSubCategoryChange={handleSubCategoryChange}
-                onBrandChange={(b) => updateField('brand', b)}
+                onBrandChange={(b) => updateField("brand", b as any)}
+                // onBrandChange={handleBrandChange}
               />
             ) : currentDynamicStep === 7 ? (
-              // PricingDetails is mapped to step 7
               <PricingDetails<MarketListingForm>
                 formData={formData}
                 setFormData={updateField}
@@ -697,60 +695,74 @@ export default function AddToProductMarketModal({
                 finalField="finalPrice"
                 marginField="profitMargin"
               />
-            ) :
-              currentDynamicStep === 18 ? (
-                <section className="bg-white p-6 rounded-lg shadow-md">
-                  <h2 className="text-xl font-semibold mb-4">Location Details</h2>
-                  <LocationPicker
-                    selectedLocationId={formData.locationId || null}
-                    availableLocations={locations} // Replace with your actual fetched locations
-                    onLocationSelect={handleLocationSelect}
-                  />
-                </section>
-              ) :
-                (
-                  <FormComponent
-                    formData={formData}
-                    handleInputChange={handleInputChange}
-                    setFormData={updateField as any}
-                  />
-                )}
-          </div>
+            ) : currentDynamicStep === 18 ? (
+              <section className="bg-white p-6 rounded-lg shadow-sm">
+                <h2 className="text-lg font-semibold mb-4">Location Details</h2>
+                <LocationPicker
+                  selectedLocationId={formData.locationId || null}
+                  availableLocations={locations}
+                  onLocationSelect={handleLocationSelect}
+                />
+              </section>
+            ) : FormComponent ? (
+              <Suspense fallback={<div className="p-6 text-center text-gray-500">Loading step…</div>}>
+                <FormComponent
+                  formData={formData}
+                  handleInputChange={handleInputChange}
+                  setFormData={updateField as any}
+                  imageFiles={imageFiles}
+                  setImageFiles={setImageFiles}
+                  imagePreviews={imagePreviews}
+                  setImagePreviews={(v: string[]) => setImagePreviews(v)}
+                />
+              </Suspense>
+            ) : (
+              <div className="p-6 text-sm text-gray-600">No form available for this step.</div>
+            )}
+          </motion.div>
         </motion.div>
 
-        {/* Footer */}
-        <div className="flex justify-between pt-4 border-t">
-          {!isFirstStep ? (
-            <button
-              className="btn-secondary flex items-center"
-              onClick={() => setStep(s => s - 1)}
-              disabled={loading}
-            >
-              <ArrowLeftIcon className="h-5 w-5 mr-1" />
-              Back
-            </button>
-          ) : <div />}
+        {/* Sticky Footer */}
+        <div className="shrink-0 border-t bg-white/90 backdrop-blur-sm p-4 sticky bottom-0 left-0 right-0 z-30 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="hidden sm:flex items-center gap-2 text-gray-500 text-xs">
+            Progress: {progress}% {autosaveStatus === "saving" ? "• saving…" : autosaveStatus === "saved" ? "• saved" : ""}
+          </div>
 
-          {isLastStep ? (
-            <button
-              className="btn-success flex items-center"
-              onClick={handleCreateListing}
-              disabled={loading}
-            >
-              Submit
-              <CheckCircleIcon className="h-5 w-5 ml-1" />
-            </button>
-          ) : (
-            <button
-              className="btn-primary flex items-center"
-              onClick={() => setStep(s => s + 1)}
-              disabled={loading}
-            >
-              Next
-              <ArrowRightIcon className="h-5 w-5 ml-1" />
-            </button>
-          )}
+          <div className="flex w-full sm:w-auto justify-between sm:justify-end gap-3">
+            {!isFirstStep && (
+              <button
+                onClick={() => setStep((s) => Math.max(1, s - 1))}
+                className="w-full sm:w-auto px-4 py-2 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center gap-2 text-gray-700"
+              >
+                <ArrowLeftIcon className="h-4 w-4" />
+                <span className="sm:hidden">Back</span>
+              </button>
+            )}
+
+            {!isLastStep && (
+              <button
+                onClick={() => setStep((s) => Math.min(lastStepIndex, s + 1))}
+                className="w-full sm:w-auto px-4 py-2 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white flex items-center justify-center gap-2"
+              >
+                <span className="sm:hidden">Next</span>
+                <ArrowRightIcon className="h-4 w-4" />
+              </button>
+            )}
+
+            {isLastStep && (
+              <button
+                onClick={handleCreateListing}
+                className="w-full sm:w-auto px-4 py-2 rounded-full bg-green-600 hover:bg-green-700 text-white flex items-center justify-center gap-2"
+              >
+                Submit
+                <CheckCircleIcon className="h-4 w-4" />
+              </button>
+            )}
+          </div>
         </div>
+
+        {/* Toast */}
+        {toast && <Toast msg={toast} onClose={() => setToast(null)} />}
       </div>
     </Modal>
   );
@@ -765,5 +777,3 @@ interface AddToProductMarketModalProps {
   categories: IStoreCategory[];
   locations: ILocation[];
 }
-
-
