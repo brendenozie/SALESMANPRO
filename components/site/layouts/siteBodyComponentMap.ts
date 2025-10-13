@@ -8,8 +8,13 @@
 // Map category strings to their corresponding layout folder names
 export const folderMap: Record<string, string> = {
   // Ecommerce
+  'ghuba': 'GhubaLayout',
+
   'ecommerce': 'EcommerceLayout',
   'e-commerce': 'EcommerceLayout',
+
+  'shoes-store': 'EcommerceShoesLayout',
+  'shoes store': 'EcommerceShoesLayout',
 
   // Services
   'services': 'ServicesLayout',
@@ -89,6 +94,7 @@ export const folderMap: Record<string, string> = {
 // Map layout folder names to their specific Site component names
 export const siteComponentNameMap: Record<string, string> = {
   'EcommerceLayout': 'EcommerceSite',
+  'EcommerceShoesLayout': 'EcommerceShoesSite',
   'ServicesLayout': 'ServiceSite',
   'BookingsLayout': 'BookingsSite',
   'RealEstateLayout': 'RealEstateSite',

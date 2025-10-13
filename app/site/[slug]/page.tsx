@@ -11,8 +11,10 @@ import {
 } from '@/components/site/layouts/siteBodyComponentMap';
 
 // Import all body components statically for server-side rendering
+import GhubaSite from '@/components/site/layouts/GhubaLayout/body/GhubaSite';
 import AutomotiveSite from '@/components/site/layouts/AutomotiveLayout/body/AutomotiveSite';
 import EcommerceSite from '@/components/site/layouts/EcommerceLayout/body/EcommerceSite';
+import EcommerceShoesSite from '@/components/site/layouts/EcommerceShoesLayout/body/EcommerceShoesSite';
 import RealEstateSite from '@/components/site/layouts/RealEstateLayout/body/RealEstateSite';
 import BlogSite from '@/components/site/layouts/BlogLayout/body/BlogSite';
 import CoursesSite from '@/components/site/layouts/CoursesLayout/body/CoursesSite';
@@ -35,8 +37,10 @@ import SaaSSite from '@/components/site/layouts/SaaSLayout/body/SaasSite';
 
 // Map component names to actual components
 const componentMap: Record<string, React.ComponentType<{ pageData: StoreForm }>> = {
+  'GhubaSite': GhubaSite,
   'AutomotiveSite': AutomotiveSite,
   'EcommerceSite': EcommerceSite,
+  'EcommerceShoesSite': EcommerceShoesSite,
   'RealEstateSite': RealEstateSite,
   'BlogSite': BlogSite,
   'CoursesSite': CoursesSite,

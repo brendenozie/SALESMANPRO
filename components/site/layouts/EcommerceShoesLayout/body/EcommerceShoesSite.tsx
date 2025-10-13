@@ -19,18 +19,19 @@ import AllProducts from './components/AllProducts';
 import { StoreForm } from '@/types/typings';
 import BannerSection from './components/BannerSection/BannerSection';
 
+
 type EcommerceSiteShoesProps = {
-  storeData: StoreForm;
+  pageData: StoreForm;
 };
 
-export default function EcommerceShoesSite({ storeData }: EcommerceSiteShoesProps) {
+export default function EcommerceShoesSite({ pageData }: EcommerceSiteShoesProps) {
   const {
     StoreCategory = [],
     marketplaceListings = [],
     testimonials = [],
     awards = [],
     promotions = [],
-  } = storeData || {};
+  } = pageData || {};
 
   const products = marketplaceListings.length;
   const customers = 0; // Or from your `storeData`
@@ -39,20 +40,20 @@ export default function EcommerceShoesSite({ storeData }: EcommerceSiteShoesProp
 
   return (
     <>
-      <HeroSlider storeFormData={storeData} />
-      <CategorySection  storeFormData={storeData} />
+      <HeroSlider storeFormData={pageData} />
+      <CategorySection  storeFormData={pageData} />
       <PromoSection promotions={promotions} />
       <PopularProducts />
-      <MetricsSection  storeFormData={storeData} />
+      <MetricsSection  storeFormData={pageData} />
       <DailyBestSells />
       <SleepTapeAd />
       <Trending />
       <FeaturesSection />
       <AllProducts /> 
       <AwardsSection awards={awards} />
-      <TestimonialsSection/> 
-      <BannerSection/>
-      <NewsletterSection /> 
+      <TestimonialsSection />
+      <BannerSection />
+      <NewsletterSection />
     </>
   );
 }
