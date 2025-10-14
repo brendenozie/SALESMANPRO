@@ -83,19 +83,45 @@ function useAutoSaveDraft(key: string, data: any, enabled = true) {
 ////////////////////////////////////////////////////////////////////////////////
 // Lightweight upload helper (keeps original signature, but safer)
 ////////////////////////////////////////////////////////////////////////////////
+// async function uploadFiles(files: File[], type: 'image' | 'video') {
+//   if (!files?.length) return [];
+//   const uploads = files.map(async (file) => {
+//     const fd = new FormData();
+//     fd.append('type', type);
+//     fd.append('file', file);
+//     const res = await fetch(`${API_URL}/upload`, { method: 'POST', body: fd, credentials: 'include' });
+//     if (!res.ok) throw new Error('Upload failed');
+//     const json = await res.json();
+//     return json.url as string;
+//   });
+//   return Promise.all(uploads);
+// }
 async function uploadFiles(files: File[], type: 'image' | 'video') {
   if (!files?.length) return [];
+
   const uploads = files.map(async (file) => {
-    const fd = new FormData();
-    fd.append('type', type);
-    fd.append('file', file);
-    const res = await fetch(`${API_URL}/upload`, { method: 'POST', body: fd, credentials: 'include' });
-    if (!res.ok) throw new Error('Upload failed');
-    const json = await res.json();
-    return json.url as string;
+    // 1️⃣ Request signed URL from backend
+    const res = await fetch(
+      `${API_URL}/upload-url?filename=${encodeURIComponent(file.name)}&type=${type}`
+    );
+    if (!res.ok) throw new Error("Failed to get signed URL");
+    const { uploadUrl, publicUrl } = await res.json();
+
+    // 2️⃣ Upload directly to S3 via PUT
+    const uploadRes = await fetch(uploadUrl, {
+      method: "PUT",
+      headers: { "Content-Type": file.type },
+      body: file,
+    });
+    if (!uploadRes.ok) throw new Error("Upload failed");
+
+    // 3️⃣ Return public CloudFront URL
+    return publicUrl;
   });
+
   return Promise.all(uploads);
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // A slightly safer payload builder -- unchanged semantics but smaller surface

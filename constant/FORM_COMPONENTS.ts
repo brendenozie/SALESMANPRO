@@ -16,7 +16,6 @@ import { ServiceSpecifics } from "@/components/stores/create/ServiceSpecifics/Se
 import CategoryPicker from "@/components/CategoryPicker";
 import LocationPicker from "@/components/LocationPicker";
 import PropertyTypeDetails from "@/components/PropertyTypeDetails";
-//jump
 
 // ..//
 // -------------------
