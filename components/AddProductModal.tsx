@@ -103,6 +103,7 @@ async function uploadFiles(files: File[], type: 'image' | 'video') {
     // 1️⃣ Request signed URL from backend
     const res = await fetch(
       `${API_URL}/upload-url?filename=${encodeURIComponent(file.name)}&type=${type}`
+      
     );
     if (!res.ok) throw new Error("Failed to get signed URL");
     const { uploadUrl, publicUrl } = await res.json();
@@ -110,7 +111,7 @@ async function uploadFiles(files: File[], type: 'image' | 'video') {
     // 2️⃣ Upload directly to S3 via PUT
     const uploadRes = await fetch(uploadUrl, {
       method: "PUT",
-      headers: { "Content-Type": file.type },
+      // headers: { "Content-Type": file.type },
       body: file,
     });
     if (!uploadRes.ok) throw new Error("Upload failed");
