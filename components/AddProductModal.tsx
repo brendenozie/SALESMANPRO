@@ -99,11 +99,11 @@ function useAutoSaveDraft(key: string, data: any, enabled = true) {
 async function uploadFiles(files: File[], type: 'image' | 'video') {
   if (!files?.length) return [];
 
-  const uploads = files.map(async (file) => {
+  const uploads = files.map(async (file, index) => {
     // 1️⃣ Request signed URL from backend
     const res = await fetch(
       `${API_URL}/upload-url?filename=${encodeURIComponent(file.name)}&type=${type}`
-      
+
     );
     if (!res.ok) throw new Error("Failed to get signed URL");
     const { uploadUrl, publicUrl } = await res.json();
@@ -117,7 +117,10 @@ async function uploadFiles(files: File[], type: 'image' | 'video') {
     if (!uploadRes.ok) throw new Error("Upload failed");
 
     // 3️⃣ Return public CloudFront URL
-    return publicUrl;
+    return {
+      index: index,
+      url: publicUrl,
+    };
   });
 
   return Promise.all(uploads);
@@ -127,7 +130,7 @@ async function uploadFiles(files: File[], type: 'image' | 'video') {
 ////////////////////////////////////////////////////////////////////////////////
 // A slightly safer payload builder -- unchanged semantics but smaller surface
 ////////////////////////////////////////////////////////////////////////////////
-function buildProductPayload(f: ProductForm, imageUrls: string[]) {
+function buildProductPayload(f: ProductForm, imageUrls: any[]) {
   return {
     ...f,
     images: imageUrls,
@@ -296,7 +299,7 @@ export default function AddProductModal({
   const { formData, setFormData, updateField } = useProductForm(product || null, companyId);
   const [step, setStep] = useState(1);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
-  const [imagePreviews, setImagePreviews] = useState<any[]>(product?.images?.map((i: any, idx: number) => ({ url: i, idx })) || []);
+  const [imagePreviews, setImagePreviews] = useState<any[]>(product?.images?.map((i: any, idx: number) => ({ url: i.url, index: i.index ??  idx })) || []);
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
