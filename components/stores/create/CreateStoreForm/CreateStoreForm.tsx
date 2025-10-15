@@ -47,6 +47,8 @@ const SITE_CATEGORIES_WITH_LOCATIONS = [
   "travel & tourism",
 ];
 
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+
 export interface SelectedLocation {
   id: string;
   name: string;
@@ -994,8 +996,6 @@ const [selectedState, dispatch] = useReducer(categoryReducer, form.StoreCategory
 // 3. Create the memoized array of selected categories to pass to the child component and for form submission.
 const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [selectedState]);
 
-
-
   //............................
  
 
@@ -1242,7 +1242,7 @@ const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [sel
         const fd = new FormData();
         fd.append("type", "image");
         fd.append("file", logoFile);
-        const res = await fetch("/api/upload", {
+        const res = await fetch(`${apiUrl}/upload-url`, {
           method: "POST",
           body: fd,
         });
@@ -1266,7 +1266,7 @@ const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [sel
         const fd = new FormData();
         fd.append("type", "image");
         fd.append("file", bannerFile);
-        const res = await fetch("/api/upload", {
+        const res = await fetch(`${apiUrl}/upload-url`, {
           method: "POST",
           body: fd,
         });
@@ -1287,7 +1287,7 @@ const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [sel
           const fd = new FormData();
           fd.append("type", "image");
           fd.append("file", file);
-          const res = await fetch("/api/upload", {
+          const res = await fetch(`${apiUrl}/upload-url`, {
             method: "POST",
             body: fd,
           });
@@ -1326,7 +1326,7 @@ const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [sel
           const fd = new FormData();
           fd.append("type", "image");
           fd.append("file", file);
-          const res = await fetch("/api/upload", {
+          const res = await fetch(`${apiUrl}/upload-url`, {
             method: "POST",
             body: fd,
           });
@@ -1363,7 +1363,7 @@ const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [sel
           const fd = new FormData();
           fd.append("type", "image");
           fd.append("file", file);
-          const res = await fetch("/api/upload", {
+          const res = await fetch(`${apiUrl}/upload-url`, {
             method: "POST",
             body: fd,
           });
@@ -1400,9 +1400,9 @@ const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [sel
       await Promise.all(uploadPromises);
 
       const isEdit = Boolean(initialData?.id);
-      const apiUrl = isEdit
-        ? `${process.env.NEXT_PUBLIC_API_URL}/stores/${initialData!.id}`
-        : `${process.env.NEXT_PUBLIC_API_URL}/stores`;
+      const apiStoresUrl = isEdit
+        ? `${apiUrl}/stores/${initialData!.id}`
+        : `${apiUrl}/stores`;
       const method = isEdit ? "PUT" : "POST";
 
       // 4) Now payload contains the correct URLs (not the stale form)
@@ -1412,7 +1412,7 @@ const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [sel
         userId: session.user.id,
       };
 
-      const res = await fetch(apiUrl, {
+      const res = await fetch(apiStoresUrl, {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(toSend),

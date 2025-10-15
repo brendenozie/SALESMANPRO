@@ -11,7 +11,7 @@ export default async function CreateStorePage() {
   const cookieHeader = (await cookies()).toString();
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/admin/get-all-categories`,
-    { cache: 'no-store', headers: { Cookie: cookieHeader } }
+    { cache: 'no-store', headers: { Cookie: cookieHeader, } }
   );
 
   const dataCategories = await res.json();

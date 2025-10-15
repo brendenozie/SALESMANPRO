@@ -44,6 +44,31 @@ export const STORE_CATEGORY_MAP: Record<string, string[]> = {
     "School Head",
     "Other"
   ],
+  "Consultant & Coach": [
+    "Business Consulting",           // strategy, operations, management consulting
+    "Career Coaching",               // personal branding, interview prep, job search
+    "Life Coaching",                 // mindset, motivation, productivity
+    "Health & Wellness Coaching",    // nutrition, fitness, mindfulness
+    "Financial Coaching",            // budgeting, investment advice, personal finance
+    "Executive Coaching",            // leadership, corporate training
+    "Marketing Consulting",          // social media, branding, content strategy
+    "Technology Consulting",         // IT, SaaS, digital transformation
+    "Education & Training",          // online courses, workshops
+    "Public Speaking & Workshops",   // events, seminars, webinars
+    "Personal Development",          // self-improvement, confidence building
+    "Team Development",              // corporate team training and HR coaching
+    "Portfolio & Personal Branding", // coaches often build personal brands
+    "Digital Goods & Subscriptions", // downloadable guides, paid newsletters
+    "Booking & Appointments",        // scheduling for coaching sessions
+    "Services",                      // general category for service offerings
+    "Blog & Content",                // thought leadership and articles
+    "Nonprofit & Community",         // mentorship or social impact coaching
+    "Finance & Legal",               // for business structure, contracts
+    "Healthcare & Clinics",          // for health/life coaches overlapping with wellness
+    "Media & Entertainment",         // podcast, YouTube coaching content
+    "SaaS & Web Apps",               // online coaching platforms
+    "Other"                          // catch-all for niche or hybrid areas
+  ],
   "Shoes Store": [
     "Fashion",
     "Cars",

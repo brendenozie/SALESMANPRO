@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 
 const SITE_CATEGORIES = [
   "E-commerce",
+  "Consultant & Coach",
   "Shoes Store",
   "Service Provider",
   "Booking & Appointments",

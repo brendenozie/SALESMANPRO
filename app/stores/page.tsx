@@ -185,7 +185,7 @@ export default function StoresPage() {
         }
     };
 
-    const handleCreate = () => router.push(`${apiBaseUrl}/stores/create`);
+    const handleCreate = () => router.push(`/stores/create`);
     const isAuthLoading = status === 'loading';
 
     return (
