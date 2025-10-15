@@ -102,7 +102,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
 
     location: product?.location || "",
     contact: product?.contact || "",
-    video: product?.video || null,
+    videos: product?.videos || null,
 
     // Books:
     author: product?.author || "",

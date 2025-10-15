@@ -24,6 +24,14 @@ import PricingDetails from "./PricingDetails";
 import LocationPicker from "./LocationPicker";
 import { MarketListingForm, ProductForm, IStoreCategory, ILocation } from "@/types/typings";
 
+// ✅ Unified Media Types
+interface UnifiedMediaItem {
+  id?: string;
+  file?: File;
+  url: string;
+  source: "local" | "server";
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Constants & API
 ////////////////////////////////////////////////////////////////////////////////
@@ -90,21 +98,31 @@ function useAutoSaveDraft(key: string, data: any, enabled = true) {
 ////////////////////////////////////////////////////////////////////////////////
 // Upload helpers
 ////////////////////////////////////////////////////////////////////////////////
-async function uploadFiles(files: File[], type: "image" | "video" | "file"): Promise<string[]> {
+async function uploadFiles(files: File[], type: "image" | "video") {
   if (!files?.length) return [];
-  const promises = files.map((file) => {
-    const fd = new FormData();
-    fd.append("type", type);
-    fd.append("file", file);
-    return fetch(`${API_URL}/upload`, { method: "POST", body: fd })
-      .then((res) => {
-        if (!res.ok) throw new Error(`${type} upload failed`);
-        return res.json();
-      })
-      .then((json) => json.url as string);
+
+  const uploads = files.map(async (file) => {
+    const res = await fetch(
+      `${API_URL}/upload-url?filename=${encodeURIComponent(file.name)}&type=${type}&contentType=${encodeURIComponent(file.type)}`
+    );
+
+    if (!res.ok) throw new Error("Failed to get signed URL");
+    const { uploadUrl, publicUrl } = await res.json();
+
+    const uploadRes = await fetch(uploadUrl, {
+      method: "PUT",
+      body: file,
+    });
+    if (!uploadRes.ok) throw new Error("Upload failed");
+
+    return {
+      url: publicUrl,
+    };
   });
-  return Promise.all(promises);
+
+  return Promise.all(uploads);
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // Converters / Payload builders
@@ -252,21 +270,23 @@ function productToListingForm(
     duration: undefined,
 
     images: p?.images ?? [],
+    videos: p?.videos ?? [],
+    // NOTE: videos are not part of the standard ProductForm -> MarketListingForm conversion in original code
   } as MarketListingForm;
 }
 
 function buildListingPayload(
   f: MarketListingForm,
-  imageUrls: string[],
-  videoUrls: string[]
+  imageUrls: any[],
+  videoUrls: any[]
 ): any {
   return {
     id: f.id || undefined,
     sellerType: f.sellerType,
     companyId: f.companyId,
     productId: f.productId,
-    images: imageUrls,
-    video: videoUrls[0] || null,
+    images: imageUrls || [],
+    videos: videoUrls || [],
     name: f.name,
     description: f.description || null,
     longDescription: f.longDescription || null,
@@ -442,12 +462,32 @@ export default function ProductMarketModal({
   );
 
   // local UI state
-  const [imageFiles, setImageFiles] = useState<File[]>([]);
-  const [videoFiles, setVideoFiles] = useState<File[]>([]);
-  const [imagePreviews, setImagePreviews] = useState<string[]>(formData.images || []);
+  const [images, setImages] = useState<UnifiedMediaItem[]>([]);
+  const [videos, setVideos] = useState<UnifiedMediaItem[]>([]);
   const [step, setStep] = useState<number>(1);
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+
+  // Sync unified media state when formData changes
+  useEffect(() => {
+    setImages(
+      formData.images?.map((img: any, idx: number) => ({
+        id: img.url || `server-img-${idx}`,
+        url: typeof img === 'string' ? img : img.url,
+        source: 'server',
+      })) || []
+    );
+  }, [formData.images]);
+
+  useEffect(() => {
+    setVideos(
+      formData.videos?.map((vid: any, idx: number) => ({
+        id: vid.url || `server-vid-${idx}`,
+        url: typeof vid === 'string' ? vid : vid.url,
+        source: 'server',
+      })) || []
+    );
+  }, [formData.videos]);
 
   // draft autosave
   const draftKey = useMemo(() => `market-listing-draft-${companyId}-${product?.id || "new"}`, [companyId, product?.id]);
@@ -561,35 +601,50 @@ export default function ProductMarketModal({
     if (info.offset.x > 80 && !isFirstStep) setStep((s) => Math.max(1, s - 1));
   };
 
-  // preview images when files selected
-  useEffect(() => {
-    if (!imageFiles.length) return;
-    const urls = imageFiles.map((f) => URL.createObjectURL(f));
-    setImagePreviews((p) => [...p, ...urls]);
-    // revoke on unmount
-    return () => {
-      urls.forEach((u) => URL.revokeObjectURL(u));
-    };
-  }, [imageFiles]);
-
   // Save / submit
   const handleCreateListing = useCallback(async () => {
     if (!window.confirm("Create listing?")) return;
     setLoading(true);
     try {
-      const [imageUrls, videoUrls] = await Promise.all([
-        uploadFiles(imageFiles, "image"),
-        uploadFiles(videoFiles, "video"),
+      // 1. Filter local files that need uploading
+      const newImageItems = images.filter(i => i.source === "local" && i.file);
+      const newVideoItems = videos.filter(v => v.source === "local" && v.file);
+
+      // 2. Create upload promises for new files
+      const uploadImagePromises = newImageItems.map(item =>
+        uploadFiles([item.file!], "image").then(result => ({ id: item.id, url: result[0].url }))
+      );
+      const uploadVideoPromises = newVideoItems.map(item =>
+        uploadFiles([item.file!], "video").then(result => ({ id: item.id, url: result[0].url }))
+      );
+
+      // 3. Run all uploads in parallel
+      const [uploadedImages, uploadedVideos] = await Promise.all([
+        Promise.all(uploadImagePromises),
+        Promise.all(uploadVideoPromises),
       ]);
 
+      // 4. Create lookup maps for quick access
+      const imageUrlMap = new Map(uploadedImages.map(i => [i.id, i.url]));
+      const videoUrlMap = new Map(uploadedVideos.map(v => [v.id, v.url]));
+
+      // 5. Build final URL arrays
+      const finalImageUrls = images.map(img =>
+        img.source === "server" ? img.url : imageUrlMap.get(img.id)!
+      ).filter(Boolean); // Filter out any potential undefined values
+      const finalVideoUrls = videos.map(vid =>
+        vid.source === "server" ? vid.url : videoUrlMap.get(vid.id)!
+      ).filter(Boolean);
+
+      // 6. Build payload
       const payload = buildListingPayload(
         {
           ...formData,
           category: (formData.category as any)?.displayName || (formData.category as any)?.name || formData.category,
           companyId: companyId,
         } as MarketListingForm,
-        imageUrls.length ? imageUrls : formData.images || [],
-        videoUrls
+        finalImageUrls,
+        finalVideoUrls
       );
 
       const res = await fetch(`${API_URL}/admin/post-market-list`, {
@@ -613,7 +668,8 @@ export default function ProductMarketModal({
     } finally {
       setLoading(false);
     }
-  }, [imageFiles, videoFiles, formData, companyId, clear, setShowRequestProductModal]);
+  }, [images, videos, formData, companyId, clear, setShowRequestProductModal]);
+
 
   // progress %
   const progress = Math.round((step / Math.max(1, lastStepIndex)) * 100);
@@ -683,7 +739,6 @@ export default function ProductMarketModal({
                 onCategoryChange={handleCategoryChange}
                 onSubCategoryChange={handleSubCategoryChange}
                 onBrandChange={(b) => updateField("brand", b as any)}
-                // onBrandChange={handleBrandChange}
               />
             ) : currentDynamicStep === 7 ? (
               <PricingDetails<MarketListingForm>
@@ -710,10 +765,10 @@ export default function ProductMarketModal({
                   formData={formData}
                   handleInputChange={handleInputChange}
                   setFormData={updateField as any}
-                  imageFiles={imageFiles}
-                  setImageFiles={setImageFiles}
-                  imagePreviews={imagePreviews}
-                  setImagePreviews={(v: string[]) => setImagePreviews(v)}
+                  images={images}
+                  setImages={setImages}
+                  videos={videos}
+                  setVideos={setVideos}
                 />
               </Suspense>
             ) : (
