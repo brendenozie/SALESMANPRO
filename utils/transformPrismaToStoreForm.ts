@@ -135,7 +135,10 @@ export function transformCompanyToStoreForm(raw: any): StoreForm {
     description: m.description ?? '',
     finalPrice: m.finalPrice ?? 0,
     images: Array.isArray(m.images)
-      ? m.images.filter((img: any): img is string => typeof img === 'string' && img !== null)
+      ? m.images
+      : [],
+    videos: Array.isArray(m.videos)
+      ? m.videos
       : [],
     isAvailable: m.isAvailable,
     isFeatured: m.isFeatured,
