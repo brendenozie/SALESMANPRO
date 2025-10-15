@@ -4,29 +4,33 @@ import React, { useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import toast, { Toaster } from "react-hot-toast";
 
-// --- PreviewManager Utility ---
+
+// --- PreviewManager ---
 class PreviewManager {
-  createPreviews(files: File[]) {
-    return files.map(file => URL.createObjectURL(file));
+  createPreviews(files: File[], startIndex = 0) {
+    return files.map((file, idx) => ({
+      url: URL.createObjectURL(file),
+      index: startIndex + idx,
+    }));
   }
-  revokePreviews(previews: string[]) {
-    previews.forEach(preview => URL.revokeObjectURL(preview));
+  revokePreviews(previews: { url: string }[]) {
+    previews.forEach(p => URL.revokeObjectURL(p.url));
   }
 }
 
-// --- Max Size Constants ---
+// --- Constants ---
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
 const MAX_VIDEO_SIZE = 100 * 1024 * 1024; // 100MB
 const MAX_BOOK_COVER_SIZE = 5 * 1024 * 1024; // 5MB
 const MAX_BOOK_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 
 // --- TabSwitcher ---
-function TabSwitcher({
+export function TabSwitcher({
   selected,
   setSelected,
 }: {
   selected: string;
-  setSelected: (value: "images" | "videos" | "books") => void;
+  setSelected: (v: "images" | "videos" | "books") => void;
 }) {
   const tabs = ["images", "videos", "books"];
   return (
@@ -49,31 +53,49 @@ function TabSwitcher({
 }
 
 // --- ImagesTab ---
-function ImagesTab({
+export function ImagesTab({
   imageFiles,
   setImageFiles,
   imagePreviews,
   setImagePreviews,
   previewManager,
-  onDrop,
 }: any) {
   const handleFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    onDrop(files);
+
+    const validFiles = files.filter(file => {
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error(`${file.name} exceeds 10MB.`);
+        return false;
+      }
+      return true;
+    });
+
+    const newPreviews = previewManager.createPreviews(validFiles, imagePreviews.length)
+      .map((p:any) => ({ ...p, source: "local" })); // 🟢 mark as new
+
+    setImageFiles([...imageFiles, ...validFiles]);
+    setImagePreviews([...imagePreviews, ...newPreviews]);
   };
 
   const removeImage = (index: number) => {
-    const updatedFiles = [...imageFiles];
     const updatedPreviews = [...imagePreviews];
-    updatedFiles.splice(index, 1);
-    previewManager.revokePreviews([updatedPreviews[index]]);
-    updatedPreviews.splice(index, 1);
-    setImageFiles(updatedFiles);
+    const removed = updatedPreviews.splice(index, 1)[0];
+
+    if (removed.source === "local") {
+      // also remove corresponding file
+      const updatedFiles = [...imageFiles];
+      updatedFiles.splice(index, 1);
+      previewManager.revokePreviews([removed]);
+      setImageFiles(updatedFiles);
+    }
+
     setImagePreviews(updatedPreviews);
   };
 
   return (
     <div className="space-y-4">
+      <Toaster />
       <input
         type="file"
         accept="image/*"
@@ -84,11 +106,13 @@ function ImagesTab({
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
         {imagePreviews.map((preview: any, index: number) => (
-          <div key={index} className="relative group">
+          <div key={preview.index} className="relative group">
             <img
               src={preview.url}
               alt="preview"
-              className="rounded-lg w-full h-32 object-cover shadow-md"
+              className={`rounded-lg w-full h-32 object-cover shadow-md ${
+                preview.source === "server" ? "border border-green-400" : ""
+              }`}
             />
             <button
               onClick={() => removeImage(index)}
@@ -103,25 +127,36 @@ function ImagesTab({
   );
 }
 
+
 // --- VideosTab ---
-function VideosTab({
+export function VideosTab({
   videoFiles,
   setVideoFiles,
   videoPreviews,
   setVideoPreviews,
   previewManager,
-  onDrop,
 }: any) {
   const handleFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    onDrop(files);
+
+    const validFiles = files.filter(file => {
+      if (file.size > MAX_VIDEO_SIZE) {
+        toast.error(`${file.name} exceeds 100MB.`);
+        return false;
+      }
+      return true;
+    });
+
+    const newPreviews = previewManager.createPreviews(validFiles, videoPreviews.length);
+    setVideoFiles([...videoFiles, ...validFiles]);
+    setVideoPreviews([...videoPreviews, ...newPreviews]);
   };
 
   const removeVideo = (index: number) => {
     const updatedFiles = [...videoFiles];
     const updatedPreviews = [...videoPreviews];
-    updatedFiles.splice(index, 1);
     previewManager.revokePreviews([updatedPreviews[index]]);
+    updatedFiles.splice(index, 1);
     updatedPreviews.splice(index, 1);
     setVideoFiles(updatedFiles);
     setVideoPreviews(updatedPreviews);
@@ -129,6 +164,7 @@ function VideosTab({
 
   return (
     <div className="space-y-4">
+      <Toaster />
       <input
         type="file"
         accept="video/*"
@@ -138,10 +174,10 @@ function VideosTab({
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {videoPreviews.map((preview: string, index: number) => (
-          <div key={index} className="relative group">
+        {videoPreviews.map((preview: any, index: number) => (
+          <div key={preview.index} className="relative group">
             <video
-              src={preview}
+              src={preview.url}
               controls
               className="rounded-lg w-full h-40 object-cover shadow-md"
             />
@@ -159,12 +195,11 @@ function VideosTab({
 }
 
 // --- BooksTab ---
-function BooksTab({
+export function BooksTab({
   books,
   setBooks,
-  previewManager,
-  maxCoverSize,
-  maxBookSize,
+  maxCoverSize = MAX_BOOK_COVER_SIZE,
+  maxBookSize = MAX_BOOK_FILE_SIZE,
 }: any) {
   const [title, setTitle] = useState("");
   const [author, setAuthor] = useState("");
@@ -174,11 +209,11 @@ function BooksTab({
 
   const handleCover = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    if (file && file.size > maxCoverSize) {
+      toast.error("Cover image exceeds 5MB.");
+      return;
+    }
     if (file) {
-      if (file.size > maxCoverSize) {
-        toast.error("Cover image exceeds 5MB.");
-        return;
-      }
       setCoverFile(file);
       setCoverPreview(URL.createObjectURL(file));
     }
@@ -186,13 +221,11 @@ function BooksTab({
 
   const handleBook = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > maxBookSize) {
-        toast.error("Book file exceeds 50MB.");
-        return;
-      }
-      setBookFile(file);
+    if (file && file.size > maxBookSize) {
+      toast.error("Book file exceeds 50MB.");
+      return;
     }
+    setBookFile(file ?? null);
   };
 
   const handleSave = () => {
@@ -204,8 +237,8 @@ function BooksTab({
     setBooks((prev: any[]) => [
       ...prev,
       {
-        title: title.trim(),
-        author: author.trim(),
+        title,
+        author,
         coverFile,
         coverPreview,
         bookFile,
@@ -227,6 +260,7 @@ function BooksTab({
 
   return (
     <div className="space-y-6">
+      <Toaster />
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <input
           type="text"
@@ -247,40 +281,38 @@ function BooksTab({
       <div className="flex flex-col sm:flex-row gap-4 items-center">
         <input type="file" accept="image/*" onChange={handleCover} />
         <input type="file" accept=".pdf,.epub" onChange={handleBook} />
+        <button
+          onClick={handleSave}
+          className="bg-indigo-600 text-white px-4 py-2 rounded-lg"
+        >
+          Add Book
+        </button>
       </div>
 
-      {coverPreview && (
-        <img
-          src={coverPreview}
-          alt="cover"
-          className="w-32 h-44 object-cover rounded-lg shadow-md"
-        />
-      )}
-
-      <button
-        onClick={handleSave}
-        className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
-      >
-        Save Book
-      </button>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
-        {books.map((book: any, i: number) => (
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {books.map((b: any, index: number) => (
           <div
-            key={i}
-            className="border border-gray-300 dark:border-gray-700 rounded-lg p-4 flex items-center justify-between"
+            key={index}
+            className="flex items-center justify-between bg-gray-100 dark:bg-gray-800 p-3 rounded-lg shadow"
           >
-            <div>
-              <h4 className="font-semibold">{book.title}</h4>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                {book.author}
-              </p>
+            <div className="flex items-center gap-3">
+              {b.coverPreview && (
+                <img
+                  src={b.coverPreview}
+                  alt={b.title}
+                  className="w-12 h-16 object-cover rounded"
+                />
+              )}
+              <div>
+                <div className="font-semibold">{b.title}</div>
+                <div className="text-sm text-gray-500">{b.author}</div>
+              </div>
             </div>
             <button
-              onClick={() => removeBook(i)}
-              className="text-red-500 hover:underline text-sm"
+              onClick={() => removeBook(index)}
+              className="text-red-500 hover:text-red-700"
             >
-              Remove
+              ✕
             </button>
           </div>
         ))}
@@ -348,7 +380,10 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
       if (valid.length) {
         setImageFiles(prev => [...prev, ...valid]);
         const previews = previewManager.createPreviews(valid);
-        setImagePreviews(prev => [...prev, ...previews]);
+        setImagePreviews(prev => [
+          ...prev,
+          ...previews.map(p => p.url)
+        ]);
       }
     },
     [previewManager]
@@ -363,7 +398,7 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
       if (valid.length) {
         setVideoFiles(prev => [...prev, ...valid]);
         const previews = previewManager.createPreviews(valid);
-        setVideoPreviews(prev => [...prev, ...previews]);
+        setVideoPreviews(prev => [...prev, ...previews.map(p => p.url)]);
       }
     },
     [previewManager]

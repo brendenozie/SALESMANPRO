@@ -299,7 +299,15 @@ export default function AddProductModal({
   const { formData, setFormData, updateField } = useProductForm(product || null, companyId);
   const [step, setStep] = useState(1);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
-  const [imagePreviews, setImagePreviews] = useState<any[]>(product?.images?.map((i: any, idx: number) => ({ url: i.url, index: i.index ??  idx })) || []);
+  // const [imagePreviews, setImagePreviews] = useState<any[]>(product?.images?.map((i: any, idx: number) => ({ url: i.url, index: i.index ??  idx })) || []);
+  const [imagePreviews, setImagePreviews] = useState<any[]>(
+    product?.images?.map((i: any, idx: number) => ({
+      url: i.url,
+      index: idx,
+      source: "server", // 🟢 mark as existing
+    })) || []
+  );
+
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
@@ -373,7 +381,18 @@ export default function AddProductModal({
     setLoading(true);
     try {
       const imageUrls = imageFiles.length ? await uploadFiles(imageFiles, 'image') : formData.images;
-      const payload = buildProductPayload({ ...formData, images: imageUrls }, imageUrls);
+
+      // Upload only new local files
+      // const newUploads = await uploadFiles(imageFiles);
+
+      const mergedImages = [
+        ...imagePreviews
+          .filter((p: any) => p.source === "server") // keep existing
+          .map((p: any) => ({ url: p.url })),
+        ...imageUrls.map((url: string) => ({ url })), // add new ones
+      ];
+
+      const payload = buildProductPayload({ ...formData, images: mergedImages }, mergedImages);
       const res = await fetch(`${API_URL}/admin/post-product`, {
         method: 'POST',
         credentials: 'include',
