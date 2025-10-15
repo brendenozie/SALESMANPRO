@@ -601,7 +601,7 @@ model Product {
   subCategory     Json? // Consider a specific model if structure is fixed
   subCategoryName String? // Added: From General Details
   images          Json[] // Store URLs or paths
-  video           String?
+  videos          Json[]
   tags            String[] // Array of strings for search/filtering
   brand           String?
 
@@ -1649,10 +1649,10 @@ model marketplaceListings {
   dimensions      String? // Changed from 'dimension' for consistency with Product
   material        String[] // Matches Product model
 
-  quantity     Int     @default(1)
+  quantity     Int    @default(1)
   images       Json[]
-  video        String?
-  profitMargin Float?  @default(0)
+  videos       Json[]
+  profitMargin Float? @default(0)
 
   // Pricing
   buyingPrice  Float  @default(0) // Assuming this is distinct from costPrice on Product

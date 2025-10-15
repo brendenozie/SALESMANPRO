@@ -83,7 +83,7 @@ function useAutoSaveDraft(key: string, data: any, enabled = true) {
 ////////////////////////////////////////////////////////////////////////////////
 // Upload helper for getting signed URLs and uploading files
 ////////////////////////////////////////////////////////////////////////////////
-async function uploadFiles(files: File[], type: 'image' | 'video') {
+async function uploadFiles(files: File[], type: "image" | "video" | "book") {
   if (!files?.length) return [];
 
   const uploads = files.map(async (file, index) => {
@@ -115,10 +115,14 @@ async function uploadFiles(files: File[], type: 'image' | 'video') {
 ////////////////////////////////////////////////////////////////////////////////
 // Payload builder to structure data for the backend
 ////////////////////////////////////////////////////////////////////////////////
-function buildProductPayload(formData: ProductForm, finalImages: { index: number; url: string }[]) {
+function buildProductPayload(formData: ProductForm, finalImages: { index: number; url: string }[], 
+  finalBooks: { index: number; url: string }[],
+  finalVideos: { index: number; url: string }[] = []) {
   return {
     ...formData,
     images: finalImages,
+    books: finalBooks,
+    videos: finalVideos,
   };
 }
 
@@ -145,7 +149,7 @@ function useProductForm(product: Partial<ProductForm> | null, companyId: string)
     dimensions: product?.dimensions || '',
     material: product?.material || [],
     images: product?.images || [],
-    video: product?.video || null,
+    videos: product?.videos || null,
     digitalUrl: product?.digitalUrl || '',
     autoDeliver: !!product?.autoDeliver,
     isAvailable: product?.isAvailable ?? false,
@@ -265,7 +269,19 @@ export default function AddProductModal({
       source: "server", // Mark existing images from the server
     })) || []
   );
+  // --- Video states ---
+  const [videoFiles, setVideoFiles] = useState<File[]>([]);
+  const [videoPreviews, setVideoPreviews] = useState<any[]>(
+    product?.videos?.map((v: any, idx: number) => ({
+      url: v.url,
+      index: v.index ?? idx,
+      source: "server",
+    })) || []
+  );
 
+  // --- Book states ---
+  const [books, setBooks] = useState<any[]>(product?.books || []);
+  
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
@@ -317,31 +333,57 @@ export default function AddProductModal({
     setLoading(true);
     try {
       // 1. Upload only the new files held in the `imageFiles` state.
-      const newlyUploadedImages = await uploadFiles(imageFiles, 'image');
+      // const newlyUploadedImages = await uploadFiles(imageFiles, 'image');
+      // Upload new local images/videos
+      const [uploadedImages, uploadedVideos] = await Promise.all([
+        uploadFiles(imageFiles, "image"),
+        uploadFiles(videoFiles, "video"),
+      ]);
+
+      // books are handled differently since they are files with no urls
+      const uploadedBooks = await uploadFiles(
+        books.filter((b) => b.source !== "server").map((b) => b.file),
+        "book"
+      );
+      const finalBooks = books.map((b) =>
+        b.source === "server" ? { url: b.url } : uploadedBooks.shift() // Use shift to maintain order
+      ).map((bk:any, idx) => ({ index: idx, url: bk.url }));
+
+      let imageIndex = 0;
+
+      const finalImages = imagePreviews.map((p) =>
+        p.source === "server" ? { url: p.url } : uploadedImages[imageIndex++]
+      ).map((img, idx) => ({ index: idx, url: img.url }));
+
+      let videoIndex = 0;
+      const finalVideos = videoPreviews.map((p) =>
+        p.source === "server" ? { url: p.url } : uploadedVideos[videoIndex++]
+      ).map((v, idx) => ({ index: idx, url: v.url }));
 
       // 2. Combine existing and new images, respecting the current display order.
       // The `imagePreviews` array is the source of truth for the final order.
-      let localFileCounter = 0;
-      const combinedImages = imagePreviews.map((preview) => {
-        if (preview.source === 'server') {
-          // This is an existing image; keep its original URL.
-          return { url: preview.url };
-        } else {
-          // This is a new image; get its URL from the upload results.
-          // Assumes the order of 'local' previews matches the upload order.
-          const uploadedImage = newlyUploadedImages[localFileCounter++];
-          return { url: uploadedImage.url };
-        }
-      });
+      // let localFileCounter = 0;
+
+      // const combinedImages = imagePreviews.map((preview) => {
+      //   if (preview.source === 'server') {
+      //     // This is an existing image; keep its original URL.
+      //     return { url: preview.url };
+      //   } else {
+      //     // This is a new image; get its URL from the upload results.
+      //     // Assumes the order of 'local' previews matches the upload order.
+      //     const uploadedImage = newlyUploadedImages[localFileCounter++];
+      //     return { url: uploadedImage.url };
+      //   }
+      // });
 
       // 3. Format the final array to match the desired database schema.
-      const finalPayloadImages = combinedImages.map((image, idx) => ({
-        index: idx,
-        url: image.url,
-      }));
+      // const finalPayloadImages = combinedImages.map((image, idx) => ({
+      //   index: idx,
+      //   url: image.url,
+      // }));
 
       // 4. Build the final payload and send it to the backend.
-      const payload = buildProductPayload(formData, finalPayloadImages);
+      const payload = buildProductPayload(formData, finalImages, finalBooks, finalVideos);
       
       const res = await fetch(`${API_URL}/admin/post-product`, {
         method: 'POST',
@@ -448,6 +490,12 @@ export default function AddProductModal({
                 setImageFiles={setImageFiles}
                 imagePreviews={imagePreviews}
                 setImagePreviews={setImagePreviews}
+                videoFiles={videoFiles}
+                setVideoFiles={setVideoFiles}
+                videoPreviews={videoPreviews}
+                setVideoPreviews={setVideoPreviews}
+                books={books}
+                setBooks={setBooks}
               />
             </Suspense>
           ) : (

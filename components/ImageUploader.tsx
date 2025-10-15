@@ -187,7 +187,7 @@ export function VideosTab({
       />
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {videoPreviews.map((preview: any, index: number) => (
+        {videoPreviews?.map((preview: any, index: number) => (
           <div key={preview.index} className="relative group">
             <video
               src={preview.url}
@@ -303,7 +303,7 @@ export function BooksTab({
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {books.map((b: any, index: number) => (
+        {books?.map((b: any, index: number) => (
           <div
             key={index}
             className="flex items-center justify-between bg-gray-100 dark:bg-gray-800 p-3 rounded-lg shadow"

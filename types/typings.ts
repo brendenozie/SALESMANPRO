@@ -335,7 +335,8 @@ export interface ProductForm {
   subCategory?: any;
   subCategoryName?: string | null;
   images: any[];
-  video?: string | null;
+  videos?: any[];//string | null;
+  books?: any[];//string | null;
   tags: string[];
   brand?: string | null;
   companyId?: string | null;
