@@ -34,6 +34,7 @@ import { useSession } from 'next-auth/react';
 import { getCategoryDefaultData } from "@/lib/defaultStoreData";
 import { CompanyLocation, Promotion } from "@prisma/client";
 import { categoryReducer } from "@/hooks/categoryReducer";
+import toast from "react-hot-toast";
 
 const SITE_CATEGORIES_WITH_PRICING = [
   "service provider",
@@ -1221,216 +1222,616 @@ const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [sel
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (e: FormEvent) => {
+  // const handleSubmit = async (e: FormEvent) => {
 
-    e.preventDefault();
-    if (isSubmitting) return;
-    if (!session?.user?.id) return;
+  //   e.preventDefault();
+  //   if (isSubmitting) return;
+  //   if (!session?.user?.id) return;
 
-    setIsSubmitting(true);
+  //   setIsSubmitting(true);
 
-    // 1) Prepare a local copy of form data (so we can mutate it without
-    //    worrying about React batching or stale closures).
-    const payload = { ...form };
+  //   // 1) Prepare a local copy of form data (so we can mutate it without
+  //   //    worrying about React batching or stale closures).
+  //   const payload = { ...form };
 
-    // 2) Build upload promises, but write each returned URL into `payload`
-    const uploadPromises: Promise<void>[] = [];
+  //   // 2) Build upload promises, but write each returned URL into `payload`
+  //   const uploadPromises: Promise<void>[] = [];
 
-    // 2.a) Logo
-    if (logoFile) {
-      const p = (async () => {
-        const fd = new FormData();
-        fd.append("type", "image");
-        fd.append("file", logoFile);
-        const res = await fetch(`${apiUrl}/upload-url`, {
-          method: "POST",
-          body: fd,
-        });
-        if (!res.ok) {
-          throw new Error("Logo upload failed");
-        }
-        const { url } = await res.json();
-        // 2.a.i) Write it into our local payload
-        payload.logoUrl = url;
-        // 2.a.ii) Also update React state so the UI immediately reflects it
-        setForm((prev) => ({ ...prev, logoUrl: url }));
-      })();
-      uploadPromises.push(p);
-    }
+  //   // 2.a) Logo
+  //   if (logoFile) {
+  //     const p = (async () => {
+  //       const fd = new FormData();
+  //       fd.append("type", "image");
+  //       fd.append("file", logoFile);
+  //       const res = await fetch(`${apiUrl}/upload-url`, {
+  //         method: "POST",
+  //         body: fd,
+  //       });
+  //       if (!res.ok) {
+  //         throw new Error("Logo upload failed");
+  //       }
+  //       const { url } = await res.json();
+  //       // 2.a.i) Write it into our local payload
+  //       payload.logoUrl = url;
+  //       // 2.a.ii) Also update React state so the UI immediately reflects it
+  //       setForm((prev) => ({ ...prev, logoUrl: url }));
+  //     })();
+  //     uploadPromises.push(p);
+  //   }
 
     
-    console.log("sub 4");
-    // 2.b) Banner
-    if (bannerFile) {
-      const p = (async () => {
-        const fd = new FormData();
-        fd.append("type", "image");
-        fd.append("file", bannerFile);
-        const res = await fetch(`${apiUrl}/upload-url`, {
-          method: "POST",
-          body: fd,
-        });
-        if (!res.ok) {
-          throw new Error("Banner upload failed");
-        }
-        const { url } = await res.json();
+  //   console.log("sub 4");
+  //   // 2.b) Banner
+  //   if (bannerFile) {
+  //     const p = (async () => {
+  //       const fd = new FormData();
+  //       fd.append("type", "image");
+  //       fd.append("file", bannerFile);
+  //       const res = await fetch(`${apiUrl}/upload-url`, {
+  //         method: "POST",
+  //         body: fd,
+  //       });
+  //       if (!res.ok) {
+  //         throw new Error("Banner upload failed");
+  //       }
+  //       const { url } = await res.json();
+  //       payload.bannerUrl = url;
+  //       setForm((prev) => ({ ...prev, bannerUrl: url }));
+  //     })();
+  //     uploadPromises.push(p);
+  //   }
+
+  //   // 2.c) Hero Slides
+  //   heroSlideFiles.forEach((file, idx) => {
+  //     if (file) {
+  //       const p = (async () => {
+  //         const fd = new FormData();
+  //         fd.append("type", "image");
+  //         fd.append("file", file);
+  //         const res = await fetch(`${apiUrl}/upload-url`, {
+  //           method: "POST",
+  //           body: fd,
+  //         });
+  //         if (!res.ok) {
+  //           throw new Error(`Slide ${idx + 1} upload failed`);
+  //         }
+  //         const { url } = await res.json();
+  //         // 2.c.i) Mutate local payload.heroSlides
+  //         if (!payload.heroSlides) payload.heroSlides = [];
+  //         // ensure there’s a slot for this index
+  //         while (payload.heroSlides.length <= idx) {
+  //           payload.heroSlides.push({
+  //             ...payload.heroSlides[idx],
+  //             imageUrl: "",
+  //           });
+  //         }
+  //         payload.heroSlides[idx] = {
+  //           ...payload.heroSlides[idx],
+  //           imageUrl: url,
+  //         };
+  //         // 2.c.ii) Mirror into state so UI updates
+  //         setForm((prev) => {
+  //           const slides = [...prev.heroSlides];
+  //           slides[idx] = { ...slides[idx], imageUrl: url };
+  //           return { ...prev, heroSlides: slides };
+  //         });
+  //       })();
+  //       uploadPromises.push(p);
+  //     }
+  //   });
+
+  //   // 2.c.ii) Product images for Hero Slides
+  //   productImageFiles.forEach((file, idx) => {
+  //     if (file) {
+  //       const p = (async () => {
+  //         const fd = new FormData();
+  //         fd.append("type", "image");
+  //         fd.append("file", file);
+  //         const res = await fetch(`${apiUrl}/upload-url`, {
+  //           method: "POST",
+  //           body: fd,
+  //         });
+  //         if (!res.ok) {
+  //           throw new Error(`Product image for slide ${idx + 1} upload failed`);
+  //         }
+  //         const { url } = await res.json();
+  //         if (!payload.heroSlides) payload.heroSlides = [];
+  //         while (payload.heroSlides.length <= idx) {
+  //           payload.heroSlides.push({
+  //             ...payload.heroSlides[idx],
+  //             imageUrl: "",
+  //             productImageUrl: "",
+  //           });
+  //         }
+  //         payload.heroSlides[idx] = {
+  //           ...payload.heroSlides[idx],
+  //           productImageUrl: url,
+  //         };
+  //         setForm((prev) => {
+  //           const slides = [...prev.heroSlides];
+  //           slides[idx] = { ...slides[idx], productImageUrl: url };
+  //           return { ...prev, heroSlides: slides };
+  //         });
+  //       })();
+  //       uploadPromises.push(p);
+  //     }
+  //   });
+
+  //   // 3.c) Hero Slides
+  //   promotionSlideFiles.forEach((file, idx) => {
+  //     if (file) {
+  //       const p = (async () => {
+  //         const fd = new FormData();
+  //         fd.append("type", "image");
+  //         fd.append("file", file);
+  //         const res = await fetch(`${apiUrl}/upload-url`, {
+  //           method: "POST",
+  //           body: fd,
+  //         });
+  //         if (!res.ok) {
+  //           throw new Error(`Promotions Slide ${idx + 1} upload failed`);
+  //         }
+  //         const { url } = await res.json();
+  //         // 2.c.i) Mutate local payload.heroSlides
+  //         if (!payload.promotions) payload.promotions = [];
+  //         // ensure there’s a slot for this index
+  //         while (payload.promotions.length <= idx) {
+  //           payload.promotions.push({
+  //             ...payload.promotions[idx],
+  //             bannerUrl: "",
+  //           });
+  //         }
+  //         payload.promotions[idx] = {
+  //           ...payload.promotions[idx],
+  //           bannerUrl: url,
+  //         };
+  //         // 2.c.ii) Mirror into state so UI updates
+  //         setForm((prev) => {
+  //           const slides = [...prev.promotions];
+  //           slides[idx] = { ...slides[idx], bannerUrl: url };
+  //           return { ...prev, promotions: slides };
+  //         });
+  //       })();
+  //       uploadPromises.push(p);
+  //     }
+  //   });
+
+  //   // 4) Wait for all uploads to finish
+  //   try {
+  //     await Promise.all(uploadPromises);
+
+  //     const isEdit = Boolean(initialData?.id);
+  //     const apiStoresUrl = isEdit
+  //       ? `${apiUrl}/stores/${initialData!.id}`
+  //       : `${apiUrl}/stores`;
+  //     const method = isEdit ? "PUT" : "POST";
+
+  //     // 4) Now payload contains the correct URLs (not the stale form)
+  //     const toSend = {
+  //       ...payload,
+  //       StoreCategory: selectedCategoriesArray,
+  //       userId: session.user.id,
+  //     };
+
+  //     const res = await fetch(apiUrl, {
+  //       method,
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify(toSend),
+  //     });
+
+  //     if (res.ok) {
+  //       router.push("/stores");
+  //     } else {
+  //       console.error("Save failed", await res.text());
+  //       setIsSubmitting(false);
+  //       // show an error toast/message
+  //     }
+  //   } catch (err: any) {
+  //     console.error("Error uploading files or saving store:", err);
+  //     setIsSubmitting(false);
+  //     alert(`Error: ${err.message}`);
+  //   }
+  // };
+
+//   const uploadFile = async (file: File, type: "image" | "video" | "file") => {
+//   const fd = new FormData();
+//   fd.append("type", type);
+//   fd.append("file", file);
+
+//   const res = await fetch(`${apiUrl}/upload-url`, {
+//     method: "POST",
+//     body: fd,
+//   });
+
+//   if (!res.ok) {
+//     const text = await res.text();
+//     throw new Error(`Upload failed: ${text}`);
+//   }
+
+//   const { url } = await res.json();
+//   return url;
+// };
+
+// const handleSubmit = async (e: FormEvent) => {
+//   e.preventDefault();
+//   if (isSubmitting || !session?.user?.id) return;
+
+//   setIsSubmitting(true);
+
+//   const payload = { ...form };
+//   const uploadPromises: Promise<void>[] = [];
+
+//   // --- Logo Upload ---
+//   if (logoFile) {
+//     uploadPromises.push(
+//       (async () => {
+//         const url = await uploadFile(logoFile, "image");
+//         payload.logoUrl = url;
+//         setForm((prev) => ({ ...prev, logoUrl: url }));
+//       })()
+//     );
+//   }
+
+//   // --- Banner Upload ---
+//   if (bannerFile) {
+//     uploadPromises.push(
+//       (async () => {
+//         const url = await uploadFile(bannerFile, "image");
+//         payload.bannerUrl = url;
+//         setForm((prev) => ({ ...prev, bannerUrl: url }));
+//       })()
+//     );
+//   }
+
+//   // --- Hero Slides ---
+//   heroSlideFiles.forEach((file, idx) => {
+//     if (file) {
+//       uploadPromises.push(
+//         (async () => {
+//           const url = await uploadFile(file, "image");
+
+//           if (!payload.heroSlides) payload.heroSlides = [];
+//           while (payload.heroSlides.length <= idx) {
+//             payload.heroSlides.push({
+//               id: "",
+//               companyId: payload.id || "",
+//               imageUrl: "",
+//               productImageUrl: null,
+//               headline: null,
+//               subline: null,
+//               ctaText: null,
+//               ctaLink: null,
+//               badgeText: null,
+//               price: null,
+//               endsAt: null,
+//               order: 0,
+//               iconKey: null,
+//               backgroundColor: null,
+//               textColor: null,
+//               videoLink: null
+//             });
+//           }
+
+//           payload.heroSlides[idx] = { ...payload.heroSlides[idx], imageUrl: url };
+
+//           setForm((prev) => {
+//             const slides = [...prev.heroSlides];
+//             slides[idx] = { ...slides[idx], imageUrl: url };
+//             return { ...prev, heroSlides: slides };
+//           });
+//         })()
+//       );
+//     }
+//   });
+
+//   // --- Product Images for Hero Slides ---
+//   productImageFiles.forEach((file, idx) => {
+//     if (file) {
+//       uploadPromises.push(
+//         (async () => {
+//           const url = await uploadFile(file, "image");
+
+//           if (!payload.heroSlides) payload.heroSlides = [];
+//           while (payload.heroSlides.length <= idx) {
+//             payload.heroSlides.push({
+//               id: "",
+//               companyId: payload.id || "",
+//               imageUrl: "",
+//               productImageUrl: "",
+//               headline: null,
+//               subline: null,
+//               ctaText: null,
+//               ctaLink: null,
+//               badgeText: null,
+//               price: null,
+//               endsAt: null,
+//               order: 0,
+//               iconKey: null,
+//               backgroundColor: null,
+//               textColor: null,
+//               videoLink: null
+//             });
+//           }
+
+//           payload.heroSlides[idx] = { ...payload.heroSlides[idx], productImageUrl: url };
+
+//           setForm((prev) => {
+//             const slides = [...prev.heroSlides];
+//             slides[idx] = { ...slides[idx], productImageUrl: url };
+//             return { ...prev, heroSlides: slides };
+//           });
+//         })()
+//       );
+//     }
+//   });
+
+//   // --- Promotion Slides ---
+//   promotionSlideFiles.forEach((file, idx) => {
+//     if (file) {
+//       uploadPromises.push(
+//         (async () => {
+//           const url = await uploadFile(file, "image");
+
+//           if (!payload.promotions) payload.promotions = [];
+//           while (payload.promotions.length <= idx) {
+//             payload.promotions.push({...payload.promotions[idx], bannerUrl: "" });
+//           }
+
+//           payload.promotions[idx] = { ...payload.promotions[idx], bannerUrl: url };
+
+//           setForm((prev) => {
+//             const promos = [...prev.promotions];
+//             promos[idx] = { ...promos[idx], bannerUrl: url };
+//             return { ...prev, promotions: promos };
+//           });
+//         })()
+//       );
+//     }
+//   });
+
+//   // --- Execute Uploads and Save Store ---
+//   try {
+//     await Promise.all(uploadPromises);
+
+//     const isEdit = Boolean(initialData?.id);
+//     const method = isEdit ? "PUT" : "POST";
+//     const apiStoresUrl = isEdit
+//       ? `${apiUrl}/stores/${initialData!.id}`
+//       : `${apiUrl}/stores`;
+
+//     const toSend = {
+//       ...payload,
+//       StoreCategory: selectedCategoriesArray,
+//       userId: session.user.id,
+//     };
+
+//     const res = await fetch(apiStoresUrl, {
+//       method,
+//       headers: { "Content-Type": "application/json" },
+//       body: JSON.stringify(toSend),
+//     });
+
+//     if (!res.ok) {
+//       const text = await res.text();
+//       console.error("Save failed", text);
+//       alert(`Error saving store: ${text}`);
+//       return;
+//     }
+
+//     router.push("/stores");
+//   } catch (err: any) {
+//     console.error("Error uploading files or saving store:", err);
+//     alert(`Error: ${err.message}`);
+//   } finally {
+//     setIsSubmitting(false);
+//   }
+// };
+
+// const uploadFile = async (file: File, type: "image" | "video" | "file") => {
+//   const fd = new FormData();
+//   fd.append("type", type);
+//   fd.append("file", file);
+
+//   const res = await fetch(`${apiUrl}/upload-url`, {
+//     method: "POST",
+//     body: fd,
+//   });
+
+//   if (!res.ok) {
+//     const text = await res.text();
+//     throw new Error(`Upload failed: ${text}`);
+//   }
+
+//   const { url } = await res.json();
+//   return url;
+// };
+////////////////////////////////////////////////////////////////////////////////
+// Upload helper for getting signed URLs and uploading files
+////////////////////////////////////////////////////////////////////////////////
+async function uploadFile(files: File[], type: "image" | "video" | "book") {
+  console.log("Uploading files:", files);
+  
+  console.log("Starting upload for : ", type);
+
+  if (!files?.length) return [];
+  console.log("Starting upload for : ", type);
+
+  const uploads = files.map(async (file, index) => {
+    // 1. Request signed URL from your backend
+    // const res = await fetch(
+    //   `${API_URL}/upload-url?filename=${encodeURIComponent(file.name)}&type=${type}`
+    // );
+
+    const res = await fetch(
+      `${apiUrl}/upload-url?filename=${encodeURIComponent(file.name)}&type=${type}&contentType=${encodeURIComponent(file.type)}`
+    );
+
+    if (!res.ok) throw new Error("Failed to get signed URL");
+    const { uploadUrl, publicUrl } = await res.json();
+
+    // 2. Upload directly to S3 via PUT request
+    const uploadRes = await fetch(uploadUrl, {
+      method: "PUT",
+      body: file,
+    });
+    if (!uploadRes.ok) throw new Error("Upload failed");
+
+    // 3. Return the public CloudFront/S3 URL
+    return {
+      // The original index is not needed here as we will re-index later
+      url: publicUrl,
+    };
+  });
+
+  return Promise.all(uploads);
+}
+
+
+const handleSubmit = async (e: FormEvent) => {
+  e.preventDefault();
+  if (isSubmitting || !session?.user?.id) return;
+  setIsSubmitting(true);
+
+  const payload = { ...form };
+  const uploadPromises: Promise<void>[] = [];
+
+  console.log("🟢 Starting store upload sequence...");
+
+  // --- Logo Upload ---
+  if (logoFile) {
+    uploadPromises.push(
+      (async () => {
+        const [{ url }] = await uploadFile([logoFile], "image");
+        payload.logoUrl = url;
+        setForm((prev) => ({ ...prev, logoUrl: url }));
+        console.log("✅ Logo uploaded:", url);
+      })()
+    );
+  }
+
+  // --- Banner Upload ---
+  if (bannerFile) {
+    uploadPromises.push(
+      (async () => {
+        const [{ url }] = await uploadFile([bannerFile], "image");
         payload.bannerUrl = url;
         setForm((prev) => ({ ...prev, bannerUrl: url }));
-      })();
-      uploadPromises.push(p);
-    }
+        console.log("✅ Banner uploaded:", url);
+      })()
+    );
+  }
 
-    // 2.c) Hero Slides
-    heroSlideFiles.forEach((file, idx) => {
-      if (file) {
-        const p = (async () => {
-          const fd = new FormData();
-          fd.append("type", "image");
-          fd.append("file", file);
-          const res = await fetch(`${apiUrl}/upload-url`, {
-            method: "POST",
-            body: fd,
-          });
-          if (!res.ok) {
-            throw new Error(`Slide ${idx + 1} upload failed`);
-          }
-          const { url } = await res.json();
-          // 2.c.i) Mutate local payload.heroSlides
+  // --- Hero Slides ---
+  heroSlideFiles.forEach((file, idx) => {
+    if (file) {
+      uploadPromises.push(
+        (async () => {
+          const [{ url }] = await uploadFile([file], "image");
           if (!payload.heroSlides) payload.heroSlides = [];
-          // ensure there’s a slot for this index
-          while (payload.heroSlides.length <= idx) {
-            payload.heroSlides.push({
-              ...payload.heroSlides[idx],
-              imageUrl: "",
-            });
-          }
-          payload.heroSlides[idx] = {
-            ...payload.heroSlides[idx],
-            imageUrl: url,
-          };
-          // 2.c.ii) Mirror into state so UI updates
+
+          const existing = payload.heroSlides[idx] || {};
+          payload.heroSlides[idx] = { ...existing, imageUrl: url };
+
           setForm((prev) => {
             const slides = [...prev.heroSlides];
             slides[idx] = { ...slides[idx], imageUrl: url };
             return { ...prev, heroSlides: slides };
           });
-        })();
-        uploadPromises.push(p);
-      }
-    });
 
-    // 2.c.ii) Product images for Hero Slides
-    productImageFiles.forEach((file, idx) => {
-      if (file) {
-        const p = (async () => {
-          const fd = new FormData();
-          fd.append("type", "image");
-          fd.append("file", file);
-          const res = await fetch(`${apiUrl}/upload-url`, {
-            method: "POST",
-            body: fd,
-          });
-          if (!res.ok) {
-            throw new Error(`Product image for slide ${idx + 1} upload failed`);
-          }
-          const { url } = await res.json();
+          console.log(`✅ Hero slide ${idx + 1} image uploaded:`, url);
+        })()
+      );
+    }
+  });
+
+  // --- Product Images for Hero Slides ---
+  productImageFiles.forEach((file, idx) => {
+    if (file) {
+      uploadPromises.push(
+        (async () => {
+          const [{ url }] = await uploadFile([file], "image");
           if (!payload.heroSlides) payload.heroSlides = [];
-          while (payload.heroSlides.length <= idx) {
-            payload.heroSlides.push({
-              ...payload.heroSlides[idx],
-              imageUrl: "",
-              productImageUrl: "",
-            });
-          }
-          payload.heroSlides[idx] = {
-            ...payload.heroSlides[idx],
-            productImageUrl: url,
-          };
+
+          const existing = payload.heroSlides[idx] || {};
+          payload.heroSlides[idx] = { ...existing, productImageUrl: url };
+
           setForm((prev) => {
             const slides = [...prev.heroSlides];
             slides[idx] = { ...slides[idx], productImageUrl: url };
             return { ...prev, heroSlides: slides };
           });
-        })();
-        uploadPromises.push(p);
-      }
-    });
 
-    // 3.c) Hero Slides
-    promotionSlideFiles.forEach((file, idx) => {
-      if (file) {
-        const p = (async () => {
-          const fd = new FormData();
-          fd.append("type", "image");
-          fd.append("file", file);
-          const res = await fetch(`${apiUrl}/upload-url`, {
-            method: "POST",
-            body: fd,
-          });
-          if (!res.ok) {
-            throw new Error(`Promotions Slide ${idx + 1} upload failed`);
-          }
-          const { url } = await res.json();
-          // 2.c.i) Mutate local payload.heroSlides
-          if (!payload.promotions) payload.promotions = [];
-          // ensure there’s a slot for this index
-          while (payload.promotions.length <= idx) {
-            payload.promotions.push({
-              ...payload.promotions[idx],
-              bannerUrl: "",
-            });
-          }
-          payload.promotions[idx] = {
-            ...payload.promotions[idx],
-            bannerUrl: url,
-          };
-          // 2.c.ii) Mirror into state so UI updates
-          setForm((prev) => {
-            const slides = [...prev.promotions];
-            slides[idx] = { ...slides[idx], bannerUrl: url };
-            return { ...prev, promotions: slides };
-          });
-        })();
-        uploadPromises.push(p);
-      }
-    });
-
-    // 4) Wait for all uploads to finish
-    try {
-      await Promise.all(uploadPromises);
-
-      const isEdit = Boolean(initialData?.id);
-      const apiStoresUrl = isEdit
-        ? `${apiUrl}/stores/${initialData!.id}`
-        : `${apiUrl}/stores`;
-      const method = isEdit ? "PUT" : "POST";
-
-      // 4) Now payload contains the correct URLs (not the stale form)
-      const toSend = {
-        ...payload,
-        StoreCategory: selectedCategoriesArray,
-        userId: session.user.id,
-      };
-
-      const res = await fetch(apiStoresUrl, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(toSend),
-      });
-
-      if (res.ok) {
-        router.push("/stores");
-      } else {
-        console.error("Save failed", await res.text());
-        setIsSubmitting(false);
-        // show an error toast/message
-      }
-    } catch (err: any) {
-      console.error("Error uploading files or saving store:", err);
-      setIsSubmitting(false);
-      alert(`Error: ${err.message}`);
+          console.log(`✅ Hero slide ${idx + 1} product image uploaded:`, url);
+        })()
+      );
     }
-  };
+  });
+
+  // --- Promotion Slides ---
+  promotionSlideFiles.forEach((file, idx) => {
+    if (file) {
+      uploadPromises.push(
+        (async () => {
+          const [{ url }] = await uploadFile([file], "image");
+          if (!payload.promotions) payload.promotions = [];
+
+          const existing = payload.promotions[idx] || {};
+          payload.promotions[idx] = { ...existing, bannerUrl: url };
+
+          setForm((prev) => {
+            const promos = [...prev.promotions];
+            promos[idx] = { ...promos[idx], bannerUrl: url };
+            return { ...prev, promotions: promos };
+          });
+
+          console.log(`✅ Promotion slide ${idx + 1} uploaded:`, url);
+        })()
+      );
+    }
+  });
+
+  try {
+    // Wait for uploads to complete
+    await Promise.all(uploadPromises);
+    console.log("🟢 All uploads complete. Saving store data...");
+
+    const isEdit = Boolean(initialData?.id);
+    const method = isEdit ? "PUT" : "POST";
+    const apiStoresUrl = isEdit
+      ? `${apiUrl}/stores/${initialData!.id}`
+      : `${apiUrl}/stores`;
+
+    const toSend = {
+      ...payload,
+      StoreCategory: selectedCategoriesArray,
+      userId: session.user.id,
+    };
+
+    const res = await fetch(apiStoresUrl, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(toSend),
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      console.error("❌ Save failed:", text);
+      toast.error(`Error saving store: ${text}`);
+      return;
+    }
+
+    console.log("✅ Store saved successfully!");
+    toast.success(isEdit ? "Store updated successfully!" : "Store created!");
+    router.push("/stores");
+  } catch (err: any) {
+    console.error("❌ Error uploading or saving store:", err);
+    toast.error(`Error: ${err.message}`);
+  } finally {
+    setIsSubmitting(false);
+    console.log("🟡 Submit finished.");
+  }
+};
+
 
   // Render step or review
   const StepContent =  stepIndex < allSteps.length ? ( 
