@@ -110,7 +110,7 @@ export function VideosTab({ videos, setVideos }: { videos: UnifiedMediaItem[], s
         <p>Drag & drop videos here</p>
       </Dropzone>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-        {videos.map((vid, idx) => <FilePreview key={vid.url} preview={vid} onRemove={() => removeVideo(idx)} />)}
+        {videos.map((vid, idx) => <FilePreview key={vid.url} preview={vid.url} onRemove={() => removeVideo(idx)} />)}
       </div>
     </div>
   );
