@@ -470,7 +470,7 @@ export interface MarketListingForm {
   material: string[];
   quantity: number;
   images: any[];
-  video?: string | null;
+  videos?: any[];//string | null;
   profitMargin?: number | null;
   buyingPrice: number;
   sellingPrice: number;
