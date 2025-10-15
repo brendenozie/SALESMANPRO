@@ -82,7 +82,7 @@ async function getInventory(req: Request) {
       dimensions: p.dimensions || '',
       material: p.material || null,
       images: p.images,
-      video: p.video || null,
+      videos: p.videos || null,
       digitalUrl: p.digitalUrl || '',
       autoDeliver: p.autoDeliver || false,
       isAvailable: p.isAvailable || false,

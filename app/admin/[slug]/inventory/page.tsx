@@ -40,6 +40,7 @@ export default async function AdminInventoryPage({ params }: Props) {
 
     if (productsRes.ok) {
       let prodeuctR = (await productsRes.json());
+      console.log("prodeuctR:", prodeuctR);
       productsData = Array.isArray(prodeuctR.data.results) ? prodeuctR.data.results : [];
 
     }
