@@ -54,7 +54,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, companyId,
   
   const statusClasses = getStatusBadgeClass(property.status);
   const typeIcon = getProductTypeIcon(property.category);
-  const imageUrl = property.images && property.images.length > 0 ? property.images[0] : '/images/placeholder-listing.jpg';
+  const imageUrl = property.images && property.images.length > 0 ? property.images[0].url : '/images/placeholder-listing.jpg';
 
   // Fallback for Next/Image loader if needed, but using a simple img tag for maximum compatibility with dynamic URLs
   const ImageComponent = property.images && property.images.length > 0 ? 

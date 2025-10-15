@@ -40,7 +40,7 @@ const ServiceMediaTab: React.FC<ServiceMediaTabProps> = ({
                 <input
                     type="text"
                     name="images[0]" // Assuming first image is main
-                    value={MarketListingForm.images[0] || ''}
+                    value={MarketListingForm.images[0].url || ''}
                     
                     className={`mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-600 p-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2`}
                     style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
@@ -49,7 +49,7 @@ const ServiceMediaTab: React.FC<ServiceMediaTabProps> = ({
                 <p className="text-gray-500 text-sm mt-1">Provide a URL for your main service image.</p>
                 {MarketListingForm.images[0] && (
                     <div className="mt-4 relative w-32 h-32 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
-                        <Image src={MarketListingForm.images[0]} loader={imageLoader} alt="Main Image Preview" layout="fill" objectFit="cover" />
+                        <Image src={MarketListingForm.images[0].url} loader={imageLoader} alt="Main Image Preview" layout="fill" objectFit="cover" />
                     </div>
                 )}
             </motion.label>
@@ -81,7 +81,7 @@ const ServiceMediaTab: React.FC<ServiceMediaTabProps> = ({
                     <div className="mt-4 flex flex-wrap gap-2">
                         {MarketListingForm.images.slice(1).map((imgUrl, idx) => (
                             <div key={idx} className="relative w-24 h-24 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
-                                <Image src={imgUrl} loader={imageLoader} alt={`Additional Image ${idx + 1}`} layout="fill" objectFit="cover" />
+                                <Image src={imgUrl.url} loader={imageLoader} alt={`Additional Image ${idx + 1}`} layout="fill" objectFit="cover" />
                             </div>
                         ))}
                     </div>
@@ -92,7 +92,7 @@ const ServiceMediaTab: React.FC<ServiceMediaTabProps> = ({
                 <input
                     type="text"
                     name="video"
-                    value={MarketListingForm.video || ''}
+                    value={MarketListingForm.videos?.[0].url || ''}
                     onChange={handleChange}
                     className={`mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-600 p-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2`}
                     style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}

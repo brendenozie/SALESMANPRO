@@ -347,7 +347,7 @@ export default function AdminServicesClient({
                                             <div className="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 shadow-md border border-gray-200 dark:border-gray-600">
                                                 {svc.images && svc.images.length > 0 && svc.images[0] ? (
                                                     <Image
-                                                        src={svc.images[0]}
+                                                        src={svc.images[0].url}
                                                         loader={imageLoader}
                                                         alt={svc.name || "Service Image"}
                                                         layout="fill"

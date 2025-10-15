@@ -399,7 +399,7 @@ const ProductCard: React.FC<ProductCardProps> = ({
   onToggleOffer
 }) => {
   const imageUrl = product.images && product.images.length > 0
-    ? product.images[0]
+    ? product.images[0].url
     : "[https://placehold.co/400x200/333/eee?text=No+Image](https://placehold.co/400x200/333/eee?text=No+Image)";
 
   return (
