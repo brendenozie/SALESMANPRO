@@ -18,7 +18,7 @@ async function handlePost(req: Request) {
     tags,
     // Media
     images,
-    video,
+    videos,
     // Category
     productCategoryId: rawProductCategoryId,
     category: rawCategory,
@@ -185,6 +185,7 @@ async function handlePost(req: Request) {
   // Parse arrays
   const parsedTags = Array.isArray(tags) ? tags : [];
   const parsedImages = Array.isArray(images) ? images : [];
+  const parsedVideos = Array.isArray(videos) ? videos : [];
   const parsedColor = Array.isArray(color) ? color : [];
   const parsedSize = Array.isArray(size) ? size : [];
   const parsedMaterial = Array.isArray(material) ? material : [];
@@ -218,7 +219,7 @@ async function handlePost(req: Request) {
           longDescription: parsedLongDesc,
           tags: parsedTags,
           images: parsedImages,
-          video: video || null,
+          videos: parsedVideos || null,
           productCategory: productCategoryId
             ? { connect: { id: productCategoryId } }
             : undefined,
@@ -336,7 +337,7 @@ async function handlePost(req: Request) {
           longDescription: parsedLongDesc,
           tags: parsedTags,
           images: parsedImages,
-          video: video || null,
+          videos: parsedVideos || null,
           productCategory: productCategoryId
             ? { connect: { id: productCategoryId } }
             : undefined,

@@ -17,7 +17,6 @@ import CategoryPicker from './CategoryPicker';
 import PricingDetails from './PricingDetails';
 import { ProductForm, IStoreCategory } from '@/types/typings';
 
-
 // NOTE: keep API constants consistent with your app's env
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
@@ -78,6 +77,37 @@ function useAutoSaveDraft(key: string, data: any, enabled = true) {
   const clear = useCallback(() => localStorage.removeItem(key), [key]);
 
   return { status, restore, clear };
+}
+
+// Represents a file that already exists on the server
+interface ExistingMedia {
+  index?: number; // Optional index for ordering
+  url: string;
+  source: 'server';
+}
+
+// Represents a new file selected by the user, not yet uploaded
+interface NewMedia {
+  id: string; // For stable keys in React  
+  index?: number; // Optional index for ordering
+  file: File;
+  url: string; // Blob URL for preview
+  source: 'local';
+}
+
+// A discriminated union for robustly handling both types
+type MediaItem = ExistingMedia | NewMedia;
+
+// Specific type for books, as they have more metadata
+interface BookItem {
+  id: string;
+  title: string;
+  author: string;
+  coverFile: File | null;
+  coverPreviewUrl: string | null;
+  bookFile: File | null;
+  source: 'local' | 'server'; // To distinguish new books from existing ones
+  url?: string; // URL for existing book files from the server
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -261,6 +291,21 @@ export default function AddProductModal({
 }) {
   const { formData, setFormData, updateField } = useProductForm(product || null, companyId);
   const [step, setStep] = useState(1);
+   // Single source of truth for images
+  const [images, setImages] = useState<MediaItem[]>(
+    product?.images?.map((img, idx) => ({ index: img.index ?? idx, url: img.url, source: 'server' })) || []
+  );
+
+  // Single source of truth for videos
+  const [videos, setVideos] = useState<MediaItem[]>(
+    product?.videos?.map((vid, idx) => ({ index: vid.index ?? idx, url: vid.url, source: 'server' })) || []
+  );
+  
+  // State for books (assuming a similar structure)
+  const [books, setBooks] = useState<BookItem[]>(
+    product?.books?.map((book: any) => ({ ...book, source: 'server', id: book.url })) || []
+  );
+
   const [imageFiles, setImageFiles] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<any[]>(
     product?.images?.map((i: any, idx: number) => ({
@@ -280,7 +325,7 @@ export default function AddProductModal({
   );
 
   // --- Book states ---
-  const [books, setBooks] = useState<any[]>(product?.books || []);
+  // const [books, setBooks] = useState<any[]>(product?.books || []);
   
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
@@ -332,33 +377,74 @@ export default function AddProductModal({
     if (!window.confirm('Are you sure you want to save this product?')) return;
     setLoading(true);
     try {
+
+      // 1. Filter to get only the new, local files that need uploading
+      const newImageFiles = images.filter((img): img is NewMedia => img.source === 'local').map(img => img.file);
+      const newVideoFiles = videos.filter((vid): vid is NewMedia => vid.source === 'local').map(vid => vid.file);
+      const newBookFiles = books.filter(b => b.source === 'local' && b.bookFile).map(b => b.bookFile!);
+      
+      // 2. Upload all new files in parallel
+      const [uploadedImageUrls, uploadedVideoUrls, uploadedBookUrls] = await Promise.all([
+        uploadFiles(newImageFiles, "image"),
+        uploadFiles(newVideoFiles, "video"),
+        uploadFiles(newBookFiles, "book"),
+      ]);
+
+      // 3. Map over the state arrays to build the final URL lists, maintaining order.
+      // This is now declarative and much easier to reason about.
+      let newImageIdx = 0;
+      const finalImages = images.map(img => {
+        return { url: img.source === 'server' ? img.url : uploadedImageUrls[newImageIdx++]?.url };
+      }).map((img, idx) => ({ index: idx, url: img.url }));
+      
+      let newVideoIdx = 0;
+      const finalVideos = videos.map(vid => {
+        return { url: vid.source === 'server' ? vid.url : uploadedVideoUrls[newVideoIdx++]?.url };
+      }).map((vid, idx) => ({ index: idx, url: vid.url }));
+
+      let newBookIdx = 0;
+      const finalBooks = books.map(book => {
+         // This assumes you want to send more than just the URL for books
+        const bookUrl = book.source === 'server' ? book.url : uploadedBookUrls[newBookIdx++]?.url;
+        return { 
+          title: book.title, 
+          author: book.author,
+          url: bookUrl
+          // ... any other book metadata ...
+        };
+      }).map((book, idx) => ({ index: idx, ...book }));
+
+
+      // 4. Build the final payload and send it to the backend.
+      const payload = buildProductPayload(formData, finalImages, finalBooks, finalVideos);
+      
       // 1. Upload only the new files held in the `imageFiles` state.
       // const newlyUploadedImages = await uploadFiles(imageFiles, 'image');
       // Upload new local images/videos
-      const [uploadedImages, uploadedVideos] = await Promise.all([
-        uploadFiles(imageFiles, "image"),
-        uploadFiles(videoFiles, "video"),
-      ]);
+      // const [uploadedImages, uploadedVideos] = await Promise.all([
+      //   uploadFiles(imageFiles, "image"),
+      //   uploadFiles(videoFiles, "video"),
+      // ]);
 
-      // books are handled differently since they are files with no urls
-      const uploadedBooks = await uploadFiles(
-        books.filter((b) => b.source !== "server").map((b) => b.file),
-        "book"
-      );
-      const finalBooks = books.map((b) =>
-        b.source === "server" ? { url: b.url } : uploadedBooks.shift() // Use shift to maintain order
-      ).map((bk:any, idx) => ({ index: idx, url: bk.url }));
+      // // books are handled differently since they are files with no urls
+      // const uploadedBooks = await uploadFiles(
+      //   books.filter((b) => b.source !== "server").map((b) => b.file),
+      //   "book"
+      // );
+      // const finalBooks = books.map((b) =>
+      //   b.source === "server" ? { url: b.url } : uploadedBooks.shift() // Use shift to maintain order
+      // ).map((bk:any, idx) => ({ index: idx, url: bk.url }));
 
-      let imageIndex = 0;
+      // let imageIndex = 0;
 
-      const finalImages = imagePreviews.map((p) =>
-        p.source === "server" ? { url: p.url } : uploadedImages[imageIndex++]
-      ).map((img, idx) => ({ index: idx, url: img.url }));
+      // const finalImages = imagePreviews.map((p) =>
+      //   p.source === "server" ? { url: p.url } : uploadedImages[imageIndex++]
+      // ).map((img, idx) => ({ index: idx, url: img.url }));
 
-      let videoIndex = 0;
-      const finalVideos = videoPreviews.map((p) =>
-        p.source === "server" ? { url: p.url } : uploadedVideos[videoIndex++]
-      ).map((v, idx) => ({ index: idx, url: v.url }));
+      // let videoIndex = 0;
+      // const finalVideos = videoPreviews.map((p) =>
+      //   p.source === "server" ? { url: p.url } : uploadedVideos[videoIndex++]
+      // ).map((v, idx) => ({ index: idx, url: v.url }));
 
       // 2. Combine existing and new images, respecting the current display order.
       // The `imagePreviews` array is the source of truth for the final order.
@@ -383,7 +469,7 @@ export default function AddProductModal({
       // }));
 
       // 4. Build the final payload and send it to the backend.
-      const payload = buildProductPayload(formData, finalImages, finalBooks, finalVideos);
+      // const payload = buildProductPayload(formData, finalImages, finalBooks, finalVideos);
       
       const res = await fetch(`${API_URL}/admin/post-product`, {
         method: 'POST',
@@ -486,6 +572,7 @@ export default function AddProductModal({
                 handleInputChange={handleInputChange}
                 filteredSubCategories={formData.category?.subcategories || []}
                 filteredBrands={formData.category?.allBrands || []}
+
                 imageFiles={imageFiles}
                 setImageFiles={setImageFiles}
                 imagePreviews={imagePreviews}
@@ -494,6 +581,12 @@ export default function AddProductModal({
                 setVideoFiles={setVideoFiles}
                 videoPreviews={videoPreviews}
                 setVideoPreviews={setVideoPreviews}
+                
+                // Pass the unified state and setters
+                images={images}
+                setImages={setImages}
+                videos={videos}
+                setVideos={setVideos}
                 books={books}
                 setBooks={setBooks}
               />
