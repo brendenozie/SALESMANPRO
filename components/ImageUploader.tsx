@@ -64,7 +64,7 @@ export function ImagesTab({
     const files = Array.from(e.target.files || []);
 
     const validFiles = files.filter(file => {
-      if (file.size > 10 * 1024 * 1024) {
+      if (file.size > MAX_IMAGE_SIZE) {
         toast.error(`${file.name} exceeds 10MB.`);
         return false;
       }
@@ -72,24 +72,37 @@ export function ImagesTab({
     });
 
     const newPreviews = previewManager.createPreviews(validFiles, imagePreviews.length)
-      .map((p:any) => ({ ...p, source: "local" })); // 🟢 mark as new
+      .map((p:any) => ({ ...p, source: "local" })); // Mark as new local preview
 
     setImageFiles([...imageFiles, ...validFiles]);
     setImagePreviews([...imagePreviews, ...newPreviews]);
   };
 
-  const removeImage = (index: number) => {
-    const updatedPreviews = [...imagePreviews];
-    const removed = updatedPreviews.splice(index, 1)[0];
+  const removeImage = (indexToRemove: number) => {
+    const originalPreviews = [...imagePreviews];
+    const removedPreview = originalPreviews[indexToRemove];
+    
+    // If the removed image was a new, local file, we must also remove its File object.
+    if (removedPreview.source === 'local') {
+      let localFileIndex = -1;
+      let localFilesEncountered = 0;
+      for (let i = 0; i <= indexToRemove; i++) {
+        if (originalPreviews[i].source === 'local') {
+          localFilesEncountered++;
+        }
+      }
+      localFileIndex = localFilesEncountered - 1;
 
-    if (removed.source === "local") {
-      // also remove corresponding file
-      const updatedFiles = [...imageFiles];
-      updatedFiles.splice(index, 1);
-      previewManager.revokePreviews([removed]);
-      setImageFiles(updatedFiles);
+      if (localFileIndex > -1) {
+          const updatedFiles = [...imageFiles];
+          updatedFiles.splice(localFileIndex, 1);
+          setImageFiles(updatedFiles);
+      }
+      
+      previewManager.revokePreviews([removedPreview]);
     }
 
+    const updatedPreviews = imagePreviews.filter((_: any, index: number) => index !== indexToRemove);
     setImagePreviews(updatedPreviews);
   };
 
@@ -106,17 +119,17 @@ export function ImagesTab({
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
         {imagePreviews.map((preview: any, index: number) => (
-          <div key={preview.index} className="relative group">
+          <div key={preview.url || index} className="relative group">
             <img
               src={preview.url}
               alt="preview"
               className={`rounded-lg w-full h-32 object-cover shadow-md ${
-                preview.source === "server" ? "border border-green-400" : ""
+                preview.source === "server" ? "border-2 border-green-400" : ""
               }`}
             />
             <button
               onClick={() => removeImage(index)}
-              className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition"
+              className="absolute top-2 right-2 bg-black/60 text-white text-xs px-2 py-1 rounded-full opacity-0 group-hover:opacity-100 transition"
             >
               ✕
             </button>
@@ -322,33 +335,28 @@ export function BooksTab({
 }
 
 
-/* ---------- Types ---------- */
 interface BookItem {
   title: string;
   author: string;
-  coverFile: File | null;         // raw File for the cover image
-  coverPreview: string | null;    // objectURL for the cover preview
-  bookFile: File | null;          // raw File for the actual PDF/EPUB/etc.
+  coverFile: File | null;
+  coverPreview: string | null;
+  bookFile: File | null;
 }
 
 interface MediaUploaderProps {
-  // Parent maintains raw File arrays and preview URLs
   imageFiles: File[];
   setImageFiles: React.Dispatch<React.SetStateAction<File[]>>;
-  imagePreviews: string[];
-  setImagePreviews: React.Dispatch<React.SetStateAction<string[]>>;
-
+  imagePreviews: any[];
+  setImagePreviews: React.Dispatch<React.SetStateAction<any[]>>;
   videoFiles: File[];
   setVideoFiles: React.Dispatch<React.SetStateAction<File[]>>;
-  videoPreviews: string[];
-  setVideoPreviews: React.Dispatch<React.SetStateAction<string[]>>;
-
+  videoPreviews: any[];
+  setVideoPreviews: React.Dispatch<React.SetStateAction<any[]>>;
   books: BookItem[];
   setBooks: React.Dispatch<React.SetStateAction<BookItem[]>>;
 }
 
-// --- Main MediaUploader ---
-const MediaUploader: React.FC<MediaUploaderProps> = ({
+const ImageUploader: React.FC<MediaUploaderProps> = ({
   imageFiles,
   setImageFiles,
   imagePreviews,
@@ -364,45 +372,7 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
     "images"
   );
 
-  // const [imageFiles, setImageFiles] = useState<File[]>([]);
-  // const [imagePreviews, setImagePreviews] = useState<string[]>([]);
-  // const [videoFiles, setVideoFiles] = useState<File[]>([]);
-  // const [videoPreviews, setVideoPreviews] = useState<string[]>([]);
-  // const [books, setBooks] = useState<any[]>([]);
-
   const previewManager = new PreviewManager();
-
-  const handleImageDrop = useCallback(
-    (files: File[]) => {
-      const valid = files.filter(f => f.size <= MAX_IMAGE_SIZE);
-      const invalid = files.filter(f => f.size > MAX_IMAGE_SIZE);
-      if (invalid.length) toast.error(`${invalid.length} file(s) exceed 10MB.`);
-      if (valid.length) {
-        setImageFiles(prev => [...prev, ...valid]);
-        const previews = previewManager.createPreviews(valid);
-        setImagePreviews(prev => [
-          ...prev,
-          ...previews.map(p => p.url)
-        ]);
-      }
-    },
-    [previewManager]
-  );
-
-  const handleVideoDrop = useCallback(
-    (files: File[]) => {
-      const valid = files.filter(f => f.size <= MAX_VIDEO_SIZE);
-      const invalid = files.filter(f => f.size > MAX_VIDEO_SIZE);
-      if (invalid.length)
-        toast.error(`${invalid.length} video(s) exceed 100MB.`);
-      if (valid.length) {
-        setVideoFiles(prev => [...prev, ...valid]);
-        const previews = previewManager.createPreviews(valid);
-        setVideoPreviews(prev => [...prev, ...previews.map(p => p.url)]);
-      }
-    },
-    [previewManager]
-  );
 
   const tabVariants = {
     initial: { opacity: 0, y: 10 },
@@ -426,7 +396,6 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
                 imagePreviews={imagePreviews}
                 setImagePreviews={setImagePreviews}
                 previewManager={previewManager}
-                onDrop={handleImageDrop}
               />
             </motion.div>
           )}
@@ -438,7 +407,6 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
                 videoPreviews={videoPreviews}
                 setVideoPreviews={setVideoPreviews}
                 previewManager={previewManager}
-                onDrop={handleVideoDrop}
               />
             </motion.div>
           )}
@@ -459,4 +427,5 @@ const MediaUploader: React.FC<MediaUploaderProps> = ({
   );
 }
 
-export default MediaUploader;
+export default ImageUploader;
+

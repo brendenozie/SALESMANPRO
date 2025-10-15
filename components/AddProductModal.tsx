@@ -81,44 +81,29 @@ function useAutoSaveDraft(key: string, data: any, enabled = true) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Lightweight upload helper (keeps original signature, but safer)
+// Upload helper for getting signed URLs and uploading files
 ////////////////////////////////////////////////////////////////////////////////
-// async function uploadFiles(files: File[], type: 'image' | 'video') {
-//   if (!files?.length) return [];
-//   const uploads = files.map(async (file) => {
-//     const fd = new FormData();
-//     fd.append('type', type);
-//     fd.append('file', file);
-//     const res = await fetch(`${API_URL}/upload`, { method: 'POST', body: fd, credentials: 'include' });
-//     if (!res.ok) throw new Error('Upload failed');
-//     const json = await res.json();
-//     return json.url as string;
-//   });
-//   return Promise.all(uploads);
-// }
 async function uploadFiles(files: File[], type: 'image' | 'video') {
   if (!files?.length) return [];
 
   const uploads = files.map(async (file, index) => {
-    // 1️⃣ Request signed URL from backend
+    // 1. Request signed URL from your backend
     const res = await fetch(
       `${API_URL}/upload-url?filename=${encodeURIComponent(file.name)}&type=${type}`
-
     );
     if (!res.ok) throw new Error("Failed to get signed URL");
     const { uploadUrl, publicUrl } = await res.json();
 
-    // 2️⃣ Upload directly to S3 via PUT
+    // 2. Upload directly to S3 via PUT request
     const uploadRes = await fetch(uploadUrl, {
       method: "PUT",
-      // headers: { "Content-Type": file.type },
       body: file,
     });
     if (!uploadRes.ok) throw new Error("Upload failed");
 
-    // 3️⃣ Return public CloudFront URL
+    // 3. Return the public CloudFront/S3 URL
     return {
-      index: index,
+      // The original index is not needed here as we will re-index later
       url: publicUrl,
     };
   });
@@ -128,17 +113,17 @@ async function uploadFiles(files: File[], type: 'image' | 'video') {
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// A slightly safer payload builder -- unchanged semantics but smaller surface
+// Payload builder to structure data for the backend
 ////////////////////////////////////////////////////////////////////////////////
-function buildProductPayload(f: ProductForm, imageUrls: any[]) {
+function buildProductPayload(formData: ProductForm, finalImages: { index: number; url: string }[]) {
   return {
-    ...f,
-    images: imageUrls,
-  } as any;
+    ...formData,
+    images: finalImages,
+  };
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Hook: initialize product form (keeps shape compatible with your earlier hook)
+// Hook to initialize and manage the product form state
 ////////////////////////////////////////////////////////////////////////////////
 function useProductForm(product: Partial<ProductForm> | null, companyId: string) {
   const getInitial = useCallback((): ProductForm => ({
@@ -147,12 +132,10 @@ function useProductForm(product: Partial<ProductForm> | null, companyId: string)
     name: product?.name || '',
     description: product?.description || '',
     longDescription: product?.longDescription || '',
-
     tags: product?.tags || [],
     category: product?.category || null,
     subCategory: product?.subCategory || null,
     subCategoryName: product?.subCategoryName || '',
-
     brand: product?.brand || null,
     model: product?.model || '',
     color: product?.color || [],
@@ -161,19 +144,16 @@ function useProductForm(product: Partial<ProductForm> | null, companyId: string)
     condition: product?.condition || '',
     dimensions: product?.dimensions || '',
     material: product?.material || [],
-
     images: product?.images || [],
     video: product?.video || null,
     digitalUrl: product?.digitalUrl || '',
     autoDeliver: !!product?.autoDeliver,
-
     isAvailable: product?.isAvailable ?? false,
     isOnOffer: product?.isOnOffer ?? false,
     isFlashDeal: product?.isFlashDeal ?? false,
     isNewArrival: product?.isNewArrival ?? false,
     isDiscounted: product?.isDiscounted ?? false,
     isFeatured: product?.isFeatured ?? false,
-
     quantity: product?.quantity ?? 1,
     costPrice: product?.costPrice ?? 0,
     sellingPrice: product?.sellingPrice ?? 0,
@@ -181,11 +161,8 @@ function useProductForm(product: Partial<ProductForm> | null, companyId: string)
     finalPrice: product?.finalPrice ?? 0,
     profitMargin: product?.profitMargin ?? 0,
     pricingTiers: product?.pricingTiers || [],
-
     startDealDate: product?.startDealDate || null,
     endDealDate: product?.endDealDate || null,
-
-    // vehicles
     make: product?.make || '',
     trim: product?.trim || '',
     type: product?.type || '',
@@ -197,45 +174,31 @@ function useProductForm(product: Partial<ProductForm> | null, companyId: string)
     vin: product?.vin || '',
     logbookStatus: product?.logbookStatus || 'Available',
     serviceHistory: product?.serviceHistory || 'Full',
-
     negotiable: product?.negotiable ?? false,
     financingAvailable: product?.financingAvailable ?? false,
     tradeIn: product?.tradeIn ?? false,
     features: product?.features || [],
-
-    // books
     author: product?.author || '',
     publisher: product?.publisher || '',
     isbn: product?.isbn || '',
-
-    // fashion
     fabricComposition: product?.fabricComposition || '',
     careInstructions: product?.careInstructions || '',
-
-    // appliances
     energyRating: product?.energyRating || '',
     warrantyPeriod: product?.warrantyPeriod || '',
-
-    // beauty
     ingredients: product?.ingredients || '',
     usageInstructions: product?.usageInstructions || '',
     expirationDate: product?.expirationDate || null,
-
     option: product?.option || [],
     amenities: product?.amenities || [],
-
     bedrooms: product?.bedrooms ?? 0,
     studios: product?.studios ?? 0,
     bathrooms: product?.bathrooms ?? 0,
     area: product?.area || '',
-
     propertyTypeId: product?.propertyTypeId || '',
     serviceSchedule: product?.serviceSchedule || '',
-
     year: product?.year ?? new Date().getFullYear(),
     availabilityStart: product?.availabilityStart || '',
     availabilityEnd: product?.availabilityEnd || '',
-
     location: product?.location || {},
     locationName: product?.locationName || '',
     latitude: product?.latitude ?? null,
@@ -243,10 +206,8 @@ function useProductForm(product: Partial<ProductForm> | null, companyId: string)
     contact: product?.contact || '',
     contactName: product?.contactName || '',
     email: product?.email || '',
-
     status: product?.status || 'ACTIVE',
     collectionId: product?.collectionId || '',
-
     hourlyRate: product?.hourlyRate,
     minimumHours: product?.minimumHours,
     minNoticePeriod: product?.minNoticePeriod,
@@ -256,12 +217,10 @@ function useProductForm(product: Partial<ProductForm> | null, companyId: string)
     fulfillmentStatus: product?.fulfillmentStatus,
     providerRating: product?.providerRating,
     bookingSlots: product?.bookingSlots,
-
   } as ProductForm), [product, companyId]);
 
   const [formData, setFormData] = useState<ProductForm>(getInitial);
 
-  // calculated final price & profit margin
   useEffect(() => {
     const sellingPrice = formData.sellingPrice;
     const costPrice = formData.costPrice;
@@ -281,7 +240,7 @@ function useProductForm(product: Partial<ProductForm> | null, companyId: string)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// Main component: refactored modal with responsive layout, progress, autosave, lazy steps
+// Main AddProductModal Component
 ////////////////////////////////////////////////////////////////////////////////
 export default function AddProductModal({
   showRequestProductModal,
@@ -299,24 +258,21 @@ export default function AddProductModal({
   const { formData, setFormData, updateField } = useProductForm(product || null, companyId);
   const [step, setStep] = useState(1);
   const [imageFiles, setImageFiles] = useState<File[]>([]);
-  // const [imagePreviews, setImagePreviews] = useState<any[]>(product?.images?.map((i: any, idx: number) => ({ url: i.url, index: i.index ??  idx })) || []);
   const [imagePreviews, setImagePreviews] = useState<any[]>(
     product?.images?.map((i: any, idx: number) => ({
       url: i.url,
-      index: idx,
-      source: "server", // 🟢 mark as existing
+      index: i.index ?? idx,
+      source: "server", // Mark existing images from the server
     })) || []
   );
 
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
-  // Auto-save draft to localStorage
   const draftKey = useMemo(() => `product-draft-${companyId}-${product?.id || 'new'}`, [companyId, product?.id]);
-  const { status: autosaveStatus, restore, clear } = useAutoSaveDraft(draftKey, formData, true);
+  const { restore, clear } = useAutoSaveDraft(draftKey, formData, true);
 
   useEffect(() => {
-    // restore draft if present and product is null (create flow)
     if (!product) {
       const draft = restore();
       if (draft) {
@@ -324,23 +280,16 @@ export default function AddProductModal({
         setToast('Restored unsaved draft');
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [product, restore, setFormData, setToast]);
 
-  // dynamic steps (lazy load heavy components)
   const categoryKey = formData.category?.displayName?.trim() || '';
   const stepsForCategory = useMemo(() => CATEGORY_STEPS[categoryKey] || [1, 2, 3], [categoryKey]);
   const lastStepIndex = stepsForCategory.length;
   const isFirstStep = step === 1;
   const isLastStep = step === lastStepIndex;
   const currentDynamicStep = stepsForCategory[step - 1] || 1;
-
-  // Resolve component dynamically from your FORM_COMPONENTS map but wrap with Suspense
-  // If FORM_COMPONENTS already contains React components, we will use them directly; otherwise
-  // keep the logic simple and use a fallback.
   const FormComponent = FORM_COMPONENTS[currentDynamicStep] ?? null;
 
-  // handle native inputs generically
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const target = e.target as HTMLInputElement;
     const val = target.type === 'checkbox' ? target.checked : target.value;
@@ -349,211 +298,202 @@ export default function AddProductModal({
 
   const handleCategoryChange = useCallback((cat: IStoreCategory | null) => {
     updateField('category', cat as any);
-    // clear dependent fields
     updateField('subCategory', null as any);
     updateField('brand', null as any);
   }, [updateField]);
 
-  // next with optional per-step validation
   const goNext = useCallback(async () => {
-    // example hook per component to validate
-    const Comp: any = FormComponent as any;
-    if (Comp?.validate) {
-      const ok = await Comp.validate(formData);
-      if (!ok) {
-        setToast('Please fix validation errors in this step');
-        return;
-      }
-    }
     setStep((s) => Math.min(lastStepIndex, s + 1));
-  }, [FormComponent, formData, lastStepIndex]);
+  }, [lastStepIndex]);
 
   const goPrev = useCallback(() => setStep((s) => Math.max(1, s - 1)), []);
-
-  // drag to go back (mobile feel)
+  
   const handleDragEnd = (_: any, info: any) => {
     if (info.offset.x > 100) goPrev();
   };
 
-  // Save (final): uploads and POST
   const handleSave = useCallback(async () => {
-    if (!window.confirm('Save this product?')) return;
+    if (!window.confirm('Are you sure you want to save this product?')) return;
     setLoading(true);
     try {
-      const imageUrls = imageFiles.length ? await uploadFiles(imageFiles, 'image') : formData.images;
+      // 1. Upload only the new files held in the `imageFiles` state.
+      const newlyUploadedImages = await uploadFiles(imageFiles, 'image');
 
-      // Upload only new local files
-      // const newUploads = await uploadFiles(imageFiles);
+      // 2. Combine existing and new images, respecting the current display order.
+      // The `imagePreviews` array is the source of truth for the final order.
+      let localFileCounter = 0;
+      const combinedImages = imagePreviews.map((preview) => {
+        if (preview.source === 'server') {
+          // This is an existing image; keep its original URL.
+          return { url: preview.url };
+        } else {
+          // This is a new image; get its URL from the upload results.
+          // Assumes the order of 'local' previews matches the upload order.
+          const uploadedImage = newlyUploadedImages[localFileCounter++];
+          return { url: uploadedImage.url };
+        }
+      });
 
-      const mergedImages = [
-        ...imagePreviews
-          .filter((p: any) => p.source === "server") // keep existing
-          .map((p: any) => ({ url: p.url })),
-        ...imageUrls.map((url: string) => ({ url })), // add new ones
-      ];
+      // 3. Format the final array to match the desired database schema.
+      const finalPayloadImages = combinedImages.map((image, idx) => ({
+        index: idx,
+        url: image.url,
+      }));
 
-      const payload = buildProductPayload({ ...formData, images: mergedImages }, mergedImages);
+      // 4. Build the final payload and send it to the backend.
+      const payload = buildProductPayload(formData, finalPayloadImages);
+      
       const res = await fetch(`${API_URL}/admin/post-product`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
+
       if (!res.ok) throw new Error(await res.text());
-      setToast('Product saved.');
-      clear();
+      
+      setToast('Product saved successfully.');
+      clear(); // Clear the auto-saved draft
       setShowRequestProductModal(false);
+
     } catch (err: any) {
-      setToast(err?.message || 'Error saving product');
+      setToast(err?.message || 'Error: Could not save product.');
     } finally {
       setLoading(false);
     }
-  }, [imageFiles, formData, clear, setShowRequestProductModal]);
+  }, [imageFiles, imagePreviews, formData, clear, setShowRequestProductModal]);
 
-  // small responsive UI variants
-  const containerVar = {
-    hidden: { opacity: 0, y: 12 },
-    show: { opacity: 1, y: 0, transition: { when: 'beforeChildren', staggerChildren: 0.02 } },
-  };
 
-  // progress percent
   const progress = Math.round((step / Math.max(1, lastStepIndex)) * 100);
 
   return (
    <Modal isOpen={showRequestProductModal} onClose={() => setShowRequestProductModal(false)} title="">
-  <div className="relative w-full max-w-5xl h-[90vh] bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+    <div className="relative w-full max-w-5xl h-[90vh] bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col">
 
-    {/* Loading Overlay */}
-    <AnimatePresence>
-      {loading && (
+      {/* Loading Overlay */}
+      <AnimatePresence>
+        {loading && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-40 bg-white/70 backdrop-blur flex items-center justify-center"
+          >
+            <div className="animate-pulse text-gray-700">Saving…</div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Top Bar */}
+      <div className="shrink-0 flex items-center justify-between px-4 py-3 border-b">
+        <div className="flex items-center gap-3">
+          <button aria-label="close" onClick={() => setShowRequestProductModal(false)} className="p-2 rounded-md hover:bg-gray-100">
+            <XMarkIcon className="h-5 w-5 text-gray-700" />
+          </button>
+          <div>
+            <div className="text-sm font-semibold">Add product</div>
+            <div className="text-xs text-gray-500">Step {step} of {lastStepIndex}</div>
+          </div>
+        </div>
+        <div className="w-64">
+          <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+            <div className="h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" style={{ width: `${progress}%` }} />
+          </div>
+        </div>
+      </div>
+
+      {/* Scrollable Content */}
+      <div className="flex-1 overflow-y-auto px-4 py-4">
+        <Stepper step={step} stepsForCategory={stepsForCategory} STEP_LABELS={STEP_LABELS} />
+
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="absolute inset-0 z-40 bg-white/70 backdrop-blur flex items-center justify-center"
+          key={step}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          transition={{ type: "spring", stiffness: 240, damping: 30 }}
+          drag="x"
+          dragConstraints={{ left: 0, right: 0 }}
+          onDragEnd={handleDragEnd}
+          className="mt-4"
         >
-          <div className="animate-pulse text-gray-700">Saving…</div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-
-    {/* Top Bar */}
-    <div className="shrink-0 flex items-center justify-between px-4 py-3 border-b">
-      <div className="flex items-center gap-3">
-        <button aria-label="close" onClick={() => setShowRequestProductModal(false)} className="p-2 rounded-md hover:bg-gray-100">
-          <XMarkIcon className="h-5 w-5 text-gray-700" />
-        </button>
-        <div>
-          <div className="text-sm font-semibold">Add product</div>
-          <div className="text-xs text-gray-500">Step {step} of {lastStepIndex}</div>
-        </div>
-      </div>
-      <div className="w-64">
-        <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-          <div className="h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" style={{ width: `${progress}%` }} />
-        </div>
-      </div>
-    </div>
-
-    {/* Scrollable Content */}
-    <motion.div
-      className="flex-1 overflow-y-auto px-4 py-4"
-      variants={containerVar}
-      initial="hidden"
-      animate="show"
-    >
-      <Stepper step={step} stepsForCategory={stepsForCategory} STEP_LABELS={STEP_LABELS} />
-
-      <motion.div
-        key={step}
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        exit={{ opacity: 0, x: -20 }}
-        transition={{ type: "spring", stiffness: 240, damping: 30 }}
-        drag="x"
-        dragConstraints={{ left: 0, right: 0 }}
-        onDragEnd={handleDragEnd}
-        className="mt-4"
-      >
-        {step === 1 ? (
-          <CategoryPicker
-            formData={{ category: formData.category, subCategory: formData.subCategory, brand: formData.brand }}
-            categories={categories}
-            filteredBrands={formData.category?.allBrands || []}
-            onCategoryChange={handleCategoryChange}
-            onSubCategoryChange={(s) => updateField("subCategory", s as any)}
-            onBrandChange={(b) => updateField("brand", b as any)}
-          />
-        ) : currentDynamicStep === 7 ? (
-          <PricingDetails<ProductForm>
-            formData={formData}
-            setFormData={updateField as any}
-            costField="costPrice"
-            revenueField="sellingPrice"
-            discountField="discount"
-            finalField="finalPrice"
-            marginField="profitMargin"
-          />
-        ) : FormComponent ? (
-          <Suspense fallback={<div className="p-6 text-center text-gray-500">Loading step…</div>}>
-            <FormComponent
+          {step === 1 ? (
+            <CategoryPicker
+              formData={{ category: formData.category, subCategory: formData.subCategory, brand: formData.brand }}
+              categories={categories}
+              filteredBrands={formData.category?.allBrands || []}
+              onCategoryChange={handleCategoryChange}
+              onSubCategoryChange={(s) => updateField("subCategory", s as any)}
+              onBrandChange={(b) => updateField("brand", b as any)}
+            />
+          ) : currentDynamicStep === 7 ? (
+            <PricingDetails<ProductForm>
               formData={formData}
               setFormData={updateField as any}
-              handleInputChange={handleInputChange}
-              filteredSubCategories={formData.category?.subcategories || []}
-              filteredBrands={formData.category?.allBrands || []}
-              imageFiles={imageFiles}
-              setImageFiles={setImageFiles}
-              imagePreviews={imagePreviews}
-              setImagePreviews={setImagePreviews}
+              costField="costPrice"
+              revenueField="sellingPrice"
+              discountField="discount"
+              finalField="finalPrice"
+              marginField="profitMargin"
             />
-          </Suspense>
-        ) : (
-          <div className="p-6 text-sm text-gray-600">No form available for this step.</div>
-        )}
-      </motion.div>
-    </motion.div>
+          ) : FormComponent ? (
+            <Suspense fallback={<div className="p-6 text-center text-gray-500">Loading step…</div>}>
+              <FormComponent
+                formData={formData}
+                setFormData={updateField as any}
+                handleInputChange={handleInputChange}
+                filteredSubCategories={formData.category?.subcategories || []}
+                filteredBrands={formData.category?.allBrands || []}
+                imageFiles={imageFiles}
+                setImageFiles={setImageFiles}
+                imagePreviews={imagePreviews}
+                setImagePreviews={setImagePreviews}
+              />
+            </Suspense>
+          ) : (
+            <div className="p-6 text-sm text-gray-600">No form available for this step.</div>
+          )}
+        </motion.div>
+      </div>
 
-    {/* Sticky Footer */}
-    <div className="shrink-0 border-t bg-white/90 backdrop-blur-sm p-4 sticky bottom-0 left-0 right-0 z-30 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
-      <div className="hidden sm:flex items-center gap-2 text-gray-500 text-xs">
-        Progress: {progress}%
+      {/* Sticky Footer */}
+      <div className="shrink-0 border-t bg-white/90 backdrop-blur-sm p-4 sticky bottom-0 left-0 right-0 z-30 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="hidden sm:flex items-center gap-2 text-gray-500 text-xs">
+          Progress: {progress}%
+        </div>
+        <div className="flex w-full sm:w-auto justify-between sm:justify-end gap-3">
+          {!isFirstStep && (
+            <button
+              onClick={goPrev}
+              className="w-full sm:w-auto px-4 py-2 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center gap-2 text-gray-700"
+            >
+              <ArrowLeftIcon className="h-4 w-4" />
+              <span className="sm:hidden">Back</span>
+            </button>
+          )}
+          {!isLastStep ? (
+            <button
+              onClick={goNext}
+              className="w-full sm:w-auto px-4 py-2 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white flex items-center justify-center gap-2"
+            >
+              <span className="sm:hidden">Next</span>
+              <ArrowRightIcon className="h-4 w-4" />
+            </button>
+          ) : (
+            <button
+              onClick={handleSave}
+              className="w-full sm:w-auto px-4 py-2 rounded-full bg-green-600 hover:bg-green-700 text-white flex items-center justify-center gap-2"
+            >
+              Save
+              <CheckCircleIcon className="h-4 w-4" />
+            </button>
+          )}
+        </div>
       </div>
-      <div className="flex w-full sm:w-auto justify-between sm:justify-end gap-3">
-        {!isFirstStep && (
-          <button
-            onClick={goPrev}
-            className="w-full sm:w-auto px-4 py-2 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center gap-2 text-gray-700"
-          >
-            <ArrowLeftIcon className="h-4 w-4" />
-            <span className="sm:hidden">Back</span>
-          </button>
-        )}
-        {!isLastStep && (
-          <button
-            onClick={goNext}
-            className="w-full sm:w-auto px-4 py-2 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white flex items-center justify-center gap-2"
-          >
-            <span className="sm:hidden">Next</span>
-            <ArrowRightIcon className="h-4 w-4" />
-          </button>
-        )}
-        {isLastStep && (
-          <button
-            onClick={handleSave}
-            className="w-full sm:w-auto px-4 py-2 rounded-full bg-green-600 hover:bg-green-700 text-white flex items-center justify-center gap-2"
-          >
-            Save
-            <CheckCircleIcon className="h-4 w-4" />
-          </button>
-        )}
-      </div>
+
+      {/* Toast */}
+      {toast && <Toast msg={toast} onClose={() => setToast(null)} />}
     </div>
-
-    {/* Toast */}
-    {toast && <Toast msg={toast} onClose={() => setToast(null)} />}
-  </div>
-</Modal>
-
+   </Modal>
   );
 }
