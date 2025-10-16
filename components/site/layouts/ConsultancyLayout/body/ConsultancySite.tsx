@@ -15,8 +15,6 @@ import AboutSection from "./components/AboutSection";
 import ServicesSection from "./components/ServicesSection";
 import CallToActionSection from "./components/CallToActionSection";
 
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
-
 export default function ConsultancySite({ pageData }: { pageData: StoreForm }) {
   
   const { storeFormData } = useStoreContext(); // Use for global theme settings only
