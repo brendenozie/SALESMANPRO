@@ -30,6 +30,10 @@ export const folderMap: Record<string, string> = {
   // Portfolio
   'portfolio': 'PortfolioLayout',
   'portfolio & personal branding': 'PortfolioLayout',
+  
+  // Consultancy
+  'consultancy': 'ConsultancyLayout',
+  'consultant & coach': 'ConsultancyLayout',
 
   // Blog
   'blog': 'BlogLayout',
@@ -95,6 +99,8 @@ export const folderMap: Record<string, string> = {
 export const siteComponentNameMap: Record<string, string> = {
   'EcommerceLayout': 'EcommerceSite',
   'EcommerceShoesLayout': 'EcommerceShoesSite',
+  'ConsultancyLayout': 'ConsultancySite',
+  'GhubaLayout': 'GhubaSite',
   'ServicesLayout': 'ServiceSite',
   'BookingsLayout': 'BookingsSite',
   'RealEstateLayout': 'RealEstateSite',

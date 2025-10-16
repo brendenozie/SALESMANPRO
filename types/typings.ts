@@ -464,6 +464,8 @@ export interface MarketListingForm {
   color: string[];
   size: string[];
   weight: string[];
+
+  badge?: string | null;
   
   condition?: string | null;
   dimensions?: string | null;

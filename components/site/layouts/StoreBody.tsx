@@ -32,6 +32,7 @@ const DefaultSite     = dynamic(() => import('@/components/site/layouts/DefaultL
 const PortfolioSite   = dynamic(() => import('@/components/site/layouts/PortfolioLayout/body/PortfolioSite'),   { loading: () => <LoadingPlaceholder /> });
 const ServiceSite     = dynamic(() => import('@/components/site/layouts/ServicesLayout/body/ServiceSite'),      { loading: () => <LoadingPlaceholder /> });
 const SaaSSite        = dynamic(() => import('@/components/site/layouts/SaaSLayout/body/SaaSSite'),            { loading: () => <LoadingPlaceholder /> });
+const ConsultancySite = dynamic(() => import('@/components/site/layouts/ConsultancyLayout/body/ConsultancySite'), { loading: () => <LoadingPlaceholder /> });
 
 type LayoutBodyComponent = React.ComponentType<{
   // params: { storeFormData: StoreForm };
@@ -51,6 +52,10 @@ const categoryBodyLayoutMap: Record<string, LayoutBodyComponent>  = {
   'services':    ServiceSite,
   'service provider': ServiceSite,
 
+  // consultancy
+  'consultancy': ConsultancySite,
+  'consultant & coach': ConsultancySite,
+  
   // bookings
   'bookings':       BookingsSite,
   'booking & appointments': BookingsSite,

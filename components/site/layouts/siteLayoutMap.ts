@@ -24,6 +24,7 @@ const TravelLayout = dynamic(() => import('@/components/site/layouts/TravelLayou
 const RestaurantLayout = dynamic(() => import('@/components/site/layouts/RestaurantLayout/RestaurantLayout'));
 const AutomotiveLayout = dynamic(() => import('@/components/site/layouts/AutomotiveLayout/AutomotiveLayout'));
 const SaaSLayout = dynamic(() => import('@/components/site/layouts/SaaSLayout/SaaSLayout'));
+const ConsultancyLayout = dynamic(() => import('@/components/site/layouts/ConsultancyLayout/ConsultancyLayout'));
 
 import { ReactNode } from 'react';
 import { StoreForm } from '../../../types/typings';
@@ -43,6 +44,8 @@ export const categoryHeaderFooterLayoutMap: Record<string, LayoutHeaderFooterCom
   'service provider': ServicesLayout,
   'bookings': BookingsLayout,
   'booking & appointments': BookingsLayout,
+  'consultancy': ConsultancyLayout,
+  'consultant & coach': ConsultancyLayout,
   'real estate': RealEstateLayout,
   'portfolio': PortfolioLayout,
   'portfolio & personal branding': PortfolioLayout,
@@ -89,6 +92,8 @@ export const folderMap: Record<string, string> = {
   'service provider': 'ServicesLayout',
   'bookings': 'BookingsLayout',
   'booking & appointments': 'BookingsLayout',
+  'consultancy': 'ConsultancyLayout',
+  'consultant & coach': 'ConsultancyLayout',
   'real estate': 'RealEstateLayout',
   'portfolio': 'PortfolioLayout',
   'portfolio & personal branding': 'PortfolioLayout',
@@ -128,6 +133,7 @@ export const siteComponentNameMap: Record<string, string> = {
   'GhubaLayout': 'GhubaSite',
   'EcommerceLayout': 'EcommerceSite',
   'EcommerceShoesLayout': 'EcommerceShoesSite',
+  'ConsultancyLayout': 'ConsultancySite',
   'ServicesLayout': 'ServiceSite',
   'BookingsLayout': 'BookingsSite',
   'RealEstateLayout': 'RealEstateSite',

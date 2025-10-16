@@ -14,6 +14,7 @@ import {
 import GhubaSite from '@/components/site/layouts/GhubaLayout/body/GhubaSite';
 import AutomotiveSite from '@/components/site/layouts/AutomotiveLayout/body/AutomotiveSite';
 import EcommerceSite from '@/components/site/layouts/EcommerceLayout/body/EcommerceSite';
+import ConsultancyLayout from '@/components/site/layouts/ConsultancyLayout/body/ConsultancySite';
 import EcommerceShoesSite from '@/components/site/layouts/EcommerceShoesLayout/body/EcommerceShoesSite';
 import RealEstateSite from '@/components/site/layouts/RealEstateLayout/body/RealEstateSite';
 import BlogSite from '@/components/site/layouts/BlogLayout/body/BlogSite';
@@ -41,6 +42,7 @@ const componentMap: Record<string, React.ComponentType<{ pageData: StoreForm }>>
   'AutomotiveSite': AutomotiveSite,
   'EcommerceSite': EcommerceSite,
   'EcommerceShoesSite': EcommerceShoesSite,
+  'ConsultancySite': ConsultancyLayout,
   'RealEstateSite': RealEstateSite,
   'BlogSite': BlogSite,
   'CoursesSite': CoursesSite,
