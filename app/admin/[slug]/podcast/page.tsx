@@ -53,9 +53,7 @@ interface PaginatedPodcasts {
  */
 
 interface PageProps {
-  params: {
-    slug: string; // This is companyId, or perhaps a creatorId/adminId
-  };
+  params:Promise<{ slug: string }>
 }
 
 /**

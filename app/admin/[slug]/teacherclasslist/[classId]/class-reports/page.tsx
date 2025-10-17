@@ -60,17 +60,17 @@ interface AcademicLevelInfo {
 }
 
 interface PageProps {
-  params: {
-    slug: string; // Corresponds to `teacherId` in APIs
-    classId: string; // Corresponds to `classId` in previous context
-  };
+  params: Promise<{
+    slug: string; // teacherId
+    classId: string; // The ID of the academic level/class
+  }>;
 }
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
-export default function ClassReportsPage({ params }: PageProps) {
+export default async function ClassReportsPage({ params }: PageProps) {
 
-  const { slug, classId } = params;
+  const { slug, classId } = await params;
 
   const educatorId = slug;
   const academicLevelId  = classId;

@@ -6,10 +6,10 @@ import AddClassEventPage, { AcademicLevelOption, CourseOption, EducatorOption, S
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface PageProps {
-  params: {
-    slug: string; // This is the educatorId (teacherId)
-    classId: string; // This is the academicLevelId
-  };
+  params: Promise<{
+    slug: string; // teacherId
+    classId: string; // The ID of the academic level/class
+  }>;
 }
 
 // --- Helper function to generate sample data (for fallback) ---
@@ -214,9 +214,8 @@ const generateSampleEventData = (companyId: string): {
 
 export default async function EventsManagerPage({ params }: PageProps) {
 
-  const teacherId = params.slug; // This is Educator ID
-  const academicLevelId = params.classId; // This is AcademicLevel ID
-
+  const { slug: teacherId, classId: academicLevelId } = await params;
+  
   let initialEvents: EventData[] = [];
   let allAcademicLevels: AcademicLevelOption[] = []; // Still useful for the form's audience targeting
   let allCourses: CourseOption[] = [];

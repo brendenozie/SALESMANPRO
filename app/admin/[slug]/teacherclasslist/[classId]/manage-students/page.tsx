@@ -5,10 +5,10 @@ import StudentRosterPage, { StudentRosterStudent } from "./StudentRosterPage";
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface Props {
-  params: {
+  params: Promise<{
     slug: string; // teacherId
     classId: string; // The ID of the academic level/class
-  };
+  }>;
 }
 
 /**
@@ -18,8 +18,7 @@ interface Props {
  */
 export default async function StudentRosterPageServer({ params }: Props) {
 
-  const academicLevelId = params.classId;
-  const teacherId = params.slug;
+  const { slug: teacherId, classId: academicLevelId } = await params;
 
   let studentsData: StudentRosterStudent[] = [];
   let fetchError: boolean = false;

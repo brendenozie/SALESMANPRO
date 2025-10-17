@@ -7,10 +7,10 @@ import TakeAttendancePage from "./TakeAttendancePage";
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface Props {
-  params: {
-    slug: string;
-    classId: string;
-  };
+  params: Promise<{
+    slug: string; // teacherId
+    classId: string; // The ID of the academic level/class
+  }>;
 }
 
 /**
@@ -20,7 +20,7 @@ interface Props {
  * an authenticated session (e.g., using NextAuth.js's getServerSession).
  */
 export default async function AcademicLevelAttendancePage({ params }: Props) {
-  const { slug, classId } = params;
+  const { slug, classId } =  await params;
 
   // TODO: Replace with actual educatorId from your authentication system.
   // For demonstration, we use a placeholder.

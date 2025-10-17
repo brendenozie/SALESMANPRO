@@ -1,6 +1,6 @@
 // app/admin/[slug]/class-teacher-academic-levels/page.tsx
 // import { AssignedAcademicLevel, ClassTeacherAcademicLevelsPageData, ClassTeacherInfo, StudentInAcademicLevel } from "@/app/api/class-teacher-academic-levels/route";
-import { AssignedAcademicLevel, ClassTeacherAcademicLevelsPageData, ClassTeacherInfo, StudentInAcademicLevel } from "@/app/api/teacher/academic-levels/route";
+// import { AssignedAcademicLevel, ClassTeacherAcademicLevelsPageData, ClassTeacherInfo, StudentInAcademicLevel } from "@/app/api/teacher/academic-levels/route";
 
 import React from "react";
 import ClassTeacherAcademicLevelsPage from "./TeachersClassListPage";
@@ -9,15 +9,65 @@ import { getAuthSession } from "@/lib/auth";
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface Props {
-  params: {
-    slug: string; // teacherId
-  };
+  params: Promise<{
+    slug: string; 
+  }>;
 }
 
 // IMPORTANT: In a real application, the currentTeacherUserId would come from an authentication context (e.g., NextAuth.js session).
 // For this example, we'll use a hardcoded mock ID.
 // This ID should match a userId of an Educator in your database that is assigned to an AcademicLevel.
 const MOCK_CURRENT_TEACHER_USER_ID = "USR001"; // Example: assuming USR001 is a teacher's user ID
+
+// Local TypeScript types used by this page (define here to avoid missing-type errors)
+type ThemeSettings = {
+  primaryColor?: string;
+  accentColor?: string;
+};
+
+interface ClassTeacherInfo {
+  id: string;
+  name: string;
+  email?: string;
+  role?: string;
+}
+
+interface StudentInAcademicLevel {
+  studentId: string;
+  name: string;
+  email?: string;
+  parentEmail?: string;
+}
+
+interface AcademicLevelEvent {
+  id: string;
+  name: string;
+  date?: string;
+  time?: string;
+}
+
+interface AcademicLevelAnnouncement {
+  id: string;
+  text: string;
+  type?: 'info' | 'warning' | 'error' | string;
+}
+
+interface AssignedAcademicLevel {
+  id: string;
+  name: string;
+  description?: string;
+  roleInLevel?: string;
+  studentsCount?: number;
+  students?: StudentInAcademicLevel[];
+  academicLevelEvents?: AcademicLevelEvent[];
+  academicLevelAnnouncements?: AcademicLevelAnnouncement[];
+}
+
+interface ClassTeacherAcademicLevelsPageData {
+  classTeacherInfo: ClassTeacherInfo;
+  themeSettings?: ThemeSettings;
+  assignedAcademicLevels: AssignedAcademicLevel[];
+}
 
 // --- Helper function to generate sample data (for fallback) ---
 const generateSampleClassTeacherAcademicLevelsData = (): ClassTeacherAcademicLevelsPageData => {
@@ -88,10 +138,10 @@ const generateSampleClassTeacherAcademicLevelsData = (): ClassTeacherAcademicLev
  * then renders the Client Component below.
  */
 export default async function ClassTeacherAcademicLevelsPageServer({ params }: Props) {
-  
+  const { slug } = await params;
   const session = await getAuthSession();
 
-  const teacherId = session?.user?.id || params.slug || MOCK_CURRENT_TEACHER_USER_ID;
+  const teacherId = session?.user?.id || slug || MOCK_CURRENT_TEACHER_USER_ID;
 
   let pageData: ClassTeacherAcademicLevelsPageData | null = null; // Changed type to ClassTeacherAcademicLevelsPageData
   let fetchError: boolean = false;
@@ -119,10 +169,15 @@ export default async function ClassTeacherAcademicLevelsPageServer({ params }: P
     pageData = generateSampleClassTeacherAcademicLevelsData(); // Assign the full sample data
   }
 
+  const resolvedThemeSettings: { primaryColor: string; accentColor: string } = {
+    primaryColor: pageData.themeSettings?.primaryColor ?? "#007bff",
+    accentColor: pageData.themeSettings?.accentColor ?? "#28a745",
+  };
+
   return (
     <ClassTeacherAcademicLevelsPage
       classTeacherInfo={pageData.classTeacherInfo}
-      themeSettings={pageData.themeSettings}
+      themeSettings={resolvedThemeSettings}
       assignedAcademicLevels={pageData.assignedAcademicLevels}
       teacherId={teacherId} // Pass teacherId for navigation
     />
