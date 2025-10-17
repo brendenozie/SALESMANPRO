@@ -255,16 +255,21 @@ const PrincipalDashboardSchema = z.object({
 });
 
 // (You can add more schemas for TutorDashboard and other dashboards as needed)
+interface DashboardProps {
+  params: Promise<{
+    slug: string;
+  }>;
+}
 
 // --- Main Page with Loading/Error Boundaries, Type Validation ---
-export default async function AdminDashboardPage({ params }: { params: { slug: string } }) {
+export default async function AdminDashboardPage({ params }: DashboardProps) {
   let error: string | null = null;
   let isLoading = false;
 
   try {
     const session = await getAuthSession();
     const cookiesHeader = (await cookies()).toString();
-    const { slug } = params;
+    const { slug } = await params;
 
     if (!session) redirect('/login');
     const userRole = session.user?.role?.toUpperCase() || 'ADMIN';

@@ -36,10 +36,16 @@ import { cookies } from 'next/headers';
 
 export const dynamic = 'force-dynamic';
 
-export default async function AdminDashboardPage({ params }: { params: { slug: string } }) {
+interface AdminDashboardPageProps {
+  params: { slug: string | Promise<string>; };
+}
+
+export default async function AdminDashboardPage({ params }: AdminDashboardPageProps) {
+  // params.slug can be string | Promise<string> — normalize to a string before use
+  const rawSlug = params.slug;
+  const slug = typeof rawSlug === 'string' ? rawSlug : await rawSlug;
   const session = await getAuthSession();
   const cookiesHeader = (await cookies()).toString();
-  const slug = (await params).slug;
   
   if (!session) {
     redirect('/login'); // Redirect to login if no session
