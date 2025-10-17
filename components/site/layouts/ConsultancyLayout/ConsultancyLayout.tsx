@@ -33,7 +33,7 @@ const ConsultancyLayout: React.FC<ConsultancyLayoutProps> = (
 
   return (
     <>
-      <Header storeFormData={params.storeFormData} />
+      <Header storeFormData={params.storeFormData as any} />
 
       <section className="container">{children}</section>
 
