@@ -22,7 +22,7 @@ const MediaLayout = dynamic(() => import( '@/components/site/layouts/MediaLayout
 const TravelLayout = dynamic(() => import( '@/components/site/layouts/TravelLayout/TravelLayout'));
 const RestaurantLayout = dynamic(() => import( '@/components/site/layouts/RestaurantLayout/RestaurantLayout'));
 const AutomotiveLayout = dynamic(() => import( '@/components/site/layouts/AutomotiveLayout/AutomotiveLayout'));
-const SaaSLayout = dynamic(() => import( '@/components/site/layouts/SaaSLayout/SaaSLayout'));
+// const SaaSLayout = dynamic(() => import( '@/components/site/layouts/SaaSLayout/SaaSLayout'));
 const ConsultancyLayout = dynamic(() => import('@/components/site/layouts/ConsultancyLayout/ConsultancyLayout'));
 import { ReactNode } from 'react';
 import { StoreForm } from '../../../types/typings';
@@ -62,8 +62,8 @@ const categoryHeaderFooterLayoutMap: Record<string, LayoutHeaderFooterComponent>
     'event & ticketing':EventsLayout,
     'healthcare':HealthcareLayout,
     'healthcare & clinics':HealthcareLayout,
-    'saas':SaaSLayout ,
-    'saas & web apps':SaaSLayout ,
+    // 'saas':SaaSLayout ,
+    // 'saas & web apps':SaaSLayout ,
     'automotive':AutomotiveLayout ,
     'media':MediaLayout ,
     'media & entertainment':MediaLayout ,

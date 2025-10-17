@@ -10,12 +10,11 @@ interface SaaSLayoutProps {
 }
 
 
-export default function SaaSLayout({ children }: SaaSLayoutProps) {
+export default function SaaSLayout({ params, children }: SaaSLayoutProps) {
   
   return (
     <>
       <Header/>
-      {/* Main Content Area */}
       <section className="container">{children}</section>
       <Footer/>
     </>
