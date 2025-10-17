@@ -23,9 +23,9 @@ const TravelLayout = dynamic(() => import( '@/components/site/layouts/TravelLayo
 const RestaurantLayout = dynamic(() => import( '@/components/site/layouts/RestaurantLayout/RestaurantLayout'));
 const AutomotiveLayout = dynamic(() => import( '@/components/site/layouts/AutomotiveLayout/AutomotiveLayout'));
 const SaaSLayout = dynamic(() => import( '@/components/site/layouts/SaaSLayout/SaaSLayout'));
+const ConsultancyLayout = dynamic(() => import('@/components/site/layouts/ConsultancyLayout/ConsultancyLayout'));
 import { ReactNode } from 'react';
 import { StoreForm } from '../../../types/typings';
-const ConsultancyLayout = dynamic(() => import('@/components/site/layouts/ConsultancyLayout/ConsultancyLayout'));
 
 type LayoutHeaderFooterComponent = React.ComponentType<{
   params: { storeFormData: StoreForm };
