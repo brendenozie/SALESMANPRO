@@ -82,7 +82,7 @@ const Footer = () => {
               <img src={Logo.src} alt="Company Logo" className="w-16 h-16 object-contain" />
             </Link>
             <p className="text-gray-600 text-sm max-w-sm">
-              TulivuApps is the ultimate platform for sales professionals to streamline their workflow, boost productivity, and close deals faster.
+              SalesmanPro is the ultimate platform for sales professionals to streamline their workflow, boost productivity, and close deals faster.
             </p>
           </div>
 
@@ -120,7 +120,7 @@ const Footer = () => {
 
         {/* Bottom Section: Copyright */}
         <div className="mt-8 text-center text-gray-500 text-sm">
-          &copy; {new Date().getFullYear()} TulivuApps. All rights reserved.
+          &copy; {new Date().getFullYear()} SalesmanPro. All rights reserved.
         </div>
       </div>
     </footer>

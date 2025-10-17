@@ -17,7 +17,7 @@ const s3 = new S3Client({
 
 //   try {
 //     const command = new PutObjectCommand({
-//       Bucket: process.env.AS3_BUCKET_NAME, // "tulivuappsbucket"
+//       Bucket: process.env.AS3_BUCKET_NAME, // "salesmanprobucket"
 //       Key: `images/${filename}`,
 //       ContentType: contentType, // <-- IMPORTANT: Must match the frontend
 //     });
@@ -174,7 +174,7 @@ export async function GET(req: Request) {
 
 // //   try {
 // //     const command = new PutObjectCommand({
-// //       Bucket: process.env.AS3_BUCKET_NAME, // "tulivuappsbucket"
+// //       Bucket: process.env.AS3_BUCKET_NAME, // "salesmanprobucket"
 // //       Key: `images/${filename}`,
 // //       ContentType: contentType, // <-- IMPORTANT: Must match the frontend
 // //     });

@@ -32,7 +32,7 @@ module.exports = {
       "upload.wikimedia.org",
       "links.papareact.com",
       "images.trvl-media.com",
-      "tulivuapps.com",
+      "salesmanpro.site",
       "/"
     ],
   },

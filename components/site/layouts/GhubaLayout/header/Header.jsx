@@ -204,7 +204,7 @@ const TopBar = ({location, setLocation, locationName, setLocationName, isOpen, s
         </span>
         <span className="flex items-center space-x-2">
           <i className="fa fa-envelope"></i>
-          <span>support@tulivuapps.com</span>
+          <span>support@salesmanpro.site</span>
         </span>
       </div>
       <div className="flex space-x-6">

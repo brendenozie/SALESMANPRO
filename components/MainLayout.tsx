@@ -8,8 +8,8 @@ const MainLayout = (props: PropsWithChildren) => {
   return (
     <div className="bg-gray-50 text-gray-900 flex flex-col min-h-screen">
       <Head>
-        <title>TulivuApps - Your Management Solution</title>
-        <meta name="description" content="TulivuApps is the ultimate platform for professionals to streamline their workflow, boost productivity, and close deals faster." />
+        <title>SalesmanPro - Your Management Solution</title>
+        <meta name="description" content="SalesmanPro is the ultimate platform for professionals to streamline their workflow, boost productivity, and close deals faster." />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 

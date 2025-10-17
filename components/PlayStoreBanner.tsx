@@ -82,7 +82,7 @@ const PlayStoreBanner = () => {
           variants={itemVariants}
         >
           <Link
-            href="https://play.google.com/store/apps/details?id=co.ke.tulivuapps.salesmanapp"
+            href="https://play.google.com/store/apps/details?id=co.ke.salesmanpro.salesmanapp"
             className="inline-block bg-gradient-to-r from-pink-600 via-red-500 to-yellow-400 text-white py-4 px-10 rounded-full font-bold text-lg shadow-lg hover:shadow-2xl transform hover:scale-105 transition-transform duration-300"
           >
             Get Started Now

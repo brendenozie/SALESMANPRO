@@ -104,7 +104,7 @@ export default function AboutUs() {
 
           {/* Light-mode text colors */}
           <motion.p variants={itemVariants} className="text-lg text-gray-700 leading-relaxed">
-            At <span className="font-semibold text-gray-900">TulivuApps</span>, we turn entrepreneurial dreams into digital realities.
+            At <span className="font-semibold text-gray-900">SalesmanPro</span>, we turn entrepreneurial dreams into digital realities.
             Our platform provides everything you need to {" "}
             <span className="text-red-600 font-medium">
               launch, manage, and scale your online business
@@ -150,7 +150,7 @@ export default function AboutUs() {
               {/* Replaced Next.js Image with a standard img tag to resolve the error */}
               <img
                 src="https://placehold.co/500x500/E2E8F0/475569?text=Your+Image" // Replace with your compelling, high-quality image
-                alt="A successful entrepreneur using TulivuApps"
+                alt="A successful entrepreneur using SalesmanPro"
                 width={500}
                 height={500}
                 className="object-cover aspect-square"

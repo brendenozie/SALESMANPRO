@@ -102,7 +102,7 @@ export type StoreForm = {
 //       sat: '',
 //       sun: ''
 //     },
-//     domain: 'https://www.educational-online-courses.tulivuapps.com',
+//     domain: 'https://www.educational-online-courses.salesmanpro.site',
 //     currency: 'KES',
 //     locale: 'en-US',
 //     pricingTiers: [],

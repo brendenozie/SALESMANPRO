@@ -3,7 +3,7 @@ import { getToken } from "next-auth/jwt";
 import { NextFetchEvent, NextRequest, NextResponse } from "next/server";
 
 // Your app’s main host
-const PRIMARY_HOST = "127.0.0.1:3000";//"tulivuapps.com";//app.your-production-domain.com
+const PRIMARY_HOST = "127.0.0.1:3000";//"salesmanpro.site";//app.your-production-domain.com
 
 // Protected paths that require authentication
 const protectedPaths = [
@@ -57,7 +57,7 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
   //
   // ---- 1. CUSTOM DOMAIN HANDLING ----
   //
-  // if (host && host !== PRIMARY_HOST && !host.endsWith(".tulivuapps.com")) {
+  // if (host && host !== PRIMARY_HOST && !host.endsWith(".salesmanpro.site")) {
   //   // Instead of Prisma query, forward host for lookup later
   //   if (pathname === "/") {
   //     url.pathname = `/404`;
@@ -72,17 +72,17 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
   // }
 
   //
-  // ---- 2. SUBDOMAIN HANDLING (slug.tulivuapps.com) ----
+  // ---- 2. SUBDOMAIN HANDLING (slug.salesmanpro.site) ----
   //
-  // ---- 2. SUBDOMAIN HANDLING (slug.tulivuapps.com OR slug.localhost) ----
+  // ---- 2. SUBDOMAIN HANDLING (slug.salesmanpro.site OR slug.localhost) ----
   // if (
-  //   host.endsWith(".tulivuapps.com") ||
+  //   host.endsWith(".salesmanpro.site") ||
   //   host.endsWith(".localhost") ||
   //   host.endsWith(".127.0.0.1") ||
   //   host.endsWith(".test")
   // ) {
   //   const subdomain = host
-  //     .replace(".tulivuapps.com", "")
+  //     .replace(".salesmanpro.site", "")
   //     .replace(".localhost", "")
   //     .replace(".127.0.0.1", "")
   //     .replace(".test", "");
