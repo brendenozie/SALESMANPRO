@@ -26,7 +26,8 @@ const sampleInventory: InventoryItem[] = [
   { id: 'inv005', name: 'Antiseptic Wipes (Pack)', category: 'Disposables', stock: 40, minStock: 20, lastUpdated: '2023-07-09' },
 ];
 
-export default function AdminInventoryPage({ params }: { params: { adminSlug: string } }) {
+export default function AdminInventoryPage() {
+  
   const [inventory, setInventory] = useState<InventoryItem[]>(sampleInventory);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('All');

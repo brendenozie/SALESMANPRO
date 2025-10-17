@@ -104,7 +104,10 @@ interface PageProps {
   params:Promise<{ slug: string }> // Assuming this page might still get a slug, though not used for global locations
 }
 
-export default function LocationManagementPage({params}:PageProps) {
+export default async function LocationManagementPage({params}:PageProps) {
+
+  const { slug: companyId } = await params;
+  
   const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -126,7 +129,7 @@ export default function LocationManagementPage({params}:PageProps) {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaseUrl}/admin/locationsv2?companyId=${params.slug}`,
+      const res = await fetch(`${apiBaseUrl}/admin/locationsv2?companyId=${companyId}`,
         { 
           integrity: "same-origin",
         }

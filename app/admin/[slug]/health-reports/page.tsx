@@ -147,9 +147,17 @@ interface StaffPerformanceItem {
   // Add other metrics as per API
 }
 
+interface StaffPerformanceReportData {
+  params: Promise<{
+    slug: string;
+  }>;
+}
 
 // --- Main AdminReportsPage Component ---
-export default function AdminReportsPage({ params }: { params: { adminSlug: string } }) {
+export default async function AdminReportsPage({ params }: StaffPerformanceReportData) {
+
+  const { slug: companyId } = await params;
+
   const [activeTab, setActiveTab] = useState('sales'); // 'sales', 'inventory', 'appointments', 'staff'
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -199,7 +207,7 @@ export default function AdminReportsPage({ params }: { params: { adminSlug: stri
   const [viewModalTitle, setViewModalTitle] = useState('');
 
   // Mock companyId for demonstration. In a real app, this would come from auth/session.
-  const companyId = "654321098765432109876543"; // IMPORTANT: Replace with your actual company ID
+  // const companyId = "654321098765432109876543"; // IMPORTANT: Replace with your actual company ID
 
   // --- Common Data Fetchers for Dropdowns ---
   const fetchPatientsList = useCallback(async () => {

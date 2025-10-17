@@ -71,7 +71,7 @@ interface Props {
 
 export default async function AdminStaffPage({ params }: Props) {
 
-  const { slug } = params;
+  const { slug } = await params;
 
   // 1. Fetch data on the server
   const initialStaff = await getInitialStaffData(slug, '', '');

@@ -10,9 +10,7 @@ type Event = {
 };
 
 interface Props {
-  params: {
-    slug: string; // companyId (or adminSlug)
-  };
+  params:Promise<{ slug: string }>
 }
 
 // Define the API URL based on the environment
@@ -24,7 +22,7 @@ const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
  * and passes them to the client component for interactive check-in logic.
  */
 export default async function AdminCheckinPage({ params }: Props) {
-  const adminSlug = params.slug;
+  const { slug : adminSlug} = await params;
 
   // 1. Get cookies for authentication in the server environment
   const cookiesHeader = (await cookies())

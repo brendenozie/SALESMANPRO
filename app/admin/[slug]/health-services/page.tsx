@@ -54,7 +54,11 @@ async function getInitialServiceData(companyId: string): Promise<Service[]> {
   return data || mockServices;
 }
 
-export default async function AdminServicesPage({ params }: { params: { slug: string } }) {
+interface Props {
+  params:Promise<{ slug: string }>
+}
+
+export default async function AdminServicesPage({ params }: Props) {
   const { slug : companyId } = await params;
   
   // 1. Fetch data on the server

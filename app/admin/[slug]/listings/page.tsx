@@ -59,16 +59,8 @@ interface PaginatedListings {
   results: MarketListingForm[];
 }
 
-/**
- * This is a **Server Component**. It fetches all the data
- * at request‐time (no caching, just like getServerSideProps),
- * then renders the Client Component below.
- */
-
 interface PageProps {
-  params: {
-    slug: string; // this is companyId
-  };
+  params:Promise<{ slug: string }>
 }
 
 /**

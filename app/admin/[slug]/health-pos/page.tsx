@@ -29,7 +29,7 @@ const sampleProducts: Product[] = [
   { id: 'p6', name: 'Thermometer', price: 25.00, category: 'Equipment' },
 ];
 
-export default function AdminPOSPage({ params }: { params: { adminSlug: string } }) {
+export default function AdminPOSPage() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');

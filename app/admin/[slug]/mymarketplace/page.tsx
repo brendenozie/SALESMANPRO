@@ -14,9 +14,7 @@ type Category = {
 };
 
 interface PageProps {
-  params: {
-    slug: string; // this is companyId
-  };
+  params:Promise<{ slug: string }>
 }
 
 export default async function ClientInventoryPage({ params }: PageProps) {

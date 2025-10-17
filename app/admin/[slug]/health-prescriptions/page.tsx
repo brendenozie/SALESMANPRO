@@ -139,9 +139,15 @@ async function fetchDoctors(companyId: string, cookieHeader: string) {
 //     }
 //   }, [companyId, searchTerm, filterStatus]);
 
+interface AdminPrescriptionsPageProps {
+  params: Promise<{
+    slug: string;
+  }>;
+}
 
-export default async function AdminPrescriptionsPage({ params }: { params: { slug: string } }) {
-  const companyId = params.slug || COMPANY_ID;
+
+export default async function AdminPrescriptionsPage({ params }: AdminPrescriptionsPageProps) {
+  const { slug: companyId} = await params;
   const cookieHeader = (await cookies()).toString(); // Get the cookie header from the request context
 
   // 1. Fetch ALL necessary data concurrently on the server
