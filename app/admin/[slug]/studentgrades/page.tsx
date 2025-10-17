@@ -9,10 +9,10 @@ const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 const MOCK_CURRENT_USER_ID = "clx023j0d00003b6033877d9c"; // This is the User ID
 
 interface PageProps {
-  params: {
+  params: Promise<{
     slug: string; // This is now the student's USER ID from the URL
     courseId?: string; // Optional: if viewing grades for a specific course
-  };
+  }>;
 }
 
 // --- NEW DATA TYPES TO MATCH THE UPDATED API RESPONSE ---
@@ -57,9 +57,11 @@ export interface StudentGradesPageData {
 // Server Component: Fetches data and passes it to the client
 export default async function StudentGradesServerPage({ params }: PageProps) {
   
+  const { slug: studentSlug, courseId } = await params;
   // The 'slug' from the URL is the student's User ID
-  const studentId = params.slug || MOCK_CURRENT_USER_ID; 
-  const courseId = params.courseId;
+  const studentId = studentSlug || MOCK_CURRENT_USER_ID;
+  // const studentId = params.slug || MOCK_CURRENT_USER_ID; 
+  // const courseId = params.courseId;
 
   let gradesPageData: StudentGradesPageData | null = null;
   let fetchError: string | null = null;
@@ -81,7 +83,7 @@ export default async function StudentGradesServerPage({ params }: PageProps) {
       gradesPageData = {
         ...data,
         studentId: studentId,
-        companyId: params.slug, // Assuming companyId is the slug for routing purposes
+        companyId: studentSlug, // Assuming companyId is the slug for routing purposes
       };
       
       if (gradesPageData && courseId && data.courseGrades.length > 0) {

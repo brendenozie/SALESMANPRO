@@ -10,13 +10,13 @@ const MOCK_CURRENT_STUDENT_USER_ID = "clx023j0d00003b6033877d9c"; // Example: St
 const MOCK_COMPANY_ID = "clx021j3f00003b6033877d9a"; // Example: Company ID (replace with actual if available)
 
 interface PageProps {
-  params: {
+  params: Promise<{
     slug: string; // studentId (which is actually the User.id associated with the Student)
     courseId?: string; // Optional: if viewing assignments for a specific course
-  };
-  searchParams: {
+  }>;
+  searchParams: Promise<{
     companyId?: string; // Expect companyId as a query parameter
-  };
+  }>;
 }
 
 // Define types for data fetched by the server component
@@ -53,9 +53,8 @@ export interface StudentAssignmentsPageData {
 }
 
 export default async function StudentAssignmentsServerPage({ params, searchParams }: PageProps) {
-
-  const courseId = params.courseId; // This will be undefined if not in the URL path
-  const studentId = params.slug || MOCK_CURRENT_STUDENT_USER_ID;
+  const { slug: studentSlug, courseId } = await params;
+  const studentId = studentSlug || MOCK_CURRENT_STUDENT_USER_ID;
   // const companyId = searchParams.companyId || MOCK_COMPANY_ID; // Get companyId from search params or use mock
 
   let assignmentsPageData: StudentAssignmentsPageData | null = null;

@@ -1,6 +1,6 @@
 // app/admin/[slug]/reports/page.tsx
 import React from "react";
-import { Props } from "react-apexcharts";
+// import { Props } from "react-apexcharts";
 import AdminReportsPageClient,{ OverallStats, StudentPerformanceData, StaffReportsData, AcademicReportsData, UpcomingEventsSummaryItem }  from "./AdminReportsPageClient";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
@@ -96,7 +96,7 @@ const generateSampleReportData = (): {
  * at request‐time (no caching, just like getServerSideProps),
  * then renders the Client Component below.
  */
-export default async function AdminReportsPage({ params }: Props) {
+export default async function AdminReportsPage({ params }: PageProps) {
   const { slug : companyId } = await params;
 
   let overallStats: OverallStats | null = null;

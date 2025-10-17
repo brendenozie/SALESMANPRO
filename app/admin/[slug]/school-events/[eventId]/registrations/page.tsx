@@ -10,10 +10,10 @@ import EventRegistrationsPage, {
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface PageProps {
-  params: {
+  params: Promise<{
     slug: string; // companyId
     eventId: string;
-  };
+  }>;
 }
 
 // --- Helper function to generate sample data (for fallback) ---
@@ -106,7 +106,7 @@ const generateSampleRegistrationData = (companyId: string, eventId: string): {
 
 
 export default async function EventRegistrationsOverviewPage({ params }: PageProps) {
-  const { slug: companyId, eventId } = params;
+  const { slug: companyId, eventId } = await params;
 
   let initialEventDetails: EventDetailsForRegistrationPage | null = null;
   let initialRegistrations: EventRegistrationData[] = [];
