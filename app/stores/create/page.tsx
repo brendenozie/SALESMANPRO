@@ -16,7 +16,7 @@ export default async function CreateStorePage() {
 
   const dataCategories = await res.json();
   
-  const availableCategories = dataCategories.data.results;
+  const availableCategories = dataCategories.data?.results || [];
 
   const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/locations`, {
     cache: 'no-store',
@@ -25,7 +25,7 @@ export default async function CreateStorePage() {
 
   const dataLocations = await response.json();
 
-  const availableLocations = dataLocations.data.data || [];
+  const availableLocations = dataLocations.data?.data || [];
 
   return <CreateStoreForm 
     availableCategories={availableCategories} 
