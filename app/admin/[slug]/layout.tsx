@@ -14,7 +14,7 @@ export default async function AdminStoreLayout({
   params,
   children,
 }: {
-  params: { slug: string };
+  params:Promise<{ slug: string }>
   children: ReactNode;
 }) {
   // Fetch the session to get the user's role

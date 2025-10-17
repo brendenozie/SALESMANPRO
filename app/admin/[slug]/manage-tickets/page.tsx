@@ -5,7 +5,7 @@ import AdminTicketsClient from "./AdminTicketsClient";
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface Props {
-  params: { slug: string };
+  params:Promise<{ slug: string }>
 }
 
 export default async function AdminTicketsPage({ params }: Props) {

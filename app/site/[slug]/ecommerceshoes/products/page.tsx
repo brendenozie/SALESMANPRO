@@ -83,7 +83,7 @@ const mockProducts: MarketListingForm[] = [
 
 // --- Page Props ---
 interface PageProps {
-  params: { slug: string };
+  params:Promise<{ slug: string }>
   searchParams: {
     search?: string;
     category?: string;

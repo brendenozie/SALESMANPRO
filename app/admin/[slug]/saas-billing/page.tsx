@@ -36,11 +36,30 @@ export interface InvoiceItem {
   lineItems: { description: string; quantity: number; unitPrice: number; total: number }[];
 }
 
-export default async function BillingPage() {
-  
-  const { slug : companyId, 
-          searchParams: { page = "1", limit = "10", transactionStatus = "", transactionType = "", invoiceStatus = "" }
-        }  =  useParams<any>();
+interface PageProps {
+  params: Promise<{ slug: string }>; // companyId
+  searchParams: Promise<{
+    page?: string;
+    limit?: string;
+    transactionStatus?: string;
+    transactionType?: string;
+    invoiceStatus?: string;
+  }>;
+}
+
+export default async function BillingPage({ params, searchParams }: PageProps) {
+  const { slug: companyId } = await params;
+  const {
+    page = "1",
+    limit = "10",
+    transactionStatus = "",
+    transactionType = "",
+    invoiceStatus = "",
+  } = await searchParams;
+
+  // convert query params to numbers for proper typing
+  const pageNumber = Number.isFinite(Number(page)) ? parseInt(page, 10) : 1;
+  const limitNumber = Number.isFinite(Number(limit)) ? parseInt(limit, 10) : 10;
 
   let transactionsData: TransactionItem[] = [];
   let totalTransactionItems = 0;
@@ -52,7 +71,7 @@ export default async function BillingPage() {
   try {
     // Fetch transactions from the new API route
     const transactionsResponse = await fetch(
-      `${apiUrl}/admin/billing/transactions?page=${page}&limit=${limit}&status=${transactionStatus}&type=${transactionType}`,
+      `${apiUrl}/admin/billing/transactions?page=${pageNumber}&limit=${limitNumber}&status=${transactionStatus}&type=${transactionType}`,
       {
         headers: {
           'Content-Type': 'application/json',
@@ -68,7 +87,7 @@ export default async function BillingPage() {
     
     // Fetch invoices from the new API route
     const invoicesResponse = await fetch(
-      `${apiUrl}/admin/billing/invoices?page=${page}&limit=${limit}&status=${invoiceStatus}`,
+      `${apiUrl}/admin/billing/invoices?page=${pageNumber}&limit=${limitNumber}&status=${invoiceStatus}`,
       {
         headers: {
           'Content-Type': 'application/json',
@@ -91,14 +110,14 @@ export default async function BillingPage() {
       transactions={transactionsData}
       totalTransactionItems={totalTransactionItems}
       totalTransactionPages={totalTransactionPages}
-      currentTransactionPage={page}
-      transactionsPerPage={limit}
+      currentTransactionPage={pageNumber}
+      transactionsPerPage={limitNumber}
       
       invoices={invoicesData}
       totalInvoiceItems={totalInvoiceItems}
       totalInvoicePages={totalInvoicePages}
-      currentInvoicePage={page}
-      invoicesPerPage={limit}
+      currentInvoicePage={pageNumber}
+      invoicesPerPage={limitNumber}
     />
   );
 }
@@ -140,7 +159,7 @@ export default async function BillingPage() {
 // }
 
 // interface PageProps {
-//   params: { slug: string }; // companyId
+//   params:Promise<{ slug: string }> // companyId
 //   searchParams: {
 //     page?: string;
 //     limit?: string;

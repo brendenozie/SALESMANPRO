@@ -27,7 +27,7 @@ async function listClients(request: Request) {
           select: { totalPrice: true, createdAt: true },
         });
 
-        const totalPurchases = orders.reduce((sum, o) => sum + o.totalPrice, 0);
+        const totalPurchases = orders.reduce((sum, o) => sum + (o.totalPrice ?? 0), 0);
         const averageOrderValue = orders.length
           ? totalPurchases / orders.length
           : 0;

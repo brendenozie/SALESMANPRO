@@ -10,7 +10,7 @@ import NewsletterSection from '@/components/site/NewsletterSection/NewsletterSec
 type Category = { id: string; name: string };
 
 interface PageProps {
-  params: { slug: string };
+  params:Promise<{ slug: string }>
   searchParams: {
     page?: string;
     search?: string;

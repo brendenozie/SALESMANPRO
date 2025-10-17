@@ -11,7 +11,7 @@ type Category = { id: string; name: string };
 type Product = { id: string; name: string; price: number; imageUrl: string; slug?: string };
 
 interface PageProps {
-  params: { slug: string };
+  params:Promise<{ slug: string }>
   searchParams: {
     page?: string;
     search?: string;

@@ -66,7 +66,7 @@ async function getInitialStaffData(companyId: string, searchTerm: string, status
 }
 
 interface Props {
-  params: { slug: string };
+  params:Promise<{ slug: string }>
 }
 
 export default async function AdminStaffPage({ params }: Props) {

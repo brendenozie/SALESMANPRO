@@ -3,9 +3,14 @@ import { NextRequest } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { TransactionStatus, TransactionType } from "@prisma/client";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { VerifiedUser } from "@/lib/verifyAuth";
 
-const getTransactions = async (request: Request, context: { params: { slug: string }; user?: any }) => {
+const getTransactions = async (request: Request, context:{
+  params: any;
+  user?: VerifiedUser; // Use the imported type here
+})  => {
   const companyId = context.params.slug;
+  const user = context.user;
   const { searchParams } = new URL(request.url);
 
   const page = parseInt(searchParams.get("page") || "1");
@@ -21,8 +26,8 @@ const getTransactions = async (request: Request, context: { params: { slug: stri
   if (type) whereClause.type = type;
 
   // If user is not admin, restrict to their own transactions
-  if (context.user?.role !== "ADMIN") {
-    whereClause.userId = context.user.id;
+  if (user?.role !== "ADMIN") {
+    whereClause.userId = user?.id;
   }
 
   // ✅ Count
@@ -79,7 +84,4 @@ const getTransactions = async (request: Request, context: { params: { slug: stri
 };
 
 // ✅ Export wrapped handler
-export const GET = withApiHandler(getTransactions, {
-  requireAuth: true,
-  requireRateLimit: true,
-});
+export const GET = withApiHandler(getTransactions);

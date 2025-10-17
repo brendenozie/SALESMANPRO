@@ -46,7 +46,7 @@ function getMenuItemsFor(userRole: Role, categoryType: CategoryType, allCategory
 // --- Main AdminLayout Component ---
 export default function AdminLayout({ children, params }: {
   children: React.ReactNode,
-  params: { slug: string };
+  params:Promise<{ slug: string }>
 }) {
   const { storeFormData, userRole, userId } = useStoreContext();
   const pathname = usePathname();

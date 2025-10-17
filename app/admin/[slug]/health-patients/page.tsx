@@ -6,7 +6,7 @@ const apiBaseUrl =
   process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
 
 interface AdminPatientsPageProps {
-  params: { slug: string };
+  params:Promise<{ slug: string }>
 }
 
 export default async function AdminPatientsPage(

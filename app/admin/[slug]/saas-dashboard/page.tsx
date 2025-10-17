@@ -29,7 +29,7 @@ export interface LatestReview {
 }
 
 interface PageProps {
-  params: { slug: string }; // companyId
+  params:Promise<{ slug: string }> // companyId
 }
 
 export default async function DashboardPage({ params }: PageProps) {

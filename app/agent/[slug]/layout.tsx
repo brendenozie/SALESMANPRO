@@ -11,7 +11,7 @@ export default async function StoreLayout({
   params,
   children,
 }: {
-  params: { slug: string };
+  params:Promise<{ slug: string }>
   children: ReactNode;
 }) {
   // ✅ Fetch the store (tenant) data

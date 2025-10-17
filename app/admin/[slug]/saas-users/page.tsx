@@ -21,23 +21,28 @@ interface UserItem {
 }
 
 interface PageProps {
-  params: { slug: string }; // companyId
-  searchParams: {
+  params: Promise<{ slug: string }>; // companyId
+  searchParams: Promise<{
     page?: string;
     limit?: string;
     search?: string;
     status?: string;
     plan?: string;
-  };
+  }>;
 }
 
 export default async function UsersPage({ params, searchParams }: PageProps) {
   const { slug : companyId } = await params;
-  const page = parseInt(searchParams.page || "1");
-  const limit = parseInt(searchParams.limit || "10");
-  const searchTerm = searchParams.search || "";
-  const filterStatus = searchParams.status;
-  const filterPlan = searchParams.plan;
+  const {
+    page: pageStr,
+    limit: limitStr,
+    search: searchTerm = "",
+    status: filterStatus,
+    plan: filterPlan,
+  } = await searchParams;
+
+  const page = parseInt(pageStr || "1", 10);
+  const limit = parseInt(limitStr || "10", 10);
 
   const skip = (page - 1) * limit;
 

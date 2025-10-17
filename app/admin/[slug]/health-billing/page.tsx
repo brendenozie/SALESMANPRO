@@ -94,7 +94,13 @@ async function fetchPatients(companyId: string, cookieHeader: string) {
   }
 }
 
-export default async function AdminBillingPage({ params }: { params: { slug: string } }) {
+interface AdminBillingPageProps {
+  params: Promise<{
+    slug: string; // companyId
+  }>;
+}
+
+export default async function AdminBillingPage({ params }: AdminBillingPageProps) {
   const { slug : companyId } = await params;
   const cookieHeader = (await cookies()).toString(); // Get the cookie header from the request context
 
