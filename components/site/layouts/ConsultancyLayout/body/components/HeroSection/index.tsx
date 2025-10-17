@@ -9,7 +9,7 @@ const loader = ({ src, width, quality }: { src: string; width: number; quality?:
 const heroSlides = [
   {
     type: "image",
-    url: "/coach-hero.jpg",
+    url: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=2670&auto=format&fit=crop",
     headline: "Unlock Your True Potential",
     subline:
       "Empowering ambitious individuals and teams to create a life of purpose, clarity, and success.",
