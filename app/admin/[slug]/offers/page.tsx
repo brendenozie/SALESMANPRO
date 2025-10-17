@@ -48,12 +48,10 @@ export type OfferContract = {
 };
 
 interface OffersPageProps {
-  params: {
-    adminSlug: string;
-  };
+  params:Promise<{ slug: string }>
 }
 
-export default function OffersPage() {
+export default async function OffersPage() {
   const { slug: adminSlug } = useParams() as { slug: string };
   const [offers, setOffers] = useState<OfferContract[]>([]);
   const [searchTerm, setSearchTerm] = useState('');

@@ -15,7 +15,6 @@ import {
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 
-
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
 
 // --- Sample Data Generation (for fallback) ---
@@ -40,13 +39,11 @@ const generateSampleDashboardData = () => ({
 });
 
 interface AdminDashboardPageProps {
-  params: {
-    adminSlug: string;
-  };
+  params:Promise<{ slug: string }>
 }
 
-export default function AdminDashboardPage({ params }: AdminDashboardPageProps) {
-  const { adminSlug } = params;
+export default async function AdminDashboardPage({ params }: AdminDashboardPageProps) {
+  const { slug : adminSlug } = await params;
   const [dashboardData, setDashboardData] = useState<any>(null); // Use a more specific type in a real app
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

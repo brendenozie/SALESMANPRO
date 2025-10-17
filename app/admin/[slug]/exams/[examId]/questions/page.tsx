@@ -5,10 +5,10 @@ import ExamQuestionsManagerPage, { ExamDetailsForQuestions, ExamQuestionData } f
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface PageProps {
-  params: {
+  params: Promise<{
     slug: string; // companyId
     examId: string;
-  };
+  }>;
 }
 
 // --- Helper function to generate sample data (for fallback) ---
@@ -100,7 +100,7 @@ const generateSampleQuestionData = (examId: string): {
 
 
 export default async function ExamQuestionsPage({ params }: PageProps) {
-  const { slug: companyId, examId } = params;
+  const { slug: companyId, examId } = await params;
 
   let initialExamDetails: ExamDetailsForQuestions | null = null;
   let initialQuestions: ExamQuestionData[] = [];

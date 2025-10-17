@@ -7,9 +7,7 @@ import { BuildingLibraryIcon, CloudIcon, Cog6ToothIcon, GlobeAltIcon, SpeakerWav
 
 
 interface SettingsProps {
-  params: {
-    adminSlug: string;
-  };
+  params:Promise<{ slug: string }>
 }
 
 const containerVariants = {
@@ -27,8 +25,8 @@ const formFieldVariants = {
   visible: { opacity: 1, x: 0, transition: { duration: 0.3 } },
 };
 
-export default function SettingsPage({ params }: SettingsProps) {
-  const { adminSlug } = params;
+export default async function SettingsPage({ params }: SettingsProps) {
+  const { slug: adminSlug } = await params;
   const settingsData: GeneralSettings = getSettingsData(adminSlug);
 
   const [currentSettings, setCurrentSettings] = React.useState(settingsData);

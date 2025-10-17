@@ -7,9 +7,7 @@ import { BellAlertIcon, ChartBarIcon, CurrencyDollarIcon, StarIcon, UserGroupIco
 
 
 interface ReportsProps {
-  params: {
-    adminSlug: string;
-  };
+  params:Promise<{ slug: string }>
 }
 
 const containerVariants = {
@@ -47,8 +45,8 @@ const StatCard = ({ title, value, description, icon, color }:any) => (
   </motion.div>
 );
 
-export default function ReportsPage({ params }: ReportsProps) {
-  const { adminSlug } = params;
+export default async function ReportsPage({ params }: ReportsProps) {
+  const { slug: adminSlug } = await params;
   const reportsSummary: ReportSummary = getReportsData(adminSlug);
 
   return (

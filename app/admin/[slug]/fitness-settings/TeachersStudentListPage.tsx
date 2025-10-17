@@ -35,9 +35,7 @@ interface SettingsData {
 }
 
 interface SettingsPageProps {
-  params: {
-    adminSlug: string;
-  };
+  params:Promise<{ slug: string }>
 }
 
 const containerVariants = {

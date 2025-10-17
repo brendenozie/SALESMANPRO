@@ -52,9 +52,7 @@ interface FormState {
 }
 
 interface PageProps {
-  params: {
-    adminSlug: string;
-  };
+  params:Promise<{ slug: string }>
 }
 
 // --- Status Badge ---

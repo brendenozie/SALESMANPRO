@@ -5,10 +5,10 @@ import ExamSubmissionsManagerPage, { ExamDetailsForSubmissions, ExamSubmissionDa
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface PageProps {
-  params: {
+  params: Promise<{
     slug: string; // companyId
     examId: string;
-  };
+  }>;
 }
 
 // --- Helper function to generate sample data (for fallback) ---
@@ -106,7 +106,7 @@ const generateSampleSubmissionData = (examId: string, companyId: string): {
 
 
 export default async function ExamSubmissionsPage({ params }: PageProps) {
-  const { slug: companyId, examId } = params;
+  const { slug: companyId, examId } = await params;
 
   let initialExamDetails: ExamDetailsForSubmissions | null = null;
   let initialSubmissions: ExamSubmissionData[] = [];

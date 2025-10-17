@@ -1,6 +1,7 @@
 // app/admin/[slug]/exams/page.tsx
 import React from "react";
 import AdminExamsOverviewPage, { ExamData, CourseOption, EducatorOption, AcademicLevelOption } from "./AdminExamsOverviewPage";
+import { cookies } from "next/headers";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -158,6 +159,8 @@ const generateSampleExamData = (companyId: string): {
 
 
 export default async function ExamsManagerPage({ params }: PageProps) {
+
+  const cookieHeader = (await cookies()).toString();
   const { slug : companyId } = await params;
 
   let initialExams: ExamData[] = [];
@@ -170,9 +173,12 @@ export default async function ExamsManagerPage({ params }: PageProps) {
     // Fetch exams
     const examsRes = await fetch(`${apiUrl}/admin/exams?companyId=${encodeURIComponent(companyId)}`, {
       next: { revalidate: 60 },
+      headers: { 
+        Cookie: cookieHeader
+      }
     });
     if (examsRes.ok) {
-      initialExams = (await examsRes.json()) as ExamData[];
+      initialExams = (await examsRes.json()).data as ExamData[];
     } else {
       console.error(`[ExamsManagerPage] Failed to fetch exams: ${examsRes.status} ${examsRes.statusText}`);
       fetchError = true;
@@ -181,9 +187,12 @@ export default async function ExamsManagerPage({ params }: PageProps) {
     // Fetch all courses
     const coursesRes = await fetch(`${apiUrl}/admin/courses?companyId=${encodeURIComponent(companyId)}`, {
       next: { revalidate: 60 },
+      headers: {
+        Cookie: cookieHeader
+      }
     });
     if (coursesRes.ok) {
-      allCourses = (await coursesRes.json()) as CourseOption[];
+      allCourses = (await coursesRes.json()).data as CourseOption[];
     } else {
       console.error(`[ExamsManagerPage] Failed to fetch courses: ${coursesRes.status} ${coursesRes.statusText}`);
       fetchError = true;
@@ -192,9 +201,12 @@ export default async function ExamsManagerPage({ params }: PageProps) {
     // Fetch all educators
     const educatorsRes = await fetch(`${apiUrl}/admin/educators?companyId=${encodeURIComponent(companyId)}`, {
       next: { revalidate: 60 },
+      headers: {
+        Cookie: cookieHeader
+      }
     });
     if (educatorsRes.ok) {
-      allEducators = (await educatorsRes.json()) as EducatorOption[];
+      allEducators = (await educatorsRes.json()).data as EducatorOption[];
     } else {
       console.error(`[ExamsManagerPage] Failed to fetch educators: ${educatorsRes.status} ${educatorsRes.statusText}`);
       fetchError = true;
@@ -203,9 +215,12 @@ export default async function ExamsManagerPage({ params }: PageProps) {
     // Fetch all academic levels (for display in course options)
     const academicLevelsRes = await fetch(`${apiUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`, {
       next: { revalidate: 60 },
+      headers: {
+        Cookie: cookieHeader
+      }
     });
     if (academicLevelsRes.ok) {
-      allAcademicLevels = (await academicLevelsRes.json()) as AcademicLevelOption[];
+      allAcademicLevels = (await academicLevelsRes.json()).data as AcademicLevelOption[];
     } else {
       console.error(`[ExamsManagerPage] Failed to fetch academic levels: ${academicLevelsRes.status} ${academicLevelsRes.statusText}`);
       fetchError = true;

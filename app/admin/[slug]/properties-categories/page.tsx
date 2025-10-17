@@ -28,13 +28,11 @@ const mockCategories: Category[] = [
 ];
 
 interface CategoriesPageProps {
-  params: {
-    adminSlug: string;
-  };
+  params:Promise<{ slug: string }>
 }
 
-export default function PropertiesCategoriesPage({ params }: CategoriesPageProps) {
-  const { adminSlug } = params;
+export default async function PropertiesCategoriesPage({ params }: CategoriesPageProps) {
+  const { slug: adminSlug } = params;
 
   // In a real app, you'd fetch categories here:
   // const [categories, setCategories] = useState<Category[]>([]);

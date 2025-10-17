@@ -3,9 +3,9 @@ import { motion } from 'framer-motion';
 import { DashboardMetrics, getDashboardData } from '@/constant/Data';
 
 interface DashboardProps {
-  params: {
-    adminSlug: string;
-  };
+  params: Promise<{
+    slug: string;
+  }>;
 }
 
 const cardVariants = {
@@ -28,8 +28,9 @@ const listItemVariants = {
   visible: { opacity: 1, x: 0 },
 };
 
-export default function DashboardPage({ params }: DashboardProps) {
-  const { adminSlug } = params;
+export default async function DashboardPage({ params }: DashboardProps) {
+  
+  const { slug: adminSlug } = await params;
   const dashboardData: DashboardMetrics = getDashboardData(adminSlug);
 
   return (

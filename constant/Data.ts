@@ -243,9 +243,7 @@ export const picardDataV1 = [
 
 // Shared data types
 interface AdminPageProps {
-  params: {
-    adminSlug: string;
-  };
+  params:Promise<{ slug: string }>
 }
 
 // --- Dashboard Data ---
