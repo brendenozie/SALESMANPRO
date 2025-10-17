@@ -226,16 +226,16 @@ export default function ContentPage() {
                   {currentContent.content ? `${Math.ceil(currentContent.content.replace(/<[^>]*>/g, '').split(/\s+/).length / 200)} min read` : 'N/A min read'}
                 </span>
               )}
-              {currentContent.type === 'podcast' && currentContent.duration && (
+              {/* {currentContent.type === 'podcast' && currentContent.duration && (
                 <span className="flex items-center">
                   <SpeakerWaveIcon className="h-4 w-4 mr-1.5" style={{ color: primaryColor }} />
                   {currentContent.duration}
                 </span>
-              )}
+              )} */}
             </div>
 
             {/* Podcast Audio Player (Conditional) */}
-            {currentContent.type === 'podcast' && currentContent.audioUrl && (
+            {/* {currentContent.type === 'podcast' && currentContent.audioUrl && (
               <motion.div
                 className="mb-8 p-4 bg-gray-100 rounded-xl shadow-inner"
                 initial="hidden"
@@ -247,7 +247,7 @@ export default function ContentPage() {
                   Your browser does not support the audio element.
                 </audio>
               </motion.div>
-            )}
+            )} */}
 
             {/* Main Content Body */}
             <div
@@ -392,8 +392,8 @@ export default function ContentPage() {
           </p>
           <textarea
             className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50 mb-4"
-            style={{ borderColor: primaryColor, focusRingColor: primaryColor }}
-            rows="5"
+            // style={{ borderColor: primaryColor, focusRingColor: primaryColor }}
+            // rows="5"
             placeholder="Write your comment here..."
           ></textarea>
           <button

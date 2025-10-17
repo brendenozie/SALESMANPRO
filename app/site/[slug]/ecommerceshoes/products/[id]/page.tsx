@@ -5,13 +5,11 @@ import React, { useState } from 'react';
 import { notFound } from 'next/navigation';
 import prisma from '@/server/db/prismadb'; // This import is for server-side
 import Image from 'next/image';
-import Section from '@/components/site/Section/Section';
 // import ProductCard from '@/components/shop/ProductCard'; // Assuming ProductCard is the correct component for individual products
 import NewsletterSection from '@/components/site/NewsletterSection/NewsletterSection';
 import { StarIcon, PlusIcon, MinusIcon } from '@heroicons/react/24/solid';
 import { motion, AnimatePresence } from 'framer-motion'; // Import motion and AnimatePresence
 import { useStateContext } from '@/contexts/ContextProvider';
-import { useStoreContext } from '@/contexts/StoreContext'; // Correctly import useStoreContext
 import { StoreForm, MarketListingForm } from '@/types/typings'; // Import relevant types
 import ProductCard from '@/components/site/layouts/EcommerceLayout/body/components/ProductCard';
 
@@ -65,7 +63,7 @@ export default async function ProductPage({ params }: PageProps) {
 
   return (
     // Pass rawStore to ProductDetail to access theme settings in client component
-    <ProductDetail product={product as MarketListingForm} related={relatedWithImages as MarketplaceListingForm[]} storeData={rawStore as StoreForm} />
+    <ProductDetail product={product as MarketListingForm} related={relatedWithImages as MarketListingForm[]} storeData={rawStore as unknown as StoreForm} />
   );
 }
 
@@ -117,8 +115,8 @@ function ProductDetail({ product, related, storeData }: {
               className="relative w-full aspect-video md:aspect-square lg:aspect-video rounded-2xl overflow-hidden shadow-xl border border-gray-200 dark:border-gray-700"
             >
               <Image
-                src={currentImage}
-                alt={product.title}
+                src={currentImage || 'https://via.placeholder.com/600x400?text=No+Image'}
+                alt={product.name}
                 fill
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 className="object-contain bg-white dark:bg-gray-800" // Use object-contain and a background for better fit
@@ -139,8 +137,8 @@ function ProductDetail({ product, related, storeData }: {
                 style={idx === mainIndex ? { borderColor: primary, boxShadow: `0 0 0 4px ${primary}` } : {}} // Dynamic ring color
               >
                 <Image
-                  src={img.url}
-                  alt={`${product.title}-${idx}`}
+                  src={img.url || 'https://via.placeholder.com/96x96?text=No+Image'}
+                  alt={`${product.name}-${idx}`}
                   fill
                   sizes="96px"
                   className="object-cover"
@@ -153,7 +151,7 @@ function ProductDetail({ product, related, storeData }: {
         {/* Details Section */}
         <div className="space-y-8 p-6 bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">
           <h1 className="text-4xl lg:text-5xl font-extrabold text-gray-900 dark:text-white leading-tight">
-            {product.title}
+            {product.name}
           </h1>
 
           {/* Rating */}
@@ -163,32 +161,34 @@ function ProductDetail({ product, related, storeData }: {
                 <StarIcon
                   key={i}
                   className={`h-6 w-6 transition-colors duration-200 ${
-                    product.rating && product.rating > i ? 'text-yellow-400' : 'text-gray-300'
+                    // product.rating && product.rating > i ? 'text-yellow-400' : 
+                    'text-gray-300'
                   }`}
                 />
               ))}
             </div>
             <span className="ml-2 text-lg font-medium text-gray-700 dark:text-gray-300">
-              {product.rating ? `(${product.rating.toFixed(1)})` : '(No reviews yet)'}
+              {/* {product.rating ? `(${product.rating.toFixed(1)})` :  */}
+              {'(No reviews yet)'}
             </span>
-            {product.reviews && product.reviews > 0 && (
+            {/* {product.reviews && product.reviews > 0 && (
               <span className="text-gray-500 dark:text-gray-400">({product.reviews} reviews)</span>
-            )}
+            )} */}
           </div>
 
           {/* Price */}
           <div className="flex items-baseline gap-3">
             <span className="text-5xl font-extrabold" style={{ color: primary }}>
-              ${product.finalPrice.toFixed(2)}
+              ${product.finalPrice?.toFixed(2) || '0.00'}
             </span>
-            {product.originalPrice && product.originalPrice > product.finalPrice && (
+            {typeof product.sellingPrice === 'number' && typeof product.finalPrice === 'number' && product.sellingPrice > product.finalPrice && (
               <span className="text-2xl line-through text-gray-500 dark:text-gray-400">
-                ${product.originalPrice.toFixed(2)}
+                ${product.sellingPrice.toFixed(2)}
               </span>
             )}
-            {product.originalPrice && product.originalPrice > product.finalPrice && (
+            {typeof product.sellingPrice === 'number' && typeof product.finalPrice === 'number' && product.sellingPrice > product.finalPrice && (
               <span className="ml-3 px-3 py-1 bg-red-500 text-white rounded-full text-lg font-bold">
-                -{Math.round(((product.originalPrice - product.finalPrice) / product.originalPrice) * 100)}%
+                -{Math.round(((product.sellingPrice - product.finalPrice) / product.sellingPrice) * 100)}%
               </span>
             )}
           </div>

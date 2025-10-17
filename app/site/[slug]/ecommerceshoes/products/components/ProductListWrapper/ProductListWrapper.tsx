@@ -17,7 +17,7 @@ export interface FilterState {
 
 interface ProductListWrapperProps {
   products: MarketListingForm[];
-  categories: { id: string, name: string }[];
+  categories: { id: string, displayName: string }[];
 }
 
 

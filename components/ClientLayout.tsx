@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, PropsWithChildren } from "react";
 import {
   HomeIcon,

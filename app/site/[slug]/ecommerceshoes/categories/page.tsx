@@ -42,7 +42,7 @@ export default function CategoriesPage() {
                     {cat.icon && (
                       <Image
                         src={cat.icon}
-                        alt={cat.name || cat.displayName || cat.category?.name || ''}
+                        alt={ cat.displayName || cat.category?.name || ''}
                         loader={imageLoader}
                         fill
                         priority
@@ -53,7 +53,7 @@ export default function CategoriesPage() {
                   </div>
                   <div className="p-4 text-center">
                     <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
-                      {cat.name || cat.displayName || cat.category?.name}
+                      {cat.displayName || cat.category?.name}
                     </h3>
                   </div>
                 </Link>

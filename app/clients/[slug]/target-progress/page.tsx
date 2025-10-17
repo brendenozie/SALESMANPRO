@@ -1,3 +1,5 @@
+"use client";
+
 import UserNav from '@/components/AdminNav';
 import ClientLayout from '@/components/ClientLayout';
 import React from 'react';

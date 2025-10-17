@@ -188,11 +188,11 @@ export default async function ProductListPage({ params, searchParams }: PageProp
 
   // Normalize categories
   const cats = categories.length
-    ? categories.map((c) => ({ id: c.id, name: c.name }))
+    ? categories.map((c) => ({ id: c.id, displayName: c.name }))
     : [
-        { id: "cat_1", name: "Men's Shoes" },
-        { id: "cat_2", name: "Accessories" },
-        { id: "cat_3", name: "Home Goods" },
+        { id: "cat_1", displayName: "Men's Shoes" },
+        { id: "cat_2", displayName: "Accessories" },
+        { id: "cat_3", displayName: "Home Goods" },
       ];
 
   return (

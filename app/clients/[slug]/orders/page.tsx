@@ -1,3 +1,5 @@
+"use client";
+
 import UserNav from '@/components/AdminNav';
 import UserLayout from '@/components/UserLayout';
 import { CheckCircleIcon, ClockIcon, XMarkIcon } from '@heroicons/react/24/outline';

@@ -47,20 +47,20 @@ export default async function ProductListPage({ params, searchParams }: PageProp
 
   // Fetch data
   const [listings, totalCount, categories] = await Promise.all([
-    prisma.marketplaceListing.findMany({
+    prisma.marketplaceListings.findMany({
       where,
       skip: (page - 1) * pageSize,
       take: pageSize,
       orderBy,
       // include: { images: true }
     }),
-    prisma.marketplaceListing.count({ where }),
+    prisma.marketplaceListings.count({ where }),
     prisma.productCategory.findMany({ orderBy: { name: 'asc' } }),
   ]);
 
   const products: Product[] = listings.map(p => ({
     id: p.id,
-    name: p.title,
+    name: p.name,
     price: p.finalPrice ?? 0,
     imageUrl: 'p.images[0]?.url ',//|| '/placeholder.png',
     slug: "",//p.slug || undefined,

@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useState } from 'react';
 import UserNav from '@/components/AdminNav';
 import ClientLayout from '@/components/ClientLayout';
