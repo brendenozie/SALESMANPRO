@@ -1,16 +1,11 @@
-ts
+// ts
 // app/api/returnStock/route.ts
-import { NextResponse } from "next/server";
+
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
-import { verifyAuth } from "@/lib/verifyAuth";
 
 export const POST = withApiHandler(async (req: Request) => {
-  const auth = await verifyAuth(req);
-  if (!auth.success) {
-    return formatResponse(false, null, auth.error, 401);
-  }
 
   try {
     const { productId, agentId, quantity, isDamaged } = await req.json();
@@ -21,7 +16,9 @@ export const POST = withApiHandler(async (req: Request) => {
 
     // Check agent's inventory
     const agentInventory = await prisma.agentInventory.findFirst({
-      where: { productId, salesAgentId: agentId },
+      where: { inventoryItem:{
+        productId
+      }, salesAgentId: agentId },
     });
 
     if (!agentInventory || agentInventory.quantity < quantity) {

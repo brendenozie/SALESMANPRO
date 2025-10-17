@@ -1,4 +1,4 @@
-typescript
+// typescript
 // app/api/admin/agents/top/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
@@ -13,12 +13,12 @@ async function getTopAgents(req: Request) {
 
   try {
     const topAgents = await prisma.salesAgent.findMany({
-      orderBy: { totalSales: "desc" }, // uncomment if you want ordering
-      select: {
-        id: true,
-        name: true,
-        totalSales: true,
-      },
+      // orderBy: { totalSales: "desc" }, // uncomment if you want ordering
+      // include: {
+      //   id: true,
+      //   name: true,
+      //   totalSales: true,
+      // },
       take: 10, // limit to top 10
     });
 

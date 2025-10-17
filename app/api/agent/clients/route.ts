@@ -1,49 +1,32 @@
 // app/api/admin/clients/route.ts
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
-import { formatResponse, verifyAuth } from "@/lib/verifyAuth";
+import { formatResponse } from "@/lib/formatResponse";
 
 // GET /api/admin/clients
 export const GET = withApiHandler(async (request: Request) => {
-const auth = await verifyAuth(request);
-if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  
 
 try {
 const clients = await prisma.client.findMany({
-select: {
-id: true,
-name: true,
-email: true,
-phoneNumber: true,
-ClientInventory: {
-select: {
-inventoryItem: {
-select: {
-product: {
-select: { name: true, salesPrice: true },
-},
-},
-},
-quantity: true,
-updatedAt: true,
-logs: {
-select: {
-price: true,
-totalPrice: true,
-createdAt: true,
-},
-orderBy: { createdAt: "desc" },
-take: 1, // most recent log
-},
-},
-orderBy: { updatedAt: "desc" },
-},
-communications: {
-select: { createdAt: true },
-orderBy: { createdAt: "desc" },
-take: 1,
-},
-},
+  include: {
+    ClientInventory: {
+      include: {
+        inventoryItem: {
+          include: {
+            product: {
+              select: { name: true, sellingPrice: true },
+            },
+          },
+        },
+        logs: { orderBy: { createdAt: "desc" } },
+      },
+      orderBy: { updatedAt: "desc" },
+      take: 1,
+      },
+  user: { select: { id: true, name: true, email: true, phone: true } },
+
+}
 });
 
 
@@ -58,18 +41,18 @@ const processedClients = clients.map((client) => {
   const recentTransactionDate = recentLog?.createdAt || null;
   const recentTransactionAmount = recentLog?.totalPrice || 0;
 
-  const recentCommunication = client.communications[0];
-  const status = recentCommunication ? "engaged" : "inactive";
+  // const recentCommunication = client.communications[0];
+  // const status = recentCommunication ? "engaged" : "inactive";
 
   return {
     id: client.id,
-    name: client.name,
-    email: client.email,
-    phoneNumber: client.phoneNumber,
+    name: client.user.name,
+    email: client.user.email,
+    phoneNumber: client.user.phone,
     totalSales,
     recentTransactionAmount,
     recentTransactionDate,
-    status,
+    status:"inactive",
   };
 });
 

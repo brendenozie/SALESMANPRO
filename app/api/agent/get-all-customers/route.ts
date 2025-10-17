@@ -1,4 +1,4 @@
-typescript
+
 // app/api/admin/agents/[id]/clients/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
@@ -28,15 +28,18 @@ async function getClientsByAgent(req: Request, { params }: { params: { id: strin
   try {
     const clients = await prisma.client.findMany({
       where: { salesAgentId: id },
+      include: {
+        user: { select: { id: true, name: true, email: true, phone: true } },
+      },
       skip: offset,
       take: limit,
     });
 
     const formattedClients = clients.map((client) => ({
       id: client.id,
-      name: client.name,
-      email: client.email,
-      phoneNumber: client.phoneNumber,
+      name: client.user?.name || "",
+      email: client.user?.email || "",
+      phoneNumber: client.user?.phone || "",
       totalOrders: 100, // TODO: replace with actual count when orders relation is added
     }));
 

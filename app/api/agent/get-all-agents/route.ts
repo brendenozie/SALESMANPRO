@@ -15,13 +15,16 @@ async function getAgents(req: Request) {
   try {
     const agents = await prisma.salesAgent.findMany({
       include: {
+        user: {
+          select: { id: true, name: true, email: true },
+        },
         clients: true, // Optional: include clients if needed
       },
     });
 
     const formattedAgents = agents.map((agent) => ({
       id: agent.id,
-      name: agent.name,
+      name: agent.user?.name || "",
       // totalSales: agent.orders?.reduce((sum, order) => sum + order.quantity, 0) || 0,
       // inventory: agent.orders?.map((order) => ({
       //   productId: order.product.id,

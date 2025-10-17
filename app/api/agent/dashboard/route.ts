@@ -1,12 +1,10 @@
 // app/api/admin/agents/dashboard/route.ts
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
-import { formatResponse, verifyAuth } from "@/lib/verifyAuth";
+import { formatResponse } from "@/lib/formatResponse";
 
 // GET /api/admin/agents/dashboard
 export const GET = withApiHandler(async (request: Request) => {
-const auth = await verifyAuth(request);
-if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
 const { searchParams } = new URL(request.url);
 const salesAgentId = searchParams.get("salesAgentId");
@@ -71,12 +69,12 @@ const monthlyTargetProgress =
 
 // Pending orders
 const pendingOrders = await prisma.request.count({
-  where: { salesAgentId, status: "PENDING" },
+  where: { requesterId: salesAgentId, status: "PENDING" },
 });
 
 // Pending requests
 const pendingRequests = await prisma.request.count({
-  where: { salesAgentId, status: "PENDING" },
+  where: { requesterId: salesAgentId, status: "PENDING" },
 });
 
 // Leads & demos (placeholder values, replace with real queries later)
@@ -85,7 +83,7 @@ const demosConducted = 0;
 
 // Pending tasks
 const tasks = await prisma.task.findMany({
-  where: { userId: salesAgentId, status: "PENDING" },
+  where: { createdById: salesAgentId, status: "PENDING" },
   orderBy: { dueDate: "asc" },
   take: limit,
   skip: offset,

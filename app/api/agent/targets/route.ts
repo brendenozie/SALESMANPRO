@@ -1,16 +1,10 @@
-ts
+// ts
 // app/api/salesAgent/targets/route.ts
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
-import { verifyAuth } from "@/lib/verifyAuth";
 
 export const GET = withApiHandler(async (req: Request) => {
-  const auth = await verifyAuth(req);
-  if (!auth.success) {
-    return formatResponse(false, null, auth.error, 401);
-  }
-
   const { searchParams } = new URL(req.url);
   const salesAgentId = searchParams.get("salesAgentId");
   const limit = parseInt(searchParams.get("limit") || "10", 10);
@@ -26,7 +20,7 @@ export const GET = withApiHandler(async (req: Request) => {
 
   try {
     const targets = await prisma.target.findMany({
-      where: { salesAgentId },
+      where: { agentId:salesAgentId },
       include: {
         salesAgent: true,
         product: true,

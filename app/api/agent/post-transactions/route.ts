@@ -1,14 +1,11 @@
-typescript
+// typescript
 // app/api/post/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
-import { verifyAuth } from "@/lib/verifyAuth";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
 async function handleTransaction(req: Request) {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
   if (req.method !== "POST") {
     return formatResponse(false, null, "Method not allowed", 405);

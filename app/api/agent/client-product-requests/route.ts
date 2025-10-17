@@ -1,12 +1,10 @@
 // app/api/admin/agents/requests/route.ts
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
-import { formatResponse, verifyAuth } from "@/lib/verifyAuth";
+import { formatResponse } from "@/lib/formatResponse";
 
 // GET /api/admin/agents/requests?agentId=...&limit=10&offset=0
 export const GET = withApiHandler(async (request: Request) => {
-const auth = await verifyAuth(request);
-if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
 const { searchParams } = new URL(request.url);
 
@@ -28,11 +26,11 @@ try {
 const productRequests = await prisma.request.findMany({
 where: {
 requestedByType: "CLIENT",
-salesAgentId: agentId,
+requesterId: agentId,
 },
 include: {
 product: true,
-salesAgent: true,
+requester: true,
 },
 take: limit,
 skip: offset,
@@ -44,10 +42,10 @@ const formattedRequests = productRequests.map((req) => ({
   productId: req.productId,
   productName: req.product?.name || "Unknown Product",
   quantityRequested: req.quantity,
-  salesAgentId: req.salesAgent?.id || null,
-  salesAgentName: req.salesAgent?.name || "Unassigned",
+  requesterId: req.requester?.id || null,
+  requesterName: req.requester?.name || "Unassigned",
   status: req.status || "Pending",
-  requestedAt: req.createdAt.toISOString(),
+  requestedAt: req.createdAt?.toISOString(),
 }));
 
 return formatResponse(

@@ -1,4 +1,4 @@
-typescript
+// typescript
 // app/api/tasks/[id]/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";

@@ -1,4 +1,4 @@
-typescript
+// typescript
 // app/api/admin/agents/[id]/inventory/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
@@ -38,14 +38,20 @@ async function getAgentInventory(req: Request, { params }: { params: { id: strin
             product: true,
           },
         },
-        client: true,
+        client: {
+          include: {
+            user: {
+              select: { id: true, name: true, email: true },
+            },
+          },
+        },
       },
     });
 
     // Map client inventory to calculate sales details
     const salesDetails = clientInventory.map((item) => ({
       clientId: item.client.id,
-      clientName: item.client.name,
+      clientName: item.client.user?.name || "Unknown Client",
       productId: item.inventoryItem.productId,
       productName: item.inventoryItem.product?.name || "Unknown Product",
       quantitySold: item.quantity,

@@ -1,17 +1,12 @@
-ts
+// ts
 // app/api/agents/[agentId]/requests/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
-import { verifyAuth } from "@/lib/verifyAuth";
 
 export const GET = withApiHandler(async (req: Request, { params }: { params: { agentId: string } }) => {
-  const auth = await verifyAuth(req);
-  if (!auth.success) {
-    return formatResponse(false, null, auth.error, 401);
-  }
-
+ 
   // Parse query params
   const { searchParams } = new URL(req.url);
   const limit = parseInt(searchParams.get("limit") || "10", 10);
@@ -28,10 +23,10 @@ export const GET = withApiHandler(async (req: Request, { params }: { params: { a
 
   try {
     const productRequests = await prisma.request.findMany({
-      where: { requestedById: agentId },
+      where: { requesterId: agentId },
       include: {
         product: true,
-        salesAgent: true,
+        requester: true,
       },
       take: limit,
       skip: offset,
@@ -42,10 +37,10 @@ export const GET = withApiHandler(async (req: Request, { params }: { params: { a
       productId: request.productId,
       productName: request.product?.name || "Unknown Product",
       quantityRequested: request.quantity,
-      salesAgentId: request.salesAgent?.id || null,
-      salesAgentName: request.salesAgent?.name || "Unassigned",
+      salesAgentId: request.requester?.id || null,
+      salesAgentName: request.requester?.name || "Unassigned",
       status: request.status || "Pending",
-      requestedAt: request.createdAt.toISOString(),
+      requestedAt: request.createdAt?.toISOString() || null,
     }));
 
     return formatResponse(true, { agentId, requests: formattedRequests }, "Requests fetched successfully", 200);

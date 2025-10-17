@@ -1,16 +1,11 @@
-ts
+// ts
 // app/api/returnProductToAgent/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
-import { verifyAuth } from "@/lib/verifyAuth";
 
 export const POST = withApiHandler(async (req: Request) => {
-  const auth = await verifyAuth(req);
-  if (!auth.success) {
-    return formatResponse(false, null, auth.error, 401);
-  }
 
   try {
     const { agentId, clientId, inventoryItemId, quantity } = await req.json();
@@ -34,9 +29,10 @@ export const POST = withApiHandler(async (req: Request) => {
     }
 
     // Retrieve agent's inventory
-    let agentInventory = await prisma.agentInventory.findUnique({
+    let agentInventory = await prisma.agentInventory.findFirst({
       where: {
-        inventoryItemId_salesAgentId: { inventoryItemId, salesAgentId: agentId },
+         salesAgentId: agentId,
+         inventoryItemId
       },
     });
 

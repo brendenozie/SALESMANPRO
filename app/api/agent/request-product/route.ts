@@ -1,4 +1,4 @@
-ts
+// ts
 // app/api/requests/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
@@ -21,7 +21,7 @@ export const POST = withApiHandler(async (req: Request) => {
     }
 
     const data: any = {
-      requestedById: salesAgentId,
+      requesterId: salesAgentId,
       requestedByType: "SALES_AGENT",
       product: { connect: { id: productId } },
       quantity,
@@ -35,9 +35,9 @@ export const POST = withApiHandler(async (req: Request) => {
       {
         requestId: productRequest.id,
         productId: productRequest.productId,
-        clientId: productRequest.requestedById,
+        clientId: productRequest.requesterId,
         quantity: productRequest.quantity,
-        salesAgentId: productRequest.salesAgentId,
+        salesAgentId: productRequest.requesterId,
         status: productRequest.status,
         createdAt: productRequest.createdAt,
       },

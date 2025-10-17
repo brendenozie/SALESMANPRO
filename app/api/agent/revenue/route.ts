@@ -1,16 +1,11 @@
-ts
+// ts
 // app/api/salesAgent/revenue/route.ts
-import { NextResponse } from "next/server";
+
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
-import { verifyAuth } from "@/lib/verifyAuth";
 
 export const GET = withApiHandler(async (req: Request) => {
-  const auth = await verifyAuth(req);
-  if (!auth.success) {
-    return formatResponse(false, null, auth.error, 401);
-  }
 
   const { searchParams } = new URL(req.url);
   const salesAgentId = searchParams.get("salesAgentId");
@@ -42,10 +37,10 @@ export const GET = withApiHandler(async (req: Request) => {
     }
 
     // Aggregate revenue data
-    const revenueData = await prisma.order.groupBy({
+    const revenueData = await prisma.customerOrder.groupBy({
       by: ["createdAt"],
       where: {
-        salesAgentId,
+        consumerId:salesAgentId,
         createdAt: { gte: start, lte: end },
       },
       _sum: { totalPrice: true },
@@ -53,7 +48,7 @@ export const GET = withApiHandler(async (req: Request) => {
     });
 
     const formattedRevenue = revenueData.map((entry) => ({
-      date: entry.createdAt.toISOString().split("T")[0],
+      date: entry.createdAt?.toISOString().split("T")[0],
       revenue: entry._sum.totalPrice || 0,
     }));
 

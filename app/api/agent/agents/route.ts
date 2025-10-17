@@ -1,30 +1,24 @@
 // app/api/admin/agents/route.ts
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
-import { formatResponse, verifyAuth } from "@/lib/verifyAuth";
+import { formatResponse } from "@/lib/formatResponse";
 
 // GET /api/admin/agents - Get all sales agents
 export const GET = withApiHandler(async (request: Request) => {
-const auth = await verifyAuth(request);
-if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
 const agents = await prisma.salesAgent.findMany({
-select: {
-id: true,
-name: true,
-email: true,
-phoneNumber: true,
-commissions: {
-select: {
-commissionEarned: true,
-createdAt: true,
-status: true,
-},
-orderBy: {
-createdAt: "desc",
-},
-},
-},
+  include: {
+    commissions: {
+      orderBy: { createdAt: "desc" },
+    },
+    user: {
+      select: {
+        id: true,
+        name: true,
+        email: true,
+      },
+    },
+  },
 });
 
 // Example: compute aggregates or flatten structure
@@ -40,11 +34,10 @@ sum +
 
 
 const recentCommission = agent.commissions[0];
-
 return {
   id: agent.id,
-  name: agent.name,
-  email: agent.email,
+  name: agent.user?.name ?? "",
+  email: agent.user?.email ?? "",
   phoneNumber: agent.phoneNumber,
   totalCommissions,
   recentCommission: {
@@ -53,8 +46,6 @@ return {
     status: recentCommission?.status || "PENDING",
   },
 };
-
-
 });
 
 return formatResponse(

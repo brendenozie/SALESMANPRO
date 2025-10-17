@@ -1,4 +1,4 @@
-typescript
+// typescript
 // app/api/admin/agents/[id]/orders/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
@@ -39,7 +39,7 @@ async function getOrders(req: Request, { params }: { params: { id: string } }) {
           _sum: { totalPrice: true },
         }),
         prisma.request.aggregate({
-          where: { salesAgentId: agentId, status: "PENDING" },
+          where: { requesterId: agentId, status: "PENDING" },
           _sum: { totalPrice: true },
         }),
       ]);
@@ -67,10 +67,14 @@ async function getOrders(req: Request, { params }: { params: { id: string } }) {
       skip,
       take: limit,
       orderBy: { createdAt: "desc" },
-      include: {
-        inventoryItem: { include: { product: true } },
+      include: ( {
+        inventoryItem: {
+          include: {
+            product: true,
+          },
+        },
         client: true,
-      },
+      } as any ),
     });
 
     // Monthly revenue grouped
@@ -80,11 +84,22 @@ async function getOrders(req: Request, { params }: { params: { id: string } }) {
       _sum: { totalPrice: true },
     });
 
-    const monthlyRevenueFormatted = monthlyRevenue.map((entry) => ({
-      month: new Date(entry.createdAt).toLocaleString("default", { month: "long" }),
-      year: new Date(entry.createdAt).getFullYear(),
-      revenue: entry._sum.totalPrice || 0,
-    }));
+    const monthlyRevenueFormatted = monthlyRevenue.map((entry) => {
+      const createdAt = entry.createdAt;
+      if (!createdAt) {
+        return {
+          month: null,
+          year: null,
+          revenue: entry._sum.totalPrice || 0,
+        };
+      }
+      const date = new Date(createdAt);
+      return {
+        month: date.toLocaleString("default", { month: "long" }),
+        year: date.getFullYear(),
+        revenue: entry._sum.totalPrice || 0,
+      };
+    });
 
     return formatResponse(
       true,

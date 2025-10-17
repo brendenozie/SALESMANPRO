@@ -75,13 +75,15 @@ salesAgent: true,
     where: { productId: product.id },
   });
 
+  // Safely resolve a numeric sales price from the product (handle different possible field names)
+  const resolvedSalesPrice = Number(
+    (product as any).salesPrice ?? (product as any).salePrice ?? (product as any).price ?? 0
+  );
+
   for (const pc of productCommissions) {
     const { commissionRate = 0, basedOn } = pc;
-    const finalPrice = product.salesPrice;
-    const commissionEarned =
-      basedOn === "COST"
-        ? commissionRate * product.salesPrice * quantity
-        : commissionRate * finalPrice * quantity;
+    const finalPrice = resolvedSalesPrice;
+    const commissionEarned = commissionRate * finalPrice * quantity;
 
     if (commissionEarned > 0) {
       commissions.push(
