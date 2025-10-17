@@ -101,9 +101,7 @@ export type Showing = {
 // ];
 
 interface ShowingsPageProps {
-  params: {
-    slug: string;
-  };
+  params:Promise<{ slug: string }>
 }
 
 export default function ShowingsPage() {

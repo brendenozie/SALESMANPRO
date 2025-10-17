@@ -47,7 +47,7 @@ interface Location {
 
 
 interface PageProps {
-  params: { slug: string; };
+  params:Promise<{ slug: string }>
 }
 
 // --- Helper Function to Build the Tree ---

@@ -7,9 +7,7 @@ import { DepartmentData } from "./DepartmentsPage"; // Import the type
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface PageProps {
-  params: {
-    slug: string; // companyId
-  };
+  params:Promise<{ slug: string }>
 }
 
 /**

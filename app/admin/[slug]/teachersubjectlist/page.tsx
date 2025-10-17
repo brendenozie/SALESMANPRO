@@ -73,9 +73,7 @@ interface TeacherClassesPageData {
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface Props {
-  params: {
-    slug: string; // companyId
-  };
+  params:Promise<{ slug: string }>
 }
 
 // IMPORTANT: In a real application, the currentTeacherUserId would come from an authentication context (e.g., NextAuth.js session).

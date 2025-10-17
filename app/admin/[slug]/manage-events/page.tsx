@@ -22,9 +22,7 @@ type Agent = {
 };
 
 interface Props {
-  params: {
-    slug: string; // companyId
-  };
+  params:Promise<{ slug: string }>
 }
 
 export type OrganizerOption = { id: string; name: string; email: string };

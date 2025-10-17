@@ -26,7 +26,7 @@ interface Location {
 }
 
 interface PageProps {
-  params: { slug: string; }; // companyId
+  params:Promise<{ slug: string }> // companyId
 }
 
 // --- Helper Function to Build the Tree ---

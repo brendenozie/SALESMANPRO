@@ -46,9 +46,7 @@ export interface TravelBookingData {
 }
 
 interface AdminBookingsPageProps {
-  params: {
-    slug: string;
-  };
+  params:Promise<{ slug: string }>
 }
 
 const containerVariants = {

@@ -590,9 +590,7 @@ const AddEditAgentModal: React.FC<AddEditAgentModalProps> = ({ isOpen, onClose, 
 
 // --- Main AgentsPage Component ---
 interface AgentsPageProps {
-  params: {
-    slug: string;
-  };
+  params:Promise<{ slug: string }>
 }
 
 export default function AgentsPage() {

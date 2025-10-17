@@ -28,9 +28,7 @@ type Order = {
 };
 
 interface Props {
-  params: {
-    slug: string; // companyId
-  };
+  params:Promise<{ slug: string }>
 }
 
 export default async function AdminOrdersPage({ params }: Props) {

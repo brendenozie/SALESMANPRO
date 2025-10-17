@@ -16,9 +16,7 @@ import { AgentProfile } from './AgentsClientPage'; // Import the main type from 
 const apiBaseUrl = process.env.API_BASE_URL || 'http://127.0.0.1:3000/api'; // Replace with your actual API base URL
 // --- Interface for Server Component Props ---
 interface AgentsPageProps {
-  params: {
-    slug: string; 
-  };
+  params:Promise<{ slug: string }>
 }
 
 // --- Agent Summary Card Component (Server-side, purely presentational) ---

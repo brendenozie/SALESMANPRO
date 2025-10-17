@@ -13,9 +13,7 @@ type Agent = {
 };
 
 interface Props {
-  params: {
-    slug: string; // companyId
-  };
+  params:Promise<{ slug: string }>
 }
 
 /**

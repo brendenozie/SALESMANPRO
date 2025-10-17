@@ -32,9 +32,7 @@ import { IStoreCategory, ILocation, MarketListingForm } from '@/types/typings';
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
 interface TravelExperiencesManagementPageProps {
-  params: {
-    slug: string;
-  };
+  params:Promise<{ slug: string }>
 }
 
 export default function TravelExperiencesManagementPage() {

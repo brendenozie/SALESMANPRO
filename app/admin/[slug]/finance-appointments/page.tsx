@@ -58,9 +58,7 @@ interface AppointmentFormState {
 }
 
 interface PageProps {
-  params: {
-    slug: string; // companyId
-  };
+  params:Promise<{ slug: string }>
 }
 
 interface AppointmentStatusBadgeProps {

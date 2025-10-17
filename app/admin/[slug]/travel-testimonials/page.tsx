@@ -34,8 +34,8 @@ type FormState = Omit<Testimonial, "id" | "companyId">;
 
 // ---- Component ----
 const TestimonialsPage = () => {
-  const params = useParams<{ slug: string }>();
-  const { slug : companyId } = await params;
+  
+  const { slug : companyId } = useParams();
 
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [loading, setLoading] = useState(true);

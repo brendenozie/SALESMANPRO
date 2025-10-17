@@ -42,9 +42,7 @@ interface FormState {
 }
 
 interface PageProps {
-  params: {
-    slug: string; // companyId
-  };
+  params:Promise<{ slug: string }>
 }
 
 const PackagesPage = () => {

@@ -30,9 +30,7 @@ const mockLocations: Location[] = [
 ];
 
 interface LocationsPageProps {
-  params: {
-    slug: string;
-  };
+  params:Promise<{ slug: string }>
 }
 
 export default function PropertiesLocationsPage({ params }: LocationsPageProps) {

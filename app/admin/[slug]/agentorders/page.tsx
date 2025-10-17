@@ -18,9 +18,7 @@ interface ProductRequest {
 }
 
 interface PageProps {
-  params: {
-    slug: string; // companyId, if you ever need it
-  };
+  params:Promise<{ slug: string }>
 }
 
 /**

@@ -33,9 +33,7 @@ const loader = ({ src, width, quality }: { src: string; width: number; quality?:
 // }
 
 interface TrainersPageProps {
-  params: {
-    slug: string;
-  };
+  params:Promise<{ slug: string }>
 }
 
 // A reusable component for a single trainer's card

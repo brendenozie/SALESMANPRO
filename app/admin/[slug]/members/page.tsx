@@ -32,9 +32,7 @@ export type ProjectMember = {
 
 
 interface PageProps {
-  params: {
-    slug: string; // companyId
-  };
+  params:Promise<{ slug: string }>
 }
 
 /**

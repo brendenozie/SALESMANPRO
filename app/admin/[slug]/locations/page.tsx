@@ -101,7 +101,7 @@ const buildLocationTree = (locations: Location[]): Location[] => {
 
 
 interface PageProps {
-  params: { slug: string; }; // Assuming this page might still get a slug, though not used for global locations
+  params:Promise<{ slug: string }> // Assuming this page might still get a slug, though not used for global locations
 }
 
 export default function LocationManagementPage({params}:PageProps) {

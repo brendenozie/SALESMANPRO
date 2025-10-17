@@ -23,9 +23,7 @@ interface Program {
 }
 
 interface ProgramsProps {
-  params: {
-    slug: string;
-  };
+  params:Promise<{ slug: string }>
 }
 
 // Variants for the main container

@@ -25,9 +25,7 @@ export type Project = {
 };
 
 interface PageProps {
-  params: {
-    slug: string; // companyId
-  };
+  params:Promise<{ slug: string }>
 }
 
 /**
