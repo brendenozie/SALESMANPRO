@@ -1,6 +1,7 @@
-import { useRouter } from "next/router";
+"use client";
+
+import { useRouter } from "next/navigation";
 import { useState } from "react";
-// import dayjs from "dayjs"; {dayjs(task.dueDate).format("MMMM DD, YYYY")}
 import Link from "next/link";
 
 type Task = {
@@ -15,24 +16,33 @@ type Task = {
 
 type Props = {
   task: Task;
-  onUpdateStatus: (id: string, newStatus: Task["status"]) => void;
-  onDeleteTask: (id: string) => void;
 };
 
-const TaskDetails = ({ task, onUpdateStatus, onDeleteTask }: Props) => {
+const TaskDetails = ({ task }: Props) => {
   const router = useRouter();
-  const [selectedStatus, setSelectedStatus] = useState(task.status);
+  const [selectedStatus, setSelectedStatus] = useState<Task["status"]>(
+    task.status
+  );
 
-  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleStatusChange = async (
+    e: React.ChangeEvent<HTMLSelectElement>
+  ) => {
     const newStatus = e.target.value as Task["status"];
     setSelectedStatus(newStatus);
-    onUpdateStatus(task.id, newStatus);
+
+    await fetch(`/api/tasks/${task.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: newStatus }),
+    });
+
+    router.refresh(); // revalidate server data
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (confirm("Are you sure you want to delete this task?")) {
-      onDeleteTask(task.id);
-      router.push("/dashboard"); // Redirect after deletion
+      await fetch(`/api/tasks/${task.id}`, { method: "DELETE" });
+      router.push("/dashboard");
     }
   };
 
@@ -46,7 +56,7 @@ const TaskDetails = ({ task, onUpdateStatus, onDeleteTask }: Props) => {
           <div className="ml-6">
             <h1 className="text-3xl font-bold text-gray-800">{task.taskName}</h1>
             <p className="text-sm text-gray-500">
-              Due: 00:00:00 at {task.dueTime}
+              Due: {task.dueDate} at {task.dueTime}
             </p>
           </div>
         </div>
@@ -88,23 +98,3 @@ const TaskDetails = ({ task, onUpdateStatus, onDeleteTask }: Props) => {
 };
 
 export default TaskDetails;
-
-export const getServerSideProps = async (context: any) => {
-  const { id } = context.params;
-
-  const url = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
-
-  const task = await fetch(`${url}/get-tasks/${id}`)
-    .then((res) => res.json())
-    .catch(() => null);
-
-  if (!task) {
-    return { notFound: true };
-  }
-
-  return {
-    props: {
-      task,
-    },
-  };
-};

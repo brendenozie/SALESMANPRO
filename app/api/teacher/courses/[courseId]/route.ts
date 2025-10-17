@@ -47,7 +47,7 @@ export const GET = withApiHandler(async (request: Request) => {
     const assignedCourses = await prisma.course.findMany({
       where: {
         OR: [
-          { instructorId: educator.id },
+          // { instructorId: educator.id },
           {
             academicLevels: {
               some: {

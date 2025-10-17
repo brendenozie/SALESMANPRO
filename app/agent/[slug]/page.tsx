@@ -45,7 +45,7 @@ const calculateProgress = (currentValue: number, goal: number) => {
   return Math.min(progress, 100);
 };
 
-// 🚀 Server Component
+// ✅ Server Component (no "use client")
 export default async function AgentDashboardPage() {
   const session = await getServerSession(authOptions);
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
@@ -58,16 +58,17 @@ export default async function AgentDashboardPage() {
     );
   }
 
+  // --- Fetch dashboard data ---
   let data: DashboardData | null = null;
 
   try {
     const token =
       (session as any)?.accessToken ||
       (session as any)?.user?.token ||
-      ""; // handle both token locations
+      "";
 
     const res = await fetch(`${apiUrl}/agent/dashboard`, {
-      next: { revalidate: 60 }, // ISR: refresh every 60s
+      cache: "no-store", // always fresh data
       headers: {
         Authorization: token ? `Bearer ${token}` : "",
       },
@@ -76,10 +77,10 @@ export default async function AgentDashboardPage() {
     if (res.ok) {
       data = await res.json();
     } else {
-      console.error("Failed to fetch dashboard data:", res.statusText);
+      console.error("❌ Failed to fetch dashboard data:", res.statusText);
     }
   } catch (error) {
-    console.error("Error fetching dashboard data:", error);
+    console.error("⚠️ Error fetching dashboard data:", error);
   }
 
   if (!data) {
@@ -92,7 +93,7 @@ export default async function AgentDashboardPage() {
     );
   }
 
-  // ✅ Dashboard cards
+  // --- Dashboard cards ---
   const dataCards = [
     {
       href: "/agent/sales",
@@ -150,10 +151,12 @@ export default async function AgentDashboardPage() {
     },
   ];
 
+  // --- JSX output ---
   return (
     <UserLayout>
       <div className="flex flex-col min-h-screen bg-gray-900 text-white w-full">
         <UserNav />
+
         <div className="container mx-auto p-4">
           <div className="flex flex-col lg:flex-row bg-gray-100 dark:bg-gray-800 min-h-full h-full p-4 space-y-8 lg:space-y-0 lg:space-x-8 rounded-2xl shadow-inner">
 
@@ -246,7 +249,7 @@ export default async function AgentDashboardPage() {
                   Today's Plan
                 </h3>
                 <Link
-                  href="/tasks"
+                  href="/agent/tasks"
                   className="py-2 px-5 bg-indigo-600 font-semibold text-white rounded-full shadow-md hover:bg-indigo-700 transition-all duration-300"
                 >
                   View All
@@ -267,7 +270,7 @@ export default async function AgentDashboardPage() {
                       <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
                         <strong>Due:</strong> {task.dueDate} at {task.dueTime}
                       </p>
-                      <Link href={`/taskdetails/${task.id}`}>
+                      <Link href={`/agent/tasks/${task.id}`}>
                         <button className="mt-4 py-2 px-4 bg-gradient-to-r from-orange-400 to-orange-500 text-white rounded-md shadow hover:from-orange-500 hover:to-orange-600 transition-all duration-300">
                           View Details
                         </button>

@@ -1,5 +1,4 @@
 // app/api/teacher/courses/[courseId]/events/route.ts
-import { NextResponse } from 'next/server';
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";

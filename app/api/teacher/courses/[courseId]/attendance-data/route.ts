@@ -44,7 +44,7 @@ async function getAttendanceData(request: Request, { params }: { params: { cours
       select: { id: true, companyId: true },
     });
 
-    if (!educatorProfile) {
+    if (!educatorProfile || !educatorProfile.companyId) {
       return formatResponse(false, null, 'Educator not found or not authorized', 403);
     }
 

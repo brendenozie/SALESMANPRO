@@ -33,7 +33,7 @@ export const GET = withApiHandler(async (request: Request, { params }: { params:
     if (!educatorProfile) return formatResponse(false, null, "Educator not found or unauthorized", 403);
 
     const course = await prisma.course.findUnique({
-      where: { id: courseId, companyId: educatorProfile.companyId },
+      where: { id: courseId, companyId: educatorProfile.companyId ?? undefined },
       select: {
         id: true,
         title: true,
@@ -93,8 +93,10 @@ export const GET = withApiHandler(async (request: Request, { params }: { params:
 
     const allAssessments = [...formattedExams, ...formattedAssignments];
 
+    const cleanedStudentIds = studentIdsInCourse.filter((id): id is string => !!id);
+
     const grades = await prisma.grade.findMany({
-      where: { courseId, companyId: educatorProfile.companyId, studentId: { in: studentIdsInCourse } },
+      where: { courseId, companyId: educatorProfile.companyId ?? undefined, studentId: { in: cleanedStudentIds } },
       select: {
         id: true,
         studentId: true,

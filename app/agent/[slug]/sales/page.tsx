@@ -1,11 +1,22 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import { Line } from "react-chartjs-2";
-import { Chart as ChartJS, LineElement, CategoryScale, LinearScale, PointElement } from "chart.js";
+import {
+  Chart as ChartJS,
+  LineElement,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
 import { format, parseISO } from "date-fns";
 import UserLayout from "@/components/UserLayout";
 import UserNav from "@/components/AdminNav";
 
-ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement);
+ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement, Title, Tooltip, Legend);
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
 
@@ -20,40 +31,47 @@ type Sale = {
   date: string;
 };
 
-type Props = {
-  salesData: Sale[];
-};
-
-const SalesSummaryPage = ({ salesData }: Props) => {
+const SalesSummaryPage = () => {
+  const [salesData, setSalesData] = useState<Sale[]>([]);
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
   const [salesAgentId, setSalesAgentId] = useState<string>("63f7c9e2d91b1b2a5e80b016");
-  const [filteredSales, setFilteredSales] = useState<Sale[]>(salesData);
 
   const fetchSalesData = async () => {
-    const url = `${apiBaseUrl}/agent/sales?startDate=${startDate}&endDate=${endDate}&salesAgentId=${salesAgentId}`;
-    const response = await fetch(url);
-    const data = await response.json();
-    setFilteredSales(data);
+    try {
+      const query = new URLSearchParams({
+        ...(startDate && { startDate }),
+        ...(endDate && { endDate }),
+        salesAgentId,
+      }).toString();
+
+      const response = await fetch(`${apiBaseUrl}/agent/sales?${query}`, {
+        cache: "no-store",
+      });
+      const data = await response.json();
+      setSalesData(data || []);
+    } catch (error) {
+      console.error("Error fetching sales data:", error);
+    }
   };
 
   useEffect(() => {
     fetchSalesData();
   }, [startDate, endDate, salesAgentId]);
 
-  // Prepare data for the chart
+  // Prepare chart data
   const prepareChartData = () => {
-    const salesByDate = filteredSales.reduce((acc, sale) => {
+    const salesByDate = salesData.reduce((acc, sale) => {
       const date = format(parseISO(sale.date), "yyyy-MM-dd");
       acc[date] = (acc[date] || 0) + sale.totalAmount;
       return acc;
-    }, {} as { [date: string]: number });
+    }, {} as Record<string, number>);
 
     const sortedDates = Object.keys(salesByDate).sort();
-    const labels = sortedDates;
-    const data = sortedDates.map((date) => salesByDate[date]);
-
-    return { labels, data };
+    return {
+      labels: sortedDates,
+      data: sortedDates.map((d) => salesByDate[d]),
+    };
   };
 
   const chartData = prepareChartData();
@@ -64,9 +82,10 @@ const SalesSummaryPage = ({ salesData }: Props) => {
       {
         label: "Revenue",
         data: chartData.data,
-        fill: false,
-        borderColor: "#4F46E5", // Indigo color
-        tension: 0.3,
+        borderColor: "#6366F1",
+        backgroundColor: "rgba(99, 102, 241, 0.3)",
+        tension: 0.4,
+        fill: true,
       },
     ],
   };
@@ -74,11 +93,11 @@ const SalesSummaryPage = ({ salesData }: Props) => {
   const lineChartOptions = {
     responsive: true,
     plugins: {
-      legend: { display: true },
+      legend: { display: true, labels: { color: "#111" } },
     },
     scales: {
-      x: { title: { display: true, text: "Date" } },
-      y: { title: { display: true, text: "Revenue ($)" } },
+      x: { title: { display: true, text: "Date", color: "#111" } },
+      y: { title: { display: true, text: "Revenue ($)", color: "#111" } },
     },
   };
 
@@ -124,7 +143,7 @@ const SalesSummaryPage = ({ salesData }: Props) => {
 
             {/* Graph Section */}
             <div className="bg-white shadow p-6 rounded-lg mb-6">
-              <h2 className="text-xl font-bold mb-4">Revenue Trend</h2>
+              <h2 className="text-xl font-bold mb-4 text-gray-800">Revenue Trend</h2>
               <Line data={lineChartData} options={lineChartOptions} />
             </div>
 
@@ -132,13 +151,12 @@ const SalesSummaryPage = ({ salesData }: Props) => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
               <div className="bg-indigo-600 text-white p-4 rounded-lg shadow">
                 <h2 className="text-lg font-bold">Total Sales</h2>
-                <p className="text-2xl font-semibold">{filteredSales.length}</p>
+                <p className="text-2xl font-semibold">{salesData.length}</p>
               </div>
               <div className="bg-green-600 text-white p-4 rounded-lg shadow">
                 <h2 className="text-lg font-bold">Total Revenue</h2>
                 <p className="text-2xl font-semibold">
-                  $
-                  {filteredSales.reduce((sum, sale) => sum + sale.totalAmount, 0).toFixed(2)}
+                  ${salesData.reduce((sum, s) => sum + s.totalAmount, 0).toFixed(2)}
                 </p>
               </div>
             </div>
@@ -150,11 +168,3 @@ const SalesSummaryPage = ({ salesData }: Props) => {
 };
 
 export default SalesSummaryPage;
-
-export const getServerSideProps = async () => {
-  const url = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
-  const salesData = await fetch(`${url}/agent/sales`)
-    .then((res) => res.json())
-    .catch(() => []);
-  return { props: { salesData } };
-};

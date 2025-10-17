@@ -1,4 +1,5 @@
 "use client";
+
 // app/[slug]/layout.tsx
 import prisma from '@/server/db/prismadb';
 import { StoreContextProvider } from '@/contexts/StoreContext';

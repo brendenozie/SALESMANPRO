@@ -84,4 +84,53 @@ async function updateDoctorProfile(request: Request) {
   }
 
   try {
-    const existingDoctor = await prisma
+    const existingDoctor = await prisma.doctor.findUnique({
+      where: { id: doctorId },
+      include: { User: true },
+    });
+
+    if (!existingDoctor) {
+      return formatResponse(false, null, "Doctor not found", 404);
+    }
+
+    if (!existingDoctor.userId) {
+      return formatResponse(false, null, "Doctor has no associated user", 400);
+    }
+
+    // Ensure the User relation was loaded and is not null
+    if (!existingDoctor.User) {
+      return formatResponse(false, null, "Associated user not found", 400);
+    }
+
+    // Update User fields
+    await prisma.user.update({
+      where: { id: existingDoctor.userId },
+      data: {
+        name: name || existingDoctor.User.name,
+        email: email || existingDoctor.User.email,
+        phone: phone || existingDoctor.User.phone,
+        profilePicture:
+          profilePicture || existingDoctor.User.profilePicture,
+      },
+    });
+    // Update Doctor fields
+    const updatedDoctor = await prisma.doctor.update({
+      where: { id: doctorId },
+      data: {
+        specialty: specialty || existingDoctor.specialty,
+        status: status || existingDoctor.status,
+      },
+      include: {
+        User: { select: { id: true, name: true, email: true, phone: true, profilePicture: true } },
+      },
+    });
+    const formattedProfile = await formatDoctorProfile(updatedDoctor);
+    return formatResponse(true, formattedProfile, "Doctor profile updated");
+  } catch (err: any) {
+    console.error("PUT /api/doctor/profile error:", err);
+    return formatResponse(false, null, err.message || "Internal server error", 500);
+  }
+}
+
+export const GET = withApiHandler(getDoctorProfile);
+export const PUT = withApiHandler(updateDoctorProfile);
