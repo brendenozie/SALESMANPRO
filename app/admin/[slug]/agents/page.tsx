@@ -25,9 +25,7 @@ export type Agent = {
 };
 
 interface PageProps {
-  params: {
-    slug: string; // This is the companyId
-  };
+  params:Promise<{ slug: string }>
 }
 
 /**

@@ -22,9 +22,7 @@ export type Campaign = {
 };
 
 interface PageProps {
-  params: {
-    slug: string; // companyId - assuming campaigns can be filtered by company
-  };
+  params:Promise<{ slug: string }>
 }
 
 /**

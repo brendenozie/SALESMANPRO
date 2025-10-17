@@ -39,9 +39,7 @@ export interface OrderItem {
 }
 
 interface Props {
-  params: {
-    slug: string; // This is the companyId
-  };
+  params:Promise<{ slug: string }>
 }
 
 /**
