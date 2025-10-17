@@ -180,9 +180,7 @@ const fetchData = async <T,>(
 
 
 interface PropertyPageProps {
-    params: {
-        slug: string; // The admin/company ID
-    };
+    params:Promise<{ slug: string }>
 }
 
 

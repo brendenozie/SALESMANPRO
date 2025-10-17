@@ -1,6 +1,7 @@
 // app/admin/[slug]/billing/page.tsx
 import React from "react";
 import BillingClient from "./BillingClient";
+import { useParams } from "next/navigation";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -35,24 +36,11 @@ export interface InvoiceItem {
   lineItems: { description: string; quantity: number; unitPrice: number; total: number }[];
 }
 
-interface PageProps {
-  params: { slug: string }; // companyId
-  searchParams: {
-    page?: string;
-    limit?: string;
-    transactionStatus?: string;
-    transactionType?: string;
-    invoiceStatus?: string;
-  };
-}
-
-export default async function BillingPage({ params, searchParams }: PageProps) {
-  const { slug : companyId } = await params;
-  const page = parseInt(searchParams.page || "1");
-  const limit = parseInt(searchParams.limit || "10");
-  const transactionStatus = searchParams.transactionStatus || "";
-  const transactionType = searchParams.transactionType || "";
-  const invoiceStatus = searchParams.invoiceStatus || "";
+export default async function BillingPage() {
+  
+  const { slug : companyId, 
+          searchParams: { page = "1", limit = "10", transactionStatus = "", transactionType = "", invoiceStatus = "" }
+        }  =  useParams<any>();
 
   let transactionsData: TransactionItem[] = [];
   let totalTransactionItems = 0;
@@ -64,18 +52,31 @@ export default async function BillingPage({ params, searchParams }: PageProps) {
   try {
     // Fetch transactions from the new API route
     const transactionsResponse = await fetch(
-      `${apiUrl}/admin/billing/transactions?page=${page}&limit=${limit}&status=${transactionStatus}&type=${transactionType}`
+      `${apiUrl}/admin/billing/transactions?page=${page}&limit=${limit}&status=${transactionStatus}&type=${transactionType}`,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Credentials': 'include', // Include cookies for authentication if needed
+        },
+      }
+
     );
-    const transactionsResult = await transactionsResponse.json();
+    const transactionsResult = (await transactionsResponse.json()).data;
     transactionsData = transactionsResult.transactionsData || [];
     totalTransactionItems = transactionsResult.totalTransactionItems || 0;
     totalTransactionPages = transactionsResult.totalTransactionPages || 0;
     
     // Fetch invoices from the new API route
     const invoicesResponse = await fetch(
-      `${apiUrl}/admin/billing/invoices?page=${page}&limit=${limit}&status=${invoiceStatus}`
+      `${apiUrl}/admin/billing/invoices?page=${page}&limit=${limit}&status=${invoiceStatus}`,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Credentials': 'include', // Include cookies for authentication if needed
+        },
+      }
     );
-    const invoicesResult = await invoicesResponse.json();
+    const invoicesResult = (await invoicesResponse.json()).data;
     invoicesData = invoicesResult.invoicesData || [];
     totalInvoiceItems = invoicesResult.totalInvoiceItems || 0;
     totalInvoicePages = invoicesResult.totalInvoicePages || 0;

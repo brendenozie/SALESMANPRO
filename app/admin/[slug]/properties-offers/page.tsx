@@ -12,9 +12,7 @@ const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
 // --- Interface for Server Component Props ---
 interface OffersPageProps {
-    params: {
-        slug: string; // The admin/company ID
-    };
+    params:Promise<{ slug: string }>
 }
 
 // --- Sample Data Generation (MOCKUPS FOR FALLBACK) ---
@@ -98,7 +96,7 @@ const fetchData = async <T,>(
         const res = await fetch(url, { cache: 'no-store', headers: { cookie: cookiesHeaders } });
 
         if (!res.ok) {
-            throw new Error(`Failed to fetch ${endpoint} (Status: ${res.status})`);
+            throw new Error(`Failed to fetch ${endpoint} (Status: ${res.status}`);
         }
 
         const dataRes = await res.json();
@@ -131,7 +129,7 @@ const fetchData = async <T,>(
 
 
 export default async function OffersPage({ params }: OffersPageProps) {
-    const { slug } = params;
+    const { slug } = await params;
     const cookiesHeaders = (await cookies()).toString();
 
     if (!slug) {

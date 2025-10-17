@@ -32,7 +32,7 @@ interface CategoriesPageProps {
 }
 
 export default async function PropertiesCategoriesPage({ params }: CategoriesPageProps) {
-  const { slug: adminSlug } = params;
+  const { slug: adminSlug } = await params;
 
   // In a real app, you'd fetch categories here:
   // const [categories, setCategories] = useState<Category[]>([]);

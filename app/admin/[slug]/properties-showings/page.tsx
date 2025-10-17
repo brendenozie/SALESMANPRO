@@ -12,9 +12,7 @@ const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
 // --- Interface for Server Component Props ---
 interface ShowingsPageProps {
-  params: {
-    slug: string; // The admin/company ID
-  };
+  params:Promise<{ slug: string }>
 }
 
 // --- Sample Data Generation (MOCKUPS FOR FALLBACK) ---
@@ -116,7 +114,7 @@ const fetchData = async <T,>(
 
 
 export default async function ShowingsPage({ params }: ShowingsPageProps) {
-    const { slug } = params;
+    const { slug } = await params;
     const cookiesHeaders = (await cookies()).toString();
 
     if (!slug) {

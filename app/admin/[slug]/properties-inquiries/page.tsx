@@ -11,9 +11,7 @@ import InquiriesClientPage, { Inquiry } from './InquiriesClientPage';
 
 // --- Interface for Server Component Props ---
 interface InquiriesPageProps {
-  params: {
-    slug: string; // This is the company ID or admin ID
-  };
+  params:Promise<{ slug: string }>
 }
 
 // --- Sample Data Generation (Server-side execution) ---
@@ -53,7 +51,7 @@ const generateSampleInquiries = (): Inquiry[] => [
 
 // NOTE: This is an async Server Component.
 export default async function InquiriesPage({ params }: InquiriesPageProps) {
-  const { slug } = params;
+  const { slug } = await params;
   const cookiesHeader = (await cookies()).toString(); // Capture cookies for potential API calls
 
   if (!slug) {
