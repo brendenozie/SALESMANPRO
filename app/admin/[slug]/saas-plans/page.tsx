@@ -46,13 +46,9 @@ interface SubscriptionItem {
 }
 
 interface PlansClientProps {
-  companyId: string;
-  plans: PlanItem[];
-  initialSubscriptions: SubscriptionItem[];
-  initialTotalSubscriptionItems: number;
-  initialTotalSubscriptionPages: number;
-  initialCurrentSubscriptionPage: number;
-  subscriptionsPerPage: number;
+  params : Promise<{
+    slug: string;
+  }>;
 }
 
 
@@ -61,19 +57,14 @@ interface PlansClientProps {
 // SERVER-SIDE DATA FETCHING
 // This component fetches all necessary data on the server before rendering the client component.
 // =================================================================================================
-export default async function DashboardPage({ 
-  companyId = "60c84e1b5b4e5d1a2c8a2a01",
-  plans,
-  initialSubscriptions,
-  initialTotalSubscriptionItems,
-  initialTotalSubscriptionPages,
-  initialCurrentSubscriptionPage = 10,
-  subscriptionsPerPage = 1}: PlansClientProps) {
+export default async function DashboardPage({params }: PlansClientProps) {
+  const { slug : companyId } = await params;
+
   // In a real application, you would get this from the user's session or a URL parameter
   // const companyId = "60c84e1b5b4e5d1a2c8a2a01"; // Hardcoded for demonstration
 
-  // const subscriptionsPerPage = 10;
-  // const initialCurrentSubscriptionPage = 1;
+  const subscriptionsPerPage = 10;
+  const initialCurrentSubscriptionPage = 1;
 
   try {
     // Fetch Plans from the API
