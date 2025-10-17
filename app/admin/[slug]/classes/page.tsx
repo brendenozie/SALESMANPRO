@@ -2,6 +2,7 @@
 
 import React from "react";
 import ClassesManagementPage from "./ClassesManagementPage";
+import { cookies } from "next/headers";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -53,6 +54,7 @@ interface Props {
  */
 export default async function AdminInventoryPage({ params }: Props) {
   const companyId = params.slug;
+  const cookieHeaders = (await cookies()).toString();
 
   let productsData: Product[] = [];
   let categoriesData: Category[] = [];
@@ -62,7 +64,9 @@ export default async function AdminInventoryPage({ params }: Props) {
     // Fetch all products for this company
     const productsRes = await fetch(
       `${apiUrl}/admin/get-all-products?companyId=${encodeURIComponent(companyId)}`,
-      { next: { revalidate: 60 } } // equivalent to SSR on every request
+      { next: { revalidate: 60 },
+        headers: { cookie: cookieHeaders }
+     } // equivalent to SSR on every request
     );
     if (productsRes.ok) {
       productsData = (await productsRes.json()) as Product[];
@@ -73,10 +77,10 @@ export default async function AdminInventoryPage({ params }: Props) {
       `${apiUrl}/admin/get-store-categories?companyId=${encodeURIComponent(
         companyId
       )}`,
-      { next: { revalidate: 60 } }
+      { next: { revalidate: 60 }, headers: { cookie: cookieHeaders } }
     );
     if (categoriesRes.ok) {
-      const categoriesJson = (await categoriesRes.json()) as {
+      const categoriesJson = (await categoriesRes.json()).data as {
         results: Category[];
       };
       categoriesData = categoriesJson.results;
@@ -85,10 +89,10 @@ export default async function AdminInventoryPage({ params }: Props) {
     // Fetch all agents for this company
     const agentsRes = await fetch(
       `${apiUrl}/admin/get-all-agents?companyId=${encodeURIComponent(companyId)}`,
-      { next: { revalidate: 60 } }
+      { next: { revalidate: 60 }, headers: { cookie: cookieHeaders } }
     );
     if (agentsRes.ok) {
-      agentsData = (await agentsRes.json()) as Agent[];
+      agentsData = (await agentsRes.json()).data as Agent[];
     }
 
     // Sanity check: ensure arrays

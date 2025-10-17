@@ -2,6 +2,7 @@
 
 import React from "react";
 import ClientsClient from "./ClientsClient";
+import { cookies } from "next/headers";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -26,11 +27,12 @@ interface PageProps {
  */
 export default async function ClientsPage(_: PageProps) {
   let clientsData: Client[] = [];
+  const cookieHeader = (await cookies()).toString();
 
   try {
-    const res = await fetch(`${apiUrl}/admin/clients`, { next: { revalidate: 60 } });
+    const res = await fetch(`${apiUrl}/admin/clients`, { next: { revalidate: 60 }, headers: { cookie: cookieHeader } });
     if (res.ok) {
-      clientsData = (await res.json()) as Client[];
+      clientsData = (await res.json()).data as Client[];
     } else {
       console.error(
         "[ClientsPage] Failed to fetch clients →",

@@ -6,15 +6,14 @@
 
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
-import { formatResponse, verifyAuth } from "@/lib/formatResponse";
+
+import { formatResponse } from "@/lib/formatResponse";
 
 /**
  * GET /api/courses/[id]
  * Fetch a single course by ID.
  */
 const GET = async (request: Request, { params }: { params: { id: string } }) => {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
   const { id } = params;
 
@@ -41,14 +40,12 @@ const GET = async (request: Request, { params }: { params: { id: string } }) => 
  * Update an existing course by ID.
  */
 const PUT = async (request: Request, { params }: { params: { id: string } }) => {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
   const { id } = params;
 
   try {
     const body = await request.json();
-    const { academicLevelIds, ...dataToUpdate } = body;
+    const { academicLevelIds, ...dataToUpdate } = body as { academicLevelIds?: string[]; [key: string]: any };
 
     // Update direct fields
     await prisma.course.update({
@@ -64,7 +61,7 @@ const PUT = async (request: Request, { params }: { params: { id: string } }) => 
       });
 
       const existingLevelIds = new Set(existingAcademicLevels.map((al) => al.academicLevelId));
-      const newLevelIds = new Set(academicLevelIds);
+      const newLevelIds = new Set<string>(academicLevelIds || []);
 
       // Remove old links
       const levelsToRemove = [...existingLevelIds].filter((levelId) => !newLevelIds.has(levelId));
@@ -118,8 +115,6 @@ const PUT = async (request: Request, { params }: { params: { id: string } }) => 
  * Delete a course by ID.
  */
 const DELETE = async (request: Request, { params }: { params: { id: string } }) => {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
   const { id } = params;
 

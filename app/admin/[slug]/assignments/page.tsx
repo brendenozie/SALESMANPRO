@@ -2,6 +2,7 @@
 
 import React from "react";
 import AdminAssignmentsOverviewPage from "./AdminAssignmentsOverviewPage";
+import { cookies } from "next/headers";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -40,15 +41,20 @@ interface PageProps {
  */
 export default async function CategoryManagerPage(_: PageProps) {
   let categoriesData: Category[] = [];
+  const cookieHeader = (await cookies()).toString();
 
   try {
     const res = await fetch(`${apiUrl}/admin/get-categories`, {
       next: { revalidate: 60 }, // SSR on every request
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: cookieHeader,
+      },
     });
 
     if (res.ok) {
       // Assuming API responds with { categories: Category[] }
-      const json = (await res.json()) as { categories: Category[] };
+      const json = (await res.json()).data as { categories: Category[] };
       categoriesData = json.categories;
     } else {
       console.error(

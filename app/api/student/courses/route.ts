@@ -1,4 +1,4 @@
-ts
+// ts
 // app/api/courses/route.ts
 // Handles API requests for Courses:
 // - GET /api/courses: Fetches all courses for the authenticated student.
@@ -13,7 +13,7 @@ import { formatResponse } from "@/lib/formatResponse";
 // --------------------
 // GET /api/courses
 // --------------------
-const getCourses = async (request: NextRequest) => {
+const getCourses = async (request: Request) => {
   const session = await getAuthSession();
 
   if (
@@ -27,7 +27,7 @@ const getCourses = async (request: NextRequest) => {
 
   // Fetch the student and their academic level
   const student = await prisma.student.findUnique({
-    where: { userId: session.user.id },
+    where: { userId: session.user?.id },
     select: {
       id: true,
       companyId: true,
@@ -54,7 +54,7 @@ const getCourses = async (request: NextRequest) => {
   const academicLevelId =
     student.StudentAcademicLevel[0]?.academicLevel?.id ?? null;
 
-  let courses = [];
+  let courses: any[] = [];
   if (academicLevelId) {
     const courseAcademicLevels = await prisma.courseAcademicLevel.findMany({
       where: { academicLevelId },
@@ -77,7 +77,7 @@ const getCourses = async (request: NextRequest) => {
 // --------------------
 // POST /api/courses
 // --------------------
-const createCourse = async (request: NextRequest) => {
+const createCourse = async (request: Request) => {
   const body = await request.json();
   const { title, description, imageUrl, credits, code, companyId, academicLevelIds } = body;
 
@@ -121,7 +121,7 @@ const createCourse = async (request: NextRequest) => {
       return formatResponse(false, null, "Course with this code already exists.", 409);
     }
 
-    return formatResponse(false, null, "Failed to create course", 500, error.message);
+    return formatResponse(false, null, `Failed to create course: ${error?.message ?? "Unknown error"}`, 500);
   }
 };
 

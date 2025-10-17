@@ -1,12 +1,10 @@
 // app/api/student/assignments/route.ts
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
-import { formatResponse, verifyAuth } from "@/lib/formatResponse";
+import { formatResponse } from "@/lib/formatResponse";
 
 // ✅ GET student assignments
 const getAssignments = async (req: Request) => {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
   const { searchParams } = new URL(req.url);
   const studentId = searchParams.get("studentId");
@@ -14,7 +12,7 @@ const getAssignments = async (req: Request) => {
 
   if (!studentId) {
     return formatResponse(false, null, "Missing studentId", 400);
-  }
+  } 
 
   const student = await prisma.student.findUnique({
     where: { userId: studentId },
@@ -130,8 +128,6 @@ const getAssignments = async (req: Request) => {
 
 // ✅ POST student submission
 const submitAssignment = async (req: Request) => {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
   const { studentId, assignmentId, submissionUrl, submissionContent, companyId } =
     await req.json();

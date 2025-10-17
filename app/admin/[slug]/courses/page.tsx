@@ -2,6 +2,7 @@
 
 import React from "react";
 import CoursesClient, { CourseType, EducatorOption, DepartmentOption, AcademicLevelOption } from "./CoursesClient";
+import { cookies } from "next/headers";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -140,6 +141,7 @@ const generateSampleCoursesData = (companyId: string): {
  */
 export default async function AdminCoursesPage({ params }: PageProps) {
   const companyId = params.slug;
+  const cookieHeader = (await cookies()).toString();
 
   let initialCourses: CourseType[] = [];
   let allEducators: EducatorOption[] = [];
@@ -151,10 +153,10 @@ export default async function AdminCoursesPage({ params }: PageProps) {
     // Fetch all courses for this company
     const coursesRes = await fetch(
       `${apiUrl}/admin/courses?companyId=${encodeURIComponent(companyId)}`,
-      { next: { revalidate: 60 } } // equivalent to SSR on every request
+      { next: { revalidate: 60 }, headers: { cookie: cookieHeader } } // equivalent to SSR on every request
     );
     if (coursesRes.ok) {
-      initialCourses = (await coursesRes.json()) as CourseType[];
+      initialCourses = (await coursesRes.json()).data as CourseType[];
     } else {
       console.error(
         `[AdminCoursesPage] Failed to fetch courses: ${coursesRes.status} ${coursesRes.statusText}`
@@ -165,10 +167,10 @@ export default async function AdminCoursesPage({ params }: PageProps) {
     // Fetch all educators for this company
     const educatorsRes = await fetch(
       `${apiUrl}/admin/educators?companyId=${encodeURIComponent(companyId)}`,
-      { next: { revalidate: 60 } }
+      { next: { revalidate: 60 }, headers: { cookie: cookieHeader } }
     );
     if (educatorsRes.ok) {
-      const fetchedEducators = (await educatorsRes.json()) as any[]; // Use 'any' for initial fetch, then map
+      const fetchedEducators = (await educatorsRes.json()).data as any[]; // Use 'any' for initial fetch, then map
       allEducators = fetchedEducators.map(e => ({
         id: e.id,
         name: e.name,
@@ -184,10 +186,10 @@ export default async function AdminCoursesPage({ params }: PageProps) {
     // Fetch all departments for this company
     const departmentsRes = await fetch(
       `${apiUrl}/admin/departments?companyId=${encodeURIComponent(companyId)}`,
-      { next: { revalidate: 60 } }
+      { next: { revalidate: 60 }, headers: { cookie: cookieHeader } }
     );
     if (departmentsRes.ok) {
-      allDepartments = (await departmentsRes.json()) as DepartmentOption[];
+      allDepartments = (await departmentsRes.json()).data as DepartmentOption[];
     } else {
       console.error(
         `[AdminCoursesPage] Failed to fetch departments: ${departmentsRes.status} ${departmentsRes.statusText}`
@@ -198,10 +200,10 @@ export default async function AdminCoursesPage({ params }: PageProps) {
     // Fetch all academic levels for this company
     const academicLevelsRes = await fetch(
       `${apiUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`,
-      { next: { revalidate: 60 } }
+      { next: { revalidate: 60 }, headers: { cookie: cookieHeader } }
     );
     if (academicLevelsRes.ok) {
-      allAcademicLevels = (await academicLevelsRes.json()) as AcademicLevelOption[];
+      allAcademicLevels = (await academicLevelsRes.json()).data as AcademicLevelOption[];
     } else {
       console.error(
         `[AdminCoursesPage] Failed to fetch academic levels: ${academicLevelsRes.status} ${academicLevelsRes.statusText}`

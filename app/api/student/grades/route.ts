@@ -1,4 +1,4 @@
-ts
+// ts
 // app/api/student/grades/route.ts
 // Handles fetching student grades, GPA, and detailed records.
 
@@ -6,11 +6,8 @@ import { NextRequest } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
-import { verifyAuth } from "@/lib/verifyAuth"; // assuming you have this util
 
-const getStudentGrades = async (request: NextRequest) => {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+const getStudentGrades = async (request: Request) => {
 
   const { searchParams } = new URL(request.url);
   const studentId = searchParams.get("studentId");
@@ -135,8 +132,8 @@ const getStudentGrades = async (request: NextRequest) => {
     }),
   ].sort(
     (a, b) =>
-      new Date(b.gradedDate).getTime() -
-      new Date(a.gradedDate).getTime()
+      (b.gradedDate ? new Date(b.gradedDate).getTime() : 0) -
+      (a.gradedDate ? new Date(a.gradedDate).getTime() : 0)
   );
 
   return formatResponse(true, {

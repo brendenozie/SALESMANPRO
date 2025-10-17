@@ -1,11 +1,10 @@
 // app/api/student/classes/route.ts
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
-import { formatResponse, verifyAuth } from "@/lib/formatResponse";
+
+import { formatResponse } from "@/lib/formatResponse";
 
 const GET = async (request: Request) => {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
   const { searchParams } = new URL(request.url);
   const studentId = searchParams.get("studentId");

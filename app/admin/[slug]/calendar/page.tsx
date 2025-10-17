@@ -1,6 +1,7 @@
 // app/[slug]/appointments/page.tsx
 import React from "react";
 import AdminAppointmentsClient, { AppointmentItem, OrderItem } from "./AdminAppointementsClient"; // Updated import to include OrderItem type
+import { cookies } from "next/headers";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -159,6 +160,8 @@ const sampleOrderItems: OrderItem[] = [
 
 export default async function AppointmentsPage({ params }: Props) {
   const companyId = params.slug;
+  const cookieHeader = await cookies().toString();
+
   let orderItems: OrderItem[] = [];
 
   // In a real application, you would fetch both appointments and order items
@@ -166,10 +169,15 @@ export default async function AppointmentsPage({ params }: Props) {
   try {
     const res = await fetch(
       `${apiUrl}/admin/orders?companyId=${encodeURIComponent(companyId)}`,
-      { next: { revalidate: 60 } } // SSR on every request
+      { next: { revalidate: 60 },
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: cookieHeader,
+        },
+     } // SSR on every request
     );
     if (res.ok) {
-      const json = (await res.json()) as { orderItems: OrderItem[] };
+      const json = (await res.json()).data as { orderItems: OrderItem[] };
       // Filter orderItems to include only those with date/timeSlot if necessary
       orderItems = json.orderItems.filter(item => item.date && item.timeSlot) || [];
     } else {

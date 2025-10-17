@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import CompanyLocationForm from './CompanyLocationForm';
+import { useParams } from 'next/navigation';
 
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
@@ -35,18 +36,19 @@ interface CompanyLocation {
   };
 }
 
-interface PageProps {
-  params: {
-    slug: string; // companyId
-  };
-}
+// interface PageProps {
+//   params: {
+//     slug: string; // companyId
+//   };
+// }
 
 // Main App component for Company Location Management
-export default function App( { params }: PageProps) {
+export default function App() {
   // Hardcoded company ID for demonstration.
   // In a real app, this would come from auth context or URL params.
-  const COMPANY_ID = params.slug || "60c72b2f9b1e8b001c8e4d1b"; // Replace with a valid Company ID from your DB
-
+  // const COMPANY_ID = params.slug || "60c72b2f9b1e8b001c8e4d1b"; // Replace with a valid Company ID from your DB
+  const { slug : COMPANY_ID } = useParams();
+  
   const [companyLocations, setCompanyLocations] = useState<CompanyLocation[]>([]);
   const [availableLocations, setAvailableLocations] = useState<any[]>([]); // All base locations for selection
   const [loading, setLoading] = useState(true);
@@ -82,7 +84,9 @@ export default function App( { params }: PageProps) {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${apiBaseUrl}/admin/company-locations?companyId=${COMPANY_ID}`);
+      const response = await fetch(`${apiBaseUrl}/admin/company-locations?companyId=${COMPANY_ID}`
+        , { headers: { 'Credentials': 'include' } }
+      );
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -99,7 +103,9 @@ export default function App( { params }: PageProps) {
   // Function to fetch all available base locations (for the dropdown)
   const fetchAvailableLocations = async () => {
     try {
-      const response = await fetch(`${apiBaseUrl}/admin/locations`); // Use the generic /api/locations endpoint
+      const response = await fetch(`${apiBaseUrl}/admin/locations`,
+        { headers: { 'Credentials': 'include' } }
+      ); // Use the generic /api/locations endpoint
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -172,7 +178,7 @@ export default function App( { params }: PageProps) {
 
       const response = await fetch(`${apiBaseUrl}/admin/company-locations`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Credentials': 'include' },
         body: JSON.stringify(payload),
       });
 
@@ -216,7 +222,7 @@ export default function App( { params }: PageProps) {
 
       const response = await fetch(`${apiBaseUrl}/admin/company-locations/${selectedCompanyLocation.id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Credentials': 'include' },
         body: JSON.stringify(payload),
       });
 
@@ -246,6 +252,7 @@ export default function App( { params }: PageProps) {
     try {
       const response = await fetch(`${apiBaseUrl}/admin/company-locations/${companyLocationToDeleteId}`, {
         method: 'DELETE',
+        headers: { 'Credentials': 'include' },
       });
 
       if (!response.ok) {

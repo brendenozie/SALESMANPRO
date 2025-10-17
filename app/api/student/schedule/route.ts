@@ -1,4 +1,4 @@
-ts
+// ts
 // app/api/student/schedule/route.ts
 // Handles fetching a student's schedule (recurring classes + events)
 
@@ -6,11 +6,8 @@ import { NextRequest } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
-import { verifyAuth } from "@/lib/verifyAuth";
 
-const getStudentSchedule = async (request: NextRequest) => {
-  const auth = await verifyAuth(request);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+const getStudentSchedule = async (request: Request) => {
 
   const { searchParams } = new URL(request.url);
   const studentId = searchParams.get("studentId");

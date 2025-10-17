@@ -2,6 +2,7 @@
 
 import React from "react";
 import CourseAssignmentsClient, { CourseAssignmentType, CourseOption, AcademicLevelOption } from "./CourseAssignmentsClient";
+import { cookies } from "next/headers";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -102,6 +103,7 @@ const generateSampleGlobalAssignmentsData = (companyId: string): {
  */
 export default async function GlobalCourseAssignmentsManagementPage({ params }: PageProps) {
   const companyId = params.slug;
+  const cookieHeader = await cookies().toString();
 
   let initialAssignments: CourseAssignmentType[] = [];
   let allCourses: CourseOption[] = [];
@@ -112,10 +114,13 @@ export default async function GlobalCourseAssignmentsManagementPage({ params }: 
     // Fetch all assignments for this company
     const assignmentsRes = await fetch(
       `${apiUrl}/course-assignments?companyId=${encodeURIComponent(companyId)}`,
-      { next: { revalidate: 60 } }
+      { 
+        next: { revalidate: 60 },
+        headers: { cookie: cookieHeader }
+     }
     );
     if (assignmentsRes.ok) {
-      initialAssignments = (await assignmentsRes.json()) as CourseAssignmentType[];
+      initialAssignments = (await assignmentsRes.json()).data as CourseAssignmentType[];
     } else {
       console.error(
         `[GlobalCourseAssignmentsManagementPage] Failed to fetch assignments: ${assignmentsRes.status} ${assignmentsRes.statusText}`
@@ -126,10 +131,14 @@ export default async function GlobalCourseAssignmentsManagementPage({ params }: 
     // Fetch all courses for this company (for filtering and linking)
     const coursesRes = await fetch(
       `${apiUrl}/courses?companyId=${encodeURIComponent(companyId)}`,
-      { next: { revalidate: 60 } }
+      { 
+        next: { revalidate: 60 },
+        headers: { cookie: cookieHeader }
+
+     }
     );
     if (coursesRes.ok) {
-      const fetchedCourses = (await coursesRes.json()) as any[]; // Use 'any' for initial fetch, then map
+      const fetchedCourses = (await coursesRes.json()).data as any[]; // Use 'any' for initial fetch, then map
       allCourses = fetchedCourses.map(c => ({
         id: c.id,
         title: c.title,
@@ -146,10 +155,13 @@ export default async function GlobalCourseAssignmentsManagementPage({ params }: 
     // Fetch all academic levels (for filtering)
     const academicLevelsRes = await fetch(
       `${apiUrl}/academic-levels?companyId=${encodeURIComponent(companyId)}`,
-      { next: { revalidate: 60 } }
+      { 
+        next: { revalidate: 60 },
+        headers: { cookie: cookieHeader }
+       }
     );
     if (academicLevelsRes.ok) {
-      allAcademicLevels = (await academicLevelsRes.json()) as AcademicLevelOption[];
+      allAcademicLevels = (await academicLevelsRes.json()).data as AcademicLevelOption[];
     } else {
       console.error(
         `[GlobalCourseAssignmentsManagementPage] Failed to fetch academic levels: ${academicLevelsRes.status} ${academicLevelsRes.statusText}`

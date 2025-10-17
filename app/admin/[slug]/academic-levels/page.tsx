@@ -2,6 +2,7 @@
 
 import React from "react";
 import AcademicLevelsClient, { AcademicLevelType } from "./AcademicLevelsClient";
+import { cookies } from "next/headers";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -80,6 +81,7 @@ const generateSampleAcademicLevelsData = (companyId: string): AcademicLevelType[
  */
 export default async function AcademicLevelsManagementPage({ params }: PageProps) {
   const companyId = params.slug;
+  const cookieHeaders = (await cookies()).toString();
 
   let initialAcademicLevels: AcademicLevelType[] = [];
   let fetchError: boolean = false;
@@ -88,10 +90,10 @@ export default async function AcademicLevelsManagementPage({ params }: PageProps
     // Fetch all academic levels for this company
     const academicLevelsRes = await fetch(
       `${apiUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`,
-      { next: { revalidate: 60 } } // equivalent to SSR on every request
+      { next: { revalidate: 60 }, headers: { cookie: cookieHeaders } } // equivalent to SSR on every request
     );
     if (academicLevelsRes.ok) {
-      initialAcademicLevels = (await academicLevelsRes.json()) as AcademicLevelType[];
+      initialAcademicLevels = (await academicLevelsRes.json()).data as AcademicLevelType[];
     } else {
       // console.error(
       //   `[AcademicLevelsManagementPage] Failed to fetch academic levels: ${academicLevelsRes.status} ${academicLevelsRes.statusText}`
