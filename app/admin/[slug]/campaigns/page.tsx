@@ -32,7 +32,7 @@ interface PageProps {
  * then renders the client component with the fetched data.
  */
 export default async function CampaignsPage({ params }: PageProps) {
-  const companyId = params.slug; // Assuming campaigns can be filtered by companyId
+  const { slug : companyId } = await params; // Assuming campaigns can be filtered by companyId
   const cookieHeader = await cookies().toString();
   let campaignsData: Campaign[] = [];
 

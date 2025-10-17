@@ -112,7 +112,7 @@ const generateSampleMessageData = (companyId: string, currentUserId: string): {
  * then renders the Client Component below.
  */
 export default async function MessagesManagerPage({ params }: Props) {
-  const companyId = params.slug;
+  const { slug : companyId } = await params;
   const currentUserId = MOCK_CURRENT_USER_ID; // In a real app, get this from auth context
   
     const cookieHeader = await cookies().toString();

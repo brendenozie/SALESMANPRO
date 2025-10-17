@@ -219,7 +219,7 @@ const generateSampleEventData = (companyId: string): {
 
 
 export default async function EventsManagerPage({ params }: PageProps) {
-  const companyId = params.slug;
+  const { slug : companyId } = await params;
 
   let initialEvents: EventData[] = [];
   let allAcademicLevels: AcademicLevelOption[] = [];

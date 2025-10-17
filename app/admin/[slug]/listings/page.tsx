@@ -76,7 +76,7 @@ interface PageProps {
  * then renders the ClientInventoryClient with those props.
  */
 export default async function ClientInventoryPage({ params }: PageProps) {
-  const companyId = params.slug;
+  const { slug : companyId } = await params;
 
   let productsData: MarketListingForm[] = [];
   let categoriesData: IStoreCategory[] = [];

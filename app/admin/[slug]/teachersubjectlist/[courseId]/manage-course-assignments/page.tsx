@@ -42,7 +42,7 @@ export interface ManageAssignmentsPageData {
 }
 
 export default async function ManageAssignmentsServerPage({ params }: PageProps) {
-  const companyId = params.slug;
+  const { slug : companyId } = await params;
   const courseId = params.courseId;
   const educatorId = MOCK_CURRENT_EDUCATOR_ID; // In a real app, get this from auth context
 

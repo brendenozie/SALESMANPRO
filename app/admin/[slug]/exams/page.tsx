@@ -160,7 +160,7 @@ const generateSampleExamData = (companyId: string): {
 
 
 export default async function ExamsManagerPage({ params }: PageProps) {
-  const companyId = params.slug;
+  const { slug : companyId } = await params;
 
   let initialExams: ExamData[] = [];
   let allCourses: CourseOption[] = [];

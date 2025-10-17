@@ -11,7 +11,7 @@ interface PageProps {
 }
 
 export default async function AdminResultsOverviewPageWrapper({ params }: PageProps) {
-  const companyId = params.slug;
+  const { slug : companyId } = await params;
 
 
 

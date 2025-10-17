@@ -86,7 +86,7 @@ const generateSampleParentsData = (companyId: string): ParentType[] => {
  * then renders the Client Component below.
  */
 export default async function ParentsManagementPage({ params }: PageProps) {
-  const companyId = params.slug;
+  const { slug : companyId } = await params;
 
   let initialParents: ParentType[] = [];
   let fetchError: boolean = false;

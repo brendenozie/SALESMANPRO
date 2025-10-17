@@ -80,7 +80,7 @@ const generateSampleAdminResultsData = (companyId: string): {
 
 
 export default async function AdminResultsOverviewPageWrapper({ params }: PageProps) {
-  const companyId = params.slug;
+  const { slug : companyId } = await params;
 
   let initialSubmissions: ExamSubmissionDataForAdmin[] = [];
   let allExams: ExamOption[] = [];

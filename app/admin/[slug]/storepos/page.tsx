@@ -19,7 +19,7 @@ interface PageProps {
 export default async function PosPage({ params }: PageProps) {
   const session = await getAuthSession();
   
-  const companyId = params.slug;
+  const { slug : companyId } = await params;
   const cookieHeaders = (await cookies()).toString();
   const userName = session?.user?.name || "Guest";
   // console.log("Current userName from cookies:", userName);

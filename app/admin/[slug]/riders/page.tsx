@@ -35,7 +35,7 @@ interface PageProps {
  * to the client component.
  */
 export default async function RidersPage({ params }: PageProps) {
-  const companyId = params.slug;
+  const { slug : companyId } = await params;
   let ridersData: RiderProfile[] = [];
   const cookieHeader = await cookies().toString();
   

@@ -51,7 +51,7 @@ interface PageProps {
  * to the client component.
  */
 export default async function WritersPage({ params }: PageProps) {
-  const companyId = params.slug;
+  const { slug : companyId } = await params;
   let writersData: Writer[] = [];
   const cookieHeader = await cookies().toString();
 

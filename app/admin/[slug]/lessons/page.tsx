@@ -121,7 +121,7 @@ const generateSampleTimetableData = (companyId: string): {
 
 
 export default async function TimetableManagerPage({ params }: PageProps) {
-  const companyId = params.slug;
+  const { slug : companyId } = await params;
 
   let initialTimetable: TimetableEntry[] = [];
   let allCourses: CourseOption[] = [];

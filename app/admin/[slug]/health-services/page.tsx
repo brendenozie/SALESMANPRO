@@ -55,7 +55,7 @@ async function getInitialServiceData(companyId: string): Promise<Service[]> {
 }
 
 export default async function AdminServicesPage({ params }: { params: { slug: string } }) {
-  const companyId = params.slug;
+  const { slug : companyId } = await params;
   
   // 1. Fetch data on the server
   const initialServices = await getInitialServiceData(companyId);

@@ -20,7 +20,7 @@ interface PageProps {
 }
 
 export default async function ClientInventoryPage({ params }: PageProps) {
-  const companyId = params.slug;
+  const { slug : companyId } = await params;
   const cookieHeader = await cookies().toString();
 
   let productsData: MarketListingForm[] = [];

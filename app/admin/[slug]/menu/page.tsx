@@ -63,7 +63,7 @@ interface PaginatedListings {
  * Server Component: Fetches menu categories and products for a specific restaurant.
  */
 export default async function MenuPage({ params }: PageProps) {
-    const companyId = params.slug;
+    const { slug : companyId } = await params;
     const cookieHeader = await cookies().toString();
   
     let productsData: MarketListingForm[] = [];

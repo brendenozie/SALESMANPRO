@@ -55,7 +55,7 @@ interface PageProps {
  * Server Component: Fetches delivery orders for a specific restaurant.
  */
 export default async function DeliveryPage({ params }: PageProps) {
-  const companyId = params.slug;
+  const { slug : companyId } = await params;
   const cookieHeader = (await cookies()).toString();
   let deliveryOrdersData: CustomerOrder[] = [];
   let error: string | null = null;

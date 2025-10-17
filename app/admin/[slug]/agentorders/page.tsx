@@ -29,7 +29,7 @@ interface PageProps {
  */
 export default async function ProductRequestsPage({ params }: PageProps) {
   // You can extract companyId from params.slug if the endpoint needs it:
-  const companyId = params.slug;
+  const { slug : companyId } = await params;
   const cookieHeaders = (await cookies()).toString();
 
   let requestsData: ProductRequest[] = [];

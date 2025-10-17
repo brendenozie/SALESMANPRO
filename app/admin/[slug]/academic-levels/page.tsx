@@ -80,7 +80,7 @@ const generateSampleAcademicLevelsData = (companyId: string): AcademicLevelType[
  * then renders the Client Component below.
  */
 export default async function AcademicLevelsManagementPage({ params }: PageProps) {
-  const companyId = params.slug;
+  const { slug : companyId } = await params;
   const cookieHeaders = (await cookies()).toString();
 
   let initialAcademicLevels: AcademicLevelType[] = [];

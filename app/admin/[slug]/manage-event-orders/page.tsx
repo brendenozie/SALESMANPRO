@@ -34,7 +34,7 @@ interface Props {
 }
 
 export default async function AdminOrdersPage({ params }: Props) {
-  const companyId = params.slug;
+  const { slug : companyId } = await params;
 
   // ✅ 1. Serialize cookies for secure server-side fetching
   const cookiesHeader = (await cookies())

@@ -9,7 +9,7 @@ interface Props {
 }
 
 export default async function AdminTicketsPage({ params }: Props) {
-  const companyId = params.slug;
+  const { slug : companyId } = await params;
   const cookiesHeader = (await cookies()).toString();
 
   let tickets = [];

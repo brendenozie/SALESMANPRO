@@ -49,7 +49,7 @@ interface Props {
  * and passes them to the client component as initial props.
  */
 export default async function ProductsPage({ params }: Props) {
-  const companyId = params.slug;
+  const { slug : companyId } = await params;
   const cookieStore = (await cookies()).toString();
 
   let orderItems: OrderItem[] = [];

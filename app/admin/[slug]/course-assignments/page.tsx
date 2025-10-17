@@ -102,7 +102,7 @@ const generateSampleGlobalAssignmentsData = (companyId: string): {
  * then renders the Client Component below.
  */
 export default async function GlobalCourseAssignmentsManagementPage({ params }: PageProps) {
-  const companyId = params.slug;
+  const { slug : companyId } = await params;
   const cookieHeader = await cookies().toString();
 
   let initialAssignments: CourseAssignmentType[] = [];

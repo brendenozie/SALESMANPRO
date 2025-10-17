@@ -199,7 +199,7 @@ const generateSampleAnnouncementData = (companyId: string): {
 
 
 export default async function AnnouncementsManagerPage({ params }: PageProps) {
-  const companyId = params.slug;
+  const { slug : companyId } = await params;
 
   let initialAnnouncements: AnnouncementData[] = [];
   let allAcademicLevels: AcademicLevelOption[] = [];

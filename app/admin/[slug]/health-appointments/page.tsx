@@ -94,7 +94,7 @@ async function fetchDoctors(companyId: string, cookieHeader: string) {
 
 export default async function AdminAppointmentsPage({ params }: Props) {
   // Get the companyId from the URL params
-  const companyId = params.slug;
+  const { slug : companyId } = await params;
   const cookieHeader = (await cookies()).toString();
 
   // Fetch initial data on the server

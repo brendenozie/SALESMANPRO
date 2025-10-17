@@ -132,7 +132,7 @@ const generateSampleGlobalMaterialsData = (companyId: string): {
  * then renders the Client Component below.
  */
 export default async function GlobalCourseMaterialsManagementPage({ params }: PageProps) {
-  const companyId = params.slug;
+  const { slug : companyId } = await params;
   const cookieHeader = await cookies().toString();
 
   let initialMaterials: CourseMaterialType[] = [];

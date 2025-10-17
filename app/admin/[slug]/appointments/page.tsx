@@ -82,7 +82,7 @@ const sampleOrderItems: OrderItem[] = [
 // Page Component (Server Component)
 // ──────────────────────────────────────────────
 export default async function AppointmentsPage({ params }: Props) {
-  const companyId = params.slug;
+  const { slug : companyId } = await params;
   const cookieStore = cookies();
   const cookieHeader = cookieStore.toString();
 

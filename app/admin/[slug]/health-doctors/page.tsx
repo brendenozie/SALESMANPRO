@@ -51,7 +51,7 @@ async function fetchDoctors(companyId: string) {
 }
 
 export default async function AdminDoctorsPage({ params }: Props) {
-  const companyId = params.slug;
+  const { slug : companyId } = await params;
   const doctors = await fetchDoctors(companyId);
 
   return (

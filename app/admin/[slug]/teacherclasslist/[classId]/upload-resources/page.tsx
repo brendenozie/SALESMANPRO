@@ -52,7 +52,7 @@ interface Props {
  * then renders the Client Component below.
  */
 export default async function AdminInventoryPage({ params }: Props) {
-  const companyId = params.slug;
+  const { slug : companyId } = await params;
 
   let productsData: Product[] = [];
   let categoriesData: Category[] = [];

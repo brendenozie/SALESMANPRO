@@ -33,7 +33,7 @@ interface PageProps {
 }
 
 export default async function DashboardPage({ params }: PageProps) {
-  const companyId = params.slug;
+  const { slug : companyId } = await params;
 
   // --- Simulate API Calls with Dummy Data ---
   let stats: DashboardStats = {

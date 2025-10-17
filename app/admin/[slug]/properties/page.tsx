@@ -187,7 +187,7 @@ interface PropertyPageProps {
 
 
 export default async function PropertyManagementPage({ params }: PropertyPageProps) {
-    const companyId = params.slug;
+    const { slug : companyId } = await params;
     const cookiesHeaders = (await cookies()).toString();
 
     if (!companyId) {

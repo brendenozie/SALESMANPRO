@@ -35,7 +35,7 @@ interface PageProps {
  * to the client component.
  */
 export default async function AgentsPage({ params }: PageProps) {
-  const companyId = params.slug;
+  const { slug : companyId } = await params;
   let agentsData: Agent[] = [];
   const cookieHeader = await cookies().toString();
   

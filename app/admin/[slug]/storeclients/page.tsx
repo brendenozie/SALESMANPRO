@@ -16,7 +16,7 @@ interface PageProps {
  * then renders the client component with the fetched data.
  */
 export default async function ClientsPage({ params }: PageProps) {
-  const companyId = params.slug;
+  const { slug : companyId } = await params;
   const cookieStore = (await cookies()).toString();
 
   let clientsData: Client[] = [];

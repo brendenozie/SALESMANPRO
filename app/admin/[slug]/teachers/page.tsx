@@ -175,7 +175,7 @@ const generateSampleEducatorsData = (companyId: string): {
  * then renders the Client Component below.
  */
 export default async function TeachersManagementPage({ params }: PageProps) {
-  const companyId = params.slug;
+  const { slug : companyId } = await params;
 
   let initialEducators: EducatorType[] = [];
   let allDepartments: DepartmentOption[] = [];

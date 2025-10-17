@@ -63,7 +63,7 @@ interface PageProps {
  * then renders the PodcastsClient with those props.
  */
 export default async function PodcastsAdminPage({ params }: PageProps) {
-  const companyId = params.slug; // Using companyId as the slug for now, adjust as needed
+  const { slug : companyId } = await params; // Using companyId as the slug for now, adjust as needed
   const cookieHeader = (await cookies()).toString();
   let podcastsData: Podcast[] = [];
   let categoriesData: IStoreCategory[] = [];

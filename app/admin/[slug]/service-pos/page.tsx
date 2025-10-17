@@ -50,7 +50,7 @@ interface PageProps {
  * Server Component: Fetches initial data for the POS.
  */
 export default async function PosPage({ params }: PageProps) {
-  const companyId = params.slug;
+  const { slug : companyId } = await params;
   let categoriesData: ProductCategory[] = [];
   let productsData: Product[] = [];
 

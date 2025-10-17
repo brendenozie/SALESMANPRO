@@ -35,7 +35,7 @@ export type OrganizerOption = { id: string; name: string; email: string };
  * then renders the Client Component below.
  */
 export default async function AdminInventoryPage({ params }: Props) {
-  const companyId = params.slug;
+  const { slug : companyId } = await params;
   const cookiesHeader = (await cookies()).toString  ();
 
   let categoriesData: IStoreCategory[] = [];

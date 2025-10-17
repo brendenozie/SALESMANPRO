@@ -95,7 +95,7 @@ async function fetchPatients(companyId: string, cookieHeader: string) {
 }
 
 export default async function AdminBillingPage({ params }: { params: { slug: string } }) {
-  const companyId = params.slug;
+  const { slug : companyId } = await params;
   const cookieHeader = (await cookies()).toString(); // Get the cookie header from the request context
 
   // 1. Fetch ALL necessary data concurrently on the server

@@ -47,7 +47,7 @@ interface PageProps {
 }
 
 export default async function BillingPage({ params, searchParams }: PageProps) {
-  const companyId = params.slug;
+  const { slug : companyId } = await params;
   const page = parseInt(searchParams.page || "1");
   const limit = parseInt(searchParams.limit || "10");
   const transactionStatus = searchParams.transactionStatus || "";
@@ -224,7 +224,7 @@ export default async function BillingPage({ params, searchParams }: PageProps) {
 
 
 // export default async function BillingPage({ params, searchParams }: PageProps) {
-//   const companyId = params.slug;
+//   const { slug : companyId } = await params;
 //   const page = parseInt(searchParams.page || "1");
 //   const limit = parseInt(searchParams.limit || "10");
 //   const transactionStatus = searchParams.transactionStatus || "";

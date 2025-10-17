@@ -99,7 +99,7 @@ const generateSampleReportData = (): {
  * then renders the Client Component below.
  */
 export default async function AdminReportsPage({ params }: Props) {
-  const companyId = params.slug;
+  const { slug : companyId } = await params;
 
   let overallStats: OverallStats | null = null;
   let studentPerformanceData: StudentPerformanceData | null = null;

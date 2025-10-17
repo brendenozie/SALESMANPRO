@@ -18,7 +18,7 @@ interface PageProps {
  */
 export default async function CategoryManagerPage({ params }: PageProps) {
   let storeCategories: IStoreCategory[] = [];
-  const companyId = params.slug;
+  const { slug : companyId } = await params;
 
   try {
     const cookieHeader = cookies().toString();

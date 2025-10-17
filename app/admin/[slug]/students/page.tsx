@@ -158,7 +158,7 @@ const generateSampleStudentsData = (companyId: string): {
  * then renders the Client Component below.
  */
 export default async function StudentsManagementPage({ params }: PageProps) {
-  const companyId = params.slug;
+  const { slug : companyId } = await params;
 
   let initialStudents: StudentType[] = [];
   let allParents: ParentOption[] = [];

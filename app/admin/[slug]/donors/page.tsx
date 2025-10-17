@@ -50,7 +50,7 @@ interface PageProps {
  */
 export default async function DonationsPage({ params }: PageProps) {
 
-  const companyId = params.slug; // Assuming donations can be filtered by companyId
+  const { slug : companyId } = await params; // Assuming donations can be filtered by companyId
   const cookieHeader = await cookies().toString();
 
   let donationsData: Donation[] = [];

@@ -39,7 +39,7 @@ export interface AttendancePageData {
 }
 
 export default async function TakeAttendanceServerPage({ params }: PageProps) {
-  const companyId = params.slug;
+  const { slug : companyId } = await params;
   const courseId = params.courseId;
   const educatorId = params.slug || MOCK_CURRENT_EDUCATOR_ID; // In a real app, get this from auth context
 
