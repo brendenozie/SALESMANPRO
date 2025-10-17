@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { HomeIcon, UsersIcon, CalendarDaysIcon, CurrencyDollarIcon, ClipboardDocumentListIcon, SunIcon } from '@heroicons/react/24/solid';
 
 interface DashboardCardProps {
@@ -48,8 +48,9 @@ const fadeIn = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.7, ease: "easeOut" } }
 };
 
-export default function AdminDashboardPage({ params }: { params: { adminSlug: string } }) {
-  const { adminSlug } = params;
+export default function AdminDashboardPage() {
+  
+  const { slug: adminSlug } = useParams();
 
   // Sample Data for Dashboard Cards
   const dashboardStats = [

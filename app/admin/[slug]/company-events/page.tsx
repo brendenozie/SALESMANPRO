@@ -12,6 +12,7 @@ import {
   BellAlertIcon,
   ArrowRightIcon,
 } from '@heroicons/react/24/outline';
+import { useParams } from 'next/navigation';
 
 // Framer Motion variants
 const sectionVariants = {
@@ -50,7 +51,8 @@ const mockDashboardData = {
   ],
 };
 
-export default function AdminDashboard({ adminSlug = 'your-org-slug' }: { adminSlug?: string }) {
+export default function AdminDashboard() {
+  const { slug : adminSlug } = useParams(); // Replace with actual slug from params
   return (
     <div className="min-h-screen bg-gray-950 text-gray-200 p-8 sm:p-12 font-sans relative overflow-hidden">
       {/* Decorative Background Elements */}

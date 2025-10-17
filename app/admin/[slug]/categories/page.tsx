@@ -7,9 +7,7 @@ import { cookies } from "next/headers";
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
 interface PageProps {
-  params: {
-    slug: string; // company ID
-  };
+  params:Promise<{ slug: string }>
 }
 
 /**
@@ -24,7 +22,7 @@ export default async function CategoryManagerPage({ params }: PageProps) {
     const cookieHeader = cookies().toString();
 
     const res = await fetch(
-      `${apiUrl}/admin/get-store-categories?companyId=${params.slug}`,
+      `${apiUrl}/admin/get-store-categories?companyId=${companyId}`,
       { cache: 'no-store', headers: { Cookie: cookieHeader } },
     );
 

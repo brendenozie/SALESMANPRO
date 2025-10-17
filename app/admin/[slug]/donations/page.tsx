@@ -39,9 +39,7 @@ export type Donation = {
 };
 
 interface PageProps {
-  params: {
-    slug: string; // companyId - assuming donations can be filtered by company
-  };
+  params:Promise<{ slug: string }>
 }
 
 /**

@@ -2,14 +2,15 @@
 
 import React from "react";
 import MaterialsClient, { CourseMaterialType, CourseDetailsType, EducatorOption } from "./MaterialsClient";
+import { cookies } from "next/headers";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface PageProps {
-  params: {
-    slug: string; // companyId
+  params:Promise<{ 
+    slug: string;
     courseId: string;
-  };
+   }>;
 }
 
 // --- Helper function to generate sample data ---
@@ -114,7 +115,8 @@ const generateSampleMaterialsData = (companyId: string, courseId: string): {
  * then renders the Client Component below.
  */
 export default async function CourseMaterialsManagementPage({ params }: PageProps) {
-  const { slug: companyId, courseId } = params;
+  const { slug: companyId, courseId } = await params;
+  const cookieHeaders = (await cookies()).toString();
 
   let initialMaterials: CourseMaterialType[] = [];
   let courseDetails: CourseDetailsType | null = null;
@@ -125,10 +127,10 @@ export default async function CourseMaterialsManagementPage({ params }: PageProp
     // Fetch course details
     const courseRes = await fetch(
       `${apiUrl}/courses/${encodeURIComponent(courseId)}`,
-      { next: { revalidate: 60 } }
+      { next: { revalidate: 60 }, headers: { Cookie: cookieHeaders } }
     );
     if (courseRes.ok) {
-      courseDetails = (await courseRes.json()) as CourseDetailsType;
+      courseDetails = (await courseRes.json()).data as CourseDetailsType;
     } else {
       console.error(
         `[CourseMaterialsManagementPage] Failed to fetch course details: ${courseRes.status} ${courseRes.statusText}`
@@ -139,10 +141,10 @@ export default async function CourseMaterialsManagementPage({ params }: PageProp
     // Fetch all materials for this specific course
     const materialsRes = await fetch(
       `${apiUrl}/course-materials?courseId=${encodeURIComponent(courseId)}`,
-      { next: { revalidate: 60 } }
+      { next: { revalidate: 60 }, headers: { Cookie: cookieHeaders } }
     );
     if (materialsRes.ok) {
-      initialMaterials = (await materialsRes.json()) as CourseMaterialType[];
+      initialMaterials = (await materialsRes.json()).data as CourseMaterialType[];
     } else {
       console.error(
         `[CourseMaterialsManagementPage] Failed to fetch materials: ${materialsRes.status} ${materialsRes.statusText}`
@@ -153,10 +155,10 @@ export default async function CourseMaterialsManagementPage({ params }: PageProp
     // Fetch all educators (for the "uploaded by" dropdown)
     const educatorsRes = await fetch(
       `${apiUrl}/educators?companyId=${encodeURIComponent(companyId)}`,
-      { next: { revalidate: 60 } }
+      { next: { revalidate: 60 }, headers: { Cookie: cookieHeaders } }
     );
     if (educatorsRes.ok) {
-      const fetchedEducators = (await educatorsRes.json()) as any[];
+      const fetchedEducators = (await educatorsRes.json()).data as any[];
       allEducators = fetchedEducators.map(e => ({
         id: e.id,
         name: e.name,

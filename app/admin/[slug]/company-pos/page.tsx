@@ -15,6 +15,8 @@ import {
   ArrowPathIcon, // For loading spinner
 } from '@heroicons/react/24/outline';
 
+import { useParams } from "next/navigation";
+
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
 
@@ -37,7 +39,9 @@ const formItemVariants = {
   },
 };
 
-export default function AdminPOS({ adminSlug = 'your-org-slug' }: { adminSlug?: string }) {
+export default function AdminPOS() {
+  const { slug : adminSlug } = useParams();
+
   const [events, setEvents] = useState<any[]>([]); // Fetched events
   const [selectedEventId, setSelectedEventId] = useState('');
   const [availableTickets, setAvailableTickets] = useState<any[]>([]); // Tickets for selected event

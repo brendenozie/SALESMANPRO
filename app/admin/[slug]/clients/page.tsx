@@ -16,9 +16,7 @@ const apiBaseUrl = process.env.INTERNAL_API_URL || 'http://localhost:3000/api';
 
 // --- Interface for Server Component Props ---
 interface ClientsPageProps {
-  params: {
-    slug: string; // Using adminSlug instead of slug for consistency
-  };
+  params:Promise<{ slug: string }>
 }
 
 // --- Client Summary Card Component (Server-side, purely presentational) ---
@@ -56,7 +54,7 @@ const generateSampleClients = (): ClientProfile[] => [
 
 // NOTE: This is an async Server Component.
 export default async function ClientsPage({ params }: ClientsPageProps) {
-  const { slug } = params;
+  const { slug } = await params;
   const cookiesHeader = (await cookies()).toString();
 
   if (!slug) {

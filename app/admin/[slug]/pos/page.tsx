@@ -41,9 +41,7 @@ export type Product = {
 };
 
 interface PageProps {
-  params: {
-    slug: string; // This will be the companyId
-  };
+  params:Promise<{ slug: string }>
 }
 
 /**

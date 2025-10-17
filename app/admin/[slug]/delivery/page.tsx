@@ -46,9 +46,7 @@ export type CustomerOrder = {
 };
 
 interface PageProps {
-  params: {
-    slug: string; // This will be the companyId
-  };
+  params:Promise<{ slug: string }>
 }
 
 /**
