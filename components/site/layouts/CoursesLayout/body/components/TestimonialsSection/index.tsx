@@ -135,7 +135,7 @@ export default function TestimonialSection() {
   const accentColor = storeFormData?.themeSettings?.secondaryColor || '#FFC107'; // A vibrant amber/yellow for highlights
 
   // Determine which testimonials to render: dynamic or fallback
-  const testimonialsToRender: Testimonial[] = Array.isArray(storeFormData?.testimonials) && storeFormData.testimonials.length > 0
+  const testimonialsToRender: Testimonial[] = storeFormData?.testimonials && Array.isArray(storeFormData?.testimonials) && storeFormData.testimonials.length > 0
     ? storeFormData.testimonials
         .sort((a, b) => (a.order || 0) - (b.order || 0)) // Sort by order if available
         .map(t => ({

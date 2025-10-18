@@ -12,6 +12,11 @@ import {
 
 export default function Footer() {
   const { storeFormData } = useStoreContext();
+
+  if (!storeFormData) {
+    return null;
+  }
+
   const {
     name,
     slug,
@@ -43,7 +48,7 @@ export default function Footer() {
                 rel="noreferrer"
                 className="text-gray-300 hover:text-white transition-colors"
               >
-                {s.channel.charAt(0).toUpperCase() + s.channel.slice(1)}
+                {String(s.channel).charAt(0).toUpperCase() + String(s.channel).slice(1)}
               </a>
             ))}
           </div>

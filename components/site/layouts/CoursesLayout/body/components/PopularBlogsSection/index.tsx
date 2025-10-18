@@ -148,7 +148,7 @@ export default function LatestEventsSection() {
   const accentColor = storeFormData?.themeSettings?.secondaryColor || '#FFC107'; // A vibrant amber/yellow for highlights
 
   // Determine which events to render: dynamic or fallback
-  const eventsToRender = Array.isArray(storeFormData?.events) && storeFormData.events.length > 0
+  const eventsToRender = storeFormData?.events && Array.isArray(storeFormData?.events) && storeFormData.events.length > 0
     ? storeFormData.events//.sort((a, b) => (a.order || 0) - (b.order || 0)) // Sort by order
     : fallbackEvents;
 

@@ -73,15 +73,15 @@ const Footer: React.FC<FooterProps> = ({ storeFormData }) => {
           <ul className="space-y-3 text-sm">
             <li className="flex items-center space-x-2">
               <EnvelopeIcon className="w-5 h-5 text-orange-500" />
-              <a href="mailto:info@yourcoach.com" className="hover:text-orange-400">info@yourcoach.com</a>
+              <a href="mailto:info@flourishhub.com" className="hover:text-orange-400">info@flourishhub.com</a>
             </li>
             <li className="flex items-center space-x-2">
               <PhoneIcon className="w-5 h-5 text-orange-500" />
-              <a href="tel:+1-555-123-4567" className="hover:text-orange-400">+1 (555) 123-4567</a>
+              <a href="tel:+254721299385" className="hover:text-orange-400">+254 721299385</a>
             </li>
             <li className="flex items-center space-x-2">
               <MapPinIcon className="w-5 h-5 text-orange-500" />
-              <span>New York, NY, USA</span>
+              <span>Nairobi, Kenya</span>
             </li>
           </ul>
         </motion.div>
