@@ -61,7 +61,7 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
   //
   // ---- 1. CUSTOM DOMAIN HANDLING ----
   //
-  if (host && host === PRIMARY_HOST && !host.endsWith(".salesmanpro.site") || host === "127.0.0.1:3000") {
+  if (host && host === PRIMARY_HOST && !host.endsWith(".salesmanpro.site") || host === "127.0.0.1:3000" || host === "localhost:3000" ) {
     // Instead of Prisma query, forward host for lookup later
     // if (pathname === "/") {
     //   url.pathname = `/404`;
