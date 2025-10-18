@@ -33,8 +33,8 @@ interface LocationsPageProps {
   params:Promise<{ slug: string }>
 }
 
-export default function PropertiesLocationsPage({ params }: LocationsPageProps) {
-  const { slug } = params;
+export default async function PropertiesLocationsPage({ params }: LocationsPageProps) {
+  const { slug } = await params;
 
   // In a real app, you'd fetch locations here:
   // const [locations, setLocations] = useState<Location[]>([]);

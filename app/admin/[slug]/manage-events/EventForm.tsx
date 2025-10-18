@@ -102,7 +102,7 @@ type Agent = {
 // --- Event Form Component ---
 interface EventFormProps {
   event?: Partial<IEvent | null>;
-  onSave: (eventData: IEvent) => void;
+  onSave: (eventData: Partial<IEvent>) => void;
   onClose: () => void;
   isSaving: boolean;
   apiError: string | null;
@@ -289,11 +289,15 @@ export default function EventForm({ event, onSave, onClose, isSaving, apiError, 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     if (validateForm()) {
-      // Prepare data for API, converting dates back to ISO strings for consistency
-      const dataToSave = {
+      // Prepare data for API, keep Date objects for IEvent fields (or undefined)
+      const dataToSave: Partial<IEvent> = {
         ...formData,
-        startDateTime: formData.startDateTime ? new Date(formData.startDateTime).toISOString() : '',
-        endDateTime: formData.endDateTime ? new Date(formData.endDateTime).toISOString() : undefined, // Send as undefined if empty
+        startDateTime: formData.startDateTime
+          ? (formData.startDateTime instanceof Date ? formData.startDateTime : new Date(formData.startDateTime))
+          : undefined,
+        endDateTime: formData.endDateTime
+          ? (formData.endDateTime instanceof Date ? formData.endDateTime : new Date(formData.endDateTime))
+          : undefined, // Send as undefined if empty
         // Ensure price is null if not paid, as per backend logic
         price: formData.isPaid ? formData.price : null,
         // Ensure maxCapacity is null if registration is not required

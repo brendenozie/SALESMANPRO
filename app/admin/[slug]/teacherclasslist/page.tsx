@@ -52,16 +52,40 @@ interface AcademicLevelAnnouncement {
   type?: 'info' | 'warning' | 'error' | string;
 }
 
-interface AssignedAcademicLevel {
+export interface AssignedAcademicLevel {
   id: string;
   name: string;
   description?: string;
   roleInLevel?: string;
-  studentsCount?: number;
+  studentsCount: number;
   students?: StudentInAcademicLevel[];
-  academicLevelEvents?: AcademicLevelEvent[];
-  academicLevelAnnouncements?: AcademicLevelAnnouncement[];
+  academicLevelEvents: AcademicLevelEvent[];
+  academicLevelAnnouncements: AcademicLevelAnnouncement[];
 }
+
+// Define types used by the client component
+// type AcademicLevelEvent = {
+//   id: string;
+//   name: string;
+//   date: string; // ISO date string
+//   time?: string;
+// };
+
+// type AcademicLevelAnnouncement = {
+//   id: string;
+//   text: string;
+//   createdAt?: string;
+// };
+
+// interface AssignedAcademicLevel {
+//   id: string;
+//   name: string;
+//   description?: string;
+//   studentsCount: number;
+//   roleInLevel?: string;
+//   academicLevelEvents: AcademicLevelEvent[];
+//   academicLevelAnnouncements: AcademicLevelAnnouncement[];
+// }
 
 interface ClassTeacherAcademicLevelsPageData {
   classTeacherInfo: ClassTeacherInfo;

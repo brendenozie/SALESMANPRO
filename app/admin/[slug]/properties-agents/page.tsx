@@ -55,7 +55,7 @@ const generateSampleAgents = (): AgentProfile[] => [
 
 // NOTE: This component is an async Server Component by default in the App Router.
 export default async function AgentsPage({ params }: AgentsPageProps) {
-  const { slug } = params;
+  const { slug } = await params;
   const cookiesHeader = (await cookies()).toString(); // Get cookies for auth if needed
 
   if (!slug) {

@@ -192,7 +192,7 @@ const AddEditClientModal: React.FC<AddEditModalProps> = ({
         isOpen={isOpen} 
         onClose={onClose} 
         title={client ? "Edit Client Profile" : "Add New Client"}
-        contentClassName="sm:max-w-xl bg-gray-900 shadow-2xl rounded-xl border border-gray-700" 
+        // contentClassName="sm:max-w-xl bg-gray-900 shadow-2xl rounded-xl border border-gray-700" 
     >
       <form onSubmit={submit} className="p-4 space-y-5">
         {["name", "email", "phoneNumber"].map((field) => (
@@ -246,7 +246,7 @@ const DeleteConfirmationModal: React.FC<DeleteModalProps> = ({
     isOpen={isOpen} 
     onClose={onClose} 
     title="Confirm Deletion"
-    contentClassName="sm:max-w-md bg-gray-900 shadow-2xl rounded-xl border border-gray-700"
+    // contentClassName="sm:max-w-md bg-gray-900 shadow-2xl rounded-xl border border-gray-700"
   >
     <div className="p-4 text-center space-y-6">
       <ExclamationTriangleIcon className="h-16 w-16 text-red-500 mx-auto animate-pulse" />

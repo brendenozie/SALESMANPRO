@@ -81,6 +81,7 @@ export const GET = withApiHandler(
             by: ['type'],
             where: { companyId, type: { not: null } },
             _count: { _all: true },
+            orderBy: { _count: { id: 'desc' } },
             take: 4
         })
       ]);
@@ -102,7 +103,12 @@ export const GET = withApiHandler(
           dueTime: task.dueTime || 'Any time',
         })),
         charts: {
-            inventoryBreakdown: inventoryBreakdown.map(item => ({ type: item.type ?? 'Other', count: item._count._all })),
+            inventoryBreakdown: inventoryBreakdown.map(item => {
+              const count = (typeof item._count === 'object' && item._count !== null)
+                ? (item._count._all ?? 0)
+                : (typeof item._count === 'number' ? item._count : 0);
+              return { type: item.type ?? 'Other', count };
+            }),
             // Sales trend would require a more complex historical query; stubbed for now.
             salesTrend: [12, 18, 15, 22, vehiclesSold]
         }

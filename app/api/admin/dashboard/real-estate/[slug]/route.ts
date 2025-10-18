@@ -26,23 +26,26 @@ export const GET = withApiHandler(
         tasks
       ] = await prisma.$transaction([
         // 1. Total Properties
-        prisma.property.count({ where: { companyId, status: 'AVAILABLE' } }),
+        prisma.marketplaceListings.count({ where: { companyId: companyId, } }), // status: 'AVAILABLE'
         
-        // 2. Total Agents
-        prisma.salesAgent.count({ where: { companyId, status: 'ACTIVE' } }),
+        // 2. Total Agents status: 'ACTIVE'
+        prisma.salesAgent.count({ where: { companyId: companyId,  } }),
 
         // 3. Total Clients
-        prisma.client.count({ where: { companyId } }),
+        prisma.client.count({ where: { companyId: companyId } }),
 
         // 4. Revenue This Month (from paid invoices)
-        prisma.invoice.aggregate({
-          _sum: { amount: true },
-          where: { companyId, status: 'PAID', invoiceDate: { gte: monthStart } },
-        }),
+        (() => {
+          const invoiceWhere: any = { companyId: companyId, status: 'PAID', invoiceDate: { gte: monthStart } };
+          return prisma.invoice.aggregate({
+            _sum: { amount: true },
+            where: invoiceWhere,
+          });
+        })(),
 
         // 5. Appointments Today
         prisma.appointment.count({
-          where: { companyId, date: { gte: todayStart, lte: todayEnd } },
+          where: { companyId: companyId, date: { gte: todayStart, lte: todayEnd } },
         }),
         
         // 6. Today's Tasks for the user

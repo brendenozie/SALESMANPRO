@@ -36,7 +36,7 @@ async function handleGet(request: Request, context: HandlerContext): Promise<Nex
   const totalTicketsSoldResult = await prisma.orderItem.aggregate({
     where: {
       order: {
-        company: { slug: adminSlug },
+        Company: { slug: adminSlug },
         status: "COMPLETED",
       },
       marketplaceListing: {
@@ -54,7 +54,7 @@ async function handleGet(request: Request, context: HandlerContext): Promise<Nex
   // 4. Total Revenue
   const totalRevenueResult = await prisma.customerOrder.aggregate({
     where: {
-      company: { slug: adminSlug },
+      Company: { slug: adminSlug },
       status: "COMPLETED",
     },
     _sum: {
@@ -65,12 +65,12 @@ async function handleGet(request: Request, context: HandlerContext): Promise<Nex
 
   // 5. Recent Activities
   const recentActivities = await prisma.customerOrder.findMany({
-    where: { company: { slug: adminSlug } },
+    where: { Company: { slug: adminSlug } },
     orderBy: { createdAt: "desc" },
     take: 5,
     select: {
       id: true,
-      customerName: true,
+      name: true,
       totalPrice: true,
       status: true,
       createdAt: true,
@@ -80,8 +80,8 @@ async function handleGet(request: Request, context: HandlerContext): Promise<Nex
   const formattedActivities = recentActivities.map(order => ({
     id: order.id,
     type: "Order",
-    description: `Order #${order.id} by ${order.customerName || 'N/A'} (${order.status}) for $${order.totalPrice.toFixed(2)}`,
-    time: order.createdAt.toISOString(),
+    description: `Order #${order.id} by ${order.name || 'N/A'} (${order.status}) for $${order.totalPrice?.toFixed(2)}`,
+    time: order.createdAt?.toISOString(),
   }));
 
   // 6. Upcoming Events List

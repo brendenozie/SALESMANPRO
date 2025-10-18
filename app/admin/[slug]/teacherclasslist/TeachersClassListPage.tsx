@@ -18,10 +18,14 @@ import {
 } from '@heroicons/react/24/outline';
 
 import { useRouter } from "next/navigation";
+import { AssignedAcademicLevel } from './page';
 
-import { AssignedAcademicLevel, ClassTeacherAcademicLevelsPageData, ClassTeacherInfo, StudentInAcademicLevel } from "@/app/api/teacher/academic-levels/route";
-
-
+interface ClassTeacherInfo {
+  id: string;
+  name: string;
+  role?: string;
+  email?: string;
+}
 
 // Define props for the client component
 interface ClassTeacherAcademicLevelsPageProps {
@@ -244,7 +248,9 @@ export default function ClassTeacherAcademicLevelsPage({
                     <h5 className="text-sm font-medium text-gray-700 flex items-center gap-1"><ClockIcon className="h-4 w-4 text-purple-500" /> Upcoming Events:</h5>
                     <ul className="list-disc list-inside text-xs text-gray-600 ml-2">
                       {level.academicLevelEvents.slice(0, 2).map(event => (
-                        <li key={event.id}>{event.name} on {new Date(event.date).toLocaleDateString()} at {event.time}</li>
+                        <li key={event.id}>
+                          {event.name} on {event.date ? new Date(event.date).toLocaleDateString() : 'Unknown date'}{event.time ? ` at ${event.time}` : ''}
+                        </li>
                       ))}
                       {level.academicLevelEvents.length > 2 && <li>...and {level.academicLevelEvents.length - 2} more</li>}
                     </ul>

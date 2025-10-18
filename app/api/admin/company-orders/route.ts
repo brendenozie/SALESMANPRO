@@ -99,7 +99,7 @@ async function handleGet(request: Request, context: HandlerContext): Promise<Nex
       order.id,
       order.customerName,
       order.customerEmail,
-      order.totalPrice.toFixed(2),
+      order.totalPrice?.toFixed(2),
       order.createdAt?.toISOString(),
       order.status,
       order.paymentMethod,

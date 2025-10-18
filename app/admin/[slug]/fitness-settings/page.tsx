@@ -26,7 +26,9 @@ const formFieldVariants = {
 };
 
 export default async function SettingsPage({ params }: SettingsProps) {
+  
   const { slug: adminSlug } = await params;
+
   const settingsData: GeneralSettings = getSettingsData(adminSlug);
 
   const [currentSettings, setCurrentSettings] = React.useState(settingsData);

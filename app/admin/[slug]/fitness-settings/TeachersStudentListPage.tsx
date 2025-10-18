@@ -57,8 +57,8 @@ const customLoader = ({ src, width, quality }: { src: string; width: number; qua
   return `${src}?w=${width}&q=${quality || 75}`;
 };
 
-export default function SettingsPage({ params }: SettingsPageProps) {
-  const { adminSlug } = params;
+export default async function SettingsPage({ params }: SettingsPageProps) {
+  const { slug : adminSlug } = await params;
 
   const [settings, setSettings] = useState<SettingsData | null>(null);
   const [loading, setLoading] = useState(true);

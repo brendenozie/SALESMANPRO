@@ -176,7 +176,7 @@ export default function AdminEventsClient({ slug, allOrganizers, allEvents }: Ad
     }
   };
 
-  const handleSaveEvent = async (eventData: IEvent) => {
+  const handleSaveEvent = async (eventData: Partial<IEvent>) => {
     if (!slug) {
       setError("Admin slug is missing. Cannot save event.");
       return;

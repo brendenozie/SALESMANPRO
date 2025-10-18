@@ -10,13 +10,16 @@ import { getAuthSession } from '@/lib/auth';
 
 export const dynamic = 'force-dynamic';
 
+interface Props {
+  params: Promise<{ slug: string }>;
+  children: ReactNode;
+}
+
 export default async function AdminStoreLayout({
   params,
   children,
-}: {
-  params:Promise<{ slug: string }>
-  children: ReactNode;
-}) {
+}: Props)  {
+  const { slug } = await params;
   // Fetch the session to get the user's role
   const session = await getAuthSession();
 
@@ -33,10 +36,10 @@ export default async function AdminStoreLayout({
     notFound(); // Using notFound instead of redirect for layout, or redirect to a more appropriate unauthorized page
   }
 
-  let companyId = params.slug || session?.user?.id;
+  let companyId = slug || session?.user?.id;
 
   const raw = await prisma.company.findUnique({
-    where: { id: params.slug },
+    where: { id: companyId },
     include: {
       socialLinks: true, policies: true, faqs: true, testimonials: true,
       heroSlides: true, promotions: true, SEO: true, AnalyticsConfig: true,

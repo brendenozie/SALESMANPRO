@@ -63,6 +63,7 @@ export const GET = withApiHandler(
             by: ['startTime'],
             where: { companyId, status: 'COMPLETED', startTime: { gte: weekStart } },
             _count: { id: true },
+            orderBy: { startTime: 'asc' },
         }),
 
         // 9. Class Attendance Distribution

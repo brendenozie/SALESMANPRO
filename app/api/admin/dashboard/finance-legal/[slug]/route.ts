@@ -64,7 +64,8 @@ export const GET = withApiHandler(
         prisma.case.groupBy({
             by: ['caseType'],
             where: { companyId },
-            _count: { _all: true }
+            _count: { _all: true },
+            orderBy: { caseType: 'asc' }
         })
       ]);
 
@@ -85,7 +86,7 @@ export const GET = withApiHandler(
           dueTime: task.dueTime || 'Any time',
         })),
         charts: {
-            caseDistribution: caseDistribution.map(item => ({ type: item.caseType, count: item._count._all })),
+            caseDistribution: caseDistribution.map(item => ({ type: item.caseType, count: (item._count as any)?._all ?? 0 })),
             // Revenue growth would require a more complex historical query, stubbed for now
             revenueGrowth: [15000, 22000, 18000, 29000, revenueThisMonth]
         }

@@ -174,7 +174,8 @@ export default function ManageAssignmentsPage({ classId }: ManageAssignmentsPage
       status: assignmentStatus,
     };
 
-    let updatedAssignments;
+    let updatedAssignments : any[] = [];
+    
     if (editingAssignment) {
       // Edit existing assignment
       updatedAssignments = currentClass.assignments.map((assign: any) =>

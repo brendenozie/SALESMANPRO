@@ -51,7 +51,7 @@ export interface TeacherSchedulePageData {
 
 export default async function TeachersScheduleServerPage({ params }: PageProps) {
   const { slug : companyId } = await params;
-  const educatorId = params.slug || MOCK_CURRENT_EDUCATOR_ID;
+  const educatorId = companyId || MOCK_CURRENT_EDUCATOR_ID;
 
   let schedulePageData: TeacherSchedulePageData | null = null;
   let fetchError: string | null = null;
