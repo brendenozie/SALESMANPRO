@@ -2,7 +2,8 @@
 
 import React, { useCallback } from "react";
 import InputField from "./InputField"; // Ensure this component accepts an 'onChange' prop
-import { ProductForm } from "./AddProductModal";
+import { ProductForm } from "@/types/typings";
+// import { ProductForm } from "./AddProductModal";
 // import { ProductForm } from '@/types/typings'; // Assuming ProductForm is the comprehensive type for your main form data
 
 interface EnginePerformanceProps {

@@ -18,6 +18,7 @@ import Stepper from "./Stepper";
 // load the new package dynamically, no ssr
 const ReactQuill = dynamic(() => import("react-quill-new"), { ssr: false });
 import 'react-quill-new/dist/quill.snow.css';
+import { set } from "lodash";
 
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
@@ -39,6 +40,13 @@ const STEP_LABELS: Record<number, string> = {
   4: "SEO",
   5: "Review",
 };
+
+interface UnifiedMediaItem {
+  id?: string;
+  file?: File;
+  url: string;
+  source: "local" | "server";
+}
 
 interface AddEditBlogModalProps {
   show: boolean;
@@ -75,22 +83,20 @@ export default function AddEditBlogModal({
     metaKeywords: initialData.seo?.keywords || [],
     category: initialData.category || null,
     subCategory: initialData.subCategory || null,
-    brand: initialData.brand || null,    
+    brand: initialData.brand || null,
     companyId: companyId,
-    author: initialData.author || "Admin"
-  }); 
+    author: initialData.author || "Admin",
+  });
 
   const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const [newImages, setNewImages] = useState<File[]>([]);
-  const [images, setImages] = useState(
-    initialData.coverImage ? [{ id: 0, url: initialData.coverImage }] : []
+  // const [newImages, setNewImages] = useState<UnifiedMediaItem[]>([]);
+  // const [newImages, setNewImages] = useState<UnifiedMediaItem[]>([]);
+  const [images, setImages] = useState<UnifiedMediaItem[]>(
+    initialData.coverImage
+      ? [{ id: "0", url: initialData.coverImage, source: "server" }]
+      : []
   );
-
    // Generic handler
    const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -115,24 +121,49 @@ export default function AddEditBlogModal({
   const isStepValid = useMemo(() => {
     if (step === 1) return formData.category && formData.subCategory;
     if (step === 2) return formData.title && formData.content.length > 20;
-    if (step === 3) return images.length > 0 || newImages.length > 0;
+    if (step === 3) return images.length > 0 || images.length > 0;
     if (step === 4) return formData.seoTitle && formData.seoDescription;
     return true;
-  }, [step, formData, images, newImages]);
+  }, [step, formData, images]);
 
-  const uploadFile = async (file: File, type: string) => {
-    const data = new FormData();
-    data.append("file", file);
-    data.append("type", type);
-    const res = await fetch("/api/upload", { method: "POST", body: data });
-    const json = await res.json();
-    return json.url as string;
+  const uploadFile = async (file: File, type: string): Promise<string> => {
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("type", type);
+
+      const res = await fetch(`${apiUrl}/admin/upload`, {
+        method: "POST",
+        body: fd,
+      });
+
+      if (!res.ok) {
+        console.error("File upload failed", await res.text());
+        return "";
+      }
+
+      const data = await res.json();
+      // expect the upload endpoint to return { url: "https://..." } or similar
+      return data?.url ?? data?.path ?? "";
+    } catch (err) {
+      console.error("Upload error", err);
+      return "";
+    }
   };
 
   const handleSubmit = async () => {
     let coverUrl = images[0]?.url || "";
-    if (newImages[0]) {
-      coverUrl = await uploadFile(newImages[0], "blog-cover");
+    if (images[0]) {
+      // UnifiedMediaItem may wrap the actual File in a .file property or already be a File-like URL;
+      // try to extract a File, otherwise fall back to url/string if present.
+      const candidate: any = (images[0] as any).file ?? images[0];
+      if (candidate instanceof File) {
+        coverUrl = await uploadFile(candidate, "blog-cover");
+      } else if (typeof candidate === "string") {
+        coverUrl = candidate;
+      } else if ((images[0] as any).url) {
+        coverUrl = (images[0] as any).url;
+      }
     }
 
     const payload = {
@@ -143,7 +174,7 @@ export default function AddEditBlogModal({
       content: formData.content,
       isFeature: formData.isFeature,
       status: formData.status,
-      categories: [formData.category.displayName],
+      categories: [formData.category?.displayName],
       tags: formData.tags,
       coverImage: coverUrl,
       seo: {
@@ -152,7 +183,7 @@ export default function AddEditBlogModal({
         keywords: formData.metaKeywords,
       },
       companyId: formData.companyId,
-      author: formData.author
+      author: formData.author,
     };
 
     await fetch(`${apiUrl}/admin/post-blog`, {
@@ -294,19 +325,10 @@ export default function AddEditBlogModal({
 
           {step === 3 && (
             <ImageUploader
-              imageFiles={newImages}
-              setImageFiles={setNewImages}
-              imagePreviews={images.map((i) => i.url)}
-              setImagePreviews={(value) => {
-                const urls = typeof value === "function"
-                  ? value(images.map((img) => img.url))
-                  : value;
-                setImages(urls.map((url, idx) => ({ id: idx, url })));
-              }}
-              videoFiles={[]}
-              setVideoFiles={() => {}}
-              videoPreviews={[]}
-              setVideoPreviews={() => {}}
+              images={images}
+              setImages={setImages}
+              videos={[]}
+              setVideos={() => {}}
               books={[]}
               setBooks={() => {}}
             />

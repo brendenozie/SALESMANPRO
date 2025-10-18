@@ -13,9 +13,16 @@ import type { Metadata } from "next";
 // Cache the page and its data for 60 seconds (ISR)
 export const revalidate = 60;
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+interface Props{
+  params: Promise<{ slug: string }>;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+
+  const { slug } = await params;
+
   const company = await prisma.company.findUnique({
-    where: { slug: params.slug },
+    where: { slug: slug },
     select: {
       name: true,
       SEO: {
@@ -50,13 +57,18 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   };
 }
 
+interface StoreLayoutProps {
+  params: Promise<{ slug: string }>;
+  children: ReactNode;
+}
+
 export default async function StoreLayout({
   params,
   children,
-}: {
-  params:Promise<{ slug: string }>
-  children: ReactNode;
-}) {
+}: StoreLayoutProps) {
+
+  const { slug } = await params;
+
   const hdrs = await headers();
   const requestedHost = hdrs.get("x-requested-host");
   const requestedSubdomain = hdrs.get("x-requested-subdomain");
@@ -82,7 +94,7 @@ export default async function StoreLayout({
   // ---- 3. Fallback to slug param ----
   if (!raw) {
     raw = await prisma.company.findUnique({
-      where: { slug: params.slug },
+      where: { slug: slug },
       include: leanShellInclude(),
     });
   }

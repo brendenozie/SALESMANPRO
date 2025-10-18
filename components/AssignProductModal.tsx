@@ -285,7 +285,7 @@ const AssignProductModal: React.FC<any> = ({ showAssignProductModal, setShowAssi
   // --- Main Render ---
   return (
     <Modal
-      contentClassName="bg-white rounded-xl shadow-2xl w-full max-w-2xl" // Wider and more modern modal styling
+      // contentClassName="bg-white rounded-xl shadow-2xl w-full max-w-2xl" // Wider and more modern modal styling
       isOpen={showAssignProductModal}
       onClose={() => setShowAssignProductModal(false)}
       title={`Assign **${product.name}** to Sales Agent`}
