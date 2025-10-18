@@ -104,7 +104,16 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
       return res;
     }
   }
-  
+
+  //other domain name
+  if (host && host !== PRIMARY_HOST && !host.endsWith(".salesmanpro.site")) {
+    url.pathname = `/site/${pathname}`;
+    const res = NextResponse.rewrite(url);
+    res.headers.set("x-requested-host", host);
+    res.headers.set("x-original-path", pathname);
+    return res;
+  }
+
   //
   // ---- 4. SESSION-BASED PROTECTION ----
   //
