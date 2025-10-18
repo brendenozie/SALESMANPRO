@@ -14,7 +14,8 @@ interface PageProps {
  * Server Component: fetches all departments
  * and passes them down to the client component.
  */
-export default async function DepartmentsManagerPage({ params: { slug } }: PageProps) {
+export default async function DepartmentsManagerPage({ params}: PageProps) {
+  const { slug } = await params;
   let departmentsData: DepartmentData[] = [];
 
   try {
