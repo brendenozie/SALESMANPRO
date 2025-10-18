@@ -67,9 +67,9 @@ async function getDoctorAppointments(request: Request) {
       doctorName: appt.doctor?.User?.name || "N/A",
       service: appt.service || "N/A",
       date: appt.date ? new Date(appt.date).toISOString().split("T")[0] : "N/A",
-      timeSlot: appt.timeSlot || "N/A",
+      timeSlot: (appt as any).timeSlot || "N/A",
       status: appt.status,
-      notes: appt.notes || "N/A",
+      notes: (appt as any).notes || "N/A",
       createdAt: appt.createdAt
         ? new Date(appt.createdAt).toLocaleDateString()
         : "N/A",

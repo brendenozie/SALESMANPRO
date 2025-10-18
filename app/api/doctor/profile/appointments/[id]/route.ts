@@ -68,7 +68,7 @@ async function updateAppointment(
       },
       include: {
         user: { select: { name: true, email: true, phone: true } },
-        doctor: { include: { user: { select: { name: true } } } },
+        doctor: { include: { User: { select: { name: true } } } },
       },
     });
 
@@ -78,14 +78,14 @@ async function updateAppointment(
       patientName: updatedAppointment.user?.name || "N/A",
       patientEmail: updatedAppointment.user?.email || "N/A",
       patientPhone: updatedAppointment.user?.phone || "N/A",
-      doctorName: updatedAppointment.doctor?.user?.name || "N/A",
+      doctorName: updatedAppointment.doctor?.User?.name || "N/A",
       service: updatedAppointment.service || "N/A",
       date: updatedAppointment.date
         ? updatedAppointment.date.toISOString().split("T")[0]
         : "N/A",
-      timeSlot: updatedAppointment.timeSlot || "N/A",
+      timeSlot: (updatedAppointment as any).timeSlot || "N/A",
       status: updatedAppointment.status,
-      notes: updatedAppointment.notes || "N/A",
+      notes: (updatedAppointment as any).notes || "N/A",
       createdAt: updatedAppointment.createdAt
         ? updatedAppointment.createdAt.toLocaleDateString()
         : "N/A",

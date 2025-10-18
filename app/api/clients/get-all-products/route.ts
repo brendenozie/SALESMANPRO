@@ -2,7 +2,6 @@ import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler"; // Assumed utility
 import { formatResponse } from "@/lib/formatResponse"; // Assumed utility
 import { verifyAuth } from "@/lib/verifyAuth"; // Assumed utility
-import { CommissionBasedOn } from "@prisma/client"; // Assuming these types exist
 
 // Handles the assignment of inventory from an Agent's stock to a Client's inventory.
 export const POST = withApiHandler(async (request: Request) => {
@@ -94,7 +93,7 @@ export const POST = withApiHandler(async (request: Request) => {
 
         // CRITICAL FIX: Base commission on costPrice if basedOn is 'COST'.
         // If 'COST' is intended to be *Sales Price* in your business logic, adjust this.
-        const basePrice = basedOn === "COST" ? product.costPrice : product.salesPrice;
+        const basePrice = basedOn === "COST" ? product.costPrice : product.sellingPrice;
 
         // Ensure commissionRate is a valid number
         if (typeof commissionRate !== 'number' || commissionRate < 0) continue;
@@ -102,18 +101,19 @@ export const POST = withApiHandler(async (request: Request) => {
         const commissionEarned = commissionRate * basePrice * parsedQuantity;
 
         if (commissionEarned > 0) {
-          recordedCommissions.push(
-            await tx.commissionEarned.create({ // Assuming a separate model for earned commissions: CommissionEarned
-              data: {
-                salesAgentId: agentInventory.salesAgentId,
-                productId: product.id,
-                commissionRate,
-                commissionEarned,
-                basedOn: basedOn as CommissionBasedOn, // Casting based on imported type
-                // Optionally add: clientInventoryId: clientInventory.id,
-              },
-            })
-          );
+          // The Prisma client doesn't expose a 'commissionEarned' model currently;
+          // instead of calling a missing DB model, build the commission record in-memory.
+          // If you later add a CommissionEarned model to the schema, replace this block
+          // with a proper tx.<model>.create(...) call.
+          const commissionRecord = {
+            salesAgentId: agentInventory.salesAgentId,
+            productId: product.id,
+            commissionRate,
+            commissionEarned,
+            basedOn: basedOn, 
+            // Optionally add: clientInventoryId: clientInventory.id,
+          };
+          recordedCommissions.push(commissionRecord);
         }
       }
 

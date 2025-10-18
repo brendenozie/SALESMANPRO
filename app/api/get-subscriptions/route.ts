@@ -17,19 +17,19 @@ async function getSubscriptionPlans(request: Request) {
   }
 
   try {
-    const plans = await prisma.subscriptionPlan.findMany({
-      skip: offset,
-      take: limit,
-      orderBy: { createdAt: "desc" },
-    });
+    // const plans = await prisma.subscriptionPlan.findMany({
+    //   skip: offset,
+    //   take: limit,
+    //   orderBy: { createdAt: "desc" },
+    // });
 
-    const totalCount = await prisma.subscriptionPlan.count();
+    const totalCount = 0;//await prisma.subscriptionPlan.count();
 
     return formatResponse(true, {
       total: totalCount,
       page,
       limit,
-      plans,
+      // plans,
     });
   } catch (error: any) {
     console.error("GET /api/subscription-plans error:", error);

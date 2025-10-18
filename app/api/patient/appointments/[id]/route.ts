@@ -25,29 +25,54 @@ async function PUT(request: Request, { params }: { params: { id: string } }) {
       return formatResponse(false, null, "Unauthorized or Appointment not found", 403);
     }
 
+    const updateData: any = { status };
+    if (typeof notes !== "undefined") updateData.notes = notes; // patient may add cancellation notes
+
     const updatedAppointment = await prisma.appointment.update({
       where: { id },
-      data: {
-        status,
-        notes, // patient may add cancellation notes
-      },
-      include: {
+      data: updateData,
+      select: {
+        id: true,
+        service: true,
+        date: true,
+        status: true,
+        createdAt: true,
+        userId: true,
         user: { select: { name: true } },
-        doctor: { include: { User: { select: { name: true } } } },
+        doctorId: true,
       },
     });
 
+    // fetch patient's and doctor's user names separately if we have their IDs
+    let patientName = "N/A";
+    if (updatedAppointment.userId) {
+      const patientUser = await prisma.user.findUnique({
+        where: { id: updatedAppointment.userId },
+        select: { name: true },
+      });
+      patientName = patientUser?.name || "N/A";
+    }
+
+    let doctorName = "N/A";
+    if (updatedAppointment.doctorId) {
+      const doctorUser = await prisma.user.findUnique({
+        where: { id: updatedAppointment.doctorId },
+        select: { name: true },
+      });
+      doctorName = doctorUser?.name || "N/A";
+    }
+
     const formattedUpdatedAppointment = {
       id: updatedAppointment.id,
-      patientName: updatedAppointment.user?.name || "N/A",
-      doctorName: updatedAppointment.doctor?.User?.name || "N/A",
+      patientName,
+      doctorName,
       service: updatedAppointment.service || "N/A",
       date: updatedAppointment.date
         ? new Date(updatedAppointment.date).toISOString().split("T")[0]
         : "N/A",
-      timeSlot: updatedAppointment.timeSlot || "N/A",
+      timeSlot: (updatedAppointment as any).timeSlot || "N/A",
       status: updatedAppointment.status,
-      notes: updatedAppointment.notes || "N/A",
+      notes: typeof notes !== "undefined" ? notes : "N/A",
       createdAt: updatedAppointment.createdAt
         ? new Date(updatedAppointment.createdAt).toLocaleDateString()
         : "N/A",

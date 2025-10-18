@@ -37,7 +37,7 @@ async function GET(request: Request) {
         const itemsString = Array.isArray(invoice.items)
           ? JSON.stringify(invoice.items).toLowerCase()
           : typeof invoice.items === "string"
-          ? invoice.items.toLowerCase()
+          ? (invoice.items as string).toLowerCase()
           : "";
         return (
           invoice.id.toLowerCase().includes(lowerCaseSearchTerm) ||

@@ -23,7 +23,7 @@ async function GET(request: Request) {
     let prescriptions = await prisma.prescription.findMany({
       where: whereClause,
       include: {
-        patient: { select: { name: true } },
+        patient: { include: { user: true } },
         doctor: { include: { User: { select: { name: true } } } },
       },
       orderBy: { issuedDate: "desc" },
@@ -42,7 +42,7 @@ async function GET(request: Request) {
     const formattedPrescriptions = prescriptions.map((rx) => ({
       id: rx.id,
       patientId: rx.patientId,
-      patientName: rx.patient?.name || "N/A",
+      patientName: rx.patient?.user.name || "N/A",
       doctorId: rx.doctorId,
       doctorName: rx.doctor?.User?.name || "N/A",
       medication: rx.medication,

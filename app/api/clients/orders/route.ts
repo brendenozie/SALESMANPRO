@@ -56,7 +56,7 @@ export const GET = withApiHandler(async (req: Request) => {
           select: {
             status: true,
             createdAt: true,
-            client: { select: { id: true, name: true } },
+            // client: { select: { id: true, name: true } },
           },
         },
       },
@@ -93,8 +93,10 @@ export const GET = withApiHandler(async (req: Request) => {
 
   const monthlyRevenue = Array(12).fill(0);
   orderItemsForMonthly.forEach((item) => {
-    const month = new Date(item.order.createdAt).getMonth(); // 0–11
-    monthlyRevenue[month] += item.price;
+    const createdAt = item.order.createdAt;
+    if (!createdAt) return;
+    const month = new Date(createdAt).getMonth(); // 0–11
+    monthlyRevenue[month] += item.price ?? 0;
   });
 
   // 7. Return response

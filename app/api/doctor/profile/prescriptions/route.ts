@@ -31,7 +31,7 @@ async function getHandler(request: Request) {
     let prescriptions = await prisma.prescription.findMany({
       where: whereClause,
       include: {
-        patient: { select: { name: true } },
+        patient: { include: { user: { select: { name: true } } } },
         doctor: { include: { User: { select: { name: true } } } },
       },
       orderBy: { issuedDate: "desc" },
@@ -42,7 +42,7 @@ async function getHandler(request: Request) {
       const lowerCaseSearchTerm = searchTerm.toLowerCase();
       prescriptions = prescriptions.filter(
         (rx) =>
-          rx.patient?.name?.toLowerCase().includes(lowerCaseSearchTerm) ||
+          rx.patient?.user.name?.toLowerCase().includes(lowerCaseSearchTerm) ||
           rx.medication?.toLowerCase().includes(lowerCaseSearchTerm) ||
           rx.dosage?.toLowerCase().includes(lowerCaseSearchTerm)
       );
@@ -51,7 +51,7 @@ async function getHandler(request: Request) {
     const formattedPrescriptions = prescriptions.map((rx) => ({
       id: rx.id,
       patientId: rx.patientId,
-      patientName: rx.patient?.name || "N/A",
+      patientName: rx.patient?.user.name || "N/A",
       doctorId: rx.doctorId,
       doctorName: rx.doctor?.User?.name || "N/A",
       medication: rx.medication,

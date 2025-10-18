@@ -28,22 +28,26 @@ async function handler(req: Request) {
     return formatResponse(false, null, "Invalid action. Must be one of: view, purchase, favorite", 400);
   }
 
-  try {
+    try {
     await prisma.productMetrics.upsert({
-      where: { productId },
+      where: { id: productId },
       update: dataUpdate,
       create: {
-        productId,
-        views: action === "view" ? 1 : 0,
-        purchases: action === "purchase" ? 1 : 0,
-        favorites: action === "favorite" ? 1 : 0,
+        // populate required fields for ProductMetricsCreateInput
+        id: productId,
+        metricType: action,
+        value: 1,
+        date: new Date(),
+        product: {
+          connect: { id: productId },
+        },
       },
     });
 
     return formatResponse(true, { productId, action }, "Product metrics updated successfully", 200);
   } catch (error: any) {
     console.error("Error updating product metrics:", error);
-    return formatResponse(false, null, "Internal Server Error", 500, error.message);
+    return formatResponse(false, null, "Internal Server Error: " + (error?.message ?? ""), 500);
   }
 }
 

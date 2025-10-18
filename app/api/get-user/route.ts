@@ -1,14 +1,15 @@
 // app/api/users/route.ts (or app/api/users/[page]/route.ts if dynamic)
-import { NextApiRequest, NextApiResponse } from "next";
+
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
-async function handler(req: NextApiRequest, res: NextApiResponse) {
+async function handler(req: Request, res: any) {
   if (req.method === "GET") {
     try {
-      const { page = "0" } = req.query;
-      const currentPage = parseInt(page as string, 10) || 0;
+      const url = new URL(req.url);
+      const page = url.searchParams.get("page") ?? "0";
+      const currentPage = parseInt(page, 10) || 0;
 
       const limit = 20;
       const skip = currentPage > 0 ? currentPage * limit : 0;

@@ -37,15 +37,15 @@ async function putHandler(
       );
     }
 
+    const dataToUpdate: any = { status };
+    if (typeof notes !== "undefined") dataToUpdate.notes = notes;
+
     const updatedAppointment = await prisma.appointment.update({
       where: { id },
-      data: {
-        status,
-        notes,
-      },
+      data: dataToUpdate,
       include: {
         user: { select: { name: true, email: true, phone: true } },
-        doctor: { include: { user: { select: { name: true } } } },
+        doctor: { include: { User: { select: { name: true } } } },
       },
     });
 
@@ -54,14 +54,14 @@ async function putHandler(
       patientName: updatedAppointment.user?.name || "N/A",
       patientEmail: updatedAppointment.user?.email || "N/A",
       patientPhone: updatedAppointment.user?.phone || "N/A",
-      doctorName: updatedAppointment.doctor?.user?.name || "N/A",
+      doctorName: updatedAppointment.doctor?.User?.name || "N/A",
       service: updatedAppointment.service || "N/A",
       date: updatedAppointment.date
         ? new Date(updatedAppointment.date).toISOString().split("T")[0]
         : "N/A",
-      timeSlot: updatedAppointment.timeSlot || "N/A",
+      timeSlot: (updatedAppointment as any).timeSlot || "N/A",
       status: updatedAppointment.status,
-      notes: updatedAppointment.notes || "N/A",
+      notes: (updatedAppointment as any).notes || "N/A",
       createdAt: updatedAppointment.createdAt
         ? new Date(updatedAppointment.createdAt).toLocaleDateString()
         : "N/A",

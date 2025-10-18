@@ -52,7 +52,11 @@ export const GET = withApiHandler(async (req: Request) => {
           },
         },
       },
-      salesAgent: true,
+      salesAgent: {
+        include: {
+          user: true,
+        },
+      },
     },
   });
 
@@ -63,14 +67,14 @@ export const GET = withApiHandler(async (req: Request) => {
     productName: item.inventoryItem.product?.name || "Unknown Product",
     quantityPurchased: item.quantity,
     salesAgentId: item.salesAgent?.id,
-    salesAgentName: item.salesAgent?.name || "N/A",
+    salesAgentName: item.salesAgent?.user.name || "N/A",
     productDetails: {
       category: item.inventoryItem.product?.productCategory?.name || "Uncategorized",
       subCategory: item.inventoryItem.product?.subCategory,
       tags: item.inventoryItem.product?.tags,
       brand: item.inventoryItem.product?.brand,
       costPrice: item.inventoryItem.product?.costPrice,
-      salesPrice: item.inventoryItem.product?.salesPrice,
+      salesPrice: item.inventoryItem.product?.sellingPrice,
     },
   }));
 

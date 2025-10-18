@@ -23,7 +23,7 @@ async function getLocation(req: Request) {
     // if (agentId) whereClause.agentId = agentId;
 
     const location = await prisma.location.findFirst({
-      where: { userId: String(userId) },
+      where: ({ userId: String(userId) } as any),
     });
 
     if (!location) {

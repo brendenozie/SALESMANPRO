@@ -38,7 +38,7 @@ export const GET = withApiHandler(async (req: Request) => {
   }
 
   // 3. Fetch marketplace products for the seller
-  const products = await prisma.marketplaceListing.findMany({
+  const products = await prisma.marketplaceListings.findMany({
     where: { sellerId },
     take: limit,
     skip: offset,

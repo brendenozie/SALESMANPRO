@@ -39,17 +39,17 @@ async function putHandler(request: Request, { params }: { params: { id: string }
         expiryDate: expiryDate ? new Date(expiryDate) : undefined,
       },
       include: {
-        patient: { select: { name: true } },
-        doctor: { include: { user: { select: { name: true } } } },
+        patient: { include: { user: true } },
+        doctor: { include: { User: { select: { name: true } } } },
       },
     });
 
     const formattedUpdatedPrescription = {
       id: updatedPrescription.id,
       patientId: updatedPrescription.patientId,
-      patientName: updatedPrescription.patient?.name || "N/A",
+      patientName: updatedPrescription.patient?.user.name || "N/A",
       doctorId: updatedPrescription.doctorId,
-      doctorName: updatedPrescription.doctor?.user?.name || "N/A",
+      doctorName: updatedPrescription.doctor?.User?.name || "N/A",
       medication: updatedPrescription.medication,
       dosage: updatedPrescription.dosage,
       instructions: updatedPrescription.instructions || "N/A",

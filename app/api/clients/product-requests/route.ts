@@ -8,7 +8,7 @@ import { withApiHandler } from "@/lib/hooks/withApiHandler";
  * API route to fetch product requests made by a specific client.
  * Supports pagination via 'limit' and 'offset'.
  */
-async function GET(req: Request) {
+async function handleGET(req: Request) {
   // 1. Authentication Check
   const auth = await verifyAuth(req);
   if (!auth.success) return formatResponse(false, null, auth.error, 401);
@@ -85,5 +85,4 @@ async function GET(req: Request) {
   }
 }
 
-export const GETHandler = withApiHandler(GET);
-export { GETHandler as GET };
+export const GET = withApiHandler(handleGET);

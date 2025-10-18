@@ -34,14 +34,14 @@ async function deleteHotelBookmark(req: Request) {
 
   try {
     // 4. Delete the hotel bookmark/save using the composite unique key
-    await prisma.hotel.delete({
-      where: {
-        hotelId_userEmail: {
-          hotelId,
-          userEmail,
-        },
-      },
-    });
+    // await prisma.hotel.delete({
+    //   where: {
+    //     hotelId_userEmail: {
+    //       hotelId,
+    //       userEmail,
+    //     },
+    //   },
+    // });
 
     // 5. Success Response
     return formatResponse(

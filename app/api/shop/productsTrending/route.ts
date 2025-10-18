@@ -30,16 +30,16 @@ export async function GET(req: Request) {
     });
 
     // Calculate trending score
-    const trending = metrics.map((m) => {
-      const score =
-        (m.views || 0) * weightViews +
-        (m.purchases || 0) * weightPurchases +
-        (m.favorites || 0) * weightFavorites;
+    const trending = metrics.map((m: any) => {
+      const views = m.views ?? 0;
+      const purchases = m.purchases ?? 0;
+      const favorites = m.favorites ?? 0;
+      const score = views * weightViews + purchases * weightPurchases + favorites * weightFavorites;
       return {
         product: m.product,
-        views: m.views,
-        purchases: m.purchases,
-        favorites: m.favorites,
+        views,
+        purchases,
+        favorites,
         score,
       };
     });

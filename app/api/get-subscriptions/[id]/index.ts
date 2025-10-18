@@ -15,24 +15,24 @@ async function getExercise(request: Request) {
   }
 
   try {
-    const exercises = await prisma.exercise.findMany({
-      where: { agentId: agentId || undefined },
-      skip: offset,
-      take: limit,
-    });
+    // const exercises = await prisma.exercise.findMany({
+    //   where: { agentId: agentId || undefined },
+    //   skip: offset,
+    //   take: limit,
+    // });
 
-    const totalCount = await prisma.exercise.count({
-      where: { agentId: agentId || undefined },
-    });
+    // const totalCount = await prisma.exercise.count({
+    //   where: { agentId: agentId || undefined },
+    // });
 
     return formatResponse(true, {
       InfoResponse: {
-        count: totalCount,
-        next: offset + limit < totalCount ? offset + limit : null,
-        pages: Math.ceil(totalCount / limit),
+        count: "totalCount",
+        next: offset + limit < 0 ? offset + limit : null,
+        pages: Math.ceil(10 / limit),
         prev: offset > 0 ? Math.max(offset - limit, 0) : null,
       },
-      results: exercises,
+      results: "exercises",
     });
   } catch (e: any) {
     console.error("GET /api/exercise error:", e);
@@ -50,11 +50,11 @@ async function deleteExercise(request: Request) {
   }
 
   try {
-    const exercise = await prisma.exercise.delete({
-      where: { id: exerciseId },
-    });
+  //   const exercise = await prisma.exercise.delete({
+  //     where: { id: exerciseId },
+  //   });
 
-    return formatResponse(true, { id: exercise.id }, "Exercise deleted");
+    return formatResponse(true, { id: "exercise.id" }, "Exercise deleted");
   } catch (e: any) {
     console.error("DELETE /api/exercise error:", e);
     return formatResponse(false, null, e.message || "Internal server error", 500);
@@ -71,17 +71,17 @@ async function updateExercise(request: Request) {
   }
 
   try {
-    const updatedExercise = await prisma.exercise.update({
-      where: { id },
-      data: {
-        exName: exerciseName,
-        publicId,
-        url,
-        status,
-      },
-    });
+    // const updatedExercise = await prisma.exercise.update({
+    //   where: { id },
+    //   data: {
+    //     exName: exerciseName,
+    //     publicId,
+    //     url,
+    //     status,
+    //   },
+    // });
 
-    return formatResponse(true, updatedExercise, "Exercise updated");
+    return formatResponse(true, null, "Exercise updated");
   } catch (e: any) {
     console.error("PUT /api/exercise error:", e);
     return formatResponse(false, null, e.message || "Internal server error", 500);

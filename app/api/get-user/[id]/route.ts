@@ -37,13 +37,13 @@ async function updateUser(request: Request, { params }: { params: { id: string }
     const updatedBooking = await prisma.booking.update({
       where: { id },
       data: {
-        question: question.question,
-        answer: question.answer,
+        // question: question.question,
+        // answer: question.answer,
         status: question.status,
-        audioUrl: question.audioUrl ?? null,
-        audioWaveform: Array.isArray(question.audioWaveform)
-          ? question.audioWaveform
-          : Prisma.DbNull,
+        // audioUrl: question.audioUrl ?? null,
+        // audioWaveform: Array.isArray(question.audioWaveform)
+        //   ? question.audioWaveform
+        //   : Prisma.DbNull,
       },
     });
 

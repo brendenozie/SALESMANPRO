@@ -45,7 +45,8 @@ async function getDoctorPatients(request: Request) {
 
     // 4. Map and normalize patients
     let patients = appointments.map((appt) => ({
-      id: appt.user?.consumerProfile?.id || appt.user?.id || "N/A",
+      // consumerProfile is returned as an array, use the first element's id if present
+      id: appt.user?.consumerProfile?.[0]?.id || appt.user?.id || "N/A",
       userId: appt.user?.id || "N/A",
       name: appt.user?.name || "N/A",
       email: appt.user?.email || "N/A",

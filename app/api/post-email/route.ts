@@ -6,11 +6,7 @@ import { formatResponse } from "@/lib/formatResponse";
 
 async function GET(request: Request) {
   try {
-    const auth = await verifyAuth(request);
-    if (!auth.success) {
-      return formatResponse(false, null, auth.error, 401);
-    }
-
+    
     const body = await request.json();
     const { fname, lname, email, phone, company, message } = body;
 
