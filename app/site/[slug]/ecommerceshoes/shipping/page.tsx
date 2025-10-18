@@ -40,9 +40,7 @@ interface Store {
   products: Product[];
 }
 
-interface ShippingPageProps {
-  store: Store;
-}
+
 
 // --- Icon components for the shipping options ---
 const StandardIcon = () => (
@@ -78,7 +76,7 @@ const mockStore = {
   ]
 };
 
-const ShippingPage: React.FC<ShippingPageProps> = () => {
+const ShippingPage: React.FC = () => {
   // In a real application, you would use your context.
   // const store = useStore();
   const store = mockStore;

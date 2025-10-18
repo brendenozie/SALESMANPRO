@@ -40,14 +40,12 @@ interface Store {
   products: Product[];
 }
 
-interface TermsPageProps {
-  store: Store;
-}
+ShippingPage
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
 
 
-const TermsPage: React.FC<TermsPageProps> = () => {
+const TermsPage: React.FC = () => {
   const store = useStore();
   return (
       <Section title="Terms of Service" background="none">

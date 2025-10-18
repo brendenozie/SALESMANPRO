@@ -44,14 +44,12 @@ interface Store {
   products: Product[];
 }
 
-interface TrackOrderPageProps {
-  store: Store;
-}
+
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
 
 
-const TrackOrderPage: React.FC<TrackOrderPageProps> = () => {
+const TrackOrderPage: React.FC = () => {
 
   const store = useStore();
 
@@ -63,4 +61,4 @@ const TrackOrderPage: React.FC<TrackOrderPageProps> = () => {
       </motion.div>
     </Section>
 )};
-export default TrackOrderPageProps;
+export default TrackOrderPage;

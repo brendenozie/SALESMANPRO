@@ -43,14 +43,12 @@ interface Store {
   products: Product[];
 }
 
-interface CartProps {
-  store: Store;
-}
+
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
 
 
-const HomepageMockup: React.FC<CartProps> = ({ store }) => {
+const CartpageMockup: React.FC = () => {
   return (
     <div className="font-sans text-gray-800 bg-gray-50 dark:bg-gray-900 dark:text-gray-200">
       {/* Header */}
@@ -203,7 +201,8 @@ const HomepageMockup: React.FC<CartProps> = ({ store }) => {
   );
 };
 
-export default HomepageMockup;
+
+export default CartpageMockup;
 export const getStaticProps = async () => {
   return {
     props: {

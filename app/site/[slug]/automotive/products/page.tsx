@@ -23,7 +23,7 @@ interface PageProps {
 export const dynamic = 'force-dynamic';
 
 export default async function ProductListPage({ params, searchParams }: PageProps) {
-  const { slug } = params;
+  const { slug } = await params;
   const page = parseInt(searchParams.page || '1', 10);
   const pageSize = 12;
   const search = searchParams.search || '';

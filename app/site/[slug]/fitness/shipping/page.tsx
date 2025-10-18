@@ -43,14 +43,12 @@ interface Store {
   products: Product[];
 }
 
-interface ShippingPageProps {
-  store: Store;
-}
+
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
 
 
-const ShippingPage: React.FC<ShippingPageProps> = () => {
+const ShippingPage: React.FC = () => {
   const store = useStore();
 
   return(
@@ -61,4 +59,4 @@ const ShippingPage: React.FC<ShippingPageProps> = () => {
       </motion.div>
     </Section>
 )};
-export default ShippingPageProps;
+export default ShippingPage;

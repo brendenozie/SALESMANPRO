@@ -40,13 +40,11 @@ interface Store {
   products: Product[];
 }
 
-interface PrivacyPolicyProps {
-  store: Store;
-}
+
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
 
-const PrivacyPolicyPage: React.FC<PrivacyPolicyProps> = () => {
+const PrivacyPolicyPage: React.FC = () => {
   const store = useStore();
   return (
         <Section title="Privacy Policy" background="none">

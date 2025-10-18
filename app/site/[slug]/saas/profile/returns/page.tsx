@@ -44,14 +44,12 @@ interface Store {
   products: Product[];
 }
 
-interface ReturnsPageProps {
-  store: Store;
-}
+
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
 
 
-const ReturnsPage: React.FC<ReturnsPageProps> = () => {
+const ReturnsPage: React.FC = () => {
 
   const store = useStore();
 
