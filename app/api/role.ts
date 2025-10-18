@@ -1,7 +1,9 @@
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { getCookie } from "cookies-next";
-import { NextApiRequest, NextApiResponse } from "next";
+import { NextResponse } from "next/server";
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
+const getHandler = async (req: Request) => {
+
   if (req.method !== "GET") {
     return NextResponse.json({ message: "Method Not Allowed" });
   }
@@ -17,5 +19,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     role = "AGENT";
   }
 
-  return res.status(200).json({ role });
+  return NextResponse.json({ role });
 }
+
+export const GET = withApiHandler(getHandler);

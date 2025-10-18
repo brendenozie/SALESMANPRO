@@ -1,5 +1,4 @@
-import { buffer } from "micro";
-import { NextApiRequest, NextApiResponse } from "next";
+import { NextResponse } from "next/server";
 
 // Establish connection with Stripe
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
@@ -38,32 +37,38 @@ const fulfillBooking = async (session: any) => {
   }
 };
 
-export default async (req: NextApiRequest, res: NextApiResponse) => {
+export default async (req: Request) => {
+export default async (req: Request) => {
   // Connect Webhooks to be notified of Stripe Activity
   // more info: https://stripe.com/docs/connect/webhooks
   if (req.method === "POST") {
-    const requestBuffer = await buffer(req);
-    const payload = requestBuffer.toString();
-    const sig = req.headers["stripe-signature"];
+    // Read raw body from the Request (web-standard API) and convert to Buffer
+    const buf = Buffer.from(await req.arrayBuffer());
+    const payload = buf.toString();
+    const sig = req.headers.get("stripe-signature");
     let event;
     // Verify the Event posted came from Stripe
     try {
       event = stripe.webhooks.constructEvent(payload, sig, endpointSecret);
     } catch (err: any) {
       console.log("ERROR", err.message);
-      return NextResponse.send(`Webhook error: ${err.message}`);
+      return NextResponse.json({ error: `Webhook error: ${err.message}` }, { status: 400 });
     }
     // Handle the checkout.session.completed event
     if (event.type === "checkout.session.completed") {
       const session = event.data.object;
       // Fulfill Hotel Booking
-      return fulfillBooking(session)
-        .then(() => res.status(200))
-        .catch((err) => {
-          NextResponse.send(`Webhook Error: ${err.message}`);
-        });
+      try {
+        await fulfillBooking(session);
+        return NextResponse.json({ received: true }, { status: 200 });
+      } catch (err: any) {
+        console.error(err);
+        return NextResponse.json({ error: `Webhook Error: ${err.message}` }, { status: 500 });
+      }
     }
+    return NextResponse.json({ received: true }, { status: 200 });
   }
+  return NextResponse.next();
 };
 
 export const config = {
