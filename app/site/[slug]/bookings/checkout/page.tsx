@@ -19,17 +19,18 @@ import { useRouter } from "next/navigation";
 const steps = ["Billing", "Payment", "Review"];
 
 interface CheckoutPageProps {
-  searchParams: {
+  searchParams: Promise<{
     listingId?: string;
     name?: string;
     price?: string;
     date?: string;     // "YYYY-MM-DD"
     timeSlot?: string; // "HH:MM"
-  };
+  }>;
 }
 
-export default function CheckoutPage({ searchParams }: CheckoutPageProps) {
-  const { listingId, name, price, date, timeSlot } = searchParams;
+
+export default async function CheckoutPage({ searchParams }: CheckoutPageProps) {
+  const { listingId, name, price, date, timeSlot } = await searchParams;
   const { data: session } = useSession();
   const router = useRouter();
 
