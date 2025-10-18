@@ -88,8 +88,8 @@ const putClientLogic = async (request: Request, context: RouteContext) => {
         phone: updatedClientData.user?.phone || 'N/A',
         membershipType: updatedClientData.membershipType || 'Standard',
         membershipStatus: updatedClientData.membershipStatus,
-        joinDate: updatedClientData.joinDate.toISOString().split('T')[0],
-        lastActive: updatedClientData.lastActive.toISOString().split('T')[0],
+        joinDate: updatedClientData.joinDate?.toISOString().split('T')[0],
+        lastActive: updatedClientData.lastActive?.toISOString().split('T')[0],
         photoUrl: updatedClientData.photoUrl || 'https://placehold.co/128x128/E0E7FF/4338CA?text=No+Photo',
     };
 

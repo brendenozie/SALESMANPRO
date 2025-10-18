@@ -199,7 +199,7 @@ async function createEducator(request: Request) {
   const newEducator = await prisma.$transaction(async (tx) => {
     const educator = await tx.educator.create({
       data: {
-        userId: user.id,
+        userId: user?.id || '',
         loginCode,
         companyId,
         phone,
