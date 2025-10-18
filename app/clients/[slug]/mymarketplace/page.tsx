@@ -24,7 +24,7 @@ export type MarketplaceProduct = {
   sellingPrice: number;
 };
 
-export async function getMarketplaceProducts(clientId: string): Promise<MarketplaceProduct[]> {
+export async function getMarketplaceProducts(clientId: string) {
   try {
     const response = await fetch(`${apiUrl}/clients/my-market-place?sellerId=${clientId}`, {
       cache: "no-store",

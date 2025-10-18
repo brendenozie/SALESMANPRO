@@ -21,13 +21,13 @@ type Product = {
 };
 
 interface Props {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }
 
-const ClientInventoryPage = ({ params }: Props) => {
-  const { slug: companyId } = params;
+const ClientInventoryPage = async ({ params }: Props) => {
+  const { slug: companyId } = await params;
   const [productsData, setProductsData] = useState<Product[]>([]);
 
   React.useEffect(() => {

@@ -6,11 +6,12 @@ import { verifyAuth } from "@/lib/verifyAuth";
 import { NextResponse } from "next/server";
 
 // Define GradeStatus enum
-export enum GradeStatus {
-  PASSED = "PASSED",
-  FAILED = "FAILED",
-  PENDING = "PENDING",
-}
+const GradeStatus = {
+  PASSED: "PASSED",
+  FAILED: "FAILED",
+  PENDING: "PENDING",
+} as const;
+
 
 export const GET = withApiHandler(async (request: Request, { params }: { params: { courseId: string } }) => {
   const auth = await verifyAuth(request);
@@ -119,7 +120,7 @@ export const GET = withApiHandler(async (request: Request, { params }: { params:
         gradeId: grade.id,
         score: grade.score,
         gradeValue: grade.gradeValue,
-        gradeStatus: grade.gradeStatus as GradeStatus,
+        gradeStatus: grade.gradeStatus,
         comments: grade.comments,
         academicLevelAtTimeOfGradingId: grade.academicLevelAtTimeOfGradingId,
       };
