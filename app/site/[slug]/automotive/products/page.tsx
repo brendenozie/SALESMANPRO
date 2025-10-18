@@ -12,24 +12,25 @@ type Product = { id: string; name: string; price: number; imageUrl: string; slug
 
 interface PageProps {
   params:Promise<{ slug: string }>
-  searchParams: {
+  searchParams: Promise<{
     page?: string;
     search?: string;
     category?: string;
     sort?: string;
-  };
+  }>;
 }
 
 export const dynamic = 'force-dynamic';
 
 export default async function ProductListPage({ params, searchParams }: PageProps) {
   const { slug } = await params;
-  const page = parseInt(searchParams.page || '1', 10);
-  const pageSize = 12;
-  const search = searchParams.search || '';
-  const categoryId = searchParams.category || null;
-  const sort = searchParams.sort || 'newest';
-
+  
+  const { page, search, category, sort } = await searchParams;
+  
+  let pageSize = 12;
+  const pageNum = parseInt(page || '1', 10);
+  const categoryId = category || undefined;
+  const sortOption = sort || 'newest';
   // Ensure store exists
   const baseCompany = await prisma.company.findUnique({ where: { slug } });
   if (!baseCompany) notFound();
@@ -49,7 +50,7 @@ export default async function ProductListPage({ params, searchParams }: PageProp
   const [listings, totalCount, categories] = await Promise.all([
     prisma.marketplaceListings.findMany({
       where,
-      skip: (page - 1) * pageSize,
+      skip: (pageNum - 1) * pageSize,
       take: pageSize,
       orderBy,
       // include: { images: true }
@@ -107,19 +108,19 @@ export default async function ProductListPage({ params, searchParams }: PageProp
 
           <div className="flex justify-center items-center space-x-2 mt-8">
             <Link
-              href={`/${slug}/products?page=${page - 1}&search=${search}&category=${categoryId || ''}&sort=${sort}`}
-              className={`px-3 py-1 border rounded ${page <= 1 ? 'opacity-50 pointer-events-none' : ''}`}
+              href={`/${slug}/products?page=${pageNum - 1}&search=${search}&category=${categoryId || ''}&sort=${sortOption}`}
+              className={`px-3 py-1 border rounded ${pageNum <= 1 ? 'opacity-50 pointer-events-none' : ''}`}
             >Previous</Link>
             {Array.from({ length: totalPages }, (_, i) => (
               <Link
                 key={i}
-                href={`/${slug}/products?page=${i + 1}&search=${search}&category=${categoryId || ''}&sort=${sort}`}
-                className={`px-3 py-1 border rounded ${i + 1 === page ? 'bg-gray-200' : ''}`}
+                href={`/${slug}/products?page=${i + 1}&search=${search}&category=${categoryId || ''}&sort=${sortOption}`}
+                className={`px-3 py-1 border rounded ${i + 1 === pageNum ? 'bg-gray-200' : ''}`}
               >{i + 1}</Link>
             ))}
             <Link
-              href={`/${slug}/products?page=${page + 1}&search=${search}&category=${categoryId || ''}&sort=${sort}`}
-              className={`px-3 py-1 border rounded ${page >= totalPages ? 'opacity-50 pointer-events-none' : ''}`}
+              href={`/${slug}/products?page=${pageNum + 1}&search=${search}&category=${categoryId || ''}&sort=${sortOption}`}
+              className={`px-3 py-1 border rounded ${pageNum >= totalPages ? 'opacity-50 pointer-events-none' : ''}`}
             >Next</Link>
           </div>
         </Section>

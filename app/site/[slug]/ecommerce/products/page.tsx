@@ -11,23 +11,24 @@ type Category = { id: string; name: string };
 
 interface PageProps {
   params:Promise<{ slug: string }>
-  searchParams: {
+  searchParams: Promise<{
     page?: string;
     search?: string;
     category?: string;
     sort?: string;
-  };
+  }>;
 }
 
 export const dynamic = 'force-dynamic';
 
 export default async function ProductListPage({ params, searchParams }: PageProps) {
   const { slug } = params;
-  const page = parseInt(searchParams.page || '1', 10);
-  const pageSize = 12;
-  const search = searchParams.search || '';
-  const categoryId = searchParams.category || null;
-  const sort = searchParams.sort || 'newest';
+  const { page, search, category, sort } = await searchParams;
+  
+  let pageSize = 12;
+  const pageNum = parseInt(page || '1', 10);
+  const categoryId = category || undefined;
+  const sortOption = sort || 'newest';
 
   // Ensure store exists
   const baseCompany = await prisma.company.findUnique({ where: { slug } });
