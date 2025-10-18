@@ -14,8 +14,11 @@ export default async function StoreLayout({
   params:Promise<{ slug: string }>
   children: ReactNode;
 }) {
+
+  const { slug } = await params;
+
   const raw = await prisma.company.findUnique({
-    where: { slug: String(params?.slug) },
+    where: { slug: String(slug) },
     include: {
       marketplaceListings: {
         take: 8,

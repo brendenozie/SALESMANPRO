@@ -38,7 +38,6 @@ const fulfillBooking = async (session: any) => {
 };
 
 export default async (req: Request) => {
-export default async (req: Request) => {
   // Connect Webhooks to be notified of Stripe Activity
   // more info: https://stripe.com/docs/connect/webhooks
   if (req.method === "POST") {

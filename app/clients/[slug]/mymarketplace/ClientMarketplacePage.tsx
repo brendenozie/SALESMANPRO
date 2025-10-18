@@ -4,27 +4,27 @@ import React, { useState } from 'react';
 import dynamic from 'next/dynamic';
 import ClientLayout from '@/components/ClientLayout';
 import UserNav from '@/components/UserNav';
-import { MarketplaceProduct } from './page';
+import { MarketListingForm } from '@/types/typings';
 
 // Dynamically load modals to reduce bundle size
 const ProductRequestModal = dynamic(() => import('@/components/ProductRequestModal'));
 const AddToProductMarketModal = dynamic(() => import('@/components/AddToProductMarketModal'));
 
 interface Props {
-  productsData: MarketplaceProduct[];
+  productsData: MarketListingForm[];
 }
 
 const ClientMarketplacePage = ({ productsData = [] }: Props) => {
   const [showRemoveModal, setShowRemoveModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<MarketplaceProduct | null>(null);
+  const [selectedProduct, setSelectedProduct] = useState<MarketListingForm | null>(null);
 
-  const handleEditProduct = (product: MarketplaceProduct) => {
+  const handleEditProduct = (product: MarketListingForm) => {
     setSelectedProduct(product);
     setShowEditModal(true);
   };
 
-  const handleRemoveProduct = (product: MarketplaceProduct) => {
+  const handleRemoveProduct = (product: MarketListingForm) => {
     setSelectedProduct(product);
     setShowRemoveModal(true);
   };
@@ -49,11 +49,11 @@ const ClientMarketplacePage = ({ productsData = [] }: Props) => {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
                 {productsData.map((product) => (
                   <div
-                    key={product._id}
+                    key={product.id}
                     className="bg-gray-100 border border-gray-200 rounded-xl p-6 transition-transform duration-300 transform hover:scale-105 shadow-md hover:shadow-xl"
                   >
                     <h3 className="text-2xl font-bold text-gray-800 mb-3 hover:text-blue-600 transition-colors">
-                      {product.title}
+                      {product.name}
                     </h3>
 
                     <p className="text-sm text-gray-600 mb-1">
