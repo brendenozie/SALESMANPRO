@@ -1,16 +1,16 @@
 // app/api/admin/reports/sales/route.ts
-import { NextRequest } from "next/server";
+
 import prisma from "@/server/db/prismadb";
 import { verifyAuth } from "@/lib/verifyAuth";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
-async function getSales(req: NextRequest) {
+async function getSales(req: Request) {
   const auth = await verifyAuth(req);
   if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
   try {
-    const { searchParams } = req.nextUrl;
+    const { searchParams } = req.url ? new URL(req.url) : { searchParams: new URLSearchParams() };
     const startDate = searchParams.get("startDate");
     const endDate = searchParams.get("endDate");
     const agentId = searchParams.get("agentId");
@@ -28,28 +28,29 @@ async function getSales(req: NextRequest) {
           gte: startDate ? new Date(startDate) : undefined,
           lte: endDate ? new Date(endDate) : undefined,
         },
-        agentId: agentId || undefined,
+        consumerId: agentId || undefined,
       },
       include: {
-        marketplaceListing: true,
-        client: true,
-        salesAgent: true,
+        items: { include: { marketplaceListing: true } },
       },
       skip: offset,
       take: limit,
     });
 
-    const formattedSales = sales.map((sale) => ({
-      id: sale.id,
-      productName: sale.product?.name || "Unknown",
-      category: sale.product?.category || "N/A",
-      quantity: sale.quantity,
-      price: sale.product?.price,
-      totalAmount: sale.totalPrice,
-      region: sale.client?.name || "N/A",
-      salesAgent: sale.salesAgent?.user?.name || "Unknown Agent",
-      date: sale.createdAt.toISOString(),
-    }));
+    const formattedSales = sales.map((sale) => {
+      const firstItem = sale.items && sale.items.length > 0 ? sale.items[0] : null;
+      return {
+        id: sale.id,
+        productName: firstItem?.marketplaceListing?.name || "Unknown",
+        category: firstItem?.marketplaceListing?.category || "N/A",
+        quantity: firstItem?.quantity ??  0,
+        price: firstItem?.marketplaceListing?.finalPrice ?? null,
+        totalAmount: sale.totalPrice,
+        region: "N/A",
+        salesAgent:  "Unknown Agent", //sale.salesAgent?.user?.name ||
+        date: sale.createdAt?.toISOString() || null,
+      };
+    });
 
     return formatResponse(true, formattedSales, "Sales data fetched successfully");
   } catch (error) {

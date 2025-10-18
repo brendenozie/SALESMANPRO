@@ -13,32 +13,9 @@ async function getStore(req: Request, { params }: { params: { id: string } }) {
     const store = await prisma.company.findUnique({
       where: { id: storeId },
       include: {
-        productCategories: {
-          include: {
-            subcategories: {
-              include: {
-                brands: {
-                  include: {
-                    _count: {
-                      select: { products: true },
-                    },
-                  },
-                },
-                _count: {
-                  select: { products: true, brands: true },
-                },
-                products: {
-                  take: 5, // Preview list to save payload size
-                },
-              },
-            },
-          },
-        },
+        productCategories: true,
         _count: {
           select: { marketplaceListings: true },
-        },
-        products: {
-          take: 5, // Store's own products preview
         },
       },
     });

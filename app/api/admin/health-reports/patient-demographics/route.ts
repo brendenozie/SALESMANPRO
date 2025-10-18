@@ -1,7 +1,7 @@
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
-import { Role } from "@prisma/client"; // Assuming Role enum is available
+import { ROLE } from "@prisma/client";
 
 /**
  * GET Handler: Generates a patient demographics report for the specified company.
@@ -35,8 +35,7 @@ async function getPatientDemographicsReport(
   if (endDateParam) {
     dateFilter.lte = new Date(endDateParam);
   }
-
-  const patientRoles: Role[] = ["CLIENT", "CONSUMER", "STUDENT", "PARENT"] as Role[];
+  const patientRoles: ROLE[] = [ROLE.CLIENT, ROLE.CONSUMER, ROLE.STUDENT, ROLE.PARENT];
 
   // 2. Fetch all relevant patient data
   const patients = await prisma.user.findMany({

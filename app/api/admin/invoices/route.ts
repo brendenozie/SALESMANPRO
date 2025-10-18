@@ -192,7 +192,7 @@ async function handlePostInvoice(request: Request, { params }: RouteParams) {
       data: {
         userId: userIdForPayment,
         orderId: newInvoice.id,
-        amount: newInvoice.totalPrice,
+        amount: newInvoice.totalPrice || 0,
         status: status === "Paid" || status === "COMPLETED" ? "COMPLETED" : "PENDING",
         transactionId: `INV-${newInvoice.id}-${Date.now()}`,
       }

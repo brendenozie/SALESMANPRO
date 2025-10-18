@@ -106,9 +106,10 @@ async function getSalesReport(request: Request) {
 
     // Aggregate sales by doctor (via appointment)
     if (item.appointment?.doctor?.User?.id) {
-      const dKey = item.appointment.doctor.User.id;
+      const dKey = String(item.appointment.doctor.User.id);
+      const docName = item.appointment.doctor.User.name ?? "";
       if (!salesByDoctor[dKey]) {
-        salesByDoctor[dKey] = { name: item.appointment.doctor.User.name, revenue: 0, appointments: 0 };
+        salesByDoctor[dKey] = { name: docName, revenue: 0, appointments: 0 };
       }
       salesByDoctor[dKey].revenue += revenue;
       // Note: This counts one 'sale' per order item per doctor, not unique appointments.
@@ -117,9 +118,9 @@ async function getSalesReport(request: Request) {
 
     // Aggregate sales by patient (via appointment)
     if (item.appointment?.user?.id) {
-      const uKey = item.appointment.user.id;
+      const uKey = String(item.appointment.user.id);
       if (!salesByPatient[uKey]) {
-        salesByPatient[uKey] = { name: item.appointment.user.name, totalSpent: 0, orderCount: 0 };
+        salesByPatient[uKey] = { name: item.appointment.user.name ?? "", totalSpent: 0, orderCount: 0 };
       }
       salesByPatient[uKey].totalSpent += revenue;
       salesByPatient[uKey].orderCount += 1;

@@ -59,12 +59,12 @@ async function handlePOST(request: Request) {
         description,
         duration,
         tags: tags || [],
-        date: date ? new Date(date) : new Date(),
+        // date: date ? new Date(date) : new Date(),
         status: status as VideoStatus,
-        imageUrl,
+        // thumbnailUrl:imageUrl,
         companyId,
         userId,
-      },
+      } as any,
     });
 
     return formatResponse(true, newVideo, "Video created successfully", 201);

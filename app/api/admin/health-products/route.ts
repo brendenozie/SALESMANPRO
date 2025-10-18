@@ -1,7 +1,6 @@
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
-import { MarketplaceListings } from "@prisma/client"; // Assuming MarketplaceListings type is available
 
 /**
  * GET Handler: Fetches a filtered list of active products available for POS use.
@@ -59,7 +58,7 @@ async function getPosProducts(
   });
 
   // 4. Format Products
-  const formattedProducts = products.map((product: Partial<MarketplaceListings> & { id: string, name: string, sellingPrice: number, quantity: number | null }) => ({
+  const formattedProducts = products.map((product: any & { id: string, name: string, sellingPrice: number, quantity: number | null }) => ({
     id: product.id,
     name: product.name,
     price: product.sellingPrice,

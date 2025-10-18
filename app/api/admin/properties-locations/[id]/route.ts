@@ -11,8 +11,8 @@ const getLocation = async (req: Request, { params }: { params: { id: string } })
   const location = await prisma.location.findUnique({
     where: { id },
     include: {
-      _count: { select: { properties: true } },
-      parentLocation: { select: { id: true, name: true } },
+      _count: { select: { marketplaceListings: true } },
+      parent: { select: { id: true, name: true } },
     },
   });
 
@@ -22,7 +22,7 @@ const getLocation = async (req: Request, { params }: { params: { id: string } })
 
   const formattedLocation = {
     ...location,
-    propertyCount: location._count.properties,
+    propertyCount: location._count.marketplaceListings,
     _count: undefined,
   };
 
@@ -39,7 +39,7 @@ const updateLocation = async (req: Request, { params }: { params: { id: string }
 
   const updatedLocation = await prisma.location.update({
     where: { id },
-    data: { name, description, latitude, longitude, parentLocationId },
+    data: { name, description, latitude, longitude, parentId:parentLocationId },
   });
 
   return formatResponse(true, updatedLocation, "Location updated successfully", 200);

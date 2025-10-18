@@ -21,7 +21,7 @@ async function getSchedule(req: Request, { params }: { params: { adminSlug: stri
 
     const videos = await prisma.video.findMany({
       where: { status: { in: ["PUBLISHED", "PROCESSING", "DRAFT"] } },
-      select: { id: true, title: true, status: true, },
+      select: { id: true, title: true, status: true, createdAt: true  },
     });
 
     const formattedArticles = articles.map(item => ({
@@ -32,7 +32,7 @@ async function getSchedule(req: Request, { params }: { params: { adminSlug: stri
 
     const formattedVideos = videos.map(item => ({
       ...item,
-      date: item.date ? item.date.toISOString().split("T")[0] : "N/A",
+      date: item.createdAt ? item.createdAt.toISOString().split("T")[0] : "N/A",
       type: "Video",
       status: item.status === "PUBLISHED" ? "Scheduled" : item.status,
     }));
@@ -84,9 +84,8 @@ async function createSchedule(req: Request, { params }: { params: { adminSlug: s
         data: {
           title,
           status,
-          // album:{ connect: { id: company.id } },
-          // date: date ? new Date(date) : undefined,
-          // company: { connect: { id: company.id } },
+          createdAt: date ? new Date(date) : undefined,
+          album: { connect: { id: company.id } },
         },
       });
     } else {
@@ -124,7 +123,7 @@ async function updateSchedule(req: Request, { params }: { params: { adminSlug: s
     } else if (type === "Video") {
       updatedItem = await prisma.video.update({
         where: { id },
-        data: { title, status, date: date ? new Date(date) : undefined },
+        data: { title, status, createdAt: date ? new Date(date) : undefined },
       });
     } else {
       return formatResponse(false, null, "Invalid content type", 400);

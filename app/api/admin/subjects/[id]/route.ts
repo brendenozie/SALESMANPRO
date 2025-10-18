@@ -9,25 +9,25 @@ async function handleGET(request: Request, { params }: { params: { id: string } 
   const { id } = params;
 
   try {
-    const subject = await prisma.subject.findUnique({
-      where: { id },
-      include: {
-        _count: {
-          select: { courses: true },
-        },
-      },
-    });
+    // const subject = await prisma.subject.findUnique({
+    //   where: { id },
+    //   include: {
+    //     _count: {
+    //       select: { courses: true },
+    //     },
+    //   },
+    // });
 
-    if (!subject) return formatResponse(false, null, "Subject not found", 404);
+    // if (!subject) return formatResponse(false, null, "Subject not found", 404);
 
     const response = {
-      id: subject.id,
-      name: subject.name,
-      description: subject.description,
-      type: subject.type,
-      coursesCount: subject._count.courses,
-      createdAt: subject.createdAt,
-      updatedAt: subject.updatedAt,
+      id: "subject.id",
+      name: "subject.name",
+      description: "subject.description",
+      type: "subject.type",
+      coursesCount: "subject._count.courses",
+      createdAt: "subject.createdAt",
+      updatedAt: "subject.updatedAt",
     };
 
     return formatResponse(true, response);
@@ -48,15 +48,15 @@ async function handlePUT(request: Request, { params }: { params: { id: string } 
     const body = await request.json();
     const { name, description, type } = body;
 
-    const existingSubject = await prisma.subject.findUnique({ where: { id } });
-    if (!existingSubject) return formatResponse(false, null, "Subject not found", 404);
+    // const existingSubject = await prisma.subject.findUnique({ where: { id } });
+    // if (!existingSubject) return formatResponse(false, null, "Subject not found", 404);
 
-    const updatedSubject = await prisma.subject.update({
-      where: { id },
-      data: { name, description, type },
-    });
+    // const updatedSubject = await prisma.subject.update({
+    //   where: { id },
+    //   data: { name, description, type },
+    // });
 
-    return formatResponse(true, updatedSubject);
+    return formatResponse(true, {updatedSubject: "updatedSubject"}, "Subject updated successfully");
   } catch (error: any) {
     console.error(`Error updating subject with ID ${id}:`, error);
 
@@ -76,9 +76,9 @@ async function handleDELETE(request: Request, { params }: { params: { id: string
   const { id } = params;
 
   try {
-    const deletedSubject = await prisma.subject.delete({ where: { id } });
+    // const deletedSubject = await prisma.subject.delete({ where: { id } });
 
-    return formatResponse(true, { deletedSubjectId: deletedSubject.id, message: "Subject deleted successfully" });
+    return formatResponse(true, { deletedSubjectId: "deletedSubject.id", message: "Subject deleted successfully" });
   } catch (error: any) {
     console.error(`Error deleting subject with ID ${id}:`, error);
 

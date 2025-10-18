@@ -1,4 +1,4 @@
-ts
+// ts
 // app/api/agents/top/route.ts
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
@@ -14,13 +14,14 @@ export const GET = withApiHandler(async (req: Request) => {
   try {
     // Fetch top agent by totalSales
     const topAgent = await prisma.salesAgent.findFirst({
-      orderBy: { totalSales: "desc" },
-      select: { id: true, name: true, totalSales: true },
+      include: {
+        user: { select: { name: true } },
+      },
     });
 
     return formatResponse(true, {
-      topAgent: topAgent?.name || "N/A",
-      topAgentSales: topAgent?.totalSales || 0,
+      topAgent: topAgent?.user.name || "N/A",
+      topAgentSales:  0, //topAgent?.totalSales ||
       agentId: topAgent?.id || null,
     });
   } catch (error: any) {

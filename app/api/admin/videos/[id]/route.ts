@@ -56,7 +56,7 @@ async function handlePUT(request: Request, { params }: { params: { id: string } 
         duration,
         tags,
         status: status as VideoStatus,
-        imageUrl,
+        // imageUrl,
         companyId,
         userId,
       },

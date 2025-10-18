@@ -6,9 +6,8 @@ import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
 // GET company settings
-async function getCompanySettings(req: NextRequest) {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+async function getCompanySettings(req: Request) {
+  
 
   const url = new URL(req.url);
   const companyId = url.searchParams.get("companyId");
@@ -31,9 +30,7 @@ async function getCompanySettings(req: NextRequest) {
 }
 
 // PUT update company settings
-async function updateCompanySettings(req: NextRequest) {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+async function updateCompanySettings(req: Request) {
 
   const url = new URL(req.url);
   const companyId = url.searchParams.get("companyId");

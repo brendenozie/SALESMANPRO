@@ -6,9 +6,8 @@ import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
 // GET user notification settings
-async function getUserSettings(req: NextRequest, { params }: { params: { userId: string } }) {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+async function getUserSettings(req: Request, { params }: { params: { userId: string } }) {
+  
 
   const { userId } = params;
   if (!userId) return formatResponse(false, null, "User ID is required", 400);
@@ -26,9 +25,8 @@ async function getUserSettings(req: NextRequest, { params }: { params: { userId:
 }
 
 // PUT update or create user notification settings
-async function updateUserSettings(req: NextRequest, { params }: { params: { userId: string } }) {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+async function updateUserSettings(req: Request, { params }: { params: { userId: string } }) {
+  
 
   const { userId } = params;
   if (!userId) return formatResponse(false, null, "User ID is required", 400);

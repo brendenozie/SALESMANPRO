@@ -12,15 +12,15 @@ const getLocations = async (req: Request) => {
 
   const locations = await prisma.location.findMany({
     include: {
-      _count: { select: { properties: true } },
-      parentLocation: { select: { id: true, name: true } },
+      _count: { select: { marketplaceListings: true } },
+      parent: { select: { id: true, name: true } },
     },
     orderBy: { name: "asc" },
   });
 
   const formattedLocations = locations.map((loc) => ({
     ...loc,
-    propertyCount: loc._count.properties,
+    propertyCount: loc._count.marketplaceListings,
     _count: undefined,
   }));
 
@@ -39,13 +39,21 @@ const createLocation = async (req: Request) => {
     return formatResponse(false, null, "Location name is required", 400);
   }
 
+  // generate a slug from the name to satisfy the required 'slug' field in the Prisma schema
+  const slug = String(name)
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+
   const newLocation = await prisma.location.create({
     data: {
       name,
+      slug,
       description,
       latitude,
       longitude,
-      parentLocationId,
+      parentId: parentLocationId,
     },
   });
 

@@ -185,9 +185,10 @@ async function createAppointment(
   const newAppointment = await prisma.appointment.create({
     data: {
       userId: patientUser.id,
+      companyId: company.id,
       date: appointmentDateTime,
       status,
-      // If you have a doctorId, link it here
+      // Create the OrderItem as part of the appointment, but don't try to create another appointment inside the OrderItem
       OrderItem: {
         create: {
           marketplaceListing: { connect: { id: serviceListing.id } },
@@ -196,16 +197,20 @@ async function createAppointment(
           status: "PENDING",
           date: date,
           timeSlot: time,
-          appointment: {
+          // create the related order required by the OrderItem relation
+          order: {
             create: {
-              userId: patientUser.id,
+              status: "PENDING",
+              consumerId: patientUser.id,
               companyId: company.id,
-              status: "PENDING"
             }
           }
         }
       },
     },
+    include: {
+      OrderItem: { include: { marketplaceListing: true } }
+    }
   });
 
   // --- Success Response ---

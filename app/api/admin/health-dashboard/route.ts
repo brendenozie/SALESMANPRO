@@ -80,7 +80,7 @@ async function getDashboardSummary(
     }),
   ]);
 
-  const todayRevenue = todayOrders.reduce((sum, order) => sum + order.totalPrice, 0);
+  const todayRevenue = todayOrders.reduce((sum, order) => sum + (order.totalPrice || 0), 0);
 
   // Mock new prescriptions (as no model exists)
   const newPrescriptions = Math.floor(Math.random() * 20) + 15;

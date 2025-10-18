@@ -63,8 +63,8 @@ const getClientsLogic = async (req: Request, context: RouteContext) => {
         phone: client.user?.phone || 'N/A',
         membershipType: client.membershipType || 'Standard',
         membershipStatus: client.membershipStatus,
-        joinDate: client.joinDate.toISOString().split('T')[0], // YYYY-MM-DD
-        lastActive: client.lastActive.toISOString().split('T')[0], // YYYY-MM-DD
+        joinDate: client.joinDate?.toISOString().split('T')[0], // YYYY-MM-DD
+        lastActive: client.lastActive?.toISOString().split('T')[0], // YYYY-MM-DD
         photoUrl: client.photoUrl || 'https://placehold.co/128x128/E0E7FF/4338CA?text=No+Photo',
     }));
 
@@ -172,8 +172,8 @@ const postClientLogic = async (req: Request, context: RouteContext) => {
         phone: newClientData.user?.phone || 'N/A',
         membershipType: newClientData.membershipType || 'Standard',
         membershipStatus: newClientData.membershipStatus,
-        joinDate: newClientData.joinDate.toISOString().split('T')[0],
-        lastActive: newClientData.lastActive.toISOString().split('T')[0],
+        joinDate: newClientData.joinDate?.toISOString().split('T')[0],
+        lastActive: newClientData.lastActive?.toISOString().split('T')[0],
         photoUrl: newClientData.photoUrl || 'https://placehold.co/128x128/E0E7FF/4338CA?text=No+Photo',
     };
 

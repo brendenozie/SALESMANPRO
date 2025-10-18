@@ -41,11 +41,17 @@ async function handlePOST(request: Request) {
 
     const newTarget = await prisma.target.create({
       data: {
-        salesAgentId,
-        productId,
-        targetAmount,
+        targetValue: targetAmount,
+        periodStart: new Date(startDate),
+        periodEnd: new Date(endDate),
         startDate: new Date(startDate),
         endDate: new Date(endDate),
+        product: {
+          connect: { id: productId },
+        },
+        salesAgent: {
+          connect: { id: salesAgentId },
+        },
       },
     });
 

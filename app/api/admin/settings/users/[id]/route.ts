@@ -6,10 +6,8 @@ import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
 // PUT /api/settings/users/[id] - Update user
-async function updateUser(req: NextRequest, { params }: { params: { id: string } }) {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
-
+async function updateUser(req: Request, { params }: { params: { id: string } }) {
+  
   const { id } = params;
   if (!id) return formatResponse(false, null, "User ID is required", 400);
 
@@ -30,10 +28,8 @@ async function updateUser(req: NextRequest, { params }: { params: { id: string }
 }
 
 // DELETE /api/settings/users/[id] - Delete user
-async function deleteUser(req: NextRequest, { params }: { params: { id: string } }) {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
-
+async function deleteUser(req: Request, { params }: { params: { id: string } }) {
+  
   const { id } = params;
   if (!id) return formatResponse(false, null, "User ID is required", 400);
 

@@ -66,13 +66,18 @@ async function getInvoices(request: Request) {
     const lowerCaseSearchTerm = searchTerm.toLowerCase();
     invoices = invoices.filter(invoice => {
       // Safely parse items for search, checking for both array and string storage
-      const itemsString = Array.isArray(invoice.items)
-        ? JSON.stringify(invoice.items).toLowerCase()
-        : (typeof invoice.items === 'string' ? invoice.items.toLowerCase() : '');
+      const rawItems = (invoice as any).items;
+      let itemsString = '';
+
+      if (Array.isArray(rawItems)) {
+        itemsString = JSON.stringify(rawItems).toLowerCase();
+      } else {
+        itemsString = String(rawItems ?? '').toLowerCase();
+      }
 
       return (
         invoice.patient?.name?.toLowerCase().includes(lowerCaseSearchTerm) ||
-        invoice.id.toLowerCase().includes(lowerCaseSearchTerm) ||
+        String(invoice.id ?? '').toLowerCase().includes(lowerCaseSearchTerm) ||
         itemsString.includes(lowerCaseSearchTerm)
       );
     });
@@ -112,8 +117,21 @@ async function createInvoice(request: Request) {
       amount: parseFloat(amount),
       invoiceDate: new Date(invoiceDate),
       dueDate: dueDate ? new Date(dueDate) : undefined,
-      // CRITICAL: Store items as a JSON string
-      items: JSON.stringify(items),
+      // Store items as JSON (not as a string) to satisfy Prisma InputJsonValue[] type.
+      // Ensure items is parsed if it's a string coming from the client.
+      items: (() => {
+        if (Array.isArray(items)) return items;
+        if (typeof items === 'string') {
+          try {
+            return JSON.parse(items);
+          } catch {
+            // fallback: wrap primitive/string in an array
+            return [items];
+          }
+        }
+        // fallback to array containing the value or empty array
+        return items ? [items] : [];
+      })() as any,
       notes: notes,
       status: status || 'PENDING',
     },

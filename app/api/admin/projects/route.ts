@@ -27,7 +27,7 @@ interface ProjectCreateData {
 /**
  * GET /api/projects - Fetch all projects
  */
-export const GET = withApiHandler(async (request: NextRequest) => {
+export const GET = withApiHandler(async (request: Request) => {
   
 
 
@@ -50,7 +50,7 @@ export const GET = withApiHandler(async (request: NextRequest) => {
 /**
  * POST /api/projects - Create a new project
  */
-export const POST = withApiHandler(async (request: NextRequest) => {
+export const POST = withApiHandler(async (request: Request) => {
   
 
 

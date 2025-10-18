@@ -77,7 +77,7 @@ async function getAppointmentTrends(
         gte: startDate,
         lt: endDate, // Use less than (<) to cover the full date range efficiently
       },
-      status: { not: "DRAFT" } // Exclude any potential draft status
+      // status: { not: "DRAFT" } // Exclude any potential draft status
     },
     orderBy: { date: 'asc' },
     select: {

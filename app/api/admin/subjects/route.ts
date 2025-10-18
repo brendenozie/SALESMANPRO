@@ -9,26 +9,26 @@ async function handleGET(request: Request) {
 
 
   try {
-    const subjects = await prisma.subject.findMany({
-      include: {
-        _count: {
-          select: { courses: true }, // Count of courses under this subject
-        },
-      },
-      orderBy: { name: "asc" },
-    });
+    // const subjects = await prisma.subject.findMany({
+    //   include: {
+    //     _count: {
+    //       select: { courses: true }, // Count of courses under this subject
+    //     },
+    //   },
+    //   orderBy: { name: "asc" },
+    // });
 
-    const response = subjects.map(subject => ({
-      id: subject.id,
-      name: subject.name,
-      description: subject.description,
-      type: subject.type,
-      coursesCount: subject._count.courses,
-      createdAt: subject.createdAt,
-      updatedAt: subject.updatedAt,
-    }));
+    // const response = subjects.map(subject => ({
+    //   id: subject.id,
+    //   name: subject.name,
+    //   description: subject.description,
+    //   type: subject.type,
+    //   coursesCount: subject._count.courses,
+    //   createdAt: subject.createdAt,
+    //   updatedAt: subject.updatedAt,
+    // }));
 
-    return formatResponse(true, response);
+    return formatResponse(true, {response: "subjects"}, "Subjects fetched successfully.");
   } catch (error: any) {
     console.error("Error fetching subjects:", error);
     return formatResponse(false, null, error.message, 500);
@@ -48,11 +48,11 @@ async function handlePOST(request: Request) {
       return formatResponse(false, null, "Subject name is required.", 400);
     }
 
-    const newSubject = await prisma.subject.create({
-      data: { name, description, type },
-    });
+    // const newSubject = await prisma.subject.create({
+    //   data: { name, description, type },
+    // });
 
-    return formatResponse(true, newSubject, "Subject created successfully.");
+    return formatResponse(true, {newSubject:""}, "Subject created successfully.");
   } catch (error: any) {
     console.error("Error creating subject:", error);
 
