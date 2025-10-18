@@ -107,9 +107,9 @@ interface Invoice {
 }
 
 interface PageProps {
-  params: {
+  params: Promise<{
     patientSlug: string;
-  };
+  }>;
 }
 
 // --- Main PatientDashboardPage Component ---

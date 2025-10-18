@@ -41,14 +41,11 @@ interface Store {
   products: Product[];
 }
 
-interface AboutProps {
-  store: Store;
-}
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
 
 
-const AboutPage: React.FC<AboutProps> = () => {
+const AboutPage: React.FC = () => {
 
   const store = useStore();
 
