@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "@/server/db/prismadb";
 import { startOfDay, endOfDay, addDays,subDays  } from 'date-fns';
+import { NextResponse } from "next/server";
 
 // Define your types
 interface AverageCaloriesSummary {
@@ -9,8 +10,7 @@ interface AverageCaloriesSummary {
 }
 
 export default async function handle(
-  req: NextApiRequest,
-  res: NextApiResponse
+  req: Request,
 ) {
  
 
@@ -54,7 +54,7 @@ export default async function handle(
       // await Promise.all(updatePromises);
 
       // Respond with success
-      return res.status(200).json({ message: 'ExerciseCategoryId fields updated successfully' });
+      return NextResponse.json({ message: 'ExerciseCategoryId fields updated successfully' });
     
   } catch (error) {
     console.error('Error fetching activity summary:', error);
