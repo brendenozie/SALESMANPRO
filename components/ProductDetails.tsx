@@ -290,7 +290,8 @@ export const PropertyDetails: React.FC<{ formData: ProductForm; handleInputChang
       <div className="space-y-2">
         <Field label="Bathrooms" name="bathrooms" type="number" placeholder="e.g., 2" value={formData.bathrooms || ""} onChange={handleInputChange} />
         <Field label="Bedrooms" name="bedrooms" type="number" placeholder="e.g., 3" value={formData.bedrooms || ""} onChange={handleInputChange} />
-        <Field label="Plot Size" name="plotSize" placeholder="e.g., 500 sqm" value={formData.plotSize || ""} onChange={handleInputChange} />
+        <Field label="Plot Size" name="plotSize" placeholder="e.g., 500 sqm" value={""} onChange={handleInputChange} />
+        {/* formData.plotSize ||  */}
       </div>
     </SectionWrapper>
   );
@@ -315,7 +316,8 @@ export const TravelDetails: React.FC<{ formData: ProductForm; handleInputChange:
 
   return (
     <SectionWrapper title="Travel Specifics">
-      <Field label={label} name="travelDetail" placeholder="Enter travel detail" value={formData.travelDetail || ""} onChange={handleInputChange} />
+      <Field label={label} name="travelDetail" placeholder="Enter travel detail" value={""} onChange={handleInputChange} />
+      {/* formData.travelDetail ||  */}
     </SectionWrapper>
   );
 };

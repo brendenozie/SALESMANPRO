@@ -241,7 +241,7 @@ const LocationPicker: React.FC<{ onAddressSelect: (address: string, coords: { la
       <div className="mt-4 h-96 w-full rounded-lg overflow-hidden">
         <MapContainer center={[mapCenter.lat, mapCenter.lng]} zoom={zoom} style={{ height: "100%", width: "100%" }} onClick={handleMapClick}>
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-          <MapUpdater />
+          <MapUpdater {...({} as any)} />
           <MapDragHandler />
           {selectedLocation && (
             <>

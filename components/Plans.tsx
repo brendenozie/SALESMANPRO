@@ -1,10 +1,9 @@
 import React from "react";
 import whiteTick from "@/assets/whiteTick.png";
 import fit1 from "@/assets/fit1.png";
-import { ISubscritption } from "@/types/typings";
 
 type Props = {
-  subscriptions: ISubscritption[];
+  subscriptions: any[];
 };
 
 const Plans = ({ subscriptions }: Props) => {
@@ -25,7 +24,7 @@ const Plans = ({ subscriptions }: Props) => {
       {/* Plans Section */}
       <div className="flex flex-col sm:flex-row items-center justify-center gap-8 sm:gap-[3rem] z-10">
         {subscriptions && subscriptions.length > 0 ? (
-          subscriptions.map((item: ISubscritption, i) => (
+          subscriptions.map((item: any, i) => (
             <div
               className={`flex flex-col text-gray-800 gap-6 sm:gap-8 p-6 sm:p-8 w-full sm:w-[18rem] md:w-[20rem] rounded-lg shadow-lg transition-transform duration-300 transform ${
                 i === 1

@@ -13,6 +13,7 @@ import { StarIcon, MagnifyingGlassIcon } from "@heroicons/react/24/solid";
 
 // We'll assume these types and contexts exist for a complete example
 import { useStoreContext } from "@/contexts/StoreContext";
+import { MarketListingForm } from "@/types/typings";
 
 const loader = ({ src, width, quality }:any) => `${src}?w=${width}&q=${quality || 75}`;
 
@@ -35,36 +36,49 @@ export default function Hero() {
     ],
   };
 
-  const {
-    name = defaultFormData.name,
-    description = defaultFormData.description,
-    bannerUrl = defaultFormData.bannerUrl,
-    marketplaceListings = defaultFormData.marketplaceListings
-  } = storeFormData || {};
+  // const {
+  //   name = defaultFormData.name,
+  //   description = defaultFormData.description,
+  //   bannerUrl = defaultFormData.bannerUrl,
+  //   marketplaceListings = defaultFormData.marketplaceListings || []
+  // } = storeFormData || {};
 
   const [searchTerm, setSearchTerm] = useState("");
   const [date, setDate] = useState(new Date());
   const [time, setTime] = useState(new Date());
 
-  const inputRef = useRef(null);
-  const dropdownRef = useRef(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const dropdownRef = useRef<HTMLUListElement | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
 
-  // Memoize filteredServices for performance and correct dependency
-  const filteredServices = useMemo(() => {
-    return marketplaceListings
-      ?.filter((item) =>
-        item.name?.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-      .map((item) => ({
-        id: item.id,
-        name: item.name,
-        isAvailable: item.isAvailable,
-        price: item.finalPrice,
-        imageUrl: item.images?.[0] ?? null,
-      }))
-      .slice(0, 5); // Limit to 5 results for a cleaner dropdown
-  }, [searchTerm, marketplaceListings]);
+//   const marketplaceListings = useMemo(() => {
+//   return (marketplaceListings ?? [])
+//     .filter((item) =>
+//       item.name?.toLowerCase().includes(searchTerm.toLowerCase())
+//     )
+//     .map((item) => ({
+//       id: item.id,
+//       name: item.name,
+//       isAvailable: item.isAvailable,
+//       price: item.finalPrice,
+//       imageUrl: item.images?.[0] ?? null,
+//     }))
+//     .slice(0, 5);
+// }, [searchTerm, marketplaceListings]);
+
+const {
+  name = defaultFormData.name,
+  description = defaultFormData.description,
+  bannerUrl = defaultFormData.bannerUrl,
+  marketplaceListings = (defaultFormData.marketplaceListings as unknown as MarketListingForm[]) || [],
+}: {
+  name: string;
+  description: string;
+  bannerUrl: string;
+  marketplaceListings: MarketListingForm[];
+} = storeFormData || ({} as any);
+
+
 
   useEffect(() => {
     const handleClickOutside = (event:any) => {
@@ -136,16 +150,16 @@ export default function Hero() {
                     setActiveIndex(0);
                   }}
                   onKeyDown={(e) => {
-                    if (filteredServices.length === 0) return;
+                    if (marketplaceListings.length === 0) return;
                     if (e.key === "ArrowDown") {
-                      setActiveIndex((prev) => (prev + 1) % filteredServices.length);
+                      setActiveIndex((prev) => (prev + 1) % marketplaceListings.length);
                       e.preventDefault();
                     } else if (e.key === "ArrowUp") {
-                      setActiveIndex((prev) => (prev - 1 + filteredServices.length) % filteredServices.length);
+                      setActiveIndex((prev) => (prev - 1 + marketplaceListings.length) % marketplaceListings.length);
                       e.preventDefault();
                     } else if (e.key === "Enter") {
-                      if (filteredServices[activeIndex]) {
-                        setSearchTerm(filteredServices[activeIndex].name);
+                      if (marketplaceListings[activeIndex]) {
+                        setSearchTerm(marketplaceListings[activeIndex].name);
                         setActiveIndex(-1);
                       }
                     }
@@ -156,12 +170,12 @@ export default function Hero() {
               </div>
 
               {/* Autocomplete Dropdown */}
-              {searchTerm && filteredServices.length > 0 && activeIndex !== -1 && (
+              {searchTerm && marketplaceListings.length > 0 && activeIndex !== -1 && (
                 <ul
                   ref={dropdownRef}
                   className="absolute z-20 w-full mt-2 bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden max-h-48 overflow-y-auto"
                 >
-                  {filteredServices.map((item, index) => (
+                  {marketplaceListings.map((item, index) => (
                     <li
                       key={item.id}
                       onClick={() => {
@@ -170,9 +184,9 @@ export default function Hero() {
                       }}
                       className={`flex items-center gap-3 p-3 cursor-pointer transition ${index === activeIndex ? 'bg-teal-100' : 'hover:bg-teal-50'}`}
                     >
-                      {item.imageUrl && (
+                      {item.images[0] && (
                         <Image
-                          src={item.imageUrl}
+                          src={item.images[0] || "https://via.placeholder.com/40/"}
                           loader={loader}
                           alt={item.name}
                           width={40}

@@ -79,10 +79,11 @@ export default function ServicesSection() {
 
   const primaryColor = themeSettings?.primaryColor || '#00A880';
 
-  const filteredListings = marketplaceListings.filter((item) =>
-    item.name.toLowerCase().includes(search.toLowerCase()) ||
-    item.description?.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredListings = marketplaceListings;
+  // .filter((item) =>
+  //   item.name.toLowerCase().includes(search.toLowerCase()) ||
+  //   item.description?.toLowerCase().includes(search.toLowerCase())
+  // );
 
   // Staggered animation variants
   const containerVariants = {
