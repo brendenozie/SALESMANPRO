@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
 
 
 // POST /api/post
-
-export default async function GET( req : Request ) {
+ async function handleGET( req : Request ) {
   // const { wiDate,
   //   wiAmount,
   //   userId
@@ -33,4 +34,9 @@ export default async function GET( req : Request ) {
   //   },
   // });
   // res.json(result);
+
+    return formatResponse(true, null, "GET request received.", 200);
+  
 }
+
+export const GET = withApiHandler(handleGET);

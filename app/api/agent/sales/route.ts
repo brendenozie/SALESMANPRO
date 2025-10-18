@@ -1,15 +1,15 @@
 // ts
 // // app/api/salesAgent/sales/route.ts
-// import prisma from "@/server/db/prismadb";
-// import { withApiHandler } from "@/lib/hooks/withApiHandler";
-// import { formatResponse } from "@/lib/formatResponse";
-// import { verifyAuth } from "@/lib/verifyAuth";
+import prisma from "@/server/db/prismadb";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { formatResponse } from "@/lib/formatResponse";
+import { verifyAuth } from "@/lib/verifyAuth";
 
-// export const GET = withApiHandler(async (req: Request) => {
-//   const auth = await verifyAuth(req);
-//   if (!auth.success) {
-//     return formatResponse(false, null, auth.error, 401);
-//   }
+export const GET = withApiHandler(async (req: Request) => {
+  const auth = await verifyAuth(req);
+  if (!auth.success) {
+    return formatResponse(false, null, auth.error, 401);
+  }
 
 //   const { searchParams } = new URL(req.url);
 //   const agentId = searchParams.get("agentId");
@@ -63,7 +63,7 @@
 //     return formatResponse(true, formattedSales);
 //   } catch (error: any) {
 //     console.error("Error fetching sales data:", error);
-//     return formatResponse(false, null, error.message || "Internal Server Error", 500);
+    return formatResponse(false, null, "error.message || Internal Server Error", 500);
 //   }
-// });
+});
 

@@ -40,7 +40,7 @@ async function POST(req: Request) {
 
   try {
     const data: any = {
-      requestedById: clientId,
+      requesterId: clientId,
       requestedByType: "CLIENT",
       product: { connect: { id: productId } },
       quantity,
@@ -61,9 +61,9 @@ async function POST(req: Request) {
       {
         requestId: productRequest.id,
         productId: productRequest.productId,
-        clientId: productRequest.requestedById,
+        clientId: productRequest.requesterId,
         quantity: productRequest.quantity,
-        salesAgentId: productRequest.salesAgentId,
+        salesAgentId: salesAgentId ?? null,
         status: productRequest.status,
         createdAt: productRequest.createdAt,
       },

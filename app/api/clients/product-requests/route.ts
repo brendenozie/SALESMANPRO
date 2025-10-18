@@ -37,10 +37,10 @@ async function GET(req: Request) {
   try {
     // 3. Fetch product requests with pagination
     const productRequests = await prisma.request.findMany({
-      where: { requestedById: clientId },
+      where: { requesterId: clientId },
       include: {
         product: true,
-        salesAgent: true,
+        requester: true,
       },
       take: parsedLimit,
       skip: parsedOffset,
@@ -53,10 +53,10 @@ async function GET(req: Request) {
       productId: request.productId,
       productName: request.product?.name || "Unknown Product",
       quantityRequested: request.quantity,
-      salesAgentId: request.salesAgent?.id || null,
-      salesAgentName: request.salesAgent?.name || "Unassigned",
+      requesterId: request.requester?.id || null,
+      requesterName: request.requester?.name || "Unassigned",
       status: request.status || "Pending",
-      requestedAt: request.createdAt.toISOString(),
+      requestedAt: request.createdAt?.toISOString(),
     }));
 
     // 5. Success Response

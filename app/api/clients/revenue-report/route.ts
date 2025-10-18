@@ -3,7 +3,7 @@ import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
 import { verifyAuth } from "@/lib/verifyAuth";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
-import { OrderStatus } from "@prisma/client"; // if used in reports
+import { OrderStatus, Prisma } from "@prisma/client"; // if used in reports
 
 /**
  * API route to fetch various financial and sales reports based on the 'reportType' query parameter.
@@ -50,21 +50,21 @@ async function GET(req: Request) {
 
       case "revenue-by-product":
         data = await prisma.customerOrder.groupBy({
-          by: ["productId"],
+          by: ["productId"] as unknown as Array<Prisma.CustomerOrderScalarFieldEnum>,
           _sum: { totalPrice: true },
         });
         break;
 
       case "revenue-by-sales-agent":
         data = await prisma.customerOrder.groupBy({
-          by: ["salesAgentId"],
+          by: ["salesAgentId"] as unknown as Array<Prisma.CustomerOrderScalarFieldEnum>,
           _sum: { totalPrice: true },
         });
         break;
 
       case "revenue-by-client":
         data = await prisma.customerOrder.groupBy({
-          by: ["clientId"],
+          by: [Prisma.CustomerOrderScalarFieldEnum.consumerId],
           _sum: { totalPrice: true },
         });
         break;
@@ -77,7 +77,11 @@ async function GET(req: Request) {
 
         const monthlyRevenue = Array(12).fill(0);
         ordersForMonthly.forEach((order) => {
-          const month = new Date(order.createdAt).getMonth();
+          // Skip orders without a creation date
+          if (!order.createdAt) return;
+          const month = order.createdAt instanceof Date
+            ? order.createdAt.getMonth()
+            : new Date(order.createdAt).getMonth();
           monthlyRevenue[month] += order.totalPrice;
         });
         data = { monthlyRevenue };
@@ -104,14 +108,14 @@ async function GET(req: Request) {
 
       case "commission-based-revenue":
         data = await prisma.commission.groupBy({
-          by: ["salesAgentId"],
+          by: [Prisma.CommissionScalarFieldEnum.salesAgentId],
           _sum: { commissionEarned: true },
         });
         break;
 
       case "revenue-by-order-status":
         data = await prisma.customerOrder.groupBy({
-          by: ["status"],
+          by: [Prisma.CustomerOrderScalarFieldEnum.status],
           _sum: { totalPrice: true },
         });
         break;

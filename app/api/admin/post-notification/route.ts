@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; // Adjust path as needed
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
 
 // POST /api/post
 // Required fields in body: title
 // Optional fields in body: content
-export default async function GET( req : Request ) {
+async function handleGET( req : Request ) {
   if (req.method === 'POST') {
     // const { title, message, } = req.body;
 
@@ -17,5 +18,10 @@ export default async function GET( req : Request ) {
     // } catch (error) {
     //   NextResponse.json({ error: 'Error creating notification' });
     // }
+    return NextResponse.json({ message: 'POST request received' });
   }
+  
+  return NextResponse.json({ message: 'GET request received' });
 }
+
+export const GET = withApiHandler(handleGET);
