@@ -2,9 +2,10 @@
 import { NextResponse } from 'next/server'
 import prisma from '@/server/db/prismadb'
 import { formatResponse } from "@/lib/formatResponse";
+import { withApiHandler } from '@/lib/hooks/withApiHandler';
 
 
-export async function GET(request: Request) {
+async function getHandler(request: Request) {
   try {
         
     const { searchParams } = new URL(request.url)
@@ -31,3 +32,5 @@ export async function GET(request: Request) {
     )
   }
 }
+
+export const GET = withApiHandler(getHandler);

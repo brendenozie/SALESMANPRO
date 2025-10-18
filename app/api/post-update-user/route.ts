@@ -5,7 +5,7 @@ import { formatResponse } from "@/lib/formatResponse";
 
 // PUT /api/users/update
 // Updates user details
-async function PUT(request: Request) {
+async function putHandler(request: Request) {
   try {
     
     const body = await request.json();
@@ -68,4 +68,4 @@ async function PUT(request: Request) {
   }
 }
 
-export const PUTHandler = withApiHandler(PUT);
+export const PUT = withApiHandler(putHandler);

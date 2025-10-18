@@ -3,7 +3,7 @@ import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
-async function POST(request: Request) {
+async function postHandler(request: Request) {
   try {
     
     const body = await request.json();
@@ -24,4 +24,4 @@ async function POST(request: Request) {
   }
 }
 
-export const POSTHandler = withApiHandler(POST);
+export const POST = withApiHandler(postHandler);

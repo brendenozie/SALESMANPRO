@@ -31,11 +31,9 @@ async function handler(req: Request) {
   }
 
   try {
-    const requests = await prisma.productRequest.findMany({
+    const requests = await prisma.request.findMany({
       where: {
-        salesAgent: {
-          clients: { some: { id: customerId.toString() } },
-        },
+        requesterId: customerId.toString(),
         ...(agentId ? { salesAgentId: agentId } : {}),
       },
       include: {

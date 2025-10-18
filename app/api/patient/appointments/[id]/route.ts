@@ -3,7 +3,7 @@ import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
-async function PUT(request: Request, { params }: { params: { id: string } }) {
+async function putHandler(request: Request, { params }: { params: { id: string } }) {
   const { id } = params; // Appointment ID
   const { searchParams } = new URL(request.url);
   const patientId = searchParams.get("patientId");
@@ -85,4 +85,4 @@ async function PUT(request: Request, { params }: { params: { id: string } }) {
   }
 }
 
-export const PUTHandler = withApiHandler(PUT);
+export const PUT = withApiHandler(putHandler);

@@ -30,6 +30,10 @@ export const GET = withApiHandler(async (request: Request) => {
       return formatResponse(false, null, "Educator not found", 404);
     }
 
+    if (!educator.companyId) {
+      return formatResponse(false, null, "Educator is not associated with a company", 400);
+    }
+
     const teacherInfo = {
       id: educator.id,
       name: educator.user?.name || "N/A",

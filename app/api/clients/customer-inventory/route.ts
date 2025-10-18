@@ -1,4 +1,4 @@
-ts
+// ts
 // app/api/admin/inventory/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb"; 
@@ -41,17 +41,29 @@ async function handler(req: Request) {
       },
       skip: offset,
       take: limit,
-      include: {
-        product: { select: { name: true, description: true } },
-      },
+      // intentionally not including a related product key here because the relation name may differ
     });
 
-    const formattedInventory = inventory.map((item) => ({
-      productId: item.productId,
-      name: item.product.name,
-      description: item.product.description,
-      quantity: item.quantity,
-    }));
+    // gather unique product IDs from the inventory and fetch product details separately
+    const productIds = Array.from(new Set(inventory.map((i) => i.productId).filter(Boolean))) as string[];
+    const products = productIds.length
+      ? await prisma.product.findMany({
+          where: { id: { in: productIds } },
+          select: { id: true, name: true, description: true },
+        })
+      : [];
+
+    const productMap = new Map(products.map((p) => [p.id, p]));
+
+    const formattedInventory = inventory.map((item) => {
+      const product = productMap.get(item.productId) || { name: null, description: null };
+      return {
+        productId: item.productId,
+        name: product.name,
+        description: product.description,
+        quantity: item.quantity,
+      };
+    });
 
     return formatResponse(true, formattedInventory, "Inventory fetched successfully");
   } catch (error) {

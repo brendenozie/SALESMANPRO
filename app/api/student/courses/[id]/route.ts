@@ -13,7 +13,7 @@ import { formatResponse } from "@/lib/formatResponse";
  * GET /api/courses/[id]
  * Fetch a single course by ID.
  */
-const GET = async (request: Request, { params }: { params: { id: string } }) => {
+const getHandler = async (request: Request, { params }: { params: { id: string } }) => {
 
   const { id } = params;
 
@@ -39,7 +39,7 @@ const GET = async (request: Request, { params }: { params: { id: string } }) => 
  * PUT /api/courses/[id]
  * Update an existing course by ID.
  */
-const PUT = async (request: Request, { params }: { params: { id: string } }) => {
+const putHandler = async (request: Request, { params }: { params: { id: string } }) => {
 
   const { id } = params;
 
@@ -114,7 +114,7 @@ const PUT = async (request: Request, { params }: { params: { id: string } }) => 
  * DELETE /api/courses/[id]
  * Delete a course by ID.
  */
-const DELETE = async (request: Request, { params }: { params: { id: string } }) => {
+const deleteHandler = async (request: Request, { params }: { params: { id: string } }) => {
 
   const { id } = params;
 
@@ -132,8 +132,7 @@ const DELETE = async (request: Request, { params }: { params: { id: string } }) 
 };
 
 // Export withApiHandler wrappers
-export const GETHandler = withApiHandler(GET);
-export const PUTHandler = withApiHandler(PUT);
-export const DELETEHandler = withApiHandler(DELETE);
+export const GET = withApiHandler(getHandler);
+export const PUT = withApiHandler(putHandler);
+export const DELETE = withApiHandler(deleteHandler);
 
-export { GETHandler as GET, PUTHandler as PUT, DELETEHandler as DELETE };

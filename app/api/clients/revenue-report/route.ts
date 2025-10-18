@@ -8,7 +8,7 @@ import { OrderStatus, Prisma } from "@prisma/client"; // if used in reports
 /**
  * API route to fetch various financial and sales reports based on the 'reportType' query parameter.
  */
-async function GET(req: Request) {
+async function GETHandler(req: Request) {
   // 1. Authentication Check
   const auth = await verifyAuth(req);
   if (!auth.success) return formatResponse(false, null, auth.error, 401);
@@ -148,5 +148,5 @@ async function GET(req: Request) {
 }
 
 // Wrap withApiHandler
-export const GETHandler = withApiHandler(GET);
-export { GETHandler as GET };
+export const GET = withApiHandler(GETHandler);
+// export { GETHandler as GET };

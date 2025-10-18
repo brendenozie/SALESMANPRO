@@ -47,4 +47,4 @@ async function handler(req: Request, res: any) {
     .json(formatResponse(false, null, `Method ${req.method} not allowed`, 405));
 }
 
-export default withApiHandler(handler);
+export const GET = withApiHandler(handler);

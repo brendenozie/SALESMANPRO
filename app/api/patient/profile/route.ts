@@ -22,7 +22,7 @@ async function formatPatientProfile(user: any) {
   };
 }
 
-async function GET(request: Request) {
+async function getHandler(request: Request) {
   const { searchParams } = new URL(request.url);
   const patientId = searchParams.get("patientId");
 
@@ -53,7 +53,7 @@ async function GET(request: Request) {
   }
 }
 
-async function PUT(request: Request) {
+async function putHandler(request: Request) {
   const { searchParams } = new URL(request.url);
   const patientId = searchParams.get("patientId");
   const body = await request.json();
@@ -93,5 +93,5 @@ async function PUT(request: Request) {
   }
 }
 
-export const GETHandler = withApiHandler(GET);
-export const PUTHandler = withApiHandler(PUT);
+export const GET = withApiHandler(getHandler);
+export const PUT = withApiHandler(putHandler);

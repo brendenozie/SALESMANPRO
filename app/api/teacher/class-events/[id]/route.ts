@@ -56,8 +56,8 @@ async function getEvent(request: Request, { params }: { params: { id: string } }
       contactPerson: event.contactPerson,
       contactEmail: event.contactEmail,
       contactPhone: event.contactPhone,
-      createdAt: event.createdAt.toISOString(),
-      updatedAt: event.updatedAt.toISOString(),
+      createdAt: event.createdAt?.toISOString(),
+      updatedAt: event.updatedAt?.toISOString(),
     };
 
     return formatResponse(true, responseData, "Event fetched successfully", 200);

@@ -4,7 +4,7 @@ import SendMail from "@/service/mailservice";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
-async function GET(request: Request) {
+async function postHandler(request: Request) {
   try {
     
     const body = await request.json();
@@ -39,4 +39,4 @@ async function GET(request: Request) {
   }
 }
 
-export const GETHandler = withApiHandler(GET);
+export const POST = withApiHandler(postHandler);

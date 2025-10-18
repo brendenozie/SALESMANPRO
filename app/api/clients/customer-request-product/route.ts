@@ -1,4 +1,4 @@
-ts
+// ts
 // app/api/admin/product-request/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
@@ -22,15 +22,21 @@ async function handler(req: Request) {
     return formatResponse(false, null, "All fields are required", 400);
   }
 
-  try {
-    const request = await prisma.productRequest.create({
+    try {
+    const request = await prisma.request.create({
       data: {
-        productId,
+        product: {
+          connect: { id: productId },
+        },
         quantity,
-        companyId: salesAgentId, // adjust if companyId should come from elsewhere
-        salesAgentId,
+        companyId: customerId, // set companyId from customerId (adjust if different in your schema)
+        requester: {
+          connect: { id: salesAgentId },
+        },
+        // provide the requestedByType expected by the Prisma type (cast to any if your enum name differs)
+        requestedByType: "SALES_AGENT" as any,
         status: "PENDING",
-      },
+      } as any,
     });
 
     return formatResponse(true, request, "Product request created successfully", 201);

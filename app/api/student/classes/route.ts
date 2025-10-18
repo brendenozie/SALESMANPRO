@@ -4,7 +4,7 @@ import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
 import { formatResponse } from "@/lib/formatResponse";
 
-const GET = async (request: Request) => {
+const getHandler = async (request: Request) => {
 
   const { searchParams } = new URL(request.url);
   const studentId = searchParams.get("studentId");
@@ -131,5 +131,4 @@ const GET = async (request: Request) => {
   }
 };
 
-export const GETHandler = withApiHandler(GET);
-export { GETHandler as GET };
+export const GET = withApiHandler(getHandler);

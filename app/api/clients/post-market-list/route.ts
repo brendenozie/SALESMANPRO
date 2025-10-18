@@ -115,7 +115,7 @@ export const POST = withApiHandler(async (req: Request) => {
 
   // 5. Transactional upsert
   await prisma.$transaction(async (tx) => {
-    const existingListing = await tx.marketplaceListing.findFirst({
+    const existingListing = await tx.marketplaceListings.findFirst({
       where: { sellerId, sellerType, productId },
     });
 
@@ -170,12 +170,12 @@ export const POST = withApiHandler(async (req: Request) => {
     };
 
     if (existingListing) {
-      marketplaceListing = await tx.marketplaceListing.update({
+      marketplaceListing = await tx.marketplaceListings.update({
         where: { id: existingListing.id },
         data: commonData,
       });
     } else {
-      marketplaceListing = await tx.marketplaceListing.create({
+      marketplaceListing = await tx.marketplaceListings.create({
         data: { ...commonData, createdAt: now, status: "ACTIVE" },
       });
     }

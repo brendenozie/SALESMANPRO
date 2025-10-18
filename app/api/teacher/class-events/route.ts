@@ -108,9 +108,7 @@ async function getEvents(request: Request) {
 // POST /api/events
 async function createEvent(request: Request) {
   try {
-    const auth = await verifyAuth(request);
-    if (!auth.success) return formatResponse(false, null, auth.error, 401);
-
+   
     const body = await request.json();
     const {
       title, summary, description, startDateTime, endDateTime, location, onlineMeetingLink,

@@ -7,7 +7,7 @@ import { withApiHandler } from "@/lib/hooks/withApiHandler";
 /**
  * API route to create a new product request from a client.
  */
-async function POST(req: Request) {
+async function postHandler(req: Request) {
   // 1. Authentication Check
   const auth = await verifyAuth(req);
   if (!auth.success) return formatResponse(false, null, auth.error, 401);
@@ -84,5 +84,4 @@ async function POST(req: Request) {
   }
 }
 
-export const POSTHandler = withApiHandler(POST);
-export { POSTHandler as POST };
+export const POST = withApiHandler(postHandler);

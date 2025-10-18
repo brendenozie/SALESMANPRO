@@ -3,7 +3,7 @@ import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
-async function GET(request: Request) {
+async function getHandler(request: Request) {
   const { searchParams } = new URL(request.url);
   const patientId = searchParams.get("patientId"); // User.id of patient
   const status = searchParams.get("status"); // 'PAID', 'PENDING', 'OVERDUE', 'CANCELED', 'All'
@@ -81,4 +81,4 @@ async function GET(request: Request) {
   }
 }
 
-export const GETHandler = withApiHandler(GET);
+export const GET = withApiHandler(getHandler);
