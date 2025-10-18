@@ -106,11 +106,17 @@ interface Invoice {
   createdAt: string; // Formatted date string
 }
 
+interface PageProps {
+  params: {
+    patientSlug: string;
+  };
+}
+
 // --- Main PatientDashboardPage Component ---
-export default function PatientDashboardPage({ params }: { params: { patientSlug: string } }) {
+export default async function PatientDashboardPage({ params }: PageProps) {
   // In a real app, patientId would come from authenticated session
   // For demo, we'll use a placeholder or derive from params if it's the patient's actual User ID
-  const currentPatientId = params.patientSlug; // Assuming patientSlug is the actual User ID
+  const { patientSlug : currentPatientId } = await params; // Assuming patientSlug is the actual User ID
 
   const [activeTab, setActiveTab] = useState('profile'); // 'profile', 'appointments', 'prescriptions', 'invoices'
   const [loading, setLoading] = useState(false);

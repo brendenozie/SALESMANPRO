@@ -1,9 +1,17 @@
 import TaskDetails from "./TaskDetails";
 
-export default async function TaskPage({ params }: { params: { id: string } }) {
-  const url = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+interface PageProps {
+  params: Promise<{
+    id: string;
+  }>;
+}
 
-  const task = await fetch(`${url}/get-tasks/${params.id}`, {
+export default async function TaskPage({ params }: PageProps) {
+    
+  const url = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+  const { id } = await params;
+
+  const task = await fetch(`${url}/get-tasks/${id}`, {
     cache: "no-store", // ensures fresh data (similar to getServerSideProps)
   }).then((res) => res.json());
 

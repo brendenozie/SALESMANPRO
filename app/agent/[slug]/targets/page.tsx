@@ -11,13 +11,13 @@ export const metadata: Metadata = {
 };
 
 interface TargetPageProps {
-  params: {
+  params: Promise<{
     salesAgentId: string;
-  };
+  }>;
 }
 
 export default async function TargetPage({ params }: TargetPageProps) {
-  const { salesAgentId } = params;
+  const { salesAgentId } = await params;
 
   const res = await fetch(`${apiBaseUrl}/agent/targets?salesAgentId=${salesAgentId}`, {
     cache: "no-store", // ensures fresh data every time

@@ -41,9 +41,9 @@ export type Writer = {
 };
 
 interface PageProps {
-  params: {
+  params: Promise<{
     slug: string; // This is the companyId (or blogId)
-  };
+  }>;
 }
 
 /**

@@ -9,10 +9,10 @@ const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 const MOCK_CURRENT_EDUCATOR_ID = "clx023j0d00003b6033877d9c"; // Example: Educator ID
 
 interface PageProps {
-  params: {
+  params: Promise<{
     slug: string; // companyId
     courseId: string;
-  };
+  }>;
 }
 
 // Define types for data fetched by the server component
@@ -54,8 +54,7 @@ export interface ClassSchedulePageData {
 }
 
 export default async function ClassScheduleServerPage({ params }: PageProps) {
-  const { slug : companyId } = await params;
-  const courseId = params.courseId;
+  const { slug: companyId, courseId } = await params;
   const educatorId = MOCK_CURRENT_EDUCATOR_ID; // In a real app, get this from auth context
 
   let schedulePageData: ClassSchedulePageData | null = null;

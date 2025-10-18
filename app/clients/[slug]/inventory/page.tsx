@@ -21,10 +21,25 @@ type Product = {
 };
 
 interface Props {
-  productsData: Product[];
+  params: {
+    slug: string;
+  };
 }
 
-const ClientInventoryPage = ({ productsData = [] }: Props) => {
+const ClientInventoryPage = ({ params }: Props) => {
+  const { slug: companyId } = params;
+  const [productsData, setProductsData] = useState<Product[]>([]);
+
+  React.useEffect(() => {
+    const fetchData = async () => {
+      const res = await fetch(`${apiUrl}/clients/${companyId}/inventory`);
+      const data = await res.json();
+      setProductsData(data);
+    };
+
+    fetchData();
+  }, [companyId]);
+
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [showAddToMarketModal, setShowAddToMarketModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);

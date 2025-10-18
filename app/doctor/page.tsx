@@ -115,11 +115,17 @@ interface ProductUsed {
   lastUsedDate: string; // YYYY-MM-DD
 }
 
+interface PageProps {
+  params: {
+    doctorSlug: string;
+  };
+}
+
 // --- Main DoctorDashboardPage Component ---
-export default function DoctorDashboardPage({ params }: { params: { doctorSlug: string } }) {
+export default function DoctorDashboardPage({ params }: PageProps) {
   // In a real app, doctorId would come from authenticated session
   // For demo, we'll use a placeholder or derive from params if it's the doctor's actual ID
-  const currentDoctorId = params.doctorSlug; // Assuming doctorSlug is the actual Doctor ID
+  const { doctorSlug : currentDoctorId } = params; // Assuming doctorSlug is the actual Doctor ID
 
   const [activeTab, setActiveTab] = useState('profile'); // 'profile', 'patients', 'appointments', 'prescriptions', 'products-used'
   const [loading, setLoading] = useState(false);

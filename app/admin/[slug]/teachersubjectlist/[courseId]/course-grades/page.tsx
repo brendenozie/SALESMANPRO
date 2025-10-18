@@ -8,10 +8,10 @@ const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 const MOCK_CURRENT_EDUCATOR_ID = "clx023j0d00003b6033877d9c"; // Example: Educator ID
 
 interface PageProps {
-  params: {
+  params: Promise<{
     slug: string; // companyId
     courseId: string;
-  };
+  }>;
 }
 
 export interface StudentGradeData {
@@ -57,8 +57,9 @@ export interface ConsolidatedGradesPageData {
 }
 
 export default async function ConsolidatedGradesServerPage({ params }: PageProps) {
-  const courseId = params.courseId;
-  const educatorId = params.slug || MOCK_CURRENT_EDUCATOR_ID;
+
+  const courseId = (await params).courseId;
+  const educatorId = (await params).slug || MOCK_CURRENT_EDUCATOR_ID;
 
   let gradesPageData: ConsolidatedGradesPageData | null = null;
   let fetchError: string | null = null;

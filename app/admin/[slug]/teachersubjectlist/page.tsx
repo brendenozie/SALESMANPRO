@@ -163,8 +163,8 @@ const generateSampleTeacherClassesData = (companyId: string, teacherUserId: stri
  * then renders the Client Component below.
  */
 export default async function TeachersSubjectPage({ params }: Props) {
-  
-  const teacherUserId = params.slug || MOCK_CURRENT_TEACHER_USER_ID; // In a real app, get this from auth context
+
+  const teacherUserId = (await params).slug || MOCK_CURRENT_TEACHER_USER_ID; // In a real app, get this from auth context
 
   let pageData: TeacherClassesPageData | null = null;
   let fetchError: boolean = false;

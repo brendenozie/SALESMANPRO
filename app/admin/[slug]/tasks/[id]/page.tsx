@@ -24,8 +24,14 @@ async function fetchTask(id: string): Promise<Task | null> {
   }
 }
 
-export default async function TaskPage({ params }: { params: { id: string } }) {
-  const task = await fetchTask(params.id);
+interface TaskPageProps {
+  params: Promise<{
+    id: string;
+  }>;
+}
+
+export default async function TaskPage({ params }: TaskPageProps) {
+  const task = await fetchTask((await params).id);
   if (!task) return notFound();
 
   return <TaskDetailsClient task={task} />;

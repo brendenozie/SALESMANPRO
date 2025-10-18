@@ -16,17 +16,17 @@ export interface EnrolledStudent {
 }
 
 interface PageProps {
-  params: {
+  params: Promise<{
     slug: string;
     courseId: string;
-  };
+  }>;
 }
 
 // ✅ Adjust this to your actual backend URL or use .env
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 export default async function SendMessagePage({ params }: PageProps) {
-  const { slug, courseId } = params;
+  const { slug, courseId } = await params;
 
   try {
     // Fetch course info
