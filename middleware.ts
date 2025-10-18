@@ -31,6 +31,10 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
   const pathname = url.pathname;
   const host = request.headers.get("host")?.split(":")[0] || "";
 
+  if (host.startsWith("www.")) {
+    return NextResponse.redirect(`https://${host.replace("www.", "")}${pathname}`);
+  }
+
   //
   // ---- 3. API KEY PROTECTION ----
   //
@@ -59,10 +63,10 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
   //
   if (host && host !== PRIMARY_HOST && !host.endsWith(".salesmanpro.site")) {
     // Instead of Prisma query, forward host for lookup later
-    if (pathname === "/") {
-      url.pathname = `/404`;
-      return NextResponse.rewrite(url);
-    }
+    // if (pathname === "/") {
+    //   url.pathname = `/404`;
+    //   return NextResponse.rewrite(url);
+    // }
 
     url.pathname = `/site/${pathname}`;
     const res = NextResponse.rewrite(url);
@@ -85,20 +89,35 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
       .replace(".127.0.0.1", "")
       .replace(".test", "");
 
+      // If accessing just subdomain root → redirect to /site/[slug]
     if (subdomain && subdomain !== "www") {
-      if (pathname === "/") {
-        url.pathname = `/404`;
-        return NextResponse.rewrite(url);
+      if (pathname === "/" || pathname === "") {
+        url.pathname = `/site/${subdomain}`;
+      } else {
+        url.pathname = `/site/${subdomain}${pathname}`;
       }
 
-      url.pathname = `/site/${subdomain}${pathname}`;
       const res = NextResponse.rewrite(url);
-
       res.headers.set("x-requested-subdomain", subdomain);
-      res.headers.set("x-original-path", pathname); 
+      res.headers.set("x-original-path", pathname);
       res.headers.set("x-requested-host", host);
       return res;
     }
+
+    // if (subdomain && subdomain !== "www") {
+    //   if (pathname === "/") {
+    //     url.pathname = `/404`;
+    //     return NextResponse.rewrite(url);
+    //   }
+
+    //   url.pathname = `/site/${subdomain}${pathname}`;
+    //   const res = NextResponse.rewrite(url);
+
+    //   res.headers.set("x-requested-subdomain", subdomain);
+    //   res.headers.set("x-original-path", pathname); 
+    //   res.headers.set("x-requested-host", host);
+    //   return res;
+    // }
   }
   
   //
