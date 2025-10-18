@@ -40,8 +40,6 @@ interface Store {
   products: Product[];
 }
 
-ShippingPage
-
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
 
 
