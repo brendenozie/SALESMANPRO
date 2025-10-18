@@ -77,11 +77,12 @@ export default function PricingAndStatsSection() {
     const primaryColor = themeSettings?.primaryColor || '#00A880';
 
     // Grouping stats and metrics for a single map operation
-    const combinedStats = useMemo(() => {
-        // Here we'd ideally merge `stats` and `metrics` from the actual data.
-        // For this example, we'll just use the `stats` array.
-        return stats?.filter(s => s.value !== undefined);
-    }, [stats]);
+    const combinedStats = stats || [];
+    // useMemo(() => {
+    //     // Here we'd ideally merge `stats` and `metrics` from the actual data.
+    //     // For this example, we'll just use the `stats` array.
+    //     return stats?.filter(s => (s.value !== undefined && s.value !== null)) || [];
+    // }, [stats]);
 
     return (
         <section className="bg-gray-50 py-20 lg:py-32">
@@ -109,32 +110,40 @@ export default function PricingAndStatsSection() {
                     </motion.p>
 
                     <div className="mt-16 grid grid-cols-2 lg:grid-cols-4 gap-8">
-                        {combinedStats?.map((item, i) => (
-                            <motion.div
-                                key={item.label}
-                                className="bg-white rounded-3xl p-8 shadow-lg border border-gray-200 flex flex-col items-center justify-center transition-all duration-300 transform hover:-translate-y-2 hover:shadow-2xl"
-                                initial={{ opacity: 0, scale: 0.9 }}
-                                whileInView={{ opacity: 1, scale: 1 }}
-                                transition={{ duration: 0.5, delay: i * 0.1 }}
-                                viewport={{ once: true, amount: 0.5 }}
-                            >
-                                {item.iconUrl && (
-                                    <Image
-                                        src={item.iconUrl}
-                                        loader={loader}
-                                        alt={item.label}
-                                        width={80}
-                                        height={80}
-                                        className="mb-4 rounded-full object-cover"
-                                    />
-                                )}
-                                <h5 className="text-5xl lg:text-6xl font-extrabold text-emerald-600 leading-tight">
-                                    <CountUp end={parseFloat((isNaN(item.value) ? 0 : item.value))} />
-                                    {String(item.value).includes('+') && '+'}
-                                </h5>
-                                <p className="mt-2 text-lg font-medium text-gray-700">{item.label}</p>
-                            </motion.div>
-                        ))}
+                        {combinedStats?.map((item, i) => {
+                            const numericValue =
+                                typeof item.value === 'string'
+                                    ? parseFloat(item.value) || 0
+                                    : typeof item.value === 'number'
+                                    ? item.value
+                                    : 0;
+                            return (
+                                <motion.div
+                                    key={item.label}
+                                    className="bg-white rounded-3xl p-8 shadow-lg border border-gray-200 flex flex-col items-center justify-center transition-all duration-300 transform hover:-translate-y-2 hover:shadow-2xl"
+                                    initial={{ opacity: 0, scale: 0.9 }}
+                                    whileInView={{ opacity: 1, scale: 1 }}
+                                    transition={{ duration: 0.5, delay: i * 0.1 }}
+                                    viewport={{ once: true, amount: 0.5 }}
+                                >
+                                    {item.iconUrl && (
+                                        <Image
+                                            src={item.iconUrl}
+                                            loader={loader}
+                                            alt={item.label}
+                                            width={80}
+                                            height={80}
+                                            className="mb-4 rounded-full object-cover"
+                                        />
+                                    )}
+                                    <h5 className="text-5xl lg:text-6xl font-extrabold text-emerald-600 leading-tight">
+                                        <CountUp end={numericValue} />
+                                        {typeof item.value === 'string' && item.value.includes('+') && '+'}
+                                    </h5>
+                                    <p className="mt-2 text-lg font-medium text-gray-700">{item.label}</p>
+                                </motion.div>
+                            );
+                        })}
                     </div>
                 </div>
 

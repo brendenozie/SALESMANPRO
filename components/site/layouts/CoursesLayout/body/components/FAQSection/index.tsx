@@ -196,8 +196,8 @@ export default function FAQSection() {
   const accentColor = storeFormData?.themeSettings?.secondaryColor || '#FFC107';
 
   // Determine which FAQs to render: dynamic or fallback
-  const faqsToRender = Array.isArray(storeFormData?.faqs) && storeFormData.faqs.length > 0
-    ? storeFormData.faqs.sort((a, b) => (a.order || 0) - (b.order || 0)) // Sort by order
+  const faqsToRender = storeFormData?.faqs && Array.isArray(storeFormData?.faqs) && storeFormData?.faqs?.length > 0
+    ? storeFormData?.faqs?.sort((a, b) => (a.order || 0) - (b.order || 0)) // Sort by order
     : fallbackFaqs;
 
   // Animation variants for section title

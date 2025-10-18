@@ -152,8 +152,8 @@ export default function LatestEventsSection() {
     ? storeFormData.events//.sort((a, b) => (a.order || 0) - (b.order || 0)) // Sort by order
     : fallbackEvents;
 
-  const mainEvent = eventsToRender[0]; // Assuming the first event is the main one
-  const sideEvents = eventsToRender.slice(1); // Remaining events are side events
+  const mainEvent :any = eventsToRender[0]; // Assuming the first event is the main one
+  const sideEvents : any = eventsToRender.slice(1); // Remaining events are side events
 
   // Animation variants for section title and subtitle
   const textVariants = {
@@ -308,7 +308,7 @@ export default function LatestEventsSection() {
             viewport={{ once: true, amount: 0.3 }}
             variants={sideCardContainerVariants}
           >
-            {sideEvents.map((event) => (
+            {sideEvents.map((event :any) => (
               <motion.div
                 key={event.id}
                 className="flex items-center bg-white rounded-2xl p-4 shadow-md transition-all duration-300

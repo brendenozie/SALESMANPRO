@@ -7,7 +7,8 @@ import {
   MinusIcon, // Using MinusIcon for the 'X' to look more like a collapse
   QuestionMarkCircleIcon, // New icon for FAQ section
   EnvelopeIcon,
-  PlayIcon, // For contact us
+  PlayIcon,
+  ArrowRightIcon, // For contact us
 } from "@heroicons/react/24/outline";
 import Link from "next/link"; // For the CTA link
 
@@ -86,18 +87,18 @@ const dummyFaqs = [
 //──────────────────────────────────────────────────────────────────────────────
 
 // --- Reusable Service Card Component ---
-const ServiceCard = ({ icon, title, children }) => (
-  <div className="bg-white p-8 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100">
-    <div className="flex items-center justify-center h-16 w-16 rounded-full bg-orange-50 text-orange-600 mb-6 shadow-md">
-      {icon}
-    </div>
-    <h3 className="text-2xl font-bold text-gray-900 mb-3">{title}</h3>
-    <p className="text-gray-700 leading-relaxed">{children}</p>
-    <a href="#contact" className="mt-4 inline-flex items-center text-orange-600 hover:text-orange-700 font-semibold transition-colors">
-        Learn More <ArrowRightIcon className="w-4 h-4 ml-2" />
-    </a>
-  </div>
-);
+// const ServiceCard = ({ icon, title, children }) => (
+//   <div className="bg-white p-8 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100">
+//     <div className="flex items-center justify-center h-16 w-16 rounded-full bg-orange-50 text-orange-600 mb-6 shadow-md">
+//       {icon}
+//     </div>
+//     <h3 className="text-2xl font-bold text-gray-900 mb-3">{title}</h3>
+//     <p className="text-gray-700 leading-relaxed">{children}</p>
+//     <a href="#contact" className="mt-4 inline-flex items-center text-orange-600 hover:text-orange-700 font-semibold transition-colors">
+//         Learn More <ArrowRightIcon className="w-4 h-4 ml-2" />
+//     </a>
+//   </div>
+// );
 
 export default  function AppPromoSection() {
   return (

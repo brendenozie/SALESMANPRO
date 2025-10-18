@@ -72,14 +72,14 @@ export default function CtaSection() {
   const accentColor = storeFormData?.themeSettings?.secondaryColor || '#FFC107';
 
   // Dynamic content from storeFormData with fallbacks
-  const ctaTitle = storeFormData?.ctaSection?.title || storeFormData?.name || "Ignite Your Learning Journey Today";
-  const ctaSubtitle = storeFormData?.ctaSection?.subtitle || storeFormData?.description || "Join our vibrant community and unlock endless possibilities for growth and discovery. Your future starts here!";
-  const ctaButtonLabel = storeFormData?.ctaSection?.buttonLabel || "Explore Courses";
-  const ctaButtonHref = storeFormData?.ctaSection?.buttonHref || "/courses";
-  const ctaImageUrl = storeFormData?.ctaSection?.imageUrl || storeFormData?.bannerUrl || "https://placehold.co/1200x800/D1D5DB/4B5563?text=Engage+Your+Mind";
-  const subscribeText = storeFormData?.ctaSection?.subscribeText || "Stay informed with our newest courses, events, and exclusive offers.";
-  const subscribePlaceholder = storeFormData?.ctaSection?.subscribePlaceholder || storeFormData?.contactEmail || "Enter your email...";
-  const subscribeButtonLabel = storeFormData?.ctaSection?.subscribeButtonLabel || "Subscribe Now";
+  const ctaTitle = storeFormData?.name || "Ignite Your Learning Journey Today";
+  const ctaSubtitle = storeFormData?.description || "Join our vibrant community and unlock endless possibilities for growth and discovery. Your future starts here!";
+  const ctaButtonLabel = "Explore Courses"; //storeFormData?.ctaSection?.buttonLabel || 
+  const ctaButtonHref = "/courses"; //storeFormData?.ctaSection?.buttonHref || 
+  const ctaImageUrl = storeFormData?.bannerUrl || "https://placehold.co/1200x800/D1D5DB/4B5563?text=Engage+Your+Mind";
+  const subscribeText =  "Stay informed with our newest courses, events, and exclusive offers.";
+  const subscribePlaceholder = storeFormData?.contactEmail || "Enter your email...";
+  const subscribeButtonLabel =  "Subscribe Now"; //storeFormData?.ctaSection?.subscribeButtonLabel ||
 
   // Mock navigation for demonstration
   const mockNavigation = (path: string) => {

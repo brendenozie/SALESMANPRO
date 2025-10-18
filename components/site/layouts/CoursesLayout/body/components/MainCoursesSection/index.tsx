@@ -159,7 +159,7 @@ export default function CoursesSection() {
   const accentColor = storeFormData?.themeSettings?.secondaryColor || '#FFC107'; // A vibrant amber/yellow for highlights
 
   // Determine which courses to render: dynamic or fallback
-  const coursesToRender = Array.isArray(storeFormData?.courses) && storeFormData.courses.length > 0
+  const coursesToRender = storeFormData?.courses && Array.isArray(storeFormData?.courses) && storeFormData.courses.length > 0
     ? storeFormData.courses
     : fallbackCourses;
 

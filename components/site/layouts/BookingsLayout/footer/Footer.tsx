@@ -19,12 +19,20 @@ export default function SiteFooter() {
   const {
     name,
     description,
-    socialLinks, // Expecting an object like { facebook: 'url', twitter: 'url', ... }
+    socialLinks, // Expecting an object like { facebook: 'url', twitter: 'url', ... } or an array of { platform, url }
     contactPhone,
     themeSettings,
   } = storeFormData || {}; // Added default empty object to prevent errors
 
   const primaryColor = themeSettings?.primaryColor || '#00A880'; // Consistent primary color
+
+  // normalize socialLinks to a map if it's an array (some APIs return SocialLink[])
+  const socialLinksMap: Record<string, string | false> = Array.isArray(socialLinks)
+    ? (socialLinks as any[]).reduce((acc: Record<string, string | false>, item: any) => {
+        if (item?.platform) acc[item.platform] = item.url ?? false;
+        return acc;
+      }, {})
+    : (socialLinks || {}); // if already an object, use as-is
 
   // Fallback social links for development/demonstration
   const defaultSocialLinks = {
@@ -34,8 +42,8 @@ export default function SiteFooter() {
     whatsapp: `https://wa.me/${contactPhone || '254712345678'}`, // Use contactPhone if available
   };
 
-  const getSocialLink = (platform: keyof typeof socialLinks) =>
-    socialLinks?.[platform] || defaultSocialLinks[platform];
+  const getSocialLink = (platform: keyof typeof defaultSocialLinks) =>
+    (socialLinksMap as any)?.[platform] || defaultSocialLinks[platform];
 
   return (
     <footer className="relative bg-gray-50 text-gray-800 pt-20 pb-10 px-6 overflow-hidden">
@@ -48,36 +56,27 @@ export default function SiteFooter() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.1 }}
-          viewport={{ once: true, amount: 0.3 }}
-        >
-          <h3 className="text-3xl font-extrabold" style={{ color: primaryColor }}>{name || 'Your Brand'}</h3>
-          <p className="mt-4 text-gray-600 text-base leading-relaxed max-w-xs">
-            {description ||
-              "Your gateway to personalized, on-demand wellness experiences. Book your perfect session, anytime, anywhere."}
-          </p>
-          <div className="flex gap-4 mt-8 text-gray-500">
-            {socialLinks?.facebook !== false && ( // Check if link is explicitly set to false to hide
+          className="flex gap-4 mt-8 text-gray-500">
+            {socialLinksMap?.facebook !== false && ( // Check if link is explicitly set to false to hide
               <a href={getSocialLink('facebook')} target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="hover:text-gray-900 transition-colors transform hover:scale-110">
                 <FacebookIcon className="w-7 h-7" /> {/* Replaced with custom SVG icon */}
               </a>
             )}
-            {socialLinks?.instagram !== false && (
+            {socialLinksMap?.instagram !== false && (
               <a href={getSocialLink('instagram')} target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="hover:text-gray-900 transition-colors transform hover:scale-110">
                 <InstagramIcon className="w-7 h-7" />
               </a>
             )}
-            {socialLinks?.twitter !== false && (
+            {socialLinksMap?.twitter !== false && (
               <a href={getSocialLink('twitter')} target="_blank" rel="noopener noreferrer" aria-label="Twitter" className="hover:text-gray-900 transition-colors transform hover:scale-110">
                 <TwitterIcon className="w-7 h-7" />
               </a>
             )}
-            {socialLinks?.whatsapp !== false && (
+            {socialLinksMap?.whatsapp !== false && (
               <a href={getSocialLink('whatsapp')} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" className="hover:text-gray-900 transition-colors transform hover:scale-110">
                 <WhatsappIcon className="w-7 h-7" />
               </a>
             )}
-          </div>
         </motion.div>
 
         {/* Quick Links */}

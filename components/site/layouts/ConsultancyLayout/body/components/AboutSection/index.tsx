@@ -1,34 +1,11 @@
 "use client";
 import React, { useEffect, useRef, useState, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import Image from "next/image";
-import { ArrowRightIcon, ArrowLeftIcon } from "@heroicons/react/24/outline";
+import { ArrowRightIcon } from "@heroicons/react/24/outline";
 
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
-
-const heroSlides = [
-  {
-    type: "image",
-    url: "/coach-hero.jpg",
-    headline: "Unlock Your True Potential",
-    subline:
-      "Empowering ambitious individuals and teams to create a life of purpose, clarity, and success.",
-  },
-  {
-    type: "image",
-    url: "https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?q=80&w=2670&auto=format&fit=crop",
-    headline: "Transform Your Vision into Action",
-    subline:
-      "Through strategic coaching and tailored consultation, I help you move from ideas to impact.",
-  },
-  {
-    type: "video",
-    url: "https://cdn.pixabay.com/video/2024/02/26/200827-919106201_large.mp4",
-    headline: "Lead with Confidence, Inspire with Purpose",
-    subline:
-      "Gain clarity, build resilience, and become the leader you were meant to be.",
-  },
-];
+const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
+  `${src}?w=${width}&q=${quality || 75}`;
 
 const autoAdvanceDelay = 9000; // 9 seconds
 
@@ -40,8 +17,8 @@ const AboutSection: React.FC = () => {
     (direction: "next" | "prev") => {
       setCurrent((prev) =>
         direction === "next"
-          ? (prev + 1) % heroSlides.length
-          : (prev - 1 + heroSlides.length) % heroSlides.length
+          ? (prev + 1) % 3
+          : (prev - 1 + 3) % 3
       );
     },
     []
@@ -54,8 +31,10 @@ const AboutSection: React.FC = () => {
   }, [current, advanceSlide]);
 
   return (
-    // {/* 3. About Section */}
-    <section id="about" className="relative py-28 bg-gradient-to-br from-orange-50 via-white to-gray-50 overflow-hidden">
+    <section
+      id="about"
+      className="relative py-28 bg-gradient-to-br from-orange-50 via-white to-gray-50 overflow-hidden"
+    >
       {/* Decorative floating shapes */}
       <div className="absolute inset-0">
         <div className="absolute top-20 left-10 w-40 h-40 bg-orange-200 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-blob"></div>
@@ -73,8 +52,8 @@ const AboutSection: React.FC = () => {
         >
           <div className="relative w-full h-[480px] rounded-3xl overflow-hidden shadow-2xl border-[6px] border-white transform hover:scale-[1.02] transition-transform duration-500">
             <Image
-              src="/coach-about.jpg" // Replace with your photo
-              alt="Coach working with a client in a bright setting"
+              src="/coach-about.jpg" // Replace with Coach Jackie’s image
+              alt="Coach Jackie Wegoki - inspiring human flourishing"
               layout="fill"
               objectFit="cover"
               loader={loader}
@@ -96,52 +75,68 @@ const AboutSection: React.FC = () => {
           viewport={{ once: true }}
         >
           <span className="uppercase text-orange-700 font-semibold tracking-wide text-sm mb-3 inline-block">
-            Meet Your Coach
+            About FlourisHUb
           </span>
           <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6 leading-tight">
-            Hi, I'm <span className="bg-gradient-to-r from-orange-600 to-red-500 bg-clip-text text-transparent">Alex Johnson</span> — Your Dedicated Coach.
+            A Platform for All Beautiful Souls —{" "}
+            <span className="bg-gradient-to-r from-orange-600 to-red-500 bg-clip-text text-transparent">
+              Flourishing Together
+            </span>
           </h2>
+
           <p className="text-lg text-gray-700 mb-4 leading-relaxed">
-            With over 15 years of experience, I’ve guided leaders, entrepreneurs, and purpose-driven individuals
-            to break through self-doubt, embrace clarity, and step confidently into their next chapter.
-          </p>
-          <p className="text-lg text-gray-700 mb-6 leading-relaxed">
-            My approach blends neuroscience-backed coaching with intuitive strategies, empowering you to
-            achieve balance, peak performance, and lasting fulfillment — both professionally and personally.
+            Founded by <strong>Coach Jackie Wegoki</strong>, FlourisHUb is a nurturing space for
+            all beautiful souls committed to the art of human flourishing. Guided by compassion and
+            purpose, Jackie envisions a world where every individual is nourished to grow and thrive
+            in wholeness.
           </p>
 
-          {/* Highlights (adds credibility and quick visual scan) */}
+          <p className="text-lg text-gray-700 mb-6 leading-relaxed">
+            Our mission is simple yet transformative — to create a global hub that uplifts
+            individuals, families, and communities toward authentic growth, balance, and joy. We
+            believe that when one soul flourishes, the ripple of transformation touches families,
+            communities, and nations.
+          </p>
+
+          {/* Highlights */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8 text-left">
             <div className="flex items-center space-x-3">
               <span className="w-3 h-3 bg-orange-500 rounded-full"></span>
-              <p className="text-gray-800 font-medium">Certified Executive Coach</p>
+              <p className="text-gray-800 font-medium">
+                Vision – To create a hub that enables human flourishing
+              </p>
             </div>
             <div className="flex items-center space-x-3">
               <span className="w-3 h-3 bg-orange-500 rounded-full"></span>
-              <p className="text-gray-800 font-medium">15+ Years Transforming Careers</p>
+              <p className="text-gray-800 font-medium">
+                Mission – Nourishing to flourish
+              </p>
             </div>
             <div className="flex items-center space-x-3">
               <span className="w-3 h-3 bg-orange-500 rounded-full"></span>
-              <p className="text-gray-800 font-medium">Speaker at TEDx & Forbes Summit</p>
+              <p className="text-gray-800 font-medium">
+                Values – A Flourishing Soul. A Flourishing Family. A Flourishing Nation.
+              </p>
             </div>
             <div className="flex items-center space-x-3">
               <span className="w-3 h-3 bg-orange-500 rounded-full"></span>
-              <p className="text-gray-800 font-medium">Holistic Mindset & Leadership Coach</p>
+              <p className="text-gray-800 font-medium">
+                Community – Celebrating and uplifting others through love and purpose
+              </p>
             </div>
           </div>
 
           {/* CTA */}
           <a
-            href="#contact"
+            href="#community"
             className="inline-flex items-center px-8 py-4 bg-orange-600 text-white font-semibold rounded-full shadow-lg hover:bg-orange-700 hover:shadow-xl transition-all duration-300 text-lg"
           >
-            Get to Know Me Better
+            Join the FlourisHUb Movement
             <ArrowRightIcon className="w-5 h-5 ml-2" />
           </a>
         </motion.div>
       </div>
     </section>
-
   );
 };
 
