@@ -33,12 +33,13 @@ const safeJsonParse = (jsonField: any, fallback: any = null) => {
   return fallback; // Return fallback for other types or null/undefined
 };
 
+interface EditStorePageProps {
+  params: Promise<{ id: string }>;
+}
 export default async function EditStorePage({
   params,
-}: {
-  params: { id: string };
-}) {
-  const id = params.id;
+}: EditStorePageProps) {
+  const id = (await params).id;
 
   // --- Fetch the company with ALL its one-to-many and one-to-one relations ---
   const store = await prisma.company.findUnique({

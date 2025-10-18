@@ -63,7 +63,11 @@ const componentMap: Record<string, React.ComponentType<{ pageData: StoreForm }>>
   'DefaultSite': DefaultSite,
 };
 
-export default async function StorePage({ params }: { params: { slug: string } }) {
+interface StorePageProps {
+  params: Promise<{ slug: string }>;
+} 
+export default async function StorePage({ params }: StorePageProps) {
+  const { slug } = await params;
   const hdrs = await headers();
   const requestedHost = hdrs.get("x-requested-host");
   const requestedSubdomain = hdrs.get("x-requested-subdomain");
@@ -87,7 +91,7 @@ export default async function StorePage({ params }: { params: { slug: string } }
 
   if (!raw) {
     raw = await prisma.company.findUnique({
-      where: { slug: params.slug },
+      where: { slug: slug },
       include: pageDataInclude(),
     });
   }

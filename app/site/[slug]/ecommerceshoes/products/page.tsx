@@ -84,30 +84,31 @@ const mockProducts: MarketListingForm[] = [
 // --- Page Props ---
 interface PageProps {
   params:Promise<{ slug: string }>
-  searchParams: {
+  searchParams: Promise<{
     search?: string;
     category?: string;
     sort?: string;
     minPrice?: string;
     maxPrice?: string;
-  };
+  }>;
 }
 
 export const dynamic = "force-dynamic";
 
 export default async function ProductListPage({ params, searchParams }: PageProps) {
-  const { slug } = params;
+  const { slug } = await params; 
+  const searchParamsResolved = await searchParams;
 
   // Ensure store exists
   const company = await prisma.company.findUnique({ where: { slug } });
   if (!company) notFound();
 
   // Extract filters
-  const search = searchParams.search || "";
-  const categoryId = searchParams.category || null;
-  const sort = searchParams.sort || "newest";
-  const minPrice = parseFloat(searchParams.minPrice || "0");
-  const maxPrice = parseFloat(searchParams.maxPrice || "100000");
+  const search = searchParamsResolved.search || "";
+  const categoryId = searchParamsResolved.category || null;
+  const sort = searchParamsResolved.sort || "newest";
+  const minPrice = parseFloat(searchParamsResolved.minPrice || "0");
+  const maxPrice = parseFloat(searchParamsResolved.maxPrice || "100000");
 
   // Build DB filters
   const where: any = { companyId: company.id };

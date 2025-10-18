@@ -22,7 +22,7 @@ interface PageProps {
 export const dynamic = 'force-dynamic';
 
 export default async function ProductListPage({ params, searchParams }: PageProps) {
-  const { slug } = params;
+  const { slug } = await  params;
   const { page, search, category, sort } = await searchParams;
   
   let pageSize = 12;
@@ -49,7 +49,7 @@ export default async function ProductListPage({ params, searchParams }: PageProp
   const [listings, totalCount, categories] = await Promise.all([
     prisma.marketplaceListings.findMany({
       where,
-      skip: (page - 1) * pageSize,
+      skip: (pageNum - 1) * pageSize,
       take: pageSize,
       orderBy,
       select: {
@@ -106,19 +106,19 @@ export default async function ProductListPage({ params, searchParams }: PageProp
 
           <div className="flex justify-center items-center space-x-2 mt-8">
             <Link
-              href={`/${slug}/products?page=${page - 1}&search=${search}&category=${categoryId || ''}&sort=${sort}`}
-              className={`px-3 py-1 border rounded ${page <= 1 ? 'opacity-50 pointer-events-none' : ''}`}
+              href={`/${slug}/products?page=${pageNum - 1}&search=${search}&category=${categoryId || ''}&sort=${sort}`}
+              className={`px-3 py-1 border rounded ${pageNum <= 1 ? 'opacity-50 pointer-events-none' : ''}`}
             >Previous</Link>
             {Array.from({ length: totalPages }, (_, i) => (
               <Link
                 key={i}
                 href={`/${slug}/products?page=${i + 1}&search=${search}&category=${categoryId || ''}&sort=${sort}`}
-                className={`px-3 py-1 border rounded ${i + 1 === page ? 'bg-gray-200' : ''}`}
+                className={`px-3 py-1 border rounded ${i + 1 === pageNum ? 'bg-gray-200' : ''}`}
               >{i + 1}</Link>
             ))}
             <Link
-              href={`/${slug}/products?page=${page + 1}&search=${search}&category=${categoryId || ''}&sort=${sort}`}
-              className={`px-3 py-1 border rounded ${page >= totalPages ? 'opacity-50 pointer-events-none' : ''}`}
+              href={`/${slug}/products?page=${pageNum + 1}&search=${search}&category=${categoryId || ''}&sort=${sort}`}
+              className={`px-3 py-1 border rounded ${pageNum >= totalPages ? 'opacity-50 pointer-events-none' : ''}`}
             >Next</Link>
           </div>
         </Section>
