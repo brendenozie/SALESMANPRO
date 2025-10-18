@@ -15,13 +15,13 @@ import { useState } from 'react';
 import { StoreForm } from '@/types/typings';
 
 interface PageProps {
-  params: { slug: string; productId: string };
+  params: Promise<{ slug: string; productId: string }>;
 }
 
 export const dynamic = 'force-dynamic';
 
 export default async function ProductPage({ params }: PageProps) {
-  const { slug, productId } = params;
+  const { slug, productId } = await params;
   const { storeFormData } = useStoreContext();
 
   // Fetch store data for context

@@ -14,14 +14,14 @@ import { StoreForm, MarketListingForm } from '@/types/typings'; // Import releva
 import ProductCard from '@/components/site/layouts/EcommerceLayout/body/components/ProductCard';
 
 interface PageProps {
-  params: { slug: string; productId: string };
+  params: Promise<{ slug: string; productId: string }>;
 }
 
 // Ensure this is a server component as it fetches data
 export const dynamic = 'force-dynamic';
 
 export default async function ProductPage({ params }: PageProps) {
-  const { slug, productId } = params;
+  const { slug, productId } = await params;
 
   // Fetch store data
   const rawStore = await prisma.company.findUnique({ where: { slug } });
