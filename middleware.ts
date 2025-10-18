@@ -57,51 +57,49 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
   //
   // ---- 1. CUSTOM DOMAIN HANDLING ----
   //
-  // if (host && host !== PRIMARY_HOST && !host.endsWith(".salesmanpro.site")) {
-  //   // Instead of Prisma query, forward host for lookup later
-  //   if (pathname === "/") {
-  //     url.pathname = `/404`;
-  //     return NextResponse.rewrite(url);
-  //   }
+  if (host && host !== PRIMARY_HOST && !host.endsWith(".salesmanpro.site")) {
+    // Instead of Prisma query, forward host for lookup later
+    if (pathname === "/") {
+      url.pathname = `/404`;
+      return NextResponse.rewrite(url);
+    }
 
-  //   url.pathname = `/site/${pathname}`;
-  //   const res = NextResponse.rewrite(url);
-  //   res.headers.set("x-requested-host", host);
-  //   res.headers.set("x-original-path", pathname); 
-  //   return res;
-  // }
+    url.pathname = `/site/${pathname}`;
+    const res = NextResponse.rewrite(url);
+    res.headers.set("x-requested-host", host);
+    res.headers.set("x-original-path", pathname); 
+    return res;
+  }
 
-  //
-  // ---- 2. SUBDOMAIN HANDLING (slug.salesmanpro.site) ----
   //
   // ---- 2. SUBDOMAIN HANDLING (slug.salesmanpro.site OR slug.localhost) ----
-  // if (
-  //   host.endsWith(".salesmanpro.site") ||
-  //   host.endsWith(".localhost") ||
-  //   host.endsWith(".127.0.0.1") ||
-  //   host.endsWith(".test")
-  // ) {
-  //   const subdomain = host
-  //     .replace(".salesmanpro.site", "")
-  //     .replace(".localhost", "")
-  //     .replace(".127.0.0.1", "")
-  //     .replace(".test", "");
+  if (
+    host.endsWith(".salesmanpro.site") ||
+    host.endsWith(".localhost") ||
+    host.endsWith(".127.0.0.1") ||
+    host.endsWith(".test")
+  ) {
+    const subdomain = host
+      .replace(".salesmanpro.site", "")
+      .replace(".localhost", "")
+      .replace(".127.0.0.1", "")
+      .replace(".test", "");
 
-  //   if (subdomain && subdomain !== "www") {
-  //     if (pathname === "/") {
-  //       url.pathname = `/404`;
-  //       return NextResponse.rewrite(url);
-  //     }
+    if (subdomain && subdomain !== "www") {
+      if (pathname === "/") {
+        url.pathname = `/404`;
+        return NextResponse.rewrite(url);
+      }
 
-  //     url.pathname = `/site/${subdomain}${pathname}`;
-  //     const res = NextResponse.rewrite(url);
+      url.pathname = `/site/${subdomain}${pathname}`;
+      const res = NextResponse.rewrite(url);
 
-  //     res.headers.set("x-requested-subdomain", subdomain);
-  //     res.headers.set("x-original-path", pathname); 
-  //     res.headers.set("x-requested-host", host);
-  //     return res;
-  //   }
-  // }
+      res.headers.set("x-requested-subdomain", subdomain);
+      res.headers.set("x-original-path", pathname); 
+      res.headers.set("x-requested-host", host);
+      return res;
+    }
+  }
   
   //
   // ---- 4. SESSION-BASED PROTECTION ----
