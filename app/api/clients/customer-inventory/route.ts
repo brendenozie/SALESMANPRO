@@ -45,7 +45,7 @@ async function handler(req: Request) {
     });
 
     // gather unique product IDs from the inventory and fetch product details separately
-    const productIds = Array.from(new Set(inventory.map((i) => i.productId).filter(Boolean))) as string[];
+    const productIds = Array.from(new Set(inventory.map((i) => i.inventoryItemId).filter(Boolean))) as string[];
     const products = productIds.length
       ? await prisma.product.findMany({
           where: { id: { in: productIds } },
@@ -56,9 +56,9 @@ async function handler(req: Request) {
     const productMap = new Map(products.map((p) => [p.id, p]));
 
     const formattedInventory = inventory.map((item) => {
-      const product = productMap.get(item.productId) || { name: null, description: null };
+      const product = productMap.get(item.inventoryItemId) || { name: null, description: null };
       return {
-        productId: item.productId,
+        productId: item.inventoryItemId,
         name: product.name,
         description: product.description,
         quantity: item.quantity,
