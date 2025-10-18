@@ -3,11 +3,11 @@ import React from "react";
 import Link from "next/link";
 
 interface FailedPageProps {
-  searchParams: { orderId?: string };
+  searchParams: Promise<{ orderId?: string }>;
 }
 
-export default function PaymentFailedPage({ searchParams }: FailedPageProps) {
-  const { orderId } = searchParams;
+export default async function PaymentFailedPage({ searchParams }: FailedPageProps) {
+  const { orderId } = await searchParams;
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-red-50 p-6">

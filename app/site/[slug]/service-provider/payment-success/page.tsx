@@ -3,11 +3,11 @@ import React from "react";
 import Link from "next/link";
 
 interface SuccessPageProps {
-  searchParams: { orderId?: string };
+  searchParams: Promise<{ orderId?: string }>;
 }
 
-export default function PaymentSuccessPage({ searchParams }: SuccessPageProps) {
-  const { orderId } = searchParams;
+export default async function PaymentSuccessPage({ searchParams }: SuccessPageProps) {
+  const { orderId } = await searchParams;
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-green-50 p-6">
