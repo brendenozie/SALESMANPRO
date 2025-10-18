@@ -3,7 +3,7 @@ import { getToken } from "next-auth/jwt";
 import { NextFetchEvent, NextRequest, NextResponse } from "next/server";
 
 // Your app’s main host
-const PRIMARY_HOST = "127.0.0.1:3000";//"salesmanpro.site";//app.your-production-domain.com
+const PRIMARY_HOST = "salesmanpro.site";//app.your-production-domain.com
 
 // Protected paths that require authentication
 const protectedPaths = [
@@ -61,7 +61,7 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
   //
   // ---- 1. CUSTOM DOMAIN HANDLING ----
   //
-  if (host && host !== PRIMARY_HOST && !host.endsWith(".salesmanpro.site")) {
+  if (host && host === PRIMARY_HOST && !host.endsWith(".salesmanpro.site") || host === "127.0.0.1:3000") {
     // Instead of Prisma query, forward host for lookup later
     // if (pathname === "/") {
     //   url.pathname = `/404`;
@@ -103,21 +103,6 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
       res.headers.set("x-requested-host", host);
       return res;
     }
-
-    // if (subdomain && subdomain !== "www") {
-    //   if (pathname === "/") {
-    //     url.pathname = `/404`;
-    //     return NextResponse.rewrite(url);
-    //   }
-
-    //   url.pathname = `/site/${subdomain}${pathname}`;
-    //   const res = NextResponse.rewrite(url);
-
-    //   res.headers.set("x-requested-subdomain", subdomain);
-    //   res.headers.set("x-original-path", pathname); 
-    //   res.headers.set("x-requested-host", host);
-    //   return res;
-    // }
   }
   
   //
@@ -148,5 +133,6 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
   //
   // ---- 5. DEFAULT ----
   //
+
   return NextResponse.next();
 }
