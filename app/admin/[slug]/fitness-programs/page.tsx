@@ -1,10 +1,8 @@
-"use client";
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BellAlertIcon, CalendarDateRangeIcon, CalendarDaysIcon, PencilIcon, PlusCircleIcon, TrashIcon, UserIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import Head from 'next/head'; // For setting page title/meta tags
-import { useParams } from 'next/navigation';
 
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
@@ -396,10 +394,14 @@ export default async function handler(req, res) {
 }
 */
 
+interface Props {
+  params: Promise<{ slug: string }>;
+}
 
-export default function ProgramsPage() {
 
-  const { slug } = useParams<ProgramsProps['params']>();
+export default async function ProgramsPage({ params }: Props) {
+
+  const { slug } = await params;  
   
   const [programs, setPrograms] = useState<Program[]>([]);
   const [loading, setLoading] = useState(true);
