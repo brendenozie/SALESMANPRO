@@ -216,6 +216,7 @@ model Company {
   category          String
   logoUrl           String?
   bannerUrl         String?
+  videoUrl          String? // Added field for company video URL
 
   contactEmail String
   contactPhone String?

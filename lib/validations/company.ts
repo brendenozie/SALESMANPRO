@@ -122,6 +122,7 @@ export const companySchema = z.object({
   category: z.string().min(1),
   logoUrl: z.string().optional().or(z.literal('')),//.url().optional().or(z.literal('')),
   bannerUrl: z.string().url().optional().or(z.literal('')),
+  videoUrl: z.string().url().optional().or(z.literal('')),
   contactEmail: z.string().email(),
   contactPhone: z.string().optional(),
   address: z.string().optional(),
