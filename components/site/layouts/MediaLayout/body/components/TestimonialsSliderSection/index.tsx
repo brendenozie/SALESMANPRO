@@ -117,7 +117,7 @@ export default function TestimonialsSlider({ testimonials }: TestimonialsSliderP
                 {testimonials[idx].avatarUrl && (
                   <div className="mx-auto w-24 h-24 rounded-full overflow-hidden mb-6 ring-4 ring-red-600 ring-offset-2 ring-offset-gray-800"> {/* Larger avatar, red ring */}
                     <Image
-                      src={testimonials[idx].avatarUrl}
+                      src={testimonials[idx].avatarUrl || "https://placehold.co/128x128/000000/FFFFFF?text=Avatar"}
                       alt={testimonials[idx].author}
                       loader={loader}
                       width={96}

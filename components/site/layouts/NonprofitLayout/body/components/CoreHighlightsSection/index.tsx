@@ -88,7 +88,7 @@ export default function CoreHighlightsSection() {
 
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#059669';
 
-  const featuresToRender = Array.isArray(storeFormData?.CoreValues) && storeFormData.CoreValues.length > 0
+  const featuresToRender = storeFormData?.CoreValues && Array.isArray(storeFormData?.CoreValues) && storeFormData.CoreValues.length > 0
     ? storeFormData.CoreValues//.sort((a, b) => (a.order || 0) - (b.order || 0))
     : [];
 

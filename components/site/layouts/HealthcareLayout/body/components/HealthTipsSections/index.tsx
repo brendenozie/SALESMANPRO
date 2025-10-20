@@ -72,7 +72,7 @@ export default function NewsSection() {
   const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.2 });
 
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#008080';
-  const blogsToRender = Array.isArray(storeFormData?.blogs) && storeFormData.blogs.length > 0
+  const blogsToRender = storeFormData?.blogs && Array.isArray(storeFormData?.blogs) && storeFormData.blogs.length > 0
     ? storeFormData.blogs.slice(0, 3)
     : fallbackBlogs;
   const organizationSlug = storeFormData?.slug || 'unbite-healthcare';

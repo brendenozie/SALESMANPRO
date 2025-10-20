@@ -176,7 +176,7 @@ interface FallbackListingItem {
   id: string;
   name: string;
   subtitle?: string;
-  location?: string;
+  location?: any;
   rating?: number;
   imageUrl: string;
   slug: string;
@@ -548,14 +548,14 @@ export default function FeaturedListingsOverviewSection() {
     id: listing.id,
     name: listing.name, // Business name
     title: listing.name, // Listing title
-    subtitle: listing.product?.brand || 'Service/Product', // Using brand as subtitle, or generic
+    subtitle: listing.category?.brand || 'Service/Product', // Using brand as subtitle, or generic
     location: listing.location || 'Nairobi, Kenya', // Placeholder if not in schema
     rating:  Math.floor(Math.random() * 3) + 3, // listing.rating || Random rating 3-5 if not provided
     imageUrl: listing.images?.[0] || 'https://placehold.co/600x400/CCCCCC/333333?text=No+Image', // First image or fallback
     slug: listing.id, // Using ID as slug for simplicity, ideally you'd have a dedicated slug field
     tags: listing.isFeatured ? ['Featured'] : [], // Example tag
-    description: listing.description || listing.product?.description || 'No description available.', // For modal
-    price: `${currency} ${listing.finalPrice.toLocaleString()}`, // For modal
+    description: listing.description || listing.category?.brand || 'No description available.', // For modal
+    price: `${currency} ${listing?.finalPrice?.toLocaleString()}`, // For modal
   }));
 
   // Use transformed listings if available, otherwise use static fallback
