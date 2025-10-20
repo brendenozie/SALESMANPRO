@@ -133,7 +133,7 @@ export default function WhyDineWithUs() {
   const aboutImage = storeFormData?.bannerUrl || "/images/about-chef-story.jpg"; // Specific image for about section
 
   // Dynamic features from storeFormData or fallback
-  const featuresToRender = Array.isArray(storeFormData?.CoreValues) && storeFormData.CoreValues.length > 0
+  const featuresToRender = storeFormData?.CoreValues && Array.isArray(storeFormData?.CoreValues) && storeFormData.CoreValues.length > 0
     ? storeFormData.CoreValues//.sort((a, b) => (a.order || 0) - (b.order || 0)) // Sort by order
     : fallbackFeatures;
 

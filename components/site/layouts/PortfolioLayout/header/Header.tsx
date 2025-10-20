@@ -39,15 +39,14 @@ const navLinks = [
 
 export default function Header() {
   const { storeFormData } = useStoreContext();
-  const {
-    name,
-    slug,
-    logoUrl,
-    contactEmail,
-    contactPhone,
-    socialLinks = [],
-    themeSettings = {},
-  } = storeFormData;
+
+  const name = storeFormData?.name || 'My Portfolio';
+  const slug = storeFormData?.slug || 'my-portfolio';
+  const logoUrl = storeFormData?.logoUrl || 'https://placehold.co/140x40/png/gray/white?text=Logo';
+  const contactEmail = storeFormData?.contactEmail || '';
+  const contactPhone = storeFormData?.contactPhone || '';
+  const socialLinks = storeFormData?.socialLinks || [];
+  const themeSettings = storeFormData?.themeSettings || {};
 
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -111,7 +110,7 @@ export default function Header() {
         {/* Social Icons */}
         <div className="hidden md:flex items-center gap-4">
           {socialLinks.map(({ channel, url }) => {
-            const IconComponent = socialIconMap[channel as SocialChannel];
+            const IconComponent = socialIconMap[channel as unknown as SocialChannel];
             if (!IconComponent) return null;
 
             return (
@@ -181,7 +180,7 @@ export default function Header() {
             {/* Mobile Social Icons */}
             <div className="flex justify-center gap-4 mt-4">
             {socialLinks.map(({ channel, url }) => {
-            const IconComponent = socialIconMap[channel as SocialChannel];
+            const IconComponent = socialIconMap[channel as unknown as SocialChannel];
             if (!IconComponent) return null;
 
             return (

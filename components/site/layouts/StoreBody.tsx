@@ -34,10 +34,7 @@ const ServiceSite     = dynamic(() => import('@/components/site/layouts/Services
 const SaaSSite        = dynamic(() => import('@/components/site/layouts/SaaSLayout/body/SaasSite'),            { loading: () => <LoadingPlaceholder /> });
 const ConsultancySite = dynamic(() => import('@/components/site/layouts/ConsultancyLayout/body/ConsultancySite'), { loading: () => <LoadingPlaceholder /> });
 
-type LayoutBodyComponent = React.ComponentType<{
-  // params: { storeFormData: StoreForm };
-  // children: ReactNode;
-}>;
+type LayoutBodyComponent = React.ComponentType<any>;
 
 // (2) Create a plain object that maps every normalized key to its component.
 //     Keys should be fully lowercased (and stripped of spaces/punctuation if you prefer).
