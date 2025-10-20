@@ -4,16 +4,18 @@ import {
   PencilIcon,
   TrashIcon,
   PlusCircleIcon,
+  PlayCircleIcon,
+  FilmIcon,
 } from "@heroicons/react/24/outline";
 import { motion } from "framer-motion";
 import { ICoreValue } from "@/types/typings";
 
-
 export interface BannerLogoAccordionProps {
   logoUrl?: string | null;
   bannerUrl?: string | null;
-  onUpload: (field: "logoUrl" | "bannerUrl", file: File) => void;
-  onRemove: (field: "logoUrl" | "bannerUrl") => void;
+  videoUrl?: string | null;
+  onUpload: (field: "logoUrl" | "bannerUrl" | "videoUrl", file: File) => void;
+  onRemove: (field: "logoUrl" | "bannerUrl" | "videoUrl") => void;
   coreValues?: ICoreValue[] | null;
   handleUpdateCoreValue: (
     index: number,
@@ -27,6 +29,7 @@ export interface BannerLogoAccordionProps {
 export default function BannerLogoAccordion({
   logoUrl,
   bannerUrl,
+  videoUrl,
   onUpload,
   onRemove,
   coreValues,
@@ -36,9 +39,10 @@ export default function BannerLogoAccordion({
 }: BannerLogoAccordionProps) {
   const logoInputRef = useRef<HTMLInputElement>(null);
   const bannerInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (
-    field: "logoUrl" | "bannerUrl",
+    field: "logoUrl" | "bannerUrl" | "videoUrl",
     e: ChangeEvent<HTMLInputElement>
   ) => {
     const file = e.target.files?.[0];
@@ -92,8 +96,7 @@ export default function BannerLogoAccordion({
             )}
           </div>
           <p className="text-xs text-gray-500">
-            Recommended size: <span className="font-medium">200×200px</span>{" "}
-            PNG/JPG
+            Recommended size: <span className="font-medium">200×200px</span> PNG/JPG
           </p>
         </div>
         <input
@@ -152,8 +155,7 @@ export default function BannerLogoAccordion({
           )}
         </div>
         <p className="text-xs text-gray-500">
-          Recommendation:{" "}
-          <span className="font-medium">1200×300px</span> for best display
+          Recommendation: <span className="font-medium">1200×300px</span> for best display
         </p>
         <input
           ref={bannerInputRef}
@@ -161,6 +163,64 @@ export default function BannerLogoAccordion({
           accept="image/*"
           className="hidden"
           onChange={(e) => handleFileChange("bannerUrl", e)}
+        />
+      </motion.div>
+
+      {/* Video Upload */}
+      <motion.div
+        whileHover={{ scale: 1.01 }}
+        className="bg-white/70 backdrop-blur-lg rounded-2xl shadow-md p-6 space-y-3"
+      >
+        <p className="font-semibold text-gray-700">Company Intro Video</p>
+        <div
+          className="relative w-full h-64 bg-gray-100 rounded-xl overflow-hidden flex items-center justify-center cursor-pointer group"
+          onClick={() => videoInputRef.current?.click()}
+        >
+          {videoUrl ? (
+            <video
+              src={videoUrl}
+              controls
+              className="w-full h-full object-cover group-hover:opacity-90 transition"
+            />
+          ) : (
+            <div className="text-center">
+              <FilmIcon className="w-12 h-12 text-gray-300 mx-auto" />
+              <p className="text-gray-500">Click to upload an intro video</p>
+            </div>
+          )}
+
+          {videoUrl && (
+            <div className="absolute top-4 right-4 flex space-x-2">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  videoInputRef.current?.click();
+                }}
+                className="p-2 bg-white/80 rounded-full shadow hover:bg-white transition"
+              >
+                <PencilIcon className="w-5 h-5 text-gray-700" />
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onRemove("videoUrl");
+                }}
+                className="p-2 bg-white/80 rounded-full shadow hover:bg-red-100 transition"
+              >
+                <TrashIcon className="w-5 h-5 text-red-600" />
+              </button>
+            </div>
+          )}
+        </div>
+        <p className="text-xs text-gray-500">
+          Recommended format: <span className="font-medium">MP4, MOV</span> — under 1MB
+        </p>
+        <input
+          ref={videoInputRef}
+          type="file"
+          accept="video/*"
+          className="hidden"
+          onChange={(e) => handleFileChange("videoUrl", e)}
         />
       </motion.div>
 
@@ -190,7 +250,6 @@ export default function BannerLogoAccordion({
               animate={{ opacity: 1, y: 0 }}
               className="relative bg-gray-50 rounded-xl border shadow-sm p-4 space-y-3"
             >
-              {/* Remove */}
               <button
                 type="button"
                 onClick={() => handleRemoveCoreValue(i)}
@@ -211,7 +270,7 @@ export default function BannerLogoAccordion({
               <textarea
                 rows={2}
                 placeholder="Description"
-                value={cv.description || ''}
+                value={cv.description || ""}
                 onChange={(e) =>
                   handleUpdateCoreValue(i, "description", e.target.value)
                 }
@@ -220,7 +279,7 @@ export default function BannerLogoAccordion({
               <input
                 type="text"
                 placeholder="Icon name (e.g. StarIcon)"
-                value={cv.icon || ''}
+                value={cv.icon || ""}
                 onChange={(e) =>
                   handleUpdateCoreValue(i, "icon", e.target.value)
                 }

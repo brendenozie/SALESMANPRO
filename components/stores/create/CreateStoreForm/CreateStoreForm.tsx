@@ -32,7 +32,7 @@ import {
 } from "@/constant/STORE_SITE_STEPS";
 import { useSession } from 'next-auth/react';
 import { getCategoryDefaultData } from "@/lib/defaultStoreData";
-import { CompanyLocation, Promotion } from "@prisma/client";
+import { CompanyLocation } from "@prisma/client";
 import { categoryReducer } from "@/hooks/categoryReducer";
 import toast from "react-hot-toast";
 
@@ -159,6 +159,7 @@ export default function CreateStoreForm({
     category: "E-commerce",
     logoUrl: "",
     bannerUrl: "",
+    videoUrl: "",
     contactEmail: session?.user?.email || "",
     contactPhone: "",
     address: "",
@@ -315,6 +316,7 @@ export default function CreateStoreForm({
 
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [bannerFile, setBannerFile] = useState<File | null>(null);
+  const [videoFile, setVideoFile] = useState<File | null>(null);
   const [productImageFiles, setProductImageFiles] = useState<(File | null)[]>(
     () => form.heroSlides.map(() => null)
   );
@@ -342,6 +344,7 @@ export default function CreateStoreForm({
     if (!initialData) return;
     setLogoFile(null);
     setBannerFile(null);
+    setVideoFile(null);
     setHeroSlideFiles(initialData.heroSlides?.map(() => null) || []);
     setPromotionSlideFiles(initialData.promotions?.map(() => null) || []);
   }, [initialData]);
@@ -414,9 +417,11 @@ export default function CreateStoreForm({
   // 2) Handlers for “Logo / Banner” Accordion
   // ─────────────────────────────────────────────────────────────────────
 
-  const handleMediaUpload = (field: "logoUrl" | "bannerUrl", file: File) => {
+  const handleMediaUpload = (field: "logoUrl" | "bannerUrl" | "videoUrl", file: File) => {
     if (field === "logoUrl") {
       setLogoFile(file);
+    } else if (field === "videoUrl") {
+      setVideoFile(file);
     } else {
       setBannerFile(file);
     }
@@ -428,9 +433,11 @@ export default function CreateStoreForm({
     }));
   };
 
-  const handleMediaRemove = (field: "logoUrl" | "bannerUrl") => {
+  const handleMediaRemove = (field: "logoUrl" | "bannerUrl" | "videoUrl") => {
     if (field === "logoUrl") {
       setLogoFile(null);
+    } else if (field === "videoUrl") {
+      setVideoFile(null);
     } else {
       setBannerFile(null);
     }
@@ -1717,6 +1724,18 @@ const handleSubmit = async (e: FormEvent) => {
         payload.bannerUrl = url;
         setForm((prev) => ({ ...prev, bannerUrl: url }));
         console.log("✅ Banner uploaded:", url);
+      })()
+    );
+  }
+
+  // --- Video Upload ---
+  if (videoFile) {
+    uploadPromises.push(
+      (async () => {
+        const [{ url }] = await uploadFile([videoFile], "video");
+        payload.videoUrl = url;
+        setForm((prev) => ({ ...prev, videoUrl: url }));
+        console.log("✅ Video uploaded:", url);
       })()
     );
   }

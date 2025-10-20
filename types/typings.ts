@@ -690,6 +690,7 @@ export interface StoreForm {
   category: string;
   logoUrl: string | null;
   bannerUrl: string | null;
+  videoUrl: string | null;
   contactEmail: string;
   contactPhone: string | null;
   site: string | null;
@@ -879,8 +880,8 @@ export interface Handlers {
   onBulkToggleLocations: (locationIds: string[]) => void;
 
   // ✅ Media handlers (unchanged)
-  handleMediaUpload: (field: "logoUrl" | "bannerUrl", file: File) => void;
-  handleMediaRemove: (field: "logoUrl" | "bannerUrl") => void;
+  handleMediaUpload: (field: "logoUrl" | "bannerUrl" | "videoUrl", file: File) => void;
+  handleMediaRemove: (field: "logoUrl" | "bannerUrl" | "videoUrl") => void;
 }
 // export interface Handlers {
 //   handleChange: (
