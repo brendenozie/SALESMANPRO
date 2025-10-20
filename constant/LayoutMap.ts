@@ -3,7 +3,7 @@
 
 import BlogHeaderLayout from '@/components/site/layouts/BlogLayout/BlogLayout';
 import NonprofitHeaderLayout from '@/components/site/layouts/NonprofitLayout/NonprofitLayout';
-import SaaSHeaderLayout from '@/components/site/layouts/SaaSLayout/SaaSLayout';
+// import SaaSHeaderLayout from '@/components/site/layouts/SaaSLayout/SaaSLayout';
 import AutomotiveHeaderLayout from '@/components/site/layouts/AutomotiveLayout/AutomotiveLayout';
 import TravelHeaderLayout from '@/components/site/layouts/TravelLayout/TravelLayout';
 import CoursesHeaderLayout from "@/components/site/layouts/CoursesLayout/CoursesLayout";
@@ -35,7 +35,7 @@ export const layoutMap: Record<string, any> = {
   'events': EventsHeaderLayout,
   'real-estate': RealEstateHeaderLayout,
   'healthcare': HealthcareHeaderLayout,
-  'saas': SaaSHeaderLayout,
+  // 'saas': SaaSHeaderLayout,
   'media': MediaHeaderLayout,
   'finance': FinanceHeaderLayout,
   'automotive': AutomotiveHeaderLayout,
