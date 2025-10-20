@@ -79,7 +79,7 @@ export default function TestimonialsSection() {
   const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.2 });
 
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#FF5722';
-  const testimonialsToRender = Array.isArray(storeFormData?.testimonials) && storeFormData.testimonials.length > 0
+  const testimonialsToRender = storeFormData?.testimonials && Array.isArray(storeFormData?.testimonials) && storeFormData.testimonials.length > 0
     ? storeFormData.testimonials.sort((a, b) => (a.order || 0) - (b.order || 0))
     : [
       { id: 'fb-test-1', authorName: 'Alex Johnson', quote: 'This organization truly changed the lives of many in my community. Their dedication is inspiring and their impact is undeniable!', avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a86e927f643?q=80&w=2670&auto=format&fit=crop', order: 1 },

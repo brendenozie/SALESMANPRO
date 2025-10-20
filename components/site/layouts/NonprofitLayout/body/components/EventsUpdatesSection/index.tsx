@@ -155,7 +155,7 @@ export default function EventsSection() {
   const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.2 });
 
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#FF5722';
-  const eventsToRender = Array.isArray(storeFormData?.events) && storeFormData.events.length > 0
+  const eventsToRender = storeFormData?.events && Array.isArray(storeFormData?.events) && storeFormData.events.length > 0
     ? storeFormData.events//.sort((a, b) => (a.order || 0) - (b.order || 0))
     : fallbackEvents;
   const organizationSlug = storeFormData?.slug || 'non-profit';

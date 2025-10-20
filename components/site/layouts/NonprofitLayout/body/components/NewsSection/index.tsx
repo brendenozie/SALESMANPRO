@@ -143,7 +143,7 @@ export default function NewsSection() {
   const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.2 });
 
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#FF5722';
-  const blogsToRender = Array.isArray(storeFormData?.blogs) && storeFormData.blogs.length > 0
+  const blogsToRender = storeFormData?.blogs && Array.isArray(storeFormData?.blogs) && storeFormData.blogs.length > 0
     ? storeFormData.blogs//.sort((a, b) => (a.order || 0) - (b.order || 0))
     : fallbackBlogs;
   const organizationSlug = storeFormData?.slug || 'non-profit';

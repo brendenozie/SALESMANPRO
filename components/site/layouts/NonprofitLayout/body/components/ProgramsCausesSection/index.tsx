@@ -120,7 +120,7 @@ export default function ProgramsCausesSection() {
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#FF5722'; // Default Orange
 
   // Determine which listings to render: dynamic or fallback
-  const listingsToRender = Array.isArray(storeFormData?.projects) && storeFormData.projects.length > 0
+  const listingsToRender = storeFormData?.projects && Array.isArray(storeFormData?.projects) && storeFormData.projects.length > 0
     ? storeFormData.projects//.sort((a, b) => (a.order || 0) - (b.order || 0)) // Sort by order
     : fallbackCauses;
 

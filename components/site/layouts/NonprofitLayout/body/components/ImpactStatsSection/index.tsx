@@ -68,7 +68,7 @@ export default function ImpactStatsSection() {
 
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#FF5722';
 
-  const metricsToRender = Array.isArray(storeFormData?.metrics) && storeFormData.metrics.length > 0
+  const metricsToRender = storeFormData?.metrics && Array.isArray(storeFormData?.metrics) && storeFormData.metrics.length > 0
     ? storeFormData.metrics.sort((a, b) => (a.order || 0) - (b.order || 0))
     : [
         { id: 'fb-metric-1', value: "1,500+", label: "Lives Impacted", order: 1, icon: <UserGroupIcon className='text-white w-6 h-6' /> },
