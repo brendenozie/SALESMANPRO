@@ -30,6 +30,35 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
   const url = request.nextUrl.clone();
   const pathname = url.pathname;
   const host = request.headers.get("host")?.split(":")[0] || "";
+  const origin = request.headers.get("origin");
+
+  // ✅ 1. Handle CORS preflight requests
+  if (pathname.startsWith("/api/")) {
+    const responseHeaders = new Headers();
+    if (origin) {
+      // Allow any subdomain of salesmanpro.site automatically
+      // if (
+      //   origin.endsWith(".salesmanpro.site") //||
+      //   // allowedOrigins.includes(origin)
+      // ) {
+        responseHeaders.set("Access-Control-Allow-Origin", origin);
+      // }
+    }
+
+    responseHeaders.set("Access-Control-Allow-Credentials", "true");
+    responseHeaders.set("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+    responseHeaders.set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");
+
+    // If it's a preflight request — respond immediately
+    if (request.method === "OPTIONS") {
+      return new NextResponse(null, { status: 204, headers: responseHeaders });
+    }
+
+    // Otherwise, continue and attach headers to the final response
+    const res = NextResponse.next();
+    responseHeaders.forEach((value, key) => res.headers.set(key, value));
+    return res;
+  }
 
   if (host.startsWith("www.")) {
     return NextResponse.redirect(`https://${host.replace("www.", "")}${pathname}`);
