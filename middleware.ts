@@ -65,11 +65,21 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
   // PRIMARY_HOST does NOT rewrite to /site, but local hosts DO.
 
   // 1. PRIMARY HOST HANDLING (Routes to root /)
-  if (host === PRIMARY_HOST) {
-      // If we're on the primary host, we do nothing in the middleware
-      // and let the request naturally resolve (to / for root, /path for others).
-      // The request for PRIMARY_HOST/ will resolve to /
-      return NextResponse.next();
+  
+  if (
+    host === PRIMARY_HOST ||
+    host === "127.0.0.1" ||
+    host === "localhost"
+  ) {
+    // If the local request includes a port, handle it too.
+    const fullHost = request.headers.get("host");
+    if (fullHost === "127.0.0.1:3000" || fullHost === "localhost:3000") {
+        // Local dev host paths resolve natively (e.g., 127.0.0.1:3000/ goes to /)
+        return NextResponse.next();
+    }
+
+    // Primary host paths resolve natively.
+    return NextResponse.next();
   }
 
   // 2. LOCAL HOST HANDLING (Rewrites to /site)
