@@ -255,3 +255,103 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
 
   return NextResponse.next();
 }
+
+
+// import { getToken } from "next-auth/jwt";
+// import { NextFetchEvent, NextRequest, NextResponse } from "next/server";
+
+// const PRIMARY_HOST = "salesmanpro.site";
+
+// // Paths requiring authentication
+// const protectedPaths = ["/admin", "/clients", "/agents", "/users"];
+
+// // API key protection (currently commented out)
+// const API_KEY_HEADER = process.env.NEXT_PUBLIC_API_KEY_HEADER!;
+// const API_SECRET = process.env.NEXT_PUBLIC_API_SECRET!;
+
+// // ✅ Allowed origins (you can include tenant subdomains or wildcard patterns)
+// const allowedOrigins = [
+//   "https://salesmanpro.site",
+//   "https://www.salesmanpro.site",
+//   "http://localhost:3000",
+// ];
+
+// export const config = {
+//   matcher: ["/((?!_next/|.*\\..*).*)"], // all paths except _next/* and static assets
+// };
+
+// export default async function middleware(request: NextRequest, ev: NextFetchEvent) {
+//   const url = request.nextUrl.clone();
+//   const pathname = url.pathname;
+//   const host = request.headers.get("host")?.split(":")[0] || "";
+//   const origin = request.headers.get("origin");
+
+
+//   // ✅ 2. WWW to non-WWW redirect
+//   if (host.startsWith("www.")) {
+//     return NextResponse.redirect(`https://${host.replace("www.", "")}${pathname}`);
+//   }
+
+//   // ✅ 3. Primary host handling
+//   if (host === PRIMARY_HOST || host === "127.0.0.1" || host === "localhost") {
+//     const fullHost = request.headers.get("host");
+//     if (fullHost === "127.0.0.1:3000" || fullHost === "localhost:3000") {
+//       return NextResponse.next();
+//     }
+//     return NextResponse.next();
+//   }
+
+//   // ✅ 4. Localhost route rewrite
+//   if (
+//     host === "127.0.0.1" ||
+//     host === "127.0.0.1:3000" ||
+//     host === "localhost" ||
+//     host === "localhost:3000"
+//   ) {
+//     if (!pathname.startsWith("/site")) {
+//       if (pathname === "/" || pathname === "") url.pathname = `/site`;
+//       else url.pathname = `/site${pathname}`;
+//       return NextResponse.rewrite(url);
+//     }
+//     return NextResponse.next();
+//   }
+
+//   // ✅ 5. Subdomain handling (tenant)
+//   if (
+//     host.endsWith(".salesmanpro.site") ||
+//     host.endsWith(".test")
+//   ) {
+//     const subdomain = host
+//       .replace(".salesmanpro.site", "")
+//       .replace(".test", "");
+
+//     if (subdomain && subdomain !== "www") {
+//       if (pathname === "/" || pathname === "") url.pathname = `/site/${subdomain}`;
+//       else url.pathname = `/site/${subdomain}${pathname}`;
+
+//       const res = NextResponse.rewrite(url);
+//       res.headers.set("x-requested-subdomain", subdomain);
+//       res.headers.set("x-original-path", pathname);
+//       res.headers.set("x-requested-host", host);
+//       return res;
+//     }
+//   }
+
+//   // ✅ 6. Custom domain handling
+//   if (
+//     host &&
+//     host !== PRIMARY_HOST &&
+//     !host.endsWith(".salesmanpro.site") &&
+//     host !== "127.0.0.1" &&
+//     host !== "localhost" &&
+//     host !== "localhost:3000"
+//   ) {
+//     url.pathname = `/site/${pathname}`;
+//     const res = NextResponse.rewrite(url);
+//     res.headers.set("x-requested-host", host);
+//     res.headers.set("x-original-path", pathname);
+//     return res;
+//   }
+
+//   return NextResponse.next();
+// }

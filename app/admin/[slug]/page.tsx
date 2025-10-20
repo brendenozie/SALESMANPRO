@@ -6,6 +6,7 @@ import { cookies } from 'next/headers';
 
 import EcomDashboardClient, { DashboardData } from '@/components/admin/EcomDashboardClient';
 import RealEstateDashboardClient from '@/components/admin/RealEstateDashboardClient';
+import CoachDashboardClient from '@/components/admin/CoachDashboardClient';
 import AutomotiveDashboardClient from '@/components/admin/AutomotiveDashboardClient';
 import BlogDashboardClient from '@/components/admin/BlogDashboardClient';
 import EventDashboardClient from '@/components/admin/EventDashboardClient';
@@ -52,6 +53,7 @@ function ErrorDashboard({ error }: { error: string }) {
 const dashboardComponents: Record<string, React.ComponentType<any>> = {
   'e-commerce': EcomDashboardClient,
   'ecommerce': EcomDashboardClient,
+  'consultant & coach': CoachDashboardClient,
   'shoes store': EcomDashboardClient,
   'real estate': RealEstateDashboardClient,
   'service provider': ServiceProviderDashboard,
