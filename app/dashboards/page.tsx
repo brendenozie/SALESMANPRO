@@ -148,9 +148,13 @@ const EmptyStateWizard = ({ name } : { name: string }) => (
       whileHover={{ scale: 1.05, boxShadow: "0 8px 15px rgba(255, 255, 255, 0.3)" }}
       whileTap={{ scale: 0.98 }}
       className="inline-flex items-center justify-center px-8 py-3 text-base font-semibold text-indigo-800 bg-white rounded-full shadow-lg transition-colors duration-200"
+      onClick={() => {
+        // Redirect to Store Setup Wizard
+        window.location.href = '/stores';
+      }}
     >
       <BuildingStorefrontIcon className="w-6 h-6 mr-3" />
-      Start Store Setup Wizard
+      Proceed to Store Setup Wizard
       <ArrowRightIcon className="w-5 h-5 ml-2" />
     </motion.button>
     <p className="mt-4 text-sm text-indigo-300">It only takes 3 minutes to launch your first location.</p>

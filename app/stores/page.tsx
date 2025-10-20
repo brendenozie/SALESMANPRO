@@ -97,32 +97,31 @@ const EmptyState = ({ title, message, buttonText, onButtonClick }: { title: stri
 );
 
 // A component for the pagination controls (Updated to be a controlled component).
-const PaginationControls = ({
-    page,
-    totalPages,
-    onPageChange
-}: {
+    
+const PaginationControls = ({ page, totalPages, onPageChange } : {
     page: number;
     totalPages: number;
     onPageChange: (newPage: number) => void;
 }) => (
-    <div className="mt-8 flex justify-center items-center space-x-4">
+    <div className="mt-12 flex justify-center items-center space-x-6">
         <button
             onClick={() => onPageChange(page - 1)}
             disabled={page <= 1}
-            className="p-2 rounded-full hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
+            className="p-3 flex items-center rounded-full text-indigo-600 hover:bg-indigo-50 disabled:text-gray-400 disabled:bg-transparent disabled:cursor-not-allowed transition duration-150 transform hover:scale-[1.05]"
         >
-            <ArrowLeftCircleIcon className="h-6 w-6 text-gray-600" />
+            <ArrowLeftCircleIcon className="h-7 w-7" />
+            <span className='ml-2 text-base font-semibold hidden sm:inline'>Previous</span>
         </button>
-        <span className="text-gray-700">
+        <span className="text-lg font-semibold text-gray-700 px-4 py-2 bg-white rounded-full shadow-md border border-gray-200">
             Page {page} of {totalPages}
         </span>
         <button
             onClick={() => onPageChange(page + 1)}
             disabled={page >= totalPages}
-            className="p-2 rounded-full hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
+            className="p-3 flex items-center rounded-full text-indigo-600 hover:bg-indigo-50 disabled:text-gray-400 disabled:bg-transparent disabled:cursor-not-allowed transition duration-150 transform hover:scale-[1.05]"
         >
-            <ArrowRightCircleIcon className="h-6 w-6 text-gray-600" />
+             <span className='mr-2 text-base font-semibold hidden sm:inline'>Next</span>
+            <ArrowRightCircleIcon className="h-7 w-7" />
         </button>
     </div>
 );
