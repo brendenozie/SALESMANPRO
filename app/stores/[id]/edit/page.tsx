@@ -132,6 +132,7 @@ export default async function EditStorePage({
     domain: store.domain ?? "",
     logoUrl: store.logoUrl ?? "",
     bannerUrl: store.bannerUrl ?? "",
+    videoUrl: store.videoUrl ?? "",
     contactEmail: store.contactEmail,
     contactPhone: store.contactPhone ?? "",
     address: store.address ?? "",
