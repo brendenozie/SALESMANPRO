@@ -61,19 +61,40 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
   //
   // ---- 1. CUSTOM DOMAIN HANDLING ----
   //
-  if (host && host === PRIMARY_HOST && !host.endsWith(".salesmanpro.site") || host === "127.0.0.1:3000" || host === "localhost:3000" ) {
-    // Instead of Prisma query, forward host for lookup later
-    // if (pathname === "/") {
-    //   url.pathname = `/404`;
-    //   return NextResponse.rewrite(url);
-    // }
 
-    url.pathname = `/site/${pathname}`;
-    const res = NextResponse.rewrite(url);
-    res.headers.set("x-requested-host", host);
-    res.headers.set("x-original-path", pathname); 
-    return res;
+  if (
+    host === PRIMARY_HOST ||
+    host === "127.0.0.1" ||
+    host === "127.0.0.1:3000" ||
+    host === "localhost" ||
+    host === "localhost:3000"
+  ) {
+    // ✅ Prevent double /site/site/*
+    if (!pathname.startsWith("/site")) {
+      // ✅ Handle root cleanly → redirect to /site
+      if (pathname === "/" || pathname === "") {
+        url.pathname = `/site`;
+      } else {
+        url.pathname = `/site${pathname}`;
+      }
+      return NextResponse.rewrite(url);
+    }
   }
+
+
+  // if (host && host === PRIMARY_HOST && !host.endsWith(".salesmanpro.site") || host === "127.0.0.1:3000" || host === "localhost:3000" ) {
+  //   // Instead of Prisma query, forward host for lookup later
+  //   // if (pathname === "/") {
+  //   //   url.pathname = `/404`;
+  //   //   return NextResponse.rewrite(url);
+  //   // }
+
+  //   url.pathname = `/site/${pathname}`;
+  //   const res = NextResponse.rewrite(url);
+  //   res.headers.set("x-requested-host", host);
+  //   res.headers.set("x-original-path", pathname); 
+  //   return res;
+  // }
 
   //
   // ---- 2. SUBDOMAIN HANDLING (slug.salesmanpro.site OR slug.localhost) ----
