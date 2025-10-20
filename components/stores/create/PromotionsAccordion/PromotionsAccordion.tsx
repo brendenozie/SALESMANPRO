@@ -278,68 +278,141 @@ const PromotionCard: React.FC<PromotionCardProps> = ({
 
           <CollapsibleSection title="Perks & Trust">
             <div className="grid md:grid-cols-2 gap-8">
-              <ListManager
-                title="Perks"
-                items={promo.perks || []}
-                onAdd={() => onAddPerk(idx)}
-                onRemove={(perkIndex) => onRemovePerk(idx, perkIndex)}
-                renderItem={(perk, pIdx) => (
-                  <div className="flex items-center gap-2">
-                    <InputField
-                      label="Icon"
-                      placeholder="e.g., SparklesIcon"
-                      value={perk.icon}
-                      // onChange={(e) => {
-                      //   const newPerks = [...(promo.perks || [])];
-                      //   newPerks[pIdx] = { ...newPerks[pIdx], icon: e.target.value };
-                      //   onUpdate(idx, 'perks', newPerks);
-                      // }}
-                      onChange={(e) => onUpdatePerk(idx, pIdx, 'icon', e.target.value)}
-                      className="flex-1"
-                    />
-                    <InputField
-                      label="Label"
-                      placeholder="e.g., Free Shipping"
-                      value={perk.label}
-                      // onChange={(e) => {
-                      //   const newPerks = [...(promo.perks || [])];
-                      //   newPerks[pIdx] = { ...newPerks[pIdx], label: e.target.value };
-                      //   onUpdate(idx, 'perks', newPerks);
-                      // }}
-                      onChange={(e) => onUpdatePerk(idx, pIdx, 'label', e.target.value)}
-                
-                      className="flex-1"
-                    />
-                    {getIconComponent(perk.icon, 'h-6 w-6 text-indigo-500')}
-                  </div>
-                )}
-              />
-              <ListManager
-                title="Trust Logos"
-                items={promo.trustLogos || []}
-                onAdd={() => onAddTrustLogo(idx)}
-                onRemove={(lIdx) => onRemoveTrustLogo(idx, lIdx)}
-                renderItem={(logoUrl, lIdx) => (
-                  <div className="flex items-center gap-2">
-                    <InputField
-                      label="Logo URL"
-                      placeholder="https://..."
-                      value={logoUrl.url}
-                      // onChange={(e) => {
-                      //   const newLogos = [...(promo.trustLogos || [])];
-                      //   newLogos[lIdx] = { id: newLogos[lIdx].id, url: e.target.value };
-                      //   onUpdate(idx, 'trustLogos', newLogos);
-                      // }}
-                      onChange={(e) => onUpdateTrustLogo(idx, lIdx, 'url', e.target.value)}
-                      className="flex-1"
-                    />
-                    {logoUrl && (
-                      <img src={logoUrl.url} alt="Logo" className="h-8 w-auto rounded-md object-contain" />
-                    )}
-                  </div>
-                )}
+  {/* ---------- PERKS SECTION ---------- */}
+  <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-all duration-300">
+    <h4 className="text-lg font-semibold text-gray-800 flex items-center gap-2 mb-4">
+      <SparklesIcon className="h-5 w-5 text-indigo-500" />
+      Promotion Perks
+    </h4>
+
+    {promo.perks.length === 0 ? (
+      <div className="text-center text-gray-500 py-8 border-2 border-dashed border-gray-200 rounded-xl">
+        <p className="text-sm mb-2">✨ No perks yet</p>
+        <button
+          onClick={() => onAddPerk(idx)}
+          className="inline-flex items-center gap-1 text-indigo-600 font-medium hover:text-indigo-800 transition"
+        >
+          <PlusIcon className="h-4 w-4" />
+          Add Your First Perk
+        </button>
+      </div>
+    ) : (
+      <div className="space-y-4">
+        {promo.perks.map((perk, pIdx) => (
+          <div
+            key={perk.id}
+            className="flex items-center gap-3 bg-gray-50 border border-gray-200 p-3 rounded-lg hover:border-indigo-300 hover:bg-indigo-50/30 transition-all duration-200"
+          >
+            <div className="flex items-center gap-2 flex-1">
+              <div className="relative group flex items-center gap-2 flex-1">
+                <InputField
+                  label="Icon"
+                  placeholder="e.g., SparklesIcon"
+                  value={perk.icon}
+                  onChange={(e) => onUpdatePerk(idx, pIdx, 'icon', e.target.value)}
+                  className="flex-1"
+                />
+                <div className="absolute right-2 top-[32px] opacity-0 group-hover:opacity-100 transition">
+                  {getIconComponent(perk.icon, 'h-6 w-6 text-indigo-500')}
+                </div>
+              </div>
+              <InputField
+                label="Label"
+                placeholder="e.g., Free Shipping"
+                value={perk.label}
+                onChange={(e) => onUpdatePerk(idx, pIdx, 'label', e.target.value)}
+                className="flex-1"
               />
             </div>
+            <button
+              type="button"
+              onClick={() => onRemovePerk(idx, pIdx)}
+              className="p-2 rounded-md text-red-500 hover:text-red-700 hover:bg-red-50 transition"
+              aria-label="Remove perk"
+            >
+              <TrashIcon className="h-5 w-5" />
+            </button>
+          </div>
+        ))}
+
+        <button
+          onClick={() => onAddPerk(idx)}
+          className="w-full flex items-center justify-center gap-1 py-2 mt-3 rounded-lg border border-indigo-300 text-indigo-600 hover:bg-indigo-50 font-medium transition"
+        >
+          <PlusIcon className="h-4 w-4" />
+          Add Another Perk
+        </button>
+      </div>
+    )}
+  </div>
+
+  {/* ---------- TRUST LOGOS SECTION ---------- */}
+  <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-all duration-300">
+    <h4 className="text-lg font-semibold text-gray-800 flex items-center gap-2 mb-4">
+      <ShieldCheckIcon className="h-5 w-5 text-green-500" />
+      Trusted By
+    </h4>
+
+    {promo.trustLogos.length === 0 ? (
+      <div className="text-center text-gray-500 py-8 border-2 border-dashed border-gray-200 rounded-xl">
+        <p className="text-sm mb-2">🛡️ No logos added yet</p>
+        <button
+          onClick={() => onAddTrustLogo(idx)}
+          className="inline-flex items-center gap-1 text-green-600 font-medium hover:text-green-800 transition"
+        >
+          <PlusIcon className="h-4 w-4" />
+          Add First Logo
+        </button>
+      </div>
+    ) : (
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {promo.trustLogos.map((logoUrl, lIdx) => (
+          <div
+            key={logoUrl.id}
+            className="relative group bg-gray-50 border border-gray-200 rounded-lg p-3 flex items-center gap-3 hover:border-green-400 hover:bg-green-50/40 transition-all duration-200"
+          >
+            <div className="flex-1">
+              <InputField
+                label="Logo URL"
+                placeholder="https://..."
+                value={logoUrl.url}
+                onChange={(e) => onUpdateTrustLogo(idx, lIdx, 'url', e.target.value)}
+              />
+            </div>
+
+            {logoUrl.url && (
+              <img
+                src={logoUrl.url}
+                alt="Logo"
+                className="h-10 w-10 rounded-md object-contain border border-gray-200 shadow-sm"
+              />
+            )}
+
+            <button
+              type="button"
+              onClick={() => onRemoveTrustLogo(idx, lIdx)}
+              className="absolute top-1 right-1 p-1 text-red-500 opacity-0 group-hover:opacity-100 hover:text-red-700 bg-white rounded-full shadow-sm transition"
+              aria-label="Remove logo"
+            >
+              <TrashIcon className="h-4 w-4" />
+            </button>
+          </div>
+        ))}
+      </div>
+    )}
+
+    {promo.trustLogos.length > 0 && (
+      <button
+        onClick={() => onAddTrustLogo(idx)}
+        className="w-full flex items-center justify-center gap-1 py-2 mt-4 rounded-lg border border-green-300 text-green-600 hover:bg-green-50 font-medium transition"
+      >
+        <PlusIcon className="h-4 w-4" />
+        Add Another Logo
+      </button>
+    )}
+  </div>
+</div>
+
           </CollapsibleSection>
 
           <CollapsibleSection title="Theme Colors">
