@@ -5,7 +5,7 @@ const prisma = new PrismaClient();
 
 export function CustomPrismaAdapter(): Adapter {
   return {
-    async createUser(user) {
+    async createUser(user: AdapterUser) {
       
       // const { email, name, image, signupPath } = user;
 
@@ -20,33 +20,34 @@ export function CustomPrismaAdapter(): Adapter {
       // }
 
       // Check if user already exists in any table
-      const existingConsumer = await prisma.consumer.findUnique({ where: { email: user.email } });
-      const existinAgent = await prisma.salesAgent.findUnique({ where: { email: user.email } });
-      const existinClient = await prisma.client.findUnique({ where: { email: user.email } });
+      // const existingConsumer = await prisma.consumer.findUnique({ where: { email: user.email } });
+      // const existinAgent = await prisma.salesAgent.findUnique({ where: { email: user.email } });
+      // const existinClient = await prisma.client.findUnique({ where: { email: user.email } });
       const existingAdmin = await prisma.user.findUnique({ where: { email: user.email } });
 
-      if (existingConsumer) return {
-        id: existingConsumer.id,
-        name: existingConsumer.name,
-        email: existingConsumer.email,
-        emailVerified: existingConsumer.emailVerified,
-        image: existingConsumer.image,
-      } as AdapterUser;
-      if (existinAgent) return {
-        id: existinAgent.id,
-        name: existinAgent.name,
-        email: existinAgent.email,
-        emailVerified: existinAgent.emailVerified,
-        image: existinAgent.image,
-      } as AdapterUser;
-      if (existinClient) return {
-        id: existinClient.id,
-        name: existinClient.name,
-        email: existinClient.email,
-        emailVerified: existinClient.emailVerified,
-        image: existinClient.image,
-      } as AdapterUser;
-      if (existingAdmin) return {
+      // if (existingConsumer) return {
+      //   id: existingConsumer.id,
+      //   name: existingConsumer.name,
+      //   email: existingConsumer.email,
+      //   emailVerified: existingConsumer.emailVerified,
+      //   image: existingConsumer.image,
+      // } as AdapterUser;
+      // if (existinAgent) return {
+      //   id: existinAgent.id,
+      //   name: existinAgent.name,
+      //   email: existinAgent.email,
+      //   emailVerified: existinAgent.emailVerified,
+      //   image: existinAgent.image,
+      // } as AdapterUser;
+      // if (existinClient) return {
+      //   id: existinClient.id,
+      //   name: existinClient.name,
+      //   email: existinClient.email,
+      //   emailVerified: existinClient.emailVerified,
+      //   image: existinClient.image,
+      // } as AdapterUser;
+      if (existingAdmin) 
+        return {
         id: existingAdmin.id,
         name: existingAdmin.name,
         email: existingAdmin.email,
@@ -68,50 +69,50 @@ export function CustomPrismaAdapter(): Adapter {
         }
 
       // Insert into the correct table
-      if (role === "AGENT") {
-        const createdUser = await prisma.salesAgent.create({ data: { ...user, role } });
-        return {
-          id: createdUser.id,
-          name: createdUser.name,
-          email: createdUser.email,
-          emailVerified: createdUser.emailVerified,
-          image: createdUser.image,
-        } as AdapterUser;
-      } else if (role === "ADMIN") {
-        const createdUser = await prisma.user.create({ data: { ...user, role } });
-        return {
-          id: createdUser.id,
-          name: createdUser.name,
-          email: createdUser.email,
-          emailVerified: createdUser.emailVerified,
-          image: createdUser.image,
-        } as AdapterUser;
-      } else if (role === "CLIENT") {
-        const createdUser = await prisma.client.create({ data: { ...user, role } });
-        return {
-          id: createdUser.id,
-          name: createdUser.name,
-          email: createdUser.email,
-          emailVerified: createdUser.emailVerified,
-          image: createdUser.image,
-        } as AdapterUser;
-      } else {
-        const createdUser = await prisma.consumer.create({ data: { ...user, role } });
-        return {
-          id: createdUser.id,
-          name: createdUser.name,
-          email: createdUser.email,
-          emailVerified: createdUser.emailVerified,
-          image: createdUser.image,
-        } as AdapterUser;
-      }
+      // if (role === "AGENT") {
+      //   const createdUser = await prisma.salesAgent.create({ data: { ...user, role } });
+      //   return {
+      //     id: createdUser.id,
+      //     name: createdUser.name,
+      //     email: createdUser.email,
+      //     emailVerified: createdUser.emailVerified,
+      //     image: createdUser.image,
+      //   } as AdapterUser;
+      // } else if (role === "ADMIN") {
+      //   const createdUser = await prisma.user.create({ data: { ...user, role } });
+      //   return {
+      //     id: createdUser.id,
+      //     name: createdUser.name,
+      //     email: createdUser.email,
+      //     emailVerified: createdUser.emailVerified,
+      //     image: createdUser.image,
+      //   } as AdapterUser;
+      // } else if (role === "CLIENT") {
+      //   const createdUser = await prisma.client.create({ data: { ...user, role } });
+      //   return {
+      //     id: createdUser.id,
+      //     name: createdUser.name,
+      //     email: createdUser.email,
+      //     emailVerified: createdUser.emailVerified,
+      //     image: createdUser.image,
+      //   } as AdapterUser;
+      // } else {
+      //   const createdUser = await prisma.consumer.create({ data: { ...user, role } });
+      //   return {
+      //     id: createdUser.id,
+      //     name: createdUser.name,
+      //     email: createdUser.email,
+      //     emailVerified: createdUser.emailVerified,
+      //     image: createdUser.image,
+      //   } as AdapterUser;
+      // }
     },
 
     async getUser(id) {
       const user = 
-        (await prisma.consumer.findUnique({ where: { id } })) ||
-        (await prisma.client.findUnique({ where: { id } })) ||
-        (await prisma.salesAgent.findUnique({ where: { id } })) ||
+        // (await prisma.consumer.findUnique({ where: { id } })) ||
+        // (await prisma.client.findUnique({ where: { id } })) ||
+        // (await prisma.salesAgent.findUnique({ where: { id } })) ||
         (await prisma.user.findUnique({ where: { id } }));
 
       if (!user) return null;
@@ -127,9 +128,9 @@ export function CustomPrismaAdapter(): Adapter {
 
     async getUserByEmail(email) {
       const user =
-        (await prisma.consumer.findUnique({ where: { email } })) ||
-        (await prisma.client.findUnique({ where: { email } })) ||
-        (await prisma.salesAgent.findUnique({ where: { email } })) ||
+        // (await prisma.consumer.findUnique({ where: { email } })) ||
+        // (await prisma.client.findUnique({ where: { email } })) ||
+        // (await prisma.salesAgent.findUnique({ where: { email } })) ||
         (await prisma.user.findUnique({ where: { email } }));
 
       if (!user) return null;
@@ -144,43 +145,51 @@ export function CustomPrismaAdapter(): Adapter {
     },
 
     async updateUser(user) {
-      const consumer = await prisma.consumer.findUnique({ where: { id: user.id } });
-      if (consumer) {
-        const updatedConsumer = await prisma.consumer.update({ where: { id: user.id }, data: { ...user, role: user.role as unknown as ROLE } });
-        return {
-          id: updatedConsumer.id,
-          name: updatedConsumer.name,
-          email: updatedConsumer.email,
-          emailVerified: updatedConsumer.emailVerified,
-          image: updatedConsumer.image,
-        } as AdapterUser;
-      }
+      // const consumer = await prisma.consumer.findUnique({ where: { id: user.id } });
+      // if (consumer) {
+      //   const updatedConsumer = await prisma.consumer.update({ where: { id: user.id }, data: { ...user, role: user.role as unknown as ROLE } });
+      //   return {
+      //     id: updatedConsumer.id,
+      //     name: updatedConsumer.name,
+      //     email: updatedConsumer.email,
+      //     emailVerified: updatedConsumer.emailVerified,
+      //     image: updatedConsumer.image,
+      //   } as AdapterUser;
+      // }
 
-      const agent = await prisma.salesAgent.findUnique({ where: { id: user.id } });
-      if (agent) {
-        const updatedAgent = await prisma.salesAgent.update({ where: { id: user.id }, data: { ...user, role: user.role as unknown as ROLE } });
-        return {
-          id: updatedAgent.id,
-          name: updatedAgent.name,
-          email: updatedAgent.email,
-          emailVerified: updatedAgent.emailVerified,
-          image: updatedAgent.image,
-        } as AdapterUser;
-      }
+      // const agent = await prisma.salesAgent.findUnique({ where: { id: user.id } });
+      // if (agent) {
+      //   const updatedAgent = await prisma.salesAgent.update({ where: { id: user.id }, data: { ...user, role: user.role as unknown as ROLE } });
+      //   return {
+      //     id: updatedAgent.id,
+      //     name: updatedAgent.name,
+      //     email: updatedAgent.email,
+      //     emailVerified: updatedAgent.emailVerified,
+      //     image: updatedAgent.image,
+      //   } as AdapterUser;
+      // }
 
-      const client = await prisma.client.findUnique({ where: { id: user.id } });
-      if (client) {
-        const updatedClient = await prisma.client.update({ where: { id: user.id }, data: { ...user, role: user.role as unknown as ROLE } });
-        return {
-          id: updatedClient.id,
-          name: updatedClient.name,
-          email: updatedClient.email,
-          emailVerified: updatedClient.emailVerified,
-          image: updatedClient.image,
-        } as AdapterUser;
-      }
+      // const client = await prisma.client.findUnique({ where: { id: user.id } });
+      // if (client) {
+      //   const updatedClient = await prisma.client.update({ where: { id: user.id }, data: { ...user, role: user.role as unknown as ROLE } });
+      //   return {
+      //     id: updatedClient.id,
+      //     name: updatedClient.name,
+      //     email: updatedClient.email,
+      //     emailVerified: updatedClient.emailVerified,
+      //     image: updatedClient.image,
+      //   } as AdapterUser;
+      // }
 
-      const updatedUser = await prisma.user.update({ where: { id: user.id }, data: { ...user, role: user.role as unknown as ROLE } });
+      const { emailVerified, ...restUser } = user;
+      const updatedUser = await prisma.user.update({ 
+        where: { id: user.id }, 
+        data: { 
+          ...restUser, 
+          role: user.role as unknown as ROLE,
+          emailVerified: typeof emailVerified === "boolean" ? emailVerified : !!emailVerified
+        } 
+      });
       return {
         id: updatedUser.id,
         name: updatedUser.name,
@@ -221,12 +230,12 @@ export function CustomPrismaAdapter(): Adapter {
       }
     },
 
-    async linkAccount(account) {
+    async linkAccount(account: AdapterAccount) {
       const createdAccount = await prisma.account.create({ data: account });
       return createdAccount as AdapterAccount;
     },
 
-    async unlinkAccount({ provider, providerAccountId }) {
+    async unlinkAccount({ provider, providerAccountId }: { provider: string; providerAccountId: string }) {
       await prisma.account.delete({
         where: { provider_providerAccountId: { provider, providerAccountId } },
       });

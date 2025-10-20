@@ -260,7 +260,7 @@ export default function HeroSection({
     <section className="relative min-h-screen w-full overflow-hidden bg-gray-50 dark:bg-gray-950 flex flex-col items-center justify-center">
       {/* Background slideshow */}
       <AnimatePresence initial={false} custom={direction}>
-        {heroSlides.map((slide, i) =>
+        {heroSlides.map((slide:any, i) =>
           i === currentSlide ? (
             <motion.div
               key={slide.id ?? i}
