@@ -30,6 +30,7 @@ const sampleStoreData : StoreForm = {
   slug: "dreamnest", // Unique identifier for the store
   description: "Your journey to the perfect home starts here. Discover properties, connect with expert agents, and find your dream space with ease.",
   bannerUrl: "/banners/main-banner.jpg", // High-quality banner for Hero
+  videoUrl: "/videos/intro.mp4", // Introductory video for the store
   StoreCategory: [
     {
       displayName: "Apartments",

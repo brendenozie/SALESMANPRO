@@ -13,6 +13,7 @@ export function transformCompanyToStoreForm(raw: any): StoreForm {
   category: raw.category,
   logoUrl: raw.logoUrl ?? '',
   bannerUrl: raw.bannerUrl ?? '',
+  videoUrl: raw.videoUrl ?? '',
   contactEmail: raw.contactEmail ?? '',
   contactPhone: raw.contactPhone ?? '',
   address: raw.address ?? '',
