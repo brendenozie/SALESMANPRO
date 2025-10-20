@@ -155,7 +155,7 @@ const sampleEbooks = [
     images: [
       "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=800&q=80",
     ],
-    author: "John Mwangi",
+    author: "Sample Author",
     category: "Personal Development",
     badge: "Featured",
   },
@@ -168,7 +168,7 @@ const sampleEbooks = [
     images: [
       "https://images.unsplash.com/photo-1544717305-2782549b5136?w=800&q=80",
     ],
-    author: "Mary Atieno",
+    author: "Sample Author",
     category: "Finance",
     badge: "Hot Deal",
   },
@@ -181,7 +181,7 @@ const sampleEbooks = [
     images: [
       "https://images.unsplash.com/photo-1522204502310-209ac7ad3e26?w=800&q=80",
     ],
-    author: "David Ouma",
+    author: "Sample Author",
     category: "Leadership",
     badge: "New Arrival",
   },

@@ -142,7 +142,7 @@ export default function FeaturedVehicleSection({
   if (!listings || listings.length === 0) {
     return (
       <section className="py-16 text-center text-gray-500">
-        <p>No premium listings available at the moment.</p>
+        <p>No listings available at the moment.</p>
       </section>
     );
   }
