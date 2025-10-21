@@ -26,7 +26,7 @@ async function handlePUT(request: Request, { params }: { params: { adminSlug: st
 
     const updatedTrainerData = await prisma.$transaction(async (tx) => {
       const updatedUser = await tx.user.update({
-        where: { id: existingTrainer.userId },
+        where: { id: existingTrainer.userId || "" },
         data: { name, email, phone: phone || null },
       });
 

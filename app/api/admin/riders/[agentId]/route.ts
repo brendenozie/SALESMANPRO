@@ -60,7 +60,7 @@ export const DELETE = withAuthAndRateLimit(async (_request, { params }) => {
   // Delete agent + user in a transaction
   await prisma.$transaction([
     prisma.salesAgent.delete({ where: { id: agentId } }),
-    prisma.user.delete({ where: { id: agentToDelete.userId } }),
+    prisma.user.delete({ where: { id: agentToDelete.userId || "" } }),
   ]);
 
   return formatResponse(true, { deletedId: agentId }, "Agent deleted successfully", 200);

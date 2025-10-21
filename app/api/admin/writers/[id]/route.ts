@@ -57,7 +57,7 @@ return NextResponse.json({ message: 'Writer not found' }, { status: 404 });
 // Update User details if email, name, or role is provided
 if (email || name || role) {
 await prisma.user.update({
-where: { id: existingWriter.userId },
+where: { id: existingWriter.userId || "" },
 data: {
 email,
 name,

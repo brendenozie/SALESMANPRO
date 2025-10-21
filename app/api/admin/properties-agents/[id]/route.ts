@@ -52,14 +52,16 @@ async function putHandler(req: Request, { params }: { params: { id: string } }) 
     return formatResponse(false, null, "Agent not found", 404);
   }
 
+
+
   const updatedUser = await prisma.user.update({
-    where: { id: salesAgent.userId },
+    where: { id: salesAgent.userId || "" },
     data: {
-      name: name ?? salesAgent.user.name,
-      email: email ?? salesAgent.user.email,
-      phone: phone ?? salesAgent.user.phone,
-      bio: bio ?? salesAgent.user.bio,
-      profilePicture: profileImageUrl ?? salesAgent.user.profilePicture,
+      name: name ?? salesAgent.user?.name,
+      email: email ?? salesAgent.user?.email,
+      phone: phone ?? salesAgent.user?.phone,
+      bio: bio ?? salesAgent.user?.bio,
+      profilePicture: profileImageUrl ?? salesAgent.user?.profilePicture,
     },
   });
 
@@ -118,7 +120,7 @@ async function deleteHandler(req: Request, { params }: { params: { id: string } 
   }
 
   await prisma.salesAgent.delete({ where: { id: agentId } });
-  await prisma.user.delete({ where: { id: salesAgent.userId } });
+  await prisma.user.delete({ where: { id: salesAgent.userId || "" } });
 
   return formatResponse(true, null, "Agent deleted successfully", 200);
 }
