@@ -15,9 +15,9 @@ const slugify = (text: string): string => {
     .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
     .toLowerCase()
     .trim()
-    .replace(/\s+/g, '-')       // Replace spaces with -
-    .replace(/[^\w-]+/g, '')    // Remove all non-word chars
-    .replace(/--+/g, '-');      // Replace multiple - with single -
+    .replace(/\s+/g, '-')       // Replace spaces with -
+    .replace(/[^\w-]+/g, '')    // Remove all non-word chars
+    .replace(/--+/g, '-');      // Replace multiple - with single -
 };
 
 // --- GET Handler Core Logic ---

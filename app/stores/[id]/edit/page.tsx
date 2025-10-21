@@ -39,6 +39,8 @@ interface EditStorePageProps {
 export default async function EditStorePage({
   params,
 }: EditStorePageProps) {
+
+  const cookieHeader = (await cookies()).toString();
   const id = (await params).id;
 
   // --- Fetch the company with ALL its one-to-many and one-to-one relations ---
@@ -101,14 +103,14 @@ export default async function EditStorePage({
   // --- Fetch available categories and locations for the form selectors ---
   const categoryRes = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/admin/get-all-categories`,
-    { next: { revalidate: 60 }, headers: { Cookie: (await cookies()).toString() } }
+    { next: { revalidate: 60 }, headers: { Cookie: cookieHeader } }
   );
   const categoryData = await categoryRes.json();
   const availableCategories: IProductCategory[] = categoryData.data.results || [];
 
   const locationRes = await fetch(
     `${process.env.NEXT_PUBLIC_API_URL}/admin/locations`,
-    { next: { revalidate: 60 }, headers: { Cookie: (await cookies()).toString() } }
+    { next: { revalidate: 60 }, headers: { Cookie: cookieHeader } }
   );
   const locationData = await locationRes.json();
   const availableLocations: ILocation[] = locationData.data.data || [];
