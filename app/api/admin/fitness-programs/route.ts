@@ -152,11 +152,14 @@ const postProgramsLogic = async (request: Request, context: RouteContext) => {
             },
         });
 
-        // 5. Fetch the instructor's name for the response
-        const instructorUser = await tx.user.findUnique({
-            where: { id: educator.userId },
-            select: { name: true },
-        });
+        // 5. Fetch the instructor's name for the response (if available)
+        let instructorUser = null;
+        if (educator.userId) {
+            instructorUser = await tx.user.findUnique({
+                where: { id: educator.userId },
+                select: { name: true },
+            });
+        }
 
         return { createdCourse, instructorUser };
     });
