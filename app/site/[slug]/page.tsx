@@ -123,7 +123,88 @@ export default async function StorePage({ params }: StorePageProps) {
  * PAGE DATA INCLUDE: Fetch all page-specific data
  * This includes listings, testimonials, blogs, courses, etc.
  */
-function pageDataInclude() {
+export function pageDataInclude() {
+  const userSelect = {
+    select: {
+      id: true,
+      name: true,
+      image: true,
+    },
+  };
+
+  const orderedAsc = { orderBy: { order: "asc" as const } };
+
+  return {
+    blogs: { orderBy: { publishedAt: "desc" as const } },
+    faqs: orderedAsc,
+    testimonials: orderedAsc,
+    heroSlides: orderedAsc,
+
+    promotions: {
+      select: {
+        title: true,
+        description: true,
+        startsAt: true,
+        endsAt: true,
+        badgeText: true,
+        price: true,
+        ctaText: true,
+        ctaLink: true,
+        bannerUrl: true,
+        featureImage1: true,
+        featureImage2: true,
+        featureImage3: true,
+        perks: true,
+        trustLogos: true,
+      },
+    },
+
+    PageSection: orderedAsc,
+    Collection: orderedAsc,
+    appPromos: true,
+
+    marketplaceListings: {
+      take: 50,
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        finalPrice: true,
+        sellingPrice: true,
+        images: true,
+        isAvailable: true,
+        isFeatured: true,
+        category: true,
+      },
+    },
+
+    // ✅ Staff & related profiles (no invalid `where`)
+    Writer: { include: { user: userSelect } },
+    Expert: { include: { user: userSelect } },
+    Doctor: { include: { User: userSelect } },
+    salesAgents: { include: { user: userSelect } },
+    educators: { include: { user: userSelect } },
+
+    // ✅ Other relations
+    Podcast: true,
+    courses: true,
+    events: true,
+    Package: true,
+    Project: true,
+    services: true,
+    CoreValues: true,
+
+    CompanyLocation: { include: { location: true } },
+    Destination: true,
+    TourPackage: true,
+
+    PaymentSettings: true,
+    ShippingSettings: true,
+  };
+}
+
+
+function pageDataIncludeV4() {
   return {
     blogs: { orderBy: { publishedAt: "desc" as const } },
     faqs: { orderBy: { order: "asc" as const } },
