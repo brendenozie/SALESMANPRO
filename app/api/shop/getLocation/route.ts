@@ -22,15 +22,15 @@ async function getLocation(req: Request) {
     // const whereClause: any = { userId };
     // if (agentId) whereClause.agentId = agentId;
 
-    const location = await prisma.location.findFirst({
-      where: ({ userId: String(userId) } as any),
-    });
+    // const location = await prisma.location.findFirst({
+    //   where: ({ userId: String(userId) } as any),
+    // });
 
-    if (!location) {
+    // if (!location) {
       return formatResponse(false, null, "Location not found", 404);
-    }
+    // }
 
-    return formatResponse(true, location);
+    // return formatResponse(true, location);
   } catch (error: any) {
     console.error("Error fetching location:", error);
     return formatResponse(false, null, "Server error fetching location", 500);
