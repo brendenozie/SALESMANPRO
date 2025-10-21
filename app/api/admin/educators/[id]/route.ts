@@ -208,8 +208,12 @@ async function updateEducator(request: Request, { params }: Params) {
       if (profilePicture !== undefined) userUpdateData.image = profilePicture;
 
       if (Object.keys(userUpdateData).length > 0) {
+        const userId = updatedEducatorRecord.userId;
+        if (!userId) {
+          throw new Error("Associated userId is missing for this educator.");
+        }
         await tx.user.update({
-          where: { id: updatedEducatorRecord.userId },
+          where: { id: userId },
           data: userUpdateData,
         });
       }

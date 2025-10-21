@@ -10,13 +10,13 @@ interface Params {
 // Define the Expert type based on your Prisma schema
 type Expert = {
   id: string;
-  userId: string;
+  userId: string | null;
   user?: {
     id: string | null;
     name: string | null;
     email: string | null;
     phone?: string | null;
-  };
+  } | null;
   companyId: string;
   specialty: string;
   experienceYears: number | null;
@@ -78,12 +78,18 @@ async function updateExpert(request: Request, { params }: Params) {
     return formatResponse(false, null, 'Expert not found or does not belong to this company.', 404);
   }
 
+  // Ensure the expert has an associated user before attempting to update
+  if (!existingExpert.userId) {
+    return formatResponse(false, null, 'Associated user not found for this expert.', 404);
+  }
+  const userId = existingExpert.userId;
+
   // Use a local try/catch for specific Prisma error codes, allowing withApiHandler to handle generic errors
   try {
     const updatedExpertData = await prisma.$transaction(async (tx) => {
       // Update the associated User record
       await tx.user.update({
-        where: { id: existingExpert.userId },
+        where: { id: userId },
         data: {
           name: name,
           email: email,

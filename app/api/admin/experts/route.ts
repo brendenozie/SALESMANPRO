@@ -10,13 +10,13 @@ import { verifyAuth } from '@/lib/verifyAuth';
 type Expert = {
   expertise: any[];
   id: string;
-  userId: string;
-  user?: {
+  userId: string | null;
+  user: {
     id: string | null;
     name: string | null;
     email: string | null;
     phone?: string | null;
-  };
+  } | null;
   companyId: string;
   specialty: string;
   experienceYears: number | null;

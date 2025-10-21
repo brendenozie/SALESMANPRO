@@ -52,14 +52,19 @@ async function updateAgent(req: Request, { params }: { params: { id: string } })
       return formatResponse(false, null, "Agent not found", 404);
     }
 
+    // Ensure there is an associated user id (Prisma may type this as string | null)
+    if (!salesAgent.userId) {
+      return formatResponse(false, null, "Agent has no associated user", 400);
+    }
+
     const updatedUser = await prisma.user.update({
       where: { id: salesAgent.userId },
       data: {
-        name: name ?? salesAgent.user.name,
-        email: email ?? salesAgent.user.email,
-        phone: phone ?? salesAgent.user.phone,
-        bio: bio ?? salesAgent.user.bio,
-        profilePicture: profileImageUrl ?? salesAgent.user.profilePicture,
+        name: name ?? salesAgent.user?.name,
+        email: email ?? salesAgent.user?.email,
+        phone: phone ?? salesAgent.user?.phone,
+        bio: bio ?? salesAgent.user?.bio,
+        profilePicture: profileImageUrl ?? salesAgent.user?.profilePicture,
       },
     });
 
@@ -118,6 +123,12 @@ async function deleteAgent(req: Request, { params }: { params: { id: string } })
 
     if (!salesAgent) {
       return formatResponse(false, null, "Agent not found", 404);
+    }
+
+    // If there is no associated userId, delete only the salesAgent and return a clear result.
+    if (!salesAgent.userId) {
+      await prisma.salesAgent.delete({ where: { id: agentId } });
+      return formatResponse(true, null, "Agent deleted (no associated user)", 200);
     }
 
     await prisma.salesAgent.delete({ where: { id: agentId } });

@@ -42,11 +42,11 @@ async function getAgents(req: Request) {
 
     const agents: AgentProfile[] = salesAgents.map((sa) => ({
       id: sa.id,
-      name: sa.user.name || "",
-      email: sa.user.email,
-      phone: sa.user.phone || "",
-      bio: sa.user.bio || "",
-      profileImageUrl: sa.user.profilePicture || "",
+      name: sa.user?.name || "",
+      email: sa.user?.email || "",
+      phone: sa.user?.phone || "",
+      bio: sa.user?.bio || "",
+      profileImageUrl: sa.user?.profilePicture || "",
       isActive: sa.isActive,
       specialties: sa.specialties,
       regions: sa.regions,
