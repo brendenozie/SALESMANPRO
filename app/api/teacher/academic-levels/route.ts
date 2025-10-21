@@ -83,10 +83,10 @@ async function getClassTeacherAcademicLevels(req: Request) {
 
     const responseData = {
       classTeacherInfo: {
-        id: educator.user.id,
-        name: educator.user.name || "N/A",
-        email: educator.user.email || "N/A",
-        role: educator.user.role || "EDUCATOR",
+        id: educator.user?.id,
+        name: educator.user?.name || "N/A",
+        email: educator.user?.email || "N/A",
+        role: educator.user?.role || "EDUCATOR",
       },
       themeSettings: {
         primaryColor: "#4A90E2",
