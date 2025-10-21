@@ -125,6 +125,88 @@ export default async function StorePage({ params }: StorePageProps) {
  */
 function pageDataInclude() {
   return {
+    blogs: { orderBy: { publishedAt: "desc" as const } },
+    faqs: { orderBy: { order: "asc" as const } },
+    testimonials: { orderBy: { order: "asc" as const } },
+    heroSlides: { orderBy: { order: "asc" as const } },
+    promotions: {
+      select: {
+        title: true,
+        description: true,
+        startsAt: true,
+        endsAt: true,
+        badgeText: true,
+        price: true,
+        ctaText: true,
+        ctaLink: true,
+        bannerUrl: true,
+        featureImage1: true,
+        featureImage2: true,
+        featureImage3: true,
+        perks: true,
+        trustLogos: true,
+      },
+    },
+    PageSection: { orderBy: { order: "asc" as const } },
+    appPromos: true,
+    Collection: { orderBy: { order: "asc" as const } },
+
+    marketplaceListings: {
+      take: 50,
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        finalPrice: true,
+        sellingPrice: true,
+        images: true,
+        isAvailable: true,
+        isFeatured: true,
+        category: true,
+      },
+    },
+
+    // Safe nested includes — filter out null user relations
+    Writer: {
+      where: { user: { isNot: {} } },
+      include: { user: { select: { id: true, name: true, image: true } } },
+    },
+    Expert: {
+      where: { user: { isNot: {} } },
+      include: { user: { select: { id: true, name: true, image: true } } },
+    },
+    Doctor: {
+      where: { User: { isNot: {} } },
+      include: { User: { select: { id: true, name: true, image: true } } },
+    },
+    salesAgents: {
+      where: { user: { isNot: {} } },
+      include: { user: { select: { id: true, name: true, image: true } } },
+    },
+    educators: {
+      where: { user: { isNot: {} } },
+      include: { user: { select: { id: true, name: true, image: true } } },
+    },
+
+    Podcast: true,
+    courses: true,
+    events: true,
+    Package: true,
+    Project: true,
+    services: true,
+    CoreValues: true,
+
+    CompanyLocation: { include: { location: true } },
+    Destination: true,
+    TourPackage: true,
+
+    PaymentSettings: true,
+    ShippingSettings: true,
+  };
+}
+
+function pageDataIncludeV1() {
+  return {
     // REMOVED Basic company info. Prisma fetches these scalar fields by default.
     // name: true,
     // slug: true,
@@ -176,12 +258,28 @@ function pageDataInclude() {
       },
     },
     
-    // People/experts
-    Writer: { include: { user: { select: { id: true, name: true, image: true } } } },
-    Expert: { include: { user: { select: { id: true, name: true, image: true } } } },
-    Doctor: { include: { User: { select: { id: true, name: true, image: true } } } },
-    salesAgents: { include: { user: { select: { id: true, name: true, image: true } } } },
-    educators: { include: { user: { select: { id: true, name: true, image: true } } } },
+    Doctor: { 
+      where: { user: { isNot: null } },
+      include: { User: { select: { id: true, name: true, image: true } } },
+    },
+
+    Writer: {
+      where: { user: { isNot: null } },
+      include: { user: { select: { id: true, name: true, image: true } } },
+    },
+    Expert: {
+      where: { user: { isNot: null } },
+      include: { user: { select: { id: true, name: true, image: true } } },
+    },
+    salesAgents: {
+      where: { user: { isNot: null } },
+      include: { user: { select: { id: true, name: true, image: true } } },
+    },
+    educators: {
+      where: { user: { isNot: null } },
+      include: { user: { select: { id: true, name: true, image: true } } },
+    },
+
     
     // Content
     Podcast: true,
