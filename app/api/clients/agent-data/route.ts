@@ -20,7 +20,7 @@ export const GET = withApiHandler(async (req: Request) => {
     });
 
     return formatResponse(true, {
-      topAgent: topAgent?.user.name || "N/A",
+      topAgent: topAgent?.user?.name || "N/A",
       topAgentSales:  0, //topAgent?.totalSales ||
       agentId: topAgent?.id || null,
     });
