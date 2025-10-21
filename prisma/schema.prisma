@@ -1160,8 +1160,8 @@ model SalesAgent {
   specialties String[] @default([])
   regions     String[] @default([])
 
-  userId String @unique @db.ObjectId // Link to User model
-  user   User   @relation("SalesAgentProfile", fields: [userId], references: [id])
+  userId String? @unique @db.ObjectId // Link to User model
+  user   User?   @relation("SalesAgentProfile", fields: [userId], references: [id])
 
   clients Client[]
 
@@ -2566,8 +2566,8 @@ enum EducatorStatus {
 model Educator {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
-  userId String @unique @db.ObjectId // Link to User model
-  user   User   @relation(name: "educator", fields: [userId], references: [id])
+  userId String? @unique @db.ObjectId // Link to User model
+  user   User?   @relation(name: "educator", fields: [userId], references: [id])
 
   phone          String?
   bio            String?
@@ -3810,8 +3810,8 @@ enum DoctorStatus {
 
 model Writer {
   id                String    @id @default(auto()) @map("_id") @db.ObjectId
-  userId            String    @unique @db.ObjectId // One-to-one relationship with User
-  user              User      @relation(fields: [userId], references: [id])
+  userId            String?   @unique @db.ObjectId // One-to-one relationship with User
+  user              User?     @relation(fields: [userId], references: [id])
   companyId         String    @db.ObjectId
   company           Company   @relation(fields: [companyId], references: [id])
   phone             String?
@@ -4782,8 +4782,8 @@ enum ExpertStatus {
 
 model Expert {
   id               String       @id @default(auto()) @map("_id") @db.ObjectId
-  userId           String       @unique @db.ObjectId // One-to-one with User
-  user             User         @relation(fields: [userId], references: [id], onDelete: Cascade) // onDelete: Cascade for user deletion
+  userId           String?      @unique @db.ObjectId // One-to-one with User
+  user             User?        @relation(fields: [userId], references: [id], onDelete: Cascade) // onDelete: Cascade for user deletion
   companyId        String       @db.ObjectId
   company          Company      @relation(fields: [companyId], references: [id])
   specialty        String

@@ -150,7 +150,100 @@ export function pageDataInclude() {
     testimonials: orderedAsc,
     heroSlides: orderedAsc,
 
-    
+    promotions: {
+      select: {
+        title: true,
+        description: true,
+        startsAt: true,
+        endsAt: true,
+        badgeText: true,
+        price: true,
+        ctaText: true,
+        ctaLink: true,
+        bannerUrl: true,
+        featureImage1: true,
+        featureImage2: true,
+        featureImage3: true,
+        perks: true,
+        trustLogos: true,
+      },
+    },
+
+    PageSection: orderedAsc,
+    Collection: orderedAsc,
+    appPromos: true,
+
+    marketplaceListings: {
+      take: 50,
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        finalPrice: true,
+        sellingPrice: true,
+        images: true,
+        isAvailable: true,
+        isFeatured: true,
+        category: true,
+      },
+    },
+
+    // 👇 FIX: Filter out null user relations
+    Writer: {
+      where: { user: { isNot: null } },
+      include: { user: userSelect },
+    },
+    Expert: {
+      where: { user: { isNot: null } },
+      include: { user: userSelect },
+    },
+    Doctor: {
+      where: { User: { isNot: null } }, // Use 'User' (uppercase)
+      include: { User: userSelect },
+    },
+    salesAgents: {
+      where: { user: { isNot: null } },
+      include: { user: userSelect },
+    },
+    educators: {
+      where: { user: { isNot: null } },
+      include: { user: userSelect },
+    },
+
+    // ✅ Other relations
+    Podcast: true,
+    courses: true,
+    events: true,
+    Package: true,
+    Project: true,
+    services: true,
+    CoreValues: true,
+
+    CompanyLocation: { include: { location: true } },
+    Destination: true,
+    TourPackage: true,
+
+    PaymentSettings: true,
+    ShippingSettings: true,
+  };
+}
+
+export function pageDataIncludeV7() {
+  const userSelect = {
+    select: {
+      id: true,
+      name: true,
+      image: true,
+    },
+  };
+
+  const orderedAsc = { orderBy: { order: "asc" as const } };
+
+  return {
+    blogs: { orderBy: { publishedAt: "desc" as const } },
+    faqs: orderedAsc,
+    testimonials: orderedAsc,
+    heroSlides: orderedAsc,
 
     promotions: {
       select: {
@@ -190,31 +283,29 @@ export function pageDataInclude() {
       },
     },
 
-
-    // ✅ STAFF & RELATED PROFILES: Added 'where' clause to exclude null user/User relations
-    Writer: { 
-      where: { user: { isNot: {} } }, // <--- ADD THIS FILTER
-      include: { user: userSelect } 
+    // 👇 FIX: Add 'where' clauses to filter out null user relations
+    Writer: {
+      where: { user: { isNot: null } },
+      include: { user: userSelect }
     },
-    Expert: { 
-      where: { user: { isNot: {} } }, // <--- ADD THIS FILTER
-      include: { user: userSelect } 
+    Expert: {
+      where: { user: { isNot: null } },
+      include: { user: userSelect }
     },
-    // Note: Doctor uses 'User'
-    Doctor: { 
-      where: { User: { isNot: {} } }, // <--- ADD THIS FILTER
-      include: { User: userSelect } 
+    Doctor: {
+      where: { User: { isNot: null } }, // Keep 'User' capitalized to match your schema
+      include: { User: userSelect }
     },
-    salesAgents: { 
-      where: { user: { isNot: {} } }, // <--- ADD THIS FILTER
-      include: { user: userSelect } 
+    salesAgents: {
+      where: { user: { isNot: null } },
+      include: { user: userSelect }
     },
-    educators: { 
-      where: { user: { isNot: {} } }, // <--- ADD THIS FILTER
-      include: { user: userSelect } 
+    educators: {
+      where: { user: { isNot: null } },
+      include: { user: userSelect }
     },
 
-    // ✅ Other relations (no change needed here)
+    // ✅ Other relations
     Podcast: true,
     courses: true,
     events: true,
