@@ -1,15 +1,10 @@
 import prisma from "@/server/db/prismadb";
-import { verifyAuth } from "@/lib/verifyAuth";
 import { rateLimit } from "@/lib/rate-limit";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
 // POST /api/location
 async function handler(req: Request) {
-  const auth = await verifyAuth(req);
-  if (!auth.success) {
-    return formatResponse(false, null, auth.error, 401);
-  }
 
   const ip = req.headers.get("x-forwarded-for") || "local";
 
