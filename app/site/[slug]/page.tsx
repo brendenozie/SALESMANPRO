@@ -118,7 +118,7 @@ export default async function StorePage({ params }: StorePageProps) {
  * PAGE DATA INCLUDE: Fetch all page-specific data
  * This includes listings, testimonials, blogs, courses, etc.
  */
-export function pageDataInclude() {
+function pageDataInclude() {
   const userSelect = {
     select: {
       id: true,
