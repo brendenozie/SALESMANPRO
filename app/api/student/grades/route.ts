@@ -59,7 +59,7 @@ const getStudentGrades = async (request: Request) => {
         where: { courseId: cg.id },
         include: { educator: { include: { user: true } } },
       });
-      cg.teacher = assign?.educator.user.name || "Unknown";
+      cg.teacher = assign?.educator.user?.name || "Unknown";
     })
   );
 

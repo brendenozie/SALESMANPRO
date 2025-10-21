@@ -62,7 +62,7 @@ const getStudentSchedule = async (request: Request) => {
     day: cs.dayOfWeek,
     startTime: cs.startTime.toISOString().slice(11, 16),
     endTime: cs.endTime.toISOString().slice(11, 16),
-    title: `${cs.course.title} - ${cs.educator.user.name}`,
+    title: `${cs.course.title} - ${cs.educator.user?.name || "TBA"}`,
     topic: cs.topic || null,
     meetingLink: cs.meetingLink || null,
     type: "class",

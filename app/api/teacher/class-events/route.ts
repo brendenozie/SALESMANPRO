@@ -154,7 +154,7 @@ async function createEvent(request: Request) {
         title, summary, description,
         startDateTime: parsedStart, endDateTime: parsedEnd,
         location, onlineMeetingLink, imageUrl, videoUrl,
-        eventType, eventStatus, organizerId: existingOrganizer.userId, audience,
+        eventType, eventStatus, organizerId: existingOrganizer.userId || "", audience,
         targetAcademicLevelIds, targetCourseIds, targetEducatorIds,
         targetStudentIds, targetDepartmentIds, targetParentIds,
         isRegistrationRequired: Boolean(isRegistrationRequired),
