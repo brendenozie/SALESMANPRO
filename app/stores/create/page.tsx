@@ -5,12 +5,14 @@
 import React from 'react';
 import { cookies } from 'next/headers';
 
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+
 export const dynamic = 'force-dynamic';
 
 export default async function CreateStorePage() {
   const cookieHeader = (await cookies()).toString();
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/admin/get-all-categories`,
+    `${apiBaserUrl}/admin/get-all-categories`,
     { cache: 'no-store', headers: { Cookie: cookieHeader, } }
   );
 
@@ -18,7 +20,7 @@ export default async function CreateStorePage() {
   
   const availableCategories = dataCategories.data?.results || [];
 
-  const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/locations`, {
+  const response = await fetch(`${apiBaserUrl}/admin/locations`, {
     cache: 'no-store',
     headers: { Cookie: cookieHeader },
   });

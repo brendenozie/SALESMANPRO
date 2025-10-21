@@ -15,6 +15,8 @@ import {
 } from "@/types/typings";
 import { cookies } from "next/headers";
 
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+
 export const dynamic = "force-dynamic";
 
 // Helper function to safely parse JSON fields from the database
@@ -102,18 +104,18 @@ export default async function EditStorePage({
 
   // --- Fetch available categories and locations for the form selectors ---
   const categoryRes = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/admin/get-all-categories`,
+    `${apiBaserUrl}/admin/get-all-categories`,
     { next: { revalidate: 60 }, headers: { Cookie: cookieHeader } }
   );
   const categoryData = await categoryRes.json();
-  const availableCategories: IProductCategory[] = categoryData.data.results || [];
+  const availableCategories: IProductCategory[] = categoryData.data?.results || [];
 
   const locationRes = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL}/admin/locations`,
+    `${apiBaserUrl}/admin/locations`,
     { next: { revalidate: 60 }, headers: { Cookie: cookieHeader } }
   );
   const locationData = await locationRes.json();
-  const availableLocations: ILocation[] = locationData.data.data || [];
+  const availableLocations: ILocation[] = locationData.data?.data || [];
 
   // --- Map the comprehensive Prisma object to the StoreForm shape ---
   const storeFormData: StoreForm = {
