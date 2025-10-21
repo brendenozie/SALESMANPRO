@@ -15,7 +15,7 @@ async function handleGetLocations(request: Request) {
   // is often needed inside the handler logic (e.g., filtering based on user role/permissions).
   // We'll proceed with fetching all, as the original code did.
 
-  const locations = await prisma.location.findMany({
+  const rawLocations = await prisma.location.findMany({
     orderBy: {
       sortOrder: 'asc', // Order by sortOrder for consistent list/tree building
     },
@@ -47,6 +47,17 @@ async function handleGetLocations(request: Request) {
       attributes: true,
     },
   });
+
+   const locations = rawLocations.map((loc) => ({
+      ...loc,
+      name: loc.name ?? "Unnamed Location",
+      slug: loc.slug ?? `location-${loc.id}`,
+      description: loc.description ?? "",
+      country: loc.country ?? "Unknown",
+    }));
+
+    return formatResponse(true, locations, "Locations fetched successfully", 20);
+
 
   // withApiHandler will wrap this result in formatResponse(true, { data: locations }) with status 200
   return formatResponse(true, { data: locations }, "Locations fetched successfully", 200);
