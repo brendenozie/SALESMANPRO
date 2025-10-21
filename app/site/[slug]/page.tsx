@@ -166,6 +166,83 @@ function pageDataInclude() {
       },
     },
 
+    // ✅ Safe, lowercase, consistent user includes
+    Writer: {
+      include: { user: { select: { id: true, name: true, image: true } } },
+    },
+    Expert: {
+      include: { user: { select: { id: true, name: true, image: true } } },
+    },
+    Doctor: {
+      include: { User: { select: { id: true, name: true, image: true } } },
+    },
+    salesAgents: {
+      include: { user: { select: { id: true, name: true, image: true } } },
+    },
+    educators: {
+      include: { user: { select: { id: true, name: true, image: true } } },
+    },
+
+    Podcast: true,
+    courses: true,
+    events: true,
+    Package: true,
+    Project: true,
+    services: true,
+    CoreValues: true,
+
+    CompanyLocation: { include: { location: true } },
+    Destination: true,
+    TourPackage: true,
+
+    PaymentSettings: true,
+    ShippingSettings: true,
+  };
+}
+
+function pageDataIncludeV3() {
+  return {
+    blogs: { orderBy: { publishedAt: "desc" as const } },
+    faqs: { orderBy: { order: "asc" as const } },
+    testimonials: { orderBy: { order: "asc" as const } },
+    heroSlides: { orderBy: { order: "asc" as const } },
+    promotions: {
+      select: {
+        title: true,
+        description: true,
+        startsAt: true,
+        endsAt: true,
+        badgeText: true,
+        price: true,
+        ctaText: true,
+        ctaLink: true,
+        bannerUrl: true,
+        featureImage1: true,
+        featureImage2: true,
+        featureImage3: true,
+        perks: true,
+        trustLogos: true,
+      },
+    },
+    PageSection: { orderBy: { order: "asc" as const } },
+    appPromos: true,
+    Collection: { orderBy: { order: "asc" as const } },
+
+    marketplaceListings: {
+      take: 50,
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        finalPrice: true,
+        sellingPrice: true,
+        images: true,
+        isAvailable: true,
+        isFeatured: true,
+        category: true,
+      },
+    },
+
     // Safe includes for all user-linked relations
     Writer: {
       where: { user: { isNot: {} } },
