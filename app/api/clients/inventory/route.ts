@@ -67,7 +67,7 @@ export const GET = withApiHandler(async (req: Request) => {
     productName: item.inventoryItem.product?.name || "Unknown Product",
     quantityPurchased: item.quantity,
     salesAgentId: item.salesAgent?.id,
-    salesAgentName: item.salesAgent?.user.name || "N/A",
+    salesAgentName: item.salesAgent?.user?.name || "N/A",
     productDetails: {
       category: item.inventoryItem.product?.productCategory?.name || "Uncategorized",
       subCategory: item.inventoryItem.product?.subCategory,
