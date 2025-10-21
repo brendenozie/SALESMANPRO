@@ -225,7 +225,7 @@ async function createEvent(request: Request) {
   if (!existingOrganizer) {
     return formatResponse(false, null, "Provided organizerId (Sales Agent) does not exist.", 400);
   }
-  const finalOrganizerUserId = existingOrganizer.user.id; // Use the User ID linked to the Sales Agent
+  const finalOrganizerUserId = existingOrganizer.user?.id; // Use the User ID linked to the Sales Agent
 
   // Validate companyId exists
   const existingCompany = await prisma.company.findUnique({
