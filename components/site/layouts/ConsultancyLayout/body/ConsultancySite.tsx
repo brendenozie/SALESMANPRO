@@ -43,7 +43,7 @@ export default function ConsultancySite({ pageData }: { pageData: StoreForm }) {
 
       <HowItWorks />
 
-      <BrowseByCategory store={ storeFormData }/>   
+      <BrowseByCategory listings={listings} storeSlug=""/>   
 
       {/* Featured Vehicles */}
       <FeaturedVehicleSection  listings={listings} slug=""/>
