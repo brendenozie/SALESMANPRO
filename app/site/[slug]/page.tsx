@@ -76,21 +76,21 @@ export default async function StorePage({ params }: StorePageProps) {
 
   // Lookup by forwarded custom domain, subdomain, or slug (same logic as layout)
   if (requestedHost) {
-    raw = await prisma.company.findUnique({
+    raw = await prisma.company.findFirst({
       where: { domain: requestedHost },
       include: pageDataInclude(),
     });
   }
 
   if (!raw && requestedSubdomain) {
-    raw = await prisma.company.findUnique({
+    raw = await prisma.company.findFirst({
       where: { slug: requestedSubdomain },
       include: pageDataInclude(),
     });
   }
 
   if (!raw) {
-    raw = await prisma.company.findUnique({
+    raw = await prisma.company.findFirst({
       where: { slug: slug },
       include: pageDataInclude(),
     });
