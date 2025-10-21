@@ -166,6 +166,89 @@ function pageDataInclude() {
       },
     },
 
+    // Safe includes for all user-linked relations
+    Writer: {
+      where: { user: { isNot: {} } },
+      include: { user: { select: { id: true, name: true, image: true } } },
+    },
+    Expert: {
+      where: { user: { isNot: {} } },
+      include: { user: { select: { id: true, name: true, image: true } } },
+    },
+    // Use correct relation name here (User vs user)
+    Doctor: {
+      where: { User: { isNot: {} } },
+      include: { User: { select: { id: true, name: true, image: true } } },
+    },
+    salesAgents: {
+      where: { user: { isNot: {} } },
+      include: { user: { select: { id: true, name: true, image: true } } },
+    },
+    educators: {
+      where: { user: { isNot: {} } },
+      include: { user: { select: { id: true, name: true, image: true } } },
+    },
+
+    Podcast: true,
+    courses: true,
+    events: true,
+    Package: true,
+    Project: true,
+    services: true,
+    CoreValues: true,
+
+    CompanyLocation: { include: { location: true } },
+    Destination: true,
+    TourPackage: true,
+
+    PaymentSettings: true,
+    ShippingSettings: true,
+  };
+}
+
+function pageDataIncludeV2() {
+  return {
+    blogs: { orderBy: { publishedAt: "desc" as const } },
+    faqs: { orderBy: { order: "asc" as const } },
+    testimonials: { orderBy: { order: "asc" as const } },
+    heroSlides: { orderBy: { order: "asc" as const } },
+    promotions: {
+      select: {
+        title: true,
+        description: true,
+        startsAt: true,
+        endsAt: true,
+        badgeText: true,
+        price: true,
+        ctaText: true,
+        ctaLink: true,
+        bannerUrl: true,
+        featureImage1: true,
+        featureImage2: true,
+        featureImage3: true,
+        perks: true,
+        trustLogos: true,
+      },
+    },
+    PageSection: { orderBy: { order: "asc" as const } },
+    appPromos: true,
+    Collection: { orderBy: { order: "asc" as const } },
+
+    marketplaceListings: {
+      take: 50,
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        finalPrice: true,
+        sellingPrice: true,
+        images: true,
+        isAvailable: true,
+        isFeatured: true,
+        category: true,
+      },
+    },
+
     // Safe nested includes — filter out null user relations
     Writer: {
       where: { user: { isNot: {} } },
@@ -205,7 +288,7 @@ function pageDataInclude() {
   };
 }
 
-function pageDataIncludeV1() {
+function pageDataIncludev1() {
   return {
     // REMOVED Basic company info. Prisma fetches these scalar fields by default.
     // name: true,
@@ -259,7 +342,7 @@ function pageDataIncludeV1() {
     },
     
     Doctor: { 
-      where: { user: { isNot: null } },
+      where: { User: { isNot: null } },
       include: { User: { select: { id: true, name: true, image: true } } },
     },
 
