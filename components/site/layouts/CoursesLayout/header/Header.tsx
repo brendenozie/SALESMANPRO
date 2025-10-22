@@ -25,7 +25,7 @@ const useMockStoreContext = () => ({
     slug: 'educational-online-courses',
     logoUrl: 'https://ghubabucket.s3.amazonaws.com/images/c370dc36-17c2-4edd-841a-b033337a73b2.png',
     contactEmail: 'brendenodhiambo@gmail.com',
-    contactPhone: '0706448146',
+    contactPhone: '0732771353',
     socialLinks: [
       { channel: "facebook", url: "https://facebook.com/education" },
       { channel: "twitter", url: "https://twitter.com/education" },

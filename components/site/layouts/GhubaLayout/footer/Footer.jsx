@@ -69,7 +69,7 @@ const Footer = () => {
           <div className="space-y-6">
             <h2 className="text-2xl font-bold text-yellow-500 border-b-2 border-yellow-500 pb-2">Contact Us</h2>
             <ul className="space-y-3 text-gray-800 dark:text-gray-300">
-              {["Nairobi, Kenya", "Email: ghuba@gmail.com", "Phone: +254 706 448 146"].map((item, index) => (
+              {["Nairobi, Kenya", "Email: ghuba@gmail.com", "Phone: +254 732 771 353"].map((item, index) => (
                 <li key={index} className="opacity-80 hover:opacity-100 hover:text-yellow-500 transition-transform transform hover:translate-x-2 duration-300 cursor-pointer">
                   {item}
                 </li>

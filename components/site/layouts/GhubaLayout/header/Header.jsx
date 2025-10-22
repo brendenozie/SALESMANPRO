@@ -200,7 +200,7 @@ const TopBar = ({location, setLocation, locationName, setLocationName, isOpen, s
       <div className="flex space-x-6">
         <span className="flex items-center space-x-2">
           <i className="fa fa-phone"></i>
-          <span>+254 706 448 146</span>
+          <span>+254 732 771 353</span>
         </span>
         <span className="flex items-center space-x-2">
           <i className="fa fa-envelope"></i>

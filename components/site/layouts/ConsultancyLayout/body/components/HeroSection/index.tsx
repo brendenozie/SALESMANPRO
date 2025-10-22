@@ -92,7 +92,7 @@ const HeroSection = () => {
   
   // CORE INTEGRATION: Using the (mocked) context hook
   const { storeFormData } = useStoreContext() || {};
-  const { heroSlides } = storeFormData || {};
+  const { heroSlides, themeSettings } = storeFormData || {};
 
   // DATA RESOLUTION: Use dynamic data if available, otherwise use the local fallback
   const slides = heroSlides && (Array.isArray(heroSlides) && heroSlides.length > 0)
@@ -132,6 +132,8 @@ const HeroSection = () => {
   // Ensure we always have a current slide, even if slides is empty (shouldn't happen with fallback)
   // Use a concrete fallback element and `any` typing to avoid type union issues coming from external `HeroSlide` types.
   const currentSlide: any = slides[current] || LOCAL_FALLBACK_SLIDES[0];
+
+  const { primaryColor, secondaryColor } = themeSettings || { primaryColor: '#F97316', secondaryColor: '#1D4ED8' }; // Default colors
 
   return (
     <section id="hero" className="relative overflow-hidden h-screen flex items-center justify-center bg-white">

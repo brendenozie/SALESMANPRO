@@ -89,7 +89,7 @@ export type StoreForm = {
 //     logoUrl: 'https://ghubabucket.s3.amazonaws.com/images/c370dc36-17c2-4edd-841a-b033337a73b2.png',
 //     bannerUrl: 'https://ghubabucket.s3.amazonaws.com/images/015fda07-de70-4629-817b-7c735ad4e844.jpeg',
 //     contactEmail: 'brendenodhiambo@gmail.com',
-//     contactPhone: '0706448146',
+//     contactPhone: '0732771353',
 //     site: null,
 //     address: 'Redeemed Gospel Church, Mau Mau Road, Mathare 3B, Mlango Kubwa ward, Mathare, Nairobi, Nairobi County, 00611, Kenya',
 //     geoLocation: { lat: -1.261568, lng: 36.8574464 },
