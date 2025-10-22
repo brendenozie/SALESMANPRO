@@ -77,11 +77,27 @@ export default async function StoreLayout({
 
   // ---- 1. Lookup by forwarded custom domain ----
   if (requestedHost) {
-    raw = await prisma.company.findUnique({
-      where: { domain: requestedHost },
+    const normalizedHost = requestedHost.replace(/^www\./, "").toLowerCase();
+
+    raw = await prisma.company.findFirst({
+      where: {
+        OR: [
+          { domain: normalizedHost },
+          { domain: `www.${normalizedHost}` },
+          { domain: `https://${normalizedHost}` },
+          { domain: `https://www.${normalizedHost}` },
+        ],
+      },
       include: leanShellInclude(),
     });
   }
+
+  // if (requestedHost) {
+  //   raw = await prisma.company.findUnique({
+  //     where: { domain: requestedHost },
+  //     include: leanShellInclude(),
+  //   });
+  // }
 
   // ---- 2. Lookup by forwarded subdomain ----
   if (!raw && requestedSubdomain) {

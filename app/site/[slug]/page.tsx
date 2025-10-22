@@ -76,11 +76,27 @@ export default async function StorePage({ params }: StorePageProps) {
 
   // Lookup by forwarded custom domain, subdomain, or slug (same logic as layout)
   if (requestedHost) {
+    const normalizedHost = requestedHost.replace(/^www\./, "").toLowerCase();
+
     raw = await prisma.company.findFirst({
-      where: { domain: requestedHost },
+      where: {
+        OR: [
+          { domain: normalizedHost },
+          { domain: `www.${normalizedHost}` },
+          { domain: `https://${normalizedHost}` },
+          { domain: `https://www.${normalizedHost}` },
+        ],
+      },
       include: pageDataInclude(),
     });
   }
+
+  // if (requestedHost) {
+  //   raw = await prisma.company.findFirst({
+  //     where: { domain: requestedHost },
+  //     include: pageDataInclude(),
+  //   });
+  // }
 
   if (!raw && requestedSubdomain) {
     raw = await prisma.company.findFirst({

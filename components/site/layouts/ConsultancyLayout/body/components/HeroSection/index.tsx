@@ -170,8 +170,8 @@ const HeroSection = () => {
         </motion.div>
       </AnimatePresence>
 
-      {/* Content */}
-      <div className="relative z-10 text-center max-w-3xl px-6">
+      {/* Content - Added pt-20 for mobile clearance and pb-12 for bottom padding */}
+      <div className="relative z-10 text-center max-w-3xl px-6 pt-20 pb-12 md:py-0">
         <motion.span
           key={current + '-span'}
           initial={{ y: 30, opacity: 0 }}
@@ -187,7 +187,8 @@ const HeroSection = () => {
           initial={{ y: 40, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.8, delay: 0.4 }}
-          className="text-5xl md:text-7xl font-extrabold text-gray-900 leading-tight"
+          // Adjusted headline size for better mobile fit: text-4xl on default/mobile screens
+          className="text-4xl sm:text-5xl md:text-7xl font-extrabold text-gray-900 leading-tight"
         >
           {/* Headline parsing logic preserved: colorizing the last part */}
           {currentSlide.headline?.split(" ").slice(0, 3).join(" ")}{" "}
