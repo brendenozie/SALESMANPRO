@@ -9,10 +9,10 @@ const resolvePromise = util.promisify(dns.resolve);
 const resolveCnamePromise = util.promisify(dns.resolveCname);
 
 // 🧠 Constants (same as API)
-const VPS_IP = "72.61.178.94";
-const PLATFORM_BASE_DOMAIN = "salesmanpro.site";
-const ADMIN_EMAIL = "brendenodhiambo@gmail.com";
-const USE_STAGING = false;
+const VPS_IP = process.env.VPS_IP || "";
+const PLATFORM_BASE_DOMAIN = process.env.PLATFORM_BASE_DOMAIN || "";
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "";
+const USE_STAGING = process.env.USE_STAGING === "true";
 
 async function verifyDNS(domain: string) {
   try {

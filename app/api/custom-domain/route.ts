@@ -24,10 +24,10 @@ const DomainSchema = z.object({
 });
 
 // 🧠 Configurable constants
-const PLATFORM_BASE_DOMAIN = "salesmanpro.site";
-const VPS_IP = "72.61.178.94"; // Change to your actual VPS IP
-const ADMIN_EMAIL = "brendenodhiambo@gmail.com";
-const USE_STAGING = false; // Set true for testing
+const PLATFORM_BASE_DOMAIN = process.env.PLATFORM_BASE_DOMAIN || "";
+const VPS_IP = process.env.VPS_IP || ""; // Change to your actual VPS IP
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "";
+const USE_STAGING = process.env.USE_STAGING === "true";
 
 export async function POST(req: Request) {
   try {
