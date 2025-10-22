@@ -2,6 +2,8 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import dns from "dns/promises";
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
+import { NextResponse } from "next/server";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
 /**
  * GET /api/custom-domain/status?companyId=...
@@ -9,16 +11,20 @@ import { formatResponse } from "@/lib/formatResponse";
  * Checks the live DNS status for the company's custom domain.
  * Returns whether DNS is properly pointing to your server.
  */
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+
+
+export const GET = withApiHandler(async (req: Request) => {
   if (req.method !== "GET") {
-    return res.status(405).json(formatResponse(false,null,"Method not allowed"));
+    return NextResponse.json(formatResponse(false,null,"Method not allowed"), { status: 405 });
   }
 
-  const { companyId } = req.query;
+  const { searchParams } = new URL(req.url);
   const VPS_IP = process.env.VPS_IP || "123.45.67.89"; // ⚙️ Update with your real server IP
 
+  const companyId = searchParams.get("companyId");
+
   if (!companyId) {
-    return res.status(400).json(formatResponse(false,null,"Missing companyId"));
+    return NextResponse.json(formatResponse(false,null,"Missing companyId"), { status: 400 });
   }
 
   try {
@@ -29,9 +35,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     if (!company || !company.domain) {
-      return res
-        .status(404)
-        .json(formatResponse(false,null,"No custom domain found for this company"));
+      return NextResponse.json(formatResponse(false,null,"No custom domain found for this company"), { status: 404 });
     }
 
     const domain = company.domain;
@@ -60,7 +64,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       console.warn(`DNS check failed for ${domain}:`, dnsErr.message);
     }
 
-    return res.status(200).json({
+    return NextResponse.json({
       success: true,
       domain,
       hasWebsite: company.hasWebsite,
@@ -68,8 +72,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
   } catch (error: any) {
     console.error("❌ Domain status error:", error);
-    return res
-      .status(500)
-      .json(formatResponse(false,null,"Server error checking domain status"));
+    return NextResponse.json(formatResponse(false,null,"Server error checking domain status"), { status: 500 });
   }
-}
+});

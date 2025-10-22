@@ -6,6 +6,7 @@ import { z } from "zod";
 import { exec } from "child_process";
 import util from "util";
 import dns from "dns";
+import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
 const execPromise = util.promisify(exec);
 const resolvePromise = util.promisify(dns.resolve);
@@ -29,7 +30,7 @@ const VPS_IP = process.env.VPS_IP || ""; // Change to your actual VPS IP
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "";
 const USE_STAGING = process.env.USE_STAGING === "true";
 
-export async function POST(req: Request) {
+export const POST = withApiHandler(async (req: Request) => {
   try {
     const body = await req.json();
     const parse = DomainSchema.safeParse(body);
@@ -139,9 +140,9 @@ export async function POST(req: Request) {
       { status: 500 }
     );
   }
-}
+});
 
-export async function GET(req: Request) {
+export const GET = withApiHandler(async (req: Request) => {
   try {
     const { searchParams } = new URL(req.url);
     const companyId = searchParams.get("companyId");
@@ -173,7 +174,7 @@ export async function GET(req: Request) {
       { status: 500 }
     );
   }
-}
+});
 
 // import { NextResponse } from "next/server";
 // import prisma from "@/server/db/prismadb";
