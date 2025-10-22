@@ -134,13 +134,32 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
 
   
   //other domain name
-  if (host && host !== PRIMARY_HOST && !host.endsWith(".salesmanpro.site") && host !== "127.0.0.1" && host !== "localhost" && host !== "localhost:3000") {
-    url.pathname = `/site/${pathname}`;
-    const res = NextResponse.rewrite(url);
-    res.headers.set("x-requested-host", host);
-    res.headers.set("x-original-path", pathname);
-    return res;
-  }
+  // ---- CUSTOM DOMAIN HANDLING (PASS HOST, NO REWRITE) ----
+if (
+  host &&
+  host !== PRIMARY_HOST &&
+  !host.endsWith(".salesmanpro.site") &&
+  host !== "127.0.0.1" &&
+  host !== "localhost" &&
+  host !== "localhost:3000"
+) {
+  // Simply pass through the request but include identifying headers
+  const res = NextResponse.next();
+
+  // Pass host and original path so the app can resolve tenant dynamically
+  res.headers.set("x-requested-host", host);
+  res.headers.set("x-original-path", pathname);
+
+  return res;
+}
+
+  // if (host && host !== PRIMARY_HOST && !host.endsWith(".salesmanpro.site") && host !== "127.0.0.1" && host !== "localhost" && host !== "localhost:3000") {
+  //   url.pathname = `/site/${pathname}`;
+  //   const res = NextResponse.rewrite(url);
+  //   res.headers.set("x-requested-host", host);
+  //   res.headers.set("x-original-path", pathname);
+  //   return res;
+  // }
 
   // ---- 2. SUBDOMAIN HANDLING (slug.salesmanpro.site OR slug.localhost) ----
   if (
