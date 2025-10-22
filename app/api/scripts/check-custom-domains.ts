@@ -62,7 +62,7 @@ async function issueSSL(domain: string) {
 async function main() {
   console.log("🚀 Starting custom domain SSL verification job...");
   const companies = await prisma.company.findMany({
-    where: { hasWebsite: true, domain: { not: null } },
+    where: { sslStatus: "PENDING" },
     select: { id: true, domain: true },
   });
 
@@ -84,6 +84,11 @@ async function main() {
 
     console.log(`🚀 DNS OK but no SSL — issuing certificate for ${domain}...`);
     await issueSSL(domain);
+
+    await prisma.company.update({
+          where: { id: c.id },
+          data: { sslStatus: "active", hasWebsite: true },
+        });
   }
 
   console.log("🎉 Custom domain SSL job finished.");
