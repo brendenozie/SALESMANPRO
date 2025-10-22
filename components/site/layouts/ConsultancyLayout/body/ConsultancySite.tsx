@@ -3,7 +3,7 @@
 import React, {  } from "react";
 import { useStoreContext } from "@/contexts/StoreContext";
 import { StoreForm } from "@/types/typings";
-import FeaturedVehicleSection from "./components/FeaturedVehicleSection";
+import FeaturedProgramsSection from "./components/FeaturedProgramsSection";
 import HeroSection from "./components/HeroSection";
 import VideoShowcaseSection from "./components/VideoShowcaseSection";
 import BrowseByCategory from "./components/BrowseByCategorySection";
@@ -46,7 +46,7 @@ export default function ConsultancySite({ pageData }: { pageData: StoreForm }) {
       <BrowseByCategory listings={listings} storeSlug=""/>   
 
       {/* Featured Vehicles */}
-      <FeaturedVehicleSection  listings={listings} slug=""/>
+      <FeaturedProgramsSection  listings={listings} slug=""/>
 
       {/* If videos are stored under latestVideos */}
       {<VideoShowcaseSection blogs={(storeFormData?.blogs || []).map(b => ({ ...b, excerpt: b.excerpt ?? "", coverImage: b.coverImage ?? "", videoAlbumId: b.videoAlbumId ?? undefined }))} />}
