@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { MarketListingForm } from "@/types/typings";
+import { MarketListingForm } from "@/types/typings"; // Assuming this is correct
 import clsx from "clsx";
 import {
   BookOpenIcon,
@@ -12,19 +12,19 @@ import {
   FireIcon,
   TagIcon,
   SparklesIcon,
-  XMarkIcon, // Added for modal close button
+  XMarkIcon,
+  ArrowDownTrayIcon, // Changed BookOpenIcon to a more suitable icon for purchase/download
 } from "@heroicons/react/24/solid";
-import BookingForm from "../BookingForm";
-// import BookingForm from "./components/BookingForm"; // Assuming this path is correct
+import BookingForm from "../BookingForm"; // Keep the booking form for consistency with previous sections
 
 const loader = ({ src, width, quality }: any) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
-// --- Ebook Card (Updated to include booking onClick) ---
+// --- Ebook Card (Enhanced Aesthetics and CTA) ---
 const EbookCard = ({
-  item, // Pass the full item object
+  item,
   slug,
-  onSelect, // New prop for handling selection
+  onSelect,
 }: {
   item: MarketListingForm;
   slug: string;
@@ -35,9 +35,9 @@ const EbookCard = ({
 
   return (
     <motion.div
-      whileHover={{ y: -8, boxShadow: "0 15px 30px rgba(0,0,0,0.15)" }}
+      whileHover={{ y: -8, boxShadow: "0 20px 40px rgba(0,0,0,0.2)" }}
       transition={{ type: "spring", stiffness: 300, damping: 20 }}
-      className="relative bg-white dark:bg-gray-800 rounded-3xl shadow-xl overflow-hidden group border border-gray-100 dark:border-gray-700 flex flex-col"
+      className="relative bg-white rounded-3xl shadow-2xl overflow-hidden group border border-orange-100 flex flex-col h-full"
     >
       {/* Badge */}
       {badge && (
@@ -46,23 +46,23 @@ const EbookCard = ({
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.2 }}
           className={clsx(
-            "absolute top-4 left-4 px-4 py-1.5 rounded-full text-sm font-bold text-white z-10 flex items-center gap-1",
+            "absolute top-4 left-4 px-4 py-1.5 rounded-full text-xs font-extrabold uppercase text-white z-10 flex items-center gap-1 shadow-md",
             badge === "New Arrival"
-              ? "bg-gradient-to-r from-green-500 to-emerald-600"
+              ? "bg-gradient-to-r from-teal-500 to-cyan-600"
               : badge === "Hot Deal"
-              ? "bg-gradient-to-r from-red-500 to-orange-600"
-              : "bg-gradient-to-r from-indigo-500 to-purple-600"
+              ? "bg-gradient-to-r from-red-500 to-pink-600"
+              : "bg-gradient-to-r from-purple-500 to-indigo-600"
           )}
         >
-          {badge === "New Arrival" && <SparklesIcon className="w-4 h-4" />}
-          {badge === "Hot Deal" && <FireIcon className="w-4 h-4" />}
-          {badge === "Featured" && <TagIcon className="w-4 h-4" />}
+          {badge === "New Arrival" && <SparklesIcon className="w-3 h-3" />}
+          {badge === "Hot Deal" && <FireIcon className="w-3 h-3" />}
+          {badge === "Featured" && <TagIcon className="w-3 h-3" />}
           {badge}
         </motion.span>
       )}
 
-      {/* Cover Image - Use Link to Listing Details */}
-      <Link href={`/site/${slug}/listing/${id}`} passHref>
+      {/* Cover Image - Link to Listing Details */}
+      <Link href={`/site/${slug}/listing/${id}`} passHref className="block">
         <div className="relative w-full aspect-[3/4] overflow-hidden">
           <Image
             src={
@@ -72,59 +72,48 @@ const EbookCard = ({
             alt={name}
             loader={loader}
             fill
-            className="object-cover transform transition duration-500 group-hover:scale-110 brightness-95 group-hover:brightness-80"
+            className="object-cover transform transition duration-500 group-hover:scale-105 brightness-95 group-hover:brightness-90"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-40 group-hover:opacity-60 transition-opacity duration-300" />
+          {/* Visual Overlay for Depth */}
+          <div className="absolute inset-0 bg-gradient-to-t from-gray-900/60 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300" />
         </div>
       </Link>
 
       {/* Details */}
-      <div className="p-6 space-y-3 flex flex-col flex-grow">
-        <h3 className="text-xl font-bold text-gray-900 dark:text-white line-clamp-2">
-          {name}
-        </h3>
-        <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 flex-grow">
-          {description || "No description available."}
-        </p>
-
-        <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400 mt-2">
-          <UserIcon className="w-5 h-5 text-gray-400" />
-          <span>{author || "Unknown Author"}</span>
+      <div className="p-6 space-y-4 flex flex-col flex-grow">
+        <div className="flex-grow">
+          <h3 className="text-xl font-extrabold text-gray-900 line-clamp-2 leading-snug group-hover:text-orange-600 transition-colors">
+            {name}
+          </h3>
+          <p className="text-sm text-gray-500 mt-2 line-clamp-2">
+            {description || "Unlock new skills and master powerful concepts with this engaging guide."}
+          </p>
         </div>
 
-        <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-400">
-          <BookOpenIcon className="w-5 h-5 text-gray-400" />
-          <span>{category || "E-Book"}</span>
+        {/* Meta */}
+        <div className="flex justify-between items-center pt-2 border-t border-gray-100">
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <UserIcon className="w-4 h-4 text-orange-400" />
+            <span className="font-medium">{author || "Coach"}</span>
+          </div>
+          <p className="text-xl font-extrabold text-orange-600">
+            {finalPrice === 0 ? "FREE" : finalPrice?.toLocaleString("en-KE", {
+                style: "currency",
+                currency: "KES",
+                minimumFractionDigits: 0
+              }) || "Free"}
+          </p>
         </div>
 
-        <p className="text-2xl font-extrabold text-orange-600 dark:text-orange-400">
-          {finalPrice?.toLocaleString("en-KE", {
-            style: "currency",
-            currency: "KES",
-          }) || "Free"}
-        </p>
-
-        {/* Action Button: Book Now (triggers modal) */}
+        {/* Action Button: Purchase/Download (triggers modal) */}
         <motion.button
-          onClick={() => onSelect(item as MarketListingForm)} // Use onSelect prop
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.97 }}
-          className="mt-4 w-full bg-gradient-to-r from-orange-600 to-red-600 text-white py-3 rounded-xl font-semibold text-lg shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2"
+          onClick={() => onSelect(item as MarketListingForm)}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          className="mt-4 w-full bg-orange-600 text-white py-3 rounded-full font-bold text-base shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2 border-2 border-orange-600 hover:bg-white hover:text-orange-600"
         >
-          Book Now
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M17 8l4 4m0 0l-4 4m4-4H3"
-            />
-          </svg>
+          <ArrowDownTrayIcon className="w-5 h-5" />
+          {finalPrice === 0 ? 'Download Now' : 'Get Your Copy'}
         </motion.button>
       </div>
     </motion.div>
@@ -140,9 +129,8 @@ const containerVariants = {
   },
 };
 
-// --- Fallback Sample Data (unchanged) ---
+// --- Fallback Sample Data (Simplified for brevity, assuming the full data exists) ---
 const sampleEbooks = [
-  // ... (your existing sampleEbooks data) ...
   {
     id: "1",
     name: "Master Your Mindset: The Key to Success",
@@ -152,7 +140,7 @@ const sampleEbooks = [
     images: [
       "https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=800&q=80",
     ],
-    author: "Sample Author",
+    author: "Jackie W.",
     category: "Personal Development",
     badge: "Featured",
   },
@@ -165,7 +153,7 @@ const sampleEbooks = [
     images: [
       "https://images.unsplash.com/photo-1544717305-2782549b5136?w=800&q=80",
     ],
-    author: "Sample Author",
+    author: "FlourisHUb Team",
     category: "Finance",
     badge: "Hot Deal",
   },
@@ -174,17 +162,17 @@ const sampleEbooks = [
     name: "The Art of Effective Communication",
     description:
       "Unlock the secrets to persuasive speaking and deep, meaningful connections.",
-    finalPrice: 799,
+    finalPrice: 0,
     images: [
       "https://images.unsplash.com/photo-1522204502310-209ac7ad3e26?w=800&q=80",
     ],
-    author: "Sample Author",
+    author: "Jackie W.",
     category: "Leadership",
     badge: "New Arrival",
   },
 ] as MarketListingForm[];
 
-// --- Main Component (Updated for state and modal) ---
+// --- Main Component (Updated for Captivating Visuals) ---
 export default function FeaturedEbooks({
   listings,
   slug,
@@ -192,81 +180,112 @@ export default function FeaturedEbooks({
   listings: MarketListingForm[];
   slug: string;
 }) {
-  // Use local state to manage the selected item for the modal
   const [selected, setSelected] = useState<MarketListingForm | null>(null);
 
-  // Use props data, falling back to sample data if props are empty
   const currentListings =
     listings && listings.length > 0 ? listings : sampleEbooks;
 
   return (
-    <section className="bg-gray-50 dark:bg-gray-950 py-16 sm:py-24">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Heading (unchanged) */}
-        <motion.h2
-          className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 dark:text-gray-50 text-center mb-16 relative z-10"
-          initial={{ opacity: 0, y: -30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.7, ease: "easeOut" }}
-        >
-          Explore Our{" "}
-          <span className="text-orange-600 dark:text-orange-400">
-            Featured
-          </span>{" "}
-          E-Books
-          <span className="block w-32 h-1 bg-orange-500 mx-auto mt-4 rounded-full" />
-        </motion.h2>
+    <section className="bg-gradient-to-br from-orange-50 via-white to-gray-50 py-20 sm:py-32 relative overflow-hidden">
+      {/* Decorative Element: Swirl/Circle background graphic */}
+      <div className="absolute top-0 left-0 w-full h-full bg-contain bg-no-repeat opacity-5" style={{ backgroundImage: "url('/img/swirl.svg')" }}></div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        {/* Section Header: More engaging and direct */}
+        <div className="text-center mb-16 sm:mb-20">
+          <motion.span
+            className="text-lg font-semibold text-orange-700 uppercase tracking-wider mb-3 block"
+            initial={{ opacity: 0, y: -10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+          >
+            The FlourisHUb Library
+          </motion.span>
+          <motion.h2
+            className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 leading-tight"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.7, delay: 0.1 }}
+          >
+            Unlock Your Potential with Our{" "}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-red-500">
+              Bestselling E-Books
+            </span>
+          </motion.h2>
+        </div>
 
         {/* Listings Grid */}
         <motion.div
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10"
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true }}
         >
-          {currentListings.map((item) => (
+          {currentListings.slice(0, 3).map((item) => ( // Limiting to 3 for featured look
             <EbookCard
               key={item.id}
-              item={item} // Pass the full item
+              item={item}
               slug={slug}
-              onSelect={setSelected} // Pass the state setter function
+              onSelect={setSelected}
             />
           ))}
         </motion.div>
+
+        {/* View All CTA */}
+        <motion.div
+          className="text-center mt-16"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.7, delay: 0.3 }}
+        >
+          <Link href={`/site/${slug}/market`} passHref>
+            <motion.span
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="inline-flex items-center px-8 py-3 bg-white text-orange-600 border-2 border-orange-600 rounded-full font-bold shadow-lg hover:bg-orange-600 hover:text-white transition-all duration-300 cursor-pointer"
+            >
+              View All Products & Resources
+              <BookOpenIcon className="w-5 h-5 ml-2" />
+            </motion.span>
+          </Link>
+        </motion.div>
       </div>
 
-      {/* Booking Modal (Copied and adapted from ServicesSection) */}
+      {/* Booking Modal (Re-styled for E-book Purchase) */}
       {selected && (
         <motion.div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 lg:p-8"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
         >
           <div
-            className="fixed inset-0 bg-gray-900 bg-opacity-70"
+            className="fixed inset-0 bg-gray-900 bg-opacity-80 backdrop-blur-sm"
             onClick={() => setSelected(null)}
           />
 
           <motion.div
             className="relative bg-white rounded-3xl max-w-4xl w-full mx-auto z-50 shadow-2xl p-6 sm:p-8 lg:p-10 transform"
-            initial={{ scale: 0.9, y: 20 }}
+            initial={{ scale: 0.9, y: 50 }}
             animate={{ scale: 1, y: 0 }}
-            exit={{ scale: 0.9, y: 20 }}
-            transition={{ duration: 0.3 }}
+            exit={{ scale: 0.9, y: 50 }}
+            transition={{ type: "spring", stiffness: 200, damping: 25 }}
           >
             <button
-              className="absolute top-4 right-4 text-gray-500 hover:text-gray-800 transition-colors z-50"
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-900 transition-colors z-50 p-1 bg-white rounded-full shadow-md"
               onClick={() => setSelected(null)}
               aria-label="Close"
             >
-              <XMarkIcon className="w-7 h-7" />
+              <XMarkIcon className="w-6 h-6" />
             </button>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="relative w-full h-[300px] md:h-auto rounded-xl overflow-hidden shadow-lg">
+            <div className="grid grid-cols-1 md:grid-cols-[1fr_2fr] gap-8 items-center">
+              {/* Ebook Cover Side */}
+              <div className="relative w-full aspect-[3/4] rounded-xl overflow-hidden shadow-2xl border-4 border-gray-100 mx-auto max-w-[200px] md:max-w-none">
                 <Image
                   src={
                     selected.images?.[0] ||
@@ -277,43 +296,32 @@ export default function FeaturedEbooks({
                   fill
                   className="object-cover"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-gray-900/40 via-transparent to-transparent"></div>
               </div>
-              <div className="space-y-6 flex flex-col justify-between">
+
+              {/* Purchase/Booking Form Side */}
+              <div className="space-y-6">
                 <div>
-                  <h2 className="text-3xl font-bold text-gray-900 leading-tight">
-                    {selected.name}
+                  <h2 className="text-3xl font-extrabold text-gray-900 leading-tight">
+                    Confirm Your Purchase
                   </h2>
-                  <p className="mt-2 text-md text-gray-700 leading-relaxed">
-                    {selected.description || "No detailed description available."}
+                  <p className="mt-2 text-md text-gray-600">
+                    You're one step closer to accessing: **{selected.name}**
                   </p>
                 </div>
-                <div className="space-y-4">
-                  <div className="flex items-center gap-6 text-lg">
-                    <p className="font-semibold text-gray-800">
-                      Price:{" "}
-                      <span className="text-orange-600 text-xl font-bold">
-                        KES {(selected.finalPrice || 0).toFixed(2)}
-                      </span>
-                    </p>
-                    <span className="inline-flex items-center gap-1.5 text-green-600 font-medium">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                        className="w-5 h-5"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      Available
-                    </span>
-                  </div>
-                  <BookingForm service={selected} />
+                
+                <div className="p-4 bg-orange-50 rounded-lg flex justify-between items-center">
+                  <span className="font-semibold text-gray-800">Total Price:</span>
+                  <span className="text-orange-700 text-3xl font-extrabold">
+                    {selected.finalPrice === 0 ? 'FREE' : selected.finalPrice?.toLocaleString("en-KE", {
+                        style: "currency",
+                        currency: "KES",
+                        minimumFractionDigits: 0
+                      })}
+                  </span>
                 </div>
+
+                {/* Placeholder for Payment/Booking Form */}
+                <BookingForm service={selected} />
               </div>
             </div>
           </motion.div>

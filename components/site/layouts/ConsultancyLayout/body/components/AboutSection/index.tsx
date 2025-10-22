@@ -1,16 +1,51 @@
 'use client';
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import React, { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
-import { ArrowRightIcon } from "@heroicons/react/24/outline";
+import { ArrowRightIcon, AcademicCapIcon, HeartIcon, GlobeAltIcon, UserGroupIcon } from "@heroicons/react/24/outline"; // Added new icons
 import { useStoreContext } from "@/contexts/StoreContext";
+
+// --- 💡 Assumed Utility (Added for dynamic color logic) ---
+const getLightTint = (hex: string) => {
+    // Simple logic: If hex is e.g. #F97316, we return a very light version
+    return hex + '1A'; // Adds 10% opacity, a simple way to get a tint
+};
+// ----------------------------------------------------
+
 
 // Image Loader
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
-// Auto-advance delay
+// Auto-advance delay (Not needed in this static section, but kept for context)
 const autoAdvanceDelay = 9000;
+
+// Component for the Founder's Story (New visual element)
+const CoachStoryCard = ({ name, description, primaryColor }: { name: string; description: string; primaryColor: string }) => {
+    const founderName = description.split('Founded by ')[1]?.split(',')[0] || name;
+
+    return (
+        <motion.div
+            className="p-6 md:p-8 bg-white rounded-3xl shadow-2xl relative z-20 w-full transform -translate-y-1/2 lg:translate-x-1/4"
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            whileInView={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
+            viewport={{ once: true }}
+            style={{ borderTop: `6px solid ${primaryColor}` }}
+        >
+            <p className="text-xl italic text-gray-800 mb-4">
+                "{description.replace(/Founded by.*FlourisHUb is/, 'I created FlourisHUb as')} a nurturing space for all beautiful souls committed to the art of human flourishing."
+            </p>
+            <div className="flex items-center">
+                <AcademicCapIcon className="w-6 h-6 mr-3" style={{ color: primaryColor }} />
+                <p className="font-bold text-gray-900">
+                    — {founderName} <span className="text-sm font-normal text-gray-500"> | Founder of {name}</span>
+                </p>
+            </div>
+        </motion.div>
+    );
+};
+
 
 const AboutSection: React.FC = () => {
   const { storeFormData } = useStoreContext();
@@ -23,155 +58,144 @@ const AboutSection: React.FC = () => {
     themeSettings = { primaryColor: "#F97316", secondaryColor: "#FB923C" },
     heroSlides = [],
     bannerUrl,
-  } = storeFormData || {};
+  } : any = storeFormData || {}; // Added : any to resolve potential TS issues
 
-  const imgSrc =
-    heroSlides?.[0]?.productImageUrl ||
-    heroSlides?.[0]?.imageUrl ||
-    bannerUrl ||
-    "/coach-about.jpg";
+  const imgSrc = useMemo(
+    () => heroSlides?.[0]?.productImageUrl || heroSlides?.[0]?.imageUrl || bannerUrl || "/coach-about.jpg",
+    [heroSlides, bannerUrl]
+  );
 
   const primaryColor = themeSettings?.primaryColor || "#F97316";
   const secondaryColor = themeSettings?.secondaryColor || "#FB923C";
 
-  const [current, setCurrent] = useState(0);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+    // Values/Highlights data
+    const highlights = useMemo(() => ([
+        {
+            icon: GlobeAltIcon,
+            title: "Vision: Global Flourishing",
+            description: "To create a hub that enables human flourishing across communities and nations.",
+        },
+        {
+            icon: HeartIcon,
+            title: "Mission: Nourish to Thrive",
+            description: "Dedicated to nourishing the soul to help every individual find their authentic path.",
+        },
+        {
+            icon: UserGroupIcon,
+            title: "Community Focus",
+            description: "Uplifting others through love and purpose to build a stronger, more connected world.",
+        },
+    ]), []);
 
-  const advanceSlide = useCallback(
-    (direction: "next" | "prev") => {
-      setCurrent((prev) =>
-        direction === "next" ? (prev + 1) % 3 : (prev - 1 + 3) % 3
-      );
-    },
-    []
-  );
-
-  useEffect(() => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(() => advanceSlide("next"), autoAdvanceDelay);
-    return () => clearTimeout(timeoutRef.current!);
-  }, [current, advanceSlide]);
+    // NOTE: Removed `current` state and `useEffect` for auto-advance as this is a static About section.
 
   return (
     <section
       id="about"
-      className="relative py-28 bg-gradient-to-br from-orange-50 via-white to-gray-50 overflow-hidden"
+      className="relative py-28 md:py-36 bg-gray-50 overflow-hidden"
     >
-      {/* Decorative floating shapes */}
-      <div className="absolute inset-0">
-        <div
-          className="absolute top-20 left-10 w-40 h-40 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-blob"
-          style={{ backgroundColor: primaryColor }}
-        ></div>
-        <div
-          className="absolute bottom-16 right-16 w-56 h-56 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-blob animation-delay-2000"
-          style={{ backgroundColor: secondaryColor }}
-        ></div>
-      </div>
+      {/* Background shape for visual appeal */}
+      <div 
+        className="absolute top-0 right-0 w-3/4 h-full bg-white transform skew-x-[-12deg] origin-top-right shadow-inner"
+        style={{ backgroundColor: getLightTint(primaryColor), opacity: 0.1 }}
+      ></div>
 
-      <div className="container relative z-10 mx-auto px-6 flex flex-col lg:flex-row items-center gap-16">
-        {/* Left: Image */}
-        <motion.div
-          className="lg:w-1/2 relative"
-          initial={{ opacity: 0, x: -50 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          viewport={{ once: true }}
-        >
-          <div className="relative w-full h-[480px] rounded-3xl overflow-hidden shadow-2xl border-[6px] border-white transform hover:scale-[1.02] transition-transform duration-500">
-            <Image
-              src={imgSrc}
-              alt={`${name} - inspiring human flourishing`}
-              layout="fill"
-              objectFit="cover"
-              loader={loader}
-              className="object-cover"
-            />
-            {/* Gradient overlay */}
-            <div
-              className="absolute inset-0 bg-gradient-to-t from-orange-500/20 via-transparent to-transparent"
-            ></div>
-          </div>
-          {/* Floating bubble */}
-          <div
-            className="absolute -bottom-10 -left-8 w-32 h-32 rounded-full mix-blend-multiply filter blur-2xl opacity-40 animate-pulse"
-            style={{ backgroundColor: primaryColor }}
-          ></div>
-        </motion.div>
-
-        {/* Right: Text */}
-        <motion.div
-          className="lg:w-1/2 text-center lg:text-left"
-          initial={{ opacity: 0, x: 50 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
-          viewport={{ once: true }}
-        >
-          <span
-            className="uppercase font-semibold tracking-wide text-sm mb-3 inline-block"
-            style={{ color: primaryColor }}
-          >
-            About {name}
-          </span>
-
-          <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6 leading-tight">
-            {tagline?.split("—")[0]} —{" "}
-            <span
-              className="bg-clip-text text-transparent bg-gradient-to-r"
-              style={{ backgroundImage: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})` }}
+      <div className="container relative z-10 mx-auto px-6 max-w-7xl">
+        {/* Main Grid: Asymmetric Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 lg:gap-20 items-start">
+            {/* Left: Image (Col Span 5) */}
+            <motion.div
+              className="lg:col-span-5 relative w-full pt-[120%] lg:pt-[100%]" // Ratio container
+              initial={{ opacity: 0, x: -50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              viewport={{ once: true }}
             >
-              {tagline?.split("—")[1] || "Flourishing Together"}
-            </span>
-          </h2>
+                {/* Decorative Accent Frame */}
+                <div 
+                    className="absolute top-0 left-0 w-[95%] h-full rounded-3xl transform translate-x-3 translate-y-3 -rotate-1"
+                    style={{ backgroundColor: primaryColor, opacity: 0.1 }}
+                ></div>
 
-          <p className="text-lg text-gray-700 mb-4 leading-relaxed">{description}</p>
+                <div className="absolute top-0 left-0 w-full h-full rounded-3xl overflow-hidden shadow-2xl border-[6px] border-white z-10">
+                  <Image
+                    src={imgSrc}
+                    alt={`${name} - inspiring human flourishing`}
+                    layout="fill"
+                    objectFit="cover"
+                    loader={loader}
+                    className="object-cover"
+                  />
+                </div>
+            </motion.div>
 
-          <p className="text-lg text-gray-700 mb-6 leading-relaxed">
-            Our mission is simple yet transformative — to create a global hub that uplifts individuals, families,
-            and communities toward authentic growth, balance, and joy. We believe that when one soul flourishes,
-            the ripple of transformation touches families, communities, and nations.
-          </p>
+            {/* Right: Text & Highlights (Col Span 7) */}
+            <motion.div
+              className="lg:col-span-7 pt-12 text-center lg:text-left"
+              initial={{ opacity: 0, x: 50 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+              viewport={{ once: true }}
+            >
+              <span
+                className="uppercase font-semibold tracking-wide text-sm mb-3 inline-block"
+                style={{ color: primaryColor }}
+              >
+                About {name}
+              </span>
 
-          {/* Highlights */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8 text-left">
-            {[
-              {
-                title: "Vision – To create a hub that enables human flourishing",
-              },
-              {
-                title: "Mission – Nourishing to flourish",
-              },
-              {
-                title: "Values – A Flourishing Soul. A Flourishing Family. A Flourishing Nation.",
-              },
-              {
-                title: "Community – Celebrating and uplifting others through love and purpose",
-              },
-            ].map((item, idx) => (
-              <div key={idx} className="flex items-center space-x-3">
+              <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6 leading-tight">
+                {tagline?.split("—")[0]} —{" "}
                 <span
-                  className="w-3 h-3 rounded-full"
-                  style={{ backgroundColor: primaryColor }}
-                ></span>
-                <p className="text-gray-800 font-medium">{item.title}</p>
-              </div>
-            ))}
-          </div>
+                  className="bg-clip-text text-transparent bg-gradient-to-r"
+                  style={{ backgroundImage: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})` }}
+                >
+                  {tagline?.split("—")[1] || "Flourishing Together"}
+                </span>
+              </h2>
 
-          {/* CTA */}
-          <a
-            href="#community"
-            className="inline-flex items-center px-8 py-4 font-semibold rounded-full shadow-lg hover:shadow-xl transition-all duration-300 text-lg"
-            style={{
-              backgroundColor: primaryColor,
-              color: "white",
-            }}
-          >
-            Join the {name} Movement
-            <ArrowRightIcon className="w-5 h-5 ml-2" />
-          </a>
-        </motion.div>
+              <p className="text-lg text-gray-700 mb-8 leading-relaxed">
+                Our mission is simple yet transformative — to create a global hub that uplifts individuals, families,
+                and communities toward authentic growth, balance, and joy. We believe that when one soul flourishes,
+                the ripple of transformation touches families, communities, and nations.
+              </p>
+
+              {/* Elevated Highlights Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12 text-left">
+                {highlights.map((item, idx) => (
+                  <div key={idx} className="p-4 bg-white rounded-xl shadow-md border-t-2" style={{ borderColor: primaryColor }}>
+                    <item.icon className="w-6 h-6 mb-2" style={{ color: primaryColor }} />
+                    <h3 className="font-bold text-gray-900 text-sm mb-1">{item.title.split(":")[0]}</h3>
+                    <p className="text-gray-600 text-xs leading-snug">{item.description}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* CTA */}
+              <a
+                href="#community"
+                className="inline-flex items-center px-8 py-3 font-semibold rounded-full shadow-lg transition-all duration-300 text-base border-2"
+                style={{
+                  backgroundColor: primaryColor,
+                  color: "white",
+                  borderColor: primaryColor
+                }}
+              >
+                Join the {name} Movement
+                <ArrowRightIcon className="w-4 h-4 ml-2" />
+              </a>
+            </motion.div>
+        </div>
       </div>
+        
+        {/* Founder Story Card positioned to overlap the main layout */}
+        <div className="container relative z-30 mx-auto pt-2 px-6 max-w-7xl mt-[-100px] lg:mt-[-50px]">
+            <CoachStoryCard 
+                name={name} 
+                description={description} 
+                primaryColor={primaryColor} 
+            />
+        </div>
     </section>
   );
 };

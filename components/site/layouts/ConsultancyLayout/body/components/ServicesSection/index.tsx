@@ -5,8 +5,28 @@ import { motion } from "framer-motion";
 import { ArrowRightIcon, SparklesIcon, CalendarIcon, BriefcaseIcon, UsersIcon, LightBulbIcon, AcademicCapIcon, BoltIcon } from "@heroicons/react/24/outline";
 // --- Data Integration Imports ---
 import { useStoreContext } from '@/contexts/StoreContext';
-import { StoreForm, IStoreCategory, ISubcategory } from '@/types/typings'; 
-import clsx from "clsx"; // Added for icon styling
+// NOTE: Assuming StoreForm, IStoreCategory, ISubcategory are defined in your project
+// import { StoreForm, IStoreCategory, ISubcategory } from '@/types/typings'; 
+import clsx from "clsx"; 
+
+// --- TYPE DEFINITIONS (Re-defined for completeness) ---
+type StoreForm = {
+    name?: string;
+    description?: string;
+    themeSettings?: { primaryColor?: string };
+    StoreCategory?: IStoreCategory[];
+};
+interface ISubcategory { name: string; id: string; }
+interface IStoreCategory { displayName: string; id: string; subcategories?: ISubcategory[]; }
+type Offering = {
+    title: string;
+    desc: string;
+    id?: string;
+    iconComponent: React.ElementType;
+    iconColor: string;
+};
+// ----------------------------------------------------
+
 
 // --- Dynamic Icon Map for Visual Diversity ---
 const dynamicHeroIconMap: Record<string, React.ElementType> = {
@@ -17,15 +37,6 @@ const dynamicHeroIconMap: Record<string, React.ElementType> = {
     'Mindset & Resilience': AcademicCapIcon,
     'Strategic Planning': CalendarIcon,
     'Service': SparklesIcon,
-};
-
-// Define the type for the offering in this component
-type Offering = {
-    title: string;
-    desc: string;
-    id?: string;
-    iconComponent: React.ElementType; // Use component type for Heroicons
-    iconColor: string; // Dynamic color for visual variation
 };
 
 // Fallback data for a standalone preview
@@ -52,6 +63,8 @@ const ServicesSection: React.FC = () => {
     
     // --- Data Integration START (Simplified) ---
     const { storeFormData } = useStoreContext() as { storeFormData: StoreForm };
+    const primaryColor = storeFormData?.themeSettings?.primaryColor || "#F97316"; // Primary color from theme
+
     const {
         name,
         description,
@@ -61,6 +74,7 @@ const ServicesSection: React.FC = () => {
     const hasCategories = Array.isArray(StoreCategory) && StoreCategory.length > 0;
     let offeringsToShow: Offering[] = [];
 
+    // NOTE: Data mapping logic remains the same for correctness
     if (hasCategories && StoreCategory.length < 6) {
         // Use Subcategories
         const enrichedSubcategories = (StoreCategory as IStoreCategory[]).flatMap(cat => 
@@ -76,9 +90,8 @@ const ServicesSection: React.FC = () => {
             title: subcat.name || 'Service',
             desc: `Specialized solutions for ${subcat.parentName || 'Coaching'}: ${subcat.name}.`, 
             id: subcat.id,
-            // Use dynamic Heroicons based on category name or default
             iconComponent: dynamicHeroIconMap[subcat.name] || dynamicHeroIconMap[subcat.parentName || 'Service'] || SparklesIcon, 
-            iconColor: iconColors[index % iconColors.length], // Cycle colors
+            iconColor: iconColors[index % iconColors.length],
         }));
 
     } else if (hasCategories) {
@@ -88,7 +101,7 @@ const ServicesSection: React.FC = () => {
             desc: `Explore our specialized ${cat.displayName} solutions.`,
             id: cat.id,
             iconComponent: dynamicHeroIconMap[cat.displayName || 'Service'] || SparklesIcon,
-            iconColor: iconColors[index % iconColors.length], // Cycle colors
+            iconColor: iconColors[index % iconColors.length],
         }));
     } else {
         // Fallback if no categories exist
@@ -96,33 +109,59 @@ const ServicesSection: React.FC = () => {
     }
     // --- Data Integration END ---
 
-    // Using the actual length of the dynamic offerings for the grid
-    const gridOfferings = offeringsToShow.slice(0, 6); // Limit to 6 for the 3-column grid layout
+    const gridOfferings = offeringsToShow.slice(0, 6);
 
     return (
-        <section id="services" className="relative py-28 bg-gradient-to-br from-orange-50 via-white to-orange-100 overflow-hidden">
-            {/* Subtle Background Accents */}
-            <div className="absolute inset-0 opacity-40">
-                <div className="absolute top-20 -left-10 w-72 h-72 bg-orange-200 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-pulse-slow"></div>
-                <div className="absolute bottom-20 right-0 w-96 h-96 bg-orange-300 rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-pulse-slow delay-500"></div>
+        <section id="services" className="relative py-28 md:py-36 bg-gray-50 overflow-hidden">
+            {/* Background Accent Grid (Visually richer background) */}
+            <div className="absolute inset-0 z-0 opacity-10">
+                <svg className="h-full w-full" fill="none">
+                    <defs>
+                        <pattern id="grid-pattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+                            <path d="M19 0H0V19" stroke="#E5E7EB" strokeWidth="0.5" />
+                        </pattern>
+                    </defs>
+                    <rect width="100%" height="100%" fill="url(#grid-pattern)" />
+                </svg>
             </div>
+            {/* Top right gradient blob */}
+            <div 
+                className="absolute top-0 right-0 w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse-slow"
+                style={{ backgroundColor: primaryColor }}
+            ></div>
 
-            <div className="relative container mx-auto px-6">
+
+            <div className="relative container mx-auto px-6 max-w-7xl z-10">
                 {/* Section Header */}
                 <div className="text-center mb-20">
-                    <span className="text-lg font-semibold text-orange-700 uppercase tracking-wider mb-3 block">
+                    <span 
+                        className="text-lg font-semibold uppercase tracking-wider mb-3 block"
+                        style={{ color: primaryColor }}
+                    >
                         Our Expertise
                     </span>
-                    <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight">
-                        {name || 'Transformative Coaching'} <span className="text-orange-600">Solutions</span>
-                    </h2>
-                    <p className="mt-5 text-xl text-gray-700 max-w-3xl mx-auto">
+                    <motion.h2 
+                        className="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight"
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6 }}
+                        viewport={{ once: true }}
+                    >
+                        {name || 'Transformative Coaching'} <span style={{ color: primaryColor }}>Solutions</span>
+                    </motion.h2>
+                    <motion.p 
+                        className="mt-5 text-xl text-gray-700 max-w-3xl mx-auto"
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6, delay: 0.1 }}
+                        viewport={{ once: true }}
+                    >
                         {description || 'Experience the synergy of strategy, mindset, and purpose — designed to help you lead with clarity, confidence, and impact.'}
-                    </p>
+                    </motion.p>
                 </div>
 
                 {/* Services Grid with Visual Enhancements */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {gridOfferings.map((service, i) => {
                         const Icon = service.iconComponent;
                         return (
@@ -132,38 +171,72 @@ const ServicesSection: React.FC = () => {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true, amount: 0.3 }}
                                 transition={{ duration: 0.6, delay: i * 0.1 }}
-                                className="group relative p-8 rounded-3xl bg-white/90 backdrop-blur-sm border border-orange-100 shadow-xl hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 flex flex-col"
+                                className="group relative p-8 rounded-3xl bg-white shadow-xl border-t-4 border-white transition-all duration-500 hover:shadow-2xl hover:scale-[1.02] flex flex-col items-start"
+                                // Dynamic border-t-4 and a subtle hover gradient from the primary color
+                                style={{ 
+                                    borderTopColor: primaryColor,
+                                    // Subtle inner shadow on hover
+                                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)' 
+                                }}
                             >
-                                <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-orange-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                                {/* Hover Gradient Overlay for Polish */}
+                                <div 
+                                    className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                                    style={{ background: `radial-gradient(circle at 100% 0%, ${primaryColor}1A, transparent 70%)` }}
+                                ></div>
 
                                 <div className="relative z-10 flex-grow">
                                     {/* --- 🛑 VISUAL IMPROVEMENT: STYLED ICON CONTAINER 🛑 --- */}
                                     <div 
                                         className={clsx(
-                                            "mb-6 p-3 rounded-full inline-flex items-center justify-center ring-4 ring-offset-2 transition-all duration-300",
-                                            service.iconColor.replace('text', 'bg').replace('-600', '-100'), // Background color
-                                            service.iconColor.replace('text', 'ring').replace('-600', '-500'), // Ring color
+                                            "mb-6 p-4 rounded-xl inline-flex items-center justify-center ring-4 ring-offset-2 transition-all duration-500 group-hover:ring-offset-4",
+                                            service.iconColor.replace('text', 'bg').replace('-600', '-100'), // Background color (e.g., bg-orange-100)
+                                            service.iconColor.replace('text', 'ring').replace('-600', '-500'), // Ring color (e.g., ring-orange-500)
                                         )}
                                     >
-                                        <Icon className={clsx("w-8 h-8", service.iconColor)} aria-hidden="true" />
+                                        <Icon className={clsx("w-7 h-7", service.iconColor)} aria-hidden="true" />
                                     </div>
                                     {/* -------------------------------------------------------- */}
 
                                     <h3 className="text-2xl font-bold text-gray-900 mb-3">{service.title}</h3>
-                                    <p className="text-gray-700 leading-relaxed mb-6">{service.desc}</p>
+                                    <p className="text-gray-600 leading-relaxed mb-6">{service.desc}</p>
                                 </div>
 
                                 <a
                                     href={`#contact`} 
-                                    className="relative z-10 inline-flex items-center text-orange-600 font-semibold hover:text-orange-800 transition-all group-hover:translate-x-1"
+                                    className="relative z-10 inline-flex items-center font-semibold transition-all group-hover:translate-x-1"
+                                    style={{ color: primaryColor }}
                                 >
-                                    Start Your Journey
+                                    Explore Solution
                                     <ArrowRightIcon className="w-5 h-5 ml-2 transition-transform duration-300" />
                                 </a>
                             </motion.div>
                         );
                     })}
                 </div>
+                
+                {/* Final CTA outside the grid */}
+                <motion.div 
+                    className="mt-20 text-center"
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.4 }}
+                    viewport={{ once: true }}
+                >
+                    <p className="text-lg text-gray-700 mb-6">Ready to take the next step towards your goals?</p>
+                    <a
+                        href="#contact"
+                        className="inline-flex items-center px-10 py-4 font-bold rounded-full text-lg shadow-xl hover:shadow-2xl transition-all duration-300"
+                        style={{
+                            backgroundColor: primaryColor,
+                            color: "white",
+                            border: `2px solid ${primaryColor}`
+                        }}
+                    >
+                        Book a Discovery Call
+                        <CalendarIcon className="w-5 h-5 ml-2" />
+                    </a>
+                </motion.div>
             </div>
         </section>
     );

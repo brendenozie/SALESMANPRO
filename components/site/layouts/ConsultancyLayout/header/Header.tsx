@@ -304,7 +304,7 @@ const DynamicLogo: React.FC<{ formData: StoreForm; isScrolled: boolean }> = ({
               .substring(0, 4)
               .toUpperCase()}`;
           }}
-          className={`object-contain transition-all duration-300 ${
+          className={`object-contain transition-all duration-300 rounded-full ${
             isScrolled ? "h-8" : "h-10"
           }`}
         />
@@ -328,13 +328,13 @@ const DynamicLogo: React.FC<{ formData: StoreForm; isScrolled: boolean }> = ({
           <span className="text-orange-600">{displayName.split(" ")[0]}</span>{" "}
           <span className="text-gray-900">{displayName.split(" ")[1] || ""}</span>
         </span>
-        <span
+        {/* <span
           className={`text-sm font-medium text-gray-500 ${
             isScrolled ? "opacity-90" : "opacity-70"
           }`}
         >
           Consultant & Coach
-        </span>
+        </span> */}
       </div>
     </a>
   );

@@ -1,19 +1,17 @@
-"use client";
+'use client';
 
 import React, { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
-import { ChevronLeftIcon, ChevronRightIcon, StarIcon } from "@heroicons/react/24/solid";
+import { ChevronLeftIcon, ChevronRightIcon, StarIcon, ChatBubbleBottomCenterTextIcon } from "@heroicons/react/24/solid";
 import { Testimonial } from "@/types/typings";
 
-const customLoader = ({ src, width, quality }: any) => {
-  return `${src}?w=${width}&q=${quality || 75}`;
-};
-
-// interface Testimonial {
+// Assuming Testimonial is defined in typings as:
+// export interface Testimonial {
+//   id: string;
 //   quote: string;
-//   author: string;
-//   role?: string;
+//   authorName: string; // Changed from 'author' to match usage
+//   authorTitle?: string; // Changed from 'role' to match usage
 //   avatarUrl?: string;
 //   rating?: number;
 // }
@@ -22,12 +20,54 @@ interface Props {
   testimonials: Testimonial[];
 }
 
-// Animation variants for carousel transitions
+const customLoader = ({ src, width, quality }: any) => {
+  // Ensure placeholder paths are handled gracefully
+  if (src.startsWith('/')) return src; 
+  return `${src}?w=${width}&q=${quality || 75}`;
+};
+
+// --- Sample Data (High-quality fallback) ---
+const sampleTestimonials: Testimonial[] = [
+  {
+    id: "t1",
+    quote: "Working with the team was a breakthrough moment. I gained the clarity and confidence to pitch my business idea, and it was funded! Truly transformative coaching.",
+    authorName: "Alexandria J.",
+    authorTitle: "Founder & CEO, Startup Inc.",
+    avatarUrl: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&h=100&fit=crop",
+    rating: 5,
+  },
+  {
+    id: "t2",
+    quote: "The strategies I learned here fundamentally changed my time management and productivity. I now achieve more with less stress. Highly recommend!",
+    authorName: "Marcus P.",
+    authorTitle: "Senior Product Manager",
+    avatarUrl: "https://images.unsplash.com/photo-1507003211169-0a6dd7228f7d?w=100&h=100&fit=crop",
+    rating: 5,
+  },
+  {
+    id: "t3",
+    quote: "The personalized approach felt deeply intuitive. It wasn't just advice; it was a partnership that helped me overcome my greatest professional hurdle yet.",
+    authorName: "Dr. Elena V.",
+    authorTitle: "Lead Research Scientist",
+    avatarUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29329?w=100&h=100&fit=crop",
+    rating: 4,
+  },
+  {
+    id: "t4",
+    quote: "If you're stuck in a rut, this is the guidance you need. I found my purpose and a clear pathway forward.",
+    authorName: "Chris R.",
+    authorTitle: "Freelance Creative Director",
+    avatarUrl: "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?w=100&h=100&fit=crop",
+    rating: 5,
+  },
+];
+
+// Animation variants for carousel transitions (unchanged, they are perfect)
 const itemVariants = {
   enter: (direction: number) => ({
     x: direction > 0 ? 300 : -300,
     opacity: 0,
-    scale: 0.8,
+    scale: 0.9, // Slightly less aggressive scale change
   }),
   center: {
     x: 0,
@@ -43,7 +83,7 @@ const itemVariants = {
   exit: (direction: number) => ({
     x: direction < 0 ? 300 : -300,
     opacity: 0,
-    scale: 0.8,
+    scale: 0.9, // Slightly less aggressive scale change
     transition: {
       type: "spring",
       stiffness: 100,
@@ -53,145 +93,76 @@ const itemVariants = {
   }),
 };
 
-export default function TestimonialsCarouselSection({ testimonials }: Props) {
-  const [current, setCurrent] = useState(0);
-  const [direction, setDirection] = useState(0);
 
-  if (!testimonials || testimonials.length === 0) {
+// --- Main Component ---
+export default function TestimonialsCarouselSection({ testimonials }: Props) {
+  // Use provided data or sample data
+  const data = (testimonials && testimonials.length > 0) ? testimonials : sampleTestimonials;
+    
+  // Early return if data is genuinely empty
+  if (data.length === 0) {
     return (
-      <section className="py-16 text-center">
-        <p className="text-lg text-gray-600 dark:text-gray-300">
-          No testimonials available at the moment. Be the first to share your experience!
+      <section className="py-20 text-center bg-gray-50">
+        <p className="text-xl text-gray-600">
+          No client stories to show yet. Be the first to share your **success story**!
         </p>
       </section>
     );
   }
 
+  const [current, setCurrent] = useState(0);
+  const [direction, setDirection] = useState(0);
+
   // Auto-rotate every 7 seconds
   useEffect(() => {
     const timer = setInterval(() => {
       setDirection(1);
-      setCurrent((prev) => (prev + 1) % testimonials.length);
+      setCurrent((prev) => (prev + 1) % data.length);
     }, 7000);
     return () => clearInterval(timer);
-  }, [testimonials.length]);
+  }, [data.length]);
 
   const paginate = (newDirection: number) => {
     setDirection(newDirection);
     setCurrent((prev) => {
-      const newIndex = (prev + newDirection + testimonials.length) % testimonials.length;
-      return newIndex;
+      // Calculate new index correctly
+      return (prev + newDirection + data.length) % data.length;
     });
   };
 
   return (
-    <>
-    {/* 5. Testimonials Section */}
-<section
-  id="testimonials"
-  className="relative py-28 bg-gradient-to-br from-white via-orange-50/50 to-orange-100/30 overflow-hidden"
->
-  {/* Decorative Glow Elements */}
-  <div className="absolute inset-0 pointer-events-none opacity-40">
-    <div className="absolute top-10 left-0 w-72 h-72 bg-orange-200 rounded-full mix-blend-multiply filter blur-3xl animate-pulse-slow"></div>
-    <div className="absolute bottom-10 right-0 w-80 h-80 bg-orange-300 rounded-full mix-blend-multiply filter blur-3xl animate-pulse-slow"></div>
-  </div>
+    <section 
+      id="testimonials"
+      className="relative py-20 md:py-32 bg-gradient-to-br from-white via-orange-50/50 to-orange-100/30 overflow-hidden"
+    >
+      {/* Background Flourish (Intuitive Visual Appeal) */}
+      <div className="absolute inset-0 pointer-events-none opacity-30">
+        <div className="absolute top-1/4 left-0 w-96 h-96 bg-yellow-200 rounded-full mix-blend-multiply filter blur-3xl animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute bottom-1/4 right-0 w-96 h-96 bg-orange-300 rounded-full mix-blend-multiply filter blur-3xl animate-pulse-slow" style={{ animationDelay: '4s' }}></div>
+      </div>
 
-  <div className="relative container mx-auto px-6">
-    {/* Header */}
-    <div className="text-center mb-20">
-      <span className="text-lg font-semibold text-orange-700 uppercase tracking-wider mb-3 block">
-        Voices of Success
-      </span>
-      <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight">
-        What My Clients <span className="text-orange-600">Are Saying</span>
-      </h2>
-      <p className="mt-5 text-xl text-gray-700 max-w-3xl mx-auto">
-        Authentic stories from professionals and teams who transformed their performance,
-        confidence, and clarity through our sessions.
-      </p>
-    </div>
-
-    {/* Testimonials Grid */}
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-      {[
-        {
-          quote:
-            "Alex’s coaching completely reshaped how I lead. I found clarity, confidence, and courage to navigate major change with impact.",
-          name: "Sarah Chen",
-          title: "CEO, Tech Innovations",
-          image: "/client-sarah.jpg",
-        },
-        {
-          quote:
-            "I was uncertain about my career direction, but Alex guided me with practical strategies and emotional insight. I now thrive in my dream role!",
-          name: "Michael Rodriguez",
-          title: "Product Manager, Global Solutions",
-          image: "/client-michael.jpg",
-        },
-        {
-          quote:
-            "Our team’s communication and synergy transformed after just two workshops. We’re more united, creative, and productive than ever.",
-          name: "Emily White",
-          title: "Head of HR, Creative Agency",
-          image: "/client-emily.jpg",
-        },
-      ].map((t, i) => (
-        <div
-          key={i}
-          className="group relative p-8 rounded-3xl bg-white/80 backdrop-blur-md border border-orange-100 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2"
-        >
-          {/* Quotation Mark Accent */}
-          <div className="absolute top-4 right-6 text-orange-300 text-6xl font-serif opacity-20 group-hover:opacity-40 transition-opacity">
-            “
-          </div>
-
-          {/* Client Quote */}
-          <p className="text-lg text-gray-800 leading-relaxed mb-8 relative z-10 italic">
-            “{t.quote}”
-          </p>
-
-          {/* Client Info */}
-          <div className="flex items-center gap-4">
-            <img
-              src={t.image}
-              alt={t.name}
-              className="w-14 h-14 rounded-full object-cover shadow-md border border-orange-100"
-            />
-            <div>
-              <h4 className="font-bold text-gray-900 text-lg">{t.name}</h4>
-              <span className="text-gray-500 text-sm">{t.title}</span>
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  </div>
-</section>
-
-    <section className="py-16 px-4 md:px-8 lg:px-16 bg-gradient-to-br from-purple-50 to-blue-50 dark:from-gray-900 dark:to-gray-950 relative overflow-hidden">
-      {/* Background blobs */}
-      <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-purple-200 dark:bg-purple-800 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob" style={{ animationDelay: "-3s" }}></div>
-      <div className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-blue-200 dark:bg-blue-800 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob-reverse" style={{ animationDelay: "-5s" }}></div>
-
-      <div className="max-w-7xl mx-auto relative z-10">
-        {/* Section Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
+      <div className="relative container mx-auto px-6 max-w-7xl">
+        {/* Header */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="text-center mb-12"
+          className="text-center mb-16"
         >
-          <h2 className="text-4xl font-extrabold text-gray-900 dark:text-white leading-tight mb-3">
-            Hear From Our Community! 🌟
+          <span className="text-lg font-semibold text-orange-700 uppercase tracking-wider mb-3 block flex items-center justify-center gap-2">
+            <ChatBubbleBottomCenterTextIcon className="w-5 h-5" /> Voices of Transformation
+          </span>
+          <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight">
+            Real Clients, <span className="text-orange-600">Real Results</span>
           </h2>
-          <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-            Discover why our users love us. Real stories from real people.
+          <p className="mt-5 text-xl text-gray-700 max-w-3xl mx-auto">
+            Read inspiring stories from individuals and businesses that have achieved peak performance and clarity.
           </p>
         </motion.div>
 
-        <div className="relative max-w-2xl mx-auto h-[350px] md:h-[300px] flex items-center justify-center">
+        {/* Carousel Area */}
+        <div className="relative max-w-3xl mx-auto h-[400px] md:h-[350px] flex items-center justify-center">
           <AnimatePresence initial={false} custom={direction}>
             <motion.div
               key={current}
@@ -203,96 +174,100 @@ export default function TestimonialsCarouselSection({ testimonials }: Props) {
               drag="x"
               dragConstraints={{ left: 0, right: 0 }}
               dragElastic={1}
-              onDragEnd={(e: any, { offset, velocity }:any) => {
-                const swipePower = Math.abs(offset.x) * velocity.x;
-                if (swipePower < -10000) {
+              onDragEnd={(_e: any, { offset, velocity }:any) => {
+                const swipe = offset.x;
+                // Use swipe velocity and distance for intuitive drag
+                if (swipe < -100 || (swipe < -50 && velocity.x < -100)) {
                   paginate(1);
-                } else if (swipePower > 10000) {
+                } else if (swipe > 100 || (swipe > 50 && velocity.x > 100)) {
                   paginate(-1);
                 }
               }}
               className="absolute w-full px-4"
             >
-              <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 md:p-10 shadow-2xl border border-blue-100 dark:border-gray-700 transform hover:scale-[1.01] transition-transform duration-300 ease-out cursor-grab">
+              <div className="bg-white rounded-3xl p-8 md:p-12 shadow-xl border border-orange-200/50 transform transition-transform duration-300 ease-out cursor-grab active:cursor-grabbing hover:scale-[1.01]">
                 <div className="flex flex-col items-center text-center">
-                  {/* Avatar */}
-                  {testimonials[current].avatarUrl && (
-                    <motion.div
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.3 }}
-                      className="w-24 h-24 rounded-full overflow-hidden border-4 border-blue-500 dark:border-blue-400 shadow-md mb-6"
-                    >
-                      <Image
-                        src={testimonials[current].avatarUrl || 'placeholder.com'}
-                        alt={testimonials[current].authorName || 'author name'}
-                        width={96}
-                        height={96}
-                        loader={customLoader}
-                        className="object-cover transition-transform duration-300 group-hover:scale-105"
-                      />
-                    </motion.div>
-                  )}
+                  {/* Quotation Mark Accent */}
+                  <ChatBubbleBottomCenterTextIcon className="w-10 h-10 text-orange-400 mb-4 opacity-70" />
 
                   {/* Quote */}
-                  <p className="text-xl md:text-2xl italic text-gray-800 dark:text-gray-100 mb-6 font-serif leading-relaxed">
-                    &ldquo;{testimonials[current].quote}&rdquo;
+                  <p className="text-xl md:text-2xl italic text-gray-800 mb-6 font-serif leading-relaxed">
+                    &ldquo;{data[current].quote}&rdquo;
                   </p>
 
-                  {/* Rating */}
-                  {testimonials[current].rating && (
-                    <div className="flex justify-center mb-4">
+                  {/* Author Info Container */}
+                  <div className="flex flex-col items-center">
+                    {/* Avatar */}
+                    {data[current].avatarUrl && (
+                      <div
+                        className="w-16 h-16 rounded-full overflow-hidden border-4 border-orange-100 shadow-md mb-3"
+                      >
+                        <Image
+                          src={data[current].avatarUrl || '/placeholder.jpg'}
+                          alt={data[current].authorName || 'Client'}
+                          width={64}
+                          height={64}
+                          loader={customLoader}
+                          className="object-cover"
+                        />
+                      </div>
+                    )}
+                    
+                    {/* Author Name and Title */}
+                    <p className="font-bold text-orange-700 text-lg">
+                      {data[current].authorName}
+                    </p>
+                    {data[current].authorTitle && (
+                      <p className="text-sm text-gray-500 mt-0.5">
+                        {data[current].authorTitle}
+                      </p>
+                    )}
+                  </div>
+                  
+                  {/* Rating (Placed below author for better flow) */}
+                  {data[current].rating && (
+                    <div className="flex justify-center mt-4">
                       {Array.from({ length: 5 }).map((_, i) => (
                         <StarIcon
                           key={i}
-                          className={`w-6 h-6 ${
-                            i < (testimonials[current].rating ?? 0)
-                              ? "text-yellow-400"
-                              : "text-gray-300 dark:text-gray-600"
+                          className={`w-5 h-5 transition-colors duration-300 ${
+                            i < (data[current].rating ?? 0)
+                              ? "text-yellow-500"
+                              : "text-gray-300"
                           }`}
                         />
                       ))}
                     </div>
-                  )}
-
-                  {/* Author */}
-                  <p className="font-bold text-blue-700 dark:text-blue-400 text-lg">
-                    {testimonials[current].authorName}
-                  </p>
-                  {testimonials[current].authorTitle && (
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                      {testimonials[current].authorTitle}
-                    </p>
                   )}
                 </div>
               </div>
             </motion.div>
           </AnimatePresence>
 
-          {/* Navigation */}
+          {/* Navigation Buttons */}
           <motion.button
             onClick={() => paginate(-1)}
             aria-label="Previous testimonial"
-            className="absolute left-0 top-1/2 -translate-y-1/2 bg-white dark:bg-gray-700 p-3 rounded-full shadow-lg hover:bg-gray-100 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 z-20 opacity-80 hover:opacity-100 -ml-2 md:-ml-8"
+            className="absolute left-0 top-1/2 -translate-y-1/2 bg-white p-3 rounded-full shadow-xl border border-orange-100/50 hover:bg-orange-50 focus:outline-none focus:ring-4 focus:ring-orange-300 transition-all duration-300 z-20 opacity-90 hover:opacity-100 -ml-2 md:-ml-12"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
           >
-            <ChevronLeftIcon className="w-6 h-6 text-blue-600 dark:text-blue-300" />
+            <ChevronLeftIcon className="w-6 h-6 text-orange-600" />
           </motion.button>
           <motion.button
             onClick={() => paginate(1)}
             aria-label="Next testimonial"
-            className="absolute right-0 top-1/2 -translate-y-1/2 bg-white dark:bg-gray-700 p-3 rounded-full shadow-lg hover:bg-gray-100 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 z-20 opacity-80 hover:opacity-100 -mr-2 md:-mr-8"
+            className="absolute right-0 top-1/2 -translate-y-1/2 bg-white p-3 rounded-full shadow-xl border border-orange-100/50 hover:bg-orange-50 focus:outline-none focus:ring-4 focus:ring-orange-300 transition-all duration-300 z-20 opacity-90 hover:opacity-100 -mr-2 md:-mr-12"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
           >
-            <ChevronRightIcon className="w-6 h-6 text-blue-600 dark:text-blue-300" />
+            <ChevronRightIcon className="w-6 h-6 text-orange-600" />
           </motion.button>
         </div>
 
-        {/* Dots */}
+        {/* Dots Navigation */}
         <div className="flex justify-center mt-12 gap-3">
-          {testimonials.map((_, idx) => (
+          {data.map((_, idx) => (
             <motion.button
               key={idx}
               onClick={() => {
@@ -300,9 +275,9 @@ export default function TestimonialsCarouselSection({ testimonials }: Props) {
                 setCurrent(idx);
               }}
               className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                idx === current ? "bg-blue-600 w-8" : "bg-gray-300 dark:bg-gray-600"
+                idx === current ? "bg-orange-600 w-7" : "bg-gray-300 hover:bg-orange-300"
               }`}
-              whileHover={{ scale: 1.2 }}
+              whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               aria-label={`Go to testimonial ${idx + 1}`}
             />
@@ -310,6 +285,5 @@ export default function TestimonialsCarouselSection({ testimonials }: Props) {
         </div>
       </div>
     </section>
-    </>
   );
 }
