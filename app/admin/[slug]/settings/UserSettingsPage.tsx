@@ -71,7 +71,7 @@ const customLoader = ({ src, width, quality }: { src: string; width: number; qua
 // --- END MOCK CONTEXTS ---
 
 
-export default function UserSettingsPage() {
+export default function UserSettingsPage( { companyId }: { companyId: string } ) {
   const { storeFormData } = useMockStoreContext();
   const { user, updateUserProfile, changePassword, updateNotificationPreferences, deactivateAccount, logoutUser } = useMockUserContext();
 
@@ -118,7 +118,7 @@ export default function UserSettingsPage() {
   const handleNotificationUpdate = async (e: React.FormEvent) => { e.preventDefault(); try { const result = await updateNotificationPreferences({ emailAlerts, smsAlerts, inAppNotifications }); showStatus('success', (result as { message: string }).message); } catch (error: any) { showStatus('error', error.message || 'Failed to update notification preferences.'); } };
   const handleDeactivateAccount = async () => { if (window.confirm('Are you sure you want to deactivate your account?')) { try { const result = await deactivateAccount(); showStatus('success', (result as { message: string }).message); } catch (error: any) { showStatus('error', error.message || 'Failed to deactivate account.'); } } };
   const handleLogout = async () => { if (window.confirm('Are you sure you want to log out?')) { try { await logoutUser(storeFormData.category); } catch (error: any) { showStatus('error', error.message || 'Failed to log out.'); } } };
-  const handleDomainSubmit = async (e: React.FormEvent) => { e.preventDefault(); setDomainStatus(null); if (loading) return; setLoading(true); try { const res = await fetch(`${apiBaseUrl}/custom-domain`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Credentials' : 'include' }, body: JSON.stringify({ domain: customDomain }), }); const data = await res.json(); if (!res.ok) throw new Error(data.error || 'Unknown error'); setDomainStatus({ type: 'success', message: data.message }); setCustomDomain(''); setLoading(false); } catch (err: any) { setDomainStatus({ type: 'error', message: err.message }); setLoading(false); } };
+  const handleDomainSubmit = async (e: React.FormEvent) => { e.preventDefault(); setDomainStatus(null); if (loading) return; setLoading(true); try { const res = await fetch(`${apiBaseUrl}/custom-domain`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Credentials' : 'include' }, body: JSON.stringify({ domain: customDomain, companyId }), }); const data = await res.json(); if (!res.ok) throw new Error(data.error || 'Unknown error'); setDomainStatus({ type: 'success', message: data.message }); setCustomDomain(''); setLoading(false); } catch (err: any) { setDomainStatus({ type: 'error', message: err.message }); setLoading(false); } };
   // --- END HANDLERS ---
 
 

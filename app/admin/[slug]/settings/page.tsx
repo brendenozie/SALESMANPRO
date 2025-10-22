@@ -14,6 +14,6 @@ export default async function AdminResultsOverviewPageWrapper({ params }: PagePr
 
 
   return (
-    <UserSettingsPage />
+    <UserSettingsPage companyId={companyId} />
   );
 }
