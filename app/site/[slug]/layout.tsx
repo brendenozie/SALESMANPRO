@@ -21,16 +21,62 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const { slug } = await params;
 
-  const company = await prisma.company.findUnique({
-    where: { slug: slug },
-    select: {
-      name: true,
-      SEO: {
-        select: { title: true, description: true, keywords: true }
+  const hdrs = await headers();
+  const requestedHost = hdrs.get("x-requested-host");
+  const requestedSubdomain = hdrs.get("x-requested-subdomain");
+
+  let company = null;
+
+  // ---- 1. Lookup by forwarded custom domain ----
+  if (requestedHost) {
+    const normalizedHost = requestedHost.replace(/^www\./, "").toLowerCase();
+
+    company = await prisma.company.findFirst({
+      where: {
+        OR: [
+          { domain: normalizedHost },
+          { domain: `www.${normalizedHost}` },
+          { domain: `https://${normalizedHost}` },
+          { domain: `https://www.${normalizedHost}` },
+        ],
       },
-      logoUrl: true,
-    },
-  });
+      select: {
+        name: true,
+        SEO: {
+          select: { title: true, description: true, keywords: true }
+        },
+        logoUrl: true,
+      },
+    });
+  }
+
+  // ---- 2. Lookup by forwarded subdomain ----
+  if (!company && requestedSubdomain) {
+    company = await prisma.company.findUnique({
+      where: { slug: requestedSubdomain },
+      select: {
+        name: true,
+        SEO: {
+          select: { title: true, description: true, keywords: true }
+        },
+        logoUrl: true,
+      },
+    });
+  }
+
+  // ---- 3. Fallback to slug param ----
+  if (!company) {
+    company = await prisma.company.findUnique({
+      where: { slug: slug },
+      select: {
+        name: true,
+        SEO: {
+          select: { title: true, description: true, keywords: true }
+        },
+        logoUrl: true,
+      },
+    });
+  }
 
   if (!company) {
     return { title: 'Store not found' };
