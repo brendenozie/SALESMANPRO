@@ -188,8 +188,8 @@ const AboutSection: React.FC = () => {
         </div>
       </div>
         
-        {/* Founder Story Card positioned to overlap the main layout */}
-        <div className="container relative z-30 mx-auto pt-2 px-6 max-w-7xl mt-[-100px] lg:mt-[-50px]">
+        {/* Founder Story Card positioned to overlap the main layout  mt-[-100px] lg:mt-[-50px]*/}
+        <div className="container relative z-30 mx-auto mt-2 px-6 max-w-7xl">
             <CoachStoryCard 
                 name={name} 
                 description={description} 
