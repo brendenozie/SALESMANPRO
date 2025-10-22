@@ -135,23 +135,39 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
   
   //other domain name
   // ---- CUSTOM DOMAIN HANDLING (PASS HOST, NO REWRITE) ----
-if (
-  host &&
-  host !== PRIMARY_HOST &&
-  !host.endsWith(".salesmanpro.site") &&
-  host !== "127.0.0.1" &&
-  host !== "localhost" &&
-  host !== "localhost:3000"
-) {
-  // Simply pass through the request but include identifying headers
-  const res = NextResponse.next();
+  // ---- CUSTOM DOMAIN HANDLING: rewrite into /site/[slug] but pass original host ----
+  if (
+    host &&
+    host !== PRIMARY_HOST &&
+    !host.endsWith(".salesmanpro.site") &&
+    host !== "127.0.0.1" &&
+    host !== "localhost" &&
+    host !== "localhost:3000"
+  ) {
+    // Normalize host for use in path (avoid colons/ports)
+    const normalizedHost = host.replace(/^www\./, "").toLowerCase();
 
-  // Pass host and original path so the app can resolve tenant dynamically
-  res.headers.set("x-requested-host", host);
-  res.headers.set("x-original-path", pathname);
+    // We rewrite to /site/<normalizedHost> so the request lands in /site/[slug]
+    // The layout will prioritize x-requested-host when resolving the tenant.
+    if (pathname === "/" || pathname === "") {
+      url.pathname = `/site/${normalizedHost}`;
+    } else {
+      // keep inner path after the root — /about -> /site/ghuba.shop/about
+      url.pathname = `/site/${normalizedHost}${pathname}`;
+    }
 
-  return res;
-}
+    const res = NextResponse.rewrite(url);
+
+    // Important: pass original host so layout can resolve tenant from domain
+    res.headers.set("x-requested-host", host);
+    // Also useful: the original path requested on the custom domain
+    res.headers.set("x-original-path", pathname);
+    // Optional: expose the rewritten slug (for debugging/logging)
+    res.headers.set("x-rewritten-slug", normalizedHost);
+
+    return res;
+  }
+
 
   // if (host && host !== PRIMARY_HOST && !host.endsWith(".salesmanpro.site") && host !== "127.0.0.1" && host !== "localhost" && host !== "localhost:3000") {
   //   url.pathname = `/site/${pathname}`;
