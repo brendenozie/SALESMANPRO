@@ -816,6 +816,8 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       label: "Programs & Courses",
       icon: BookOpenIcon, // Icon for a book or learning
       subItems: [
+        { label: "Ebooks", href: `/admin/${adminSlug}/ebooks` },
+        { label: "Programs", href: `/admin/${adminSlug}/programs` },
         { label: "Course Builder", href: `/admin/${adminSlug}/course-builder` },
         { label: "Content Library", href: `/admin/${adminSlug}/content-library` },
         { label: "Resource Downloads", href: `/admin/${adminSlug}/resources` },
