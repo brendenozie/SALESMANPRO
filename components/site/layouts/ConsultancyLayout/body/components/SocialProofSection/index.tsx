@@ -193,7 +193,7 @@ export default function SocialProofSection() {
           viewport={{ once: true, amount: 0.1 }}
           className="w-full relative -mb-20 md:-mb-24 z-20" // Negative margin to overlap with stats below
         >
-          <p className="text-xs font-semibold text-gray-400 mb-3 text-center uppercase tracking-widest">Featured in & Trusted by</p>
+          {/* <p className="text-xs font-semibold text-gray-400 mb-3 text-center uppercase tracking-widest">Featured in & Trusted by</p>
           <Marquee primaryColor={primaryColor}>
             {logos.map((logo: { src: string; alt: string }, idx: number) => (
               <div
@@ -211,7 +211,7 @@ export default function SocialProofSection() {
                 />
               </div>
             ))}
-          </Marquee>
+          </Marquee> */}
         </motion.div>
       </div>
       
