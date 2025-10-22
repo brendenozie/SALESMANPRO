@@ -808,8 +808,8 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       icon: UsersIcon, // Icon for people/groups
       subItems: [
         { label: "Client List", href: `/admin/${adminSlug}/clients` },
-        { label: "Leads/Prospects", href: `/admin/${adminSlug}/leads` },
-        { label: "Client History", href: `/admin/${adminSlug}/client-history` },
+        // { label: "Leads/Prospects", href: `/admin/${adminSlug}/leads` },
+        // { label: "Client History", href: `/admin/${adminSlug}/client-history` },
       ],
     },
     {
@@ -818,21 +818,21 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       subItems: [
         { label: "Ebooks", href: `/admin/${adminSlug}/ebooks` },
         { label: "Programs", href: `/admin/${adminSlug}/programs` },
-        { label: "Course Builder", href: `/admin/${adminSlug}/course-builder` },
-        { label: "Content Library", href: `/admin/${adminSlug}/content-library` },
-        { label: "Resource Downloads", href: `/admin/${adminSlug}/resources` },
+        // { label: "Course Builder", href: `/admin/${adminSlug}/course-builder` },
+        // { label: "Content Library", href: `/admin/${adminSlug}/content-library` },
+        // { label: "Resource Downloads", href: `/admin/${adminSlug}/resources` },
       ],
     },
-    { label: "Schedule & Booking", href: `/admin/${adminSlug}/schedule`, icon: CalendarIcon }, // Icon for a calendar
-    {
-      label: "Payments & Invoicing",
-      icon: CurrencyDollarIcon, // Icon for money/finance
-      subItems: [
-        { label: "Invoices", href: `/admin/${adminSlug}/invoices` },
-        { label: "Subscriptions", href: `/admin/${adminSlug}/subscriptions` },
-        { label: "Payment History", href: `/admin/${adminSlug}/payments` },
-      ],
-    },
+    // { label: "Schedule & Booking", href: `/admin/${adminSlug}/schedule`, icon: CalendarIcon }, // Icon for a calendar
+    // {
+    //   label: "Payments & Invoicing",
+    //   icon: CurrencyDollarIcon, // Icon for money/finance
+    //   subItems: [
+    //     { label: "Invoices", href: `/admin/${adminSlug}/invoices` },
+    //     { label: "Subscriptions", href: `/admin/${adminSlug}/subscriptions` },
+    //     { label: "Payment History", href: `/admin/${adminSlug}/payments` },
+    //   ],
+    // },
     { label: "Reports & Analytics", href: `/admin/${adminSlug}/analytics`, icon: ChartBarIcon }, // Icon for charts/graphs
     { label: "Messaging", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleBottomCenterTextIcon }, // Icon for chat/messages
     { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon }, // Icon for gear/settings
