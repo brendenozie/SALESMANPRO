@@ -45,8 +45,8 @@ export default function ConsultancySite({ pageData }: { pageData: StoreForm }) {
 
       <BrowseByCategory listings={listings} storeSlug=""/>   
 
-      {/* Featured Vehicles */}
-      <FeaturedProgramsSection  listings={listings} slug=""/>
+      {/* Featured  */}
+      {/* <FeaturedProgramsSection  listings={listings} slug=""/> */}
 
       {/* If videos are stored under latestVideos */}
       {<VideoShowcaseSection blogs={(storeFormData?.blogs || []).map(b => ({ ...b, excerpt: b.excerpt ?? "", coverImage: b.coverImage ?? "", videoAlbumId: b.videoAlbumId ?? undefined }))} />}
