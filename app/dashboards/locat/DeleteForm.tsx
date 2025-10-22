@@ -42,6 +42,7 @@ export function DeleteConfirmModal({ isOpen, onClose, onSuccess, location }: Del
     try {
       const response = await fetch(`${apiBaseUrl}/admin/locations/${location.id}`, {
         method: 'DELETE',
+        headers: { 'Content-Type': 'application/json', 'Credentials': 'include' },
       });
 
       if (!response.ok) {

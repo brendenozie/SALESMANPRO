@@ -56,7 +56,7 @@ async function handleGetLocations(request: Request) {
       country: loc.country ?? "Unknown",
     }));
 
-    return formatResponse(true, locations, "Locations fetched successfully", 20);
+    // return formatResponse(true, locations, "Locations fetched successfully", 20);
 
 
   // withApiHandler will wrap this result in formatResponse(true, { data: locations }) with status 200

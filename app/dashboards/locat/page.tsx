@@ -30,16 +30,19 @@ interface PageProps {
 }
 
 // --- Helper Function to Build the Tree ---
-const buildLocationTree = (locations: Location[]): Location[] => {
+const buildLocationTree = (locationsInput: Location[] | any): Location[] => {
+  // Ensure it's an array
+  const locations = Array.isArray(locationsInput) ? locationsInput : [];
+
   const locationMap: { [key: string]: Location } = {};
   const tree: Location[] = [];
 
-  // First, map all locations by their ID and initialize children array
+  // Map all locations by ID
   locations.forEach(location => {
     locationMap[location.id] = { ...location, children: [] };
   });
 
-  // Then, build the tree structure
+  // Build hierarchy
   locations.forEach(location => {
     if (location.parentId && locationMap[location.parentId]) {
       locationMap[location.parentId].children?.push(locationMap[location.id]);
@@ -50,6 +53,7 @@ const buildLocationTree = (locations: Location[]): Location[] => {
 
   return tree;
 };
+
 
 
 // Main Enhanced Location Management Component
@@ -72,10 +76,16 @@ export default function LocationManagementPage({ params }: PageProps) {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${apiBaseUrl}/admin/locations`);
+      const response = await fetch(`${apiBaseUrl}/admin/locations`,
+        { method: "GET", headers: { 
+          "Content-Type": "application/json", 
+          'Credentials': 'include' },
+        }
+      );
       if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
       const data = await response.json();
-      setLocations(data.data || []);
+      console.log("Fetched Locations:", data);
+      setLocations(data.data.data || []);
     } catch (err: any) {
       setError(`Failed to fetch locations: ${err.message}`);
     } finally {

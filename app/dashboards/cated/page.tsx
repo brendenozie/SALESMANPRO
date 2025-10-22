@@ -86,15 +86,20 @@ export default function CategoryManager() {
   });
 
   useEffect(() => {
-    fetch(`${apiUrl}/admin/get-all-categories`)
+    fetch(`${apiUrl}/admin/get-all-categories`, {
+      method: "GET",
+      headers: { 
+        "Content-Type": "application/json", 
+        'Credentials': 'include' },
+    })
       .then((res) => res.json())
       .then((data) => {
-        setCategories(data.results);
+        setCategories(data.data?.results);
       })
       .catch((err) => console.error("Failed to fetch categories:", err));
   }, []);
 
-  const filteredCategories = categories.filter((c) =>
+  const filteredCategories = categories && categories?.filter((c) =>
     c.name.toLowerCase().includes(filter.toLowerCase()) ||
     c.slug.toLowerCase().includes(filter.toLowerCase())
   );
@@ -287,8 +292,8 @@ export default function CategoryManager() {
           </button>
         </div>
         <div className="space-y-3">
-          {filteredCategories.length > 0 ? (
-            filteredCategories.map((cat) => (
+          {filteredCategories && filteredCategories?.length > 0 ? (
+            filteredCategories?.map((cat) => (
               <div
                 key={cat.id}
                 onClick={() => openForm(cat)}

@@ -142,7 +142,7 @@ export function LocationFormModal({
 
       const response = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Credentials': 'include' },
         body: JSON.stringify(payload),
       });
 

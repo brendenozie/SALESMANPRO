@@ -816,6 +816,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       label: "Programs & Courses",
       icon: BookOpenIcon, // Icon for a book or learning
       subItems: [
+        { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
         { label: "Ebooks", href: `/admin/${adminSlug}/ebooks` },
         { label: "Programs", href: `/admin/${adminSlug}/programs` },
         // { label: "Course Builder", href: `/admin/${adminSlug}/course-builder` },
@@ -823,6 +824,8 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
         // { label: "Resource Downloads", href: `/admin/${adminSlug}/resources` },
       ],
     },
+    { label: "Appointments", href: `/admin/${adminSlug}/appointments`, icon: ClipboardDocumentListIcon },
+    
     // { label: "Schedule & Booking", href: `/admin/${adminSlug}/schedule`, icon: CalendarIcon }, // Icon for a calendar
     // {
     //   label: "Payments & Invoicing",
