@@ -38,4 +38,4 @@ async function getHandler(request: Request) {
   }
 }
 
-export const GET = withApiHandler(getHandler)
+export const GET = withApiHandler(getHandler, { requireAuth: false, requireRateLimit: true });
