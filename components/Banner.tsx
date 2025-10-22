@@ -3,6 +3,7 @@
 import React from "react";
 import { motion, useMotionValue, useTransform } from "framer-motion";
 import { BuildingLibraryIcon, GlobeAltIcon, LightBulbIcon } from "@heroicons/react/24/outline";
+import hero from "@/assets/hero.png";
 
 // --- Feature Data ---
 // Icons remain the same but will stand out more against the light background.
@@ -159,7 +160,7 @@ function InteractiveHeroImage() {
         style={{ rotateX, rotateY, transition: "transform 0.1s ease-out" }}
       >
         <img
-          src="https://placehold.co/600x600/F9FAFB/374151?text=Hero+Image"
+          src={hero.src || "https://placehold.co/600x600/F9FAFB/374151?text=Hero+Image"}
           alt="Hero Illustration"
           className="w-full h-auto drop-shadow-2xl rounded-2xl"
         />

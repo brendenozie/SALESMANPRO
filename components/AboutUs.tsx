@@ -3,6 +3,7 @@
 import { GlobeAltIcon, UsersIcon } from "@heroicons/react/24/outline";
 import { motion, useMotionValue, useTransform, animate } from "framer-motion";
 import { useEffect } from "react";
+import body from "@/assets/body.png";
 
 // Helper Component for the animated number counter
 function AnimatedCounter({ value }: { value: number }) {
@@ -149,7 +150,7 @@ export default function AboutUs() {
             <div className="w-full h-full bg-white rounded-xl overflow-hidden shadow-2xl shadow-indigo-500/20">
               {/* Replaced Next.js Image with a standard img tag to resolve the error */}
               <img
-                src="https://placehold.co/500x500/E2E8F0/475569?text=Your+Image" // Replace with your compelling, high-quality image
+                src={body.src || "https://placehold.co/500x500/E2E8F0/475569?text=Your+Image"} // Replace with your compelling, high-quality image
                 alt="A successful entrepreneur using SalesmanPro"
                 width={500}
                 height={500}
