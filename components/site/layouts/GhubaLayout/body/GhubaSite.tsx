@@ -36,7 +36,8 @@ const HomePage = () => {
         if (!response.ok) throw new Error("Failed to fetch categories.");
         const data = await response.json();
         setCategories(data.categories);
-        setFeaturedCategories(data.categories[2]);
+        setFeaturedCategories(data.categories.isFeatured ? data.categories.find((cat: any) => cat.isFeatured) : data.categories[0]);
+        console.log("Fetched Categories:", data.categories);  
       } catch (err:any) {
         setError(err.message);
       }
@@ -56,6 +57,7 @@ const HomePage = () => {
         const data = await response.json();
         products[String(featuredCategories.name)] = data;
         setProductsByCategory(products);
+      
         
         console.log(products);
       } catch (err:any) {
