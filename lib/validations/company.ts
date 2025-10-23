@@ -181,4 +181,17 @@ export const companySchema = z.object({
   // -- Many-to-Many through explicit join table --
   StoreCategory: z.array(storeCategorySchema).optional(),
   CompanyLocation: z.array(companyLocationSchema).optional(),
+
+  founderName: z.string().min(2).max(100).optional(),
+  founderQuote: z.string().max(500).optional(),
+  founderImage: z.string().url().optional(),
+  partnerLogos: z.array(z.object({
+      url: z.string().optional(),
+      altText: z.string().max(100).optional(),
+  })).optional(),
+
+  sectionSubtitle: z.string().max(150).optional(),
+  sectionTitle: z.string().max(100).optional(),
+  sectionDescription: z.string().max(500).optional(),
+
 });

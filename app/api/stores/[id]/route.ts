@@ -175,6 +175,8 @@ async function updateCompany(req: Request, { params }: { params: { id: string } 
             })),
           }
         : undefined,
+
+        
     },
   });
 

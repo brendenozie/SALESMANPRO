@@ -126,6 +126,16 @@ async function createCompany(req: Request, context: HandlerContext) {
               })),
             }
           : undefined,
+
+        partnerLogos: data.partnerLogos,
+        founderImage: data.founderImage,
+        founderName: data.founderName,
+        founderQuote: data.founderQuote,
+
+        sectionTitle: data.sectionTitle,
+        sectionSubtitle: data.sectionSubtitle,
+        sectionDescription: data.sectionDescription,
+
       },
     });
 
