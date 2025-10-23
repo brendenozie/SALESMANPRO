@@ -231,10 +231,10 @@ export interface Metric {
 }
 
 // export interface Stat {
-//   label: string;
-//   value: string;
-//   iconUrl?: string;
-//   order?: number;
+  // label: string;
+  // value: string;
+  // iconUrl?: string;
+  // order?: number;
 // }
 
 export interface PricingTier {
@@ -289,6 +289,7 @@ export interface Stat {
   label: string;
   value: number | string;
   icon?: string | null;
+  iconUrl?: string;
   suffix?: string | null; // e.g. "K", "+", "%"
   prefix?: string | null; // e.g. "$"
   color?: string | null; // Optional color for display
