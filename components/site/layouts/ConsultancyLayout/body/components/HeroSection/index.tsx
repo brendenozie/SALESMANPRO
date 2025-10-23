@@ -8,6 +8,7 @@
 "use client";
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { HeroSlide } from "@/types/typings";
 
 // --------------------------------------------------
 // 1. MOCK UTILITIES (Replaces External Imports)
@@ -58,21 +59,21 @@ const ArrowLeftIcon = (props: React.SVGProps<SVGSVGElement>) => (
 const LOCAL_FALLBACK_SLIDES = [
   {
     type: "image",
-    url: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=2670&auto=format&fit=crop",
+    imageUrl: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=2670&auto=format&fit=crop",
     headline: "Unlock Your True Potentiall",
     subline:
       "Empowering ambitious individuals and teams to create a life of purpose, clarity, and success.",
   },
   {
     type: "image",
-    url: "https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?q=80&w=2670&auto=format&fit=crop",
+    imageUrl: "https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?q=80&w=2670&auto=format&fit=crop",
     headline: "Transform Your Vision into Action",
     subline:
       "Through strategic coaching and tailored consultation, I help you move from ideas to impact.",
   },
   {
     type: "video",
-    url: "https://cdn.pixabay.com/video/2024/02/26/200827-919106201_large.mp4",
+    imageUrl: "https://cdn.pixabay.com/video/2024/02/26/200827-919106201_large.mp4",
     headline: "Lead with Confidence, Inspire with Purpose",
     subline:
       "Gain clarity, build resilience, and become the leader you were meant to be.",
@@ -85,12 +86,7 @@ const autoAdvanceDelay = 9000; // 9 seconds
 // 3. MAIN COMPONENT (With Data Integration)
 // --------------------------------------------------
 interface Props {
-  heroSlides?: Array<{
-    type: "image" | "video";
-    url: string;
-    headline: string;
-    subline: string;
-  }>;
+  heroSlides?: HeroSlide[] | null | undefined;
   themeSettings?: {
     primaryColor?: string | null | undefined;
     secondaryColor?: string | null | undefined;
@@ -163,7 +159,7 @@ const HeroSection = ({ heroSlides, themeSettings } : Props) => {
         >
           {currentSlide.type === "image" ? (
             <img
-              src={currentSlide.url}
+              src={currentSlide.imageUrl || 'https://placehold.co/2670x1780/D1D5DB/1F2937?text=No+Image+Provided'}
               alt={currentSlide.headline}
               loading="eager"
               onError={handleImageError}
@@ -171,7 +167,7 @@ const HeroSection = ({ heroSlides, themeSettings } : Props) => {
             />
           ) : (
             <video
-              src={currentSlide.url}
+              src={currentSlide.videoLink || 'https://unsplash.com/video/uploaded/pexels-august-de-richelieu-4262030.mp4'}
               autoPlay
               muted
               loop
