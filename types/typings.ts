@@ -217,18 +217,18 @@ export interface IPromotion {
   updatedAt?: Date | string;
 }
 
-export interface Award {
-  name: string;
-  iconUrl: string;
-  order?: number;
-}
+// export interface Award {
+//   name: string;
+//   iconUrl: string;
+//   order?: number;
+// }
 
-export interface Metric {
-  label: string;
-  value: number;
-  iconUrl?: string;
-  order?: number;
-}
+// export interface Metric {
+//   label: string;
+//   value: number;
+//   iconUrl?: string;
+//   order?: number;
+// }
 
 // export interface Stat {
   // label: string;
@@ -302,7 +302,7 @@ export interface Stat {
  */
 export interface Metric {
   id?: string;
-  title: string;
+  // title: string;
   value: number;
   unit?: string | null; // e.g. "%", "users", "USD"
   trend?: "up" | "down" | "neutral";
@@ -310,6 +310,10 @@ export interface Metric {
   icon?: string | null;
   description?: string | null;
   updatedAt?: Date | string | null;
+
+  label: string;
+  iconUrl?: string;
+  order?: number;
 }
 
 /**
@@ -317,13 +321,16 @@ export interface Metric {
  */
 export interface Award {
   id?: string;
-  title: string;
+  // title: string;
   organization?: string | null; // Who issued the award
   year?: number | null;
   description?: string | null;
   imageUrl?: string | null;
   link?: string | null; // External reference or proof
   category?: string | null;
+  name: string;
+  iconUrl: string;
+  order?: number;
 }
 
 /**
