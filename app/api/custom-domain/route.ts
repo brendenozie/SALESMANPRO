@@ -26,7 +26,7 @@ const DomainSchema = z.object({
 const PLATFORM_BASE_DOMAIN = process.env.PLATFORM_BASE_DOMAIN || "";
 const VPS_IP = process.env.VPS_IP || ""; // Change to your actual VPS IP
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "";
-const USE_STAGING = process.env.USE_STAGING === "true";
+const USE_STAGING = process.env.USE_STAGING === "true" || false;
 
 export const POST = withApiHandler(async (req: Request) => {
   try {
