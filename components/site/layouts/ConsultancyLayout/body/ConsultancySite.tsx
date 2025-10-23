@@ -31,7 +31,7 @@ export default function ConsultancySite({ pageData }: { pageData: StoreForm }) {
       <div className="bg-gradient-to-br from-gray-50 to-orange-50 font-sans antialiased">
       
       {/* Hero */}
-      <HeroSection heroSlides={siteData?.heroSlides} themeSettings={storeFormData?.themeSettings} />
+      <HeroSection heroSlides={siteData?.heroSlides} themeSettings={siteData?.themeSettings} />
 
       <SocialProofSection />
       

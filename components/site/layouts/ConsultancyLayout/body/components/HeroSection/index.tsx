@@ -56,27 +56,63 @@ const ArrowLeftIcon = (props: React.SVGProps<SVGSVGElement>) => (
 // 2. DATA (Fallback used when context is empty)
 // --------------------------------------------------
 
-const LOCAL_FALLBACK_SLIDES = [
+const LOCAL_FALLBACK_SLIDES: HeroSlide[] = [
   {
     type: "image",
     imageUrl: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=2670&auto=format&fit=crop",
     headline: "Unlock Your True Potentiall",
-    subline:
-      "Empowering ambitious individuals and teams to create a life of purpose, clarity, and success.",
+    subline: "Empowering ambitious individuals and teams to create a life of purpose, clarity, and success.",
+    id: "",
+    companyId: "",
+    productImageUrl: null,
+    ctaText: null,
+    ctaLink: null,
+    videoLink: null,
+    badgeText: null,
+    price: null,
+    endsAt: null,
+    order: 0,
+    iconKey: null,
+    backgroundColor: null,
+    textColor: null
   },
   {
     type: "image",
     imageUrl: "https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?q=80&w=2670&auto=format&fit=crop",
     headline: "Transform Your Vision into Action",
-    subline:
-      "Through strategic coaching and tailored consultation, I help you move from ideas to impact.",
+    subline: "Through strategic coaching and tailored consultation, I help you move from ideas to impact.",
+    id: "",
+    companyId: "",
+    productImageUrl: null,
+    ctaText: null,
+    ctaLink: null,
+    videoLink: null,
+    badgeText: null,
+    price: null,
+    endsAt: null,
+    order: 0,
+    iconKey: null,
+    backgroundColor: null,
+    textColor: null
   },
   {
     type: "video",
     imageUrl: "https://cdn.pixabay.com/video/2024/02/26/200827-919106201_large.mp4",
     headline: "Lead with Confidence, Inspire with Purpose",
-    subline:
-      "Gain clarity, build resilience, and become the leader you were meant to be.",
+    subline: "Gain clarity, build resilience, and become the leader you were meant to be.",
+    id: "",
+    companyId: "",
+    productImageUrl: null,
+    ctaText: null,
+    ctaLink: null,
+    videoLink: null,
+    badgeText: null,
+    price: null,
+    endsAt: null,
+    order: 0,
+    iconKey: null,
+    backgroundColor: null,
+    textColor: null
   },
 ];
 
@@ -157,15 +193,7 @@ const HeroSection = ({ heroSlides, themeSettings } : Props) => {
           exit={{ opacity: 0 }}
           transition={{ duration: 1.2 }}
         >
-          {currentSlide.type === "image" ? (
-            <img
-              src={currentSlide.imageUrl || 'https://placehold.co/2670x1780/D1D5DB/1F2937?text=No+Image+Provided'}
-              alt={currentSlide.headline}
-              loading="eager"
-              onError={handleImageError}
-              className="w-full h-full object-cover"
-            />
-          ) : (
+          {currentSlide.type === "video" ? (            
             <video
               src={currentSlide.videoLink || 'https://unsplash.com/video/uploaded/pexels-august-de-richelieu-4262030.mp4'}
               autoPlay
@@ -174,6 +202,14 @@ const HeroSection = ({ heroSlides, themeSettings } : Props) => {
               playsInline
               className="w-full h-full object-cover"
               poster="https://placehold.co/2670x1780/D1D5DB/1F2937?text=Video+Loading"
+            />
+          ) : (            
+            <img
+              src={currentSlide.imageUrl || 'https://placehold.co/2670x1780/D1D5DB/1F2937?text=No+Image+Provided'}
+              alt={currentSlide.headline}
+              loading="eager"
+              onError={handleImageError}
+              className="w-full h-full object-cover"
             />
           )}
           {/* Gradient overlay for text readability */}
