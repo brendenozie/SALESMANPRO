@@ -223,7 +223,29 @@ export default async function EditStorePage({
     Educator: [],
     packages: [],
     destinations: [],
-    tourPackages: []
+    tourPackages: [],
+
+    partnerLogos: (() => {
+      const parsed = safeJsonParse(store.partnerLogos, []);
+      if (!Array.isArray(parsed)) return [];
+      return parsed
+        .map((item: any) => {
+          if (typeof item === "string" || typeof item === "number") {
+            return { src: String(item), alt: "" };
+          }
+          if (item && typeof item === "object" && "src" in item && typeof (item as any).src === "string") {
+            return {
+              src: (item as any).src,
+              alt: typeof (item as any).alt === "string" ? (item as any).alt : "",
+            };
+          }
+          return null;
+        })
+        .filter((p): p is { src: string; alt: string } => p !== null);
+    })(), // For marquee sections
+    founderName: store.founderName || '',
+    founderQuote: store.founderQuote || '',
+    founderImage: store.founderImage || '',
   };
 
   return (

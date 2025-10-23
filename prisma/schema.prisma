@@ -259,6 +259,21 @@ model Company {
   metrics Json?
   stats   Json?
 
+  /// Highlighted sections (e.g., mission, vision, key points)
+  /// Shape: Highlight[]
+  highlights Json?
+
+  founderName  String?
+  founderQuote String?
+  founderImage String?
+  partnerLogos Json? // Array of logo URLs for partner marquee sections
+
+  // NEW PROPS FOR CUSTOMIZABLE TEXT
+  sectionSubtitle    String?
+  sectionTitle       String?
+  sectionDescription String?
+  // END NEW PROPS
+
   StoreCategory StoreCategory[]
 
   PageSection  PageSection[]

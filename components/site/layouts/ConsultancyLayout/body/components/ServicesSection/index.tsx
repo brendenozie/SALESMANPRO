@@ -150,7 +150,7 @@ const ServicesSection: React.FC = () => {
                         {name || 'Transformative Coaching'} <span style={{ color: primaryColor }}>Solutions</span>
                     </motion.h2>
                     <motion.p 
-                        className="mt-5 text-xl text-gray-700 max-w-3xl mx-auto"
+                        className="mt-5 text-xl text-gray-700 max-w-3xl mx-auto line-clamp-3 text-ellipsis"
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.6, delay: 0.1 }}

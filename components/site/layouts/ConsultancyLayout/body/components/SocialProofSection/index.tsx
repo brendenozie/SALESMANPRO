@@ -18,18 +18,6 @@ const loader = ({ src, width, quality }: { src: string; width: number; quality?:
     src; // Placeholder for Image loader
 // ----------------------------------------------------
 
-
-// Add this type augmentation if not already present
-type StoreForm = {
-    heroSlides?: { type: string; url: string; headline: string; subline: string }[];
-    logos?: { src: string; alt: string }[];
-    stats?: { label: string; value: number }[];
-    themeSettings?: { primary: string };
-    awards?: ({ title: string; year: number } | { [key: string]: any })[];
-    metrics?: { name: string; value: number }[];
-};
-
-
 // Utility function for the logo scroll animation
 const Marquee = ({ children, primaryColor }: { children: React.ReactNode, primaryColor: string }) => (
     <div className="relative w-full overflow-hidden whitespace-nowrap py-4 sm:py-6 border-y border-gray-100 bg-white shadow-inner">

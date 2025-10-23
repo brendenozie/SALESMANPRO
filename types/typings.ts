@@ -230,12 +230,12 @@ export interface Metric {
   order?: number;
 }
 
-export interface Stat {
-  label: string;
-  value: string;
-  iconUrl?: string;
-  order?: number;
-}
+// export interface Stat {
+//   label: string;
+//   value: string;
+//   iconUrl?: string;
+//   order?: number;
+// }
 
 export interface PricingTier {
   name: string;
@@ -267,6 +267,85 @@ export interface IBlog extends Blog {}
 //################################################################################
 //## E-COMMERCE & PRODUCT INTERFACES
 //################################################################################
+/**
+ * Represents a short highlight or key section — often used
+ * in "About", "Mission", or "Vision" areas.
+ */
+export interface Highlight {
+  id?: string;
+  title: string;
+  description: string;
+  icon?: string | null; // Optional Heroicon or Lucide name
+  imageUrl?: string | null; // Optional supporting image
+  order?: number; // For sorting if needed
+}
+
+/**
+ * Represents a numerical or simple textual stat —
+ * e.g. "500+ Clients", "10 Years of Experience".
+ */
+export interface Stat {
+  id?: string;
+  label: string;
+  value: number | string;
+  icon?: string | null;
+  suffix?: string | null; // e.g. "K", "+", "%"
+  prefix?: string | null; // e.g. "$"
+  color?: string | null; // Optional color for display
+  order?: number;
+}
+
+/**
+ * Represents more detailed performance or operational metrics.
+ * Ideal for dashboards, analytics cards, or company KPIs.
+ */
+export interface Metric {
+  id?: string;
+  title: string;
+  value: number;
+  unit?: string | null; // e.g. "%", "users", "USD"
+  trend?: "up" | "down" | "neutral";
+  trendValue?: number | null; // e.g. +12 or -3.4
+  icon?: string | null;
+  description?: string | null;
+  updatedAt?: Date | string | null;
+}
+
+/**
+ * Represents awards, recognitions, or achievements a company has earned.
+ */
+export interface Award {
+  id?: string;
+  title: string;
+  organization?: string | null; // Who issued the award
+  year?: number | null;
+  description?: string | null;
+  imageUrl?: string | null;
+  link?: string | null; // External reference or proof
+  category?: string | null;
+}
+
+/**
+ * Represents color, typography, and layout customization
+ * for multi-tenant theming and white-label design.
+ */
+export interface ThemeSettings {
+  primaryColor?: string;
+  secondaryColor?: string;
+  accentColor?: string;
+  backgroundColor?: string;
+  textColor?: string;
+  fontFamily?: string;
+  buttonStyle?: "rounded" | "square" | "pill";
+  layoutStyle?: "default" | "boxed" | "full";
+  borderRadius?: number;
+  heroOverlayOpacity?: number;
+  darkMode?: boolean;
+  // Optional background textures or hero options
+  heroImage?: string | null;
+  logoStyle?: "light" | "dark" | "auto";
+  customCSS?: string | null;
+}
 
 export interface ISubcategory {
   id: string;
@@ -714,6 +793,10 @@ export interface StoreForm {
   metrics: Metric[] | null;
   stats: Stat[] | null;
 
+  sectionSubtitle?: string | null | undefined;
+  sectionTitle?: string | null | undefined;
+  sectionDescription?: string | null | undefined;
+
   // Relational arrays
   settings: CompanySettings | null;
   socialLinks: SocialLink[];
@@ -758,7 +841,15 @@ export interface StoreForm {
   services: any[];
   destinations: IDestination[];
   tourPackages: ITourPackage[];
+  
+  // 🧠 Extended Company Insights
+  partnerLogos?: { src: string; alt: string }[] | null | undefined; // For marquee sections
+  founderName?: string | null | undefined;
+  founderQuote?: string | null | undefined;
+  founderImage?: string | null | undefined; // Optional field for founder photo
+
 }
+
 
 
 export type EducatorStatus = "ACTIVE" | "INACTIVE" | "SUSPENDED"; // adjust if you have an enum
@@ -882,6 +973,15 @@ export interface Handlers {
   // ✅ Media handlers (unchanged)
   handleMediaUpload: (field: "logoUrl" | "bannerUrl" | "videoUrl", file: File) => void;
   handleMediaRemove: (field: "logoUrl" | "bannerUrl" | "videoUrl") => void;
+
+   handleArrayChange: (
+    field: "partnerLogos",
+    index: number,
+    key: string,
+    value: string | number
+  ) => void;
+    addItem: (field: "partnerLogos") => void;
+    removeItem: (field: "partnerLogos", index: number) => void;
 }
 // export interface Handlers {
 //   handleChange: (

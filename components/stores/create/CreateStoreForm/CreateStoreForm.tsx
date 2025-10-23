@@ -173,6 +173,7 @@ export default function CreateStoreForm({
       sat: { open: "", close: "" },
       sun: { open: "", close: "" },
     },
+
     // --- Core Relational Data ---
     socialLinks: [],
     policies: [],
@@ -209,7 +210,7 @@ export default function CreateStoreForm({
     ],
 
     // --- Settings Objects ---
-    themeSettings: {},
+    // themeSettings: {},
     seo: {
       id: "",
       description: null,
@@ -270,8 +271,101 @@ export default function CreateStoreForm({
     packages: [],
     Educator: [],
     destinations: [],
-    tourPackages: []
-  };
+    tourPackages: [],
+    
+  // --- Core Company Fields ---
+  // logoUrl: "",
+  // bannerUrl: "",
+  // videoUrl: "",
+  // contactEmail: session?.user?.email || "",
+  // contactPhone: "",
+  // address: "",
+  // geoLocation: { lat: 0, lng: 0 },
+  // openingHours: {
+  //   mon: { open: "09:00", close: "17:00" },
+  //   tue: { open: "09:00", close: "17:00" },
+  //   wed: { open: "09:00", close: "17:00" },
+  //   thu: { open: "09:00", close: "17:00" },
+  //   fri: { open: "09:00", close: "17:00" },
+  //   sat: { open: "", close: "" },
+  //   sun: { open: "", close: "" },
+  // },
+
+  // // --- Basic Settings ---
+  // currency: "USD",
+  // locale: "en-US",
+  // companyCategoryId: "",
+  // site: null,
+  // userId: null,
+  // createdAt: null,
+  // updatedAt: null,
+  // deletedAt: null,
+  // sEOId: null,
+
+  // // --- CoreValues / Relations ---
+  // CoreValues: [],
+
+  // // --- Page Structure & Content ---
+  // heroSlides: [],
+  // pageSections: [],
+  // appPromos: [],
+  // promotions: [],
+  // projects: [],
+  // StoreCategory: [],
+  // blogs: [],
+  // courses: [],
+  // events: [],
+  // Collection: [],
+  // Announcement: [],
+  // services: [],
+  // destinations: [],
+  // tourPackages: [],
+  // packages: [],
+  // Podcast: [],
+  // CompanyLocation: [],
+
+  // --- Social & External ---
+  // socialLinks: [],
+  // policies: [],
+  // faqs: [],
+  // testimonials: [],
+  // marketplaceListings: [],
+  // Writer: [],
+  // Expert: [],
+  // Educator: [],
+  // Doctor: [],
+  // salesAgents: [],
+
+  // --- JSON / Configurable Data ---
+  // awards: [],
+  // metrics: [],
+  // stats: [],
+  // pricingTiers: [
+  //   {
+  //     name: "Basic",
+  //     price: 0,
+  //     features: [],
+  //     description: "A great starting point.",
+  //     duration: "monthly",
+  //   },
+  // ],
+
+  // --- 🆕 New Visual / Impact / Story Fields ---
+  
+  partnerLogos: [],
+  founderName: "",
+  founderQuote: "",
+  founderImage: "",
+
+  // --- Theme / Design Settings ---
+  themeSettings: {
+    primaryColor: "#EA580C",
+    secondaryColor: "#FB923C",
+    fontFamily: "Inter, sans-serif",
+    layoutStyle: "default",
+  },
+};
+
 
   const [form, setForm] = useState<StoreForm>(() => {
     const initialForm = initialData ? { ...defaultForm, ...initialData } : defaultForm;
@@ -1183,6 +1277,38 @@ const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [sel
     setForm((f) => ({ ...f, ...updated }));
   };
 
+  // ----------------------------
+  // Adapters for StoreProfileInfo
+  // ----------------------------
+  const handleArrayChange = (
+    field: "partnerLogos",
+    index: number,
+    key: string,
+    value: string | number
+  ) => {
+    switch (field) {
+      case "partnerLogos":
+        onUpdateArray<{ src: string; alt: string }>(
+          field,
+          index,
+          key as keyof { src: string; alt: string },
+          value
+        );
+        break;
+    }
+  };
+
+
+  const addItem = (field: 'partnerLogos') => {
+    let newItem: any = {};
+    if (field === 'partnerLogos') newItem = { src: '', alt: '' };
+    onAddArray(field as keyof StoreForm, newItem);
+  };
+
+  const removeItem = (field: 'partnerLogos', index: number) => {
+    onRemoveArray(field as keyof StoreForm, index);
+  };
+
   const handlers: Handlers = {
     handleChange,
     onUpdateArray,
@@ -1193,6 +1319,10 @@ const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [sel
     onChangeSettings,
     
     onToggleDay,
+    // Add these:
+    handleArrayChange,
+    addItem,
+    removeItem,
     
     categoryDispatch: dispatch,
 

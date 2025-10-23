@@ -1,5 +1,6 @@
 // Accordion components
 import BasicInfo from '../components/stores/create/BasicInfo/BasicInfo';
+import StoreProfileInfo from '@/components/stores/create/StoreProfileInfo/StoreProfileInfo';
 import CategoryAccordion from '../components/stores/create/CategoryAccordion/CategoryAccordion';
 import BannerLogoAccordion from '../components/stores/create/BannerLogoAccordion/BannerLogoAccordion';
 import ContactAccordion from '../components/stores/create/ContactAccordion/ContactAccordion';
@@ -34,6 +35,12 @@ export const storeSteps: StepConfig[] = [
     key: 'basic',
     title: 'Basic Info',
     render: (f, h) => <BasicInfo {...f} handleChange={h.handleChange} />,
+  },
+  {
+    key: 'storeProfile',
+    title: 'Store Profile',
+    render: (f, h) => <StoreProfileInfo {...f} handleChange={h.handleChange} handleArrayChange={h.handleArrayChange}  
+    addItem={h.addItem} removeItem={h.removeItem}/>,
   },
   {
     key: 'categories',
