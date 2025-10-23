@@ -474,7 +474,8 @@ export default function CreateStoreForm({
           iconKey: null,
           backgroundColor: null,
           textColor: null,
-          videoLink:null
+          videoLink: null,
+          type: 'image'
         },
       ],
     }));
