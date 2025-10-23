@@ -57,6 +57,8 @@ export function transformCompanyToStoreForm(raw: any): StoreForm {
     ctaText: h.ctaText ?? '',
     ctaLink: h.ctaLink ?? '',
     order: h.order ?? 0,
+    type: h.type ?? 'image',
+    videoLink: h.videoLink ?? '',
   })),
   promotions: raw.promotions?.map((p: any) => ({
     id: p.id,
