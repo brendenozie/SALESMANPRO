@@ -115,6 +115,23 @@ export const POST = withApiHandler(async (req: Request) => {
       // 🔁 Reload NGINX
       await execPromise("sudo systemctl reload nginx");
       console.log("✅ NGINX reloaded successfully after SSL issuance.");
+
+      // 🧩 Create NGINX snippet for dynamic SSL loading
+      try {
+        const snippetPath = `/etc/nginx/snippets/ssl-${domain}.conf`;
+        const snippetContent = `
+                                ssl_certificate /etc/letsencrypt/live/${domain}/fullchain.pem;
+                                ssl_certificate_key /etc/letsencrypt/live/${domain}/privkey.pem;
+                                `;
+
+        // Write snippet file
+        await execPromise(`echo "${snippetContent}" | sudo tee ${snippetPath} > /dev/null`);
+        console.log(`✅ Created SSL snippet: ${snippetPath}`);
+        
+      } catch (snippetError: any) {
+        console.error("⚠️ Failed to create SSL snippet:", snippetError.message);
+      }
+
     } catch (sslError: any) {
       console.error("⚠️ SSL issuance failed:", sslError.message);
       if (sslError.stderr) console.error("Certbot stderr:", sslError.stderr);
