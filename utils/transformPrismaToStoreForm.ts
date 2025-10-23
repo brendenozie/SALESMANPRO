@@ -49,14 +49,14 @@ export function transformCompanyToStoreForm(raw: any): StoreForm {
     order: t.order,
   })),
   heroSlides: raw.heroSlides?.map((h: any) => ({
-    id: h.id,
-    imageUrl: h.imageUrl,
+    id: h.id ?? '',
+    imageUrl: h.imageUrl ?? '',
     headline: h.headline ?? '',
     subline: h.subline ?? '',
     badgeText: h.badgeText ?? '',
     ctaText: h.ctaText ?? '',
     ctaLink: h.ctaLink ?? '',
-    order: h.order,
+    order: h.order ?? 0,
   })),
   promotions: raw.promotions?.map((p: any) => ({
     id: p.id,

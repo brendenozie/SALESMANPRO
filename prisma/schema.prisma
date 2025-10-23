@@ -419,6 +419,7 @@ model Banner {
   company   Company @relation(fields: [companyId], references: [id])
   companyId String  @db.ObjectId
 
+  type            String?   @default("image") // e.g."video" | "image" | "Hero" | "Promo" | "Feature"
   imageUrl        String?
   productImageUrl String?
   headline        String?

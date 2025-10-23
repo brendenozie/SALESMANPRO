@@ -8,7 +8,6 @@
 "use client";
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useStoreContext } from '@/contexts/StoreContext'; // Replaced by mock below
 
 // --------------------------------------------------
 // 1. MOCK UTILITIES (Replaces External Imports)
@@ -85,15 +84,29 @@ const autoAdvanceDelay = 9000; // 9 seconds
 // --------------------------------------------------
 // 3. MAIN COMPONENT (With Data Integration)
 // --------------------------------------------------
+interface Props {
+  heroSlides?: Array<{
+    type: "image" | "video";
+    url: string;
+    headline: string;
+    subline: string;
+  }>;
+  themeSettings?: {
+    primaryColor?: string | null | undefined;
+    secondaryColor?: string | null | undefined;
+  } | null | undefined;
+}
 
-const HeroSection = () => {
+
+const HeroSection = ({ heroSlides, themeSettings } : Props) => {
   const [current, setCurrent] = useState(0);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   
   // CORE INTEGRATION: Using the (mocked) context hook
-  const { storeFormData } = useStoreContext() || {};
-  const { heroSlides, themeSettings } = storeFormData || {};
+  // const { storeFormData } = useStoreContext() || {};
+  // const { heroSlides, themeSettings } = storeFormData || {};
 
+  console.log("HeroSection - Loaded heroSlides:", heroSlides);
   // DATA RESOLUTION: Use dynamic data if available, otherwise use the local fallback
   const slides = heroSlides && (Array.isArray(heroSlides) && heroSlides.length > 0)
     ? heroSlides
