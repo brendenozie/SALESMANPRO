@@ -108,7 +108,8 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
           iconKey: null,
           backgroundColor: null,
           textColor: null,
-          videoLink: null
+          videoLink: null,
+          type: 'image'
         },
       ],
       promotions: [
@@ -159,7 +160,8 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
         iconKey: null,
         backgroundColor: null,
         textColor: null,
-        videoLink: null
+        videoLink: null,
+        type: 'image'
       }],
       pageSections:[{
         order: 1, settings: {}, 
@@ -203,7 +205,8 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
         iconKey: null,
         backgroundColor: null,
         textColor: null,
-        videoLink: null
+        videoLink: null,
+        type: 'image'
       }],
       pageSections:[{
         // type: SectionType.HowItWorks, 
@@ -243,7 +246,8 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
       iconKey: null,
       backgroundColor: null,
       textColor: null,
-      videoLink: null
+      videoLink: null,
+      type: 'image'
     }] }),
     "Event & Ticketing":                withOverrides({ tagline: "Discover Events" }),
     "Real Estate":                      withOverrides({ tagline: "Your Key to a New Home" }),
