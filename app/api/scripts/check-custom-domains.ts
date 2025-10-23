@@ -52,8 +52,6 @@ async function issueSSL(domain: string) {
     const { stdout, stderr } = await execPromise(cmd);
     if (stdout) console.log(stdout);
     if (stderr) console.warn(stderr);
-    await execPromise("sudo systemctl reload nginx");
-    console.log(`✅ SSL issued and NGINX reloaded for ${domain}`);
 
     
     // 🧩 Create NGINX snippet for dynamic SSL loading
@@ -68,6 +66,8 @@ async function issueSSL(domain: string) {
       await execPromise(`echo "${snippetContent}" | sudo tee ${snippetPath} > /dev/null`);
       console.log(`✅ Created SSL snippet: ${snippetPath}`);
       
+    await execPromise("sudo systemctl reload nginx");
+    console.log(`✅ SSL issued and NGINX reloaded for ${domain}`);
     } catch (snippetError: any) {
       console.error("⚠️ Failed to create SSL snippet:", snippetError.message);
     }

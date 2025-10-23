@@ -112,9 +112,6 @@ export const POST = withApiHandler(async (req: Request) => {
       if (stdout) console.log("✅ Certbot stdout:", stdout);
       if (stderr) console.warn("⚠️ Certbot stderr:", stderr);
 
-      // 🔁 Reload NGINX
-      await execPromise("sudo systemctl reload nginx");
-      console.log("✅ NGINX reloaded successfully after SSL issuance.");
 
       // 🧩 Create NGINX snippet for dynamic SSL loading
       try {
@@ -127,7 +124,12 @@ export const POST = withApiHandler(async (req: Request) => {
         // Write snippet file
         await execPromise(`echo "${snippetContent}" | sudo tee ${snippetPath} > /dev/null`);
         console.log(`✅ Created SSL snippet: ${snippetPath}`);
+
         
+      // 🔁 Reload NGINX
+      await execPromise("sudo systemctl reload nginx");
+      console.log("✅ NGINX reloaded successfully after SSL issuance.");
+
       } catch (snippetError: any) {
         console.error("⚠️ Failed to create SSL snippet:", snippetError.message);
       }
