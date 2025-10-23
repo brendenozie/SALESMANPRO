@@ -184,7 +184,7 @@ export const companySchema = z.object({
 
   founderName: z.string().min(2).max(100).optional(),
   founderQuote: z.string().max(500).optional(),
-  founderImage: z.string().url().optional(),
+  founderImage: z.string().optional(),
   partnerLogos: z.array(z.object({
       url: z.string().optional(),
       altText: z.string().max(100).optional(),

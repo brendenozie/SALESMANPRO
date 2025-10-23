@@ -246,6 +246,10 @@ export default async function EditStorePage({
     founderName: store.founderName || '',
     founderQuote: store.founderQuote || '',
     founderImage: store.founderImage || '',
+
+    sectionTitle: store.sectionTitle || '',
+    sectionSubtitle: store.sectionSubtitle || '',
+    sectionDescription: store.sectionDescription || '',
   };
 
   return (

@@ -21,9 +21,8 @@ const loader = ({ src, width, quality }: { src: string; width: number; quality?:
 const autoAdvanceDelay = 9000;
 
 // Component for the Founder's Story (New visual element)
-const CoachStoryCard = ({ name, description, primaryColor }: { name: string; description: string; primaryColor: string }) => {
-    const founderName = description.split('Founded by ')[1]?.split(',')[0] || name;
-
+const CoachStoryCard = ({ name, founderName, founderQuote, primaryColor }: { name: string; founderName: string; founderQuote: string; primaryColor: string }) => {
+    
     return (
         <motion.div
             className="p-6 md:p-8 bg-white rounded-3xl shadow-2xl relative z-20 w-full transform -translate-y-1/2 lg:translate-x-1/4"
@@ -34,7 +33,7 @@ const CoachStoryCard = ({ name, description, primaryColor }: { name: string; des
             style={{ borderTop: `6px solid ${primaryColor}` }}
         >
             <p className="text-xl italic text-gray-800 mb-4">
-                "{description.replace(/Founded by.*FlourisHUb is/, 'I created FlourisHUb as')} a nurturing space for all beautiful souls committed to the art of human flourishing."
+                {founderQuote || `“At ${name}, our vision is to ignite a global movement of flourishing souls. We believe that every individual has the potential to thrive when nurtured with love, purpose, and community. Join us on this transformative journey.”`}
             </p>
             <div className="flex items-center">
                 <AcademicCapIcon className="w-6 h-6 mr-3" style={{ color: primaryColor }} />
@@ -58,6 +57,9 @@ const AboutSection: React.FC = () => {
     themeSettings = { primaryColor: "#F97316", secondaryColor: "#FB923C" },
     heroSlides = [],
     bannerUrl,
+    CoreValues,
+    founderName,
+    founderQuote,
   } : any = storeFormData || {}; // Added : any to resolve potential TS issues
 
   const imgSrc = useMemo(
@@ -69,7 +71,8 @@ const AboutSection: React.FC = () => {
   const secondaryColor = themeSettings?.secondaryColor || "#FB923C";
 
     // Values/Highlights data
-    const highlights = useMemo(() => ([
+    const highlights = useMemo(() => (
+      [
         {
             icon: GlobeAltIcon,
             title: "Vision: Global Flourishing",
@@ -155,9 +158,9 @@ const AboutSection: React.FC = () => {
               </h2>
 
               <p className="text-lg text-gray-700 mb-8 leading-relaxed">
-                Our mission is simple yet transformative — to create a global hub that uplifts individuals, families,
+                { description || `Our mission is simple yet transformative — to create a global hub that uplifts individuals, families,
                 and communities toward authentic growth, balance, and joy. We believe that when one soul flourishes,
-                the ripple of transformation touches families, communities, and nations.
+                the ripple of transformation touches families, communities, and nations...`}
               </p>
 
               {/* Elevated Highlights Grid */}
@@ -192,7 +195,8 @@ const AboutSection: React.FC = () => {
         <div className="container relative z-30 mx-auto mt-16 px-6 max-w-7xl">
             <CoachStoryCard 
                 name={name} 
-                description={description} 
+                founderName={founderName || "Coach Jackie Wegoki"} 
+                founderQuote={founderQuote || `“At ${name}, our vision is to ignite a global movement of flourishing souls. We believe that every individual has the potential to thrive when nurtured with love, purpose, and community. Join us on this transformative journey.”`}
                 primaryColor={primaryColor} 
             />
         </div>

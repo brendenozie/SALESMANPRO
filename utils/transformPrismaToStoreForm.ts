@@ -337,5 +337,22 @@ export function transformCompanyToStoreForm(raw: any): StoreForm {
         }))
       : [],
 
+    partnerLogos: Array.isArray(raw.partnerLogos) && raw.partnerLogos.length > 0 ? raw.partnerLogos : [
+      { id: 'default', imageUrl: 'https://placehold.co/160x40/ffffff/000000?text=Logo+Placeholder' },
+      { id: 'default2', imageUrl: 'https://placehold.co/160x40/ffffff/000000?text=Logo+Placeholder' },
+      { id: 'default3', imageUrl: 'https://placehold.co/160x40/ffffff/000000?text=Logo+Placeholder' },
+      { id: 'default4', imageUrl: 'https://placehold.co/160x40/ffffff/000000?text=Logo+Placeholder' },
+      { id: 'default5', imageUrl: 'https://placehold.co/160x40/ffffff/000000?text=Logo+Placeholder' },
+      { id: 'default6', imageUrl: 'https://placehold.co/160x40/ffffff/000000?text=Logo+Placeholder' },
+      { id: 'default7', imageUrl: 'https://placehold.co/160x40/ffffff/000000?text=Logo+Placeholder' },
+    ],
+    founderQuote: raw.founderQuote ?? null,
+    founderName: raw.founderName ?? null,
+    founderImage: raw.founderImage ?? null,
+
+    sectionSubtitle: raw.sectionSubtitle ?? "Trusted Worldwide",
+    sectionDescription: raw.sectionDescription ?? "Empowering Success Through Proven Expertise",
+    sectionTitle: raw.sectionTitle ?? "Why Choose Our Consultancy Services",
+
 };
 }

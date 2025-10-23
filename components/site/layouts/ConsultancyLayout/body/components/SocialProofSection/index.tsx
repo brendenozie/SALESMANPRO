@@ -62,7 +62,7 @@ export default function App() { // Renamed to App for single file export
     // --- 🧩 Sample fallback data ---
     const sampleData = useMemo(
         () => ({
-            logos: [
+            partnerLogos: [
                 { src: 'https://placehold.co/160x40/ffffff/000000?text=Logo+A', alt: 'Logo A' },
                 { src: 'https://placehold.co/160x40/ffffff/000000?text=Logo+B', alt: 'Logo B' },
                 { src: 'https://placehold.co/160x40/ffffff/000000?text=Logo+C', alt: 'Logo C' },
@@ -85,11 +85,14 @@ export default function App() { // Renamed to App for single file export
 
     // --- ✅ Merge with real data ---
     const {
-        logos = sampleData.logos,
+        partnerLogos = sampleData.partnerLogos,
         stats: rawStats = sampleData.stats,
         awards,
         metrics,
         themeSettings = sampleData.themeSettings,
+        sectionSubtitle,
+        sectionDescription,
+        sectionTitle,
     }: any = storeFormData || sampleData;
 
     // --- 🧠 Ensure at least 3 stats logic ---
@@ -132,6 +135,12 @@ export default function App() { // Renamed to App for single file export
     const primaryColor = themeSettings?.primary || '#EA580C';
     const primaryRgb = simpleHexToRgb(primaryColor);
 
+    // --- ✂️ Section Title Split Logic ---
+    const titleWords = (sectionTitle || 'Empowering Success Through Proven Expertise').split(' ');
+    const lastTwo = titleWords.slice(-2).join(' ');
+    const firstPart = titleWords.slice(0, -2).join(' ');
+
+
 
     // --- 💎 UI ---
     return (
@@ -147,7 +156,7 @@ export default function App() { // Renamed to App for single file export
                         className="inline-block uppercase font-bold tracking-widest text-xs mb-3"
                         style={{ color: primaryColor }}
                     >
-                        Our Global Impact
+                        {sectionSubtitle || 'Trusted Worldwide'}
                     </span>
                     <motion.h2
                         className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4 leading-tight"
@@ -156,8 +165,13 @@ export default function App() { // Renamed to App for single file export
                         transition={{ duration: 0.7 }}
                         viewport={{ once: true, amount: 0.5 }}
                     >
-                        Proven Expertise, <span style={{ color: primaryColor }}>Verified Results 🏆</span>
+                        { 
+                            <>
+                                {firstPart}{" "} <span style={{ color: primaryColor }}>{lastTwo}</span>
+                            </>
+                        }
                     </motion.h2>
+
                     <motion.p
                         className="text-lg text-gray-600 max-w-2xl mx-auto"
                         initial={{ opacity: 0, y: 20 }}
@@ -165,7 +179,7 @@ export default function App() { // Renamed to App for single file export
                         transition={{ duration: 0.7, delay: 0.1 }}
                         viewport={{ once: true, amount: 0.5 }}
                     >
-                        My commitment to excellence has earned recognition on world-leading platforms and fueled the success of thousands of ambitious individuals and organizations globally.
+                        {sectionDescription || 'Join thousands of satisfied clients who have transformed their businesses and lives with our expert coaching and consulting services.'}
                     </motion.p>
                 </div>
 
@@ -179,7 +193,7 @@ export default function App() { // Renamed to App for single file export
                 >
                     <p className="text-xs font-semibold text-gray-400 mb-3 text-center uppercase tracking-widest">Featured in & Trusted by</p>
                     <Marquee primaryColor={primaryColor}>
-                        {logos.map((logo: { src: string; alt: string }, idx: number) => (
+                        {partnerLogos.map((logo: { src: string; alt: string }, idx: number) => (
                             <div
                                 key={idx}
                                 className="inline-flex flex-shrink-0 items-center justify-center w-32 sm:w-40 mx-3 sm:mx-6" // Adjusted width and margin for mobile
