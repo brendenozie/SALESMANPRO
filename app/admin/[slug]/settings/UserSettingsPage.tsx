@@ -21,6 +21,11 @@ import { useSession, signOut } from 'next-auth/react';
 import clsx from 'clsx'; // Utility for conditional classes
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+  
+  // --- NEW: Derive CNAME Target and define A Record IP ---
+  const A_RECORD_IP = process.env.VPS_IP || '72.61.178.94'; // From your example: A 14400 72.61.178.94
+  // For the CNAME value, I will use a placeholder derived from companyId as per your structure: 
+  // --- END NEW DNS DEFINITIONS ---
 
 // --- MOCK CONTEXTS (Keep these for functionality) ---
 const useMockStoreContext = () => ({
@@ -71,7 +76,7 @@ export default function UserSettingsPage( { companyId }: { companyId: string } )
   let realStoreCtx: any = null;
   try {
     // call real hook; if not configured this will either return null/undefined or throw — handled by try/catch
-    realStoreCtx = (useStoreContext as any)();
+    realStoreCtx = useStoreContext();//(useStoreContext as any)();
   } catch (e) {
     realStoreCtx = null;
   }
@@ -115,6 +120,7 @@ export default function UserSettingsPage( { companyId }: { companyId: string } )
 
   // Domain-related state
   const [customDomain, setCustomDomain] = useState('');
+  const [slug, setSlug] = useState('');
   const [loading, setLoading] = useState(false);
   const [domainStatus, setDomainStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
@@ -127,6 +133,7 @@ export default function UserSettingsPage( { companyId }: { companyId: string } )
 
   // poll ref to control lifecycle
   const pollRef = useRef<number | null>(null);
+
 
   useEffect(() => {
     // sync profile fields from user
@@ -164,6 +171,7 @@ export default function UserSettingsPage( { companyId }: { companyId: string } )
       }
 
       setCurrentDomain(data.domain || null);
+      setSlug(data.slug || '');
       setHasWebsite(typeof data.hasWebsite === 'boolean' ? data.hasWebsite : !!data.hasWebsite);
       // prefer provided dnsVerified else null
       setDnsVerified(typeof data.dnsVerified === 'boolean' ? data.dnsVerified : null);
@@ -358,7 +366,7 @@ export default function UserSettingsPage( { companyId }: { companyId: string } )
   };
 
   // -------------------------
-  // Render (keep design/styling identical, only add status displays)
+  // Render
   // -------------------------
   return (
     <div 
@@ -552,7 +560,7 @@ export default function UserSettingsPage( { companyId }: { companyId: string } )
                   </form>
                 )}
 
-                {/* 4. Custom Domain */}
+                {/* 4. Custom Domain (UPDATED WITH DNS INSTRUCTIONS) */}
                 {activeTab==='domain' && (
                   <form onSubmit={handleDomainSubmit} className="space-y-6">
                     <h2 className="text-2xl font-bold text-gray-900 border-b pb-3 mb-6">Custom Domain Setup</h2>
@@ -610,12 +618,41 @@ export default function UserSettingsPage( { companyId }: { companyId: string } )
                         </motion.p>
                     )}
 
-                    <div className="mt-6 p-4 bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800 rounded-lg">
-                        <p className="font-semibold">DNS Configuration Required</p>
-                        <p className="text-sm mt-1">
-                            Before connecting, please add a <strong>CNAME</strong> record in your DNS settings: Host: <code>your subdomain</code> (e.g., <code>store</code>), Type: <code>CNAME</code>, Value: <code>yourapp.example.com</code>.
+                    {/* NEW DNS Configuration Block */}
+                    <div className="mt-6 p-6 bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800 rounded-lg space-y-4">
+                        <p className="font-bold text-lg text-yellow-900">
+                            Action Required: Update DNS Records
                         </p>
-                      {/* If you prefer A record instructions (VPS IP), you can add here dynamically */}
+                        <p className="text-sm">
+                            To activate your domain, please log in to your **domain provider's website** (e.g., GoDaddy, Cloudflare, Namecheap) and navigate to the **DNS settings**.
+                        </p>
+                        <p className="text-sm font-semibold">
+                            ⚠️ Important: You must **delete all existing A Records** for the `@` (root) and `www` hosts before adding the new records below.
+                        </p>
+
+                        <div className="space-y-3 p-3 bg-white rounded-md border border-yellow-200">
+                            <h4 className="font-bold text-base text-gray-900">Required DNS Records:</h4>
+
+                            {/* A Record */}
+                            <div className="font-mono text-sm bg-gray-100 p-2 rounded-lg border border-gray-200">
+                                <span className="font-semibold text-gray-700">Type:</span> <code className="text-red-600">A</code><br/>
+                                <span className="font-semibold text-gray-700">Host/Name:</span> <code className="text-red-600">@</code> (The root domain)<br/>
+                                <span className="font-semibold text-gray-700">Value/IP:</span> <code className="text-red-600">{A_RECORD_IP}</code><br/>
+                                <span className="font-semibold text-gray-700">TTL:</span> <code className="text-red-600">14400</code> (or default/Auto)
+                            </div>
+
+                            {/* CNAME Record */}
+                            <div className="font-mono text-sm bg-gray-100 p-2 rounded-lg border border-gray-200">
+                                <span className="font-semibold text-gray-700">Type:</span> <code className="text-red-600">CNAME</code><br/>
+                                <span className="font-semibold text-gray-700">Host/Name:</span> <code className="text-red-600">www</code><br/>
+                                <span className="font-semibold text-gray-700">Value/Target:</span> <code className="text-red-600">{`${slug}.salesmanpro.site`}</code><br/>
+                                <span className="font-semibold text-gray-700">TTL:</span> <code className="text-red-600">14400</code> (or default/Auto)
+                            </div>
+                        </div>
+
+                        <p className="text-sm mt-3">
+                            Once you've added these records, it may take a few hours for DNS propagation. Click **Connect Domain** above after you've updated your DNS to initiate verification.
+                        </p>
                     </div>
                   </form>
                 )}
@@ -747,10 +784,9 @@ const SaveButton: React.FC<{ label: string; primaryColor?: string }> = ({ label 
 const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
   return `${src}?w=${width}&q=${quality || 75}`;
 };
-
 // 'use client';
 
-// import React, { useState, useEffect } from 'react';
+// import React, { useState, useEffect, useRef } from 'react';
 // import { motion, AnimatePresence } from 'framer-motion';
 // import {
 //   UserCircleIcon,
@@ -789,7 +825,7 @@ const customLoader = ({ src, width, quality }: { src: string; width: number; qua
 //     name: 'Jane Doe',
 //     email: 'jane.doe@example.com',
 //     phone: '123-456-7890',
-//     avatarUrl: 'https://placehold.co/100x100/E02A50/FFFFFF?text=JD', 
+//     avatarUrl: 'https://placehold.co/100x100/E02A50/FFFFFF?text=JD',
 //     notifications: {
 //       emailAlerts: true,
 //       smsAlerts: false,
@@ -797,7 +833,7 @@ const customLoader = ({ src, width, quality }: { src: string; width: number; qua
 //     },
 //   });
 
-//   // Mock API functions... (omitted for brevity, assume they work as before)
+//   // Mock API functions for demo/testing
 //   const updateUserProfile = (data: any) => new Promise((resolve) => setTimeout(() => { setUserData(prev => ({ ...prev, ...data })); resolve({ success: true, message: 'Profile updated successfully!' }); }, 500));
 //   const changePassword = (oldPass: string, newPass: string) => new Promise((resolve, reject) => setTimeout(() => (oldPass === 'password123' ? resolve({ success: true, message: 'Password changed successfully!' }) : reject({ success: false, message: 'Incorrect old password.' })), 500));
 //   const updateNotificationPreferences = (newPrefs: any) => new Promise((resolve) => setTimeout(() => { setUserData((prev) => ({ ...prev, notifications: { ...prev.notifications, ...newPrefs } })); resolve({ success: true, message: 'Notification preferences updated!' }); }, 500));
@@ -813,26 +849,45 @@ const customLoader = ({ src, width, quality }: { src: string; width: number; qua
 //     logoutUser,
 //   };
 // };
-
-// // Simplified loader for standard <img> tag
-// const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
-//   return `${src}?w=${width}&q=${quality || 75}`;
-// };
 // // --- END MOCK CONTEXTS ---
 
 
 // export default function UserSettingsPage( { companyId }: { companyId: string } ) {
-//   const { storeFormData } = useMockStoreContext();
-//   const { user, updateUserProfile, changePassword, updateNotificationPreferences, deactivateAccount, logoutUser } = useMockUserContext();
+//   // Prefer real store context if available, otherwise fallback to mock
+//   let realStoreCtx: any = null;
+//   try {
+//     // call real hook; if not configured this will either return null/undefined or throw — handled by try/catch
+//     realStoreCtx = useStoreContext();//(useStoreContext as any)();
+//   } catch (e) {
+//     realStoreCtx = null;
+//   }
+//   const mockStoreCtx = useMockStoreContext();
+//   const storeContext = realStoreCtx && Object.keys(realStoreCtx || {}).length ? realStoreCtx : mockStoreCtx;
+//   const { storeFormData } = storeContext;
 
-//   // Use Theme Colors and define fallback CSS variables
+//   // Prefer next-auth session if available
+//   const session = useSession?.(); // may be undefined in some setups
+//   // Prefer a mocked user context for demo, but can be swapped to an actual user hook later
+//   const mockUser = useMockUserContext();
+//   // If you have a real user-provider hook, you can swap it in easily; for now we use mock user data & functions
+//   const {
+//     user,
+//     updateUserProfile,
+//     changePassword,
+//     updateNotificationPreferences,
+//     deactivateAccount,
+//     logoutUser,
+//   } = mockUser;
+
+//   // Theme / colors (unchanged)
 //   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#E02A50';
 //   const accentColor = storeFormData?.themeSettings?.accentColor || "#FBBF24";
 
+//   // UI State
 //   const [activeTab, setActiveTab] = useState('profile');
 //   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
-//   // Form states (omitted setup for brevity - assumes previous state logic is maintained)
+//   // Form states
 //   const [profileName, setProfileName] = useState(user.name);
 //   const [profileEmail, setProfileEmail] = useState(user.email);
 //   const [profilePhone, setProfilePhone] = useState(user.phone);
@@ -843,11 +898,25 @@ const customLoader = ({ src, width, quality }: { src: string; width: number; qua
 //   const [emailAlerts, setEmailAlerts] = useState(user.notifications.emailAlerts);
 //   const [smsAlerts, setSmsAlerts] = useState(user.notifications.smsAlerts);
 //   const [inAppNotifications, setInAppNotifications] = useState(user.notifications.inAppNotifications);
+
+//   // Domain-related state
 //   const [customDomain, setCustomDomain] = useState('');
+//   const [slug, setSlug] = useState('');
+//   const [loading, setLoading] = useState(false);
 //   const [domainStatus, setDomainStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
-//   const [loading, setLoading] = useState(false)
+
+//   // Live domain info
+//   const [currentDomain, setCurrentDomain] = useState<string | null>(null);
+//   const [hasWebsite, setHasWebsite] = useState<boolean | null>(null);
+//   const [dnsVerified, setDnsVerified] = useState<boolean | null>(null);
+//   const [sslStatus, setSslStatus] = useState<string | null>(null);
+//   const [domainLoading, setDomainLoading] = useState<boolean>(true);
+
+//   // poll ref to control lifecycle
+//   const pollRef = useRef<number | null>(null);
 
 //   useEffect(() => {
+//     // sync profile fields from user
 //     setProfileName(user.name);
 //     setProfileEmail(user.email);
 //     setProfilePhone(user.phone);
@@ -862,24 +931,222 @@ const customLoader = ({ src, width, quality }: { src: string; width: number; qua
 //     setTimeout(() => setStatusMessage(null), 3000);
 //   };
 
-//   // --- HANDLERS (using previous logic) ---
-//   const handleProfileUpdate = async (e: React.FormEvent) => { e.preventDefault(); try { const result = await updateUserProfile({ name: profileName, email: profileEmail, phone: profilePhone, avatarUrl: profileAvatar }); showStatus('success', (result as { message: string }).message); } catch (error: any) { showStatus('error', error.message || 'Failed to update profile.'); } };
-//   const handlePasswordChange = async (e: React.FormEvent) => { e.preventDefault(); if (newPassword !== confirmNewPassword) { showStatus('error', 'New passwords do not match.'); return; } if (newPassword.length < 6) { showStatus('error', 'New password must be at least 6 characters long.'); return; } try { const result = await changePassword(oldPassword, newPassword); showStatus('success', (result as { message: string }).message); setOldPassword(''); setNewPassword(''); setConfirmNewPassword(''); } catch (error: any) { showStatus('error', error.message || 'Failed to change password.'); } };
-//   const handleNotificationUpdate = async (e: React.FormEvent) => { e.preventDefault(); try { const result = await updateNotificationPreferences({ emailAlerts, smsAlerts, inAppNotifications }); showStatus('success', (result as { message: string }).message); } catch (error: any) { showStatus('error', error.message || 'Failed to update notification preferences.'); } };
-//   const handleDeactivateAccount = async () => { if (window.confirm('Are you sure you want to deactivate your account?')) { try { const result = await deactivateAccount(); showStatus('success', (result as { message: string }).message); } catch (error: any) { showStatus('error', error.message || 'Failed to deactivate account.'); } } };
-//   const handleLogout = async () => { if (window.confirm('Are you sure you want to log out?')) { try { await logoutUser(storeFormData.category); } catch (error: any) { showStatus('error', error.message || 'Failed to log out.'); } } };
-//   const handleDomainSubmit = async (e: React.FormEvent) => { e.preventDefault(); setDomainStatus(null); if (loading) return; setLoading(true); try { const res = await fetch(`${apiBaseUrl}/custom-domain`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Credentials' : 'include' }, body: JSON.stringify({ domain: customDomain, companyId }), }); const data = await res.json(); if (!res.ok) throw new Error(data.error || 'Unknown error'); setDomainStatus({ type: 'success', message: data.message }); setCustomDomain(''); setLoading(false); } catch (err: any) { setDomainStatus({ type: 'error', message: err.message }); setLoading(false); } };
-//   // --- END HANDLERS ---
+//   // -------------------------
+//   // Domain status fetch logic
+//   // -------------------------
+//   const fetchDomainStatus = async (signal?: AbortSignal) => {
+//     if (!companyId) return;
+//     setDomainLoading(true);
+//     try {
+//       const res = await fetch(`${apiBaseUrl}/custom-domain/status?companyId=${companyId}`, { signal });
+//       const data = await res.json();
+//       if (!res.ok) {
+//         // If backend returns structured error
+//         console.warn('Failed to fetch domain status:', data?.error || data);
+//         setCurrentDomain(null);
+//         setHasWebsite(null);
+//         setDnsVerified(null);
+//         setSslStatus(null);
+//         return;
+//       }
 
+//       setCurrentDomain(data.domain || null);
+//       setHasWebsite(typeof data.hasWebsite === 'boolean' ? data.hasWebsite : !!data.hasWebsite);
+//       // prefer provided dnsVerified else null
+//       setDnsVerified(typeof data.dnsVerified === 'boolean' ? data.dnsVerified : null);
+//       // if backend includes sslStatus use it, otherwise keep null
+//       setSslStatus(data.sslStatus ?? data.ssl_status ?? null);
+//     } catch (err: any) {
+//       if (err.name === 'AbortError') {
+//         // ignore aborts
+//         return;
+//       }
+//       console.error('Error fetching domain status:', err);
+//       setCurrentDomain(null);
+//       setHasWebsite(null);
+//       setDnsVerified(null);
+//       setSslStatus(null);
+//     } finally {
+//       setDomainLoading(false);
+//     }
+//   };
 
-//   // Variants for tab content transition
+//   // Start polling when domain tab is active
+//   useEffect(() => {
+//     // cleanup any previous poll
+//     if (pollRef.current) {
+//       window.clearInterval(pollRef.current);
+//       pollRef.current = null;
+//     }
+
+//     if (activeTab === 'domain') {
+//       // initial fetch + begin polling
+//       const controller = new AbortController();
+//       fetchDomainStatus(controller.signal);
+
+//       // poll every 15 seconds
+//       const id = window.setInterval(() => {
+//         fetchDomainStatus();
+//       }, 15000);
+//       pollRef.current = id;
+
+//       return () => {
+//         if (pollRef.current) {
+//           window.clearInterval(pollRef.current);
+//           pollRef.current = null;
+//         }
+//         controller.abort();
+//       };
+//     }
+
+//     return () => {
+//       if (pollRef.current) {
+//         window.clearInterval(pollRef.current);
+//         pollRef.current = null;
+//       }
+//     };
+//   }, [activeTab, companyId]);
+
+//   // -------------------------
+//   // Handlers
+//   // -------------------------
+//   const handleProfileUpdate = async (e: React.FormEvent) => {
+//     e.preventDefault();
+//     try {
+//       const result = await updateUserProfile({ name: profileName, email: profileEmail, phone: profilePhone, avatarUrl: profileAvatar });
+//       showStatus('success', (result as { message: string }).message);
+//     } catch (error: any) {
+//       showStatus('error', error.message || 'Failed to update profile.');
+//     }
+//   };
+
+//   const handlePasswordChange = async (e: React.FormEvent) => {
+//     e.preventDefault();
+//     if (newPassword !== confirmNewPassword) {
+//       showStatus('error', 'New passwords do not match.');
+//       return;
+//     }
+//     if (newPassword.length < 6) {
+//       showStatus('error', 'New password must be at least 6 characters long.');
+//       return;
+//     }
+//     try {
+//       const result = await changePassword(oldPassword, newPassword);
+//       showStatus('success', (result as { message: string }).message);
+//       setOldPassword('');
+//       setNewPassword('');
+//       setConfirmNewPassword('');
+//     } catch (error: any) {
+//       showStatus('error', error.message || 'Failed to change password.');
+//     }
+//   };
+
+//   const handleNotificationUpdate = async (e: React.FormEvent) => {
+//     e.preventDefault();
+//     try {
+//       const result = await updateNotificationPreferences({ emailAlerts, smsAlerts, inAppNotifications });
+//       showStatus('success', (result as { message: string }).message);
+//     } catch (error: any) {
+//       showStatus('error', error.message || 'Failed to update notification preferences.');
+//     }
+//   };
+
+//   const handleDeactivateAccount = async () => {
+//     if (window.confirm('Are you sure you want to deactivate your account?')) {
+//       try {
+//         const result = await deactivateAccount();
+//         showStatus('success', (result as { message: string }).message);
+//       } catch (error: any) {
+//         showStatus('error', error.message || 'Failed to deactivate account.');
+//       }
+//     }
+//   };
+
+//   const handleLogout = async () => {
+//     if (window.confirm('Are you sure you want to log out?')) {
+//       try {
+//         await logoutUser(storeFormData.category);
+//       } catch (error: any) {
+//         showStatus('error', error.message || 'Failed to log out.');
+//       }
+//     }
+//   };
+
+//   // domain submit: POST to /custom-domain
+//   const handleDomainSubmit = async (e: React.FormEvent) => {
+//     e.preventDefault();
+//     setDomainStatus(null);
+//     if (loading) return;
+//     if (!customDomain || customDomain.trim().length === 0) {
+//       setDomainStatus({ type: 'error', message: 'Please enter a valid domain.' });
+//       return;
+//     }
+
+//     setLoading(true);
+//     try {
+//       const res = await fetch(`${apiBaseUrl}/custom-domain`, {
+//         method: 'POST',
+//         headers: { 'Content-Type': 'application/json' },
+//         body: JSON.stringify({ domain: customDomain.trim(), companyId }),
+//       });
+//       const data = await res.json();
+
+//       if (!res.ok) {
+//         // error path
+//         const errMsg = data?.error || data?.message || 'Unknown error';
+//         setDomainStatus({ type: 'error', message: errMsg });
+//         setLoading(false);
+//         return;
+//       }
+
+//       // success path
+//       const successMessage = data?.message || 'Domain saved successfully';
+//       setDomainStatus({ type: 'success', message: successMessage });
+//       setCustomDomain('');
+//       // Immediately refresh domain status and keep polling (poll effect handles repeated polling)
+//       await fetchDomainStatus();
+
+//       // in many cases cert issuance happens asynchronously on the server — continue polling to pick that up
+//     } catch (err: any) {
+//       console.error('Error submitting domain:', err);
+//       setDomainStatus({ type: 'error', message: err?.message || 'Failed to connect domain.' });
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   // Variants for tab content transition (unchanged)
 //   const contentVariants = {
 //     hidden: { opacity: 0, x: 20 },
 //     visible: { opacity: 1, x: 0, transition: { duration: 0.3 } },
 //     exit: { opacity: 0, x: -20, transition: { duration: 0.3 } },
 //   };
 
-//   // 🛑 VISUAL IMPROVEMENT: Using inline style to define CSS variables
+//   // Helper to render domain status line
+//   const renderDomainStatusLine = () => {
+//     if (domainLoading) {
+//       return <p className="text-gray-500 animate-pulse">Checking domain status...</p>;
+//     }
+
+//     if (currentDomain) {
+//       // If backend provided sslStatus, show it; otherwise infer via hasWebsite/dnsVerified
+//       if (hasWebsite) {
+//         return <p className="text-sm text-gray-600">✅ Connected and live (sslStatus: {sslStatus ?? 'UNKNOWN'})</p>;
+//       }
+
+//       if (dnsVerified) {
+//         return <p className="text-sm text-gray-600">🟢 DNS verified, awaiting SSL / finalization{sslStatus ? ` (sslStatus: ${sslStatus})` : ''}...</p>;
+//       }
+
+//       return <p className="text-sm text-gray-600">⚠️ Saved, waiting for DNS verification...</p>;
+//     }
+
+//     return <p className="text-gray-700">No custom domain connected yet.</p>;
+//   };
+
+//   // -------------------------
+//   // Render (keep design/styling identical, only add status displays)
+//   // -------------------------
 //   return (
 //     <div 
 //         className="p-4 sm:p-6 lg:p-12 bg-gray-50 min-h-screen font-sans"
@@ -901,7 +1168,7 @@ const customLoader = ({ src, width, quality }: { src: string; width: number; qua
 
 //         <div className="flex flex-col lg:flex-row divide-y lg:divide-y-0 lg:divide-x divide-gray-100">
           
-//           {/* Sidebar Navigation - 🛑 VISUAL IMPROVEMENT: Cleaner sidebar styling */}
+//           {/* Sidebar Navigation */}
 //           <nav className="w-full lg:w-1/4 flex lg:flex-col p-4 flex-shrink-0 overflow-x-auto lg:overflow-x-visible">
             
 //             {/* Navigation Buttons */}
@@ -929,7 +1196,7 @@ const customLoader = ({ src, width, quality }: { src: string; width: number; qua
 //                 </motion.button>
 //             ))}
 
-//             {/* Logout Button - 🛑 VISUAL IMPROVEMENT: Clear separation for destructive/secondary action */}
+//             {/* Logout Button */}
 //             <motion.button
 //                 onClick={handleLogout}
 //                 className="mt-6 flex items-center gap-4 px-5 py-3 rounded-xl text-left font-semibold text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors duration-200 border border-gray-200"
@@ -973,7 +1240,7 @@ const customLoader = ({ src, width, quality }: { src: string; width: number; qua
 //                   <form onSubmit={handleProfileUpdate} className="space-y-8">
 //                     <h2 className="text-2xl font-bold text-gray-900 border-b pb-3 mb-6">Personal Profile</h2>
                     
-//                     {/* Avatar Card - 🛑 VISUAL IMPROVEMENT: Dedicated card for avatar */}
+//                     {/* Avatar Card */}
 //                     <div className="bg-gray-50 p-6 rounded-xl border border-gray-200 flex flex-col sm:flex-row items-center gap-6">
 //                         <div className="relative">
 //                             <img
@@ -1078,6 +1345,28 @@ const customLoader = ({ src, width, quality }: { src: string; width: number; qua
 //                     <h2 className="text-2xl font-bold text-gray-900 border-b pb-3 mb-6">Custom Domain Setup</h2>
 //                     <p className="text-gray-600 mb-4">Connect your own domain name (e.g., **store.mydomain.com**) to your storefront for a professional look.</p>
                     
+//                     {/* Current Domain Status */}
+//                     <div className="mb-4">
+//                       {currentDomain ? (
+//                         <div className="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-lg">
+//                           <GlobeAltIcon className="h-6 w-6 text-green-600" />
+//                           <div>
+//                             <p className="font-semibold text-green-700">
+//                               {currentDomain}
+//                             </p>
+//                             {renderDomainStatusLine()}
+//                           </div>
+//                         </div>
+//                       ) : domainLoading ? (
+//                         <p className="text-gray-500 animate-pulse">Checking domain status...</p>
+//                       ) : (
+//                         <div className="p-4 bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800 rounded-lg">
+//                           <p className="text-gray-700">No custom domain connected yet.</p>
+//                         </div>
+//                       )}
+//                     </div>
+
+//                     {/* Domain Input */}
 //                     <div className="flex flex-col sm:flex-row gap-4">
 //                         <input 
 //                             type="text" 
@@ -1111,8 +1400,9 @@ const customLoader = ({ src, width, quality }: { src: string; width: number; qua
 //                     <div className="mt-6 p-4 bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800 rounded-lg">
 //                         <p className="font-semibold">DNS Configuration Required</p>
 //                         <p className="text-sm mt-1">
-//                             Before connecting, please add a **CNAME** record in your DNS settings: Host: `your subdomain` (e.g., `store`), Type: `CNAME`, Value: `yourapp.example.com`.
+//                             Before connecting, please add a <strong>CNAME</strong> record in your DNS settings: Host: <code>your subdomain</code> (e.g., <code>store</code>), Type: <code>CNAME</code>, Value: <code>yourapp.example.com</code>.
 //                         </p>
+//                       {/* If you prefer A record instructions (VPS IP), you can add here dynamically */}
 //                     </div>
 //                   </form>
 //                 )}
@@ -1122,7 +1412,7 @@ const customLoader = ({ src, width, quality }: { src: string; width: number; qua
 //                   <div className="space-y-6">
 //                     <h2 className="text-2xl font-bold text-gray-900 border-b pb-3 mb-6">Danger Zone</h2>
                     
-//                     {/* Deactivation Card - 🛑 VISUAL IMPROVEMENT: Red danger card */}
+//                     {/* Deactivation Card */}
 //                     <div className="p-6 bg-red-50 border border-red-200 rounded-xl shadow-md flex flex-col sm:flex-row justify-between items-start sm:items-center">
 //                         <div>
 //                             <h3 className="text-lg font-semibold text-red-700">Deactivate Account</h3>
@@ -1138,7 +1428,7 @@ const customLoader = ({ src, width, quality }: { src: string; width: number; qua
 //                         </motion.button>
 //                     </div>
 
-//                     {/* Deletion Card (Example of a more serious action) */}
+//                     {/* Deletion Card */}
 //                     <div className="p-6 bg-red-100 border border-red-300 rounded-xl shadow-md flex flex-col sm:flex-row justify-between items-start sm:items-center">
 //                         <div>
 //                             <h3 className="text-lg font-semibold text-red-800">Permanently Delete Account</h3>
@@ -1176,7 +1466,7 @@ const customLoader = ({ src, width, quality }: { src: string; width: number; qua
 //     readOnly?: boolean;
 // }
 
-// // 🛑 VISUAL IMPROVEMENT: Reusable Input Group with integrated Icon
+// // Reusable Input Group with integrated Icon
 // const InputGroup: React.FC<InputGroupProps> = ({ id, label, type, value, onChange, Icon, readOnly = false }) => (
 //     <div>
 //         <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
@@ -1207,7 +1497,7 @@ const customLoader = ({ src, width, quality }: { src: string; width: number; qua
 //     onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 // }
 
-// // 🛑 VISUAL IMPROVEMENT: Dedicated Toggle Component for better UX
+// // Toggle Component
 // const NotificationToggle: React.FC<NotificationToggleProps> = ({ id, label, description, checked, onChange }) => (
 //     <div className="p-4 rounded-xl bg-white border border-gray-200 shadow-sm flex items-start justify-between transition-colors hover:bg-gray-50">
 //         <div className="mr-4">
@@ -1220,13 +1510,13 @@ const customLoader = ({ src, width, quality }: { src: string; width: number; qua
 //             className="h-6 w-6 rounded-full border-gray-300 bg-gray-200 text-[var(--primary-color)] focus:ring-[var(--primary-color)] mt-1 flex-shrink-0"
 //             checked={checked}
 //             onChange={onChange}
-//             style={{ color: 'var(--primary-color)' }} // For consistent checkbox color
+//             style={{ color: 'var(--primary-color)' }}
 //         />
 //     </div>
 // );
 
-// // 🛑 VISUAL IMPROVEMENT: Reusable Save Button
-// const SaveButton: React.FC<{ label: string; primaryColor: string }> = ({ label }) => (
+// // Reusable Save Button
+// const SaveButton: React.FC<{ label: string; primaryColor?: string }> = ({ label }) => (
 //     <div className="pt-6 border-t border-gray-100">
 //         <motion.button
 //             type="submit"
@@ -1239,3 +1529,8 @@ const customLoader = ({ src, width, quality }: { src: string; width: number; qua
 //         </motion.button>
 //     </div>
 // );
+
+// // loader for simple <img>
+// const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
+//   return `${src}?w=${width}&q=${quality || 75}`;
+// };

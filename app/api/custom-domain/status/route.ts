@@ -31,7 +31,7 @@ export const GET = withApiHandler(async (req: Request) => {
     // 🔹 1. Fetch company info
     const company = await prisma.company.findUnique({
       where: { id: companyId as string },
-      select: { domain: true, hasWebsite: true },
+      select: { domain: true, hasWebsite: true, slug:true },
     });
 
     if (!company || !company.domain) {
@@ -69,6 +69,7 @@ export const GET = withApiHandler(async (req: Request) => {
       domain,
       hasWebsite: company.hasWebsite,
       dnsVerified,
+      slug: company.slug
     });
   } catch (error: any) {
     console.error("❌ Domain status error:", error);

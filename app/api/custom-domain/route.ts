@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { z } from "zod";
 import { exec } from "child_process";
 import util from "util";
@@ -43,12 +41,6 @@ export const POST = withApiHandler(async (req: Request) => {
     }
 
     const { domain, companyId } = parse.data;
-
-    // 🔒 Optional authentication
-    // const session = await getServerSession(authOptions);
-    // if (!session || !session.user?.email) {
-    //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    // }
 
     // 🧠 Fetch company record
     const company = await prisma.company.findFirst({
@@ -156,7 +148,7 @@ export const GET = withApiHandler(async (req: Request) => {
 
     const company = await prisma.company.findFirst({
       where: { id: companyId },
-      select: { domain: true, hasWebsite: true },
+      select: { domain: true, hasWebsite: true, slug:true },
     });
 
     if (!company) {
@@ -166,6 +158,7 @@ export const GET = withApiHandler(async (req: Request) => {
     return NextResponse.json({
       domain: company.domain,
       hasWebsite: company.hasWebsite,
+      slug: company.slug
     });
   } catch (error: any) {
     console.error("❌ Domain GET API error:", error);
