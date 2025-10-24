@@ -144,7 +144,8 @@ export default function ProgramManagementPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${apiUrl}/admin/my-market-place?companyId=${companyId}`, { headers: { 'Content-Type': 'application/json', 'Credentials': 'include' } });
+      const response = await fetch(`${apiUrl}/admin/my-market-place?companyId=${companyId}&type=program`,
+         { headers: { 'Content-Type': 'application/json', 'Credentials': 'include' } });
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || `HTTP error! Status: ${response.status}`);

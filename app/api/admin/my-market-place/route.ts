@@ -15,9 +15,17 @@ async function handleGetListings(req: Request, { params }: RouteParams) {
   const { searchParams } = new URL(req.url);
 
   const companyId = searchParams.get("companyId");
-  const limit = parseInt(searchParams.get("limit")  || "10", 10);
-  const page = parseInt(searchParams.get("page")   || "1", 10);
+  // const ebookType = searchParams.get("type") === "ebook";
+  const limit = parseInt(searchParams.get("limit") || "10", 10);
+  const page = parseInt(searchParams.get("page")  || "1", 10);
   const offset = (page - 1) * limit;
+
+  const typeParam = searchParams.get("type"); // "ebook" | "program" | null
+
+  const whereClause: any = { companyId };
+
+  if (typeParam === "ebook") whereClause.type = "ebook";
+  else if (typeParam === "program") whereClause.type = "";
 
   // 1. Input Validation (Use formatResponse for explicit bad requests)
   if (!companyId) {
@@ -34,12 +42,13 @@ async function handleGetListings(req: Request, { params }: RouteParams) {
 
   // 2. Total count for pagination UI
   const total = await prisma.marketplaceListings.count({
-    where: { companyId },
+    // where: { companyId, ...(ebookType ? { type: "ebook" } : {}) },
+    where: whereClause,
   });
 
   // 3. Fetch the paginated slice
   const listings = await prisma.marketplaceListings.findMany({
-    where: { companyId },
+    where: whereClause,
     orderBy: { createdAt: "desc" }, // newest first
     skip: offset,
     take: limit,
