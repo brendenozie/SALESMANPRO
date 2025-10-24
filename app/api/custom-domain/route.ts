@@ -208,9 +208,8 @@ try {
     const snippetContent = `
 # Auto-generated SSL server for ${domain}
 server {
-    listen 443 ssl;
-    listen [::]:443 ssl;
-    http2 on;
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
     server_name ${domain} www.${domain};
 
     ssl_certificate     ${certPath};
@@ -221,15 +220,15 @@ server {
     ssl_prefer_server_ciphers on;
 
     location / {
-        proxy_pass http://localhost:3000;
+        proxy_pass http://127.0.0.1:3000;
         proxy_http_version 1.1;
-        proxy_set_header Upgrade $$http_upgrade;
+        proxy_set_header Upgrade \\$http_upgrade;
         proxy_set_header Connection "upgrade";
-        proxy_set_header Host $$host;
-        proxy_set_header X-Real-IP $$remote_addr;
-        proxy_set_header X-Forwarded-For $$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $$scheme;
-        proxy_cache_bypass $$http_upgrade;
+        proxy_set_header Host \\$host;
+        proxy_set_header X-Real-IP \\$remote_addr;
+        proxy_set_header X-Forwarded-For \\$proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto \\$scheme;
+        proxy_cache_bypass \\$http_upgrade;
     }
 
     location /.well-known/acme-challenge/ {
@@ -237,6 +236,39 @@ server {
     }
 }
 `;
+
+//     const snippetContent = `
+// # Auto-generated SSL server for ${domain}
+// server {
+//     listen 443 ssl;
+//     listen [::]:443 ssl;
+//     http2 on;
+//     server_name ${domain} www.${domain};
+
+//     ssl_certificate     ${certPath};
+//     ssl_certificate_key ${keyPath};
+
+//     ssl_protocols TLSv1.2 TLSv1.3;
+//     ssl_ciphers HIGH:!aNULL:!MD5;
+//     ssl_prefer_server_ciphers on;
+
+//     location / {
+//         proxy_pass http://localhost:3000;
+//         proxy_http_version 1.1;
+//         proxy_set_header Upgrade $$http_upgrade;
+//         proxy_set_header Connection "upgrade";
+//         proxy_set_header Host $$host;
+//         proxy_set_header X-Real-IP $$remote_addr;
+//         proxy_set_header X-Forwarded-For $$proxy_add_x_forwarded_for;
+//         proxy_set_header X-Forwarded-Proto $$scheme;
+//         proxy_cache_bypass $$http_upgrade;
+//     }
+
+//     location /.well-known/acme-challenge/ {
+//         root /var/www/certbot;
+//     }
+// }
+// `;
     try {
       await execPromise(`echo "${snippetContent}" | sudo tee ${snippetPath} > /dev/null`);
       console.log(`✅ Created NGINX SSL snippet: ${snippetPath}`);
@@ -264,185 +296,6 @@ server {
   }
 });
 
-// export const POST = withApiHandler(async (req: Request) => {
-//   try {
-//     const body = await req.json();
-//     const parse = DomainSchema.safeParse(body);
-//     if (!parse.success)
-//       return NextResponse.json({ error: parse.error.issues[0].message }, { status: 400 });
-
-//     const { domain, companyId } = parse.data;
-
-//     // 1️⃣ Find company
-//     const company = await prisma.company.findFirst({ where: { id: companyId } });
-//     if (!company) return NextResponse.json({ error: "Company not found" }, { status: 404 });
-
-//     // 2️⃣ Check if domain already exists
-//     const existing = await prisma.company.findFirst({ where: { domain } });
-//     if (existing && existing.id !== company.id)
-//       return NextResponse.json(
-//         { error: "Domain already used by another tenant" },
-//         { status: 409 }
-//       );
-
-//     // 3️⃣ Save the domain in DB
-//     await prisma.company.update({
-//       where: { id: company.id },
-//       data: { domain, hasWebsite: true },
-//     });
-
-//     // 4️⃣ Verify DNS (A or CNAME)
-//     let dnsVerified = false;
-//     try {
-//       console.log(`🔍 Checking DNS for ${domain}...`);
-//       const aRecords = await resolvePromise(domain).catch(() => [] as string[]);
-//       const cnameRecords = await resolveCnamePromise(domain).catch(() => [] as string[]);
-
-//       const pointsToIP = aRecords.includes(VPS_IP);
-//       const pointsToPlatform =
-//         cnameRecords.some((c) => c.endsWith(PLATFORM_BASE_DOMAIN)) || pointsToIP;
-
-//       dnsVerified = pointsToPlatform;
-//       console.log(
-//         dnsVerified
-//           ? `✅ DNS verified for ${domain}`
-//           : `⚠️ ${domain} not pointing to ${PLATFORM_BASE_DOMAIN} or ${VPS_IP}`
-//       );
-//     } catch (dnsError: any) {
-//       console.error("⚠️ DNS check failed:", dnsError.message);
-//     }
-
-//     if (!dnsVerified) {
-//       return NextResponse.json({
-//         success: false,
-//         warning: `Domain ${domain} saved, but DNS is not yet correctly configured.`,
-//         hint: `Please point A record to ${VPS_IP} or CNAME to ${PLATFORM_BASE_DOMAIN}.`,
-//       });
-//     }
-
-//     // 5️⃣ SSL Handling
-//     const certDir = `${CERTBOT_BASE_PATH}/${domain}`;
-//     const wildcardCertDir = `${CERTBOT_BASE_PATH}/${PLATFORM_BASE_DOMAIN}`;
-
-//     let usingWildcard = false;
-
-//     // If subdomain of base domain → use wildcard cert
-//     if (domain.endsWith(`.${PLATFORM_BASE_DOMAIN}`)) {
-//       usingWildcard = true;
-//       console.log(`🔄 Using existing wildcard cert for ${domain}`);
-//     } else {
-//       // Otherwise, issue a new cert for the custom domain
-//       console.log(`🔧 Issuing SSL for ${domain}...`);
-//       const stagingFlag = USE_STAGING ? "--staging" : "";
-//       const cmd = `sudo certbot certonly --nginx ${stagingFlag} -d ${domain} -d www.${domain} --non-interactive --agree-tos -m ${ADMIN_EMAIL}`;
-
-//       try {
-//         const { stdout, stderr } = await execPromise(cmd);
-//         if (stdout) console.log("✅ Certbot output:", stdout);
-//         if (stderr) console.warn("⚠️ Certbot warnings:", stderr);
-//       } catch (err: any) {
-//         console.error("❌ Certbot failed:", err.message);
-//         if (err.stdout) console.error("STDOUT:", err.stdout);
-//         if (err.stderr) console.error("STDERR:", err.stderr);
-//         return NextResponse.json(
-//           { error: `SSL issuance failed for ${domain}`, details: err.message },
-//           { status: 500 }
-//         );
-//       }
-//     }
-
-//     // 6️⃣ Verify cert files exist
-//     const certPath = usingWildcard
-//       ? `${wildcardCertDir}/fullchain.pem`
-//       : `${certDir}/fullchain.pem`;
-//     const keyPath = usingWildcard
-//       ? `${wildcardCertDir}/privkey.pem`
-//       : `${certDir}/privkey.pem`;
-
-//     if (!fs.existsSync(certPath) || !fs.existsSync(keyPath)) {
-//       await execPromise(`sudo rm -f ${NGINX_SNIPPET_DIR}/ssl-${domain}.conf`);
-//       console.error(`❌ Missing cert files for ${domain}`);
-//       return NextResponse.json(
-//         { error: `SSL certificate files not found for ${domain}` },
-//         { status: 500 }
-//       );
-//     }
-
-    
-
-//     // 7️⃣ Write NGINX snippet
-//     const snippetPath = `${NGINX_SNIPPET_DIR}/ssl-${domain}.conf`;
-//       const snippetContent = `
-// # Auto-generated SSL server for ${domain}
-// server {
-//     listen 443 ssl http2;
-//     listen [::]:443 ssl http2;
-//     server_name ${domain} www.${domain};
-
-//     ssl_certificate     ${certPath};
-//     ssl_certificate_key ${keyPath};
-
-//     ssl_protocols TLSv1.2 TLSv1.3;
-//     ssl_ciphers HIGH:!aNULL:!MD5;
-//     ssl_prefer_server_ciphers on;
-
-//     location / {
-//         proxy_pass http://localhost:3000;
-//         proxy_http_version 1.1;
-
-//         proxy_set_header Upgrade $$http_upgrade;
-//         proxy_set_header Connection "upgrade";
-//         proxy_set_header Host $$host;
-//         proxy_set_header X-Real-IP $$remote_addr;
-//         proxy_set_header X-Forwarded-For $$proxy_add_x_forwarded_for;
-//         proxy_set_header X-Forwarded-Proto $$scheme;
-
-//         proxy_cache_bypass $$http_upgrade;
-//     }
-
-//     location /.well-known/acme-challenge/ {
-//         root /var/www/certbot;
-//     }
-// }
-// `;
-
-
-// //     const snippetContent = `
-// // # Auto-generated SSL snippet for ${domain}
-// // server_name ${domain} www.${domain};
-// // ssl_certificate ${certPath};
-// // ssl_certificate_key ${keyPath};
-// // `;
-//     try {
-//       await execPromise(`echo "${snippetContent}" | sudo tee ${snippetPath} > /dev/null`);
-//       console.log(`✅ Created NGINX snippet: ${snippetPath}`);
-//     } catch (err: any) {
-//       console.error("⚠️ Failed to create snippet:", err.message);
-//     }
-
-//     // 8️⃣ Reload NGINX
-//     try {
-//       await execPromise("sudo nginx -t");
-//       await execPromise("sudo systemctl reload nginx");
-//       console.log("✅ NGINX reloaded successfully.");
-//     } catch (err: any) {
-//       console.error("⚠️ Failed to reload NGINX:", err.message);
-//     }
-
-//     return NextResponse.json({
-//       success: true,
-//       message: `Domain "${domain}" connected successfully.`,
-//       ssl: usingWildcard ? "Using wildcard SSL" : "Dedicated SSL issued",
-//     });
-//   } catch (error: any) {
-//     console.error("❌ Domain API error:", error);
-//     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
-//   }
-// });
-
-// ===========================
-// GET - Get current domain info
-// ===========================
 export const GET = withApiHandler(async (req: Request) => {
   try {
     const { searchParams } = new URL(req.url);
