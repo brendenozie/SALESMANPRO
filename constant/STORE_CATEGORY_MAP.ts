@@ -44,31 +44,55 @@ export const STORE_CATEGORY_MAP: Record<string, string[]> = {
     "School Head",
     "Other"
   ],
+  
   "Consultant & Coach": [
-    "Business Consulting",           // strategy, operations, management consulting
-    "Career Coaching",               // personal branding, interview prep, job search
-    "Life Coaching",                 // mindset, motivation, productivity
-    "Health & Wellness Coaching",    // nutrition, fitness, mindfulness
-    "Financial Coaching",            // budgeting, investment advice, personal finance
-    "Executive Coaching",            // leadership, corporate training
-    "Marketing Consulting",          // social media, branding, content strategy
-    "Technology Consulting",         // IT, SaaS, digital transformation
-    "Education & Training",          // online courses, workshops
-    "Public Speaking & Workshops",   // events, seminars, webinars
-    "Personal Development",          // self-improvement, confidence building
-    "Team Development",              // corporate team training and HR coaching
-    "Portfolio & Personal Branding", // coaches often build personal brands
-    "Digital Goods & Subscriptions", // downloadable guides, paid newsletters
-    "Booking & Appointments",        // scheduling for coaching sessions
-    "Services",                      // general category for service offerings
-    "Blog & Content",                // thought leadership and articles
-    "Nonprofit & Community",         // mentorship or social impact coaching
-    "Finance & Legal",               // for business structure, contracts
-    "Healthcare & Clinics",          // for health/life coaches overlapping with wellness
-    "Media & Entertainment",         // podcast, YouTube coaching content
-    "SaaS & Web Apps",               // online coaching platforms
-    "Other"                          // catch-all for niche or hybrid areas
-  ],
+      // Core Coaching Categories
+      "Business Consulting",           // Business strategy, operations, management
+      "Career Coaching",               // Interview prep, job transitions, personal branding
+      "Life Coaching",                 // Mindset, motivation, productivity, personal growth
+      "Health & Wellness Coaching",    // Nutrition, fitness, mindfulness, holistic health
+      "Financial Coaching",            // Budgeting, investment, retirement planning
+      "Executive Coaching",            // Leadership, team building, corporate training
+
+      // Specialized Consulting Areas
+      "Marketing Consulting",          // Branding, digital marketing, content strategy
+      "Technology Consulting",         // IT, SaaS, automation, digital transformation
+      "Education & Training",          // Workshops, online courses, certification programs
+      "Public Speaking & Workshops",   // Seminars, webinars, motivational talks
+      "Personal Development",          // Confidence, productivity, communication skills
+      "Team Development",              // HR, conflict management, collaboration training
+      "HR & Recruitment Consulting",   // Hiring strategy, employee growth, talent development
+      "Legal & Compliance Consulting", // Business setup, contracts, compliance
+
+      // Supporting Digital & Business Layers
+      "Portfolio & Personal Branding", // Building personal sites & online presence
+      "Booking & Appointments",        // Scheduling coaching or consulting sessions
+      "Digital Goods & Subscriptions", // eBooks, paid guides, exclusive content
+      "Services",                      // General consulting or advisory services
+      "Blog & Content",                // Thought leadership, insights, case studies
+      "Directory & Listings",          // Visibility for consultants in directories
+      "SaaS & Web Apps",               // Platforms for delivering coaching programs
+      "Finance & Legal",               // Financial advisors, compliance, structuring
+      "Healthcare & Clinics",          // For wellness or therapy-related coaches
+      "Nonprofit & Community",         // Mentorship programs, social impact coaching
+      "Media & Entertainment",         // Coaching for creators, speakers, or influencers
+      "Travel & Experiences",          // Retreats, offsite coaching events, workshops
+
+      // Cross-domain Support
+      "Event & Ticketing",             // Paid seminars, conferences, meetups
+      "Fitness & Wellness",            // For coaches blending physical + mental health
+      "Educational & Online Courses",  // Self-paced coaching programs and modules
+
+      "Consultant ",                    // General consulting services
+      "Coach",                         // General coaching services
+
+      "Consultant & Coach",
+      "Consulting & Coaching",
+
+      // Miscellaneous
+      "Other"                          // Catch-all for niche or hybrid consulting areas
+    ],
+
   "Shoes Store": [
     "Fashion",
     "Cars",

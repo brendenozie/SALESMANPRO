@@ -13,6 +13,7 @@ import clsx from "clsx";
 type StoreForm = {
     name?: string;
     description?: string;
+    category?: string;
     themeSettings?: { primaryColor?: string };
     StoreCategory?: IStoreCategory[];
 };
@@ -65,49 +66,130 @@ const ServicesSection: React.FC = () => {
     const { storeFormData } = useStoreContext() as { storeFormData: StoreForm };
     const primaryColor = storeFormData?.themeSettings?.primaryColor || "#F97316"; // Primary color from theme
 
-    const {
-        name,
-        description,
-        StoreCategory = [],
-    } = storeFormData;
+    // const {
+    //     name,
+    //     description,
+    //     StoreCategory = [],
+    //     category,
+    // } = storeFormData;
 
-    const hasCategories = Array.isArray(StoreCategory) && StoreCategory.length > 0;
-    let offeringsToShow: Offering[] = [];
+    // const hasCategories = Array.isArray(StoreCategory) && StoreCategory.length > 0;
+    // let offeringsToShow: Offering[] = [];
 
-    // NOTE: Data mapping logic remains the same for correctness
-    if (hasCategories && StoreCategory.length < 6) {
-        // Use Subcategories
-        const enrichedSubcategories = (StoreCategory as IStoreCategory[]).flatMap(cat => 
-            (cat.subcategories || []).map(subcat => ({
-                ...subcat,
-                parentName: cat.displayName,
-            }))
-        );
+    // // NOTE: Data mapping logic remains the same for correctness
+    // if (hasCategories && StoreCategory.length < 6) {
+    //     // Use Subcategories
+    //     const enrichedSubcategories = (StoreCategory as IStoreCategory[]).flatMap(cat => 
+    //         (cat.subcategories || []).map(subcat => ({
+    //             ...subcat,
+    //             parentName: cat.displayName,
+    //         }))
+    //     );
 
-        const limitedSubcategories = enrichedSubcategories.slice(0, 6);
+    //     const limitedSubcategories = enrichedSubcategories.slice(0, 6);
         
-        offeringsToShow = limitedSubcategories.map((subcat, index) => ({
-            title: subcat.name || 'Service',
-            desc: `Specialized solutions for ${subcat.parentName || 'Coaching'}: ${subcat.name}.`, 
-            id: subcat.id,
-            iconComponent: dynamicHeroIconMap[subcat.name] || dynamicHeroIconMap[subcat.parentName || 'Service'] || SparklesIcon, 
-            iconColor: iconColors[index % iconColors.length],
-        }));
+    //     offeringsToShow = limitedSubcategories.map((subcat, index) => ({
+    //         title: subcat.name || 'Service',
+    //         desc: `Specialized solutions for ${subcat.parentName || 'Coaching'}: ${subcat.name}.`, 
+    //         id: subcat.id,
+    //         iconComponent: dynamicHeroIconMap[subcat.name] || dynamicHeroIconMap[subcat.parentName || 'Service'] || SparklesIcon, 
+    //         iconColor: iconColors[index % iconColors.length],
+    //     }));
 
-    } else if (hasCategories) {
-        // Display Categories themselves
-        offeringsToShow = (StoreCategory as IStoreCategory[]).slice(0, 6).map((cat, index) => ({
-            title: cat.displayName || 'Service',
-            desc: `Explore our specialized ${cat.displayName} solutions.`,
-            id: cat.id,
-            iconComponent: dynamicHeroIconMap[cat.displayName || 'Service'] || SparklesIcon,
-            iconColor: iconColors[index % iconColors.length],
-        }));
-    } else {
-        // Fallback if no categories exist
-        offeringsToShow = defaultCoachingSolutions;
-    }
-    // --- Data Integration END ---
+    // } else if (hasCategories) {
+    //     // Display Categories themselves
+    //     offeringsToShow = (StoreCategory as IStoreCategory[]).slice(0, 6).map((cat, index) => ({
+    //         title: cat.displayName || 'Service',
+    //         desc: `Explore our specialized ${cat.displayName} solutions.`,
+    //         id: cat.id,
+    //         iconComponent: dynamicHeroIconMap[cat.displayName || 'Service'] || SparklesIcon,
+    //         iconColor: iconColors[index % iconColors.length],
+    //     }));
+    // } else {
+    //     // Fallback if no categories exist
+    //     offeringsToShow = defaultCoachingSolutions;
+    // }
+    // // --- Data Integration END ---
+
+    const {
+    name,
+    description,
+    StoreCategory = [],
+    category,
+} = storeFormData;
+
+const hasCategories = Array.isArray(StoreCategory) && StoreCategory.length > 0;
+let offeringsToShow: Offering[] = [];
+
+// Normalize category text for consistent matching
+const categoryText = (category || '').toLowerCase().trim();
+
+// Define consulting-related keywords
+const consultingKeywords = [
+    'consultant',
+    'consulting',
+    'coach',
+    'coaching',
+    'consultant & coach',
+    'consulting & coaching',
+];
+
+// Check if current category matches any consulting-related keyword
+const isConsultingRelated = consultingKeywords.some(keyword =>
+    categoryText.includes(keyword)
+);
+
+// --- Apply the consulting category filter ---
+let filteredCategories = StoreCategory;
+
+if (isConsultingRelated) {
+    filteredCategories = StoreCategory.filter(cat => {
+        const name = (cat.displayName || '').toLowerCase();
+        return (
+            name.includes('consulting') ||
+            name.includes('coach') ||
+            name.includes('consultant')
+        );
+    });
+}
+
+// --- Offerings logic ---
+if (filteredCategories.length > 0 && filteredCategories.length < 6) {
+    // Use subcategories when there are fewer than 6 categories
+    const enrichedSubcategories = filteredCategories.flatMap(cat =>
+        (cat.subcategories || []).map(subcat => ({
+            ...subcat,
+            parentName: cat.displayName,
+        }))
+    );
+
+    const limitedSubcategories = enrichedSubcategories.slice(0, 6);
+
+    offeringsToShow = limitedSubcategories.map((subcat, index) => ({
+        title: subcat.name || 'Service',
+        desc: `Specialized solutions for ${subcat.parentName || 'Coaching'}: ${subcat.name}.`,
+        id: subcat.id,
+        iconComponent:
+            dynamicHeroIconMap[subcat.name] ||
+            dynamicHeroIconMap[subcat.parentName || 'Service'] ||
+            SparklesIcon,
+        iconColor: iconColors[index % iconColors.length],
+    }));
+} else if (filteredCategories.length > 0) {
+    // Show top-level categories
+    offeringsToShow = filteredCategories.slice(0, 6).map((cat, index) => ({
+        title: cat.displayName || 'Service',
+        desc: `Explore our specialized ${cat.displayName} solutions.`,
+        id: cat.id,
+        iconComponent:
+            dynamicHeroIconMap[cat.displayName || 'Service'] || SparklesIcon,
+        iconColor: iconColors[index % iconColors.length],
+    }));
+} else {
+    // Fallback if no valid categories found
+    offeringsToShow = defaultCoachingSolutions;
+}
+
 
     const gridOfferings = offeringsToShow.slice(0, 6);
 

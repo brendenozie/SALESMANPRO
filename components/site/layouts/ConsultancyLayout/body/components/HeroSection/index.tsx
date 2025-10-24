@@ -205,7 +205,7 @@ const HeroSection = ({ heroSlides, themeSettings } : Props) => {
             />
           ) : (            
             <img
-              src={currentSlide.imageUrl || 'https://placehold.co/2670x1780/D1D5DB/1F2937?text=No+Image+Provided'}
+              src={currentSlide.imageUrl && currentSlide.imageUrl !== '' ? currentSlide.imageUrl : 'https://placehold.co/2670x1780/D1D5DB/1F2937?text=No+Image+Provided'}
               alt={currentSlide.headline}
               loading="eager"
               onError={handleImageError}
