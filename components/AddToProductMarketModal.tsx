@@ -453,6 +453,7 @@ export default function ProductMarketModal({
   companyId,
   categories,
   locations,
+  ebookType = false
 }: AddToProductMarketModalProps) {
   const { formData, updateField, setFormData } = useMarketListingForm(
     product,
@@ -640,6 +641,7 @@ export default function ProductMarketModal({
       const payload = buildListingPayload(
         {
           ...formData,
+          type: ebookType ? "ebook" : formData.type,
           category: (formData.category as any)?.displayName || (formData.category as any)?.name || formData.category,
           companyId: companyId,
         } as MarketListingForm,
@@ -831,4 +833,5 @@ interface AddToProductMarketModalProps {
   companyId: string;
   categories: IStoreCategory[];
   locations: ILocation[];
+  ebookType?: boolean;
 }

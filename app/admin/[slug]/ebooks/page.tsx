@@ -145,7 +145,8 @@ export default function EbookManagementPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${apiUrl}/admin/my-market-place?companyId=${companyId}`, { headers: { 'Content-Type': 'application/json', 'Credentials': 'include' } });
+      const response = await fetch(`${apiUrl}/admin/my-market-place?companyId=${companyId}&type=ebook`,
+         { headers: { 'Content-Type': 'application/json', 'Credentials': 'include' } });
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || `HTTP error! Status: ${response.status}`);
@@ -532,6 +533,7 @@ export default function EbookManagementPage() {
           locations={locations ?? []}
           // Variable name change
           marketListItem={selectedEbook}
+          ebookType={true}
           // onSave={handleSaveEbook}
         />
       )}
