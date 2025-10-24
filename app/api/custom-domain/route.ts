@@ -148,36 +148,39 @@ export const POST = withApiHandler(async (req: Request) => {
     // 7️⃣ Write NGINX snippet
     const snippetPath = `${NGINX_SNIPPET_DIR}/ssl-${domain}.conf`;
     const snippetContent = `
-# Auto-generated SSL server for ${domain}
-server {
-    listen 443 ssl http2;
-    listen [::]:443 ssl http2;
-    server_name ${domain} www.${domain};
+      # Auto-generated SSL server for ${domain}
+      server {
+          listen 443 ssl http2;
+          listen [::]:443 ssl http2;
+          server_name ${domain} www.${domain};
 
-    ssl_certificate     ${certPath};
-    ssl_certificate_key ${keyPath};
+          ssl_certificate     ${certPath};
+          ssl_certificate_key ${keyPath};
 
-    ssl_protocols TLSv1.2 TLSv1.3;
-    ssl_ciphers HIGH:!aNULL:!MD5;
-    ssl_prefer_server_ciphers on;
+          ssl_protocols TLSv1.2 TLSv1.3;
+          ssl_ciphers HIGH:!aNULL:!MD5;
+          ssl_prefer_server_ciphers on;
 
-    location / {
-        proxy_pass http://localhost:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_cache_bypass $http_upgrade;
-    }
+          location / {
+              proxy_pass http://localhost:3000;
+              proxy_http_version 1.1;
 
-    location /.well-known/acme-challenge/ {
-        root /var/www/certbot;
-    }
-}
-`;
+              proxy_set_header Upgrade $http_upgrade;
+              proxy_set_header Connection "upgrade";
+              proxy_set_header Host $host;
+              proxy_set_header X-Real-IP $remote_addr;
+              proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+              proxy_set_header X-Forwarded-Proto $scheme;
+
+              proxy_cache_bypass $http_upgrade;
+          }
+
+          location /.well-known/acme-challenge/ {
+              root /var/www/certbot;
+          }
+      }
+      `;
+
 
 //     const snippetContent = `
 // # Auto-generated SSL snippet for ${domain}
