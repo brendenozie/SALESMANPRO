@@ -12,6 +12,8 @@ import prisma from "@/server/db/prismadb";
 import { randomBytes, randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
 
+const baseUrl = process.env.NEXTAUTH_URL || "https://salesmanpro.site";
+
 // ✅ Utility: find existing user by email
 async function findExistingUserByEmail(email: string) {
   const user = await prisma.user.findUnique({ where: { email } });
@@ -128,15 +130,20 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      authorization: {
+          params: {
+            redirect_uri: `${baseUrl}/api/auth/callback/google`,
+          },
+        },
     }),
-    FacebookProvider({
-      clientId: process.env.FACEBOOK_CLIENT_ID!,
-      clientSecret: process.env.FACEBOOK_CLIENT_SECRET!,
-    }),
-    AppleProvider({
-      clientId: process.env.APPLE_CLIENT_ID!,
-      clientSecret: process.env.APPLE_CLIENT_SECRET!,
-    }),
+    // FacebookProvider({
+    //   clientId: process.env.FACEBOOK_CLIENT_ID!,
+    //   clientSecret: process.env.FACEBOOK_CLIENT_SECRET!,
+    // }),
+    // AppleProvider({
+    //   clientId: process.env.APPLE_CLIENT_ID!,
+    //   clientSecret: process.env.APPLE_CLIENT_SECRET!,
+    // }),
     // EmailProvider({
     //   server: process.env.EMAIL_SERVER,
     //   from: process.env.EMAIL_FROM,
@@ -152,6 +159,21 @@ export const authOptions: NextAuthOptions = {
 
   // ✅ AUTO-LINK OAUTH LOGINS HERE
   callbacks: {
+    async redirect({ url, baseUrl }) {
+      try {
+        const redirectUrl = new URL(url);
+        const tenant = redirectUrl.searchParams.get("tenant");
+
+        // ✅ If the "tenant" param exists, redirect there after login
+        if (tenant) return `${tenant}/?auth=success`;
+
+        // ✅ Otherwise, fallback to base domain
+        return baseUrl;
+      } catch {
+        return baseUrl;
+      }
+    },
+
     async signIn({ user, account }) {
       // OAuth ONLY (skip credentials)
       if (account && account.provider !== "credentials") {

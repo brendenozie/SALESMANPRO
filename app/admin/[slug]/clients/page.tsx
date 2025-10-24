@@ -99,7 +99,7 @@ export default async function ClientsPage({ params }: ClientsPageProps) {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
           <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
-            Manage Vehicle Clients <span className="ml-2 text-orange-600 text-base sm:text-xl">🤝</span>
+            Manage Clients <span className="ml-2 text-orange-600 text-base sm:text-xl">🤝</span>
           </h1>
           <p className="text-md text-gray-600 mt-1">
             Keep track of all your client interactions and deal progress.
