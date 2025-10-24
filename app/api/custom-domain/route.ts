@@ -108,9 +108,25 @@ export const POST = withApiHandler(async (req: Request) => {
       // ===============================
       // 🧩 STEP A: TEMP HTTP CONFIG
       // ===============================
-      console.log(`🔧 Preparing temporary HTTP config for ${domain}...`);
-      const tempConfPath = `/etc/nginx/snippets/temp-${domain}.conf`;
-      const tempConf = `
+      // ===============================
+// 🧩 STEP A: TEMP HTTP CONFIG
+// ===============================
+console.log(`🔧 Preparing temporary HTTP config for ${domain}...`);
+
+// 1️⃣ Remove stale SSL snippet (if exists)
+const sslSnippetPath = `/etc/nginx/snippets/ssl-${domain}.conf`;
+try {
+  if (fs.existsSync(sslSnippetPath)) {
+    console.log(`🧹 Removing stale SSL snippet: ${sslSnippetPath}`);
+    await execPromise(`sudo rm -f ${sslSnippetPath}`);
+  }
+} catch (err: any) {
+  console.warn(`⚠️ Could not remove old SSL snippet: ${err.message}`);
+}
+
+// 2️⃣ Create temporary HTTP-only config
+const tempConfPath = `/etc/nginx/snippets/temp-${domain}.conf`;
+const tempConf = `
 server {
     listen 80;
     listen [::]:80;
@@ -125,17 +141,20 @@ server {
     }
 }
 `;
-      try {
-        await execPromise(`echo "${tempConf}" | sudo tee ${tempConfPath} > /dev/null`);
-        await execPromise("sudo nginx -t && sudo systemctl reload nginx");
-        console.log(`✅ Temporary HTTP config loaded for ${domain}`);
-      } catch (err: any) {
-        console.error("❌ Failed to create or reload temp config:", err.message);
-        return NextResponse.json(
-          { error: "Failed to prepare temporary Nginx config", details: err.message },
-          { status: 500 }
-        );
-      }
+
+try {
+  await execPromise(`echo "${tempConf}" | sudo tee ${tempConfPath} > /dev/null`);
+  await execPromise("sudo nginx -t");
+  await execPromise("sudo systemctl reload nginx");
+  console.log(`✅ Temporary HTTP config loaded for ${domain}`);
+} catch (err: any) {
+  console.error("❌ Failed to create or reload temp config:", err.message);
+  return NextResponse.json(
+    { error: "Failed to prepare temporary Nginx config", details: err.message },
+    { status: 500 }
+  );
+}
+
 
       // ===============================
       // 🧩 STEP B: ISSUE CERTIFICATE
