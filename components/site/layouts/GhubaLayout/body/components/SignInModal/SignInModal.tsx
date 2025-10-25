@@ -49,7 +49,7 @@ export default function SignInPrompt() {
   const handleGoogleSignIn = () => {
     setLoading(true);
     const callbackUrl = window.location.href; // original domain (e.g. https://tenant.com/dashboard)
-    window.location.href = `https://auth.salesmanpro.site/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`;
+    window.location.href = `https://auth.salesmanpro.site/auth/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`;
   };
 
   return (
