@@ -24,8 +24,8 @@ export default function SignInPrompt() {
     try {
       const result = await signIn("google", { 
         redirect: true, // Enable redirection
-        callbackUrl: "https://auth.salesmanpro.site/api/auth/callback/google",
-        // callbackUrl: "/",
+        // callbackUrl: "https://auth.salesmanpro.site/api/auth/callback/google",
+        callbackUrl: "/",
       });
       if (result?.error) throw new Error(result.error);
     } catch (err) {

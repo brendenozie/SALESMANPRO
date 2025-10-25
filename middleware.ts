@@ -4,6 +4,7 @@ import { NextFetchEvent, NextRequest, NextResponse } from "next/server";
 
 // Your app’s main host
 const PRIMARY_HOST = "salesmanpro.site";//app.your-production-domain.com
+const AUTH_DOMAIN = "auth.salesmanpro.site"; // Central auth domain
 
 // Protected paths that require authentication
 const protectedPaths = [
@@ -27,12 +28,34 @@ export const config = {
 };
 
 export default async function middleware(request: NextRequest, ev: NextFetchEvent) {
+  const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
   const url = request.nextUrl.clone();
   const pathname = url.pathname;
   const host = request.headers.get("host")?.split(":")[0] || "";
   const origin = request.headers.get("origin");
 
   // ✅ 1. Handle CORS preflight requests
+  // Allow public routes
+  // if (
+  //     pathname.startsWith("/_next") ||
+  //     pathname.startsWith("/api") ||
+  //     pathname.startsWith("/auth") ||
+  //     pathname.startsWith("/public") ||
+  //     pathname.startsWith("/site") ||
+  //     pathname === "/"
+  //   ) {
+  //     return NextResponse.next();
+  //   }
+
+    // If not signed in, redirect to centralized auth page
+    // if (!token) {
+    //   const callbackUrl = encodeURIComponent(origin + pathname);
+    //   return NextResponse.redirect(
+    //     `https://auth.salesmanpro.site/auth/signin?callback=${callbackUrl}`
+    //   );
+    // }
+
+  
   if (pathname.startsWith("/api/")) {
     const responseHeaders = new Headers();
     if (origin) {
@@ -150,7 +173,11 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
     // We rewrite to /site/<normalizedHost> so the request lands in /site/[slug]
     // The layout will prioritize x-requested-host when resolving the tenant.
     if (pathname === "/" || pathname === "") {
-      url.pathname = `/site/${normalizedHost}`;
+      if(normalizedHost === "auth.salesmanpro.site") {
+        url.pathname = `/auth/signin`;
+      } else {
+        url.pathname = `/site/${normalizedHost}`;
+      }
     } else {
       // keep inner path after the root — /about -> /site/ghuba.shop/about
       url.pathname = `/site/${normalizedHost}${pathname}`;
