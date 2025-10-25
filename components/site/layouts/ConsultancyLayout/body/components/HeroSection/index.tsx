@@ -180,6 +180,18 @@ const HeroSection = ({ heroSlides, themeSettings } : Props) => {
 
   const { primaryColor, secondaryColor } = themeSettings || { primaryColor: '#F97316', secondaryColor: '#1D4ED8' }; // Default colors
 
+  const SafeImage = ({ src, alt } : { src: string | null | undefined; alt: string | null | undefined; }) => (
+    <img
+      src={src && src.trim() !== '' ? src : 'https://placehold.co/2670x1780/D1D5DB/1F2937?text=No+Image+Provided'}
+      alt={alt || 'Image'}
+      onError={(e) => {
+        e.currentTarget.src = 'https://placehold.co/2670x1780/D1D5DB/1F2937?text=Image+Unavailable';
+      }}
+      className="w-full h-full object-cover"
+    />
+  );
+
+
   return (
     <section id="hero" className="relative overflow-hidden h-screen flex items-center justify-center bg-white">
       
@@ -204,13 +216,7 @@ const HeroSection = ({ heroSlides, themeSettings } : Props) => {
               poster="https://placehold.co/2670x1780/D1D5DB/1F2937?text=Video+Loading"
             />
           ) : (            
-            <img
-              src={currentSlide.imageUrl && currentSlide.imageUrl !== '' ? currentSlide.imageUrl : 'https://placehold.co/2670x1780/D1D5DB/1F2937?text=No+Image+Provided'}
-              alt={currentSlide.headline}
-              loading="eager"
-              onError={handleImageError}
-              className="w-full h-full object-cover"
-            />
+            <SafeImage src={currentSlide?.imageUrl} alt={currentSlide?.headline} />
           )}
           {/* Gradient overlay for text readability */}
           <div className="absolute inset-0 bg-gradient-to-t from-white via-white/40 to-transparent" />
