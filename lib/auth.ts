@@ -162,69 +162,137 @@ export const authOptions: NextAuthOptions = {
   // ✅ AUTO-LINK OAUTH LOGINS HERE
   callbacks: {
 
-     async redirect({ url, baseUrl }) {
+    async redirect({ url, baseUrl }) {
+      try {
+        console.log("[Redirect Callback] Received URL:", url);
+        console.log("[Redirect Callback] Received BaseURL:", baseUrl);
+
+        let isTenantRedirect = false;
+        let tenantUrl: URL | null = null;
+
         try {
-          // const callbackUrl = new URL(url, baseUrl).searchParams.get("callbackUrl");
-          // const target = new URL(url, baseUrl).searchParams.get("target");
-          let callbackUrl = null;
-          let target = null;
-
-           // 1️⃣ Try to read from URL directly
-          try {
-            const parsedUrl = new URL(url, baseUrl);
-            callbackUrl = parsedUrl.searchParams.get("callbackUrl");
-            target = parsedUrl.searchParams.get("target");
-          } catch (e) {
-            console.warn("URL parsing failed:", e);
-          }
-
-          // 2️⃣ Try to recover from cookie or fallback
-          if (!callbackUrl && typeof window === "undefined") {
-            // on server only — use cookie
-            const cookie = (await cookies()).get("callbackUrl");
-            callbackUrl = cookie?.value ?? null;
-          }
-
-          console.log("Redirect callbackUrl:", callbackUrl);
-          console.log("Redirect target:", target);
-          console.log("Base URL:", baseUrl);
-          console.log("url:",url);
+          // 1. Check if 'url' is an absolute URL
+          tenantUrl = new URL(url);
           
-          // If login originated from a custom domain
-          if (callbackUrl || target ) {
-            const session = await getServerSession(authOptions);
-            const userId = String((session?.user as any)?.id ?? (session?.user?.email ?? ""));
-            const tokenPayload = {
-              name: session?.user?.name,
-              email: session?.user?.email,
-              image: session?.user?.image,
-              // include id as required by the JWT type
-              id: userId,
-              // include id as `sub` for compatibility
-              sub: userId,
-            };
-            const token = await encode({
-              token: tokenPayload,
-              secret: process.env.NEXTAUTH_SECRET!,
-            });
+          // 2. Check if its origin is DIFFERENT from the auth app's origin
+          if (tenantUrl.origin !== new URL(baseUrl).origin) {
+            isTenantRedirect = true;
+          }
+        } catch (e) {
+          // 'url' was relative (e.g., "/dashboard"), so it's an internal redirect.
+          isTenantRedirect = false;
+        }
 
-            // Ensure the value passed to URL is a non-null string (TypeScript can't infer from the outer if)
-            const redirectValue = callbackUrl ?? target;
-            if (!redirectValue) return baseUrl;
-            const redirectUrl = new URL(redirectValue);
-            redirectUrl.searchParams.set("auth", "success");
-            redirectUrl.searchParams.set("token", token);
-            console.log("Redirecting to:", redirectUrl.toString());
-            return redirectUrl.toString();
+
+        // ✅ If it's a redirect back to a tenant (e.g., https://domain.com)
+        if (isTenantRedirect && tenantUrl) {
+          console.log("[Redirect Callback] Tenant redirect detected. Attaching token...");
+
+          // Get the session that was just created
+          const session = await getServerSession(authOptions);
+          if (!session || !session.user) {
+            console.error("[Redirect Callback] No session found after sign-in. Redirecting to base.");
+            return baseUrl; // Fallback
           }
 
-          // Default behavior (for auth.salesmanpro.site itself)
-          return baseUrl;
-        } catch (error) {
-          console.error("Redirect error:", error);
-          return baseUrl;
+          // Create the JWT token
+          const token = await encode({
+            token: { ...session.user, sub: (session.user as any).id }, // Pass user data
+            secret: process.env.NEXTAUTH_SECRET!,
+          });
+
+          // Build the final redirect URL
+          // 'tenantUrl' is already a URL object for "https://domain.com"
+          tenantUrl.searchParams.set("auth_token", token); // Use a clear name
+          
+          const finalUrl = tenantUrl.toString();
+          console.log("[Redirect Callback] Redirecting to tenant:", finalUrl);
+          return finalUrl; // e.g., "https://domain.com?auth_token=..."
         }
-      },
+
+        // ❌ If it's an internal redirect (e.g., user signed in on auth.salesmanpro.site)
+        console.log("[Redirect Callback] Internal redirect detected.");
+        // Handle relative URLs
+        if (url.startsWith("/")) {
+          return `${baseUrl}${url}`;
+        }
+        // Handle absolute URLs that are just our own base URL
+        if (url.startsWith(baseUrl)) {
+          return url;
+        }
+
+        // Fallback for any other case
+        return baseUrl;
+
+      } catch (error) {
+        console.error("Redirect error:", error);
+        return baseUrl;
+      }
+    },
+
+    //  async redirect({ url, baseUrl }) {
+    //     try {
+    //       // const callbackUrl = new URL(url, baseUrl).searchParams.get("callbackUrl");
+    //       // const target = new URL(url, baseUrl).searchParams.get("target");
+    //       let callbackUrl = null;
+    //       let target = null;
+
+    //        // 1️⃣ Try to read from URL directly
+    //       try {
+    //         const parsedUrl = new URL(url, baseUrl);
+    //         callbackUrl = parsedUrl.searchParams.get("callbackUrl");
+    //         target = parsedUrl.searchParams.get("target");
+    //       } catch (e) {
+    //         console.warn("URL parsing failed:", e);
+    //       }
+
+    //       // 2️⃣ Try to recover from cookie or fallback
+    //       if (!callbackUrl && typeof window === "undefined") {
+    //         // on server only — use cookie
+    //         const cookie = (await cookies()).get("callbackUrl");
+    //         callbackUrl = cookie?.value ?? null;
+    //       }
+
+    //       console.log("Redirect callbackUrl:", callbackUrl);
+    //       console.log("Redirect target:", target);
+    //       console.log("Base URL:", baseUrl);
+    //       console.log("url:",url);
+          
+    //       // If login originated from a custom domain
+    //       if (callbackUrl || target ) {
+    //         const session = await getServerSession(authOptions);
+    //         const userId = String((session?.user as any)?.id ?? (session?.user?.email ?? ""));
+    //         const tokenPayload = {
+    //           name: session?.user?.name,
+    //           email: session?.user?.email,
+    //           image: session?.user?.image,
+    //           // include id as required by the JWT type
+    //           id: userId,
+    //           // include id as `sub` for compatibility
+    //           sub: userId,
+    //         };
+    //         const token = await encode({
+    //           token: tokenPayload,
+    //           secret: process.env.NEXTAUTH_SECRET!,
+    //         });
+
+    //         // Ensure the value passed to URL is a non-null string (TypeScript can't infer from the outer if)
+    //         const redirectValue = callbackUrl ?? target;
+    //         if (!redirectValue) return baseUrl;
+    //         const redirectUrl = new URL(redirectValue);
+    //         redirectUrl.searchParams.set("auth", "success");
+    //         redirectUrl.searchParams.set("token", token);
+    //         console.log("Redirecting to:", redirectUrl.toString());
+    //         return redirectUrl.toString();
+    //       }
+
+    //       // Default behavior (for auth.salesmanpro.site itself)
+    //       return baseUrl;
+    //     } catch (error) {
+    //       console.error("Redirect error:", error);
+    //       return baseUrl;
+    //     }
+    //   },
 
     // async redirect({ url, baseUrl }) {
     //   try {
