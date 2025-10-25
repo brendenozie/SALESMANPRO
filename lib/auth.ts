@@ -169,15 +169,13 @@ export const authOptions: NextAuthOptions = {
           let callbackUrl = null;
           let target = null;
 
+           // 1️⃣ Try to read from URL directly
           try {
-            const parsedUrl = new URL(url);
-            callbackUrl = parsedUrl.searchParams.get("callbackUrl");
-            target = parsedUrl.searchParams.get("target");
-          } catch {
-            // Fallback for relative URLs
             const parsedUrl = new URL(url, baseUrl);
             callbackUrl = parsedUrl.searchParams.get("callbackUrl");
             target = parsedUrl.searchParams.get("target");
+          } catch (e) {
+            console.warn("URL parsing failed:", e);
           }
 
           // 2️⃣ Try to recover from cookie or fallback
