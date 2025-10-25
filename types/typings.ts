@@ -420,7 +420,8 @@ export interface ProductForm {
   longDescription?: string | null;
   category?: any | null; //string | null;
   subCategory?: any;
-  subCategoryName?: string | null;
+  subCategoryName?: string | null;  
+  productCategory: any | null | undefined;
   images: any[];
   videos?: any[];//string | null;
   books?: any[];//string | null;
@@ -538,6 +539,7 @@ export interface MarketListingForm {
   sellerType?: "CLIENT" | "CONSUMER" | "ADMIN" | "COMPANY" | "INDIVIDUAL" | null;
   productId?: string | null;
   productCategoryId: string;
+  productCategory: any | null | undefined;
   category?: any | null | undefined; //string | null;
   subCategory: any;
   subCategoryName?: string | null;

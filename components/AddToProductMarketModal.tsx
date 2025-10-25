@@ -129,12 +129,12 @@ async function uploadFiles(files: File[], type: "image" | "video") {
 ////////////////////////////////////////////////////////////////////////////////
 function productToListingForm(
   p?: ProductForm | null | undefined,
-  categories?: IStoreCategory[] | undefined,
+  cat?: IStoreCategory | undefined,
   companyId?: string | undefined
 ): MarketListingForm {
   // Keep this converter forgiving; copy a sensible default mapping from product fields
   // to market listing fields. Most fields are 1:1.
-  const cat = (categories && categories.find((c) => c.categoryId === p?.productCategoryId)) ?? null;
+  // const cat = (categories && categories.find((c) => c.categoryId === p?.productCategoryId)) ?? null;
 
   return {
     id: "",
@@ -404,8 +404,11 @@ function useMarketListingForm(
     const raw: Partial<MarketListingForm> = marketListItem || {};
     const p: ProductForm | null = product ?? null;
 
+
+    const cat: IStoreCategory | undefined  = (categories && categories.find((c) => c.categoryId === raw?.productCategoryId)) ?? undefined;
+
     // If editing a market list item, prefer its values; otherwise convert from product
-    const base = marketListItem ? { ...productToListingForm(p ?? undefined, categories), ...marketListItem, companyId } : productToListingForm(p ?? undefined, categories);
+    const base = marketListItem ? { ...productToListingForm(p ?? undefined, cat), ...marketListItem, companyId, category: cat } : productToListingForm(p ?? undefined, cat);
 
     return base as MarketListingForm;
   }, [product, marketListItem, companyId, categories]);
@@ -589,13 +592,13 @@ export default function ProductMarketModal({
   }, [updateField]);
 
   // load from product
-  const handleLoadFromProduct = useCallback(() => {
-    const initial = productToListingForm(product ?? undefined, categories, companyId);
-    Object.entries(initial).forEach(([key, val]) =>
-      updateField(key as keyof MarketListingForm, val as any)
-    );
-    setToast("Loaded data from product");
-  }, [product, categories, companyId, updateField]);
+  // const handleLoadFromProduct = useCallback(() => {
+  //   const initial = productToListingForm(product ?? undefined, categories, companyId);
+  //   Object.entries(initial).forEach(([key, val]) =>
+  //     updateField(key as keyof MarketListingForm, val as any)
+  //   );
+  //   setToast("Loaded data from product");
+  // }, [product, categories, companyId, updateField]);
 
   // drag to go back (mobile)
   const handleDragEnd = (_: any, info: any) => {
@@ -733,6 +736,7 @@ export default function ProductMarketModal({
             onDragEnd={handleDragEnd}
             className="mt-4"
           >
+            
             {step === 1 ? (
               <CategoryPicker
                 formData={{ category: formData.category, subCategory: formData.subCategory, brand: formData.brand }}

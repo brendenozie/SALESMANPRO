@@ -152,6 +152,20 @@ export const CATEGORY_STEPS: Record<string, number[]> = {
 
    // Directory & Listings flow
   "Directory & Listings": [1, 2, 8, 12, 11],
+
+    // — Consulting & Coaching flow —
+  "Consulting & Coaching": [1,2,7,15,16,17,8,9,10,12,11],
+  "Consulting":            [1,2,7,15,16,17,8,9,10,12,11],
+  "Coaching":              [1,2,7,15,16,17,8,9,10,12,11],
+  "Consultant":            [1,2,7,15,16,17,8,9,10,12,11],
+  "Coach":                 [1,2,7,15,16,17,8,9,10,12,11],
+  "Business Coach":        [1,2,7,15,16,17,8,9,10,12,11],
+  "Life Coach":            [1,2,7,15,16,17,8,9,10,12,11],
+  "Career Coach":          [1,2,7,15,16,17,8,9,10,12,11],
+  "Financial Consultant":  [1,2,7,15,16,17,8,9,10,12,11],
+  "Health Coach":          [1,2,7,15,16,17,8,9,10,12,11],
+  "Therapist":             [1,2,7,15,16,17,8,9,10,12,11],
+
 };
 
 

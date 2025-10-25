@@ -363,6 +363,7 @@ const CategoryPicker: React.FC<Props> = ({
   onSubCategoryChange,
   onBrandChange,
 }) => {
+
   // searchTerm used primarily for Category step (less noisy UX)
   const [searchTerm, setSearchTerm] = useState<string>("");
 
