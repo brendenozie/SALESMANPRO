@@ -195,7 +195,7 @@ const HeroSection = ({ heroSlides, themeSettings } : Props) => {
         >
           {currentSlide.type === "video" ? (            
             <video
-              src={currentSlide.videoLink || 'https://unsplash.com/video/uploaded/pexels-august-de-richelieu-4262030.mp4'}
+              src={currentSlide.videoLink && currentSlide.videoLink !== '' ? currentSlide.videoLink : 'https://unsplash.com/video/uploaded/pexels-august-de-richelieu-4262030.mp4'}
               autoPlay
               muted
               loop

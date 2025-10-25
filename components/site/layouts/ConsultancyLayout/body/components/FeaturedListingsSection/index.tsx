@@ -242,7 +242,7 @@ export default function FeaturedEbooks({
           viewport={{ once: true }}
           transition={{ duration: 0.7, delay: 0.3 }}
         >
-          <Link href={`/site/${slug}/market`} passHref>
+          {/* <Link href={`/site/${slug}/market`} passHref>
             <motion.span
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -251,7 +251,7 @@ export default function FeaturedEbooks({
               View All Products & Resources
               <BookOpenIcon className="w-5 h-5 ml-2" />
             </motion.span>
-          </Link>
+          </Link> */}
         </motion.div>
       </div>
 

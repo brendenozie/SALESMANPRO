@@ -23,7 +23,8 @@ export default function ConsultancySite({ pageData }: { pageData: StoreForm }) {
   const siteData = pageData || storeFormData;
   
   // marketplaceListings from siteData → map to VehicleCardProps
-  const listings = siteData?.marketplaceListings || [];
+  const Ebookslistings = siteData?.marketplaceListings.filter(listing => listing.type === "ebook") || [];
+  const Programslisting = siteData?.marketplaceListings.filter(listing => listing.type !== "ebook") || [];
 
   return (
     <div className="space-y-24 font-sans bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
@@ -39,11 +40,11 @@ export default function ConsultancySite({ pageData }: { pageData: StoreForm }) {
 
       <ServicesSection />  
       
-      <FeaturedListings listings={listings} slug=""/>
+      <FeaturedListings listings={Ebookslistings} slug=""/>
 
       <HowItWorks />
 
-      <BrowseByCategory listings={listings} storeSlug=""/>   
+      <BrowseByCategory listings={Programslisting} storeSlug=""/>   
 
       {/* Featured  */}
       {/* <FeaturedProgramsSection  listings={listings} slug=""/> */}
