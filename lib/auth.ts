@@ -183,7 +183,7 @@ export const authOptions: NextAuthOptions = {
           // 2️⃣ Try to recover from cookie or fallback
           if (!callbackUrl && typeof window === "undefined") {
             // on server only — use cookie
-            const cookie = (await cookies()).get("next-auth.callbackUrl");
+            const cookie = (await cookies()).get("callbackUrl");
             callbackUrl = cookie?.value ?? null;
           }
 
