@@ -173,11 +173,7 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
     // We rewrite to /site/<normalizedHost> so the request lands in /site/[slug]
     // The layout will prioritize x-requested-host when resolving the tenant.
     if (pathname === "/" || pathname === "") {
-      if(normalizedHost === "auth.salesmanpro.site") {
-        url.pathname = `/auth/signin`;
-      } else {
         url.pathname = `/site/${normalizedHost}`;
-      }
     } else {
       // keep inner path after the root — /about -> /site/ghuba.shop/about
       url.pathname = `/site/${normalizedHost}${pathname}`;
@@ -211,6 +207,12 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
     // host.endsWith(".127.0.0.1") ||
     host.endsWith(".test")
   ) {
+    
+    if (host === AUTH_DOMAIN) {
+        // Allow /auth/signin and other auth routes to resolve natively
+        return NextResponse.next();
+    }
+
     const subdomain = host
       .replace(".salesmanpro.site", "")
       // .replace(".localhost", "")
