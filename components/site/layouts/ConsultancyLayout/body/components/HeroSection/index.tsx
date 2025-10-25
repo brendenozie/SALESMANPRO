@@ -180,16 +180,44 @@ const HeroSection = ({ heroSlides, themeSettings } : Props) => {
 
   const { primaryColor, secondaryColor } = themeSettings || { primaryColor: '#F97316', secondaryColor: '#1D4ED8' }; // Default colors
 
-  const SafeImage = ({ src, alt } : { src: string | null | undefined; alt: string | null | undefined; }) => (
-    <img
-      src={src && src.trim() !== '' ? src : 'https://placehold.co/2670x1780/D1D5DB/1F2937?text=No+Image+Provided'}
-      alt={alt || 'Image'}
-      onError={(e) => {
-        e.currentTarget.src = 'https://placehold.co/2670x1780/D1D5DB/1F2937?text=Image+Unavailable';
-      }}
-      className="w-full h-full object-cover"
-    />
-  );
+  const SafeImage = ({ src, alt }: { src?: string | null; alt?: string | null }) => {
+    const validSrc =
+      src && src.trim() !== ""
+        ? src
+        : "https://placehold.co/2670x1780/D1D5DB/1F2937?text=No+Image+Provided";
+
+    return (
+      <img
+        src={validSrc}
+        alt={alt || "Image"}
+        onError={(e) => {
+          e.currentTarget.src =
+            "https://placehold.co/2670x1780/D1D5DB/1F2937?text=Image+Unavailable";
+        }}
+        className="w-full h-full object-cover"
+      />
+    );
+  };
+
+  const SafeVideo = ({ src }: { src?: string | null }) => {
+    const validSrc =
+      src && src.trim() !== ""
+        ? src
+        : "https://cdn.pixabay.com/video/2024/02/26/200827-919106201_large.mp4";
+
+    return (
+      <video
+        src={validSrc}
+        autoPlay
+        muted
+        loop
+        playsInline
+        className="w-full h-full object-cover"
+        poster="https://placehold.co/2670x1780/D1D5DB/1F2937?text=Video+Loading"
+      />
+    );
+  };
+
 
 
   return (
@@ -205,19 +233,12 @@ const HeroSection = ({ heroSlides, themeSettings } : Props) => {
           exit={{ opacity: 0 }}
           transition={{ duration: 1.2 }}
         >
-          {currentSlide.type === "video" ? (            
-            <video
-              src={currentSlide.videoLink && currentSlide.videoLink !== '' ? currentSlide.videoLink : 'https://unsplash.com/video/uploaded/pexels-august-de-richelieu-4262030.mp4'}
-              autoPlay
-              muted
-              loop
-              playsInline
-              className="w-full h-full object-cover"
-              poster="https://placehold.co/2670x1780/D1D5DB/1F2937?text=Video+Loading"
-            />
-          ) : (            
-            <SafeImage src={currentSlide?.imageUrl} alt={currentSlide?.headline} />
-          )}
+          {currentSlide.type === "video" ? (
+              <SafeVideo src={currentSlide.videoLink} />
+            ) : (
+              <SafeImage src={currentSlide.imageUrl} alt={currentSlide.headline} />
+            )}
+
           {/* Gradient overlay for text readability */}
           <div className="absolute inset-0 bg-gradient-to-t from-white via-white/40 to-transparent" />
         </motion.div>

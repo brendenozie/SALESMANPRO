@@ -166,14 +166,9 @@ export const authOptions: NextAuthOptions = {
           const callbackUrl = new URL(url, baseUrl).searchParams.get("callbackUrl");
           const target = new URL(url, baseUrl).searchParams.get("target");
 
-          // console.log(callbackUrl);
-          // console.log("callbackUrl");
-          // console.log(target);
-          // console.log("target")
-          // console.log(url);
-          // console.log("url");
-          // console.log(baseUrl);
-          // console.log("baseUrl");
+          console.log("Redirect callbackUrl:", callbackUrl);
+          console.log("Redirect target:", target);
+          
           
           // If login originated from a custom domain
           if (callbackUrl || target ) {
@@ -199,6 +194,7 @@ export const authOptions: NextAuthOptions = {
             const redirectUrl = new URL(redirectValue);
             redirectUrl.searchParams.set("auth", "success");
             redirectUrl.searchParams.set("token", token);
+            console.log("Redirecting to:", redirectUrl.toString());
             return redirectUrl.toString();
           }
 
