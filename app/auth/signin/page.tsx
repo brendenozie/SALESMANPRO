@@ -1,4 +1,7 @@
+// auth.salesmanpro.site
+
 "use client";
+import { authOptions } from "@/lib/auth";
 
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
