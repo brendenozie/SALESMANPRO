@@ -1,7 +1,7 @@
 "use client";
 
 import { signIn, signOut } from "next-auth/react";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useState, useMemo } from "react";
 
 // Placeholder icons (using inline SVGs for compliance)
@@ -35,7 +35,9 @@ const ProviderIcons: Record<string, (props: React.SVGProps<SVGSVGElement>) => JS
 export type Provider = { id: string; name: string };
 
 export default function SignInClient({ providers }: { providers: Provider[] }) {
-  const router = useRouter();
+  const router = useRouter();const params = useSearchParams();
+    // Ensure the callback URL is secure, if not from the query parameter
+    const callbackUrl = params.get("callbackUrl") || "https://salesmanpro.site";
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState({ email: "", password: "" });
@@ -75,7 +77,7 @@ export default function SignInClient({ providers }: { providers: Provider[] }) {
     setError(null);
     setIsLoading(true);
     // Use a simpler approach for social sign-in without a massive loading overlay
-    await signIn(providerId, { redirect: true, callbackUrl: "/" });
+    await signIn(providerId, { redirect: true, callbackUrl: callbackUrl });
   };
   
   // Custom Input Field Component for visual appeal
