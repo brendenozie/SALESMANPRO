@@ -130,11 +130,11 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      authorization: {
-        params: {
-          redirect_uri: `https://auth.salesmanpro.site/api/auth/callback/google`,
-        },
-      },
+      // authorization: {
+      //   params: {
+      //     redirect_uri: `https://auth.salesmanpro.site/api/auth/callback/google`,
+      //   },
+      // },
     }),
     // FacebookProvider({
     //   clientId: process.env.FACEBOOK_CLIENT_ID!,
@@ -159,25 +159,42 @@ export const authOptions: NextAuthOptions = {
 
   // ✅ AUTO-LINK OAUTH LOGINS HERE
   callbacks: {
-    async redirect({ url, baseUrl }) {
+     async redirect({ url, baseUrl }) {
       try {
-        const target = new URL(url, baseUrl);
-        const callbackUrl = target.searchParams.get("callbackUrl");
+        // Parse the original target domain if present in the login URL
+        const parsedUrl = new URL(url);
+        const target = parsedUrl.searchParams.get("target");
 
-        // ✅ If an external callbackUrl exists, redirect user there after successful auth
-        // if (callbackUrl) return decodeURIComponent(callbackUrl);
-        if (callbackUrl) {
-          const urlObj = new URL(decodeURIComponent(callbackUrl));
-          urlObj.searchParams.set("auth", "success");
-          return urlObj.toString();
+        if (target) {
+          // Send to our custom route for token handling + redirect
+          return `${baseUrl}/auth/callback?target=${encodeURIComponent(target)}`;
         }
 
-        // ✅ Otherwise, use baseUrl
-        return baseUrl;
+        // Default: stay on auth domain (salesmanpro.site)
+        return `${baseUrl}/auth/callback`;
       } catch {
         return baseUrl;
       }
     },
+    // async redirect({ url, baseUrl }) {
+    //   try {
+    //     const target = new URL(url, baseUrl);
+    //     const callbackUrl = target.searchParams.get("callbackUrl");
+
+    //     // ✅ If an external callbackUrl exists, redirect user there after successful auth
+    //     // if (callbackUrl) return decodeURIComponent(callbackUrl);
+    //     if (callbackUrl) {
+    //       const urlObj = new URL(decodeURIComponent(callbackUrl));
+    //       urlObj.searchParams.set("auth", "success");
+    //       return urlObj.toString();
+    //     }
+
+    //     // ✅ Otherwise, use baseUrl
+    //     return baseUrl;
+    //   } catch {
+    //     return baseUrl;
+    //   }
+    // },
 
     // async redirect({ url, baseUrl }) {
     //   try {
