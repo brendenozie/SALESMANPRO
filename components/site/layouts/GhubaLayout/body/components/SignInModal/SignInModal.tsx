@@ -18,20 +18,32 @@ export default function SignInPrompt() {
 
   if (!visible || status === "authenticated") return null;
 
-  const handleGoogleSignIn = async () => {
+  // const handleGoogleSignIn = async () => {
+  //   setLoading(true);
+  //   setError(null);
+  //   try {
+  //     const result = await signIn("google", { 
+  //       redirect: true, // Enable redirection
+  //       // callbackUrl: "https://auth.salesmanpro.site/api/auth/callback/google",
+  //       callbackUrl: "/",
+  //     });
+  //     if (result?.error) throw new Error(result.error);
+  //   } catch (err) {
+  //     setError("Failed to sign in. Please try again.");
+  //     setLoading(false);
+  //   }
+  // };
+
+  const handleGoogleSignIn = () => {
     setLoading(true);
-    setError(null);
-    try {
-      const result = await signIn("google", { 
-        redirect: true, // Enable redirection
-        // callbackUrl: "https://auth.salesmanpro.site/api/auth/callback/google",
-        callbackUrl: "/",
-      });
-      if (result?.error) throw new Error(result.error);
-    } catch (err) {
-      setError("Failed to sign in. Please try again.");
-      setLoading(false);
-    }
+
+    // current tenant origin (e.g. https://someclient.com)
+    const callbackUrl = window.location.href;
+
+    // Redirect user to the centralized auth domain
+    window.location.href = `https://auth.salesmanpro.site/auth/signin?callback=${encodeURIComponent(
+      callbackUrl
+    )}`;
   };
 
   return (
