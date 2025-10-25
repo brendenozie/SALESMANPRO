@@ -122,7 +122,7 @@ const AboutSection: React.FC = () => {
 
                 <div className="absolute top-0 left-0 w-full h-full rounded-3xl overflow-hidden shadow-2xl border-[6px] border-white z-10">
                   <Image
-                    src={imgSrc}
+                    src={imgSrc || 'https://via.placeholder.com/600x400?text=About+Us'}
                     alt={`${name} - inspiring human flourishing`}
                     layout="fill"
                     objectFit="cover"

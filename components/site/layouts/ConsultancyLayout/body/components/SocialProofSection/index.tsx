@@ -199,7 +199,7 @@ export default function App() { // Renamed to App for single file export
                                 className="inline-flex flex-shrink-0 items-center justify-center w-32 sm:w-40 mx-3 sm:mx-6" // Adjusted width and margin for mobile
                             >
                                 <Image
-                                    src={logo.src}
+                                    src={logo.src || "https://placehold.co/160x40/ffffff/000000?text=No+Logo"}
                                     alt={logo.alt}
                                     width={160}
                                     height={80}
