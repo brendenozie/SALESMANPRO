@@ -18,21 +18,24 @@ export default function SignInPrompt() {
 
   if (!visible || status === "authenticated") return null;
 
-  // const handleGoogleSignIn = async () => {
-  //   setLoading(true);
-  //   setError(null);
-  //   try {
-  //     const result = await signIn("google", { 
-  //       redirect: true, // Enable redirection
-  //       // callbackUrl: "https://auth.salesmanpro.site/api/auth/callback/google",
-  //       callbackUrl: "/",
-  //     });
-  //     if (result?.error) throw new Error(result.error);
-  //   } catch (err) {
-  //     setError("Failed to sign in. Please try again.");
-  //     setLoading(false);
-  //   }
-  // };
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      // signIn("google", { callbackUrl: "https://auth.salesmanpro.site/auth/callback?target=https://flourishhub.co.ke" })
+
+      const result = await signIn("google", { 
+        redirect: true, // Enable redirection
+        callbackUrl: `https://auth.salesmanpro.site/api/auth/callback/google?target=${encodeURIComponent(window.location.origin)}`,
+        // callbackUrl: "https://auth.salesmanpro.site/api/auth/callback/google",
+        // callbackUrl: "/", // Redirect back to the current domain after sign-in
+      });
+      if (result?.error) throw new Error(result.error);
+    } catch (err) {
+      setError("Failed to sign in. Please try again.");
+      setLoading(false);
+    }
+  };
 
   // const handleGoogleSignIn = () => {
   //   setLoading(true);
@@ -46,11 +49,12 @@ export default function SignInPrompt() {
   //   )}`;
   // };
 
-  const handleGoogleSignIn = () => {
-    setLoading(true);
-    const callbackUrl = window.location.href; // original domain (e.g. https://tenant.com/dashboard)
-    window.location.href = `https://auth.salesmanpro.site/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`;
-  };
+  // const handleGoogleSignIn = () => {
+  //   setLoading(true);
+  //   const callbackUrl = window.location.href; // original domain (e.g. https://tenant.com/dashboard)
+  //   window.location.href = `https://auth.salesmanpro.site/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`;
+
+  // };
 
   return (
     <motion.div
