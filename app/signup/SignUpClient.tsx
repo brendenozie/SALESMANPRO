@@ -1,10 +1,10 @@
 "use client";
 
-import { signIn, signOut } from "next-auth/react";
-import { useRouter, usePathname } from "next/navigation";
+import { signIn } from "next-auth/react"; // We use signIn for social sign-up
+import { useRouter } from "next/navigation";
 import { useState, useMemo } from "react";
 
-// Placeholder icons (using inline SVGs for compliance)
+// --- PLACEHOLDER ICONS (Reused for consistent styling) ---
 const MailIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
 );
@@ -34,52 +34,8 @@ const ProviderIcons: Record<string, (props: React.SVGProps<SVGSVGElement>) => JS
 
 export type Provider = { id: string; name: string };
 
-export default function SignInClient({ providers }: { providers: Provider[] }) {
-  const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [data, setData] = useState({ email: "", password: "" });
-
-  // Separate credentials providers from social providers
-  const { credentialProvider, socialProviders } = useMemo(() => {
-    const cred = providers.find(p => p.id === "credentials-email-password");
-    const social = providers.filter(p => p.id !== "credentials-email-password" && p.id !== "email");
-    return { credentialProvider: cred, socialProviders: social };
-  }, [providers]);
-
-
-  const loginUser = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setIsLoading(true);
-    
-    // Check for empty fields before calling API
-    if (!data.email || !data.password) {
-      setError("Please enter both email and password.");
-      setIsLoading(false);
-      return;
-    }
-
-    const res = await signIn("credentials-email-password", { ...data, redirect: false });
-    setIsLoading(false);
-
-    if (res?.error) {
-      console.error(res.error);
-      setError("Login failed. Please check your credentials.");
-      return;
-    }
-    router.push("/");
-  };
-
-  const handleSocialSignIn = async (providerId: string) => {
-    setError(null);
-    setIsLoading(true);
-    // Use a simpler approach for social sign-in without a massive loading overlay
-    await signIn(providerId, { redirect: true, callbackUrl: "/" });
-  };
-  
-  // Custom Input Field Component for visual appeal
-  const InputField = ({ label, name, type, icon: Icon, value, onChange, placeholder }: { label: string; name: string; type: string; icon: React.FC<React.SVGProps<SVGSVGElement>>; value: string; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void; placeholder: string; }) => (
+// Custom Input Field Component for visual appeal (identical to SignInClient)
+const InputField = ({ label, name, type, icon: Icon, value, onChange, placeholder }: { label: string; name: string; type: string; icon: React.FC<React.SVGProps<SVGSVGElement>>; value: string; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void; placeholder: string; }) => (
     <div>
       <label htmlFor={name} className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
         {label}
@@ -101,18 +57,89 @@ export default function SignInClient({ providers }: { providers: Provider[] }) {
         />
       </div>
     </div>
-  );
+);
+
+
+export default function SignUpClient({ providers }: { providers: Provider[] }) {
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [data, setData] = useState({ 
+    name: "", 
+    email: "", 
+    password: "", 
+    confirmPassword: "" 
+  });
+
+  // Separate credentials providers from social providers
+  const { credentialProvider, socialProviders } = useMemo(() => {
+    // Only show credential-based option if present, typically excluded for sign-up logic
+    const cred = providers.find(p => p.id === "credentials-email-password");
+    // Providers for social sign-up
+    const social = providers.filter(p => p.id !== "credentials-email-password" && p.id !== "email");
+    return { credentialProvider: cred, socialProviders: social };
+  }, [providers]);
+
+
+  const registerUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setIsLoading(true);
+
+    // Basic Validation
+    if (!data.name || !data.email || !data.password || !data.confirmPassword) {
+      setError("Please fill in all required fields.");
+      setIsLoading(false);
+      return;
+    }
+    if (data.password !== data.confirmPassword) {
+      setError("Passwords do not match. Please check them.");
+      setIsLoading(false);
+      return;
+    }
+
+    // --- MOCK API CALL FOR REGISTRATION (Replace with actual backend call) ---
+    console.log("Attempting to register user:", { name: data.name, email: data.email });
+    
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 1500)); 
+
+    // MOCK: Assuming registration is successful for the demo
+    const mockRegistrationSuccess = true; 
+
+    setIsLoading(false);
+
+    if (mockRegistrationSuccess) {
+        // Redirect to a confirmation page or the dashboard/sign-in page
+        router.push("/success?message=registration_successful"); 
+    } else {
+        // Handle mock failure
+        setError("Registration failed. Email might already be in use.");
+    }
+  };
+
+  const handleSocialSignUp = async (providerId: string) => {
+    setError(null);
+    setIsLoading(true);
+    // Use signIn with the provider for sign-up/link accounts
+    await signIn(providerId, { redirect: true, callbackUrl: "/dashboard" });
+  };
+  
+  // Update function helper
+  const updateData = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    setData((d) => ({ ...d, [field]: e.target.value }));
+  }
 
 
   return (
-    // Full-screen, engaging background with a subtle linear gradient and pattern
+    // Reuses the visually engaging background from the sign-in page
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 overflow-auto py-12 px-4 sm:px-6 lg:px-8 
                     bg-[url('https://api.unsplash.com/photos/abstract-geometric-pattern-d_7N_yP_KxI')] bg-cover bg-center">
         
         {/* Overlay for improved contrast */}
         <div className="absolute inset-0 bg-indigo-900/10 dark:bg-indigo-900/40 backdrop-blur-sm"></div>
 
-        {/* Central Sign-In Card */}
+        {/* Central Sign-Up Card */}
         <div className="max-w-md w-full space-y-8 relative z-10 bg-white dark:bg-gray-800 p-10 sm:p-12 rounded-3xl shadow-[0_20px_50px_rgba(8,_112,_184,_0.7)] dark:shadow-[0_20px_50px_rgba(255,_255,_255,_0.1)] transition-all duration-300">
           
           <div className="text-center">
@@ -122,10 +149,10 @@ export default function SignInClient({ providers }: { providers: Provider[] }) {
             </div>
             
             <h2 className="mt-2 text-3xl font-extrabold text-gray-900 dark:text-white">
-              Log In to SalesmanPro
+              Create Your SalesmanPro Account
             </h2>
             <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-              Your sales success starts here.
+              Start your today.
             </p>
           </div>
 
@@ -137,50 +164,68 @@ export default function SignInClient({ providers }: { providers: Provider[] }) {
             </div>
           )}
 
-          {/* 1. CREDENTIALS FORM */}
-          {credentialProvider && (
-            <form onSubmit={loginUser} className="space-y-6">
-              <InputField
-                label="Email Address"
-                name="email"
-                type="text"
-                icon={MailIcon}
-                value={data.email}
-                placeholder="you@company.com"
-                onChange={(e) => setData((d) => ({ ...d, email: e.target.value }))}
-              />
-              
-              <InputField
-                label="Password"
-                name="password"
-                type="password"
-                icon={LockIcon}
-                value={data.password}
-                placeholder="••••••••"
-                onChange={(e) => setData((d) => ({ ...d, password: e.target.value }))}
-              />
+          {/* 1. REGISTRATION FORM */}
+          <form onSubmit={registerUser} className="space-y-6">
+            <InputField
+              label="Full Name"
+              name="name"
+              type="text"
+              icon={UserIcon}
+              value={data.name}
+              placeholder="John Doe"
+              onChange={updateData('name')}
+            />
 
-              <button
-                type="submit"
-                disabled={isLoading}
-                className={`w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-lg 
-                            text-base font-semibold text-white transition duration-300 ease-in-out transform hover:scale-[1.01]
-                            ${isLoading
-                              ? "bg-yellow-400 cursor-wait"
-                              : "bg-yellow-500 hover:bg-yellow-600 focus:outline-none focus:ring-4 focus:ring-yellow-300 dark:focus:ring-yellow-700"
-                            }`}
-              >
-                {isLoading ? (
-                    <>
-                        <Loader2 className="h-5 w-5 mr-2" />
-                        Signing In...
-                    </>
-                ) : (
-                    "Sign In with Credentials"
-                )}
-              </button>
-            </form>
-          )}
+            <InputField
+              label="Email Address"
+              name="email"
+              type="email"
+              icon={MailIcon}
+              value={data.email}
+              placeholder="you@company.com"
+              onChange={updateData('email')}
+            />
+            
+            <InputField
+              label="Password"
+              name="password"
+              type="password"
+              icon={LockIcon}
+              value={data.password}
+              placeholder="••••••••"
+              onChange={updateData('password')}
+            />
+
+            <InputField
+              label="Confirm Password"
+              name="confirmPassword"
+              type="password"
+              icon={LockIcon}
+              value={data.confirmPassword}
+              placeholder="••••••••"
+              onChange={updateData('confirmPassword')}
+            />
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className={`w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-lg 
+                          text-base font-semibold text-white transition duration-300 ease-in-out transform hover:scale-[1.01]
+                          ${isLoading
+                            ? "bg-yellow-400 cursor-wait"
+                            : "bg-yellow-500 hover:bg-yellow-600 focus:outline-none focus:ring-4 focus:ring-yellow-300 dark:focus:ring-yellow-700"
+                          }`}
+            >
+              {isLoading ? (
+                  <>
+                      <Loader2 className="h-5 w-5 mr-2" />
+                      Creating Account...
+                  </>
+              ) : (
+                  "Sign Up"
+              )}
+            </button>
+          </form>
 
           {/* 2. DIVIDER */}
           {socialProviders.length > 0 && (
@@ -190,7 +235,7 @@ export default function SignInClient({ providers }: { providers: Provider[] }) {
               </div>
               <div className="relative flex justify-center text-sm">
                 <span className="px-3 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
-                  Or continue with
+                  Or sign up with
                 </span>
               </div>
             </div>
@@ -209,33 +254,13 @@ export default function SignInClient({ providers }: { providers: Provider[] }) {
                     className="w-full flex items-center justify-center py-3 px-4 border border-gray-300 dark:border-gray-700 
                               rounded-xl shadow-md font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 
                               hover:shadow-lg transition duration-300 ease-in-out transform hover:bg-gray-50 dark:hover:bg-gray-600"
-                    onClick={() => handleSocialSignIn(prov.id)}
+                    onClick={() => handleSocialSignUp(prov.id)}
                   >
                     <IconComponent className="mr-3 h-5 w-5" />
                     Sign in with {prov.name}
                   </button>
                 );
               })}
-
-            {/* {socialProviders.map((prov) => {
-              // Get the correct Icon Component from the map
-              const IconComponent = ProviderIcons[prov.id.toLowerCase()] || UserIcon;
-
-              return (
-                <button
-                  key={prov.id}
-                  className="w-full flex items-center justify-center py-3 px-4 border border-gray-300 dark:border-gray-700 
-                             rounded-xl shadow-md font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 
-                             hover:shadow-lg transition duration-300 ease-in-out transform hover:bg-gray-50 dark:hover:bg-gray-600"
-                  onClick={() => handleSocialSignIn(prov.id)}
-                > */}
-                  {/* Dynamically render icon component */}
-                  {/* <IconComponent className="mr-3 h-5 w-5" />
-                  
-                  Sign in with {prov.name}
-                </button>
-              );
-            })} */}
           </div>
           
         </div>
