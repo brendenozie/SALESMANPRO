@@ -168,7 +168,8 @@ export const authOptions: NextAuthOptions = {
 
           console.log("Redirect callbackUrl:", callbackUrl);
           console.log("Redirect target:", target);
-          
+          console.log("Base URL:", baseUrl);
+          console.log("url:",url);
           
           // If login originated from a custom domain
           if (callbackUrl || target ) {
