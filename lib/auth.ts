@@ -163,8 +163,22 @@ export const authOptions: NextAuthOptions = {
 
      async redirect({ url, baseUrl }) {
         try {
-          const callbackUrl = new URL(url, baseUrl).searchParams.get("callbackUrl");
-          const target = new URL(url, baseUrl).searchParams.get("target");
+          // const callbackUrl = new URL(url, baseUrl).searchParams.get("callbackUrl");
+          // const target = new URL(url, baseUrl).searchParams.get("target");
+          let callbackUrl = null;
+          let target = null;
+
+          try {
+            const parsedUrl = new URL(url);
+            callbackUrl = parsedUrl.searchParams.get("callbackUrl");
+            target = parsedUrl.searchParams.get("target");
+          } catch {
+            // Fallback for relative URLs
+            const parsedUrl = new URL(url, baseUrl);
+            callbackUrl = parsedUrl.searchParams.get("callbackUrl");
+            target = parsedUrl.searchParams.get("target");
+          }
+
 
           console.log("Redirect callbackUrl:", callbackUrl);
           console.log("Redirect target:", target);
