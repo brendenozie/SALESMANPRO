@@ -131,10 +131,10 @@ export const authOptions: NextAuthOptions = {
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
       authorization: {
-          params: {
-            redirect_uri: `${baseUrl}/api/auth/callback/google`,
-          },
+        params: {
+          redirect_uri: `https://auth.salesmanpro.site/api/auth/callback/google`,
         },
+      },
     }),
     // FacebookProvider({
     //   clientId: process.env.FACEBOOK_CLIENT_ID!,
