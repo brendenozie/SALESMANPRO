@@ -503,15 +503,44 @@ model AnalyticsConfig {
 }
 
 model PaymentSettings {
-  id                  String   @id @default(auto()) @map("_id") @db.ObjectId
-  stripeKey           String?
-  paypalKey           String?
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  // Back-relation to Company (Company is the defining side via paymentSettingsId)
+  company Company?
+
+  // --- Payment Method Enablement Flags ---
+  isStripeEnabled   Boolean @default(false)
+  isPaypalEnabled   Boolean @default(false)
+  isMpesaEnabled    Boolean @default(false)
+  isPaystackEnabled Boolean @default(false) // NEW: Toggle for Paystack
+
+  // --- Stripe Configuration ---
+  stripeKey String?
+
+  // --- PayPal Configuration ---
+  paypalKey String?
+
+  // --- M-Pesa Configuration (You might consider encrypting these) ---
   mpesaShortcode      String?
   mpesaConsumerKey    String?
   mpesaConsumerSecret String?
   mpesaCallbackUrl    String?
-  company             Company?
+
+  // --- Paystack Configuration (NEW) ---
+  paystackPublicKey String?
+  paystackSecretKey String? // IMPORTANT: Must be encrypted in the database in a real-world application.
 }
+
+// model PaymentSettings {
+//   id                  String   @id @default(auto()) @map("_id") @db.ObjectId
+//   stripeKey           String?
+//   paypalKey           String?
+//   mpesaShortcode      String?
+//   mpesaConsumerKey    String?
+//   mpesaConsumerSecret String?
+//   mpesaCallbackUrl    String?
+//   company             Company?
+// }
 
 model ShippingSettings {
   id                 String   @id @default(auto()) @map("_id") @db.ObjectId

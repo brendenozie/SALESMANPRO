@@ -228,13 +228,30 @@ export default function CreateStoreForm({
     },
     paymentSettings: {
       id: "",
-      // companyId: "",
-      stripeKey: null,
-      paypalKey: null,
-      mpesaShortcode: null,
-      mpesaConsumerKey: null,
-      mpesaConsumerSecret: null,
-      mpesaCallbackUrl: null
+    // companyId: "", // Keep this commented or include if you use it in your component
+    
+    // --- New Enablement Flags ---
+    isStripeEnabled: false,   // New: Default to false
+    isPaypalEnabled: false,   // New: Default to false
+    isMpesaEnabled: false,    // New: Default to false
+    isPaystackEnabled: false, // New: Default to false
+
+    // --- Configuration Keys ---
+    // Stripe
+    stripeKey: null,
+    
+    // PayPal
+    paypalKey: null,
+    
+    // M-Pesa
+    mpesaShortcode: null,
+    mpesaConsumerKey: null,
+    mpesaConsumerSecret: null,
+    mpesaCallbackUrl: null,
+    
+    // --- Paystack Keys ---
+    paystackPublicKey: null,  // New: Paystack Public Key
+    paystackSecretKey: null,  // New: Paystack Secret Key
     },
     shippingSettings: {
       id: "",
@@ -273,85 +290,6 @@ export default function CreateStoreForm({
     destinations: [],
     tourPackages: [],
     
-  // --- Core Company Fields ---
-  // logoUrl: "",
-  // bannerUrl: "",
-  // videoUrl: "",
-  // contactEmail: session?.user?.email || "",
-  // contactPhone: "",
-  // address: "",
-  // geoLocation: { lat: 0, lng: 0 },
-  // openingHours: {
-  //   mon: { open: "09:00", close: "17:00" },
-  //   tue: { open: "09:00", close: "17:00" },
-  //   wed: { open: "09:00", close: "17:00" },
-  //   thu: { open: "09:00", close: "17:00" },
-  //   fri: { open: "09:00", close: "17:00" },
-  //   sat: { open: "", close: "" },
-  //   sun: { open: "", close: "" },
-  // },
-
-  // // --- Basic Settings ---
-  // currency: "USD",
-  // locale: "en-US",
-  // companyCategoryId: "",
-  // site: null,
-  // userId: null,
-  // createdAt: null,
-  // updatedAt: null,
-  // deletedAt: null,
-  // sEOId: null,
-
-  // // --- CoreValues / Relations ---
-  // CoreValues: [],
-
-  // // --- Page Structure & Content ---
-  // heroSlides: [],
-  // pageSections: [],
-  // appPromos: [],
-  // promotions: [],
-  // projects: [],
-  // StoreCategory: [],
-  // blogs: [],
-  // courses: [],
-  // events: [],
-  // Collection: [],
-  // Announcement: [],
-  // services: [],
-  // destinations: [],
-  // tourPackages: [],
-  // packages: [],
-  // Podcast: [],
-  // CompanyLocation: [],
-
-  // --- Social & External ---
-  // socialLinks: [],
-  // policies: [],
-  // faqs: [],
-  // testimonials: [],
-  // marketplaceListings: [],
-  // Writer: [],
-  // Expert: [],
-  // Educator: [],
-  // Doctor: [],
-  // salesAgents: [],
-
-  // --- JSON / Configurable Data ---
-  // awards: [],
-  // metrics: [],
-  // stats: [],
-  // pricingTiers: [
-  //   {
-  //     name: "Basic",
-  //     price: 0,
-  //     features: [],
-  //     description: "A great starting point.",
-  //     duration: "monthly",
-  //   },
-  // ],
-
-  // --- 🆕 New Visual / Impact / Story Fields ---
-  
   partnerLogos: [],
   founderName: "",
   founderQuote: "",

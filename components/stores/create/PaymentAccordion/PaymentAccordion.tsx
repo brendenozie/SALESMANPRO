@@ -1,30 +1,89 @@
-import React, { ChangeEvent } from 'react';
+import React, { ChangeEvent, useCallback } from 'react';
+
+// --- Type and Interface Definitions ---
 
 /**
- * Interface for Payment settings, matching the Prisma schema model.
+ * Interface for Payment settings, extended to include Paystack and boolean
+ * flags to enable/disable each method. Matches the expected Prisma schema model.
  */
 export interface PaymentSettings {
   id?: string | null | undefined;
   companyId?: string | null | undefined;
-  stripeKey?: string | null | undefined;
+
+  // Global settings for which methods are active
+  isStripeEnabled?: boolean | null | undefined;
+  isPaypalEnabled?: boolean | null | undefined;
+  isMpesaEnabled?: boolean | null | undefined;
+  isPaystackEnabled?: boolean | null | undefined; // New field
+
+  // Stripe
+  stripeKey?: string | null | undefined; // Consider renaming to stripePublishableKey for clarity
+
+  // PayPal
   paypalKey?: string | null | undefined;
+
+  // M-Pesa
   mpesaShortcode?: string | null | undefined;
   mpesaConsumerKey?: string | null | undefined;
   mpesaConsumerSecret?: string | null | undefined;
   mpesaCallbackUrl?: string | null | undefined;
+
+  // Paystack (New fields)
+  paystackPublicKey?: string | null | undefined;
+  paystackSecretKey?: string | null | undefined;
 }
 
 /**
  * Props for the PaymentAccordion component.
  */
 export interface PaymentAccordionProps {
-  paymentSettings: PaymentSettings| null;
+  paymentSettings: PaymentSettings | null;
   onChange: (updated: PaymentSettings) => void;
 }
 
+// --- Helper Components (for visual appeal and reusability) ---
+
+interface ToggleProps {
+  label: string;
+  description: string;
+  enabled: boolean;
+  onToggle: (enabled: boolean) => void;
+}
+
+const PaymentMethodToggle: React.FC<ToggleProps> = ({
+  label,
+  description,
+  enabled,
+  onToggle,
+}) => (
+  <div
+    className={`flex items-center justify-between p-4 rounded-xl transition duration-200 ease-in-out ${
+      enabled ? 'bg-indigo-50 border-indigo-200' : 'bg-white border-gray-200'
+    } border shadow-sm`}
+  >
+    <div className="flex flex-col">
+      <span className="text-lg font-semibold text-gray-800">{label}</span>
+      <p className="text-sm text-gray-600">{description}</p>
+    </div>
+    <label className="relative inline-flex items-center cursor-pointer">
+      <input
+        type="checkbox"
+        checked={enabled}
+        onChange={(e) => onToggle(e.target.checked)}
+        className="sr-only peer"
+      />
+      <div
+        className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"
+      ></div>
+    </label>
+  </div>
+);
+
+// --- Main Component ---
+
 /**
  * A component for editing payment integration settings.
- * It provides fields for various payment gateways like Stripe, PayPal, and M-Pesa.
+ * It provides a clear way to enable/disable gateways and configure them.
  */
 export default function PaymentAccordion({
   paymentSettings,
@@ -32,136 +91,188 @@ export default function PaymentAccordion({
 }: PaymentAccordionProps) {
 
   /**
-   * A generic handler to update a specific field in the payment settings object.
-   * It creates a new object with the updated field and calls the parent onChange handler.
-   * @param key The key of the field to update.
-   * @param value The new value for the field.
+   * A generic handler to update a specific string field in the settings object.
    */
-  const updateField = (key: keyof PaymentSettings, value: string) => {
+  const updateStringField = (key: keyof PaymentSettings, value: string) => {
     onChange({ ...paymentSettings, [key]: value });
   };
 
+  /**
+   * A generic handler to update a specific boolean field (toggle) in the settings object.
+   * Uses useCallback to prevent unnecessary re-renders in the child components.
+   */
+  const updateBooleanField = useCallback(
+    (key: keyof PaymentSettings, value: boolean) => {
+      onChange({ ...paymentSettings, [key]: value });
+    },
+    [paymentSettings, onChange]
+  );
+
+  /**
+   * Renders the input field for a payment gateway setting.
+   */
+  const renderInputField = (
+    id: keyof PaymentSettings,
+    label: string,
+    placeholder: string,
+    isSecret: boolean = false // Added for better security hint
+  ) => (
+    <div>
+      <label
+        htmlFor={String(id)}
+        className="block text-sm font-semibold text-gray-700"
+      >
+        {label}
+        {isSecret && (
+          <span className="ml-2 text-xs text-red-500">
+            (Keep this secret!)
+          </span>
+        )}
+      </label>
+      <input
+        id={String(id)}
+        type={isSecret ? 'password' : 'text'}
+        value={(paymentSettings?.[id] as string) || ''}
+        onChange={(e: ChangeEvent<HTMLInputElement>) =>
+          updateStringField(id, e.target.value)
+        }
+        placeholder={placeholder}
+        className="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2 text-sm shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out"
+      />
+    </div>
+  );
+
   return (
-    <div className="max-w-3xl mx-auto p-6 bg-white shadow-xl rounded-2xl">
-      <div className="flex justify-between items-center mb-6 border-b pb-4">
-        <h2 className="text-2xl font-bold text-gray-800">Payments Settings</h2>
-        <span className="text-2xl" role="img" aria-label="credit-card">💳</span>
+    <div className="max-w-4xl mx-auto p-8 bg-white shadow-2xl rounded-3xl transform transition duration-500 hover:shadow-3xl">
+      <div className="flex justify-between items-center mb-8 border-b border-indigo-100 pb-4">
+        <h2 className="text-3xl font-extrabold text-gray-900">
+          Payment Gateway Configuration
+        </h2>
+        <span className="text-3xl text-indigo-600" role="img" aria-label="credit-card">
+          💳
+        </span>
       </div>
 
-      {/* Payment Integrations Section */}
-      <section className="p-6 border border-gray-200 rounded-xl bg-gray-50">
-        <h3 className="text-xl font-bold text-gray-800 mb-4">
-          Payment Integrations
+      {/* 1. Payment Method Selection Section */}
+      <section className="mb-10 p-6 border border-indigo-100 rounded-xl bg-indigo-50/50">
+        <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+          <span className="text-2xl mr-3">🔌</span> Select Active Methods
         </h3>
         <p className="text-sm text-gray-600 mb-6">
-          Set up your payment gateways.
+          Toggle the switch for each payment gateway you wish to enable and configure.
         </p>
-        <div className="space-y-6">
-          {/* Stripe Key */}
-          <div>
-            <label htmlFor="stripeKey" className="block text-sm font-semibold text-gray-700">
-              Stripe Publishable Key
-            </label>
-            <input
-              id="stripeKey"
-              type="text"
-              // Correctly binding the value to the prop
-              value={paymentSettings?.stripeKey || ''}
-              onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                updateField('stripeKey', e.target.value)
-              }
-              placeholder="e.g., pk_test_xxxxxxx"
-              className="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2 text-sm shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out"
-            />
-          </div>
-          {/* PayPal Key */}
-          <div>
-            <label htmlFor="paypalKey" className="block text-sm font-semibold text-gray-700">
-              PayPal Client ID
-            </label>
-            <input
-              id="paypalKey"
-              type="text"
-              // Correctly binding the value to the prop
-              value={paymentSettings?.paypalKey || ''}
-              onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                updateField('paypalKey', e.target.value)
-              }
-              placeholder="e.g., Axxxxxxxxxxxx"
-              className="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2 text-sm shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out"
-            />
-          </div>
+        <div className="space-y-4">
+          <PaymentMethodToggle
+            label="Stripe"
+            description="Enable credit/debit card payments via Stripe."
+            enabled={paymentSettings?.isStripeEnabled ?? false}
+            onToggle={(value) => updateBooleanField('isStripeEnabled', value)}
+          />
 
-          {/* M-Pesa Section */}
-          <div className="border-t border-gray-200 pt-6 mt-6 space-y-4">
-            <h4 className="text-lg font-bold text-gray-800">M-Pesa (Daraja API)</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label htmlFor="mpesaShortcode" className="block text-sm font-semibold text-gray-700">
-                  Shortcode
-                </label>
-                <input
-                  id="mpesaShortcode"
-                  type="text"
-                  // Correctly binding the value to the prop
-                  value={paymentSettings?.mpesaShortcode || ''}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                    updateField('mpesaShortcode', e.target.value)
-                  }
-                  placeholder="e.g., 600123"
-                  className="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2 text-sm shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out"
-                />
-              </div>
-              <div>
-                <label htmlFor="mpesaConsumerKey" className="block text-sm font-semibold text-gray-700">
-                  Consumer Key
-                </label>
-                <input
-                  id="mpesaConsumerKey"
-                  type="text"
-                  // Correctly binding the value to the prop
-                  value={paymentSettings?.mpesaConsumerKey || ''}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                    updateField('mpesaConsumerKey', e.target.value)
-                  }
-                  placeholder="e.g., xxxxxxxxxx"
-                  className="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2 text-sm shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out"
-                />
-              </div>
-              <div className="md:col-span-2">
-                <label htmlFor="mpesaConsumerSecret" className="block text-sm font-semibold text-gray-700">
-                  Consumer Secret
-                </label>
-                <input
-                  id="mpesaConsumerSecret"
-                  type="text"
-                  // Correctly binding the value to the prop
-                  value={paymentSettings?.mpesaConsumerSecret || ''}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                    updateField('mpesaConsumerSecret', e.target.value)
-                  }
-                  placeholder="e.g., xxxxxxxxxx"
-                  className="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2 text-sm shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out"
-                />
-              </div>
-              <div className="md:col-span-2">
-                <label htmlFor="mpesaCallbackUrl" className="block text-sm font-semibold text-gray-700">
-                  Callback URL
-                </label>
-                <input
-                  id="mpesaCallbackUrl"
-                  type="text"
-                  // Correctly binding the value to the prop
-                  value={paymentSettings?.mpesaCallbackUrl || ''}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                    updateField('mpesaCallbackUrl', e.target.value)
-                  }
-                  placeholder="e.g., https://yourstore.com/mpesa-callback"
-                  className="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2 text-sm shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out"
-                />
+          <PaymentMethodToggle
+            label="PayPal"
+            description="Enable payments through the PayPal platform."
+            enabled={paymentSettings?.isPaypalEnabled ?? false}
+            onToggle={(value) => updateBooleanField('isPaypalEnabled', value)}
+          />
+
+          <PaymentMethodToggle
+            label="M-Pesa (Daraja API)"
+            description="Enable mobile payments popular in East Africa."
+            enabled={paymentSettings?.isMpesaEnabled ?? false}
+            onToggle={(value) => updateBooleanField('isMpesaEnabled', value)}
+          />
+
+          <PaymentMethodToggle
+            label="Paystack"
+            description="Enable card and bank payments popular in Africa (e.g., Nigeria, Ghana, South Africa)."
+            enabled={paymentSettings?.isPaystackEnabled ?? false}
+            onToggle={(value) => updateBooleanField('isPaystackEnabled', value)}
+          />
+        </div>
+      </section>
+
+      {/* 2. Configuration Details Section */}
+      <section className="p-6 border border-gray-200 rounded-xl bg-white shadow-inner">
+        <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center">
+          <span className="text-2xl mr-3">⚙️</span> Gateway API Credentials
+        </h3>
+        <div className="space-y-8">
+          {/* Stripe Configuration */}
+          {(paymentSettings?.isStripeEnabled ?? false) && (
+            <div className="p-5 border-l-4 border-indigo-500 bg-indigo-50 rounded-lg shadow-md">
+              <h4 className="text-lg font-bold text-indigo-700 mb-4">Stripe Settings</h4>
+              {renderInputField(
+                'stripeKey',
+                'Stripe Publishable Key',
+                'e.g., pk_live_xxxxxxxxxxxx'
+              )}
+            </div>
+          )}
+
+          {/* PayPal Configuration */}
+          {(paymentSettings?.isPaypalEnabled ?? false) && (
+            <div className="p-5 border-l-4 border-blue-500 bg-blue-50 rounded-lg shadow-md">
+              <h4 className="text-lg font-bold text-blue-700 mb-4">PayPal Settings</h4>
+              {renderInputField(
+                'paypalKey',
+                'PayPal Client ID',
+                'e.g., Axxxxxxxxxxxx'
+              )}
+            </div>
+          )}
+
+          {/* Paystack Configuration (NEW) */}
+          {(paymentSettings?.isPaystackEnabled ?? false) && (
+            <div className="p-5 border-l-4 border-green-500 bg-green-50 rounded-lg shadow-md">
+              <h4 className="text-lg font-bold text-green-700 mb-4">Paystack Settings</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {renderInputField(
+                  'paystackPublicKey',
+                  'Paystack Public Key',
+                  'e.g., pk_live_xxxxxxxxxxxx'
+                )}
+                {renderInputField(
+                  'paystackSecretKey',
+                  'Paystack Secret Key',
+                  'e.g., sk_live_xxxxxxxxxxxx',
+                  true // Mark as secret
+                )}
               </div>
             </div>
-          </div>
+          )}
+
+          {/* M-Pesa Configuration */}
+          {(paymentSettings?.isMpesaEnabled ?? false) && (
+            <div className="p-5 border-l-4 border-red-500 bg-red-50 rounded-lg shadow-md">
+              <h4 className="text-lg font-bold text-red-700 mb-4">M-Pesa (Daraja API) Settings</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {renderInputField(
+                  'mpesaShortcode',
+                  'Shortcode (Paybill/Till Number)',
+                  'e.g., 600123'
+                )}
+                {renderInputField(
+                  'mpesaConsumerKey',
+                  'Consumer Key',
+                  'e.g., xxxxxxxxxx'
+                )}
+                {renderInputField(
+                  'mpesaConsumerSecret',
+                  'Consumer Secret',
+                  'e.g., xxxxxxxxxx',
+                  true // Mark as secret
+                )}
+                <div className="md:col-span-2">
+                  {renderInputField(
+                    'mpesaCallbackUrl',
+                    'Validation/Confirmation URL',
+                    'e.g., https://yourstore.com/mpesa-callback'
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </section>
     </div>
