@@ -195,45 +195,117 @@ export const authOptions: NextAuthOptions = {
     // },
 
     async signIn({ user, account }) {
-      // OAuth ONLY (skip credentials)
-      if (account && account.provider !== "credentials") {
-        if (!user.email) return false;
+  // Skip if not OAuth
+  if (!account || account.provider === "credentials") return true;
 
-        const existingUser = await findExistingUserByEmail(user.email);
-        if (existingUser) {
-          // ✅ Link OAuth provider to existing user
-          await prisma.account.upsert({
-            where: {
-              provider_providerAccountId: {
-                provider: account.provider,
-                providerAccountId: account.providerAccountId,
-              },
-            },
-            update: {},
-            create: {
-              userId: existingUser.id,
-              provider: account.provider,
-              providerAccountId: account.providerAccountId,
-              type: account.type,
-              access_token: account.access_token,
-              refresh_token: account.refresh_token,
-              expires_at: account.expires_at,
-              token_type: account.token_type,
-              scope: account.scope,
-              id_token: account.id_token,
-              session_state: account.session_state,
-            },
-          });
-        } else {
-          // First-time OAuth signup → create default User record
-          await createDefaultUser({ email: user.email!, name: user.name!, image: user.image! });
-        }
+  if (!user.email) return false;
 
-        return true;
-      }
+  const existingUser = await prisma.user.findUnique({
+    where: { email: user.email },
+  });
 
-      return true;
+  if (existingUser) {
+    // ✅ Check if this OAuth provider is already linked
+    const existingAccount = await prisma.account.findUnique({
+      where: {
+        provider_providerAccountId: {
+          provider: account.provider,
+          providerAccountId: account.providerAccountId,
+        },
+      },
+    });
+
+    if (!existingAccount) {
+      // ✅ Link the new OAuth provider to the existing user
+      await prisma.account.create({
+        data: {
+          userId: existingUser.id,
+          provider: account.provider,
+          providerAccountId: account.providerAccountId,
+          type: account.type,
+          access_token: account.access_token,
+          refresh_token: account.refresh_token,
+          expires_at: account.expires_at,
+          token_type: account.token_type,
+          scope: account.scope,
+          id_token: account.id_token,
+          session_state: account.session_state,
+        },
+      });
+    }
+
+    // ✅ Allow sign in — this fixes OAuthAccountNotLinked
+    return true;
+  }
+
+  // ✅ If no existing user, create a new one
+  await prisma.user.create({
+    data: {
+      email: user.email,
+      name: user.name ?? "",
+      image: user.image,
+      role: "ADMIN", // Default role
+      accounts: {
+        create: {
+          provider: account.provider,
+          providerAccountId: account.providerAccountId,
+          type: account.type,
+          access_token: account.access_token,
+          refresh_token: account.refresh_token,
+          expires_at: account.expires_at,
+          token_type: account.token_type,
+          scope: account.scope,
+          id_token: account.id_token,
+          session_state: account.session_state,
+        },
+      },
     },
+  });
+
+  return true;
+},
+
+
+    // async signIn({ user, account }) {
+    //   // OAuth ONLY (skip credentials)
+    //   if (account && account.provider !== "credentials") {
+    //     if (!user.email) return false;
+
+    //     const existingUser = await findExistingUserByEmail(user.email);
+    //     if (existingUser) {
+    //       // ✅ Link OAuth provider to existing user
+    //       await prisma.account.upsert({
+    //         where: {
+    //           provider_providerAccountId: {
+    //             provider: account.provider,
+    //             providerAccountId: account.providerAccountId,
+    //           },
+    //         },
+    //         update: {},
+    //         create: {
+    //           userId: existingUser.id,
+    //           provider: account.provider,
+    //           providerAccountId: account.providerAccountId,
+    //           type: account.type,
+    //           access_token: account.access_token,
+    //           refresh_token: account.refresh_token,
+    //           expires_at: account.expires_at,
+    //           token_type: account.token_type,
+    //           scope: account.scope,
+    //           id_token: account.id_token,
+    //           session_state: account.session_state,
+    //         },
+    //       });
+    //     } else {
+    //       // First-time OAuth signup → create default User record
+    //       await createDefaultUser({ email: user.email!, name: user.name!, image: user.image! });
+    //     }
+
+    //     return true;
+    //   }
+
+    //   return true;
+    // },
 
     async jwt({ token, user }) {
       if (user) {
