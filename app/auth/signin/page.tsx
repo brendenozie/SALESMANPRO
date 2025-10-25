@@ -32,7 +32,7 @@ const Loader2 = (props: React.SVGProps<SVGSVGElement>) => (
 export default function SignInPage() {
   const params = useSearchParams();
   // Ensure the callback URL is secure, if not from the query parameter
-  const callback = params.get("callback") || "https://salesmanpro.site";
+  const callbackUrl = params.get("callbackUrl") || "https://salesmanpro.site";
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -46,7 +46,7 @@ export default function SignInPage() {
       // Let's stick with the original simplified flow for now.
       await signIn("google", {
         redirect: true,
-        callbackUrl: callback,
+        callbackUrl: callbackUrl,
       });
     } catch (err) {
       console.error(err);
