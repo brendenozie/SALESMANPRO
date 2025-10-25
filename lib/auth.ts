@@ -161,18 +161,38 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async redirect({ url, baseUrl }) {
       try {
-        const redirectUrl = new URL(url);
-        const tenant = redirectUrl.searchParams.get("tenant");
+        const target = new URL(url, baseUrl);
+        const callbackUrl = target.searchParams.get("callbackUrl");
 
-        // ✅ If the "tenant" param exists, redirect there after login
-        if (tenant) return `${tenant}/?auth=success`;
+        // ✅ If an external callbackUrl exists, redirect user there after successful auth
+        // if (callbackUrl) return decodeURIComponent(callbackUrl);
+        if (callbackUrl) {
+          const urlObj = new URL(decodeURIComponent(callbackUrl));
+          urlObj.searchParams.set("auth", "success");
+          return urlObj.toString();
+        }
 
-        // ✅ Otherwise, fallback to base domain
+        // ✅ Otherwise, use baseUrl
         return baseUrl;
       } catch {
         return baseUrl;
       }
     },
+
+    // async redirect({ url, baseUrl }) {
+    //   try {
+    //     const redirectUrl = new URL(url);
+    //     const tenant = redirectUrl.searchParams.get("tenant");
+
+    //     // ✅ If the "tenant" param exists, redirect there after login
+    //     if (tenant) return `${tenant}/?auth=success`;
+
+    //     // ✅ Otherwise, fallback to base domain
+    //     return baseUrl;
+    //   } catch {
+    //     return baseUrl;
+    //   }
+    // },
 
     async signIn({ user, account }) {
       // OAuth ONLY (skip credentials)

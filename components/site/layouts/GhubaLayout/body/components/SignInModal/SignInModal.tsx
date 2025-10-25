@@ -34,16 +34,22 @@ export default function SignInPrompt() {
   //   }
   // };
 
+  // const handleGoogleSignIn = () => {
+  //   setLoading(true);
+
+  //   // current tenant origin (e.g. https://someclient.com)
+  //   const callbackUrl = window.location.href;
+
+  //   // Redirect user to the centralized auth domain
+  //   window.location.href = `https://auth.salesmanpro.site/auth/signin?callback=${encodeURIComponent(
+  //     callbackUrl
+  //   )}`;
+  // };
+
   const handleGoogleSignIn = () => {
     setLoading(true);
-
-    // current tenant origin (e.g. https://someclient.com)
-    const callbackUrl = window.location.href;
-
-    // Redirect user to the centralized auth domain
-    window.location.href = `https://auth.salesmanpro.site/auth/signin?callback=${encodeURIComponent(
-      callbackUrl
-    )}`;
+    const callbackUrl = window.location.href; // original domain (e.g. https://tenant.com/dashboard)
+    window.location.href = `https://auth.salesmanpro.site/signin?callbackUrl=${encodeURIComponent(callbackUrl)}`;
   };
 
   return (
