@@ -28,11 +28,33 @@ export const config = {
 };
 
 export default async function middleware(request: NextRequest, ev: NextFetchEvent) {
-  const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
+  // const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
   const url = request.nextUrl.clone();
   const pathname = url.pathname;
   const host = request.headers.get("host")?.split(":")[0] || "";
   const origin = request.headers.get("origin");
+
+  // Try to get token from cookies
+  // const token = req.cookies.get("session-token")?.value;
+
+  // // If token passed in URL (after login)
+  // const tokenFromQuery = searchParams.get("token");
+  // if (tokenFromQuery) {
+  //   const response = NextResponse.redirect(new URL("/", req.url));
+  //   response.cookies.set("session-token", tokenFromQuery, {
+  //     httpOnly: true,
+  //     secure: true,
+  //     path: "/",
+  //     sameSite: "lax",
+  //   });
+  //   return response;
+  // }
+
+  // // Verify the token if available
+  // if (token) {
+  //   const decoded = await decode({ token, secret: process.env.NEXTAUTH_SECRET! });
+  //   if (decoded) return NextResponse.next();
+  // }
 
   // ✅ 1. Handle CORS preflight requests
   // Allow public routes

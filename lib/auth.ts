@@ -11,6 +11,7 @@ import AppleProvider from "next-auth/providers/apple";
 import prisma from "@/server/db/prismadb";
 import { randomBytes, randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
+import { encode } from "next-auth/jwt";
 
 const baseUrl = process.env.NEXTAUTH_URL || "https://salesmanpro.site";
 
@@ -159,23 +160,43 @@ export const authOptions: NextAuthOptions = {
 
   // ✅ AUTO-LINK OAUTH LOGINS HERE
   callbacks: {
+
      async redirect({ url, baseUrl }) {
-      try {
-        // Parse the original target domain if present in the login URL
-        const parsedUrl = new URL(url);
-        const target = parsedUrl.searchParams.get("target");
+        try {
+          const target = new URL(url, baseUrl).searchParams.get("target");
+          console.log(target);
+          // If login originated from a custom domain
+          if (target) {
+            const session = await getServerSession(authOptions);
+            const userId = String((session?.user as any)?.id ?? (session?.user?.email ?? ""));
+            const tokenPayload = {
+              name: session?.user?.name,
+              email: session?.user?.email,
+              image: session?.user?.image,
+              // include id as required by the JWT type
+              id: userId,
+              // include id as `sub` for compatibility
+              sub: userId,
+            };
+            const token = await encode({
+              token: tokenPayload,
+              secret: process.env.NEXTAUTH_SECRET!,
+            });
 
-        if (target) {
-          // Send to our custom route for token handling + redirect
-          return `${baseUrl}/auth/callback?target=${encodeURIComponent(target)}`;
+            const redirectUrl = new URL(target);
+            redirectUrl.searchParams.set("auth", "success");
+            redirectUrl.searchParams.set("token", token);
+            return redirectUrl.toString();
+          }
+
+          // Default behavior (for auth.salesmanpro.site itself)
+          return baseUrl;
+        } catch (error) {
+          console.error("Redirect error:", error);
+          return baseUrl;
         }
+      },
 
-        // Default: stay on auth domain (salesmanpro.site)
-        return `${baseUrl}/auth/callback`;
-      } catch {
-        return baseUrl;
-      }
-    },
     // async redirect({ url, baseUrl }) {
     //   try {
     //     const target = new URL(url, baseUrl);
@@ -190,21 +211,6 @@ export const authOptions: NextAuthOptions = {
     //     }
 
     //     // ✅ Otherwise, use baseUrl
-    //     return baseUrl;
-    //   } catch {
-    //     return baseUrl;
-    //   }
-    // },
-
-    // async redirect({ url, baseUrl }) {
-    //   try {
-    //     const redirectUrl = new URL(url);
-    //     const tenant = redirectUrl.searchParams.get("tenant");
-
-    //     // ✅ If the "tenant" param exists, redirect there after login
-    //     if (tenant) return `${tenant}/?auth=success`;
-
-    //     // ✅ Otherwise, fallback to base domain
     //     return baseUrl;
     //   } catch {
     //     return baseUrl;

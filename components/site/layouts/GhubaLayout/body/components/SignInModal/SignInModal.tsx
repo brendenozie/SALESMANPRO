@@ -22,13 +22,9 @@ export default function SignInPrompt() {
     setLoading(true);
     setError(null);
     try {
-      // signIn("google", { callbackUrl: "https://auth.salesmanpro.site/auth/callback?target=https://flourishhub.co.ke" })
-
       const result = await signIn("google", { 
         redirect: true, // Enable redirection
-        callbackUrl: `https://auth.salesmanpro.site/api/auth/callback/google?target=${encodeURIComponent(window.location.origin)}`,
-        // callbackUrl: "https://auth.salesmanpro.site/api/auth/callback/google",
-        // callbackUrl: "/", // Redirect back to the current domain after sign-in
+        callbackUrl: `https://auth.salesmanpro.site/api/auth/callback?target=${encodeURIComponent(window.location.origin)}`,
       });
       if (result?.error) throw new Error(result.error);
     } catch (err) {
