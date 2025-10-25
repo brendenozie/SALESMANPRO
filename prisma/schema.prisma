@@ -2120,6 +2120,7 @@ model CustomerOrder {
   cardNumber    String?
   cardExpiry    String?
   cvv           String?
+  mpesaPhone    String?
   promoCode     String?
   paymentOption String?
   items         OrderItem[] // Relationship to multiple order items
