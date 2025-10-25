@@ -17,10 +17,10 @@ import CallToActionSection from "./components/CallToActionSection";
 
 export default function ConsultancySite({ pageData }: { pageData: StoreForm }) {
   
-  const { storeFormData } = useStoreContext(); // Use for global theme settings only
+  // const { storeFormData } = useStoreContext(); // Use for global theme settings only
 
   // Use pageData for all content
-  const siteData = pageData || storeFormData;
+  const siteData = pageData;// || storeFormData;
   
   // marketplaceListings from siteData → map to VehicleCardProps
   const Ebookslistings = siteData?.marketplaceListings.filter(listing => listing.type === "ebook") || [];
@@ -50,9 +50,9 @@ export default function ConsultancySite({ pageData }: { pageData: StoreForm }) {
       {/* <FeaturedProgramsSection  listings={listings} slug=""/> */}
 
       {/* If videos are stored under latestVideos */}
-      {<VideoShowcaseSection blogs={(storeFormData?.blogs || []).map(b => ({ ...b, excerpt: b.excerpt ?? "", coverImage: b.coverImage ?? "", videoAlbumId: b.videoAlbumId ?? undefined }))} />}
+      {<VideoShowcaseSection blogs={(pageData?.blogs || []).map(b => ({ ...b, excerpt: b.excerpt ?? "", coverImage: b.coverImage ?? "", videoAlbumId: b.videoAlbumId ?? undefined }))} />}
 
-      <TestimonialsCarouselSection  testimonials={storeFormData?.testimonials || []} />
+      <TestimonialsCarouselSection  testimonials={pageData?.testimonials || []} />
 
       <CallToActionSection />
 
