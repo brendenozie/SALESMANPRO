@@ -5,6 +5,7 @@ import Providers from "./providers";
 import siteMetadata from "@/data/siteMetadata";
 import { Metadata } from "next";
 import { getAuthSession } from "@/lib/auth";   
+import TokenSignIn from "@/components/TokenSignIn";
 
 
 export const metadata: Metadata = {
@@ -101,6 +102,8 @@ export default async function RootLayout({
       <body className="bg-gradient-to-br from-gray-50 to-gray-100">
         {/* ✅ Pass session down to Providers */}
         <Providers session={session}>
+          {/* This component will handle the token on page load */}
+          <TokenSignIn />
           <main>{children}</main>
         </Providers>
       </body>

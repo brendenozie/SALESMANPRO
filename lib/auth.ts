@@ -12,9 +12,16 @@ import AppleProvider from "next-auth/providers/apple";
 import prisma from "@/server/db/prismadb";
 import { randomBytes, randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
-import { encode } from "next-auth/jwt";
+import { decode, encode } from "next-auth/jwt";
 
 const baseUrl = process.env.NEXTAUTH_URL || "https://salesmanpro.site";
+// ⚠️ IMPORTANT: This secret MUST be the *exact same*
+// environment variable as your auth app.
+const aSharedSecret = process.env.NEXTAUTH_SECRET;
+
+if (!aSharedSecret) {
+  throw new Error("NEXTAUTH_SECRET is not set!");
+}
 
 // ✅ Utility: find existing user by email
 async function findExistingUserByEmail(email: string) {
@@ -54,6 +61,47 @@ async function createDefaultUser({ email, name, image }: { email: string; name?:
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
+    CredentialsProvider({
+      // An ID for this custom provider
+      id: "token-signin",
+      name: "Token Sign-In",
+      credentials: {
+        token: { label: "Token", type: "text" },
+      },
+      async authorize(credentials) {
+        if (!credentials?.token) {
+          console.error("Authorize: No token provided.");
+          return null;
+        }
+        
+        try {
+          // Decode the token using the shared secret
+          const decodedToken = await decode({
+            token: credentials.token,
+            secret: aSharedSecret,
+          });
+
+          if (!decodedToken || !decodedToken.email) {
+            console.error("Authorize: Token decoding failed or no email found.");
+            return null;
+          }
+
+          // The decoded token is trusted. Return it as the user object.
+          // This object will be passed to the 'jwt' callback.
+          return {
+            id: decodedToken.id as string,
+            name: decodedToken.name,
+            email: decodedToken.email,
+            image: decodedToken.image,
+            role: decodedToken.role, // Pass through your custom properties
+            // ... add other properties from your token
+          };
+        } catch (error) {
+          console.error("Token authorization error:", error);
+          return null;
+        }
+      },
+    }),
     // ✅ Credentials: Email & Password
     CredentialsProvider({
       id: "credentials-email-password",
@@ -187,6 +235,15 @@ export const authOptions: NextAuthOptions = {
         // ✅ If it's a redirect back to a tenant (e.g., https://domain.com)
         if (isTenantRedirect && tenantUrl) {
           console.log("[Redirect Callback] Tenant redirect detected. Attaching token...");
+
+          // --- BEGIN FIX ---
+          // Check if the URL *already* has the token. If so, we're in a loop.
+          // Just return the URL as-is and let the tenant app handle it.
+          if (tenantUrl.searchParams.has("auth_token")) {
+            console.warn("[Redirect Callback] Loop detected. URL already has token. Returning as-is.");
+            return tenantUrl.toString();
+          }
+          // --- END FIX ---
 
           // Get the session that was just created
           const session = await getServerSession(authOptions);
