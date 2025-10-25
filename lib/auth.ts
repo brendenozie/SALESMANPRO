@@ -4,6 +4,7 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { NextAuthOptions } from "next-auth";
 import { getServerSession } from "next-auth/next";
 import GoogleProvider from "next-auth/providers/google";
+import { cookies } from "next/headers"; // optional if you store in cookie
 import CredentialsProvider from "next-auth/providers/credentials";
 import FacebookProvider from "next-auth/providers/facebook";
 import AppleProvider from "next-auth/providers/apple";
@@ -179,6 +180,12 @@ export const authOptions: NextAuthOptions = {
             target = parsedUrl.searchParams.get("target");
           }
 
+          // 2️⃣ Try to recover from cookie or fallback
+          if (!callbackUrl && typeof window === "undefined") {
+            // on server only — use cookie
+            const cookie = (await cookies()).get("next-auth.callbackUrl");
+            callbackUrl = cookie?.value ?? null;
+          }
 
           console.log("Redirect callbackUrl:", callbackUrl);
           console.log("Redirect target:", target);

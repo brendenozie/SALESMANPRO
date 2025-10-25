@@ -43,6 +43,8 @@ export default function SignInPage() {
     try {
       setLoading(true);
       setError(null);
+      // Save callbackUrl locally so we can access it later
+    localStorage.setItem("callbackUrl", callbackUrl);
       // We set redirect: false to handle the redirect manually after the promise resolves
       // or to display a custom loading state while next-auth is processing.
       // However, for a simple sign-in flow, keeping redirect: true is often simpler.
