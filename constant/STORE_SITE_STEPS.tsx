@@ -83,6 +83,12 @@ export const paymentSteps: StepConfig[] = [
           mpesaConsumerKey: f.paymentSettings?.mpesaConsumerKey ?? null,
           mpesaConsumerSecret: f.paymentSettings?.mpesaConsumerSecret ?? null,
           mpesaCallbackUrl: f.paymentSettings?.mpesaCallbackUrl ?? null,
+          isStripeEnabled: f.paymentSettings?.isStripeEnabled ?? false,
+          isPaypalEnabled: f.paymentSettings?.isPaypalEnabled ?? false,
+          isMpesaEnabled: f.paymentSettings?.isMpesaEnabled ?? false,
+          isPaystackEnabled: f.paymentSettings?.isPaystackEnabled ?? false,
+          paystackPublicKey: f.paymentSettings?.paystackPublicKey ?? null,
+          paystackSecretKey: f.paymentSettings?.paystackSecretKey ?? null,
         }}
         onChange={(upd) =>
           h.onChangeSettings({
@@ -94,6 +100,12 @@ export const paymentSteps: StepConfig[] = [
               mpesaConsumerKey: upd.mpesaConsumerKey ?? null,
               mpesaConsumerSecret: upd.mpesaConsumerSecret ?? null,
               mpesaCallbackUrl: upd.mpesaCallbackUrl ?? null,
+              isStripeEnabled: upd.isStripeEnabled ?? false,
+              isPaypalEnabled: upd.isPaypalEnabled ?? false,
+              isMpesaEnabled: upd.isMpesaEnabled ?? false,
+              isPaystackEnabled: upd.isPaystackEnabled ?? false,
+              paystackPublicKey: upd.paystackPublicKey ?? null,
+              paystackSecretKey: upd.paystackSecretKey ?? null,
             }
           })
         }

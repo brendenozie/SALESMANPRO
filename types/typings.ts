@@ -921,6 +921,7 @@ export interface IEvent extends Event {
 
 export interface Handlers {
   // ✅ General form handlers (unchanged)
+  onUpdatePaymentSettings: (updatedSettings: PaymentSettings) => void;
   handleChange: (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => void;
