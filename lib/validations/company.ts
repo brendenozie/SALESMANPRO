@@ -162,13 +162,35 @@ export const companySchema = z.object({
   }).nullable().optional(),//z.array().optional(),
   
   paymentSettings: z.object({
+      // Primary Key (Needed for updates, as discussed in the previous step)
+      id: z.string().optional(), // Prisma ObjectId are treated as strings in the app layer
+
+      // --- Payment Method Enablement Flags ---
+      isStripeEnabled: z.boolean().nullable().optional(),
+      isPaypalEnabled: z.boolean().nullable().optional(),
+      isMpesaEnabled: z.boolean().nullable().optional(),
+      isPaystackEnabled: z.boolean().nullable().optional(), // NEW: Paystack toggle
+      isGhubaEnabled: z.boolean().nullable().optional(),
+
+      // --- Stripe Configuration ---
       stripeKey: z.string().nullable().optional(),
+
+      // --- PayPal Configuration ---
       paypalKey: z.string().nullable().optional(),
+
+      // --- M-Pesa Configuration ---
       mpesaShortcode: z.string().nullable().optional(),
       mpesaConsumerKey: z.string().nullable().optional(),
       mpesaConsumerSecret: z.string().nullable().optional(),
       mpesaCallbackUrl: z.string().nullable().optional(),
-  }).nullable().optional(),//z.array().optional(),
+
+      // --- Paystack Configuration (NEW) ---
+      paystackPublicKey: z.string().nullable().optional(),
+      paystackSecretKey: z.string().nullable().optional(),
+      // --- Ghuba Configuration (NEW) ---
+      ghubaMerchantId: z.string().nullable().optional(),
+      ghubaApiKey: z.string().nullable().optional(),
+  }).nullable().optional(),
 
   shippingSettings: z.object({
       carrierName: z.string().nullable().optional(),

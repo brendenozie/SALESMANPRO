@@ -15,6 +15,7 @@ export interface PaymentSettings {
   isPaypalEnabled?: boolean | null | undefined;
   isMpesaEnabled?: boolean | null | undefined;
   isPaystackEnabled?: boolean | null | undefined; // New field
+  isGhubaEnabled?: boolean | null | undefined; // NEW FIELD for Ghuba
 
   // Stripe
   stripeKey?: string | null | undefined; // Consider renaming to stripePublishableKey for clarity
@@ -31,6 +32,11 @@ export interface PaymentSettings {
   // Paystack (New fields)
   paystackPublicKey?: string | null | undefined;
   paystackSecretKey?: string | null | undefined;
+
+  // Ghuba (NEW FIELDS)
+  ghubaMerchantId?: string | null | undefined;
+  ghubaApiKey?: string | null | undefined;
+
 }
 
 /**
@@ -163,6 +169,13 @@ export default function PaymentAccordion({
         </p>
         <div className="space-y-4">
           <PaymentMethodToggle
+            label="Ghuba Payments"
+            description="Enable payments via Ghuba (Note: A 10% transaction fee will be deducted)."
+            enabled={paymentSettings?.isGhubaEnabled ?? false}
+            onToggle={(value) => updateBooleanField('isGhubaEnabled', value)}
+          />
+
+          <PaymentMethodToggle
             label="Stripe"
             description="Enable credit/debit card payments via Stripe."
             enabled={paymentSettings?.isStripeEnabled ?? false}
@@ -197,7 +210,31 @@ export default function PaymentAccordion({
         <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center">
           <span className="text-2xl mr-3">⚙️</span> Gateway API Credentials
         </h3>
-        <div className="space-y-8">
+        <div className="space-y-8">          
+
+          {/* Ghuba Configuration (NEW) */}
+          {(paymentSettings?.isGhubaEnabled ?? false) && (
+            <div className="p-5 border-l-4 border-yellow-500 bg-yellow-50 rounded-lg shadow-md">
+              <h4 className="text-lg font-bold text-yellow-700 mb-4">Ghuba Settings</h4>
+              <p className="text-sm text-yellow-800 mb-4 p-3 border border-yellow-300 bg-yellow-100 rounded-md font-medium">
+                <strong>⚠️ Transaction Fee Notice:</strong> Enabling Ghuba Payments will incur a 10% deduction on all successful transactions; please ensure you factor this into your pricing strategy.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {renderInputField(
+                  'ghubaMerchantId',
+                  'Ghuba Merchant ID',
+                  'e.g., GHB12345678'
+                )}
+                {renderInputField(
+                  'ghubaApiKey',
+                  'Ghuba API Key',
+                  'e.g., gsk_live_xxxxxxxxxxxx',
+                  true // Mark as secret
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Stripe Configuration */}
           {(paymentSettings?.isStripeEnabled ?? false) && (
             <div className="p-5 border-l-4 border-indigo-500 bg-indigo-50 rounded-lg shadow-md">

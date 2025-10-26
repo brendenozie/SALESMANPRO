@@ -236,6 +236,7 @@ export default function CreateStoreForm({
     isPaypalEnabled: false,   // New: Default to false
     isMpesaEnabled: false,    // New: Default to false
     isPaystackEnabled: false, // New: Default to false
+    isGhubaEnabled: false,    // New: Default to false
 
     // --- Configuration Keys ---
     // Stripe
@@ -253,6 +254,10 @@ export default function CreateStoreForm({
     // --- Paystack Keys ---
     paystackPublicKey: null,  // New: Paystack Public Key
     paystackSecretKey: null,  // New: Paystack Secret Key
+
+    // Ghuba (NEW FIELDS)
+    ghubaMerchantId: null,
+    ghubaApiKey: null
     },
     shippingSettings: {
       id: "",

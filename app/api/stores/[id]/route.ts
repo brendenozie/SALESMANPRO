@@ -89,6 +89,10 @@ async function updateCompany(req: Request, { params }: { params: { id: string } 
     return formatResponse(false, null, "Company not found or unauthorized", 404);
   }
 
+  const existingPaymentSettingsId = companyToUpdate.paymentSettingsId;
+  // Remove `id` from the nested PaymentSettings payload because Prisma's update/create inputs do not accept the related record's id field.
+  const paymentSettingsData = paymentSettings ? (({ id, ...rest }: any) => rest)(paymentSettings) : undefined;
+
   const updatedCompany = await prisma.company.update({
     where: { id },
     data: {
@@ -131,7 +135,23 @@ async function updateCompany(req: Request, { params }: { params: { id: string } 
         : undefined,
 
       AnalyticsConfig: analyticsConfig ? { update: analyticsConfig } : undefined,
-      PaymentSettings: paymentSettings ? { update: paymentSettings } : undefined,
+      PaymentSettings: paymentSettings
+                ? {
+                      // Use upsert to handle both creation and updates
+                      upsert: {
+                          // 1. Where: Targets the related record using the foreign key
+                          where: {
+                              // If an ID exists, use it. If not, use a dummy value to trigger the 'create' block.
+                              id: existingPaymentSettingsId || "non-existent-id", 
+                          },
+                          // 2. Update: What to do if the record is found
+                          update: paymentSettingsData as any,
+                          // 3. Create: What to do if the record is not found
+                          create: paymentSettingsData as any,
+                      },
+                  }
+                : undefined,
+
       ShippingSettings: shippingSettings ? { update: shippingSettings } : undefined,
 
       socialLinks: socialLinks ? { deleteMany: {}, create: socialLinks } : undefined,

@@ -74,42 +74,31 @@ export const paymentSteps: StepConfig[] = [
     key: 'payment',
     title: 'Payment',
     render: (f, h) => (
-      <PaymentAccordion
-        paymentSettings={{
-          id: f.paymentSettings?.id ?? '',
-          stripeKey: f.paymentSettings?.stripeKey ?? null,
-          paypalKey: f.paymentSettings?.paypalKey ?? null,
-          mpesaShortcode: f.paymentSettings?.mpesaShortcode ?? null,
-          mpesaConsumerKey: f.paymentSettings?.mpesaConsumerKey ?? null,
-          mpesaConsumerSecret: f.paymentSettings?.mpesaConsumerSecret ?? null,
-          mpesaCallbackUrl: f.paymentSettings?.mpesaCallbackUrl ?? null,
-          isStripeEnabled: f.paymentSettings?.isStripeEnabled ?? false,
-          isPaypalEnabled: f.paymentSettings?.isPaypalEnabled ?? false,
-          isMpesaEnabled: f.paymentSettings?.isMpesaEnabled ?? false,
-          isPaystackEnabled: f.paymentSettings?.isPaystackEnabled ?? false,
-          paystackPublicKey: f.paymentSettings?.paystackPublicKey ?? null,
-          paystackSecretKey: f.paymentSettings?.paystackSecretKey ?? null,
-        }}
-        onChange={(upd) =>
-          h.onChangeSettings({
-            paymentSettings: {
-              id: upd.id ?? '',
-              stripeKey: upd.stripeKey ?? null,
-              paypalKey: upd.paypalKey ?? null,
-              mpesaShortcode: upd.mpesaShortcode ?? null,
-              mpesaConsumerKey: upd.mpesaConsumerKey ?? null,
-              mpesaConsumerSecret: upd.mpesaConsumerSecret ?? null,
-              mpesaCallbackUrl: upd.mpesaCallbackUrl ?? null,
-              isStripeEnabled: upd.isStripeEnabled ?? false,
-              isPaypalEnabled: upd.isPaypalEnabled ?? false,
-              isMpesaEnabled: upd.isMpesaEnabled ?? false,
-              isPaystackEnabled: upd.isPaystackEnabled ?? false,
-              paystackPublicKey: upd.paystackPublicKey ?? null,
-              paystackSecretKey: upd.paystackSecretKey ?? null,
+          <PaymentAccordion
+            paymentSettings={f.paymentSettings}
+            // Pass the dedicated handler wrapped to normalize incoming PaymentSettings
+            onChange={(upd) =>
+              h.onUpdatePaymentSettings({
+                id: upd.id ?? '',
+                stripeKey: upd.stripeKey ?? null,
+                paypalKey: upd.paypalKey ?? null,
+                mpesaShortcode: upd.mpesaShortcode ?? null,
+                mpesaConsumerKey: upd.mpesaConsumerKey ?? null,
+                mpesaConsumerSecret: upd.mpesaConsumerSecret ?? null,
+                mpesaCallbackUrl: upd.mpesaCallbackUrl ?? null,
+                isStripeEnabled: upd.isStripeEnabled ?? false,
+                isPaypalEnabled: upd.isPaypalEnabled ?? false,
+                isMpesaEnabled: upd.isMpesaEnabled ?? false,
+                isGhubaEnabled: upd.isGhubaEnabled ?? false,
+                isPaystackEnabled: upd.isPaystackEnabled ?? false,
+                paystackPublicKey: upd.paystackPublicKey ?? null,
+                paystackSecretKey: upd.paystackSecretKey ?? null,
+                ghubaMerchantId: upd.ghubaMerchantId ?? null,
+                ghubaApiKey: upd.ghubaApiKey ?? null,
+                
+              })
             }
-          })
-        }
-      />
+          />
     ),
   },
   {

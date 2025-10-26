@@ -53,6 +53,10 @@ async function createCompany(req: Request, context: HandlerContext) {
 
   const data = parseResult.data;
 
+  const paymentSettingsData = data.paymentSettings 
+        ? (({ id, ...rest }: any) => rest)(data.paymentSettings) 
+        : undefined;
+
   try {
     const newCompany = await prisma.company.create({
       data: {
@@ -86,7 +90,7 @@ async function createCompany(req: Request, context: HandlerContext) {
         // Nested One-to-One
         SEO: data.seo ? { create: data.seo } : undefined,
         AnalyticsConfig: data.analyticsConfig ? { create: data.analyticsConfig } : undefined,
-        PaymentSettings: data.paymentSettings ? { create: data.paymentSettings } : undefined,
+        PaymentSettings: paymentSettingsData ? { create: paymentSettingsData } : undefined,
         ShippingSettings: data.shippingSettings ? { create: data.shippingSettings } : undefined,
 
         // Nested One-to-Many

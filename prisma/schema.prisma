@@ -513,6 +513,7 @@ model PaymentSettings {
   isPaypalEnabled   Boolean @default(false)
   isMpesaEnabled    Boolean @default(false)
   isPaystackEnabled Boolean @default(false) // NEW: Toggle for Paystack
+  isGhubaEnabled    Boolean @default(false)
 
   // --- Stripe Configuration ---
   stripeKey String?
@@ -529,6 +530,9 @@ model PaymentSettings {
   // --- Paystack Configuration (NEW) ---
   paystackPublicKey String?
   paystackSecretKey String? // IMPORTANT: Must be encrypted in the database in a real-world application.
+  // --- Ghuba Configuration (NEW) ---
+  ghubaMerchantId   String?
+  ghubaApiKey       String? // IMPORTANT: Must be encrypted in the database in a real-world application.
 }
 
 // model PaymentSettings {
