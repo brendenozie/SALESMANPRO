@@ -35,10 +35,12 @@ import RestaurentSite from '@/components/site/layouts/RestaurantLayout/body/Rest
 import DefaultSite from '@/components/site/layouts/DefaultLayout/body/DefaultSite';
 import { StoreForm } from '@/types/typings';
 import SaaSSite from '@/components/site/layouts/SaaSLayout/body/SaasSite';
+import PublicSpeakingSite from '@/components/site/layouts/PublicSpeakingLayout/body/PublicSpeakingSite';
 
 // Map component names to actual components
 const componentMap: Record<string, React.ComponentType<{ pageData: StoreForm }>> = {
   'GhubaSite': GhubaSite,
+  'PublicSpeakingSite': PublicSpeakingSite,
   'AutomotiveSite': AutomotiveSite,
   'EcommerceSite': EcommerceSite,
   'EcommerceShoesSite': EcommerceShoesSite,

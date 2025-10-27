@@ -9,6 +9,8 @@
 export const folderMap: Record<string, string> = {
   // Ecommerce
   'ghuba': 'GhubaLayout',
+  
+  'public speaking': 'PublicSpeakingLayout',
 
   'ecommerce': 'EcommerceLayout',
   'e-commerce': 'EcommerceLayout',
