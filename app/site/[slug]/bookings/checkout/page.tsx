@@ -1,16 +1,11 @@
 'use client';
 
-// app/checkout/page.tsx
-"use client";
-
 import React, { useState, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
 import Section from "@/components/site/Section/Section";
 import NewsletterSection from "@/components/site/NewsletterSection/NewsletterSection";
 import Confetti from "react-confetti";
-import {
-  CheckCircleIcon,
-} from "@heroicons/react/24/outline";
+import { CheckCircleIcon } from "@heroicons/react/24/outline";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -21,7 +16,7 @@ export default function CheckoutPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // ✅ Extract parameters from query
+  // ✅ Extract parameters
   const listingId = searchParams.get("listingId") || "";
   const name = searchParams.get("name") || "";
   const price = searchParams.get("price") || "";
@@ -29,29 +24,35 @@ export default function CheckoutPage() {
   const enrollmentDate = searchParams.get("enrollmentDate") || "";
   const timeSlot = searchParams.get("timeSlot") || "";
 
-  // ✅ Validate query
-  if (!listingId || !name || !price ) {
+  if (!listingId || !name || !price) {
     return <p className="p-6 text-red-600">Missing booking details.</p>;
   }
 
-  if(productType !== "ebook" && (!enrollmentDate || !timeSlot)) {
-    return <p className="p-6 text-red-600">Missing enrollment date or time slot for the selected service.</p>;
+  if (productType !== "ebook" && (!enrollmentDate || !timeSlot)) {
+    return (
+      <p className="p-6 text-red-600">
+        Missing enrollment date or time slot for the selected service.
+      </p>
+    );
   }
 
   const amount = Number(price);
-
-  // Step state
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [tracking, setTracking] = useState("");
   const [error, setError] = useState<Record<string, string>>({});
 
-  // Billing form
+  // Billing Info
   const [billing, setBilling] = useState({
     name: session?.user?.name || "",
     email: session?.user?.email || "",
     phone: "",
+  });
+
+  // Payment Info
+  const [paymentMethod, setPaymentMethod] = useState<"card" | "paystack" | "mpesa">("card");
+  const [card, setCard] = useState({
     cardNumber: "",
     cardExpiry: "",
     cvv: "",
@@ -62,7 +63,12 @@ export default function CheckoutPage() {
     setError((err) => ({ ...err, [e.target.name]: "" }));
   };
 
-  // Validation per step
+  const handleCardChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCard((c) => ({ ...c, [e.target.name]: e.target.value }));
+    setError((err) => ({ ...err, [e.target.name]: "" }));
+  };
+
+  // ✅ Step validation
   const validate = useCallback(() => {
     const errs: Record<string, string> = {};
     if (step === 0) {
@@ -70,70 +76,141 @@ export default function CheckoutPage() {
         if (!billing[f as keyof typeof billing]) errs[f] = "Required";
       });
     }
-    if (step === 1) {
+    if (step === 1 && paymentMethod === "card") {
       ["cardNumber", "cardExpiry", "cvv"].forEach((f) => {
-        if (!billing[f as keyof typeof billing]) errs[f] = "Required";
+        if (!card[f as keyof typeof card]) errs[f] = "Required";
       });
     }
     setError(errs);
     return Object.keys(errs).length === 0;
-  }, [step, billing]);
+  }, [step, billing, card, paymentMethod]);
 
   const total = useMemo(() => amount, [amount]);
 
-  // Navigation
   const next = () => {
     if (validate()) setStep((s) => s + 1);
   };
   const prev = () => setStep((s) => s - 1);
 
-  // Final submission
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validate()) return;
-    setLoading(true);
-    try {
-      const res = await fetch("/api/shop/orders", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": process.env.NEXT_PUBLIC_API_SECRET_KEY!,
-        },
-        body: JSON.stringify({
+  e.preventDefault();
+  if (!validate()) return;
+  setLoading(true);
+  setError({});
+
+  try {
+    const paymentOption = paymentMethod; // rename for API compatibility
+
+    const payload = {
+      consumerId: session?.user?.id,
+      name: billing.name,
+      email: billing.email,
+      phone: billing.phone,
+      promoCode: "", // optional
+      paymentOption,
+      delivery: false, // no delivery for bookings
+      totalPrice: total,
+      cardNumber: paymentOption === "card" ? card.cardNumber : undefined,
+      cardExpiry: paymentOption === "card" ? card.cardExpiry : undefined,
+      cvv: paymentOption === "card" ? card.cvv : undefined,
+      mpesaPhone: paymentOption === "mpesa" ? billing.phone : undefined, // reuse billing phone for M-Pesa
+      items: [
+        {
+          marketplaceListingId: listingId,
           date: enrollmentDate || new Date().toISOString(),
           timeSlot,
           quantity: 1,
-          consumerId: session?.user?.id,
-          name: billing.name,
-          email: billing.email,
-          phone: billing.phone,
-          cardNumber: billing.cardNumber,
-          cardExpiry: billing.cardExpiry,
-          cvv: billing.cvv,
-          totalPrice: total,
-          items: [
-            {
-              marketplaceListingId: listingId,
-              quantity: 1,
-              date: enrollmentDate || new Date().toISOString(),
-              timeSlot,
-              price: total,
-            },
-          ],
-        }),
-      });
-      if (!res.ok) throw new Error(await res.text());
-      const { order } = await res.json();
-      setTracking(order.trackingNumber);
-      setOrderPlaced(true);
-    } catch (err: any) {
-      setError({ submit: err.message || "Submission failed." });
-    } finally {
-      setLoading(false);
-    }
-  };
+          price: total,
+        },
+      ],
+      shippingAddress: undefined,
+      shippingMethod: "AT SHOP",
+    };
 
-  // Success screen
+    console.log("🔹 Sending checkout payload:", payload);
+
+    const res = await fetch("/api/shop/orders", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": process.env.NEXT_PUBLIC_API_SECRET_KEY!,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(text || "Failed to create order");
+    }
+
+    const { order, paymentResponse } = await res.json();
+
+    console.log("✅ Order created:", order);
+    console.log("✅ Payment response:", paymentResponse);
+
+    setTracking(order.trackingNumber);
+    setOrderPlaced(true);
+  } catch (err: any) {
+    console.error("❌ Checkout error:", err);
+    setError({ submit: err.message || "Submission failed." });
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+  // const handleSubmit = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   if (!validate()) return;
+  //   setLoading(true);
+  //   try {
+  //     // mock payment handler
+  //     if (paymentMethod === "paystack") {
+  //       console.log("Redirecting to Paystack...");
+  //       // TODO: integrate Paystack inline popup or API initialization
+  //     } else if (paymentMethod === "mpesa") {
+  //       console.log("Triggering M-Pesa STK Push...");
+  //       // TODO: trigger M-Pesa API or SDK
+  //     }
+
+  //     const res = await fetch("/api/shop/orders", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //         "x-api-key": process.env.NEXT_PUBLIC_API_SECRET_KEY!,
+  //       },
+  //       body: JSON.stringify({
+  //         date: enrollmentDate || new Date().toISOString(),
+  //         timeSlot,
+  //         quantity: 1,
+  //         consumerId: session?.user?.id,
+  //         name: billing.name,
+  //         email: billing.email,
+  //         phone: billing.phone,
+  //         paymentMethod,
+  //         totalPrice: total,
+  //         items: [
+  //           {
+  //             marketplaceListingId: listingId,
+  //             quantity: 1,
+  //             date: enrollmentDate || new Date().toISOString(),
+  //             timeSlot,
+  //             price: total,
+  //           },
+  //         ],
+  //       }),
+  //     });
+  //     if (!res.ok) throw new Error(await res.text());
+  //     const { order } = await res.json();
+  //     setTracking(order.trackingNumber);
+  //     setOrderPlaced(true);
+  //   } catch (err: any) {
+  //     setError({ submit: err.message || "Submission failed." });
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
   if (orderPlaced) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-100 p-6">
@@ -194,26 +271,11 @@ export default function CheckoutPage() {
           <div className="hidden md:block">
             <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-20">
               <h2 className="text-xl font-bold mb-4">Booking Summary</h2>
-              <p>
-                <strong>Service:</strong> {name}
-              </p>
-              <p>
-                {enrollmentDate ? (
-                  <>
-                    <strong>Date:</strong>{" "}
-                    {new Date(enrollmentDate).toLocaleDateString()}
-                  </>
-                ) : null}
-              </p>
-              <p>
-                <>
-                  {timeSlot ? (
-                    <>
-                      <strong>Time:</strong> {timeSlot}
-                    </>
-                  ) : null}
-                </>
-              </p>
+              <p><strong>Service:</strong> {name}</p>
+              {enrollmentDate && (
+                <p><strong>Date:</strong> {new Date(enrollmentDate).toLocaleDateString()}</p>
+              )}
+              {timeSlot && <p><strong>Time:</strong> {timeSlot}</p>}
               <div className="border-t pt-3 mt-3 flex justify-between font-bold">
                 <span>Total</span>
                 <span>${total.toFixed(2)}</span>
@@ -241,11 +303,7 @@ export default function CheckoutPage() {
                         error[fld] ? "border-red-500" : "border-gray-300"
                       }`}
                     />
-                    {error[fld] && (
-                      <p className="text-red-600 text-sm mt-1">
-                        {fld} is required
-                      </p>
-                    )}
+                    {error[fld] && <p className="text-red-600 text-sm mt-1">{fld} is required</p>}
                   </div>
                 ))}
               </div>
@@ -254,31 +312,66 @@ export default function CheckoutPage() {
             {/* Payment Step */}
             {step === 1 && (
               <div className="space-y-4">
-                <h2 className="text-2xl font-extrabold">Payment Details</h2>
-                {(["cardNumber", "cardExpiry", "cvv"] as const).map((fld) => (
-                  <div key={fld}>
-                    <input
-                      name={fld}
-                      value={billing[fld]}
-                      onChange={handleBillingChange}
-                      placeholder={
-                        fld === "cardNumber"
-                          ? "Card Number"
-                          : fld === "cardExpiry"
-                          ? "MM/YY"
-                          : "CVV"
-                      }
-                      className={`w-full p-3 border rounded-lg ${
-                        error[fld] ? "border-red-500" : "border-gray-300"
+                <h2 className="text-2xl font-extrabold">Payment Method</h2>
+
+                <div className="flex gap-4">
+                  {["card", "paystack", "mpesa"].map((method) => (
+                    <button
+                      type="button"
+                      key={method}
+                      onClick={() => setPaymentMethod(method as any)}
+                      className={`flex-1 p-3 border rounded-lg font-medium ${
+                        paymentMethod === method
+                          ? "border-indigo-600 bg-indigo-100"
+                          : "border-gray-300 bg-white"
                       }`}
-                    />
-                    {error[fld] && (
-                      <p className="text-red-600 text-sm mt-1">
-                        {fld} is required
-                      </p>
-                    )}
+                    >
+                      {method === "card" && "Card"}
+                      {method === "paystack" && "Paystack"}
+                      {method === "mpesa" && "M-Pesa"}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Conditional Inputs */}
+                {paymentMethod === "card" && (
+                  <div className="space-y-3">
+                    {(["cardNumber", "cardExpiry", "cvv"] as const).map((fld) => (
+                      <div key={fld}>
+                        <input
+                          name={fld}
+                          value={card[fld]}
+                          onChange={handleCardChange}
+                          placeholder={
+                            fld === "cardNumber"
+                              ? "Card Number"
+                              : fld === "cardExpiry"
+                              ? "MM/YY"
+                              : "CVV"
+                          }
+                          className={`w-full p-3 border rounded-lg ${
+                            error[fld] ? "border-red-500" : "border-gray-300"
+                          }`}
+                        />
+                        {error[fld] && (
+                          <p className="text-red-600 text-sm mt-1">{fld} is required</p>
+                        )}
+                      </div>
+                    ))}
                   </div>
-                ))}
+                )}
+
+                {paymentMethod === "paystack" && (
+                  <p className="text-sm text-gray-600">
+                    You’ll be redirected to Paystack to complete your payment securely.
+                  </p>
+                )}
+
+                {paymentMethod === "mpesa" && (
+                  <p className="text-sm text-gray-600">
+                    You’ll receive an M-Pesa STK push on your phone after confirming checkout.
+                  </p>
+                )}
               </div>
             )}
 
@@ -287,18 +380,11 @@ export default function CheckoutPage() {
               <div className="space-y-4">
                 <h2 className="text-2xl font-extrabold">Review & Confirm</h2>
                 <div className="space-y-2 text-sm">
-                  <p>
-                    <strong>Name:</strong> {billing.name}
-                  </p>
-                  <p>
-                    <strong>Email:</strong> {billing.email}
-                  </p>
-                  <p>
-                    <strong>Phone:</strong> {billing.phone}
-                  </p>
-                  <p>
-                    <strong>Total:</strong> ${total.toFixed(2)}
-                  </p>
+                  <p><strong>Name:</strong> {billing.name}</p>
+                  <p><strong>Email:</strong> {billing.email}</p>
+                  <p><strong>Phone:</strong> {billing.phone}</p>
+                  <p><strong>Payment:</strong> {paymentMethod.toUpperCase()}</p>
+                  <p><strong>Total:</strong> ${total.toFixed(2)}</p>
                 </div>
               </div>
             )}
@@ -345,6 +431,7 @@ export default function CheckoutPage() {
     </div>
   );
 }
+
 
 
 // import React, { useState, useEffect, useMemo, useCallback } from 'react';

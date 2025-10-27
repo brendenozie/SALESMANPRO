@@ -13,30 +13,53 @@ export async function createOrder(data: any) {
     shippingAddress,
     billingAddress,
     notes,
+    name,
+    email,
+    phone,
+    mpesaPhone,
+    promoCode,
+    trackingNumber,
+    deliveryStatus,
+    status = "PENDING",
+    delivery,
+    shippingMethod,
   } = data;
 
   return await prisma.customerOrder.create({
     data: {
       consumerId,
-      items: {
-        create: items.map((item: any) => ({
-          productId: item.productId,
-          quantity: item.quantity,
-          price: item.price,
-        })),
-      },
-      totalPrice,
-      totalTax,
-      totalDiscount,
-      totalShipping,
-      totalFinalPrice,
+      name,
+      email,
+      phone,
+      mpesaPhone,
+      promoCode,
+      trackingNumber,
+      deliveryStatus,
+      delivery: delivery ?? false,
       paymentOption,
       paymentStatus: "PENDING",
+      totalPrice,
+      totalTax: totalTax ?? 0,
+      totalDiscount: totalDiscount ?? 0,
+      totalShipping: totalShipping ?? 0,
+      totalFinalPrice: totalFinalPrice ?? totalPrice,
       shippingAddress,
       billingAddress,
+      shippingMethod,
       notes,
-      status: "PENDING",
+      status,
       orderSource: "WEBSITE",
+
+      // ✅ FIX: Pass the date string directly, removing new Date()
+      items: {
+        create: items.map((item: any) => ({
+          marketplaceListingId: item.marketplaceListingId,
+          quantity: item.quantity,
+          price: item.price,
+          date: item.date || null, // Changed from new Date(item.date)
+          timeSlot: item.timeSlot || null,
+        })),
+      },
     },
     include: { items: true },
   });

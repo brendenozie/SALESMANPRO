@@ -81,7 +81,7 @@ const sampleOrderItems: OrderItem[] = [
 // ──────────────────────────────────────────────
 export default async function AppointmentsPage({ params }: Props) {
   const { slug : companyId } = await params;
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const cookieHeader = cookieStore.toString();
 
   let fetchedAppointments: AppointmentItem[] = [];

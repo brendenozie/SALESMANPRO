@@ -27,7 +27,7 @@ export async function initiateMpesaPayment(order: any, phoneNumber: string) {
     Password: password,
     Timestamp: timestamp,
     TransactionType: "CustomerPayBillOnline",
-    Amount: order.totalFinalPrice,
+    Amount: "1",// For testing, set to 1 KES order.totalFinalPrice
     PartyA: phoneNumber,
     PartyB: MPESA_SHORTCODE,
     PhoneNumber: phoneNumber,
