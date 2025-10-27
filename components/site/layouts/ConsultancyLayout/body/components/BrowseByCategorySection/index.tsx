@@ -56,9 +56,11 @@ const ProgramCard = ({
   const { id, name, finalPrice, images, description, badge, author, category, isAvailable } = item;
   const defaultImage = "https://placehold.co/600x800/808080/FFFFFF?text=Program+Cover";
 
-  const buttonClass = isAvailable 
-    ? "bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700"
-    : "bg-gray-400 cursor-not-allowed";
+  // const buttonClass = isAvailable 
+  //   ? "bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700"
+  //   : "bg-gray-400 cursor-not-allowed";
+
+  const buttonClass = "bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-700 hover:to-red-700";
 
   // Use Link only for "View Details" to maintain SEO, but the Booking Button triggers the modal.
   const linkHref = `/site/${storeSlug}/listing/${id}`;
