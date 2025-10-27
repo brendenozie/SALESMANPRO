@@ -136,8 +136,8 @@ const ProgramCard = ({
           {/* Booking Button (triggers modal) */}
           <div className="mt-4 w-full">
             <motion.button
-              onClick={() => isAvailable && onSelect(item)} // Only allow selection if available
-              disabled={!isAvailable}
+              onClick={() => onSelect(item)} // Only allow selection if available isAvailable && 
+              // disabled={!isAvailable}
               whileHover={{ scale: isAvailable ? 1.03 : 1 }}
               whileTap={{ scale: isAvailable ? 0.97 : 1 }}
               className={clsx(
