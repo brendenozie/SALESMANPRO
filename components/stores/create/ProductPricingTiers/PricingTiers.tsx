@@ -11,6 +11,7 @@ import {
   XMarkIcon,
 } from '@heroicons/react/24/outline';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ProductForm } from '@/types/typings';
 
 interface PricingTier {
   name: string;
@@ -21,16 +22,21 @@ interface PricingTier {
   description?: string;
 }
 
+// interface ProductPricingAndTiersProps {
+//   pricingTiers: PricingTier[];
+//   setFormData: (name: string, value: any) => void;
+// }
 interface ProductPricingAndTiersProps {
-  pricingTiers: PricingTier[];
-  setFormData: (name: string, value: any) => void;
+  formData: ProductForm;
+  setFormData: <K extends keyof ProductForm>(name: K, value: ProductForm[K]) => void;
 }
 
 export default function ProductPricingAndTiers({
-  pricingTiers,
+  formData,
   setFormData,
 }: ProductPricingAndTiersProps) {
   const [open, setOpen] = useState(true);
+  const pricingTiers = formData.pricingTiers || [];
 
   const handleAddPricingTier = useCallback(() => {
     const currentTiers = pricingTiers || [];
@@ -220,7 +226,7 @@ export default function ProductPricingAndTiers({
                     </label>
 
                     <div className="flex flex-wrap gap-2 mb-2">
-                      {tier.features && tier.features.map((feature, i) => (
+                      {tier.features && tier.features.map((feature : string, i: number) => (
                         <span
                           key={i}
                           className="flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs"
@@ -230,7 +236,7 @@ export default function ProductPricingAndTiers({
                             type="button"
                             onClick={() => {
                               const updated = tier.features.filter(
-                                (_, idx) => idx !== i
+                                (_: string, idx: number) => idx !== i
                               );
                               handleUpdatePricingTier(index, 'features', updated);
                             }}

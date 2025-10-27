@@ -11,7 +11,7 @@ import ContactLocation from "@/components/ContactLocation";
 import AmenitiesStep from "@/components/AmenitiesStep";
 import VehicleAmenitiesStep from "@/components/VehicleAmenitiesStep";
 import { BookingSlot } from "@/components/stores/create/BookingSlot/BookingSlot";
-import ProductPricingAndTiers  from "@/components/stores/create/PricingTiers/PricingTiers";
+import ProductPricingAndTiers  from "@/components/stores/create/ProductPricingTiers/PricingTiers";
 import { ServiceSpecifics } from "@/components/stores/create/ServiceSpecifics/ServiceSpecifics";
 import CategoryPicker from "@/components/CategoryPicker";
 import LocationPicker from "@/components/LocationPicker";
