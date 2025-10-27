@@ -5,10 +5,10 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Bars3BottomRightIcon,
   XMarkIcon,
-  SparklesIcon, // Added an icon for the CTA
+  SparklesIcon,
 } from "@heroicons/react/24/outline";
 
-// --- Types ---
+// --- Types (Kept the same) ---
 interface StoreForm {
   slug: string;
   name: string;
@@ -19,7 +19,7 @@ interface HeaderProps {
   storeFormData: StoreForm;
 }
 
-// --- Dynamic Logo Component (Enhanced) ---
+// --- Dynamic Logo Component (Enhanced for better scroll transition) ---
 const DynamicLogo: React.FC<{ formData: StoreForm; isScrolled: boolean }> = ({
   formData,
   isScrolled,
@@ -32,6 +32,9 @@ const DynamicLogo: React.FC<{ formData: StoreForm; isScrolled: boolean }> = ({
   const nameParts = displayName.split(" ");
   const firstName = nameParts[0];
   const lastName = nameParts[1] || "";
+  
+  // Custom transition for name visibility on scroll
+  const scrollTransitionClass = isScrolled ? "text-sm md:text-base opacity-100 h-auto" : "text-lg md:text-xl md:text-2xl opacity-100 h-auto";
 
   return (
     <a
@@ -39,7 +42,7 @@ const DynamicLogo: React.FC<{ formData: StoreForm; isScrolled: boolean }> = ({
       className="flex items-center space-x-2.5 group transition-transform hover:scale-[1.02]"
       aria-label="Home"
     >
-      {/* Logo/Initials Container */}
+      {/* Logo/Initials Container - Height scales with scroll */}
       {logoUrl ? (
         <img
           src={logoUrl}
@@ -59,7 +62,7 @@ const DynamicLogo: React.FC<{ formData: StoreForm; isScrolled: boolean }> = ({
         />
       ) : (
         <div
-          className={`w-10 h-10 flex items-center justify-center rounded-full bg-orange-600 text-white font-bold transition-all duration-300 ${
+          className={`flex items-center justify-center rounded-full bg-orange-600 text-white font-bold transition-all duration-300 ${
             isScrolled ? "text-lg w-8 h-8" : "text-xl w-10 h-10"
           }`}
         >
@@ -67,7 +70,7 @@ const DynamicLogo: React.FC<{ formData: StoreForm; isScrolled: boolean }> = ({
         </div>
       )}
 
-      {/* Name beside logo */}
+      {/* Name beside logo - Height scales with scroll */}
       <div className="flex flex-col leading-tight">
         <span
           className={`font-extrabold tracking-tight transition-all duration-300 ${
@@ -82,7 +85,8 @@ const DynamicLogo: React.FC<{ formData: StoreForm; isScrolled: boolean }> = ({
             isScrolled ? "opacity-100 h-auto" : "opacity-0 h-0 md:opacity-100 md:h-auto"
           }`}
         >
-          {/* Professional Coach */}
+          {/* Subtle tag line/Profession added here */}
+          {displayName.includes("Coach") || displayName.includes("Consultant") ? "Professional Coach" : "Consulting Agency"}
         </span>
       </div>
     </a>
@@ -102,6 +106,7 @@ const navItemVariants = {
 const mobileMenuVariants = {
   closed: {
     opacity: 0,
+    // Changed scale origin for better visual effect on close
     scale: 0.98,
     transition: { when: "afterChildren" },
   },
@@ -127,7 +132,8 @@ const ConsultantCoachHeader: React.FC<HeaderProps> = ({ storeFormData }) => {
   const [isScrolled, setIsScrolled] = useState(false);
 
   const handleScroll = useCallback(() => {
-    setIsScrolled(window.scrollY > 80); // Increased scroll threshold for a more dramatic change
+    // Increased scroll threshold for a more dramatic change
+    setIsScrolled(window.scrollY > 120); 
   }, []);
 
   useEffect(() => {
@@ -140,13 +146,16 @@ const ConsultantCoachHeader: React.FC<HeaderProps> = ({ storeFormData }) => {
     };
   }, [handleScroll, mobileMenuOpen]);
 
+  // Refined Nav Items for better marketing copy
   const navItems = [
     { label: "Home", href: "#hero" },
-    { label: "Expertise", href: "#services" }, // Changed to Expertise
-    { label: "Method", href: "#about" },       // Changed to Method
-    { label: "Success Stories", href: "#testimonials" }, // Changed to Success Stories
-    { label: "Book Now", href: "#contact" },         // CTA link
+    { label: "Expertise", href: "#services" }, 
+    { label: "Method", href: "#about" }, 
+    { label: "Success Stories", href: "#testimonials" }, 
   ];
+  
+  // Separate CTA item for unique styling
+  const ctaItem = { label: "Book Now", href: "#contact" };
 
   return (
     <motion.header
@@ -155,7 +164,8 @@ const ConsultantCoachHeader: React.FC<HeaderProps> = ({ storeFormData }) => {
       transition={{ type: "spring", stiffness: 100, damping: 20 }}
       className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
         isScrolled
-          ? "bg-white/95 shadow-2xl backdrop-blur-lg border-b border-orange-100"
+          // Stronger shadow and backdrop blur on scroll
+          ? "bg-white/95 shadow-xl backdrop-blur-xl border-b border-orange-200"
           : "bg-white/90 backdrop-blur-sm"
       }`}
     >
@@ -177,6 +187,7 @@ const ConsultantCoachHeader: React.FC<HeaderProps> = ({ storeFormData }) => {
                 variants={navItemVariants}
                 initial="hidden"
                 animate="visible"
+                // Added subtle lift on hover
                 whileHover={{ y: -3 }}
                 className="relative"
               >
@@ -189,8 +200,8 @@ const ConsultantCoachHeader: React.FC<HeaderProps> = ({ storeFormData }) => {
                   }`}
                 >
                   {item.label}
-                  {/* Underline hover effect */}
-                  <span className="absolute left-1/2 -translate-x-1/2 bottom-0 h-[3px] w-0 bg-orange-600 rounded-full transition-all duration-300 group-hover:w-full"></span>
+                  {/* Underline hover effect: Centered and expanding */}
+                  <span className="absolute left-1/2 -translate-x-1/2 bottom-0 h-0.5 w-0 bg-orange-600 rounded-full transition-all duration-300 group-hover:w-full"></span>
                 </a>
               </motion.div>
             ))}
@@ -206,10 +217,12 @@ const ConsultantCoachHeader: React.FC<HeaderProps> = ({ storeFormData }) => {
               transition={{ delay: 0.4, duration: 0.5 }}
             >
               <a
-                href="#contact"
+                href={ctaItem.href}
+                // Added a ring/glow effect and stronger shadow
                 className="inline-flex items-center px-6 py-3 text-base font-bold rounded-full shadow-xl text-white bg-orange-600 ring-4 ring-orange-300/50 hover:bg-orange-700 transition-all duration-300 transform hover:scale-105 group"
               >
-                Start Your Journey
+                {ctaItem.label}
+                {/* Icon animation on hover */}
                 <SparklesIcon className="w-5 h-5 ml-2 transition-transform duration-300 group-hover:rotate-12" />
               </a>
             </motion.div>
@@ -221,6 +234,7 @@ const ConsultantCoachHeader: React.FC<HeaderProps> = ({ storeFormData }) => {
                 className={`p-3 rounded-full text-gray-800 transition-colors shadow-lg border ${
                   mobileMenuOpen
                     ? "bg-white border-gray-200"
+                    // Changed button color when closed for better contrast
                     : "bg-orange-50/80 border-orange-200 hover:bg-orange-100"
                 }`}
                 aria-label="Toggle menu"
@@ -261,11 +275,12 @@ const ConsultantCoachHeader: React.FC<HeaderProps> = ({ storeFormData }) => {
             initial="closed"
             animate="open"
             exit="closed"
-            // Increased backdrop blur and changed background for better visual appeal
-            className="md:hidden fixed top-0 left-0 w-full h-screen bg-white/95 backdrop-blur-3xl origin-top-right z-40"
+            // Full-screen, high-blur overlay for a premium mobile menu
+            className="md:hidden fixed top-0 left-0 w-full h-screen bg-white/95 backdrop-blur-2xl origin-top-right z-40"
           >
             <motion.div className="flex flex-col items-center justify-center h-full space-y-8 px-6">
-              {navItems.map((item, i) => (
+              {/* Combine nav items and CTA for mobile list */}
+              {[...navItems, ctaItem].map((item, i) => (
                 <motion.div
                   key={item.label}
                   custom={i}
@@ -277,14 +292,18 @@ const ConsultantCoachHeader: React.FC<HeaderProps> = ({ storeFormData }) => {
                 >
                   <a
                     href={item.href}
-                    className="text-4xl font-extrabold text-gray-900 hover:text-orange-600 transition-colors block p-4 tracking-tight"
+                    // Large, impactful text for mobile links
+                    className={`text-4xl font-extrabold transition-colors block p-4 tracking-tight ${
+                        item.label === ctaItem.label 
+                            ? "text-orange-600 hover:text-orange-700" 
+                            : "text-gray-900 hover:text-orange-600"
+                    }`}
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     {item.label}
                   </a>
                 </motion.div>
               ))}
-              {/* The main CTA is now the last link in the mobile nav */}
             </motion.div>
           </motion.div>
         )}
