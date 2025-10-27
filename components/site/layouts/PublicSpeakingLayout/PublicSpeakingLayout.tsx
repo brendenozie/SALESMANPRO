@@ -6,12 +6,12 @@ import Header from "./header/Header";
 import Footer from "./footer/Footer";
 import { StoreForm } from "@/types/typings";
 
-interface ConsultancyLayoutProps {
+interface PublicSpeakingLayoutProps {
   params: { storeFormData: StoreForm };
   children: ReactNode;
 }
 
-const ConsultancyLayout: React.FC<ConsultancyLayoutProps> = (
+const PublicSpeakingLayout: React.FC<PublicSpeakingLayoutProps> = (
   {
     params,
     children,
@@ -30,4 +30,4 @@ const ConsultancyLayout: React.FC<ConsultancyLayoutProps> = (
   );
 };
 
-export default ConsultancyLayout;
+export default PublicSpeakingLayout;

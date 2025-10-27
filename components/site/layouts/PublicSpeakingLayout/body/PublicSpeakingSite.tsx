@@ -15,7 +15,7 @@ import AboutSection from "./components/AboutSection";
 import ServicesSection from "./components/ServicesSection";
 import CallToActionSection from "./components/CallToActionSection";
 
-export default function ConsultancySite({ pageData }: { pageData: StoreForm }) {
+export default function PublicSpeakingSite({ pageData }: { pageData: StoreForm }) {
   
   // const { storeFormData } = useStoreContext(); // Use for global theme settings only
 
