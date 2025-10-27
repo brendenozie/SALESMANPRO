@@ -184,7 +184,7 @@ export default function App() { // Renamed to App for single file export
                 </div>
 
                 {/* 2. Marquee / Marquess Section (Logos, always above metrics) */}
-                <motion.div
+                {/* <motion.div
                     initial={{ opacity: 0, scale: 0.95 }}
                     whileInView={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.8, delay: 0.2 }}
@@ -210,7 +210,7 @@ export default function App() { // Renamed to App for single file export
                             </div>
                         ))}
                     </Marquee>
-                </motion.div>
+                </motion.div> */}
             </div>
             
             {/* 3. Impact Metrics Grid (Always below Marquess) */}

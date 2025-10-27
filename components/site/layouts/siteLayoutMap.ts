@@ -25,6 +25,7 @@ const RestaurantLayout = dynamic(() => import('@/components/site/layouts/Restaur
 const AutomotiveLayout = dynamic(() => import('@/components/site/layouts/AutomotiveLayout/AutomotiveLayout'));
 // const SaaSLayout = dynamic(() => import('@/components/site/layouts/SaaSLayout/SaaSLayout'));
 const ConsultancyLayout = dynamic(() => import('@/components/site/layouts/ConsultancyLayout/ConsultancyLayout'));
+const PublicSpeakingLayout = dynamic(() => import('@/components/site/layouts/PublicSpeakingLayout/PublicSpeakingLayout'));
 
 import { ReactNode } from 'react';
 import { StoreForm } from '../../../types/typings';
@@ -38,6 +39,8 @@ export const categoryHeaderFooterLayoutMap: Record<string, LayoutHeaderFooterCom
   'ghuba': GhubaLayout,
   'ecommerce': EcommerceLayout,
   'e-commerce': EcommerceLayout,
+  'public speaking': PublicSpeakingLayout,
+  'public-speaking': PublicSpeakingLayout,
   'shoes-store': EcommerceShoesLayout,
   'shoes store': EcommerceShoesLayout,
   'services': ServicesLayout,
@@ -86,6 +89,8 @@ export const folderMap: Record<string, string> = {
   'ghuba': 'GhubaLayout',
   'ecommerce': 'EcommerceLayout',
   'e-commerce': 'EcommerceLayout',
+  'public speaking': 'PublicSpeakingLayout',
+  'public-speaking': 'PublicSpeakingLayout',
   'shoes-store': 'EcommerceShoesLayout',
   'shoes store': 'EcommerceShoesLayout',
   'services': 'ServicesLayout',
@@ -131,6 +136,7 @@ export const folderMap: Record<string, string> = {
 // Maps layout folder name to specific Site component name
 export const siteComponentNameMap: Record<string, string> = {
   'GhubaLayout': 'GhubaSite',
+  'PublicSpeakingLayout': 'PublicSpeakingSite',
   'EcommerceLayout': 'EcommerceSite',
   'EcommerceShoesLayout': 'EcommerceShoesSite',
   'ConsultancyLayout': 'ConsultancySite',

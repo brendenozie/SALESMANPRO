@@ -33,6 +33,7 @@ const PortfolioSite   = dynamic(() => import('@/components/site/layouts/Portfoli
 const ServiceSite     = dynamic(() => import('@/components/site/layouts/ServicesLayout/body/ServiceSite'),      { loading: () => <LoadingPlaceholder /> });
 const SaaSSite        = dynamic(() => import('@/components/site/layouts/SaaSLayout/body/SaasSite'),            { loading: () => <LoadingPlaceholder /> });
 const ConsultancySite = dynamic(() => import('@/components/site/layouts/ConsultancyLayout/body/ConsultancySite'), { loading: () => <LoadingPlaceholder /> });
+const PublicSpeakingSite = dynamic(() => import('@/components/site/layouts/PublicSpeakingLayout/body/PublicSpeakingSite'), { loading: () => <LoadingPlaceholder /> });
 
 type LayoutBodyComponent = React.ComponentType<any>;
 
@@ -44,6 +45,8 @@ const categoryBodyLayoutMap: Record<string, LayoutBodyComponent>  = {
   'ecommerce':      EcommerceSite,
 
   // 'shoes store':    ShoesStoreSite,
+  'public speaking': PublicSpeakingSite,
+  'public-speaking': PublicSpeakingSite,
 
   // services
   'services':    ServiceSite,

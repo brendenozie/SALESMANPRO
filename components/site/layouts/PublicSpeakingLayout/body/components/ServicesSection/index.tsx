@@ -5,8 +5,6 @@ import { motion } from "framer-motion";
 import { ArrowRightIcon, SparklesIcon, CalendarIcon, BriefcaseIcon, UsersIcon, LightBulbIcon, AcademicCapIcon, BoltIcon } from "@heroicons/react/24/outline";
 // --- Data Integration Imports ---
 import { useStoreContext } from '@/contexts/StoreContext';
-// NOTE: Assuming StoreForm, IStoreCategory, ISubcategory are defined in your project
-// import { StoreForm, IStoreCategory, ISubcategory } from '@/types/typings'; 
 import clsx from "clsx"; 
 
 // --- TYPE DEFINITIONS (Re-defined for completeness) ---
@@ -32,6 +30,10 @@ type Offering = {
 // --- Dynamic Icon Map for Visual Diversity ---
 const dynamicHeroIconMap: Record<string, React.ElementType> = {
     'Executive Coaching': BriefcaseIcon,
+    'Professional Speakers Course': AcademicCapIcon,
+    'Corporate Package': UsersIcon,
+    'Leadership Development Program': BoltIcon,
+    'Foundational Speakers Course': LightBulbIcon,
     'Career Acceleration': BoltIcon,
     'Personal Development': LightBulbIcon,
     'Team Workshops': UsersIcon,
@@ -40,21 +42,21 @@ const dynamicHeroIconMap: Record<string, React.ElementType> = {
     'Service': SparklesIcon,
 };
 
-// Fallback data for a standalone preview
+// Fallback data reflecting the image content structure
 const defaultCoachingSolutions: Offering[] = [
-    { title: "Executive Coaching", desc: "Elevate your leadership, decision-making, and influence with high-impact executive sessions.", iconComponent: dynamicHeroIconMap['Executive Coaching'], iconColor: 'text-indigo-600' },
-    { title: "Career Acceleration", desc: "Design your career path, refine your strengths, and fast-track your professional growth.", iconComponent: dynamicHeroIconMap['Career Acceleration'], iconColor: 'text-green-600' },
-    { title: "Personal Development", desc: "Unlock your best self through purpose-driven growth and emotional intelligence mastery.", iconComponent: dynamicHeroIconMap['Personal Development'], iconColor: 'text-orange-600' },
-    { title: "Team Workshops", desc: "Ignite collaboration and synergy within your team through engaging, result-oriented workshops.", iconComponent: dynamicHeroIconMap['Team Workshops'], iconColor: 'text-purple-600' },
-    { title: "Mindset & Resilience", desc: "Overcome self-doubt, embrace change, and build the mental strength to thrive in any season.", iconComponent: dynamicHeroIconMap['Mindset & Resilience'], iconColor: 'text-sky-600' },
-    { title: "Strategic Planning", desc: "Set a clear vision, craft actionable goals, and execute with precision and purpose.", iconComponent: dynamicHeroIconMap['Strategic Planning'], iconColor: 'text-pink-600' },
+    { title: "Professional Speaker's Course", desc: "Five weeks of practical training to equip professionals with effective public speaking and communication skills.", iconComponent: dynamicHeroIconMap['Professional Speakers Course'], iconColor: 'text-indigo-600' },
+    { title: "Executive Coaching", desc: "Elevate your leadership, decision-making, and influence with high-impact executive sessions.", iconComponent: dynamicHeroIconMap['Executive Coaching'], iconColor: 'text-green-600' },
+    { title: "Corporate Package", desc: "Comprehensive, tailored training solutions for groups, designed to ignite collaboration and synergy within your team.", iconComponent: dynamicHeroIconMap['Corporate Package'], iconColor: 'text-orange-600' },
+    { title: "Leadership Development Program", desc: "Accelerate growth and build the mental strength to thrive in any season through purpose-driven leadership mastery.", iconComponent: dynamicHeroIconMap['Leadership Development Program'], iconColor: 'text-purple-600' },
+    { title: "The Foundational Speakers Course", desc: "A robust introductory course to build confidence and deliver polished messages to captivate any audience.", iconComponent: dynamicHeroIconMap['Foundational Speakers Course'], iconColor: 'text-sky-600' },
+    { title: "Custom Workshops", desc: "Strategic and customized training delivered on-site or virtually to meet your organization's unique needs.", iconComponent: dynamicHeroIconMap['Strategic Planning'], iconColor: 'text-pink-600' },
 ];
 
 // Helper to cycle through colors for variety
 const iconColors = [
-    'text-orange-600',
     'text-indigo-600',
     'text-green-600',
+    'text-orange-600',
     'text-purple-600',
     'text-sky-600',
     'text-pink-600',
@@ -62,133 +64,78 @@ const iconColors = [
 
 const ServicesSection: React.FC = () => {
     
-    // --- Data Integration START (Simplified) ---
+    // --- Data Integration (Unchanged Logic) ---
     const { storeFormData } = useStoreContext() as { storeFormData: StoreForm };
-    const primaryColor = storeFormData?.themeSettings?.primaryColor || "#F97316"; // Primary color from theme
-
-    // const {
-    //     name,
-    //     description,
-    //     StoreCategory = [],
-    //     category,
-    // } = storeFormData;
-
-    // const hasCategories = Array.isArray(StoreCategory) && StoreCategory.length > 0;
-    // let offeringsToShow: Offering[] = [];
-
-    // // NOTE: Data mapping logic remains the same for correctness
-    // if (hasCategories && StoreCategory.length < 6) {
-    //     // Use Subcategories
-    //     const enrichedSubcategories = (StoreCategory as IStoreCategory[]).flatMap(cat => 
-    //         (cat.subcategories || []).map(subcat => ({
-    //             ...subcat,
-    //             parentName: cat.displayName,
-    //         }))
-    //     );
-
-    //     const limitedSubcategories = enrichedSubcategories.slice(0, 6);
-        
-    //     offeringsToShow = limitedSubcategories.map((subcat, index) => ({
-    //         title: subcat.name || 'Service',
-    //         desc: `Specialized solutions for ${subcat.parentName || 'Coaching'}: ${subcat.name}.`, 
-    //         id: subcat.id,
-    //         iconComponent: dynamicHeroIconMap[subcat.name] || dynamicHeroIconMap[subcat.parentName || 'Service'] || SparklesIcon, 
-    //         iconColor: iconColors[index % iconColors.length],
-    //     }));
-
-    // } else if (hasCategories) {
-    //     // Display Categories themselves
-    //     offeringsToShow = (StoreCategory as IStoreCategory[]).slice(0, 6).map((cat, index) => ({
-    //         title: cat.displayName || 'Service',
-    //         desc: `Explore our specialized ${cat.displayName} solutions.`,
-    //         id: cat.id,
-    //         iconComponent: dynamicHeroIconMap[cat.displayName || 'Service'] || SparklesIcon,
-    //         iconColor: iconColors[index % iconColors.length],
-    //     }));
-    // } else {
-    //     // Fallback if no categories exist
-    //     offeringsToShow = defaultCoachingSolutions;
-    // }
-    // // --- Data Integration END ---
+    const primaryColor = storeFormData?.themeSettings?.primaryColor || "#9D3131"; // Use the maroon/red color from the image for consistency
 
     const {
-    name,
-    description,
-    StoreCategory = [],
-    category,
-} = storeFormData;
+        StoreCategory = [],
+        category,
+    } = storeFormData;
 
-const hasCategories = Array.isArray(StoreCategory) && StoreCategory.length > 0;
-let offeringsToShow: Offering[] = [];
+    // Normalize category text for consistent matching
+    const categoryText = (category || '').toLowerCase().trim();
 
-// Normalize category text for consistent matching
-const categoryText = (category || '').toLowerCase().trim();
+    // Define consulting-related keywords
+    const consultingKeywords = [
+        'consultant',
+        'consulting',
+        'coach',
+        'coaching',
+        'speaker',
+        'training',
+    ];
 
-// Define consulting-related keywords
-const consultingKeywords = [
-    'consultant',
-    'consulting',
-    'coach',
-    'coaching',
-    'consultant & coach',
-    'consulting & coaching',
-];
-
-// Check if current category matches any consulting-related keyword
-const isConsultingRelated = consultingKeywords.some(keyword =>
-    categoryText.includes(keyword)
-);
-
-// --- Apply the consulting category filter ---
-let filteredCategories = StoreCategory;
-
-if (isConsultingRelated) {
-    filteredCategories = StoreCategory.filter(cat => {
-        const name = (cat.displayName || '').toLowerCase();
-        return (
-            name.includes('consulting') ||
-            name.includes('coach') ||
-            name.includes('consultant')
-        );
-    });
-}
-
-// --- Offerings logic ---
-if (filteredCategories.length > 0 && filteredCategories.length < 6) {
-    // Use subcategories when there are fewer than 6 categories
-    const enrichedSubcategories = filteredCategories.flatMap(cat =>
-        (cat.subcategories || []).map(subcat => ({
-            ...subcat,
-            parentName: cat.displayName,
-        }))
+    const isConsultingRelated = consultingKeywords.some(keyword =>
+        categoryText.includes(keyword)
     );
 
-    const limitedSubcategories = enrichedSubcategories.slice(0, 6);
+    let filteredCategories = StoreCategory;
 
-    offeringsToShow = limitedSubcategories.map((subcat, index) => ({
-        title: subcat.name || 'Service',
-        desc: `Specialized solutions for ${subcat.parentName || 'Coaching'}: ${subcat.name}.`,
-        id: subcat.id,
-        iconComponent:
-            dynamicHeroIconMap[subcat.name] ||
-            dynamicHeroIconMap[subcat.parentName || 'Service'] ||
-            SparklesIcon,
-        iconColor: iconColors[index % iconColors.length],
-    }));
-} else if (filteredCategories.length > 0) {
-    // Show top-level categories
-    offeringsToShow = filteredCategories.slice(0, 6).map((cat, index) => ({
-        title: cat.displayName || 'Service',
-        desc: `Explore our specialized ${cat.displayName} solutions.`,
-        id: cat.id,
-        iconComponent:
-            dynamicHeroIconMap[cat.displayName || 'Service'] || SparklesIcon,
-        iconColor: iconColors[index % iconColors.length],
-    }));
-} else {
-    // Fallback if no valid categories found
-    offeringsToShow = defaultCoachingSolutions;
-}
+    if (isConsultingRelated) {
+        filteredCategories = StoreCategory.filter(cat => {
+            const name = (cat.displayName || '').toLowerCase();
+            return consultingKeywords.some(keyword => name.includes(keyword));
+        });
+    }
+
+    let offeringsToShow: Offering[] = [];
+
+    if (filteredCategories.length > 0 && filteredCategories.length < 6) {
+        // Use subcategories when there are fewer than 6 categories
+        const enrichedSubcategories = filteredCategories.flatMap(cat =>
+            (cat.subcategories || []).map(subcat => ({
+                ...subcat,
+                parentName: cat.displayName,
+            }))
+        );
+
+        const limitedSubcategories = enrichedSubcategories.slice(0, 6);
+
+        offeringsToShow = limitedSubcategories.map((subcat, index) => ({
+            title: subcat.name || 'Service',
+            desc: `Specialized solutions for ${subcat.parentName || 'Coaching'}: ${subcat.name}.`,
+            id: subcat.id,
+            iconComponent:
+                dynamicHeroIconMap[subcat.name] ||
+                dynamicHeroIconMap[subcat.parentName || 'Service'] ||
+                SparklesIcon,
+            iconColor: iconColors[index % iconColors.length],
+        }));
+    } else if (filteredCategories.length > 0) {
+        // Show top-level categories
+        offeringsToShow = filteredCategories.slice(0, 6).map((cat, index) => ({
+            title: cat.displayName || 'Service',
+            desc: `Explore our specialized ${cat.displayName} solutions.`,
+            id: cat.id,
+            iconComponent:
+                dynamicHeroIconMap[cat.displayName || 'Service'] || SparklesIcon,
+            iconColor: iconColors[index % iconColors.length],
+        }));
+    } else {
+        // Fallback if no valid categories found
+        offeringsToShow = defaultCoachingSolutions;
+    }
 
 
     const gridOfferings = offeringsToShow.slice(0, 6);
@@ -220,7 +167,7 @@ if (filteredCategories.length > 0 && filteredCategories.length < 6) {
                         className="text-lg font-semibold uppercase tracking-wider mb-3 block"
                         style={{ color: primaryColor }}
                     >
-                        Our Expertise
+                        Comprehensive Training
                     </span>
                     <motion.h2 
                         className="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight"
@@ -229,7 +176,7 @@ if (filteredCategories.length > 0 && filteredCategories.length < 6) {
                         transition={{ duration: 0.6 }}
                         viewport={{ once: true }}
                     >
-                        {name || 'Transformative Coaching'} <span style={{ color: primaryColor }}>Solutions</span>
+                        Explore Our <span style={{ color: primaryColor }}>Services</span>
                     </motion.h2>
                     <motion.p 
                         className="mt-5 text-xl text-gray-700 max-w-3xl mx-auto line-clamp-3 text-ellipsis"
@@ -238,7 +185,7 @@ if (filteredCategories.length > 0 && filteredCategories.length < 6) {
                         transition={{ duration: 0.6, delay: 0.1 }}
                         viewport={{ once: true }}
                     >
-                        {description || 'Experience the synergy of strategy, mindset, and purpose — designed to help you lead with clarity, confidence, and impact.'}
+                        {storeFormData.description || 'Experience the synergy of strategy, mindset, and purpose — designed to help you lead with clarity, confidence, and impact.'}
                     </motion.p>
                 </div>
 
@@ -253,35 +200,34 @@ if (filteredCategories.length > 0 && filteredCategories.length < 6) {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true, amount: 0.3 }}
                                 transition={{ duration: 0.6, delay: i * 0.1 }}
-                                className="group relative p-8 rounded-3xl bg-white shadow-xl border-t-4 border-white transition-all duration-500 hover:shadow-2xl hover:scale-[1.02] flex flex-col items-start"
-                                // Dynamic border-t-4 and a subtle hover gradient from the primary color
+                                // Card enhancements for premium look
+                                className="group relative p-8 rounded-3xl bg-white shadow-xl border-b-4 border-white transition-all duration-500 hover:shadow-2xl hover:scale-[1.02] flex flex-col items-start overflow-hidden"
                                 style={{ 
-                                    borderTopColor: primaryColor,
-                                    // Subtle inner shadow on hover
-                                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)' 
+                                    borderBottomColor: primaryColor, // Use border-bottom for a different look
                                 }}
                             >
                                 {/* Hover Gradient Overlay for Polish */}
                                 <div 
-                                    className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                                    style={{ background: `radial-gradient(circle at 100% 0%, ${primaryColor}1A, transparent 70%)` }}
+                                    className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-10 transition-opacity duration-300 pointer-events-none"
+                                    style={{ background: `linear-gradient(to top right, ${primaryColor}1A, transparent 70%)` }}
                                 ></div>
 
                                 <div className="relative z-10 flex-grow">
-                                    {/* --- 🛑 VISUAL IMPROVEMENT: STYLED ICON CONTAINER 🛑 --- */}
+                                    {/* --- STYLED ICON CONTAINER: More prominent and colorful --- */}
                                     <div 
                                         className={clsx(
-                                            "mb-6 p-4 rounded-xl inline-flex items-center justify-center ring-4 ring-offset-2 transition-all duration-500 group-hover:ring-offset-4",
-                                            service.iconColor.replace('text', 'bg').replace('-600', '-100'), // Background color (e.g., bg-orange-100)
-                                            service.iconColor.replace('text', 'ring').replace('-600', '-500'), // Ring color (e.g., ring-orange-500)
+                                            "mb-6 p-4 rounded-full inline-flex items-center justify-center ring-4 ring-offset-2 transition-all duration-500 group-hover:ring-offset-4",
+                                            // Dynamic background/ring colors based on iconColor
+                                            service.iconColor.replace('text', 'bg').replace('-600', '-100'),
+                                            service.iconColor.replace('text', 'ring').replace('-600', '-500'),
                                         )}
                                     >
-                                        <Icon className={clsx("w-7 h-7", service.iconColor)} aria-hidden="true" />
+                                        <Icon className={clsx("w-8 h-8", service.iconColor)} aria-hidden="true" />
                                     </div>
                                     {/* -------------------------------------------------------- */}
 
                                     <h3 className="text-2xl font-bold text-gray-900 mb-3">{service.title}</h3>
-                                    <p className="text-gray-600 leading-relaxed mb-6">{service.desc}</p>
+                                    <p className="text-gray-600 leading-relaxed mb-6 line-clamp-3">{service.desc}</p>
                                 </div>
 
                                 <a
@@ -289,7 +235,7 @@ if (filteredCategories.length > 0 && filteredCategories.length < 6) {
                                     className="relative z-10 inline-flex items-center font-semibold transition-all group-hover:translate-x-1"
                                     style={{ color: primaryColor }}
                                 >
-                                    Explore Solution
+                                    Learn More
                                     <ArrowRightIcon className="w-5 h-5 ml-2 transition-transform duration-300" />
                                 </a>
                             </motion.div>
@@ -297,7 +243,7 @@ if (filteredCategories.length > 0 && filteredCategories.length < 6) {
                     })}
                 </div>
                 
-                {/* Final CTA outside the grid */}
+                {/* Final CTA outside the grid - More assertive button style */}
                 <motion.div 
                     className="mt-20 text-center"
                     initial={{ opacity: 0, y: 30 }}
@@ -305,18 +251,20 @@ if (filteredCategories.length > 0 && filteredCategories.length < 6) {
                     transition={{ duration: 0.6, delay: 0.4 }}
                     viewport={{ once: true }}
                 >
-                    <p className="text-lg text-gray-700 mb-6">Ready to take the next step towards your goals?</p>
+                    <p className="text-xl text-gray-700 mb-6 font-medium">
+                        See all our programs or get a custom quote for your organization.
+                    </p>
                     <a
                         href="#contact"
-                        className="inline-flex items-center px-10 py-4 font-bold rounded-full text-lg shadow-xl hover:shadow-2xl transition-all duration-300"
+                        className="inline-flex items-center px-10 py-4 font-bold rounded-xl text-lg shadow-2xl transition-all duration-300 transform hover:scale-[1.03] text-white"
                         style={{
                             backgroundColor: primaryColor,
-                            color: "white",
-                            border: `2px solid ${primaryColor}`
+                            // Use a brighter color for the arrow icon to stand out
+                            boxShadow: `0 10px 15px -3px ${primaryColor}40, 0 4px 6px -2px ${primaryColor}1A`
                         }}
                     >
                         Book a Discovery Call
-                        <CalendarIcon className="w-5 h-5 ml-2" />
+                        <ArrowRightIcon className="w-5 h-5 ml-3" />
                     </a>
                 </motion.div>
             </div>

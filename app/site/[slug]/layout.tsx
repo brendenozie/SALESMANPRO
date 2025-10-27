@@ -162,6 +162,7 @@ export default async function StoreLayout({
   }
 
   if (!raw) {
+    console.log("Store layout: Company not found for slug", slug, "or host", requestedHost, "or subdomain", requestedSubdomain);
     notFound();
   }
 

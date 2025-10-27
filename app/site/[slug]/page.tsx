@@ -115,6 +115,7 @@ export default async function StorePage({ params }: StorePageProps) {
   }
 
   if (!raw) {
+    console.log("Store page: Company not found for slug", slug, "or host", requestedHost, "or subdomain", requestedSubdomain);
     notFound();
   }
 

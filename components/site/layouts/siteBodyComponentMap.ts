@@ -11,6 +11,7 @@ export const folderMap: Record<string, string> = {
   'ghuba': 'GhubaLayout',
   
   'public speaking': 'PublicSpeakingLayout',
+  'public-speaking': 'PublicSpeakingLayout',
 
   'ecommerce': 'EcommerceLayout',
   'e-commerce': 'EcommerceLayout',
@@ -101,6 +102,7 @@ export const folderMap: Record<string, string> = {
 export const siteComponentNameMap: Record<string, string> = {
   'EcommerceLayout': 'EcommerceSite',
   'EcommerceShoesLayout': 'EcommerceShoesSite',
+  'PublicSpeakingLayout': 'PublicSpeakingSite',
   'ConsultancyLayout': 'ConsultancySite',
   'GhubaLayout': 'GhubaSite',
   'ServicesLayout': 'ServiceSite',

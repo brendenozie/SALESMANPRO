@@ -1,358 +1,230 @@
 /**
  * HeroSection.jsx
  *
- * This component implements a fully responsive, auto-advancing carousel
- * using React and Framer Motion, matching the light-theme design.
- * It now correctly integrates a mock of 'useStoreContext' to load dynamic data.
+ * This component implements a static, content-focused hero section
+ * that matches the provided image layout. It dynamically incorporates
+ * data from the first available 'heroSlides' element.
  */
 "use client";
-import React, { useEffect, useRef, useState, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { HeroSlide } from "@/types/typings";
+import React from "react";
+import { motion } from "framer-motion";
+import { HeroSlide } from "@/types/typings"; // Ensure this import is correct
 
 // --------------------------------------------------
-// 1. MOCK UTILITIES (Replaces External Imports)
+// 1. MOCK UTILITIES (Adapted for Static Layout)
 // --------------------------------------------------
+
+// Utility component for safe image loading and fallback
+const SafeImage = ({ src, alt, className }: { src: string; alt: string; className: string }) => {
+    const handleError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+        // Fallback to a clear placeholder on error
+        e.currentTarget.onerror = null; 
+        e.currentTarget.src = 'https://placehold.co/600x400/D1D5DB/1F2937?text=Image+Unavailable';
+        e.currentTarget.alt = 'Image load error placeholder';
+        e.currentTarget.style.objectFit = 'contain'; // Keep placeholder contained
+    };
+    
+    return (
+        <img
+            src={src}
+            alt={alt}
+            onError={handleError}
+            className={className}
+        />
+    );
+};
 
 // A. Inline Icons (Replaces @heroicons/react)
 const ArrowRightIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3" />
+  <svg
+    {...props}
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    strokeWidth={2}
+    stroke="currentColor"
+    className="w-5 h-5"
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3"
+    />
   </svg>
 );
 
-const ArrowLeftIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 15.75L3 12m0 0l3.75-3.75M3 12h18" />
-  </svg>
-);
-
-// B. MOCK for useStoreContext (Activated for single-file environment)
-// const useStoreContext = () => {
-//   // Data simulating what the context would provide
-//   const storeData = {
-//     storeFormData: {
-//       // Data will load these slides if the component is mounted correctly.
-//       heroSlides: [
-//         {
-//           type: "image",
-//           url: "https://images.unsplash.com/photo-1579783902672-88d07018a1a4?q=80&w=2670&auto=format&fit=crop",
-//           headline: "Design Your Success Blueprint",
-//           subline: "We combine data science and creative strategy to architect scalable growth for your business.",
-//         },
-//         {
-//           type: "image",
-//           url: "https://images.unsplash.com/photo-1542435503-914c622b8ea7?q=80&w=2670&auto=format&fit=crop",
-//           headline: "Ignite Digital Transformation",
-//           subline: "Navigate the complexity of modern markets with bespoke technology and mindset coaching.",
-//         },
-//       ],
-//     },
-//   };
-//   return storeData;
-// };
-
-// --------------------------------------------------
-// 2. DATA (Fallback used when context is empty)
-// --------------------------------------------------
-
-const LOCAL_FALLBACK_SLIDES: HeroSlide[] = [
-  {
-    type: "image",
-    imageUrl: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=2670&auto=format&fit=crop",
-    headline: "Unlock Your True Potentiall",
-    subline: "Empowering ambitious individuals and teams to create a life of purpose, clarity, and success.",
-    id: "",
-    companyId: "",
-    productImageUrl: null,
-    ctaText: null,
-    ctaLink: null,
-    videoLink: null,
-    badgeText: null,
-    price: null,
-    endsAt: null,
-    order: 0,
-    iconKey: null,
-    backgroundColor: null,
-    textColor: null
-  },
-  {
-    type: "image",
-    imageUrl: "https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?q=80&w=2670&auto=format&fit=crop",
-    headline: "Transform Your Vision into Action",
-    subline: "Through strategic coaching and tailored consultation, I help you move from ideas to impact.",
-    id: "",
-    companyId: "",
-    productImageUrl: null,
-    ctaText: null,
-    ctaLink: null,
-    videoLink: null,
-    badgeText: null,
-    price: null,
-    endsAt: null,
-    order: 0,
-    iconKey: null,
-    backgroundColor: null,
-    textColor: null
-  },
-  {
-    type: "video",
-    imageUrl: "https://cdn.pixabay.com/video/2024/02/26/200827-919106201_large.mp4",
-    headline: "Lead with Confidence, Inspire with Purpose",
-    subline: "Gain clarity, build resilience, and become the leader you were meant to be.",
-    id: "",
-    companyId: "",
-    productImageUrl: null,
-    ctaText: null,
-    ctaLink: null,
-    videoLink: null,
-    badgeText: null,
-    price: null,
-    endsAt: null,
-    order: 0,
-    iconKey: null,
-    backgroundColor: null,
-    textColor: null
-  },
-];
-
-const autoAdvanceDelay = 9000; // 9 seconds
-
-// --------------------------------------------------
-// 3. MAIN COMPONENT (With Data Integration)
-// --------------------------------------------------
 interface Props {
-  heroSlides?: HeroSlide[] | null | undefined;
+  // Accepts the array of slides, but we only use the first one for this static layout
+  heroSlides?: HeroSlide[] | null;
   themeSettings?: {
     primaryColor?: string | null | undefined;
     secondaryColor?: string | null | undefined;
   } | null | undefined;
 }
 
+// --------------------------------------------------
+// 2. HERO CONTENT (Base content and Fallback Images)
+// --------------------------------------------------
+
+const IMAGE_HERO_CONTENT = {
+  // Default values used if slide data is missing
+  badge: "ENHANCE YOUR SKILLS",
+  headline: "Master the Art of Public Speaking",
+  subline: "Join our specialized training programs designed to build confidence, polish your message, and captivate any audience.",
+  ctaText: "GET STARTED",
+  ctaLink: "#contact",
+  // Placeholder images - These will only be used if the slide's imageUrls are also null
+  imageUrl: "https://images.unsplash.com/photo-1552581234-26160f608093?q=80&w=2670&auto=format&fit=crop", 
+  productImageUrl: "https://images.unsplash.com/photo-1552581234-26160f608093?q=80&w=2670&auto=format&fit=crop", 
+};
 
 const HeroSection = ({ heroSlides, themeSettings } : Props) => {
-  const [current, setCurrent] = useState(0);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Use the first slide if it exists, otherwise fall back to IMAGE_HERO_CONTENT for text defaults
+  const currentHeroSlide: any = heroSlides?.[0] || {}; 
+
+  // --- Dynamic Content Resolution ---
+  const badgeText = currentHeroSlide.badgeText || IMAGE_HERO_CONTENT.badge;
+  const headline = currentHeroSlide.headline || IMAGE_HERO_CONTENT.headline;
+  const subline = currentHeroSlide.subline || IMAGE_HERO_CONTENT.subline;
+  const ctaText = currentHeroSlide.ctaText || IMAGE_HERO_CONTENT.ctaText;
+  const ctaLink = currentHeroSlide.ctaLink || IMAGE_HERO_CONTENT.ctaLink;
   
-  // CORE INTEGRATION: Using the (mocked) context hook
-  // const { storeFormData } = useStoreContext() || {};
-  // const { heroSlides, themeSettings } = storeFormData || {};
+  // Assuming the first slide's imageUrl is the main hero image (used for the wide image on the right)
+  const mainImageUrl = currentHeroSlide.imageUrl || IMAGE_HERO_CONTENT.imageUrl;
+  // Using a fallback for the secondary image (The tall one on the left) since the HeroSlide type only has one `imageUrl` field.
+  const secondaryImageUrl = currentHeroSlide.productImageUrl || IMAGE_HERO_CONTENT.productImageUrl;
 
-  console.log("HeroSection - Loaded heroSlides:", heroSlides);
-  // DATA RESOLUTION: Use dynamic data if available, otherwise use the local fallback
-  const slides = heroSlides && (Array.isArray(heroSlides) && heroSlides.length > 0)
-    ? heroSlides
-    : LOCAL_FALLBACK_SLIDES;
+  const CTA_BG_COLOR = themeSettings?.primaryColor || "#800000"; // Use theme primary color or default Maroon
 
-  const advanceSlide = useCallback(
-    (direction: "next" | "prev") => {
-      setCurrent((prev) =>
-        direction === "next"
-          ? (prev + 1) % slides.length
-          : (prev - 1 + slides.length) % slides.length
-      );
-    },
-    [slides.length] // Dependency on slides.length is crucial for correct modulo arithmetic
-  );
-
-  useEffect(() => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(() => advanceSlide("next"), autoAdvanceDelay);
-    
-    return () => {
-        if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    };
-  }, [current, advanceSlide, slides.length]); 
-
-  const handleDotClick = (index: number) => {
-    setCurrent(index);
+  // Animation variants
+  const contentVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } },
   };
   
-  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    e.currentTarget.onerror = null;
-    e.currentTarget.src = 'https://placehold.co/2670x1780/D1D5DB/1F2937?text=Image+Load+Error';
-    e.currentTarget.alt = 'Image Load Error Placeholder';
+  const imageVariants = {
+    hidden: { opacity: 0, scale: 0.95 },
+    visible: { opacity: 1, scale: 1, transition: { duration: 1.0, ease: "easeOut" } },
   };
-  
-  // Ensure we always have a current slide, even if slides is empty (shouldn't happen with fallback)
-  // Use a concrete fallback element and `any` typing to avoid type union issues coming from external `HeroSlide` types.
-  const currentSlide: any = slides[current] || LOCAL_FALLBACK_SLIDES[0];
-
-  const { primaryColor, secondaryColor } = themeSettings || { primaryColor: '#F97316', secondaryColor: '#1D4ED8' }; // Default colors
-
-  const SafeImage = ({ src, alt }: { src?: string | null; alt?: string | null }) => {
-    const validSrc =
-      src && src.trim() !== ""
-        ? src
-        : "https://placehold.co/2670x1780/D1D5DB/1F2937?text=No+Image+Provided";
-
-    return (
-      <img
-        src={validSrc}
-        alt={alt || "Image"}
-        onError={(e) => {
-          e.currentTarget.src =
-            "https://placehold.co/2670x1780/D1D5DB/1F2937?text=Image+Unavailable";
-        }}
-        className="w-full h-full object-cover"
-      />
-    );
-  };
-
-  const SafeVideo = ({ src }: { src?: string | null }) => {
-    const validSrc =
-      src && src.trim() !== ""
-        ? src
-        : "https://cdn.pixabay.com/video/2024/02/26/200827-919106201_large.mp4";
-
-    return (
-      <video
-        src={validSrc}
-        autoPlay
-        muted
-        loop
-        playsInline
-        className="w-full h-full object-cover"
-        poster="https://placehold.co/2670x1780/D1D5DB/1F2937?text=Video+Loading"
-      />
-    );
-  };
-
 
 
   return (
-    <section id="hero" className="relative overflow-hidden h-screen flex items-center justify-center bg-white">
-      
-      {/* Background media with Framer Motion transitions */}
-      <AnimatePresence initial={false}>
-        <motion.div
-          key={current}
-          className="absolute inset-0"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 1.2 }}
-        >
-          {currentSlide.type === "video" ? (
-              <SafeVideo src={currentSlide.videoLink} />
-            ) : (
-              <SafeImage src={currentSlide.imageUrl} alt={currentSlide.headline} />
-            )}
+    <section 
+      id="hero" 
+      className="bg-gray-50/70 min-h-screen pt-24 md:pt-32 pb-16 overflow-hidden"
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {/* --- 1. Headline & CTA Area (Top Half) --- */}
+        <div className="flex justify-between items-start mb-8 lg:mb-12 pt-8">
+          
+          {/* Text Content */}
+          <div className="max-w-4xl">
+            <motion.p
+              variants={contentVariants}
+              initial="hidden"
+              animate="visible"
+              transition={{ delay: 0.1 }}
+              className="text-xs font-semibold text-gray-600 uppercase tracking-widest mb-3"
+            >
+              {badgeText}
+            </motion.p>
 
-          {/* Gradient overlay for text readability */}
-          <div className="absolute inset-0 bg-gradient-to-t from-white via-white/40 to-transparent" />
-        </motion.div>
-      </AnimatePresence>
+            <motion.h1
+              variants={contentVariants}
+              initial="hidden"
+              animate="visible"
+              transition={{ delay: 0.2 }}
+              className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-gray-900 leading-tight"
+            >
+              {headline}
+            </motion.h1>
+          </div>
 
-      {/* Content - Added pt-20 for mobile clearance and pb-12 for bottom padding */}
-      <div className="relative z-10 text-center max-w-3xl px-6 pt-20 pb-12 md:py-0">
-        <motion.span
-          key={current + '-span'}
-          initial={{ y: 30, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="text-lg font-semibold text-orange-700 uppercase tracking-wide mb-3 block"
-        >
-          Your Partner in Growth
-        </motion.span>
+          {/* Desktop CTA Button */}
+          <motion.div
+            variants={contentVariants}
+            initial="hidden"
+            animate="visible"
+            transition={{ delay: 0.4 }}
+            className="hidden md:block mt-8"
+          >
+            <a
+              href={ctaLink}
+              style={{ backgroundColor: CTA_BG_COLOR }}
+              className="inline-flex items-center px-6 py-3 text-base font-bold text-white rounded shadow-lg transition-all duration-300 transform hover:scale-[1.03] hover:shadow-xl"
+            >
+              {ctaText}
+              <ArrowRightIcon className="ml-2" />
+            </a>
+          </motion.div>
+        </div>
 
-        <motion.h1
-          key={current + '-h1'}
-          initial={{ y: 40, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-          // Adjusted headline size for better mobile fit: text-4xl on default/mobile screens
-          className="text-4xl sm:text-5xl md:text-7xl font-extrabold text-gray-900 leading-tight"
-        >
-          {/* Headline parsing logic preserved: colorizing the last part */}
-          {currentSlide.headline?.split(" ").slice(0, 3).join(" ")}{" "}
-          <span className="text-orange-600">
-            {currentSlide.headline?.split(" ").slice(3).join(" ")}
-          </span>
-        </motion.h1>
-
+        {/* Dynamic Subline/Body Content (Placed between headline and images) */}
         <motion.p
-          key={current + '-p'}
-          initial={{ y: 30, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.6 }}
-          className="mt-6 text-xl text-gray-700 max-w-2xl mx-auto"
+            variants={contentVariants}
+            initial="hidden"
+            animate="visible"
+            transition={{ delay: 0.3 }}
+            className="text-lg md:text-xl text-gray-700 max-w-4xl mx-auto sm:mx-0 mb-12"
         >
-          {currentSlide.subline}
+            {subline}
         </motion.p>
 
-        {/* Call to Action Buttons */}
+        {/* Mobile CTA (Visible below text on small screens) */}
         <motion.div
-          key={current + '-cta'}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.9 }}
-          className="mt-10 flex flex-col sm:flex-row justify-center gap-4"
-        >
-          <a
-            href="#contact"
-            className="inline-flex items-center justify-center px-10 py-5 bg-orange-600 text-white font-bold rounded-full shadow-lg hover:bg-orange-700 transition-all duration-300 transform hover:-translate-y-1 hover:scale-105 text-lg"
+            variants={contentVariants}
+            initial="hidden"
+            animate="visible"
+            transition={{ delay: 0.4 }}
+            className="md:hidden mb-12"
           >
-            Book a Free Discovery Call
-            <ArrowRightIcon className="w-6 h-6 ml-3" />
-          </a>
-          <a
-            href="#services"
-            className="inline-flex items-center justify-center px-10 py-5 bg-white text-orange-600 font-bold rounded-full shadow-lg border border-orange-200 hover:bg-orange-50 transition-all duration-300 transform hover:-translate-y-1 hover:scale-105 text-lg"
-          >
-            Explore Services
-          </a>
-        </motion.div>
-      </div>
+            <a
+              href={ctaLink}
+              style={{ backgroundColor: CTA_BG_COLOR }}
+              className="inline-flex items-center justify-center w-full px-6 py-3 text-base font-bold text-white rounded shadow-lg transition-all duration-300 hover:bg-red-800"
+            >
+              {ctaText}
+              <ArrowRightIcon className="ml-2" />
+            </a>
+          </motion.div>
+        
+        {/* --- 2. Image Grid Area (Bottom Half) --- */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+  {/* Left Image */}
+  <motion.div
+    variants={imageVariants}
+    initial="hidden"
+    animate="visible"
+    transition={{ delay: 0.6 }}
+    className="md:col-span-1 h-auto md:h-[400px] rounded-3xl overflow-hidden shadow-2xl shadow-gray-400/50 transition-all duration-500 ease-out hover:shadow-3xl hover:scale-[1.02]"
+  >
+    <SafeImage
+      src={secondaryImageUrl}
+      alt="Public speaking coach providing guidance"
+      className="w-full h-full object-cover transform transition-transform duration-700 hover:scale-[1.03]"
+    />
+  </motion.div>
 
-      {/* Slide navigation controls */}
-      <div className="absolute bottom-10 left-0 right-0 flex items-center justify-center gap-4 z-20">
-        <button
-          onClick={() => advanceSlide("prev")}
-          className="p-3 rounded-full bg-white/50 hover:bg-white/70 text-gray-800 backdrop-blur-sm transition"
-          aria-label="Previous slide"
-        >
-          <ArrowLeftIcon className="h-5 w-5" />
-        </button>
-        <div className="flex gap-2">
-          {slides.map((_, idx) => (
-            <div
-              key={idx}
-              onClick={() => handleDotClick(idx)}
-              className={`w-3 h-3 rounded-full cursor-pointer transition-all ${
-                idx === current ? "bg-orange-600 scale-110" : "bg-gray-400"
-              }`}
-              aria-label={`Go to slide ${idx + 1}`}
-            />
-          ))}
-        </div>
-        <button
-          onClick={() => advanceSlide("next")}
-          className="p-3 rounded-full bg-white/50 hover:bg-white/70 text-gray-800 backdrop-blur-sm transition"
-          aria-label="Next slide"
-        >
-          <ArrowRightIcon className="h-5 w-5" />
-        </button>
-      </div>
+  {/* Right Image */}
+  <motion.div
+    variants={imageVariants}
+    initial="hidden"
+    animate="visible"
+    transition={{ delay: 0.8 }}
+    className="md:col-span-2 h-auto md:h-[400px] rounded-3xl overflow-hidden shadow-2xl shadow-gray-400/50 transition-all duration-500 ease-out hover:shadow-3xl hover:scale-[1.02]"
+  >
+    <SafeImage
+      src={mainImageUrl}
+      alt="Group workshop attendees collaborating"
+      className="w-full h-full object-cover transform transition-transform duration-700 hover:scale-[1.03]"
+    />
+  </motion.div>
+</div>
 
-      {/* Decorative background shapes (CSS is inline for single file) */}
-      <style jsx global>{`
-        @keyframes blob {
-          0% { transform: translate(0, 0) scale(1); }
-          33% { transform: translate(30px, -50px) scale(1.1); }
-          66% { transform: translate(-20px, 20px) scale(0.9); }
-          100% { transform: translate(0, 0) scale(1); }
-        }
-        .animate-blob {
-          animation: blob 7s infinite cubic-bezier(0.7, 0, 0.3, 1);
-        }
-        .animation-delay-2000 { animation-delay: 2s; }
-        .animation-delay-4000 { animation-delay: 4s; }
-      `}</style>
-      {/* Animated blobs for a modern, subtle background effect */}
-      <div className="absolute top-0 left-0 w-64 h-64 bg-orange-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob"></div>
-      <div className="absolute bottom-20 right-20 w-72 h-72 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-2000"></div>
-      <div className="absolute top-1/3 right-1/4 w-56 h-56 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-4000"></div>
+
+        
+      </div>
     </section>
   );
 };

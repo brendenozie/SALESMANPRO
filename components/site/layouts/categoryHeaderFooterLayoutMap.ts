@@ -22,6 +22,7 @@ const MediaLayout = dynamic(() => import( '@/components/site/layouts/MediaLayout
 const TravelLayout = dynamic(() => import( '@/components/site/layouts/TravelLayout/TravelLayout'));
 const RestaurantLayout = dynamic(() => import( '@/components/site/layouts/RestaurantLayout/RestaurantLayout'));
 const AutomotiveLayout = dynamic(() => import( '@/components/site/layouts/AutomotiveLayout/AutomotiveLayout'));
+const PublicSpeakingLayout = dynamic(() => import( '@/components/site/layouts/PublicSpeakingLayout/PublicSpeakingLayout'));
 // const SaaSLayout = dynamic(() => import( '@/components/site/layouts/SaaSLayout/SaaSLayout'));
 const ConsultancyLayout = dynamic(() => import('@/components/site/layouts/ConsultancyLayout/ConsultancyLayout'));
 import { ReactNode } from 'react';
@@ -35,6 +36,8 @@ type LayoutHeaderFooterComponent = React.ComponentType<{
 const categoryHeaderFooterLayoutMap: Record<string, LayoutHeaderFooterComponent> = {
     'ghuba': GhubaLayout,
     'ecommerce': EcommerceLayout,
+    'public speaking': PublicSpeakingLayout,
+    'public-speaking': PublicSpeakingLayout,
     'shoes-store': EcommerceShoesLayout,
     'shoes store': EcommerceShoesLayout,
     'e-commerce': EcommerceLayout,
