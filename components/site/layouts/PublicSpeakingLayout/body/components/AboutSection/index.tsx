@@ -176,7 +176,7 @@ const AboutSection: React.FC = () => {
 
               {/* CTA */}
               <a
-                href="#community"
+                href="#contact"
                 className="inline-flex items-center px-8 py-3 font-semibold rounded-full shadow-lg transition-all duration-300 text-base border-2"
                 style={{
                   backgroundColor: primaryColor,
