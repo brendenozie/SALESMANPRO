@@ -21,15 +21,6 @@ export default function CheckoutPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Extract booking details from URL
-  // const listingId = searchParams.get("listingId") || "";
-  // const name = searchParams.get("name") || "";
-  // const price = searchParams.get("price") || "";
-  // const date = searchParams.get("date") || "";
-  // const timeSlot = searchParams.get("timeSlot") || "";
-
-  // const searchParams = useSearchParams();
-
   // ✅ Extract parameters from query
   const listingId = searchParams.get("listingId") || "";
   const name = searchParams.get("name") || "";
@@ -39,8 +30,12 @@ export default function CheckoutPage() {
   const timeSlot = searchParams.get("timeSlot") || "";
 
   // ✅ Validate query
-  if (!listingId || !name || !price || !enrollmentDate || !timeSlot) {
+  if (!listingId || !name || !price ) {
     return <p className="p-6 text-red-600">Missing booking details.</p>;
+  }
+
+  if(productType !== "ebook" && (!enrollmentDate || !timeSlot)) {
+    return <p className="p-6 text-red-600">Missing enrollment date or time slot for the selected service.</p>;
   }
 
   const amount = Number(price);
