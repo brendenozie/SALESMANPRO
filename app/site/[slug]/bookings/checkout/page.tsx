@@ -100,7 +100,7 @@ export default function CheckoutPage() {
           "x-api-key": process.env.NEXT_PUBLIC_API_SECRET_KEY!,
         },
         body: JSON.stringify({
-          date:enrollmentDate,
+          date: enrollmentDate || new Date().toISOString(),
           timeSlot,
           quantity: 1,
           consumerId: session?.user?.id,
@@ -115,7 +115,7 @@ export default function CheckoutPage() {
             {
               marketplaceListingId: listingId,
               quantity: 1,
-              date:enrollmentDate,
+              date: enrollmentDate || new Date().toISOString(),
               timeSlot,
               price: total,
             },
@@ -198,11 +198,21 @@ export default function CheckoutPage() {
                 <strong>Service:</strong> {name}
               </p>
               <p>
-                <strong>Date:</strong>{" "}
-                {new Date(enrollmentDate).toLocaleDateString()}
+                {enrollmentDate ? (
+                  <>
+                    <strong>Date:</strong>{" "}
+                    {new Date(enrollmentDate).toLocaleDateString()}
+                  </>
+                ) : null}
               </p>
               <p>
-                <strong>Time:</strong> {timeSlot}
+                <>
+                  {timeSlot ? (
+                    <>
+                      <strong>Time:</strong> {timeSlot}
+                    </>
+                  ) : null}
+                </>
               </p>
               <div className="border-t pt-3 mt-3 flex justify-between font-bold">
                 <span>Total</span>
