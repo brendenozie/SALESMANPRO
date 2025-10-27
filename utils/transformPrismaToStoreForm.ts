@@ -107,6 +107,15 @@ export function transformCompanyToStoreForm(raw: any): StoreForm {
       mpesaConsumerKey: raw.PaymentSettings.mpesaConsumerKey ?? null,
       mpesaConsumerSecret: raw.PaymentSettings.mpesaConsumerSecret ?? null,
       mpesaCallbackUrl: raw.PaymentSettings.mpesaCallbackUrl ?? null,
+      isStripeEnabled: raw.PaymentSettings.isStripeEnabled ?? false,
+      isPaypalEnabled: raw.PaymentSettings.isPaypalEnabled ?? false,
+      isMpesaEnabled: raw.is,
+      isPaystackEnabled: raw.PaymentSettings.isPaystackEnabled ?? false,
+      isGhubaEnabled: raw.PaymentSettings.isGhubaEnabled ?? false,
+      paystackPublicKey: raw.PaymentSettings.paystackPublicKey ?? null,
+      paystackSecretKey: raw.PaymentSettings.paystackSecretKey ?? null,
+      ghubaMerchantId: raw.PaymentSettings.ghubaMerchantId ?? null,
+      ghubaApiKey: raw.PaymentSettings.ghubaApiKey ?? null
     }
     : null,
   shippingSettings: raw.ShippingSettings

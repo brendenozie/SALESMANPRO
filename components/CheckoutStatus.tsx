@@ -11,8 +11,8 @@ export default function PaymentStatusPage({
   const provider = (searchParams.provider as "paystack" | "mpesa") || "paystack";
   const identifier =
     provider === "paystack"
-      ? searchParams.reference
-      : searchParams.checkoutRequestId;
+      ? (searchParams.reference ?? null)
+      : (searchParams.checkoutRequestId ?? null);
 
   const router = useRouter();
 

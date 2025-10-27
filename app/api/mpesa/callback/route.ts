@@ -1,28 +1,6 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 
-/**
- * Safaricom sends callback JSON after STK Push (success/failure)
- * Example:
- * {
- *   "Body": {
- *     "stkCallback": {
- *       "MerchantRequestID": "...",
- *       "CheckoutRequestID": "...",
- *       "ResultCode": 0,
- *       "ResultDesc": "The service request is processed successfully.",
- *       "CallbackMetadata": {
- *         "Item": [
- *           { "Name": "Amount", "Value": 100.00 },
- *           { "Name": "MpesaReceiptNumber", "Value": "NLJ7RT61SV" },
- *           { "Name": "PhoneNumber", "Value": 2547XXXXXXXX }
- *         ]
- *       }
- *     }
- *   }
- * }
- */
-
 export async function POST(req: Request) {
   try {
     const payload = await req.json();
@@ -34,9 +12,14 @@ export async function POST(req: Request) {
 
     const { ResultCode, ResultDesc, CheckoutRequestID } = stkCallback;
 
-    // Lookup order by CheckoutRequestID (stored during STK initiation)
+    // 1️⃣ Lookup order using CheckoutRequestID (stored in trackingNumber or transactionReference)
     const order = await prisma.customerOrder.findFirst({
-      where: { trackingNumber: { contains: CheckoutRequestID } },
+      where: {
+        OR: [
+          { trackingNumber: CheckoutRequestID },
+          { transactionReference: CheckoutRequestID },
+        ],
+      },
     });
 
     if (!order) {
@@ -44,36 +27,51 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "Order not found" }, { status: 404 });
     }
 
+    // 2️⃣ Handle success or failure
     if (ResultCode === 0) {
-      // Extract transaction data
+      // Extract metadata
       const metadata = stkCallback.CallbackMetadata?.Item || [];
       const amountItem = metadata.find((i: any) => i.Name === "Amount");
       const receiptItem = metadata.find((i: any) => i.Name === "MpesaReceiptNumber");
       const phoneItem = metadata.find((i: any) => i.Name === "PhoneNumber");
 
-      const paymentDetails = {
-        amount: amountItem?.Value || 0,
-        receipt: receiptItem?.Value || "UNKNOWN",
-        phone: phoneItem?.Value || "UNKNOWN",
-      };
+      const amount = amountItem?.Value || 0;
+      const receipt = receiptItem?.Value || "UNKNOWN";
+      const phone = phoneItem?.Value || "UNKNOWN";
 
-      // Mark order as paid
+      // 3️⃣ Create Payment record linked to order & user
+      await prisma.payment.create({
+        data: {
+          userId: order.consumerId, // from your schema
+          orderId: order.id,
+          amount,
+          status: "COMPLETED",
+          transactionId: receipt, // MpesaReceiptNumber
+        },
+      });
+
+      // 4️⃣ Update order payment and delivery details
       await prisma.customerOrder.update({
         where: { id: order.id },
         data: {
-          status: "PAID",
+          paymentStatus: "COMPLETED",
+          paymentMethod: "M-Pesa",
+          transactionId: receipt,
+          transactionReference: CheckoutRequestID,
+          transactionDate: new Date(),
+          mpesaPhone: phone,
           deliveryStatus: "Payment Received",
-          paymentOption: "mpesa",
-          paymentDetails: JSON.stringify(paymentDetails),
+          status: "COMPLETED",
         },
       });
 
       console.log(`✅ M-Pesa payment success for order ${order.trackingNumber}`);
     } else {
-      // Payment failed
+      // 5️⃣ Payment failed
       await prisma.customerOrder.update({
         where: { id: order.id },
         data: {
+          paymentStatus: "FAILED",
           status: "FAILED",
           deliveryStatus: "Payment Failed",
         },

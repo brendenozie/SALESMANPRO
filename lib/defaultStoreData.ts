@@ -49,7 +49,16 @@ const baseData: Partial<StoreForm> = {
     mpesaShortcode: null,
     mpesaConsumerKey: null,
     mpesaConsumerSecret: null,
-    mpesaCallbackUrl: null
+    mpesaCallbackUrl: null,
+    isStripeEnabled: false,
+    isPaypalEnabled: false,
+    isMpesaEnabled: false,
+    isPaystackEnabled: false,
+    isGhubaEnabled: false,
+    paystackPublicKey: null,
+    paystackSecretKey: null,
+    ghubaMerchantId: null,
+    ghubaApiKey: null
   },
   shippingSettings: {
     id: "",
