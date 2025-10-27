@@ -105,15 +105,15 @@ export default function App() { // Renamed to App for single file export
         if (filledStats.length < 3) {
             const awardFallbacks = (awards || [])
                 .slice(0, 3 - filledStats.length)
-                .map((a: { title: string; year: number }, i: number) => ({
-                    label: a.title || `Award ${i + 1}`,
+                .map((a: { title: string; label: string; name: string; year: number }, i: number) => ({
+                    label: a.title || a.name || a.label || `Award ${i + 1}`,
                     value: 'year' in a && typeof a.year === 'number' ? a.year : new Date().getFullYear(),
                 }));
 
             const metricFallbacks = (metrics || [])
                 .slice(0, 3 - (filledStats.length + awardFallbacks.length))
-                .map((m: { name: string; value: number }, i: number) => ({
-                    label: typeof m === 'object' && 'name' in m && typeof m.name === 'string' ? m.name : `Metric ${i + 1}`,
+                .map((m: {  title: string; label: string; name: string; value: number }, i: number) => ({
+                    label: typeof m === 'object' && 'label' in m && typeof m.label === 'string' ? m.label : `Metric ${i + 1}`,
                     value: typeof m.value === 'number' ? m.value : Number(m.value) || Math.floor(Math.random() * 1000),
                 }));
 
