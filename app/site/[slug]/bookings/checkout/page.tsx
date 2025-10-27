@@ -7,32 +7,24 @@ import Section from "@/components/site/Section/Section";
 import NewsletterSection from "@/components/site/NewsletterSection/NewsletterSection";
 import Confetti from "react-confetti";
 import {
-  CreditCardIcon,
   CheckCircleIcon,
-  CalendarIcon,
-  XCircleIcon,
-  ArrowLeftIcon,
 } from "@heroicons/react/24/outline";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const steps = ["Billing", "Payment", "Review"];
 
-interface CheckoutPageProps {
-  searchParams: Promise<{
-    listingId?: string;
-    name?: string;
-    price?: string;
-    date?: string;     // "YYYY-MM-DD"
-    timeSlot?: string; // "HH:MM"
-  }>;
-}
-
-
-export default async function CheckoutPage({ searchParams }: CheckoutPageProps) {
-  const { listingId, name, price, date, timeSlot } = await searchParams;
+export default function CheckoutPage() {
   const { data: session } = useSession();
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Extract booking details from URL
+  const listingId = searchParams.get("listingId") || "";
+  const name = searchParams.get("name") || "";
+  const price = searchParams.get("price") || "";
+  const date = searchParams.get("date") || "";
+  const timeSlot = searchParams.get("timeSlot") || "";
 
   // Validate incoming query
   if (!listingId || !name || !price || !date || !timeSlot) {
@@ -46,7 +38,7 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
   const [loading, setLoading] = useState(false);
   const [orderPlaced, setOrderPlaced] = useState(false);
   const [tracking, setTracking] = useState("");
-  const [error, setError] = useState<Record<string,string>>({});
+  const [error, setError] = useState<Record<string, string>>({});
 
   // Billing form
   const [billing, setBilling] = useState({
@@ -65,7 +57,7 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
 
   // Validation per step
   const validate = useCallback(() => {
-    const errs: Record<string,string> = {};
+    const errs: Record<string, string> = {};
     if (step === 0) {
       ["name", "email", "phone"].forEach((f) => {
         if (!billing[f as keyof typeof billing]) errs[f] = "Required";
@@ -80,14 +72,15 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
     return Object.keys(errs).length === 0;
   }, [step, billing]);
 
-  // Totals (for display)
   const total = useMemo(() => amount, [amount]);
 
-  // Next / Prev
-  const next = () => { if (validate()) setStep((s) => s + 1); };
+  // Navigation
+  const next = () => {
+    if (validate()) setStep((s) => s + 1);
+  };
   const prev = () => setStep((s) => s - 1);
 
-  // Final submission: call your order API
+  // Final submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
@@ -95,9 +88,10 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
     try {
       const res = await fetch("/api/shop/orders", {
         method: "POST",
-        headers: { "Content-Type": "application/json",
-                   'x-api-key': process.env.NEXT_PUBLIC_API_SECRET_KEY!, 
-                },        
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": process.env.NEXT_PUBLIC_API_SECRET_KEY!,
+        },
         body: JSON.stringify({
           date,
           timeSlot,
@@ -110,15 +104,15 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
           cardExpiry: billing.cardExpiry,
           cvv: billing.cvv,
           totalPrice: total,
-          items:[
+          items: [
             {
               marketplaceListingId: listingId,
               quantity: 1,
-              date:date,
-              timeSlot:timeSlot,
+              date,
+              timeSlot,
               price: total,
-            }
-          ]
+            },
+          ],
         }),
       });
       if (!res.ok) throw new Error(await res.text());
@@ -198,7 +192,7 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
               </p>
               <p>
                 <strong>Date:</strong>{" "}
-                {new Date(date!).toLocaleDateString()}
+                {new Date(date).toLocaleDateString()}
               </p>
               <p>
                 <strong>Time:</strong> {timeSlot}
@@ -215,6 +209,7 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
             onSubmit={step === steps.length - 1 ? handleSubmit : (e) => e.preventDefault()}
             className="md:col-span-2 bg-white rounded-3xl p-8 shadow-2xl space-y-6"
           >
+            {/* Billing Step */}
             {step === 0 && (
               <div className="space-y-4">
                 <h2 className="text-2xl font-extrabold">Billing Info</h2>
@@ -239,6 +234,7 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
               </div>
             )}
 
+            {/* Payment Step */}
             {step === 1 && (
               <div className="space-y-4">
                 <h2 className="text-2xl font-extrabold">Payment Details</h2>
@@ -269,6 +265,7 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
               </div>
             )}
 
+            {/* Review Step */}
             {step === 2 && (
               <div className="space-y-4">
                 <h2 className="text-2xl font-extrabold">Review & Confirm</h2>
@@ -322,15 +319,11 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
             </div>
 
             {error.submit && (
-              <p className="text-red-600 text-center mt-4">
-                {error.submit}
-              </p>
+              <p className="text-red-600 text-center mt-4">{error.submit}</p>
             )}
           </form>
         </div>
       </Section>
-
-      {/* Newsletter & end */}
       <NewsletterSection />
     </div>
   );
