@@ -7,9 +7,10 @@ import { CalendarDaysIcon, ClockIcon } from "@heroicons/react/24/outline";
 
 interface BookingFormProps {
   service: MarketListingForm; // Renamed to use the specific type
+  slug: string; // Added slug prop to identify the store
 }
 
-export default function ProgramsBookingForm({ service }: BookingFormProps) {
+export default function ProgramsBookingForm({ service, slug }: BookingFormProps) {
   const [date, setDate] = useState("");
   const [timeSlot, setTimeSlot] = useState("");
   const [loading, setLoading] = useState(false);
@@ -44,7 +45,7 @@ export default function ProgramsBookingForm({ service }: BookingFormProps) {
 
     // Navigate to the checkout/enrollment finalization page
     // Using `/site/booking/checkout` (standard path) or `/site/program/enrollment`
-    router.push(`/site/booking/checkout?${params.toString()}`);
+    router.push(`/site/${slug}/bookings/checkout?${params.toString()}`);
   };
 
   return (

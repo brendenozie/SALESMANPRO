@@ -400,7 +400,7 @@ export default function FeaturedProgramsSection({
                     )}
                   </div>
                   {/* The original time-based BookingForm is used here */}
-                  <ProgramsBookingForm service={selected} /> 
+                  <ProgramsBookingForm service={selected} slug={slug || ''} /> 
                 </div>
               </div>
             </div>

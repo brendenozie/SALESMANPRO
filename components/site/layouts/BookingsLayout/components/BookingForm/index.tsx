@@ -6,9 +6,10 @@ import { useState } from "react";
 
 interface BookingFormProps {
   service: any;
+  slug: string;
 }
 
-export default function BookingForm({ service }: BookingFormProps) {
+export default function BookingForm({ service, slug }: BookingFormProps) {
   const [date, setDate] = useState("");
   const [timeSlot, setTimeSlot] = useState("");
   const [loading, setLoading] = useState(false);
@@ -33,7 +34,7 @@ export default function BookingForm({ service }: BookingFormProps) {
     });
 
     // Navigate to your checkout page
-    router.push(`/site/booking/bookings/checkout?${params.toString()}`);
+    router.push(`/site/${slug}/bookings/checkout?${params.toString()}`);
   };
 
   return (

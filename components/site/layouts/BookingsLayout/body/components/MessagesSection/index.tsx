@@ -282,7 +282,7 @@ export default function ServicesSection() {
                       </span>
                     )}
                   </div>
-                  <BookingForm service={selected} />
+                  <BookingForm service={selected} slug={storeFormData?.slug || ''} />
                 </div>
               </div>
             </div>

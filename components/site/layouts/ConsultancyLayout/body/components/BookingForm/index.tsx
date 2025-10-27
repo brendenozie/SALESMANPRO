@@ -6,9 +6,10 @@ import { BookOpenIcon, EnvelopeIcon } from "@heroicons/react/24/outline"; // Add
 
 interface BookingFormProps {
   service: any; // Using 'service' to maintain consistency, but it represents the E-book listing
+  slug: string; // Added slug prop to identify the store
 }
 
-export default function BookingForm({ service }: BookingFormProps) {
+export default function BookingForm({ service, slug }: BookingFormProps) {
   // E-books require user contact info (e.g., email) for delivery/purchase.
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
@@ -43,7 +44,7 @@ export default function BookingForm({ service }: BookingFormProps) {
     // For this example, we navigate directly to the checkout page.
 
     // Navigate to your checkout page
-    router.push(`/site/booking/checkout?${params.toString()}`);
+    router.push(`/site/${slug}/bookings/checkout?${params.toString()}`);
   };
 
   return (

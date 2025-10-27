@@ -321,7 +321,7 @@ export default function FeaturedEbooks({
                 </div>
 
                 {/* Placeholder for Payment/Booking Form */}
-                <BookingForm service={selected} />
+                <BookingForm service={selected} slug={slug || ''} />
               </div>
             </div>
           </motion.div>
