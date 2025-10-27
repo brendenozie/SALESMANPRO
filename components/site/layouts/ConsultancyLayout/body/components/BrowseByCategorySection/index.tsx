@@ -145,8 +145,10 @@ const ProgramCard = ({
                 buttonClass
               )}
             >
-              {isAvailable ? "Enroll/Book Now" : "Enrollment Closed"}
-              {isAvailable && <CalendarDaysIcon className="w-5 h-5" />}
+              {/* {isAvailable ? "Enroll/Book Now" : "Enrollment Closed"}
+              {isAvailable && <CalendarDaysIcon className="w-5 h-5" />} */}
+              {"Enroll/Book Now"}
+              <CalendarDaysIcon className="w-5 h-5" />
             </motion.button>
           </div>
         </div>
@@ -336,16 +338,17 @@ export default function ProgramsSection({ listings, storeSlug }: ProgramsSection
                     <p className="font-semibold text-gray-800 dark:text-gray-200">
                       Price: <span className="text-orange-600 dark:text-orange-400 text-xl font-bold">KES { (selected.finalPrice || 0).toFixed(2) }</span>
                     </p>
-                    {selected.isAvailable ? (
+                    {(
+                    // selected.isAvailable ? (
                       <span className="inline-flex items-center gap-1.5 text-green-600 font-medium">
                         <CalendarDaysIcon className="w-5 h-5" />
                         Enrollment Open
                       </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1.5 text-red-600 font-medium">
-                        <XMarkIcon className="w-5 h-5" />
-                        Enrollment Closed
-                      </span>
+                    // ) : (
+                    //   <span className="inline-flex items-center gap-1.5 text-red-600 font-medium">
+                    //     <XMarkIcon className="w-5 h-5" />
+                    //     Enrollment Closed
+                    //   </span>
                     )}
                   </div>
                   {/* The imported time-based BookingForm is used here */}
