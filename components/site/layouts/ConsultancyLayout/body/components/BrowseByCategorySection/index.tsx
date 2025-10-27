@@ -349,7 +349,7 @@ export default function ProgramsSection({ listings, storeSlug }: ProgramsSection
                     )}
                   </div>
                   {/* The imported time-based BookingForm is used here */}
-                  <ProgramsBookingForm service={selected} /> 
+                  <ProgramsBookingForm service={selected} slug={storeSlug || ''}/> 
                 </div>
               </div>
             </div>
