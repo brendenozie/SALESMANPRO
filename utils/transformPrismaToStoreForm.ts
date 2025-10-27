@@ -50,7 +50,8 @@ export function transformCompanyToStoreForm(raw: any): StoreForm {
   })),
   heroSlides: raw.heroSlides?.map((h: any) => ({
     id: h.id ?? '',
-    imageUrl: h.imageUrl ?? '',
+    imageUrl: h.imageUrl ?? '',    
+    productImageUrl: h.productImageUrl ?? '',
     headline: h.headline ?? '',
     subline: h.subline ?? '',
     badgeText: h.badgeText ?? '',
