@@ -146,6 +146,7 @@ export function transformCompanyToStoreForm(raw: any): StoreForm {
     name: m.name,
     description: m.description ?? '',
     finalPrice: m.finalPrice ?? 0,
+    type: m.type,
     images: Array.isArray(m.images)
       ? m.images
       : [],

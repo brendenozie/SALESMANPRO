@@ -115,7 +115,7 @@ export default function ProductPricingAndTiers({
 
             {/* Tiers */}
             <div className="space-y-6">
-              {pricingTiers.map((tier, index) => (
+              {pricingTiers && pricingTiers.map((tier, index) => (
                 <motion.div
                   key={index}
                   initial={{ opacity: 0, scale: 0.95 }}
@@ -220,7 +220,7 @@ export default function ProductPricingAndTiers({
                     </label>
 
                     <div className="flex flex-wrap gap-2 mb-2">
-                      {tier.features.map((feature, i) => (
+                      {tier.features && tier.features.map((feature, i) => (
                         <span
                           key={i}
                           className="flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs"

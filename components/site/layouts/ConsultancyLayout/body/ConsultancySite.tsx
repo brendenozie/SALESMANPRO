@@ -26,6 +26,8 @@ export default function ConsultancySite({ pageData }: { pageData: StoreForm }) {
   const Ebookslistings = siteData?.marketplaceListings.filter(listing => listing.type === "ebook") || [];
   const Programslisting = siteData?.marketplaceListings.filter(listing => listing.type !== "ebook") || [];
 
+  console.log("ConsultancySite - siteData:", siteData.marketplaceListings);
+
   return (
     <div className="space-y-24 font-sans bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
 
@@ -40,11 +42,11 @@ export default function ConsultancySite({ pageData }: { pageData: StoreForm }) {
 
       <ServicesSection />  
       
-      <FeaturedListings listings={Ebookslistings} slug=""/>
+      <FeaturedListings listings={Ebookslistings} slug={siteData?.slug || ''} />
 
       <HowItWorks />
 
-      <BrowseByCategory listings={Programslisting} storeSlug=""/>   
+      <BrowseByCategory listings={Programslisting} storeSlug={siteData?.slug || ''} />   
 
       {/* Featured  */}
       {/* <FeaturedProgramsSection  listings={listings} slug=""/> */}
