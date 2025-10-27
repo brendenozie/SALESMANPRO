@@ -25,7 +25,7 @@ async function handleGetListings(req: Request, { params }: RouteParams) {
   const whereClause: any = { companyId };
 
   if (typeParam === "ebook") whereClause.type = "ebook";
-  else if (typeParam === "program") whereClause.type = "";
+  else if (typeParam === "program") whereClause.type = null;
 
   // 1. Input Validation (Use formatResponse for explicit bad requests)
   if (!companyId) {

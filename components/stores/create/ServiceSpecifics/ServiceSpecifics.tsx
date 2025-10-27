@@ -28,13 +28,13 @@ interface ServiceSpecificsProps {
 
 const deliveryMethods = ['In-person', 'Online', 'Hybrid'];
 
-export const ServiceSpecifics: React.FC<ServiceSpecificsProps> = ({ formData, handleChange }) => {
+export const ServiceSpecifics = ({ formData, handleChange }: ServiceSpecificsProps) => {
   const [open, setOpen] = useState(true);
 
   // Initialize bookingSlots with a default slot if empty
   useEffect(() => {
     if (!formData.bookingSlots || formData.bookingSlots.length === 0) {
-      handleChange('bookingSlots', [{ date: '', time: '', capacity: 1 }]);
+      // handleChange('bookingSlots', [{ date: '', time: '', capacity: 1 }]);
     }
   }, [formData.bookingSlots, handleChange]); // Depend on handleChange
 
