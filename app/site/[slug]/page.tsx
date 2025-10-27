@@ -181,6 +181,7 @@ function pageDataInclude() {
         name: true,
         description: true,
         finalPrice: true,
+        type: true,
         sellingPrice: true,
         images: true,
         isAvailable: true,
