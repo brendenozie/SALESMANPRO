@@ -31,6 +31,18 @@ const Header = () => {
     { name: "Contact", href: "/contact" },
   ];
 
+  const handleGoogleSignIn = () => {
+    const authUrl = new URL("https://salesmanpro.site/signin");
+    authUrl.searchParams.set("callbackUrl", window.location.origin);
+    window.location.href = authUrl.toString();
+  };
+
+  const handleRegister = () => {
+    const registerUrl = new URL("https://salesmanpro.site/signup");
+    registerUrl.searchParams.set("callbackUrl", window.location.origin);
+    window.location.href = registerUrl.toString();
+  }
+
   return (
     <header
       className={classNames(
@@ -105,21 +117,21 @@ const Header = () => {
           <div className="mt-8 lg:mt-0 flex flex-col lg:flex-row gap-4 lg:ml-8">
             {!session ? (
               <>
-                <Link
-                  href="/signin"
+                <button
+                  onClick={handleGoogleSignIn}                  
                   className={classNames(
                     "py-2 px-5 rounded-full text-base font-bold transition-all duration-300 border text-gray-800 border-gray-300 hover:bg-gray-100",
                     // dark ? "text-gray-800 border-gray-300 hover:bg-gray-100" : "text-white border-white hover:bg-white hover:text-gray-900"
                   )}
                 >
                   Log In
-                </Link>
-                <Link
-                  href="/register"
+                </button>
+                {/* <button
+                  onClick={handleRegister}
                   className="py-2.5 px-6 rounded-full text-base font-bold text-white bg-gradient-to-r from-pink-600 via-red-500 to-yellow-400 shadow-lg hover:scale-105 transition-all duration-300"
                 >
                   Get Started
-                </Link>
+                </button> */}
               </>
             ) : (
               <Link

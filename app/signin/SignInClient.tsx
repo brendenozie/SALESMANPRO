@@ -74,12 +74,33 @@ export default function SignInClient({ providers }: { providers: Provider[] }) {
     router.push("/");
   };
 
-  const handleSocialSignIn = async (providerId: string) => {
-    setError(null);
-    setIsLoading(true);
-    // Use a simpler approach for social sign-in without a massive loading overlay
-    await signIn(providerId, { redirect: true, callbackUrl: callbackUrl });
-  };
+  // const handleSocialSignIn = async (providerId: string) => {
+  //   setError(null);
+  //   setIsLoading(true);
+  //   // Use a simpler approach for social sign-in without a massive loading overlay
+  //   await signIn(providerId, { redirect: true, callbackUrl: callbackUrl });
+  // };
+
+    const handleSocialSignIn = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        // Save callbackUrl locally so we can access it later
+      localStorage.setItem("callbackUrl", callbackUrl);
+        // We set redirect: false to handle the redirect manually after the promise resolves
+        // or to display a custom loading state while next-auth is processing.
+        // However, for a simple sign-in flow, keeping redirect: true is often simpler.
+        // Let's stick with the original simplified flow for now.
+        await signIn("google", {
+          redirect: true,
+          callbackUrl: callbackUrl,
+        });
+      } catch (err) {
+        console.error(err);
+        setError("Sign-In failed. Please check your connection and try again.");
+        setIsLoading(false);
+      }
+    };
   
   // Custom Input Field Component for visual appeal
   const InputField = ({ label, name, type, icon: Icon, value, onChange, placeholder }: { label: string; name: string; type: string; icon: React.FC<React.SVGProps<SVGSVGElement>>; value: string; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void; placeholder: string; }) => (
@@ -212,7 +233,7 @@ export default function SignInClient({ providers }: { providers: Provider[] }) {
                     className="w-full flex items-center justify-center py-3 px-4 border border-gray-300 dark:border-gray-700 
                               rounded-xl shadow-md font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 
                               hover:shadow-lg transition duration-300 ease-in-out transform hover:bg-gray-50 dark:hover:bg-gray-600"
-                    onClick={() => handleSocialSignIn(prov.id)}
+                    onClick={() => handleSocialSignIn()}//prov.id
                   >
                     <IconComponent className="mr-3 h-5 w-5" />
                     Sign in with {prov.name}
