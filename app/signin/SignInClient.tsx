@@ -35,9 +35,10 @@ const ProviderIcons: Record<string, (props: React.SVGProps<SVGSVGElement>) => JS
 export type Provider = { id: string; name: string };
 
 export default function SignInClient({ providers }: { providers: Provider[] }) {
-  const router = useRouter();const params = useSearchParams();
+  const router = useRouter();
+  const params = useSearchParams();
     // Ensure the callback URL is secure, if not from the query parameter
-    const callbackUrl = params.get("callbackUrl") || "https://salesmanpro.site";
+  const callbackUrl = params.get("callbackUrl") || "https://salesmanpro.site";
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState({ email: "", password: "" });
