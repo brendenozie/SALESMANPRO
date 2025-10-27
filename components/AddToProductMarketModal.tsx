@@ -98,7 +98,7 @@ function useAutoSaveDraft(key: string, data: any, enabled = true) {
 ////////////////////////////////////////////////////////////////////////////////
 // Upload helpers
 ////////////////////////////////////////////////////////////////////////////////
-async function uploadFiles(files: File[], type: "image" | "video") {
+async function uploadFiles(files: File[], type: "image" | "video" | "book"): Promise<{ url: string }[]> {
   if (!files?.length) return [];
 
   const uploads = files.map(async (file) => {
@@ -278,7 +278,8 @@ function productToListingForm(
 function buildListingPayload(
   f: MarketListingForm,
   imageUrls: any[],
-  videoUrls: any[]
+  videoUrls: any[],
+  bookUrls: any[]
 ): any {
   return {
     id: f.id || undefined,
@@ -287,6 +288,7 @@ function buildListingPayload(
     productId: f.productId,
     images: imageUrls || [],
     videos: videoUrls || [],
+    books: bookUrls || [],
     name: f.name,
     description: f.description || null,
     longDescription: f.longDescription || null,
@@ -468,6 +470,7 @@ export default function ProductMarketModal({
   // local UI state
   const [images, setImages] = useState<UnifiedMediaItem[]>([]);
   const [videos, setVideos] = useState<UnifiedMediaItem[]>([]);
+  const [books, setBooks] = useState<UnifiedMediaItem[]>([]);
   const [step, setStep] = useState<number>(1);
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
@@ -492,6 +495,16 @@ export default function ProductMarketModal({
       })) || []
     );
   }, [formData.videos]);
+
+  useEffect(() => {
+    setBooks(
+      formData.books?.map((book: any, idx: number) => ({
+        id: book.url || `server-book-${idx}`,
+        url: typeof book === 'string' ? book : book.url,
+        source: 'server',
+      })) || []
+    );
+  }, [formData.books]);
 
   // draft autosave
   const draftKey = useMemo(() => `market-listing-draft-${companyId}-${product?.id || "new"}`, [companyId, product?.id]);
@@ -613,6 +626,7 @@ export default function ProductMarketModal({
       // 1. Filter local files that need uploading
       const newImageItems = images.filter(i => i.source === "local" && i.file);
       const newVideoItems = videos.filter(v => v.source === "local" && v.file);
+      const newBookItems = books.filter(b => b.source === "local" && b.file);
 
       // 2. Create upload promises for new files
       const uploadImagePromises = newImageItems.map(item =>
@@ -621,16 +635,21 @@ export default function ProductMarketModal({
       const uploadVideoPromises = newVideoItems.map(item =>
         uploadFiles([item.file!], "video").then(result => ({ id: item.id, url: result[0].url }))
       );
+      const uploadBookPromises = newBookItems.map(item =>
+        uploadFiles([item.file!], "book").then(result => ({ id: item.id, url: result[0].url }))
+      );
 
       // 3. Run all uploads in parallel
-      const [uploadedImages, uploadedVideos] = await Promise.all([
+      const [uploadedImages, uploadedVideos, uploadedBooks] = await Promise.all([
         Promise.all(uploadImagePromises),
         Promise.all(uploadVideoPromises),
+        Promise.all(uploadBookPromises),
       ]);
 
       // 4. Create lookup maps for quick access
       const imageUrlMap = new Map(uploadedImages.map(i => [i.id, i.url]));
       const videoUrlMap = new Map(uploadedVideos.map(v => [v.id, v.url]));
+      const bookUrlMap = new Map(uploadedBooks.map(b => [b.id, b.url]));
 
       // 5. Build final URL arrays
       const finalImageUrls = images.map(img =>
@@ -638,6 +657,9 @@ export default function ProductMarketModal({
       ).filter(Boolean); // Filter out any potential undefined values
       const finalVideoUrls = videos.map(vid =>
         vid.source === "server" ? vid.url : videoUrlMap.get(vid.id)!
+      ).filter(Boolean);
+      const finalBookUrls = books.map(book =>
+        book.source === "server" ? book.url : bookUrlMap.get(book.id)!
       ).filter(Boolean);
 
       // 6. Build payload
@@ -649,7 +671,8 @@ export default function ProductMarketModal({
           companyId: companyId,
         } as MarketListingForm,
         finalImageUrls,
-        finalVideoUrls
+        finalVideoUrls,
+        finalBookUrls
       );
 
       const res = await fetch(`${API_URL}/admin/post-market-list`, {
@@ -775,6 +798,8 @@ export default function ProductMarketModal({
                   setImages={setImages}
                   videos={videos}
                   setVideos={setVideos}
+                  books={books}
+                  setBooks={setBooks}
                 />
               </Suspense>
             ) : (

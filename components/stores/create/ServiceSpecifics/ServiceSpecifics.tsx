@@ -23,20 +23,21 @@ interface BookingSlotType {
 // you might need to adjust how it integrates with the parent's main form state.
 interface ServiceSpecificsProps {
   formData: ProductForm; // Use the comprehensive form type
-  handleChange: (name: string, value: any) => void; // Matches the useProductForm signature
+  // setFormData: (name: string, value: any) => void; // Matches the useProductForm signature
+  setFormData: <K extends keyof ProductForm>(name: K, value: ProductForm[K]) => void;
 }
 
 const deliveryMethods = ['In-person', 'Online', 'Hybrid'];
 
-export const ServiceSpecifics = ({ formData, handleChange }: ServiceSpecificsProps) => {
+export const ServiceSpecifics = ({ formData, setFormData }: ServiceSpecificsProps) => {
   const [open, setOpen] = useState(true);
 
   // Initialize bookingSlots with a default slot if empty
   useEffect(() => {
     if (!formData.bookingSlots || formData.bookingSlots.length === 0) {
-      // handleChange('bookingSlots', [{ date: '', time: '', capacity: 1 }]);
+      // setFormData('bookingSlots', [{ date: '', time: '', capacity: 1 }]);
     }
-  }, [formData.bookingSlots, handleChange]); // Depend on handleChange
+  }, [formData.bookingSlots, setFormData]); // Depend on setFormData
 
   const handleSlotChange = useCallback(
     (index: number, field: keyof BookingSlotType, value: string | number) => {
@@ -53,24 +54,24 @@ export const ServiceSpecifics = ({ formData, handleChange }: ServiceSpecificsPro
         ...updatedSlots[index],
         [field]: field === 'capacity' ? Number(value) : value, // Ensure capacity is a number
       };
-      handleChange('bookingSlots', updatedSlots); // Update the parent state
+      setFormData('bookingSlots', updatedSlots); // Update the parent state
     },
-    [formData.bookingSlots, handleChange]
+    [formData.bookingSlots, setFormData]
   );
 
   const handleAddSlot = useCallback(() => {
     const currentSlots = formData.bookingSlots || [];
     const newSlot: BookingSlotType = { date: '', time: '', capacity: 1 };
-    handleChange('bookingSlots', [...currentSlots, newSlot]); // Add new slot and update parent state
-  }, [formData.bookingSlots, handleChange]);
+    setFormData('bookingSlots', [...currentSlots, newSlot]); // Add new slot and update parent state
+  }, [formData.bookingSlots, setFormData]);
 
   const handleRemoveSlot = useCallback(
     (index: number) => {
       const currentSlots = formData.bookingSlots || [];
       const filteredSlots = currentSlots.filter((_, i) => i !== index); // Remove slot by index
-      handleChange('bookingSlots', filteredSlots); // Update parent state
+      setFormData('bookingSlots', filteredSlots); // Update parent state
     },
-    [formData.bookingSlots, handleChange]
+    [formData.bookingSlots, setFormData]
   );
 
   return (
@@ -102,7 +103,7 @@ export const ServiceSpecifics = ({ formData, handleChange }: ServiceSpecificsPro
                 label="Available Quantity (e.g., number of seats, items)"
                 placeholder="1"
                 value={formData.quantity}
-                onChange={(val) => handleChange('quantity', val)} // Updated
+                onChange={(val) => setFormData('quantity', val ?? 0)} // Updated
                 step={1}
               />
 
@@ -111,7 +112,7 @@ export const ServiceSpecifics = ({ formData, handleChange }: ServiceSpecificsPro
                 placeholder="0.00"
                 step={0.01}
                 value={formData.hourlyRate || 0}
-                onChange={(val) => handleChange('hourlyRate', val)} // Updated
+                onChange={(val) => setFormData('hourlyRate', val)} // Updated
               />
 
               <FormNumberField
@@ -119,21 +120,21 @@ export const ServiceSpecifics = ({ formData, handleChange }: ServiceSpecificsPro
                 placeholder="1"
                 step={1}
                 value={formData.minimumHours || 1}
-                onChange={(val) => handleChange('minimumHours', val)} // Updated
+                onChange={(val) => setFormData('minimumHours', val)} // Updated
               />
 
               <FormTextField
                 label="Minimum Notice Period (e.g., 24 hours, 3 days)"
                 placeholder="24 hours"
                 value={formData.minNoticePeriod || ''}
-                onChange={(val) => handleChange('minNoticePeriod', val)} // Updated
+                onChange={(val) => setFormData('minNoticePeriod', val)} // Updated
               />
 
               <FormTextField
                 label="Max Booking Lead Time (e.g., 3 months, 1 year)"
                 placeholder="3 months"
                 value={formData.maxBookingAhead || ''}
-                onChange={(val) => handleChange('maxBookingAhead', val)} // Updated
+                onChange={(val) => setFormData('maxBookingAhead', val)} // Updated
               />
 
               <FormNumberField
@@ -141,7 +142,7 @@ export const ServiceSpecifics = ({ formData, handleChange }: ServiceSpecificsPro
                 placeholder="100"
                 step={1}
                 value={formData.totalCapacity || 0}
-                onChange={(val) => handleChange('totalCapacity', val)} // Updated
+                onChange={(val) => setFormData('totalCapacity', val)} // Updated
               />
 
               <div>
@@ -149,7 +150,7 @@ export const ServiceSpecifics = ({ formData, handleChange }: ServiceSpecificsPro
                 <select
                   className="block w-full rounded-xl border-gray-300 p-3 focus:ring-blue-500 focus:border-blue-500 shadow-sm"
                   value={formData.deliveryMethod || ''}
-                  onChange={(e) => handleChange('deliveryMethod', e.target.value || undefined)} // Updated
+                  onChange={(e) => setFormData('deliveryMethod', e.target.value || undefined)} // Updated
                 >
                   <option value="">Select Method</option>
                   {deliveryMethods.map((method) => (
@@ -164,7 +165,7 @@ export const ServiceSpecifics = ({ formData, handleChange }: ServiceSpecificsPro
                 label="Fulfillment Status (e.g., PENDING_CONFIRMATION, CONFIRMED)"
                 placeholder="e.g., PENDING_CONFIRMATION"
                 value={formData.fulfillmentStatus || ''}
-                onChange={(val) => handleChange('fulfillmentStatus', val)} // Updated
+                onChange={(val) => setFormData('fulfillmentStatus', val)} // Updated
               />
 
               <FormNumberField
