@@ -102,7 +102,7 @@ const ContactLocation: React.FC<ContactLocationProps> = ({
         )}
 
         {/* Digital Product URL */}
-        {isDigital && (
+        {/* {isDigital && (
           <div className="relative col-span-full">
             <GlobeAltIcon className="absolute top-1/2 left-3 -translate-y-1/2 w-5 h-5 text-gray-400" />
             <input
@@ -114,7 +114,7 @@ const ContactLocation: React.FC<ContactLocationProps> = ({
               className="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
-        )}
+        )} */}
         
         {/* Contact Name */}
         <div className="relative">

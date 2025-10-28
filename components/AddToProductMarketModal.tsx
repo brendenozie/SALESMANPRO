@@ -585,7 +585,7 @@ export default function ProductMarketModal({
   // local UI state
   const [images, setImages] = useState<UnifiedMediaItem[]>([]);
   const [videos, setVideos] = useState<UnifiedMediaItem[]>([]);
-  const [books, setBooks] = useState<UnifiedMediaItem[]>([]);
+  const [ebooks, setBooks] = useState<UnifiedMediaItem[]>([]);
   const [step, setStep] = useState<number>(1);
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
@@ -621,6 +621,7 @@ export default function ProductMarketModal({
   }, [formData.videos]);
 
   useEffect(() => {
+    if (ebooks.length > 0 && ebooks.some(b => b.source === 'local')) return; // Preserve local files
     setBooks(
       formData.ebooks?.map((book: any, idx: number) => ({
         id: book.url || `server-book-${idx}`,
@@ -751,15 +752,20 @@ export default function ProductMarketModal({
     if (!window.confirm("Create listing?")) return;
     setLoading(true);
     try {
+
+      console.log("Starting upload process...");
+      console.log("Current images:", images);
+      console.log("Current videos:", videos);
+      console.log("Current books:", ebooks);
+
       // 1. Filter local files that need uploading
       const newImageItems = images.filter(i => i.source === "local" && i.file);
       const newVideoItems = videos.filter(v => v.source === "local" && v.file);
-      const newBookItems = books.filter(b => b.source === "local" && b.file);
+      const newBookItems = ebooks.filter(b => b.source === "local" && b.file);
 
       console.log("New images to upload:", newImageItems);
       console.log("New videos to upload:", newVideoItems);
       console.log("New books to upload:", newBookItems);
-
 
       // 2. Create upload promises for new files
       const uploadImagePromises = newImageItems.map(item =>
@@ -801,7 +807,7 @@ export default function ProductMarketModal({
         .map(vid => (vid.source === "server" ? vid.url : videoUrlMap.get(vid.id)!))
         .filter(Boolean);
 
-      const finalBookUrls = books
+      const finalBookUrls = ebooks
         .map(book => (book.source === "server" ? book.url : bookUrlMap.get(book.id)!))
         .filter(Boolean);
 
@@ -840,7 +846,7 @@ export default function ProductMarketModal({
     } finally {
       setLoading(false);
     }
-  }, [images, videos, formData, companyId, clear, setShowRequestProductModal]);
+  }, [images, videos, ebooks, formData, companyId, clear, setShowRequestProductModal]);
 
 
   // progress %
@@ -942,7 +948,7 @@ export default function ProductMarketModal({
                   setImages={setImages}
                   videos={videos}
                   setVideos={setVideos}
-                  books={books}
+                  books={ebooks}
                   setBooks={setBooks}
                 />
               </Suspense>
