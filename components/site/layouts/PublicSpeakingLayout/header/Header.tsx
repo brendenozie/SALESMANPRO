@@ -149,7 +149,7 @@ const PublicSpeakingHeader: React.FC<HeaderProps> = ({ storeFormData }) => {
   // Refined Nav Items for better marketing copy
   const navItems = [
     { label: "Home", href: "#hero" },
-    { label: "Expertise", href: "#services" }, 
+    // { label: "Expertise", href: "#services" }, 
     { label: "Method", href: "#about" }, 
     { label: "Success Stories", href: "#testimonials" }, 
   ];

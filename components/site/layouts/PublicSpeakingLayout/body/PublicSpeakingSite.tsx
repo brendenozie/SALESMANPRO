@@ -14,6 +14,8 @@ import SocialProofSection from "./components/SocialProofSection";
 import AboutSection from "./components/AboutSection";
 import ServicesSection from "./components/ServicesSection";
 import CallToActionSection from "./components/CallToActionSection";
+import ProgramModulesSection from "./components/ProgramModulesSection";
+import SteppingOutSection from "./components/SteppingOutSection";
 
 export default function PublicSpeakingSite({ pageData }: { pageData: StoreForm }) {
   
@@ -38,21 +40,26 @@ export default function PublicSpeakingSite({ pageData }: { pageData: StoreForm }
 
       <SocialProofSection />
       
-      <AboutSection />
 
-      <ServicesSection />  
+      {/* <SteppingOutSection storeSlug={siteData?.slug || ''} /> */}
+
+      {/* <ServicesSection />  
       
       <FeaturedListings listings={Ebookslistings} slug={siteData?.slug || ''} />
 
-      <HowItWorks />
+      <HowItWorks /> */}
 
-      <BrowseByCategory listings={Programslisting} storeSlug={siteData?.slug || ''} />   
+      <BrowseByCategory listings={Programslisting} storeSlug={siteData?.slug || ''} /> 
+      
+      <AboutSection />  
+
+      {/* <ProgramModulesSection /> */}
 
       {/* Featured  */}
-      {/* <FeaturedProgramsSection  listings={listings} slug=""/> */}
+      {/* <FeaturedProgramsSection  listings={Programslisting} slug=""/> */}
 
       {/* If videos are stored under latestVideos */}
-      {<VideoShowcaseSection blogs={(pageData?.blogs || []).map(b => ({ ...b, excerpt: b.excerpt ?? "", coverImage: b.coverImage ?? "", videoAlbumId: b.videoAlbumId ?? undefined }))} />}
+      {/* {<VideoShowcaseSection blogs={(pageData?.blogs || []).map(b => ({ ...b, excerpt: b.excerpt ?? "", coverImage: b.coverImage ?? "", videoAlbumId: b.videoAlbumId ?? undefined }))} />} */}
 
       <TestimonialsCarouselSection  testimonials={pageData?.testimonials || []} />
 

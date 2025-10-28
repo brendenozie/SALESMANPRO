@@ -56,7 +56,7 @@ const getStatIcon = (index: number, primaryColor: string) => {
     return icons[index % icons.length];
 };
 
-export default function App() { // Renamed to App for single file export
+export default function SocialProofSection() { // Renamed to App for single file export
     const { storeFormData } = useStoreContext();
 
     // --- 🧩 Sample fallback data ---

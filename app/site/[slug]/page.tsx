@@ -228,6 +228,8 @@ function pageDataInclude() {
     Destination: true,
     TourPackage: true,
 
+    // PricingTiers: true,
+
     PaymentSettings: true,
     ShippingSettings: true,
   };
