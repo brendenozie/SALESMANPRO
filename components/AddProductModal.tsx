@@ -182,7 +182,7 @@ function buildProductPayload(formData: ProductForm, finalImages: { index: number
   return {
     ...formData,
     images: finalImages,
-    books: finalBooks,
+    ebooks: finalBooks,
     videos: finalVideos,
   };
 }
@@ -211,6 +211,7 @@ function useProductForm(product: Partial<ProductForm> | null, companyId: string)
     material: product?.material || [],
     images: product?.images || [],
     videos: product?.videos || [],
+    ebooks: product?.ebooks || [],
     digitalUrl: product?.digitalUrl || '',
     autoDeliver: !!product?.autoDeliver,
     isAvailable: product?.isAvailable ?? false,
@@ -331,7 +332,7 @@ export default function AddProductModal({
     product?.videos?.map((vid, idx) => ({ index: idx, url: vid.url, source: 'server' })) || []
   );
   const [books, setBooks] = useState<UnifiedBookItem[]>(
-    product?.books?.map((b: any, idx: number) => ({
+    product?.ebooks?.map((b: any, idx: number) => ({
       id: b.url || `${idx}`,
       title: b.title,
       author: b.author,
@@ -475,7 +476,7 @@ const handleSave = useCallback(async () => {
         }));
 
         // 6. Build final payload
-        const payload = { ...formData, images: finalImages, videos: finalVideos, books: finalBooks };
+        const payload = { ...formData, images: finalImages, videos: finalVideos, ebooks: finalBooks };
         
         const res = await fetch(`${API_URL}/admin/post-product`, {
             method: 'POST',

@@ -83,7 +83,8 @@ async function handlePost(req: Request) {
     isDiscounted,
     isFeatured,
     images,
-    video,
+    videos,
+    ebooks,
     bookingSlots,
     requiredClientInfo,
     minNoticePeriod,
@@ -163,6 +164,8 @@ async function handlePost(req: Request) {
   const safeSize      = normalizeArray(size).filter(v => typeof v === "string");
   const safeMaterial  = normalizeArray(material).filter(v => typeof v === "string");
   const safeImages    = normalizeArray(images);
+  const safeVideos     = normalizeArray(videos);
+  const safeEbooks    = normalizeArray(ebooks);
   const safeAmenities = normalizeArray(amenities).filter(v => typeof v === "string");
   const safeReqInfo   = normalizeArray(requiredClientInfo).filter(v => typeof v === "string");
   const safeBooking   = normalizeArray(bookingSlots);
@@ -225,7 +228,8 @@ async function handlePost(req: Request) {
     material: safeMaterial,
     quantity: parsedQuantity,
     images: safeImages,
-    video,
+    videos: safeVideos,
+    ebooks: safeEbooks,
     tax: parsedTax,
     shippingCost: parsedShippingCost,
     discount: parsedDiscount,

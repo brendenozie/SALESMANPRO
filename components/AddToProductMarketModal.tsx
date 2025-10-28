@@ -271,6 +271,7 @@ function productToListingForm(
 
     images: p?.images ?? [],
     videos: p?.videos ?? [],
+    ebooks: p?.ebooks ?? [],
     // NOTE: videos are not part of the standard ProductForm -> MarketListingForm conversion in original code
   } as MarketListingForm;
 }
@@ -288,7 +289,7 @@ function buildListingPayload(
     productId: f.productId,
     images: imageUrls || [],
     videos: videoUrls || [],
-    books: bookUrls || [],
+    ebooks: bookUrls || [],
     name: f.name,
     description: f.description || null,
     longDescription: f.longDescription || null,
@@ -498,13 +499,13 @@ export default function ProductMarketModal({
 
   useEffect(() => {
     setBooks(
-      formData.books?.map((book: any, idx: number) => ({
+      formData.ebooks?.map((book: any, idx: number) => ({
         id: book.url || `server-book-${idx}`,
         url: typeof book === 'string' ? book : book.url,
         source: 'server',
       })) || []
     );
-  }, [formData.books]);
+  }, [formData.ebooks]);
 
   // draft autosave
   const draftKey = useMemo(() => `market-listing-draft-${companyId}-${product?.id || "new"}`, [companyId, product?.id]);

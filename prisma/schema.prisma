@@ -653,6 +653,7 @@ model Product {
   subCategoryName String? // Added: From General Details
   images          Json[] // Store URLs or paths
   videos          Json[]
+  ebooks          Json[]
   tags            String[] // Array of strings for search/filtering
   brand           String?
 
@@ -1703,6 +1704,7 @@ model marketplaceListings {
   quantity     Int    @default(1)
   images       Json[]
   videos       Json[]
+  ebooks       Json[]
   profitMargin Float? @default(0)
 
   // Pricing

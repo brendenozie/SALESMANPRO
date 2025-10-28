@@ -424,7 +424,7 @@ export interface ProductForm {
   productCategory?: any | null | undefined;
   images: any[];
   videos?: any[];//string | null;
-  books?: any[];//string | null;
+  ebooks?: any[];//string | null;
   tags: string[];
   brand?: string | null;
   companyId?: string | null;
@@ -562,7 +562,7 @@ export interface MarketListingForm {
   quantity: number;
   images: any[];
   videos?: any[];//string | null;
-  books?: any[];//string | null;
+  ebooks?: any[];//string | null;
   profitMargin?: number | null;
   buyingPrice: number;
   sellingPrice: number;

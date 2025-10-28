@@ -19,7 +19,7 @@ export default async function CategoryManagerPage({ params }: PageProps) {
   const { slug : companyId } = await params;
 
   try {
-    const cookieHeader = cookies().toString();
+    const cookieHeader = (await cookies()).toString();
 
     const res = await fetch(
       `${apiUrl}/admin/get-store-categories?companyId=${companyId}`,
