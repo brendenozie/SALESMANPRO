@@ -98,30 +98,85 @@ function useAutoSaveDraft(key: string, data: any, enabled = true) {
 ////////////////////////////////////////////////////////////////////////////////
 // Upload helpers
 ////////////////////////////////////////////////////////////////////////////////
-async function uploadFiles(files: File[], type: "image" | "video" | "book"): Promise<{ url: string }[]> {
+// utils/uploadFiles.ts
+export async function uploadFiles(
+  files: File[],
+  type: "image" | "video" | "book",
+  onProgress?: (progress: number, file: File) => void
+): Promise<{ url: string; key: string; contentType: string }[]> {
   if (!files?.length) return [];
 
   const uploads = files.map(async (file) => {
-    const res = await fetch(
-      `${API_URL}/upload-url?filename=${encodeURIComponent(file.name)}&type=${type}&contentType=${encodeURIComponent(file.type)}`
-    );
+    try {
+      // ✅ Step 1: Request a signed upload URL from your API
+      const res = await fetch(
+        `/api/upload-url?filename=${encodeURIComponent(file.name)}&type=${type}&contentType=${encodeURIComponent(file.type)}`
+      );
 
-    if (!res.ok) throw new Error("Failed to get signed URL");
-    const { uploadUrl, publicUrl } = await res.json();
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Failed to get signed URL: ${text}`);
+      }
 
-    const uploadRes = await fetch(uploadUrl, {
-      method: "PUT",
-      body: file,
-    });
-    if (!uploadRes.ok) throw new Error("Upload failed");
+      const { uploadUrl, publicUrl, key, contentType } = await res.json();
 
-    return {
-      url: publicUrl,
-    };
+      // ✅ Step 2: Upload directly to S3
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("PUT", uploadUrl);
+        xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
+
+        xhr.upload.onprogress = (event) => {
+          if (event.lengthComputable && onProgress) {
+            const progress = Math.round((event.loaded / event.total) * 100);
+            onProgress(progress, file);
+          }
+        };
+
+        xhr.onload = () => {
+          if (xhr.status === 200) resolve();
+          else reject(new Error(`Upload failed for ${file.name}: ${xhr.status}`));
+        };
+
+        xhr.onerror = () => reject(new Error(`Network error during upload for ${file.name}`));
+        xhr.send(file);
+      });
+
+      console.log(`✅ Uploaded: ${file.name} (${contentType}) → ${publicUrl}`);
+      return { url: publicUrl, key, contentType };
+    } catch (err) {
+      console.error("❌ Upload error:", err);
+      throw err;
+    }
   });
 
   return Promise.all(uploads);
 }
+
+// async function uploadFiles(files: File[], type: "image" | "video" | "book"): Promise<{ url: string }[]> {
+//   if (!files?.length) return [];
+
+//   const uploads = files.map(async (file) => {
+//     const res = await fetch(
+//       `${API_URL}/upload-url?filename=${encodeURIComponent(file.name)}&type=${type}&contentType=${encodeURIComponent(file.type)}`
+//     );
+
+//     if (!res.ok) throw new Error("Failed to get signed URL");
+//     const { uploadUrl, publicUrl } = await res.json();
+
+//     const uploadRes = await fetch(uploadUrl, {
+//       method: "PUT",
+//       body: file,
+//     });
+//     if (!uploadRes.ok) throw new Error("Upload failed");
+
+//     return {
+//       url: publicUrl,
+//     };
+//   });
+
+//   return Promise.all(uploads);
+// }
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -631,13 +686,21 @@ export default function ProductMarketModal({
 
       // 2. Create upload promises for new files
       const uploadImagePromises = newImageItems.map(item =>
-        uploadFiles([item.file!], "image").then(result => ({ id: item.id, url: result[0].url }))
+        uploadFiles([item.file!], "image", (progress, file) => {
+          console.log(`Uploading image ${file.name}: ${progress}%`);
+        }).then(result => ({ id: item.id, url: result[0].url }))
       );
+
       const uploadVideoPromises = newVideoItems.map(item =>
-        uploadFiles([item.file!], "video").then(result => ({ id: item.id, url: result[0].url }))
+        uploadFiles([item.file!], "video", (progress, file) => {
+          console.log(`Uploading video ${file.name}: ${progress}%`);
+        }).then(result => ({ id: item.id, url: result[0].url }))
       );
+
       const uploadBookPromises = newBookItems.map(item =>
-        uploadFiles([item.file!], "book").then(result => ({ id: item.id, url: result[0].url }))
+        uploadFiles([item.file!], "book", (progress, file) => {
+          console.log(`Uploading book ${file.name}: ${progress}%`);
+        }).then(result => ({ id: item.id, url: result[0].url }))
       );
 
       // 3. Run all uploads in parallel
@@ -652,16 +715,19 @@ export default function ProductMarketModal({
       const videoUrlMap = new Map(uploadedVideos.map(v => [v.id, v.url]));
       const bookUrlMap = new Map(uploadedBooks.map(b => [b.id, b.url]));
 
-      // 5. Build final URL arrays
-      const finalImageUrls = images.map(img =>
-        img.source === "server" ? img.url : imageUrlMap.get(img.id)!
-      ).filter(Boolean); // Filter out any potential undefined values
-      const finalVideoUrls = videos.map(vid =>
-        vid.source === "server" ? vid.url : videoUrlMap.get(vid.id)!
-      ).filter(Boolean);
-      const finalBookUrls = books.map(book =>
-        book.source === "server" ? book.url : bookUrlMap.get(book.id)!
-      ).filter(Boolean);
+      // 5. Build final URL arrays (server + newly uploaded)
+      const finalImageUrls = images
+        .map(img => (img.source === "server" ? img.url : imageUrlMap.get(img.id)!))
+        .filter(Boolean);
+
+      const finalVideoUrls = videos
+        .map(vid => (vid.source === "server" ? vid.url : videoUrlMap.get(vid.id)!))
+        .filter(Boolean);
+
+      const finalBookUrls = books
+        .map(book => (book.source === "server" ? book.url : bookUrlMap.get(book.id)!))
+        .filter(Boolean);
+
 
       // 6. Build payload
       const payload = buildListingPayload(

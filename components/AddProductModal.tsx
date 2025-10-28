@@ -134,43 +134,99 @@ function useAutoSaveDraft(key: string, data: any, enabled = true) {
 ////////////////////////////////////////////////////////////////////////////////
 // Upload helper for getting signed URLs and uploading files
 ////////////////////////////////////////////////////////////////////////////////
-async function uploadFiles(files: File[], type: "image" | "video" | "book") {
-  console.log("Uploading files:", files);
-  
-  console.log("Starting upload for : ", type);
-
+// utils/uploadFiles.ts
+export async function uploadFiles(
+  files: File[],
+  type: "image" | "video" | "book",
+  onProgress?: (progress: number, file: File) => void
+): Promise<{ url: string; key: string; contentType: string }[]> {
   if (!files?.length) return [];
-  console.log("Starting upload for : ", type);
 
-  const uploads = files.map(async (file, index) => {
-    // 1. Request signed URL from your backend
-    // const res = await fetch(
-    //   `${API_URL}/upload-url?filename=${encodeURIComponent(file.name)}&type=${type}`
-    // );
+  const uploads = files.map(async (file) => {
+    try {
+      // ✅ Step 1: Request a signed upload URL from your API
+      const res = await fetch(
+        `/api/upload-url?filename=${encodeURIComponent(file.name)}&type=${type}&contentType=${encodeURIComponent(file.type)}`
+      );
 
-    const res = await fetch(
-      `${API_URL}/upload-url?filename=${encodeURIComponent(file.name)}&type=${type}&contentType=${encodeURIComponent(file.type)}`
-    );
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Failed to get signed URL: ${text}`);
+      }
 
-    if (!res.ok) throw new Error("Failed to get signed URL");
-    const { uploadUrl, publicUrl } = await res.json();
+      const { uploadUrl, publicUrl, key, contentType } = await res.json();
 
-    // 2. Upload directly to S3 via PUT request
-    const uploadRes = await fetch(uploadUrl, {
-      method: "PUT",
-      body: file,
-    });
-    if (!uploadRes.ok) throw new Error("Upload failed");
+      // ✅ Step 2: Upload directly to S3
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("PUT", uploadUrl);
+        xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
 
-    // 3. Return the public CloudFront/S3 URL
-    return {
-      // The original index is not needed here as we will re-index later
-      url: publicUrl,
-    };
+        xhr.upload.onprogress = (event) => {
+          if (event.lengthComputable && onProgress) {
+            const progress = Math.round((event.loaded / event.total) * 100);
+            onProgress(progress, file);
+          }
+        };
+
+        xhr.onload = () => {
+          if (xhr.status === 200) resolve();
+          else reject(new Error(`Upload failed for ${file.name}: ${xhr.status}`));
+        };
+
+        xhr.onerror = () => reject(new Error(`Network error during upload for ${file.name}`));
+        xhr.send(file);
+      });
+
+      console.log(`✅ Uploaded: ${file.name} (${contentType}) → ${publicUrl}`);
+      return { url: publicUrl, key, contentType };
+    } catch (err) {
+      console.error("❌ Upload error:", err);
+      throw err;
+    }
   });
 
   return Promise.all(uploads);
 }
+
+
+// async function uploadFiles(files: File[], type: "image" | "video" | "book") {
+//   console.log("Uploading files:", files);
+  
+//   console.log("Starting upload for : ", type);
+
+//   if (!files?.length) return [];
+//   console.log("Starting upload for : ", type);
+
+//   const uploads = files.map(async (file, index) => {
+//     // 1. Request signed URL from your backend
+//     // const res = await fetch(
+//     //   `${API_URL}/upload-url?filename=${encodeURIComponent(file.name)}&type=${type}`
+//     // );
+
+//     const res = await fetch(
+//       `${API_URL}/upload-url?filename=${encodeURIComponent(file.name)}&type=${type}&contentType=${encodeURIComponent(file.type)}`
+//     );
+
+//     if (!res.ok) throw new Error("Failed to get signed URL");
+//     const { uploadUrl, publicUrl } = await res.json();
+
+//     // 2. Upload directly to S3 via PUT request
+//     const uploadRes = await fetch(uploadUrl, {
+//       method: "PUT",
+//       body: file,
+//     });
+//     if (!uploadRes.ok) throw new Error("Upload failed");
+
+//     // 3. Return the public CloudFront/S3 URL
+//     return {
+//       // The original index is not needed here as we will re-index later
+//       url: publicUrl,
+//     };
+//   });
+
+//   return Promise.all(uploads);
+// }
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -331,15 +387,17 @@ export default function AddProductModal({
   const [videos, setVideos] = useState<UnifiedMediaItem[]>(
     product?.videos?.map((vid, idx) => ({ index: idx, url: vid.url, source: 'server' })) || []
   );
-  const [books, setBooks] = useState<UnifiedBookItem[]>(
-    product?.ebooks?.map((b: any, idx: number) => ({
-      id: b.url || `${idx}`,
-      title: b.title,
-      author: b.author,
-      url: b.url,
-      source: "server",
-    })) || []
-  );
+  
+    const [books, setBooks] = useState<UnifiedMediaItem[]>([]);
+  // const [books, setBooks] = useState<UnifiedBookItem[]>(
+  //   product?.ebooks?.map((b: any, idx: number) => ({
+  //     id: b.url || `${idx}`,
+  //     title: b.title,
+  //     author: b.author,
+  //     url: b.url,
+  //     source: "server",
+  //   })) || []
+  // );
    // Single source of truth for images
   // const [images, setImages] = useState<MediaItem[]>(
   //   product?.images?.map((img, idx) => ({ index: img.index ?? idx, url: img.url, source: 'server' })) || []
@@ -429,54 +487,58 @@ const handleSave = useCallback(async () => {
     setLoading(true);
 
     try {
-        // 1. Filter local files that need uploading, keeping their unique IDs
+        // 1. Filter local files that need uploading
         const newImageItems = images.filter(i => i.source === "local" && i.file);
         const newVideoItems = videos.filter(v => v.source === "local" && v.file);
-        const newBookItems = books.filter(b => b.source === "local" && b.bookFile);
+        const newBookItems = books.filter(b => b.source === "local" && b.file);
 
-        // 2. Create upload promises that return the new URL along with the original ID
-        const uploadImagePromises = newImageItems.map(item => 
-            uploadFiles([item.file!], "image").then(result => ({ id: item.id, url: result[0].url }))
+        // 2. Create upload promises for new files
+        const uploadImagePromises = newImageItems.map(item =>
+          uploadFiles([item.file!], "image", (progress, file) => {
+            console.log(`Uploading image ${file.name}: ${progress}%`);
+          }).then(result => ({ id: item.id, url: result[0].url }))
         );
-        const uploadVideoPromises = newVideoItems.map(item => 
-            uploadFiles([item.file!], "video").then(result => ({ id: item.id, url: result[0].url }))
+
+        const uploadVideoPromises = newVideoItems.map(item =>
+          uploadFiles([item.file!], "video", (progress, file) => {
+            console.log(`Uploading video ${file.name}: ${progress}%`);
+          }).then(result => ({ id: item.id, url: result[0].url }))
         );
-        const uploadBookPromises = newBookItems.map(item => 
-            uploadFiles([item.bookFile!], "book").then(result => ({ id: item.id, url: result[0].url }))
+
+        const uploadBookPromises = newBookItems.map(item =>
+          uploadFiles([item.file!], "book", (progress, file) => {
+            console.log(`Uploading book ${file.name}: ${progress}%`);
+          }).then(result => ({ id: item.id, url: result[0].url }))
         );
 
         // 3. Run all uploads in parallel
         const [uploadedImages, uploadedVideos, uploadedBooks] = await Promise.all([
-            Promise.all(uploadImagePromises),
-            Promise.all(uploadVideoPromises),
-            Promise.all(uploadBookPromises),
+          Promise.all(uploadImagePromises),
+          Promise.all(uploadVideoPromises),
+          Promise.all(uploadBookPromises),
         ]);
 
-        // 4. Create a lookup map for quick access: { 'local-id-123': 'https://...' }
+        // 4. Create lookup maps for quick access
         const imageUrlMap = new Map(uploadedImages.map(i => [i.id, i.url]));
         const videoUrlMap = new Map(uploadedVideos.map(v => [v.id, v.url]));
         const bookUrlMap = new Map(uploadedBooks.map(b => [b.id, b.url]));
 
-        // 5. Build the final media arrays reliably
-        const finalImages = images.map((img, idx) => ({
-            index: idx,
-            url: img.source === "server" ? img.url : imageUrlMap.get(img.id)!,
-        }));
+        // 5. Build final URL arrays (server + newly uploaded)
+        const finalImageUrls = images
+          .map(img => (img.source === "server" ? img.url : imageUrlMap.get(img.id)!))
+          .filter(Boolean);
 
-        const finalVideos = videos.map((vid, idx) => ({
-            index: idx,
-            url: vid.source === "server" ? vid.url : videoUrlMap.get(vid.id)!,
-        }));
-        
-        const finalBooks = books.map((book, idx) => ({
-            index: idx,
-            title: book.title,
-            author: book.author,
-            url: book.source === "server" ? book.url : bookUrlMap.get(book.id)!,
-        }));
+        const finalVideoUrls = videos
+          .map(vid => (vid.source === "server" ? vid.url : videoUrlMap.get(vid.id)!))
+          .filter(Boolean);
+
+        const finalBookUrls = books
+          .map(book => (book.source === "server" ? book.url : bookUrlMap.get(book.id)!))
+          .filter(Boolean);
+
 
         // 6. Build final payload
-        const payload = { ...formData, images: finalImages, videos: finalVideos, ebooks: finalBooks };
+        const payload = { ...formData, images: finalImageUrls, videos: finalVideoUrls, ebooks: finalBookUrls };
         
         const res = await fetch(`${API_URL}/admin/post-product`, {
             method: 'POST',

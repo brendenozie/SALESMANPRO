@@ -143,12 +143,12 @@ export const CATEGORY_STEPS: Record<string, number[]> = {
   "Travel Insurance":    [1,2,7,8,9,10,12,11],
 
   // — Digital Goods & Subscriptions flow —
-  "Digital Goods & Subscriptions":[1,2,7,8,9,10,12,11],
-  "Software Licenses":   [1,2,7,8,9,10,12,11],
-  "E-books":             [1,2,7,8,9,10,12,11],
-  "Online Courses":      [1,2,7,8,9,10,12,11],
-  "Streaming Subscriptions":[1,2,7,8,9,10,12,11],
-  "Mobile App Credits":  [1,2,7,8,9,10,12,11],
+  "Digital Goods & Subscriptions":[1,2,7,8,10,12,11],
+  "Software Licenses":   [1,2,7,8,10,12,11],
+  "E-books":             [1,2,7,8,10,12,11],
+  "Online Courses":      [1,2,7,8,10,12,11],
+  "Streaming Subscriptions":[1,2,7,8,10,12,11],
+  "Mobile App Credits":  [1,2,7,8,10,12,11],
 
    // Directory & Listings flow
   "Directory & Listings": [1, 2, 8, 12, 11],

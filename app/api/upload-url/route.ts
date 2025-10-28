@@ -12,6 +12,56 @@ const s3 = new S3Client({
   },
 });
 
+
+export async function GET(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const filename = searchParams.get("filename");
+    const type = searchParams.get("type") || "image";
+    const contentType = searchParams.get("contentType");
+
+    if (!filename) {
+      return NextResponse.json({ error: "Missing filename" }, { status: 400 });
+    }
+
+    const bucket = process.env.AS3_BUCKET_NAME!;
+    const folder =
+      type === "video"
+        ? "videos"
+        : type === "book"
+        ? "books"
+        : "images"; // fallback to images
+    const key = `${folder}/${Date.now()}-${filename}`;
+
+    // ✅ Use the provided MIME type if available, else fallback safely
+    const finalContentType =
+      contentType ||
+      (filename.endsWith(".pdf")
+        ? "application/pdf"
+        : filename.endsWith(".epub")
+        ? "application/epub+zip"
+        : type.startsWith("image")
+        ? "image/*"
+        : "application/octet-stream");
+
+    const command = new PutObjectCommand({
+      Bucket: bucket,
+      Key: key,
+      ContentType: finalContentType,
+      ChecksumAlgorithm: undefined,
+    });
+
+    const uploadUrl = await getSignedUrl(s3, command, { expiresIn: 900 }); // 5 min
+    const publicUrl = `https://${process.env.NEXT_PUBLIC_CDN_URL}/${key}`;
+
+    return NextResponse.json({ uploadUrl, publicUrl });
+  } catch (err: any) {
+    console.error("S3 signed URL error:", err);
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
+}
+
+// V2
 // export async function POST(request: Request) {
 //   const { filename, contentType } = await request.json();
 
@@ -58,41 +108,76 @@ const s3 = new S3Client({
 //     secretAccessKey: process.env.ASECRET_ACCESS_KEY!,
 //   },
 // });
+// export async function GET(req: Request) {
+//   try {
+//     const { searchParams } = new URL(req.url);
+//     const filename = searchParams.get("filename");
+//     const type = searchParams.get("type") || "application/octet-stream";
 
-export async function GET(req: Request) {
-  try {
-    const { searchParams } = new URL(req.url);
-    const filename = searchParams.get("filename");
-    const type = searchParams.get("type") || "image";
+//     if (!filename) {
+//       return NextResponse.json({ error: "Missing filename" }, { status: 400 });
+//     }
 
-    if (!filename) {
-      return NextResponse.json({ error: "Missing filename" }, { status: 400 });
-    }
+//     const bucket = process.env.AS3_BUCKET_NAME!;
+//     const key = `${type.includes("image") ? "images" : "files"}/${Date.now()}-${filename}`;
 
-    const bucket = process.env.AS3_BUCKET_NAME!;
-    const key = `${type}s/${Date.now()}-${filename}`;
+//     // ✅ Map known extensions to correct MIME types
+//     let contentType = "application/octet-stream";
+//     if (type.startsWith("image")) contentType = "image/*";
+//     else if (filename.endsWith(".pdf")) contentType = "application/pdf";
+//     else if (filename.endsWith(".epub")) contentType = "application/epub+zip";
 
-    const command = new PutObjectCommand({
-      Bucket: bucket,
-      Key: key,
-      // ContentType: "image/*",
-      ChecksumAlgorithm: undefined, // Disable checksum to avoid signature mismatch
-      ContentType: type.startsWith("image") ? "image/*" : "application/octet-stream",
-      ChecksumCRC32: undefined,
-      ChecksumCRC32C: undefined,
-      ChecksumSHA1: undefined,
-      ChecksumSHA256: undefined,
-    });
+//     const command = new PutObjectCommand({
+//       Bucket: bucket,
+//       Key: key,
+//       ContentType: contentType,
+//       ChecksumAlgorithm: undefined,
+//     });
 
-    const uploadUrl = await getSignedUrl(s3, command, { expiresIn: 300 }); // 1 min
-    const publicUrl = `https://${process.env.NEXT_PUBLIC_CDN_URL}/${key}`;
+//     const uploadUrl = await getSignedUrl(s3, command, { expiresIn: 300 }); // 5 min
+//     const publicUrl = `https://${process.env.NEXT_PUBLIC_CDN_URL}/${key}`;
 
-    return NextResponse.json({ uploadUrl, publicUrl });
-  } catch (err: any) {
-    console.error("S3 signed URL error:", err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
-  }
-}
+//     return NextResponse.json({ uploadUrl, publicUrl });
+//   } catch (err: any) {
+//     console.error("S3 signed URL error:", err);
+//     return NextResponse.json({ error: err.message }, { status: 500 });
+//   }
+// }
+// V1
+// export async function GET(req: Request) {
+//   try {
+//     const { searchParams } = new URL(req.url);
+//     const filename = searchParams.get("filename");
+//     const type = searchParams.get("type") || "image";
+
+//     if (!filename) {
+//       return NextResponse.json({ error: "Missing filename" }, { status: 400 });
+//     }
+
+//     const bucket = process.env.AS3_BUCKET_NAME!;
+//     const key = `${type}s/${Date.now()}-${filename}`;
+
+//     const command = new PutObjectCommand({
+//       Bucket: bucket,
+//       Key: key,
+//       // ContentType: "image/*",
+//       ChecksumAlgorithm: undefined, // Disable checksum to avoid signature mismatch
+//       ContentType: type.startsWith("image") ? "image/*" : "application/octet-stream",
+//       ChecksumCRC32: undefined,
+//       ChecksumCRC32C: undefined,
+//       ChecksumSHA1: undefined,
+//       ChecksumSHA256: undefined,
+//     });
+
+//     const uploadUrl = await getSignedUrl(s3, command, { expiresIn: 300 }); // 1 min
+//     const publicUrl = `https://${process.env.NEXT_PUBLIC_CDN_URL}/${key}`;
+
+//     return NextResponse.json({ uploadUrl, publicUrl });
+//   } catch (err: any) {
+//     console.error("S3 signed URL error:", err);
+//     return NextResponse.json({ error: err.message }, { status: 500 });
+//   }
+// }
 
 //NEW V2
 
