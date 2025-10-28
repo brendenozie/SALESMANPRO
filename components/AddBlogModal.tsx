@@ -12,7 +12,7 @@ import {
 } from "@heroicons/react/24/outline";
 import dynamic from "next/dynamic";
 import CategoryPicker from "./CategoryPicker";
-import ImageUploader from "./ImageUploader";
+import ImageUploader, { UnifiedMediaItem } from "./ImageUploader";
 import Stepper from "./Stepper";
 
 // load the new package dynamically, no ssr
@@ -41,12 +41,12 @@ const STEP_LABELS: Record<number, string> = {
   5: "Review",
 };
 
-interface UnifiedMediaItem {
-  id?: string;
-  file?: File;
-  url: string;
-  source: "local" | "server";
-}
+// interface UnifiedMediaItem {
+//   id?: string;
+//   file?: File;
+//   url: string;
+//   source: "local" | "server";
+// }
 
 interface AddEditBlogModalProps {
   show: boolean;
@@ -92,11 +92,23 @@ export default function AddEditBlogModal({
 
   // const [newImages, setNewImages] = useState<UnifiedMediaItem[]>([]);
   // const [newImages, setNewImages] = useState<UnifiedMediaItem[]>([]);
-  const [images, setImages] = useState<UnifiedMediaItem[]>(
-    initialData.coverImage
-      ? [{ id: "0", url: initialData.coverImage, source: "server" }]
-      : []
-  );
+  const [images, setImages] = useState<UnifiedMediaItem[]>([]);
+  // Sync unified media state when formData changes
+    useEffect(() => {
+      setImages(
+        formData.images?.map((img: any, idx: number) => ({
+          id: img.url || `server-img-${idx}`,
+          url: typeof img === 'string' ? img : img.url,
+          source: 'server',
+          file: undefined,
+          title: "Untitled Image",
+          author: "Unknown",
+          coverPreviewUrl: undefined,
+          fileName: undefined,
+        })) || []
+      );
+    }, [formData.images]);
+    
    // Generic handler
    const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>

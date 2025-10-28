@@ -559,7 +559,7 @@ const handleSave = useCallback(async () => {
     } finally {
         setLoading(false);
     }
-}, [formData, images, videos, books, clear, setShowRequestProductModal]);
+}, [formData, images, books, videos, books, clear, setShowRequestProductModal]);
 
   // const handleSave = useCallback(async () => {
     
