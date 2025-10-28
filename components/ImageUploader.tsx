@@ -6,19 +6,13 @@ import toast, { Toaster } from "react-hot-toast";
 import { ArrowUpIcon, BookOpenIcon, CloudArrowUpIcon, GiftIcon, TvIcon, VideoCameraIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { InboxIcon } from "@heroicons/react/24/solid";
 
-interface UnifiedMediaItem {
-  id?: string;
-  file?: File;
-  url: string;
-  source: "local" | "server";
-}
-interface UnifiedBookItem {
+export interface UnifiedMediaItem {
   id: string;
   title: string;
   author: string;
   coverPreviewUrl?: string | null;
-  bookFile?: File | null;
-  bookFileName?: string;
+  file?: File | null;             // ✅ unified field
+  fileName?: string;
   url?: string;
   source: "local" | "server";
 }
@@ -73,6 +67,10 @@ export function ImagesTab({ images, setImages }: { images: UnifiedMediaItem[], s
       file,
       url: URL.createObjectURL(file),
       source: "local" as const,
+      title: file.name || "Untitled Image",
+      author: file.name || "Unknown",
+      coverPreviewUrl: undefined,
+      fileName: file.name || undefined,
     }));
     setImages(prev => [...prev, ...newItems]);
   };
@@ -94,11 +92,15 @@ export function ImagesTab({ images, setImages }: { images: UnifiedMediaItem[], s
 
 export function VideosTab({ videos, setVideos }: { videos: UnifiedMediaItem[], setVideos: React.Dispatch<React.SetStateAction<UnifiedMediaItem[]>> }) {
   const handleFiles = (files: File[]) => {
-    const newItems = files.map(file => ({
+    const newItems: UnifiedMediaItem[] = files.map(file => ({
       id: crypto.randomUUID(),
       file,
       url: URL.createObjectURL(file),
       source: "local" as const,
+      title: file.name || "Untitled Video",
+      author: file.name || "Unknown",
+      coverPreviewUrl: undefined,
+      fileName: file.name || undefined,
     }));
     setVideos(prev => [...prev, ...newItems]);
   };
@@ -133,8 +135,8 @@ export function VideosTab({ videos, setVideos }: { videos: UnifiedMediaItem[], s
 // }
 
 interface BooksTabProps {
-  books: UnifiedBookItem[];
-  setBooks: React.Dispatch<React.SetStateAction<UnifiedBookItem[]>>;
+  books: UnifiedMediaItem[];
+  setBooks: React.Dispatch<React.SetStateAction<UnifiedMediaItem[]>>;
 }
 
 export function BooksTab({ books, setBooks }: BooksTabProps) {
@@ -148,8 +150,8 @@ export function BooksTab({ books, setBooks }: BooksTabProps) {
       const updated = [...prev];
       updated[index] = { 
         ...updated[index], 
-        bookFile: file, 
-        bookFileName: file.name, 
+        file: file, 
+        fileName: file.name, 
         source: "local" 
       };
       return updated;
@@ -165,12 +167,12 @@ export function BooksTab({ books, setBooks }: BooksTabProps) {
 
     // --- ASSUMPTION: You need a way to parse/derive title and author from the file or prompt the user.
     // For this example, we'll use placeholder data. You'll need to expand this!
-    const newBook: UnifiedBookItem = {
+    const newBook: UnifiedMediaItem = {
       id: Date.now().toString(), // Simple unique ID
       title: file.name.replace(/\.[^/.]+$/, "") || "New Uploaded Book", // Try to use filename
       author: "Unknown Author (Local Upload)",
-      bookFile: file,
-      bookFileName: file.name,
+      file: file,
+      fileName: file.name,
       source: "local"
     };
     // --- END ASSUMPTION
@@ -205,7 +207,7 @@ export function BooksTab({ books, setBooks }: BooksTabProps) {
   );
 
   // Component for an individual visually appealing Book Card
-  const BookCard = ({ book, index }: { book: UnifiedBookItem, index: number }) => (
+  const BookCard = ({ book, index }: { book: UnifiedMediaItem, index: number }) => (
     <div 
       key={book.id || index} // Use ID if available
       className="flex items-center justify-between p-5 bg-white rounded-xl shadow-md border border-gray-200 transition duration-150 ease-in-out hover:shadow-lg"
@@ -222,10 +224,10 @@ export function BooksTab({ books, setBooks }: BooksTabProps) {
 
       <div className="flex items-center space-x-4">
         {/* Visual feedback of the current file */}
-        {book.bookFileName && (
+        {book.fileName && (
           <div className="text-xs text-gray-600 flex items-center bg-gray-100 p-2 rounded-lg">
             <InboxIcon className="w-4 h-4 mr-1.5 text-green-500" />
-            <span className='font-medium max-w-[150px] truncate'>{book.bookFileName}</span>
+            <span className='font-medium max-w-[150px] truncate'>{book.fileName}</span>
           </div>
         )}
 
@@ -273,8 +275,8 @@ export default function ImageUploader({
   setImages: React.Dispatch<React.SetStateAction<UnifiedMediaItem[]>>;
   videos: UnifiedMediaItem[];
   setVideos: React.Dispatch<React.SetStateAction<UnifiedMediaItem[]>>;
-  books: UnifiedBookItem[];
-  setBooks: React.Dispatch<React.SetStateAction<UnifiedBookItem[]>>;
+  books: UnifiedMediaItem[];
+  setBooks: React.Dispatch<React.SetStateAction<UnifiedMediaItem[]>>;
 }) {
   const [selectedTab, setSelectedTab] = useState<"images" | "videos" | "books">("images");
 

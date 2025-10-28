@@ -1,5 +1,5 @@
 // In your /api/upload-url.ts (or .js) file
-
+// /app/api/upload-url/route.ts
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { NextResponse } from "next/server";
@@ -12,13 +12,15 @@ const s3 = new S3Client({
   },
 });
 
-
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const filename = searchParams.get("filename");
     const type = searchParams.get("type") || "image";
-    const contentType = searchParams.get("contentType");
+    const contentType = searchParams.get("contentType") || "";
+
+    console.log("📘 Upload request:", { filename, type, contentType });
+
 
     if (!filename) {
       return NextResponse.json({ error: "Missing filename" }, { status: 400 });
@@ -30,10 +32,11 @@ export async function GET(req: Request) {
         ? "videos"
         : type === "book"
         ? "books"
-        : "images"; // fallback to images
+        : "images";
+
     const key = `${folder}/${Date.now()}-${filename}`;
 
-    // ✅ Use the provided MIME type if available, else fallback safely
+    // ✅ Correct content type detection
     const finalContentType =
       contentType ||
       (filename.endsWith(".pdf")
@@ -48,18 +51,84 @@ export async function GET(req: Request) {
       Bucket: bucket,
       Key: key,
       ContentType: finalContentType,
-      ChecksumAlgorithm: undefined,
+      // Do NOT set ChecksumAlgorithm if not needed — it breaks PDF uploads
     });
 
-    const uploadUrl = await getSignedUrl(s3, command, { expiresIn: 900 }); // 5 min
+    const uploadUrl = await getSignedUrl(s3, command, { expiresIn: 900 });
     const publicUrl = `https://${process.env.NEXT_PUBLIC_CDN_URL}/${key}`;
 
-    return NextResponse.json({ uploadUrl, publicUrl });
+    return NextResponse.json({
+      uploadUrl,
+      publicUrl,
+      key,
+      contentType: finalContentType,
+    });
   } catch (err: any) {
     console.error("S3 signed URL error:", err);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
+
+// import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+// import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+// import { NextResponse } from "next/server";
+
+// const s3 = new S3Client({
+//   region: process.env.AREGION || "eu-north-1",
+//   credentials: {
+//     accessKeyId: process.env.AACCESS_KEY_ID!,
+//     secretAccessKey: process.env.ASECRET_ACCESS_KEY!,
+//   },
+// });
+
+
+// export async function GET(req: Request) {
+//   try {
+//     const { searchParams } = new URL(req.url);
+//     const filename = searchParams.get("filename");
+//     const type = searchParams.get("type") || "image";
+//     const contentType = searchParams.get("contentType");
+
+//     if (!filename) {
+//       return NextResponse.json({ error: "Missing filename" }, { status: 400 });
+//     }
+
+//     const bucket = process.env.AS3_BUCKET_NAME!;
+//     const folder =
+//       type === "video"
+//         ? "videos"
+//         : type === "book"
+//         ? "books"
+//         : "images"; // fallback to images
+//     const key = `${folder}/${Date.now()}-${filename}`;
+
+//     // ✅ Use the provided MIME type if available, else fallback safely
+//     const finalContentType =
+//       contentType ||
+//       (filename.endsWith(".pdf")
+//         ? "application/pdf"
+//         : filename.endsWith(".epub")
+//         ? "application/epub+zip"
+//         : type.startsWith("image")
+//         ? "image/*"
+//         : "application/octet-stream");
+
+//     const command = new PutObjectCommand({
+//       Bucket: bucket,
+//       Key: key,
+//       ContentType: finalContentType,
+//       ChecksumAlgorithm: undefined,
+//     });
+
+//     const uploadUrl = await getSignedUrl(s3, command, { expiresIn: 900 }); // 5 min
+//     const publicUrl = `https://${process.env.NEXT_PUBLIC_CDN_URL}/${key}`;
+
+//     return NextResponse.json({ uploadUrl, publicUrl });
+//   } catch (err: any) {
+//     console.error("S3 signed URL error:", err);
+//     return NextResponse.json({ error: err.message }, { status: 500 });
+//   }
+// }
 
 // V2
 // export async function POST(request: Request) {

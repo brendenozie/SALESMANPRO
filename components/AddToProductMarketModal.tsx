@@ -23,14 +23,26 @@ import CategoryPicker from "./CategoryPicker";
 import PricingDetails from "./PricingDetails";
 import LocationPicker from "./LocationPicker";
 import { MarketListingForm, ProductForm, IStoreCategory, ILocation } from "@/types/typings";
+import { UnifiedMediaItem } from "./ImageUploader";
 
 // ✅ Unified Media Types
-interface UnifiedMediaItem {
-  id?: string;
-  file?: File;
-  url: string;
-  source: "local" | "server";
-}
+// interface UnifiedMediaItem {
+//   id?: string;
+//   file?: File;
+//   url: string;
+//   source: "local" | "server";
+// }
+// interface UnifiedMediaItem {
+//   id?: string;
+//   title?: string;
+//   author?: string;
+//   coverPreviewUrl?: string | null;
+//   file?: File;
+//   bookFile?: File | null;
+//   bookFileName?: string;
+//   url?: string;
+//   source: "local" | "server";
+// }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Constants & API
@@ -104,54 +116,101 @@ export async function uploadFiles(
   type: "image" | "video" | "book",
   onProgress?: (progress: number, file: File) => void
 ): Promise<{ url: string; key: string; contentType: string }[]> {
+  console.log("uploadFiles called with files:", files, "type:", type);
   if (!files?.length) return [];
 
   const uploads = files.map(async (file) => {
-    try {
-      // ✅ Step 1: Request a signed upload URL from your API
-      const res = await fetch(
-        `/api/upload-url?filename=${encodeURIComponent(file.name)}&type=${type}&contentType=${encodeURIComponent(file.type)}`
-      );
+    const res = await fetch(
+      `/api/upload-url?filename=${encodeURIComponent(file.name)}&type=${type}&contentType=${encodeURIComponent(file.type)}`
+    );
 
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(`Failed to get signed URL: ${text}`);
-      }
-
-      const { uploadUrl, publicUrl, key, contentType } = await res.json();
-
-      // ✅ Step 2: Upload directly to S3
-      await new Promise<void>((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        xhr.open("PUT", uploadUrl);
-        xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
-
-        xhr.upload.onprogress = (event) => {
-          if (event.lengthComputable && onProgress) {
-            const progress = Math.round((event.loaded / event.total) * 100);
-            onProgress(progress, file);
-          }
-        };
-
-        xhr.onload = () => {
-          if (xhr.status === 200) resolve();
-          else reject(new Error(`Upload failed for ${file.name}: ${xhr.status}`));
-        };
-
-        xhr.onerror = () => reject(new Error(`Network error during upload for ${file.name}`));
-        xhr.send(file);
-      });
-
-      console.log(`✅ Uploaded: ${file.name} (${contentType}) → ${publicUrl}`);
-      return { url: publicUrl, key, contentType };
-    } catch (err) {
-      console.error("❌ Upload error:", err);
-      throw err;
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`Failed to get signed URL: ${text}`);
     }
+
+    const { uploadUrl, publicUrl, key, contentType } = await res.json();
+
+    // ✅ Upload to S3
+    const xhr = new XMLHttpRequest();
+    await new Promise<void>((resolve, reject) => {
+      xhr.open("PUT", uploadUrl);
+      xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
+
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable && onProgress) {
+          onProgress(Math.round((event.loaded / event.total) * 100), file);
+        }
+      };
+
+      xhr.onload = () => {
+        if (xhr.status === 200) resolve();
+        else reject(new Error(`Upload failed for ${file.name}: ${xhr.status}`));
+      };
+
+      xhr.onerror = () => reject(new Error(`Network error for ${file.name}`));
+      xhr.send(file);
+    });
+
+    return { url: publicUrl, key, contentType };
   });
 
   return Promise.all(uploads);
 }
+
+// export async function uploadFiles(
+//   files: File[],
+//   type: "image" | "video" | "book",
+//   onProgress?: (progress: number, file: File) => void
+// ): Promise<{ url: string; key: string; contentType: string }[]> {
+//   if (!files?.length) return [];
+
+//   const uploads = files.map(async (file) => {
+//     try {
+//       // ✅ Step 1: Request a signed upload URL from your API
+//       const res = await fetch(
+//         `/api/upload-url?filename=${encodeURIComponent(file.name)}&type=${type}&contentType=${encodeURIComponent(file.type)}`
+//       );
+
+//       if (!res.ok) {
+//         const text = await res.text();
+//         throw new Error(`Failed to get signed URL: ${text}`);
+//       }
+
+//       const { uploadUrl, publicUrl, key, contentType } = await res.json();
+
+//       // ✅ Step 2: Upload directly to S3
+//       await new Promise<void>((resolve, reject) => {
+//         const xhr = new XMLHttpRequest();
+//         xhr.open("PUT", uploadUrl);
+//         xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
+
+//         xhr.upload.onprogress = (event) => {
+//           if (event.lengthComputable && onProgress) {
+//             const progress = Math.round((event.loaded / event.total) * 100);
+//             onProgress(progress, file);
+//           }
+//         };
+
+//         xhr.onload = () => {
+//           if (xhr.status === 200) resolve();
+//           else reject(new Error(`Upload failed for ${file.name}: ${xhr.status}`));
+//         };
+
+//         xhr.onerror = () => reject(new Error(`Network error during upload for ${file.name}`));
+//         xhr.send(file);
+//       });
+
+//       console.log(`✅ Uploaded: ${file.name} (${contentType}) → ${publicUrl}`);
+//       return { url: publicUrl, key, contentType };
+//     } catch (err) {
+//       console.error("❌ Upload error:", err);
+//       throw err;
+//     }
+//   });
+
+//   return Promise.all(uploads);
+// }
 
 // async function uploadFiles(files: File[], type: "image" | "video" | "book"): Promise<{ url: string }[]> {
 //   if (!files?.length) return [];
@@ -538,6 +597,11 @@ export default function ProductMarketModal({
         id: img.url || `server-img-${idx}`,
         url: typeof img === 'string' ? img : img.url,
         source: 'server',
+        file: undefined,
+        title: "Untitled Image",
+        author: "Unknown",
+        coverPreviewUrl: undefined,
+        fileName: undefined,
       })) || []
     );
   }, [formData.images]);
@@ -548,6 +612,10 @@ export default function ProductMarketModal({
         id: vid.url || `server-vid-${idx}`,
         url: typeof vid === 'string' ? vid : vid.url,
         source: 'server',
+        title: "Untitled Video",
+        author: "Unknown",
+        coverPreviewUrl: undefined,
+        fileName: undefined,
       })) || []
     );
   }, [formData.videos]);
@@ -558,6 +626,10 @@ export default function ProductMarketModal({
         id: book.url || `server-book-${idx}`,
         url: typeof book === 'string' ? book : book.url,
         source: 'server',
+        title: book.title || "Untitled Book",
+        author: "Unknown",
+        coverPreviewUrl: undefined,
+        fileName: undefined,
       })) || []
     );
   }, [formData.ebooks]);
@@ -683,6 +755,11 @@ export default function ProductMarketModal({
       const newImageItems = images.filter(i => i.source === "local" && i.file);
       const newVideoItems = videos.filter(v => v.source === "local" && v.file);
       const newBookItems = books.filter(b => b.source === "local" && b.file);
+
+      console.log("New images to upload:", newImageItems);
+      console.log("New videos to upload:", newVideoItems);
+      console.log("New books to upload:", newBookItems);
+
 
       // 2. Create upload promises for new files
       const uploadImagePromises = newImageItems.map(item =>
