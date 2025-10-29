@@ -380,7 +380,7 @@ export default function ProgramsSection({ listings, storeSlug }: ProgramsSection
           viewport={{ once: true, amount: 0.5 }}
           transition={{ delay: 0.3, duration: 0.7 }}
         >
-          <Link href={`/site/${storeSlug}/listings`} passHref>
+          {/* <Link href={`/site/${storeSlug}/listings`} passHref>
             <motion.a
               className="inline-flex items-center justify-center px-12 py-4 text-xl font-bold rounded-full shadow-2xl
                         text-white bg-gradient-to-br from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800
@@ -392,7 +392,7 @@ export default function ProgramsSection({ listings, storeSlug }: ProgramsSection
               View All Programs
               <ArrowRightIcon className="ml-2 -mr-1 w-6 h-6" />
             </motion.a>
-          </Link>
+          </Link> */}
         </motion.div>
       </div>
 
