@@ -57,7 +57,7 @@ const Shop = ({ addToCart,category, shopItems }:any) => {
 
           <div className="lg:col-span-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {shopItems?.data?.map((item : any, index : any) => (
-              <div key={index} onClick={()=>{ router.push(`/shop/product/${item.id}`)}} className="relative group bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md hover:shadow-lg transition">
+              <div key={index} onClick={()=>{ router.push(`/ghuba/product/${item.id}`)}} className="relative group bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md hover:shadow-lg transition">
                 {/* <img src={item.cover} alt={item.title} className="w-full h-64 object-cover rounded-xl" /> */}
                 <Image
                   width={300}
@@ -156,7 +156,7 @@ const ProductCard = ({ product, addToCart }:any) => {
 
   return (
     <motion.div
-      onClick={() => router.push(`/shop/product/${product.id}`)}
+      onClick={() => router.push(`/ghuba/product/${product.id}`)}
       whileHover={{ scale: 1.03 }}
       className="relative bg-white dark:bg-gray-800 p-3 md:p-4 rounded-2xl shadow-xl transition-all cursor-pointer hover:shadow-2xl hover:-translate-y-1 hover:ring-2 hover:ring-yellow-500 dark:hover:ring-yellow-400 mb-4 break-inside-avoid"
     >

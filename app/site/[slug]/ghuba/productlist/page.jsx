@@ -41,7 +41,7 @@ function useProductSearch({ searchTerm, filters }) {
 
       const res = await fetch(`${apiBaseUrl}/shop/products?${params}`);
       if (!res.ok) throw new Error('Failed to fetch products');
-      const data = await res.json();
+      const data = (await res.json()).data;
       setProducts(prev => pageNum === 1 ? data.products : [...prev, ...data.products]);
       setTotalPages(data.totalPages);
       setHasMore(pageNum < data.totalPages && data.products.length > 0);
@@ -139,7 +139,7 @@ const ProductList = () => {
 
           <div className="lg:col-span-3">
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {products.map(product => (
+              {products && products.map(product => (
                 <ProductCard key={product.id} product={product} addToCart={addToCart} />
               ))}
             </div>
@@ -163,7 +163,7 @@ const ProductCard = memo(({ product,addToCart }) => {
 
   return (
     <motion.div
-      onClick={() => router.push(`/shop/product/${product.id}`)}
+      onClick={() => router.push(`/ghuba/product/${product.id}`)}
       whileHover={{ scale: 1.03 }}
       className="relative bg-white dark:bg-gray-800 p-3 md:p-4 rounded-2xl shadow-xl transition-all cursor-pointer hover:shadow-2xl hover:-translate-y-1 hover:ring-2 hover:ring-yellow-500 dark:hover:ring-yellow-400 mb-4 break-inside-avoid"
     >

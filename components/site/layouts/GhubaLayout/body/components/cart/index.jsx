@@ -18,7 +18,7 @@ const Cart = () => {
 
   const handleCheckout = useCallback(() => {
     setIsCartOpen(false);
-    router.push('/shop/checkout');
+    router.push('/ghuba/checkout');
   }, [setIsCartOpen, router]);
 
   return (

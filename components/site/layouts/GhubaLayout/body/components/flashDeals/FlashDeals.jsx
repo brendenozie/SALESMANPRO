@@ -74,7 +74,7 @@ const FlashCard = ({ productItems, addToCart }) => {
   return (
     <Slider {...settings} className="py-8">
       {productItems.map((product) => (
-        <motion.div onClick={()=>{ router.push(`/shop/product/${product.id}`)}} key={product.id} whileHover={{ scale: 1.05 }} className="p-4">
+        <motion.div onClick={()=>{ router.push(`/ghuba/product/${product.id}`)}} key={product.id} whileHover={{ scale: 1.05 }} className="p-4">
           <div className="bg-white dark:bg-gray-900 text-black dark:text-white rounded-2xl overflow-hidden hover:shadow-3xl ">
             <div className="relative group">
               <span className="absolute top-2 left-2 bg-yellow-500 text-black text-xs px-3 py-1 rounded-full shadow-md">
@@ -102,7 +102,7 @@ const FlashCard = ({ productItems, addToCart }) => {
               </button>
             </div>
             <div className="p-4 text-center">
-              <h3 className="text-lg font-semibold truncate">{product.title}</h3>
+              <h3 className="text-lg font-semibold truncate">{product.name || product.title}</h3>
               <div className="flex justify-center mt-2 space-x-1">
                 {[...Array(5)].map((_, i) => (
                   <StarIcon

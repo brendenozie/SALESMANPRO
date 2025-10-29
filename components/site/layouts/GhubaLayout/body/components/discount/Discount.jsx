@@ -38,7 +38,7 @@ const Dcard = ({ productItems, addToCart }) => {
   return (
     <Slider {...settings}>
       {productItems.map((value, index) => (
-        <motion.div onClick={()=>{ router.push(`/shop/product/${value.id}`)}}
+        <motion.div onClick={()=>{ router.push(`/ghuba/product/${value.id}`)}}
           key={index}
           className="px-4"
           whileHover={{ scale: 1.05 }}
@@ -63,7 +63,7 @@ const Dcard = ({ productItems, addToCart }) => {
 
             <div className="absolute bottom-6 left-6 right-6 bg-white/30 backdrop-blur-lg p-4 rounded-xl shadow-xl">
               <h4 className="text-xl font-semibold text-white truncate">
-                {value.title}
+                {value.name || value.title}
               </h4>
 
               <div className="flex justify-between items-center mt-3">

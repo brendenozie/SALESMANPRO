@@ -43,7 +43,7 @@ const CategoriesGrid = ({ categories }) => {
   <div className="grid grid-cols-3 gap-2 sm:grid-cols-[repeat(auto-fit,_minmax(200px,_1fr))] sm:gap-6 px-4 py-4 sm:px-6 sm:py-8">
   {categories.map(({ name, icon }, index) => (
     <motion.div
-      onClick={() => {router.push(`/shop/productlist?category=${name}`)}}
+      onClick={() => {router.push(`/ghuba/productlist?category=${name}`)}}
       key={index}
       whileHover={{ scale: 1.05 }}
       className="relative bg-gradient-to-br from-yellow-400 to-yellow-500 text-white p-6 rounded-2xl shadow-xl flex flex-col items-center justify-center cursor-pointer hover:shadow-2xl transition-transform overflow-hidden"

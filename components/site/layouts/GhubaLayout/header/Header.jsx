@@ -149,7 +149,7 @@ const SearchBar = ({location, setLocation, locationName, setLocationName}) => {
         onBlur={() => setTimeout(() => setIsDropdownVisible(false), 200)} // Delay to allow clicking suggestions
       />
       <button 
-        onClick={() => router.push(`/shop/productlist?location=${location}`)} 
+        onClick={() => router.push(`/ghuba/productlist?location=${location}`)} 
         className="absolute right-3 text-yellow-400 text-xs hover:underline"
       >
         🔍 View Nearby Deals
@@ -182,7 +182,7 @@ const SearchBar = ({location, setLocation, locationName, setLocationName}) => {
               className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-black dark:text-white cursor-pointer transition"
               onMouseDown={() => {
                 // setSearchTerm(item);
-                router.push(`/shop/product/${item.id}`);
+                router.push(`/ghuba/product/${item.id}`);
               }} // Set input value on click
             >
               {item.title}
@@ -239,7 +239,7 @@ const NavIcons = ({
   
   const handleProfileClick = () => {
     if (user) {
-      router.push("/shop/profile");
+      router.push("/ghuba/profile");
     }
   };
 
@@ -267,11 +267,11 @@ const NavIcons = ({
 
 const menuItems = [
   { name: "Home", icon: <HomeIcon className="w-5 h-5 mr-2" />, link: "/" },
-  { name: "All Products", icon: <DocumentTextIcon className="w-5 h-5 mr-2" />, link: "/shop/productlist" },
-  { name: "All Categories", icon: <DocumentDuplicateIcon className="w-5 h-5 mr-2" />, link: "/shop/categories" },
+  { name: "All Products", icon: <DocumentTextIcon className="w-5 h-5 mr-2" />, link: "/ghuba/productlist" },
+  { name: "All Categories", icon: <DocumentDuplicateIcon className="w-5 h-5 mr-2" />, link: "/ghuba/categories" },
   { name: "My Shop", icon: <BuildingLibraryIcon className="w-5 h-5 mr-2" />, link: "/stores" },
-  { name: "Track My Order", icon: <TruckIcon className="w-5 h-5 mr-2" />, link: "/shop/orderTracking" },
-  { name: "Contact", icon: <PhoneIcon className="w-5 h-5 mr-2" />, link: "/shop/contact" },
+  { name: "Track My Order", icon: <TruckIcon className="w-5 h-5 mr-2" />, link: "/ghuba/orderTracking" },
+  { name: "Contact", icon: <PhoneIcon className="w-5 h-5 mr-2" />, link: "/ghuba/contact" },
 ];
 
 const DesktopMenu = () => (
@@ -296,10 +296,10 @@ const BottomNav = () => {
   const router = useRouter();
   const menuItems = [
     { name: "Home", icon: HomeIcon, link: "/" },
-    { name: "Products", icon: DocumentTextIcon, link: "/shop/productlist" },
-    { name: "Categories", icon: DocumentDuplicateIcon, link: "/shop/categories" },
-    { name: "Orders", icon: TruckIcon, link: "/shop/orderTracking" },
-    { name: "Profile", icon: UserIcon, link: "/shop/profile" },
+    { name: "Products", icon: DocumentTextIcon, link: "/ghuba/productlist" },
+    { name: "Categories", icon: DocumentDuplicateIcon, link: "/ghuba/categories" },
+    { name: "Orders", icon: TruckIcon, link: "/ghuba/orderTracking" },
+    { name: "Profile", icon: UserIcon, link: "/ghuba/profile" },
   ];
 
   return (
