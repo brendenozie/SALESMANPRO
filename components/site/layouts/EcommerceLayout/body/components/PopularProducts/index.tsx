@@ -6,12 +6,17 @@ import { ArrowRightCircleIcon } from '@heroicons/react/24/outline';
 import React from 'react';
 import ProductCard from '../ProductCard';
 
-
-export default function PopularProducts() {
+interface PopularProductsProps {
+  // Define any props if needed
+  slug: string;
+  marketplaceListings: any[];
+  themeSettings: Record<string, any> | null;
+}
+export default function PopularProducts({ slug, marketplaceListings, themeSettings }: PopularProductsProps) {
 
   const { cart, addToCart, decreaseQuantity, removeFromCart } = useStateContext();
   const { storeFormData } = useStoreContext();
-  const { slug, marketplaceListings = [], themeSettings = {} } = storeFormData || {};
+  // const { slug, marketplaceListings = [], themeSettings = {} } = storeFormData || {};
   const primary = themeSettings?.primaryColor || '#f97316';
   const secondary = themeSettings?.secondaryColor || '#3b82f6';
 
@@ -28,7 +33,7 @@ export default function PopularProducts() {
           </button>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {storeFormData && storeFormData.marketplaceListings?.length > 0 && storeFormData.marketplaceListings?.map((product) => (
+          {marketplaceListings?.length > 0 && marketplaceListings?.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}
         </div>

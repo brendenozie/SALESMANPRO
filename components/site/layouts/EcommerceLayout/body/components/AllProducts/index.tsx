@@ -6,12 +6,18 @@ import { ArrowRightCircleIcon } from '@heroicons/react/24/outline';
 import React from 'react';
 import ProductCard from '../ProductCard';
 
+interface AllProductsProps {
+  // Define any props if needed
+  slug: string;
+  marketplaceListings: any[];
+  themeSettings: Record<string, any> | null;
+}
 
-export default function AllProducts() {
+export default function AllProducts( { slug, marketplaceListings, themeSettings }: AllProductsProps) {
 
   const { cart, addToCart, decreaseQuantity, removeFromCart } = useStateContext();
-  const { storeFormData } = useStoreContext();
-  const { slug, marketplaceListings = [], themeSettings = {} } = storeFormData || {};
+  // const { storeFormData } = useStoreContext();
+  // const { slug, marketplaceListings = [], themeSettings = {} } = storeFormData || {};
   const primary = themeSettings?.primaryColor || '#f97316';
   const secondary = themeSettings?.secondaryColor || '#3b82f6';
 

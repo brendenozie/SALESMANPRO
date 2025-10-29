@@ -154,6 +154,8 @@ function pageDataInclude() {
     testimonials: orderedAsc,
     heroSlides: orderedAsc,
 
+    StoreCategory: true,
+
     promotions: {
       select: {
         title: true,

@@ -25,33 +25,30 @@ type EcommerceSiteProps = {
 
 export default function EcommerceSite({ pageData }: EcommerceSiteProps) {
   // Still use context for global theme/settings, but use pageData for content
-  const { storeFormData } = useStoreContext();
+  // const { storeFormData } = useStoreContext();
 
   const {
+    slug, themeSettings = {},
     StoreCategory = [],
     marketplaceListings = [],
     testimonials = [],
     awards = [],
     promotions = [],
+    bannerUrl,
   } = pageData;
-
-  const products = marketplaceListings.length;
-  const customers = 0; // Or from your `storeData`
-  const awardsCount = awards?.length || 0;
-  const support = 24; // Or from your `storeData`
 
   return (
     <>
       <HeroSlider storeFormData={pageData} />
       <CategorySection  storeFormData={pageData} />
       <PromoSection promotions={promotions} />
-      <PopularProducts />
+      <PopularProducts slug={slug} marketplaceListings={marketplaceListings} themeSettings={themeSettings} />
       <MetricsSection storeFormData={pageData} />
-      <DailyBestSells />
-      <SleepTapeAd />
-      <Trending />
+      <DailyBestSells slug={slug} marketplaceListings={marketplaceListings} themeSettings={themeSettings} />
+      <SleepTapeAd bannerUrl={bannerUrl} themeSettings={themeSettings} />
+      <Trending slug={slug} marketplaceListings={marketplaceListings} themeSettings={themeSettings} />
       <FeaturesSection />
-      <AllProducts /> 
+      <AllProducts slug={slug} marketplaceListings={marketplaceListings} themeSettings={themeSettings} /> 
       <AwardsSection awards={awards} />
       <TestimonialsSection testimonials={testimonials} />
       <NewsletterSection />

@@ -6,12 +6,18 @@ import { ArrowRightCircleIcon } from '@heroicons/react/24/outline';
 import React from 'react';
 import ProductCard from '../ProductCard';
 
+interface TrendingProps {
+  // Define any props if needed
+  slug: string;  
+  marketplaceListings: any[];
+  themeSettings: Record<string, any> | null;
+}
 
-export default function Trending() {
+export default function Trending( { slug, marketplaceListings, themeSettings }: TrendingProps) {
 
   const { cart, addToCart, decreaseQuantity, removeFromCart } = useStateContext();
   const { storeFormData } = useStoreContext();
-  const { slug, marketplaceListings = [], themeSettings = {} } = storeFormData || {};
+  // const { slug, marketplaceListings = [], themeSettings = {} } = storeFormData || {};
   const primary = themeSettings?.primaryColor || '#f97316';
   const secondary = themeSettings?.secondaryColor || '#3b82f6';
 

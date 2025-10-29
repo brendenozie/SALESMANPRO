@@ -14,6 +14,10 @@ interface ProductCardProps {
   product: MarketListingForm;
 }
 
+const loader = ({ src }: { src: string }) => {
+  return src;
+}
+
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { cart, addToCart, decreaseQuantity, removeFromCart } = useStateContext();
   const { storeFormData } = useStoreContext();
@@ -48,9 +52,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       >
         {images && images.length > 0 && (
           <Image
-            src={images[0]}
+            src={images[0] === "" ? images[0] : `https://via.placeholder.com/300`}
             alt={name}
             fill
+            loader={loader}
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             className="object-cover object-center transition-transform duration-500 group-hover:scale-105" // Subtler, more elegant zoom
             priority

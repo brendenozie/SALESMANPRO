@@ -1,15 +1,12 @@
 import { useStoreContext } from '@/contexts/StoreContext';
 import React from 'react';
 
-export default function SleepTapeAd() {
-  const { storeFormData } = useStoreContext();
-  const {
-    slug,
-    marketplaceListings = [],
-    themeSettings = {},
-    bannerUrl,
-  } = storeFormData || {};
-
+interface SleepTapeAdProps {
+  bannerUrl?: string | null;
+  themeSettings?: Record<string, any> | null;
+}
+export default function SleepTapeAd({ bannerUrl, themeSettings }: SleepTapeAdProps) {
+  
   const primary = themeSettings?.primaryColor || '#f97316'; // fallback orange
   const secondary = themeSettings?.secondaryColor || '#3b82f6'; // fallback blue
 
