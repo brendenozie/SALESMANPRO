@@ -140,20 +140,70 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
 
   // 1. PRIMARY HOST HANDLING (Routes to root /)
   
+  // if (
+  //   host === PRIMARY_HOST ||
+  //   host === "127.0.0.1" ||
+  //   host === "localhost"
+  // ) {
+  //   // If the local request includes a port, handle it too.
+  //   const fullHost = request.headers.get("host");
+  //   if (fullHost === "127.0.0.1:3000" || fullHost === "localhost:3000") {
+  //       // Local dev host paths resolve natively (e.g., 127.0.0.1:3000/ goes to /)
+  //       return NextResponse.next();
+  //   }
+
+  //   // Primary host paths resolve natively.
+  //   return NextResponse.next();
+  // }
+
+  // ---- 1. PRIMARY HOST & LOCALHOST HANDLING ----
   if (
     host === PRIMARY_HOST ||
     host === "127.0.0.1" ||
     host === "localhost"
   ) {
-    // If the local request includes a port, handle it too.
     const fullHost = request.headers.get("host");
+
+    // Local dev (localhost:3000) → serve as-is
     if (fullHost === "127.0.0.1:3000" || fullHost === "localhost:3000") {
-        // Local dev host paths resolve natively (e.g., 127.0.0.1:3000/ goes to /)
-        return NextResponse.next();
+      return NextResponse.next();
     }
 
-    // Primary host paths resolve natively.
+    // Main production app (salesmanpro.site) → serve normally
     return NextResponse.next();
+  }
+
+  // ---- 2. CUSTOM DOMAIN TENANT HANDLING (fully dynamic) ----
+  // Handles any custom domain: e.g. flourishhub.co.ke, ghuba.shop, brightacademy.org, etc.
+  if (
+    host &&
+    host !== PRIMARY_HOST &&
+    !host.endsWith(".salesmanpro.site") &&
+    !host.startsWith("127.0.0.1") &&
+    !host.startsWith("localhost")
+  ) {
+    // Normalize host
+    const normalizedHost = host.replace(/^www\./, "").toLowerCase();
+
+    // Derive tenant slug (first part before first dot)
+    const slug = normalizedHost.split(".")[0];
+
+    // Build the internal rewrite path for Next.js
+    if (pathname === "/" || pathname === "") {
+      url.pathname = `/site/${slug}`;
+    } else {
+      url.pathname = `/site/${slug}${pathname}`;
+    }
+
+    // Create the rewrite response
+    const res = NextResponse.rewrite(url);
+
+    // Attach helpful debugging headers
+    res.headers.set("x-requested-host", host);
+    res.headers.set("x-original-path", pathname);
+    res.headers.set("x-rewritten-slug", slug);
+
+    return res;
   }
 
   // 2. LOCAL HOST HANDLING (Rewrites to /site)
