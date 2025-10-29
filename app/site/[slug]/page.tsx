@@ -187,6 +187,7 @@ function pageDataInclude() {
         type: true,
         sellingPrice: true,
         images: true,
+        pricingTiers: true,
         isAvailable: true,
         isFeatured: true,
         category: true,

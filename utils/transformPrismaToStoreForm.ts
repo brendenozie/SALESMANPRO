@@ -170,6 +170,10 @@ export function transformCompanyToStoreForm(raw: any): StoreForm {
           : [],
       }
       : undefined,
+    sellingPrice: m.sellingPrice ?? 0,
+    pricingTiers: Array.isArray(m.pricingTiers)
+      ? m.pricingTiers
+      : [],
   })),
 
   currency: raw.currency ?? 'KES',
