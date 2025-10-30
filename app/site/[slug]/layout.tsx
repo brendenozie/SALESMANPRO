@@ -46,6 +46,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
           select: { title: true, description: true, keywords: true }
         },
         logoUrl: true,
+        // description: true,
       },
     });
   }
@@ -60,6 +61,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
           select: { title: true, description: true, keywords: true }
         },
         logoUrl: true,
+        // description: true,
       },
     });
   }
@@ -74,6 +76,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
           select: { title: true, description: true, keywords: true }
         },
         logoUrl: true,
+        // description: true,
       },
     });
   }
@@ -82,12 +85,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: 'Store not found' };
   }
 
-  const title = company.SEO?.title || company.name;
-  const description = company.SEO?.description || `Discover our exclusive collection of products.`;
+  const title = company.SEO?.title || company.name || Ghuba;
+  const description = company.SEO?.description || company.description || `Discover our exclusive collection of products/services.`;
 
   return {
     title,
-    description,
+    // description,
     keywords: company.SEO?.keywords || "ecommerce, ghuba, shops, marketplace",
     openGraph: {
       title,
@@ -196,6 +199,8 @@ export default async function StoreLayout({
 function leanShellInclude() {
   return {
     // Essential for theme and branding
+    
+    // description: true,
     SEO: true,
     AnalyticsConfig: true,
     

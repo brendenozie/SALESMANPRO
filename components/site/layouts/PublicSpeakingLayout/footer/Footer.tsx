@@ -1,25 +1,74 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
-import { EnvelopeIcon, PhoneIcon, MapPinIcon } from "@heroicons/react/24/outline";
-import { FaceSmileIcon } from "@heroicons/react/24/solid";
-import { StoreForm } from "../../../../../types/typings";
+import {
+  EnvelopeIcon,
+  PhoneIcon,
+  MapPinIcon,
+} from "@heroicons/react/24/outline";
+import {
+  FaceSmileIcon,
+} from "@heroicons/react/24/solid";
+import {
+  FaLinkedin,
+  FaFacebookF,
+  FaTwitter,
+  FaInstagram,
+  FaYoutube,
+} from "react-icons/fa";
+import { useStoreContext } from "@/contexts/StoreContext";
 import ClientCookieWrapper from "@/components/site/ClientCookieWrapper";
 import SignInModal from "../../GhubaLayout/body/components/SignInModal/SignInModal";
 
-interface FooterProps {
-  storeFormData: StoreForm;
-}
+export default function Footer() {
+  const { storeFormData } = useStoreContext();
 
-const Footer: React.FC<FooterProps> = ({ storeFormData }) => {
-  const socials = [
-    { name: "LinkedIn", href: "#", icon: "" },
-    { name: "Twitter", href: "#", icon: "" },
-    { name: "Facebook", href: "#", icon: "" },
-    { name: "Instagram", href: "#", icon: "" },
-    { name: "YouTube", href: "#", icon: "" },
-  ];
+  const {
+    name,
+    slug,
+    contactEmail,
+    contactPhone,
+    address,
+    socialLinks,
+    themeSettings,
+  } = storeFormData || {};
+
+  const primaryColor = themeSettings?.primaryColor || "#FF5722";
+  const secondaryColor = themeSettings?.secondaryColor || "#3F51B5";
+
+  const description = `Empowering growth, clarity, and transformation — one step at a time.
+  Let’s build a path that aligns your purpose with lasting results.`;
+
+  const socials =
+    socialLinks && socialLinks.length > 0
+      ? socialLinks
+      : [
+          { channel: "LinkedIn", url: "#" },
+          { channel: "Twitter", url: "#" },
+          { channel: "Facebook", url: "#" },
+          { channel: "Instagram", url: "#" },
+          { channel: "YouTube", url: "#" },
+        ];
+
+  const getSocialIcon = (channel: string) => {
+    switch (channel.toLowerCase()) {
+      case "linkedin":
+        return <FaLinkedin className="w-5 h-5" />;
+      case "twitter":
+      case "x":
+        return <FaTwitter className="w-5 h-5" />;
+      case "facebook":
+        return <FaFacebookF className="w-5 h-5" />;
+      case "instagram":
+        return <FaInstagram className="w-5 h-5" />;
+      case "youtube":
+        return <FaYoutube className="w-5 h-5" />;
+      default:
+        return <FaceSmileIcon className="w-5 h-5" />;
+    }
+  };
 
   return (
     <>
@@ -29,7 +78,6 @@ const Footer: React.FC<FooterProps> = ({ storeFormData }) => {
 
         {/* Footer Content */}
         <div className="container mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12 relative z-10">
-
           {/* Branding */}
           <motion.div
             initial={{ opacity: 0, y: 25 }}
@@ -37,16 +85,18 @@ const Footer: React.FC<FooterProps> = ({ storeFormData }) => {
             transition={{ duration: 0.6 }}
           >
             <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-orange-600 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg">
-                {storeFormData.name?.charAt(0).toUpperCase() || "C"}
+              <div
+                className="w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg"
+                style={{ backgroundColor: primaryColor }}
+              >
+                {(name && name.charAt(0).toUpperCase()) || "C"}
               </div>
               <h2 className="text-2xl font-extrabold text-white">
-                {storeFormData.name || "YourCoach"}
+                {name || "YourCoach"}
               </h2>
             </div>
             <p className="mt-4 text-gray-400 text-sm leading-relaxed">
-              Empowering growth, clarity, and transformation — one step at a time. 
-              Let’s build a path that aligns your purpose with lasting results.
+              {description}
             </p>
           </motion.div>
 
@@ -58,11 +108,46 @@ const Footer: React.FC<FooterProps> = ({ storeFormData }) => {
           >
             <h4 className="font-bold text-white text-lg mb-4">Quick Links</h4>
             <ul className="space-y-2 text-sm">
-              <li><a href="#hero" className="hover:text-orange-400 transition-colors">Home</a></li>
-              <li><a href="#about" className="hover:text-orange-400 transition-colors">About</a></li>
-              <li><a href="#services" className="hover:text-orange-400 transition-colors">Services</a></li>
-              <li><a href="#testimonials" className="hover:text-orange-400 transition-colors">Testimonials</a></li>
-              <li><a href="#contact" className="hover:text-orange-400 transition-colors">Contact</a></li>
+              <li>
+                <Link
+                  href={`/${slug || ""}`}
+                  className="hover:text-orange-400 transition-colors"
+                >
+                  Home
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href={`/${slug || ""}/about`}
+                  className="hover:text-orange-400 transition-colors"
+                >
+                  About
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href={`/${slug || ""}/services`}
+                  className="hover:text-orange-400 transition-colors"
+                >
+                  Services
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href={`/${slug || ""}/testimonials`}
+                  className="hover:text-orange-400 transition-colors"
+                >
+                  Testimonials
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href={`/${slug || ""}/contact`}
+                  className="hover:text-orange-400 transition-colors"
+                >
+                  Contact
+                </Link>
+              </li>
             </ul>
           </motion.div>
 
@@ -74,18 +159,34 @@ const Footer: React.FC<FooterProps> = ({ storeFormData }) => {
           >
             <h4 className="font-bold text-white text-lg mb-4">Contact Info</h4>
             <ul className="space-y-3 text-sm">
-              <li className="flex items-center space-x-2">
-                <EnvelopeIcon className="w-5 h-5 text-orange-500" />
-                <a href="mailto:info@flourishhub.com" className="hover:text-orange-400">info@flourishhub.com</a>
-              </li>
-              <li className="flex items-center space-x-2">
-                <PhoneIcon className="w-5 h-5 text-orange-500" />
-                <a href="tel:+254721299385" className="hover:text-orange-400">+254 721299385</a>
-              </li>
-              <li className="flex items-center space-x-2">
-                <MapPinIcon className="w-5 h-5 text-orange-500" />
-                <span>Nairobi, Kenya</span>
-              </li>
+              {contactEmail && (
+                <li className="flex items-center space-x-2">
+                  <EnvelopeIcon className="w-5 h-5 text-orange-500" />
+                  <a
+                    href={`mailto:${contactEmail}`}
+                    className="hover:text-orange-400"
+                  >
+                    {contactEmail}
+                  </a>
+                </li>
+              )}
+              {contactPhone && (
+                <li className="flex items-center space-x-2">
+                  <PhoneIcon className="w-5 h-5 text-orange-500" />
+                  <a
+                    href={`tel:${contactPhone}`}
+                    className="hover:text-orange-400"
+                  >
+                    {contactPhone}
+                  </a>
+                </li>
+              )}
+              {address && (
+                <li className="flex items-center space-x-2">
+                  <MapPinIcon className="w-5 h-5 text-orange-500" />
+                  <span>{address}</span>
+                </li>
+              )}
             </ul>
           </motion.div>
 
@@ -97,17 +198,20 @@ const Footer: React.FC<FooterProps> = ({ storeFormData }) => {
           >
             <h4 className="font-bold text-white text-lg mb-4">Stay Connected</h4>
             <p className="text-sm text-gray-400 mb-5">
-              Follow me for insights, tips, and motivation on personal growth and success.
+              Follow us for insights, inspiration, and updates.
             </p>
-            <div className="flex space-x-4">
+            <div className="flex space-x-3">
               {socials.map((s, idx) => (
                 <motion.a
                   key={idx}
-                  href={s.href}
-                  whileHover={{ scale: 1.2, rotate: 3 }}
-                  className="text-gray-400 hover:text-orange-400 bg-gray-800 p-2 rounded-full"
+                  href={s.url ?? "#"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={s.channel ?? `social-${idx}`}
+                  whileHover={{ scale: 1.15 }}
+                  className={`p-2 rounded-full transition-all duration-300 bg-white/5 hover:bg-[${secondaryColor}] hover:text-white text-[${primaryColor}]`}
                 >
-                  <FaceSmileIcon className="w-5 h-5" />
+                  {getSocialIcon(s.channel)}
                 </motion.a>
               ))}
             </div>
@@ -116,20 +220,22 @@ const Footer: React.FC<FooterProps> = ({ storeFormData }) => {
 
         {/* Divider */}
         <div className="mt-16 border-t border-gray-700 pt-8 text-center text-sm text-gray-500">
-          <motion.p initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} transition={{ delay: 0.4 }}>
-            &copy; {new Date().getFullYear()} {storeFormData.name || "YourCoach"} — All Rights Reserved.  
+          <motion.p
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+          >
+            &copy; {new Date().getFullYear()} {name || "YourCoach"} — All Rights Reserved.
             <br />
-            <span className="text-orange-400 font-semibold">
+            <span className="font-semibold text-orange-400" style={{ color: primaryColor }}>
               Empowering You to Lead with Clarity and Confidence.
             </span>
           </motion.p>
         </div>
       </footer>
 
-          <SignInModal />
-          <ClientCookieWrapper />
+      <SignInModal />
+      <ClientCookieWrapper />
     </>
   );
-};
-
-export default Footer;
+}
