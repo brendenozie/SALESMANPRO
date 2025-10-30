@@ -85,8 +85,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: 'Store not found' };
   }
 
-  const title = company.SEO?.title || company.name || Ghuba;
-  const description = company.SEO?.description || company.description || `Discover our exclusive collection of products/services.`;
+  const title = company.SEO?.title || company.name || "Ghuba";
+  const description = company.SEO?.description ||`Discover our exclusive collection of products/services.`;
 
   return {
     title,

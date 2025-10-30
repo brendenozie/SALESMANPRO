@@ -18,9 +18,11 @@ import {
   FaInstagram,
   FaYoutube,
 } from "react-icons/fa";
+import type { IconType } from "react-icons";
 import { useStoreContext } from "@/contexts/StoreContext";
 import ClientCookieWrapper from "@/components/site/ClientCookieWrapper";
 import SignInModal from "../../GhubaLayout/body/components/SignInModal/SignInModal";
+
 
 export default function Footer() {
   const { storeFormData } = useStoreContext();
@@ -52,23 +54,25 @@ export default function Footer() {
           { channel: "YouTube", url: "#" },
         ];
 
-  const getSocialIcon = (channel: string) => {
-    switch (channel.toLowerCase()) {
-      case "linkedin":
-        return <FaLinkedin className="w-5 h-5" />;
-      case "twitter":
-      case "x":
-        return <FaTwitter className="w-5 h-5" />;
-      case "facebook":
-        return <FaFacebookF className="w-5 h-5" />;
-      case "instagram":
-        return <FaInstagram className="w-5 h-5" />;
-      case "youtube":
-        return <FaYoutube className="w-5 h-5" />;
-      default:
-        return <FaceSmileIcon className="w-5 h-5" />;
-    }
+  const getSocialIcon = (channel: unknown): React.ReactElement => {
+  const iconMap: Record<string, IconType> = {
+    linkedin: FaLinkedin,
+    twitter: FaTwitter,
+    x: FaTwitter,
+    facebook: FaFacebookF,
+    instagram: FaInstagram,
+    youtube: FaYoutube,
   };
+
+  const key = String(channel ?? "").toLowerCase();
+  const IconComponent = iconMap[key];
+  if (IconComponent) {
+    const Component = IconComponent as React.ComponentType<any>;
+    return <Component className="w-5 h-5" />;
+  }
+  return <FaceSmileIcon className="w-5 h-5" />;
+};
+
 
   return (
     <>
