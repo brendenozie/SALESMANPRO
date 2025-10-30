@@ -41,7 +41,7 @@ interface PageProps {
  */
 export default async function MembersPage({ params }: PageProps) {
   const { slug : companyId } = await params;
-  const cookieHeader = await cookies().toString();
+  const cookieHeader = (await cookies()).toString();
 
   let membersData: Member[] = [];
   let projectsData: ProjectOption[] = [];

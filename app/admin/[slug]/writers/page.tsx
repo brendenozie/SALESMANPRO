@@ -53,7 +53,7 @@ interface PageProps {
 export default async function WritersPage({ params }: PageProps) {
   const { slug : companyId } = await params;
   let writersData: Writer[] = [];
-  const cookieHeader = await cookies().toString();
+  const cookieHeader = (await cookies()).toString();
 
   try {
     const res = await fetch(`${apiUrl}/admin/writers?companyId=${companyId}`, {

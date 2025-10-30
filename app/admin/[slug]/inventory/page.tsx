@@ -29,7 +29,7 @@ export default async function AdminInventoryPage({ params }: Props) {
   let agentsData: Agent[] = [];
 
   try {
-    const cookieHeader = await cookies().toString();
+    const cookieHeader = (await cookies()).toString();
 
     // Fetch all products for this company
     const productsRes = await fetch(`${apiUrl}/admin/get-all-inventory?companyId=${encodeURIComponent(companyId)}`,

@@ -35,7 +35,7 @@ interface PageProps {
 export default async function AgentsPage({ params }: PageProps) {
   const { slug : companyId } = await params;
   let agentsData: Agent[] = [];
-  const cookieHeader = await cookies().toString();
+  const cookieHeader = (await cookies()).toString();
   
   try {
     const res = await fetch(`${apiUrl}/admin/agents?companyId=${companyId}`, {

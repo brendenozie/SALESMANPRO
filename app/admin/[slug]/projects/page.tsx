@@ -35,7 +35,7 @@ interface PageProps {
 export default async function ProjectsPage({ params }: PageProps) {
   const { slug : companyId } = await params; // Assuming projects are filtered by companyId
   
-  const cookieHeader = await cookies().toString();
+  const cookieHeader = (await cookies()).toString();
   let projectsData: Project[] = [];
 
   try {

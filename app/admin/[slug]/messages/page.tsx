@@ -113,7 +113,7 @@ export default async function MessagesManagerPage({ params }: Props) {
   const { slug : companyId } = await params;
   const currentUserId = MOCK_CURRENT_USER_ID; // In a real app, get this from auth context
   
-    const cookieHeader = await cookies().toString();
+    const cookieHeader = (await cookies()).toString();
 
   let initialConversations: ConversationData[] = [];
   let allUsers: UserData[] = [];

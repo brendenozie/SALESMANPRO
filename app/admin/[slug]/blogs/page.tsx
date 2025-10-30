@@ -44,7 +44,7 @@ interface PageProps {
 
 export default async function BlogsPage({ params }: PageProps) {
   const { slug : companyId } = await params;
-  const cookieHeader = await cookies().toString();
+  const cookieHeader = (await cookies()).toString();
   const limit     = 10;
   const page      = 1;
 

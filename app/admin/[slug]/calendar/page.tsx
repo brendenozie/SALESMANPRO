@@ -158,7 +158,7 @@ const sampleOrderItems: OrderItem[] = [
 
 export default async function AppointmentsPage({ params }: Props) {
   const { slug : companyId } = await params;
-  const cookieHeader = await cookies().toString();
+  const cookieHeader = (await cookies()).toString();
 
   let orderItems: OrderItem[] = [];
 

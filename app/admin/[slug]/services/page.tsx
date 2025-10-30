@@ -15,7 +15,7 @@ interface PageProps {
 export default async function ServicesPage({ params }: PageProps) {
   const { slug : companyId } = await params;
   
-  const cookieHeader = await cookies().toString();
+  const cookieHeader = (await cookies()).toString();
 
   let initialServices: MarketListingForm[] = [];
   let categoriesData: IStoreCategory[] = [];

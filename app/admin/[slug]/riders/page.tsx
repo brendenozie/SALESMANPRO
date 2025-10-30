@@ -35,7 +35,7 @@ interface PageProps {
 export default async function RidersPage({ params }: PageProps) {
   const { slug : companyId } = await params;
   let ridersData: RiderProfile[] = [];
-  const cookieHeader = await cookies().toString();
+  const cookieHeader = (await cookies()).toString();
   
   try {
     const res = await fetch(`${apiUrl}/admin/riders?companyId=${companyId}`, {

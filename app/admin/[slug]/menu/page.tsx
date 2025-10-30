@@ -62,7 +62,7 @@ interface PaginatedListings {
  */
 export default async function MenuPage({ params }: PageProps) {
     const { slug : companyId } = await params;
-    const cookieHeader = await cookies().toString();
+    const cookieHeader = (await cookies()).toString();
   
     let productsData: MarketListingForm[] = [];
     let categoriesData: IStoreCategory[] = [];

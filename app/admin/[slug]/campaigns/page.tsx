@@ -31,7 +31,7 @@ interface PageProps {
  */
 export default async function CampaignsPage({ params }: PageProps) {
   const { slug : companyId } = await params; // Assuming campaigns can be filtered by companyId
-  const cookieHeader = await cookies().toString();
+  const cookieHeader = (await cookies()).toString();
   let campaignsData: Campaign[] = [];
 
   try {
