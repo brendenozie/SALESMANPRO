@@ -154,8 +154,20 @@ export default function PricingAndStatsSection() {
     };
     
     // Split stats for distinct visual treatment
-    const ratingStat = stats?.find(s => s.label === 'Average Rating') || sampleData.stats[3];
-    const coreStats = stats?.filter(s => s.label !== 'Average Rating');
+    // Ensure stats is always a proper IStat[] array
+    // Safely normalize stats (null-proof)
+const normalizedStats: IStat[] = Array.isArray(storeFormData?.stats)
+  ? ((storeFormData?.stats ?? []) as IStat[])
+  : sampleData.stats;
+
+// Split stats for distinct visual treatment
+const ratingStat =
+  normalizedStats.find((s) => s.label === "Average Rating") ||
+  sampleData.stats[3];
+
+const coreStats = normalizedStats.filter(
+  (s) => s.label !== "Average Rating"
+);
 
 
     return (

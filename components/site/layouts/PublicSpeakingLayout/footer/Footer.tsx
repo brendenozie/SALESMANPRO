@@ -23,9 +23,11 @@ import { useStoreContext } from "@/contexts/StoreContext";
 import ClientCookieWrapper from "@/components/site/ClientCookieWrapper";
 import SignInModal from "../../GhubaLayout/body/components/SignInModal/SignInModal";
 
+interface FooterProps {
+  storeFormData: any;
+}
 
-export default function Footer() {
-  const { storeFormData } = useStoreContext();
+export default function Footer({ storeFormData }: FooterProps) {
 
   const {
     name,
@@ -205,7 +207,7 @@ export default function Footer() {
               Follow us for insights, inspiration, and updates.
             </p>
             <div className="flex space-x-3">
-              {socials.map((s, idx) => (
+              {socials.map((s: any, idx: number) => (
                 <motion.a
                   key={idx}
                   href={s.url ?? "#"}
