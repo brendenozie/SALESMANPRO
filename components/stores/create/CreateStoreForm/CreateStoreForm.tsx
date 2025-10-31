@@ -1441,58 +1441,57 @@ const handleSubmit = async (e: FormEvent) => {
 
 
   // Render step or review
-
   const StepContent = useMemo(() => {
-    
-  if (stepIndex < allSteps.length) {
-    return allSteps[stepIndex].render(
-      form,
-      handlers,
-      availableCategories,
-      availableLocations,
-      selectedLocationsForDisplay,
-      selectedCategoriesArray,
-      dispatch
+    if (stepIndex < allSteps.length) {
+      return allSteps[stepIndex].render(
+        form,
+        handlers,
+        availableCategories,
+        availableLocations,
+        selectedLocationsForDisplay,
+        selectedCategoriesArray,
+        dispatch
+      );
+    }
+  
+    // Review screen
+    return (
+      <div className="space-y-6">
+        <h2 className="text-2xl font-semibold">Review Your Store</h2>
+        {allSteps.map((s: any, i: number) => (
+          <div
+            key={s.key}
+            className="p-4 border rounded hover:bg-gray-50 cursor-pointer"
+            onClick={() => setStepIndex(i)}
+          >
+            <h3 className="font-medium mb-2 flex justify-between items-center">
+              <span>{s.title}</span>
+              <span className="text-xs text-indigo-500">Edit ➔</span>
+            </h3>
+            <div className="text-gray-700">{renderReviewContent(s.key, form)}</div>
+          </div>
+        ))}
+      </div>
     );
-  }
-
-  // Review screen
-  return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-semibold">Review Your Store</h2>
-      {allSteps.map((s: any, i: number) => (
-        <div
-          key={s.key}
-          className="p-4 border rounded hover:bg-gray-50 cursor-pointer"
-          onClick={() => setStepIndex(i)}
-        >
-          <h3 className="font-medium mb-2 flex justify-between items-center">
-            <span>{s.title}</span>
-            <span className="text-xs text-indigo-500">Edit ➔</span>
-          </h3>
-          <div className="text-gray-700">{renderReviewContent(s.key, form)}</div>
-        </div>
-      ))}
-    </div>
-  );
-}, [
-  stepIndex,
-  allSteps,
-  form,
-  handlers,
-  availableCategories,
-  availableLocations,
-  selectedLocationsForDisplay,
-  selectedCategoriesArray,
-  dispatch,
-]);
-
-
-  const currentTitle = stepIndex < allSteps.length ? allSteps[stepIndex].title : "Review & Submit";
+  }, [
+    stepIndex,
+    allSteps,
+    form,
+    handlers,
+    availableCategories,
+    availableLocations,
+    selectedLocationsForDisplay,
+    selectedCategoriesArray,
+    dispatch,
+  ]);
+  
+  const currentTitle =
+    stepIndex < allSteps.length ? allSteps[stepIndex].title : "Review & Submit";
   const percent = Math.min(((stepIndex + 1) / totalSteps) * 100, 100);
+  
 
   return (
-  <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row relative">
+    <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row relative">
     {/* Full-Page Submitting Overlay - Enhanced Version */}
     {isSubmitting && (
       <motion.div
@@ -1505,7 +1504,12 @@ const handleSubmit = async (e: FormEvent) => {
         <motion.div
           initial={{ y: -50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.2, duration: 0.5, type: "spring", stiffness: 100 }}
+          transition={{
+            delay: 0.2,
+            duration: 0.5,
+            type: "spring",
+            stiffness: 100,
+          }}
           className="bg-white p-10 rounded-xl shadow-2xl flex flex-col items-center max-w-sm text-center transform scale-105"
         >
           {/* Advanced Spinner: Concentric Circles */}
@@ -1527,7 +1531,7 @@ const handleSubmit = async (e: FormEvent) => {
         </motion.div>
       </motion.div>
     )}
-    
+
     {/* Mobile Top Bar with Step Info - REMAINS FOR MOBILE CONTEXT */}
     <div className="md:hidden bg-indigo-600 text-white py-2 px-4 flex justify-between items-center shadow-sm sticky top-0 z-30">
       <span className="font-medium text-sm">
@@ -1536,67 +1540,83 @@ const handleSubmit = async (e: FormEvent) => {
       <span className="text-xs truncate max-w-[60%]">{currentTitle}</span>
     </div>
 
-    {/* Sidebar - CONDITIONAL RENDERING ADDED HERE */}
-    {stepIndex > 0 && (
-      <aside className="hidden md:flex w-64 flex-col bg-white shadow-lg p-4 sticky top-0 h-screen z-10">
-        <h2 className="text-xl font-semibold mb-6 text-indigo-700">
-          Setup Wizard
-        </h2>
-        <nav className="flex flex-col gap-4 overflow-y-auto">
-          {allSteps.map((s, i) => {
-            const completed = i < stepIndex;
-            const active = i === stepIndex;
-            return (
-              <button
-                key={s.key}
-                onClick={() => setStepIndex(i)}
-                className={`flex items-center gap-3 p-3 rounded-lg transition
-              ${completed ? "bg-green-100 text-green-800" : ""}
+    {/* Sidebar - ANIMATED */}
+    <motion.aside
+      className="hidden md:flex w-64 flex-col bg-white shadow-lg p-4 sticky top-0 h-screen z-10 overflow-hidden" // Added overflow-hidden
+      initial={false} // Prevents animation on initial load
+      animate={{
+        width: stepIndex > 0 ? "16rem" : "0rem", // 16rem = w-64
+        padding: stepIndex > 0 ? "1rem" : "0rem", // 1rem = p-4
+      }}
+      transition={{ duration: 0.3, ease: "easeInOut" }}
+    >
+      <h2 className="text-xl font-semibold mb-6 text-indigo-700">
+        Setup Wizard
+      </h2>
+      <nav className="flex flex-col gap-4 overflow-y-auto">
+        {allSteps.map((s, i) => {
+          const completed = i < stepIndex;
+          const active = i === stepIndex;
+          return (
+            <button
+              key={s.key}
+              onClick={() => setStepIndex(i)}
+              className={`flex items-center gap-3 p-3 rounded-lg transition
+                ${completed ? "bg-green-100 text-green-800" : ""}
+                ${
+                  active
+                    ? "bg-indigo-100 text-indigo-800 font-medium shadow-inner"
+                    : "hover:bg-gray-100 text-gray-700"
+                }`}
+            >
+              <span
+                className={`w-8 h-8 flex items-center justify-center rounded-full text-sm
+                    ${
+                      completed
+                        ? "bg-green-600 text-white"
+                        : active
+                        ? "bg-indigo-600 text-white"
+                        : "bg-indigo-200 text-indigo-700"
+                    }`}
+              >
+                {completed ? <CheckCircleIcon className="w-4 h-4" /> : i + 1}
+              </span>
+              <span className="text-sm">{s.title}</span>
+            </button>
+          );
+        })}
+        <button
+          type="button"
+          onClick={() => setStepIndex(allSteps.length)}
+          className={`flex items-center gap-3 p-3 rounded-lg transition
               ${
-                active
-                  ? "bg-indigo-100 text-indigo-800 font-medium shadow-inner"
+                stepIndex === allSteps.length
+                  ? "bg-green-100 text-green-800"
                   : "hover:bg-gray-100 text-gray-700"
               }`}
-              >
-                <span
-                  className={`w-8 h-8 flex items-center justify-center rounded-full text-sm
-                ${
-                  completed
-                    ? "bg-green-600 text-white"
-                    : active
-                    ? "bg-indigo-600 text-white"
-                    : "bg-indigo-200 text-indigo-700"
-                }`}
-                >
-                  {completed ? <CheckCircleIcon className="w-4 h-4" /> : i + 1}
-                </span>
-                <span className="text-sm">{s.title}</span>
-              </button>
-            );
-          })}
-          <button
-            type="button"
-            onClick={() => setStepIndex(allSteps.length)}
-            className={`flex items-center gap-3 p-3 rounded-lg transition
-          ${
-            stepIndex === allSteps.length
-              ? "bg-green-100 text-green-800"
-              : "hover:bg-gray-100 text-gray-700"
-          }`}
-          >
-            <span className="w-8 h-8 flex items-center justify-center rounded-full text-sm bg-green-200 text-green-700">
-              ✔
-            </span>
-            <span className="text-sm">Review</span>
-          </button>
-        </nav>
-      </aside>
-    )}
+        >
+          <span className="w-8 h-8 flex items-center justify-center rounded-full text-sm bg-green-200 text-green-700">
+            ✔
+          </span>
+          <span className="text-sm">Review</span>
+        </button>
+      </nav>
+    </motion.aside>
 
-    {/* Main Content - CLASS ADJUSTMENT ADDED HERE */}
-    <main className={`flex-1 flex flex-col px-2 sm:px-2 py-6 relative ${stepIndex === 0 ? 'md:w-full' : ''}`}>
-      {/* Progress Bar - CONDITIONAL RENDERING ADDED HERE */}
-      {stepIndex > 0 && (
+    {/* Main Content - CLASS ADJUSTMENT MADE */}
+    <main className="flex-1 flex flex-col px-2 sm:px-2 py-6 relative">
+      
+      {/* Progress Bar & Step Info - ANIMATED WRAPPER */}
+      <motion.div
+        className="overflow-hidden" // Clips content while height is 0
+        initial={{ height: 0, opacity: 0 }}
+        animate={{
+          height: stepIndex > 0 ? "auto" : 0,
+          opacity: stepIndex > 0 ? 1 : 0,
+        }}
+        transition={{ duration: 0.3, ease: "easeInOut" }}
+      >
+        {/* Progress Bar */}
         <div className="relative mb-4">
           <div className="h-2 bg-gray-200 rounded-full">
             <div
@@ -1610,33 +1630,29 @@ const handleSubmit = async (e: FormEvent) => {
                 key={i}
                 onClick={() => setStepIndex(i)}
                 className={`w-3 h-3 rounded-full focus:outline-none
-              ${
-                i <= stepIndex
-                  ? "bg-indigo-600"
-                  : "bg-white border border-gray-300"
-              }`}
+                      ${
+                        i <= stepIndex
+                          ? "bg-indigo-600"
+                          : "bg-white border border-gray-300"
+                      }`}
               />
             ))}
           </div>
         </div>
-      )}
 
-      {/* Step Info (Desktop only) - CONDITIONAL RENDERING ADDED HERE */}
-      {stepIndex > 0 && (
+        {/* Step Info (Desktop only) */}
         <div className="hidden md:flex justify-between mb-2 text-sm text-gray-500">
           <span>
             Step {Math.min(stepIndex + 1, totalSteps)} of {totalSteps}
           </span>
           <span>{currentTitle}</span>
         </div>
-      )}
+      </motion.div>
 
       {/* Step Content */}
       <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-6 flex-1 overflow-auto min-h-[60vh]">
         <AnimatePresence mode="wait">
-          <div
-            key={stepIndex}
-          >
+          <div key={stepIndex}>
             {StepContent}
           </div>
         </AnimatePresence>
