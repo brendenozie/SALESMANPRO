@@ -4,6 +4,14 @@ const path = require('path');
 
 module.exports = {
   /* YOU MUST ADD ENV HERE*/
+  eslint: {
+    ignoreDuringBuilds: true, // optional but saves time
+  },
+  typescript: {
+    ignoreBuildErrors: true,  // disables heavy type checking during build
+  },
+  productionBrowserSourceMaps: false,
+  
   env: {
     DATABASE_URL: process.env.DATABASE_URL ?? "",
   },

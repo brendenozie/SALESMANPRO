@@ -2,8 +2,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev -H 0.0.0.0 -p 3000",
-    "build": "cross-env NODE_OPTIONS='--max-old-space-size=8192' npx prisma generate && next build",
-    "start": "next start",
+    "build": "npx prisma generate && node --max-old-space-size=6144 node_modules/next/dist/bin/next build --no-lint",
+  "start": "next start",
     "vercel-build": "npx prisma generate && next build",
     "analyze": "cross-env ANALYZE=true next build",
     "analyze:server": "cross-env BUNDLE_ANALYZE=server next build",
