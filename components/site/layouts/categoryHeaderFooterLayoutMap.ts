@@ -78,7 +78,36 @@ const categoryHeaderFooterLayoutMap: Record<string, LayoutHeaderFooterComponent>
     'fitness & wellness':FitnessLayout ,
     'marketplace':MarketplaceLayout ,
     'other':DefaultLayout ,
-    'Other':DefaultLayout ,      
+    'Other':DefaultLayout ,     
+    
+    // variant-based (optional)
+    'modern shop (v1)': EcommerceLayout,
+    'digital goods store (v2)': EcommerceLayout,
+    'artisan marketplace (v3)': EcommerceLayout,
+    'executive coach (v1)': ConsultancyLayout,
+    'wellness retreat (v2)': ConsultancyLayout,
+    'standard speaker site': PublicSpeakingLayout,
+    'shoes store classic': EcommerceShoesLayout,
+    'agency portfolio': ServicesLayout,
+    'scheduler hub': BookingsLayout,
+    'creative cv': PortfolioLayout,
+    'modern magazine': BlogLayout,
+    'charity connect': NonprofitLayout,
+    'clinic pro': HealthcareLayout,
+    'film studio': MediaLayout,
+    'financial advisor': FinanceLayout,
+    'car dealership': AutomotiveLayout,
+    'travel agency': TravelLayout,
+    'gym & fitness': FitnessLayout,
+    'business directory': DirectoryLayout,
+    'online learning': CoursesLayout,
+    'food delivery': RestaurantLayout,
+    'event booking': EventsLayout,
+    'property listings': RealEstateLayout,
+    'app landing page': DefaultLayout, // or SaaSLayout
+    'product marketplace': MarketplaceLayout,
+    'general purpose site': DefaultLayout,
+
     'default': DefaultLayout,
        
   
