@@ -1889,6 +1889,40 @@ const handleSubmit = async (e: FormEvent) => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row relative">
+      {/* Full-Page Submitting Overlay - Enhanced Version */}
+    {isSubmitting && (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.3 }}
+        className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-indigo-700 to-purple-800 bg-opacity-95 backdrop-blur-md"
+      >
+        <motion.div
+          initial={{ y: -50, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.2, duration: 0.5, type: "spring", stiffness: 100 }}
+          className="bg-white p-10 rounded-xl shadow-2xl flex flex-col items-center max-w-sm text-center transform scale-105"
+        >
+          {/* Advanced Spinner: Concentric Circles */}
+          <div className="relative w-16 h-16 mb-6">
+            <div className="absolute inset-0 border-4 border-t-4 border-indigo-200 rounded-full animate-spin-slow"></div>
+            <div className="absolute inset-2 border-4 border-r-4 border-indigo-400 rounded-full animate-spin-medium"></div>
+            <div className="absolute inset-4 border-4 border-b-4 border-indigo-600 rounded-full animate-spin-fast"></div>
+          </div>
+
+          <p className="text-2xl font-bold text-gray-900 mb-2 leading-snug">
+            Just a moment, we're uploading...
+          </p>
+          <p className="text-md text-gray-600 font-medium">
+            Please hold tight! We're preparing everything for you.
+          </p>
+          <p className="text-sm text-gray-400 mt-4 animate-pulse">
+            This might take a moment, grab a coffee!
+          </p>
+        </motion.div>
+      </motion.div>
+    )}
       {/* Mobile Top Bar with Step Info */}
       <div className="md:hidden bg-indigo-600 text-white py-2 px-4 flex justify-between items-center shadow-sm sticky top-0 z-30">
         <span className="font-medium text-sm">
