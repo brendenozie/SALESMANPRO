@@ -173,8 +173,38 @@ const SITE_CATEGORIES: Category[] = [
         { name: "General Purpose Site", link: "https://other.salesmanpro.site", description: "A flexible starting point.", tag: 'Standard' }
       ]
     },
-  { name: "Other", icon: "🌐", variants: [{ name: "General Purpose Site", link: "https://other.salesmanpro.site", description: "A flexible starting point.", tag: 'Standard' }] },
 ];
+
+//  "E-commerce",
+//   "Public Speaking",
+//   "Consultant & Coach",
+//   "Shoes Store",
+//   "Service Provider",
+//   "Booking & Appointments",
+//   "Portfolio & Personal Branding",
+//   "Blog & Content",
+//   "Directory & Listings",
+//   "Educational & Online Courses",
+//   "Nonprofit & Community",
+//   "Restaurant & Food Delivery",
+//   "Event & Ticketing",
+//   "Real Estate",
+//   "Healthcare & Clinics",
+//   "SaaS & Web Apps",
+//   "Media & Entertainment",
+//   "Finance & Legal",
+//   "Automotive",
+//   "Travel & Tourism",
+//   "Fitness & Wellness",
+//   "Marketplace",
+//   "Tutors",
+//   "Lecturer",
+//   "Teacher",
+//   "Students",
+//   "Pupils",
+//   "Principal",
+//   "School Head",
+//   "Other",
 
 const PreviewSkeleton = () => (
   <motion.div
