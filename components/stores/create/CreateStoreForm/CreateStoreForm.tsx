@@ -1441,49 +1441,49 @@ const handleSubmit = async (e: FormEvent) => {
 
 
   // Render step or review
-  const StepContent = useMemo(() => {
-    if (stepIndex < allSteps.length) {
-      return allSteps[stepIndex].render(
-        form,
-        handlers,
-        availableCategories,
-        availableLocations,
-        selectedLocationsForDisplay,
-        selectedCategoriesArray,
-        dispatch
-      );
-    }
+  // const StepContent = useMemo(() => {
+  //   if (stepIndex < allSteps.length) {
+  //     return allSteps[stepIndex].render(
+  //       form,
+  //       handlers,
+  //       availableCategories,
+  //       availableLocations,
+  //       selectedLocationsForDisplay,
+  //       selectedCategoriesArray,
+  //       dispatch
+  //     );
+  //   }
   
-    // Review screen
-    return (
-      <div className="space-y-6">
-        <h2 className="text-2xl font-semibold">Review Your Store</h2>
-        {allSteps.map((s: any, i: number) => (
-          <div
-            key={s.key}
-            className="p-4 border rounded hover:bg-gray-50 cursor-pointer"
-            onClick={() => setStepIndex(i)}
-          >
-            <h3 className="font-medium mb-2 flex justify-between items-center">
-              <span>{s.title}</span>
-              <span className="text-xs text-indigo-500">Edit ➔</span>
-            </h3>
-            <div className="text-gray-700">{renderReviewContent(s.key, form)}</div>
-          </div>
-        ))}
-      </div>
-    );
-  }, [
-    stepIndex,
-    allSteps,
-    form,
-    handlers,
-    availableCategories,
-    availableLocations,
-    selectedLocationsForDisplay,
-    selectedCategoriesArray,
-    dispatch,
-  ]);
+  //   // Review screen
+  //   return (
+  //     <div className="space-y-6">
+  //       <h2 className="text-2xl font-semibold">Review Your Store</h2>
+  //       {allSteps.map((s: any, i: number) => (
+  //         <div
+  //           key={s.key}
+  //           className="p-4 border rounded hover:bg-gray-50 cursor-pointer"
+  //           onClick={() => setStepIndex(i)}
+  //         >
+  //           <h3 className="font-medium mb-2 flex justify-between items-center">
+  //             <span>{s.title}</span>
+  //             <span className="text-xs text-indigo-500">Edit ➔</span>
+  //           </h3>
+  //           <div className="text-gray-700">{renderReviewContent(s.key, form)}</div>
+  //         </div>
+  //       ))}
+  //     </div>
+  //   );
+  // }, [
+  //   stepIndex,
+  //   allSteps,
+  //   form,
+  //   handlers,
+  //   availableCategories,
+  //   availableLocations,
+  //   selectedLocationsForDisplay,
+  //   selectedCategoriesArray,
+  //   dispatch,
+  // ]);
   
   const currentTitle =
     stepIndex < allSteps.length ? allSteps[stepIndex].title : "Review & Submit";
@@ -1660,7 +1660,38 @@ const handleSubmit = async (e: FormEvent) => {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
           >
-            {StepContent}
+            {/* Logic from useMemo is now inline */}
+            {stepIndex < allSteps.length ? (
+              // This is the "Active Step" component
+              allSteps[stepIndex].render(
+                form,
+                handlers,
+                availableCategories,
+                availableLocations,
+                selectedLocationsForDisplay,
+                selectedCategoriesArray,
+                dispatch
+              )
+            ) : (
+              // This is the "Review" component
+              <div className="space-y-6">
+                <h2 className="text-2xl font-semibold">Review Your Store</h2>
+                {allSteps.map((s: any, i: number) => (
+                  <div
+                    key={s.key}
+                    className="p-4 border rounded hover:bg-gray-50 cursor-pointer"
+                    onClick={() => setStepIndex(i)}
+                  >
+                    <h3 className="font-medium mb-2 flex justify-between items-center">
+                      <span>{s.title}</span>
+                      <span className="text-xs text-indigo-500">Edit ➔</span>
+                    </h3>
+                    <div className="text-gray-700">{renderReviewContent(s.key, form)}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+            
           </motion.div>
         </AnimatePresence>
       </div>
