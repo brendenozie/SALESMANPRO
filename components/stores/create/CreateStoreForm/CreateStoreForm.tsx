@@ -1233,7 +1233,8 @@ const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [sel
 
   };
 
-  const next = () => setStepIndex((i) => Math.min(i + 1, totalSteps - 1));
+  // const next = () => setStepIndex((i) => Math.min(i + 1, totalSteps - 1));
+  const next = () => setStepIndex((i) => Math.min(i + 1, allSteps.length));
   const prev = () => setStepIndex((i) => Math.max(i - 1, 0));
   
 
@@ -1440,28 +1441,52 @@ const handleSubmit = async (e: FormEvent) => {
 
 
   // Render step or review
-  const StepContent =  stepIndex < allSteps.length ? ( 
-        allSteps[stepIndex].render(form, handlers, availableCategories, availableLocations, selectedLocationsForDisplay, selectedCategoriesArray, dispatch)
-      ) : (
-        <div className="space-y-6">
-          <h2 className="text-2xl font-semibold">Review Your Store</h2>
-          {allSteps.map((s: any, i: any) => (
-            <div
-              key={s.key}
-              className="p-4 border rounded hover:bg-gray-50 cursor-pointer"
-              onClick={() => setStepIndex(i)}
-            >
-              <h3 className="font-medium mb-2 flex justify-between items-center">
-                <span>{s.title}</span>
-                <span className="text-xs text-indigo-500">Edit ➔</span>
-              </h3>
-              <div className="text-gray-700">
-                {renderReviewContent(s.key, form)}
-              </div>
-            </div>
-          ))}
+
+  const StepContent = useMemo(() => {
+    
+  if (stepIndex < allSteps.length) {
+    return allSteps[stepIndex].render(
+      form,
+      handlers,
+      availableCategories,
+      availableLocations,
+      selectedLocationsForDisplay,
+      selectedCategoriesArray,
+      dispatch
+    );
+  }
+
+  // Review screen
+  return (
+    <div className="space-y-6">
+      <h2 className="text-2xl font-semibold">Review Your Store</h2>
+      {allSteps.map((s: any, i: number) => (
+        <div
+          key={s.key}
+          className="p-4 border rounded hover:bg-gray-50 cursor-pointer"
+          onClick={() => setStepIndex(i)}
+        >
+          <h3 className="font-medium mb-2 flex justify-between items-center">
+            <span>{s.title}</span>
+            <span className="text-xs text-indigo-500">Edit ➔</span>
+          </h3>
+          <div className="text-gray-700">{renderReviewContent(s.key, form)}</div>
         </div>
-      );
+      ))}
+    </div>
+  );
+}, [
+  stepIndex,
+  allSteps,
+  form,
+  handlers,
+  availableCategories,
+  availableLocations,
+  selectedLocationsForDisplay,
+  selectedCategoriesArray,
+  dispatch,
+]);
+
 
   const currentTitle = stepIndex < allSteps.length ? allSteps[stepIndex].title : "Review & Submit";
   const percent = Math.min(((stepIndex + 1) / totalSteps) * 100, 100);
@@ -1609,15 +1634,11 @@ const handleSubmit = async (e: FormEvent) => {
       {/* Step Content */}
       <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-6 flex-1 overflow-auto min-h-[60vh]">
         <AnimatePresence mode="wait">
-          <motion.div
+          <div
             key={stepIndex}
-            initial={{ opacity: 0, x: 30 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -30 }}
-            transition={{ duration: 0.3 }}
           >
             {StepContent}
-          </motion.div>
+          </div>
         </AnimatePresence>
       </div>
 
