@@ -123,7 +123,12 @@ export default async function StorePage({ params }: StorePageProps) {
   const pageData = transformCompanyToStoreForm(raw);
 
   // Determine which component to render based on category
-  const componentName = getComponentNameForCategory(pageData.category || 'other');
+  const componentName = getComponentNameForCategory(
+    pageData.category,
+    pageData.variant || '' // 👈 variant takes priority
+  );
+
+  console.log(`Rendering component: ${componentName} for category: ${pageData.category}, variant: ${pageData.variant}`);
   const BodyComponent = componentMap[componentName] || componentMap['DefaultSite'];
 
   return (

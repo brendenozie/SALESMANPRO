@@ -11,6 +11,7 @@ export function transformCompanyToStoreForm(raw: any): StoreForm {
   tagline: raw.tagline ?? '',
   description: raw.description ?? '',
   category: raw.category,
+  variant: raw.variant ?? '',
   logoUrl: raw.logoUrl ?? '',
   bannerUrl: raw.bannerUrl ?? '',
   videoUrl: raw.videoUrl ?? '',
