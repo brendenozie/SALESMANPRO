@@ -34,12 +34,27 @@ export const storeSteps: StepConfig[] = [
   {
     key: 'basic',
     title: 'Basic Info',
-    render: (f, h) => <BasicInfo {...f} handleChange={h.handleChange} />,
+    render: (f, h) => <BasicInfo 
+      name={f.name}
+      slug={f.slug}
+      category={f.category}
+      description={f.description}
+      hasWebsite={f.hasWebsite}
+      tagline={f.tagline}
+      domain={f.domain}
+      handleChange={h.handleChange} />,
   },
   {
     key: 'storeProfile',
     title: 'Store Profile',
-    render: (f, h) => <StoreProfileInfo {...f} handleChange={h.handleChange} handleArrayChange={h.handleArrayChange}  
+    render: (f, h) => <StoreProfileInfo 
+     partnerLogos={f.partnerLogos}
+      founderName={f.founderName}
+      founderQuote={f.founderQuote}
+      sectionSubtitle={f.sectionSubtitle}
+      sectionTitle={f.sectionTitle}
+      sectionDescription={f.sectionDescription}
+     handleChange={h.handleChange} handleArrayChange={h.handleArrayChange}  
     addItem={h.addItem} removeItem={h.removeItem}/>,
   },
   {
