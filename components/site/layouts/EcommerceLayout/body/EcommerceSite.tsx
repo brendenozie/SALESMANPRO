@@ -35,6 +35,7 @@ export default function EcommerceSite({ pageData }: EcommerceSiteProps) {
     awards = [],
     promotions = [],
     bannerUrl,
+    CoreValues = [],
   } = pageData;
 
   return (
@@ -43,7 +44,7 @@ export default function EcommerceSite({ pageData }: EcommerceSiteProps) {
       <CategorySection  storeFormData={pageData} />
       <PromoSection promotions={promotions} />
       <PopularProducts slug={slug} marketplaceListings={marketplaceListings} themeSettings={themeSettings} />
-      <MetricsSection storeFormData={pageData} />
+      <MetricsSection coreValues={CoreValues}  />
       <DailyBestSells slug={slug} marketplaceListings={marketplaceListings} themeSettings={themeSettings} />
       <SleepTapeAd bannerUrl={bannerUrl} themeSettings={themeSettings} />
       <Trending slug={slug} marketplaceListings={marketplaceListings} themeSettings={themeSettings} />
