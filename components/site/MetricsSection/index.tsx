@@ -3,14 +3,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import * as OutlineIcons from '@heroicons/react/24/outline';
+import { ICoreValue } from '@/types/typings';
 
-interface CoreValue {
-  id: string;
-  companyId: string;
-  title: string;
-  description: string;
-  icon: string; // string name of the icon
-}
 
 // MetricCard component to display a single feature
 const MetricCard = ({
@@ -44,8 +38,12 @@ const MetricCard = ({
   );
 };
 
+interface MetricCardProps { 
+  coreValues: ICoreValue[];
+}
+
 // Main section
-export default function MetricsSection({ storeFormData }: { storeFormData: any }) {
+export default function MetricsSection({ coreValues }: MetricCardProps) {
 
   const CoreValues = [
     {
@@ -70,11 +68,7 @@ export default function MetricsSection({ storeFormData }: { storeFormData: any }
       icon: 'TruckIcon',
     },
   ];
-
-  const coreValues = storeFormData?.coreValues?.length
-    ? storeFormData.coreValues
-    : CoreValues;
-
+  const coreValuesToUse = coreValues && coreValues.length > 0 ? coreValues : CoreValues;
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-zinc-900 font-sans p-8 flex items-center justify-center">
@@ -86,13 +80,17 @@ export default function MetricsSection({ storeFormData }: { storeFormData: any }
           We're committed to providing the best experience with our top-tier service.
         </p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
-          {coreValues.map((value: CoreValue) => {
-            const Icon = (OutlineIcons as any)[value.icon] || OutlineIcons.SparklesIcon;
+          {coreValuesToUse.map((value: ICoreValue) => {
+            const iconKey = (value.icon ?? 'SparklesIcon') as string;
+            const Icon =
+              ((OutlineIcons as any)[iconKey] || OutlineIcons.SparklesIcon) as (
+                props: React.ComponentProps<'svg'>
+              ) => JSX.Element;
             return (
               <MetricCard
                 key={value.id}
                 title={value.title}
-                description={value.description}
+                description={value.description || ''}
                 Icon={Icon}
               />
             );

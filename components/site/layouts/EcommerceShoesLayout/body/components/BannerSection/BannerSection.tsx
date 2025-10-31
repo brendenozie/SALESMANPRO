@@ -2,7 +2,12 @@
 
 import React, { useState } from 'react';
 
-export default function BannerSection() {
+interface BannerSectionProps {
+  promotions?: any[];
+  themeSettings?: any;
+}
+
+export default function BannerSection({ promotions, themeSettings }: BannerSectionProps) {
   const [isHovered, setIsHovered] = useState(false);
 
   return (

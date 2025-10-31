@@ -7,12 +7,13 @@ import React from 'react';
 import ProductCard from '../ProductCard';
 import { MarketListingForm } from '@/types/typings';
 
+interface AllProductsProps {      
+  martketplaceListings?: MarketListingForm[];
+  themeSettings?: any;
+}
 
-export default function AllProducts() {
+export default function AllProducts({ martketplaceListings, themeSettings }: AllProductsProps) {
 
-  const { cart, addToCart, decreaseQuantity, removeFromCart } = useStateContext();
-  const { storeFormData } = useStoreContext();
-  const { slug, marketplaceListings = [], themeSettings = {} } = storeFormData || {};
   const primary = themeSettings?.primaryColor || '#f97316';
   const secondary = themeSettings?.secondaryColor || '#3b82f6';
 
@@ -243,9 +244,7 @@ export default function AllProducts() {
     },
   ];
 
-  const getQuantity = (id: string) => cart.find((item: any) => item.id === id)?.quantity || 0;
-
-  const productsToShow = marketplaceListings?.length > 0 ? marketplaceListings : dummyProducts;
+  const productsToShow = martketplaceListings && martketplaceListings?.length > 0 ? martketplaceListings : dummyProducts;
 
 
   return (
@@ -260,7 +259,7 @@ export default function AllProducts() {
         </div>
         {/* Products Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {productsToShow.map((product) => (
+          {productsToShow.map((product : MarketListingForm) => (
               <ProductCard key={product.id} product={product} primary={primary} />
           ))}
         </div>

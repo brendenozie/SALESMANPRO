@@ -24,10 +24,15 @@ const dummyPromotionData = {
   trustLogos: [],
 };
 
+interface SleepTapeAdProps {
+  promotions?: any;
+  themeSettings?: any;
+}
 
-export default function SleepTapeAd() {
-  const { storeFormData } = useStoreContext();
-  const { promotions = [], themeSettings = {} } = storeFormData || {};
+
+export default function SleepTapeAd({ promotions, themeSettings }: SleepTapeAdProps) {
+  // const { storeFormData } = useStoreContext();
+  // const { promotions = [], themeSettings = {} } = storeFormData || {};
 
   // Find an active promotion to use for the ad.
   // We can use the first promotion in the list for this component.

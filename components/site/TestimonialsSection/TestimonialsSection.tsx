@@ -21,11 +21,15 @@ const sampletestimonials = [
       avatarUrl: 'https://placehold.co/100x100/FFF?text=M',
     },
   ];
+
+  interface TestimonialsSectionProps {
+    testimonials?: Testimonial[] | null;
+  }
   
 
 // Main App component containing the "Testimonials" section
-export default function TestimonialsSection( { testimonials = sampletestimonials }: { testimonials?: Testimonial[] | null }) {
-   
+export default function TestimonialsSection( { testimonials = sampletestimonials }: TestimonialsSectionProps) {
+
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-zinc-900 font-sans p-8 flex items-center justify-center">
       <section className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center py-16">

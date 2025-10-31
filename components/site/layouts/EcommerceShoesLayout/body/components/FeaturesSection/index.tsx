@@ -9,41 +9,19 @@ import {
 } from '@heroicons/react/24/outline';
 import { useStoreContext } from '@/contexts/StoreContext';
 
-const features = [
-  {
-    id: 1,
-    title: '10 minute grocery now',
-    description:
-      'Get your order delivered to your doorstep at the earliest from FreshCart pickup stores near you.',
-    icon: ClockIcon,
-  },
-  {
-    id: 2,
-    title: 'Best Prices & Offers',
-    description:
-      'Cheaper prices than your local supermarket, great cashback offers to top it off. Get best prices & offers.',
-    icon: TagIcon,
-  },
-  {
-    id: 3,
-    title: 'Wide Assortment',
-    description:
-      'Choose from 5000+ products across food, personal care, household, bakery, veg and non-veg & other categories.',
-    icon: Squares2X2Icon,
-  },
-  {
-    id: 4,
-    title: 'Easy Returns',
-    description:
-      'Not satisfied with a product? Return it at the doorstep & get a refund within hours. No questions asked policy.',
-    icon: ArrowUturnLeftIcon,
-  },
-];
 
-export default function FeaturesSection() {
+interface FeaturesSectionProps {
+  features: {
+    id: number;
+    title: string;
+    description: string;
+    icon: React.ElementType;
+  }[];
+  themeSettings?: any;
+}
 
-    const { storeFormData } = useStoreContext();
-    const { slug, marketplaceListings = [], themeSettings = {} } = storeFormData || {};
+export default function FeaturesSection({ features, themeSettings }: FeaturesSectionProps) {
+
     const primary = themeSettings?.primaryColor || '#f97316';
     const secondary = themeSettings?.secondaryColor || '#3b82f6';
 

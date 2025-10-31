@@ -12,7 +12,8 @@ const loader = ({ src, width, quality }: { src: string; width: number; quality?:
   `${src}?w=${width}&q=${quality || 75}`;
 
 export interface CategorySectionProps {
-  storeFormData: StoreForm | null;
+  promotions?: any[];
+  themeSettings?: any;
 }
 
 // New dummy promotion data
@@ -32,10 +33,9 @@ const dummyPromotionData = {
       'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80'],
 };
 
-export default function CategorySection({ storeFormData }: CategorySectionProps) {
-  const { promotions = [] } = storeFormData || {};
+export default function CategorySection({ promotions, themeSettings }: CategorySectionProps) {
 
-  const categoryData =
+  const categoryData = promotions &&
     promotions.length > 0
       ? {
           title: promotions[0].title || 'Featured Collection',
@@ -76,7 +76,7 @@ export default function CategorySection({ storeFormData }: CategorySectionProps)
 
           {/* Perks */}
           <div className="flex flex-wrap justify-center gap-4 mt-8">
-            {categoryData.perks.map((perk, idx) => (
+            {categoryData.perks.map((perk: { icon: string; label: string }, idx: number) => (
               <button
                 key={idx}
                 className="px-6 py-2 rounded-full border border-gray-400 text-sm font-medium text-gray-800 bg-white hover:bg-gray-50 transition"

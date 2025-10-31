@@ -260,6 +260,19 @@ const ProductGridItem = ({ product, isFeatured = false, primary, secondary, slug
     ? Math.round(((product.sellingPrice - product.finalPrice) / product.sellingPrice) * 100)
     : null;
 
+  const { name, images, finalPrice, sellingPrice } = product;
+  const rating = 4.5; // Example static value
+  const reviews = 149; // Example static value
+
+  // ✅ Safe image source (no empty strings)
+  // ✅ Safe image source (handles non-string values)
+  const rawImage = images && images.length > 0 ? images[0] : null;
+  const imageSrc =
+    typeof rawImage === 'string' && rawImage.trim() !== ''
+      ? rawImage
+      : 'https://via.placeholder.com/300';
+      
+
   return (
     <motion.div
       className={`relative bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden group border border-gray-100 ${isFeatured ? 'md:col-span-2' : ''}`}
@@ -269,7 +282,7 @@ const ProductGridItem = ({ product, isFeatured = false, primary, secondary, slug
       <Link href={`/site/${slug}/ecommerce/products/${product.id}`} className="relative block w-full" style={{ height: isFeatured ? '500px' : '300px' }}>
         {product.images && product.images.length > 0 && (
           <Image
-            src={product.images[0].url || 'https://via.placeholder.com/300'}
+            src={imageSrc}
             alt={product.name}
             layout="fill"
             objectFit={isFeatured ? 'cover' : 'contain'}
@@ -325,12 +338,20 @@ const ProductGridItem = ({ product, isFeatured = false, primary, secondary, slug
   );
 };
 
-export default function PopularProducts() {
-  const { storeFormData } = useStoreContext();
-  const { themeSettings = {}, marketplaceListings = [], slug } = storeFormData || {};
+interface PopularProductsProps {
+  themeSettings?: any;
+  marketplaceListings?: any[];
+  slug?: string;
+}
+
+export default function PopularProducts({themeSettings, marketplaceListings, slug}: PopularProductsProps) {
+  // const { storeFormData } = useStoreContext();
+  // const { themeSettings = {}, marketplaceListings = [], slug } = storeFormData || {};
   const primary = themeSettings?.primaryColor || '#f97316';
   const secondary = themeSettings?.secondaryColor || '#3b82f6';
-  const productsToShow = marketplaceListings?.length > 0 ? marketplaceListings : dummyProducts;
+  const productsToShow = marketplaceListings && marketplaceListings?.length > 0 ? marketplaceListings : dummyProducts;
+
+  
 
   return (
     <section className="py-20 bg-gray-100 relative">

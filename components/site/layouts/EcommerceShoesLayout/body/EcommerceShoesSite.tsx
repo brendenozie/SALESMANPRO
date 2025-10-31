@@ -18,19 +18,55 @@ import Trending from './components/Trending';
 import AllProducts from './components/AllProducts';
 import { StoreForm } from '@/types/typings';
 import BannerSection from './components/BannerSection/BannerSection';
+import { ClockIcon, TagIcon, Squares2X2Icon, ArrowUturnLeftIcon } from '@heroicons/react/24/outline';
 
 
 type EcommerceSiteShoesProps = {
   pageData: StoreForm;
 };
 
+const features = [
+  {
+    id: 1,
+    title: '10 minute grocery now',
+    description:
+      'Get your order delivered to your doorstep at the earliest from FreshCart pickup stores near you.',
+    icon: ClockIcon,
+  },
+  {
+    id: 2,
+    title: 'Best Prices & Offers',
+    description:
+      'Cheaper prices than your local supermarket, great cashback offers to top it off. Get best prices & offers.',
+    icon: TagIcon,
+  },
+  {
+    id: 3,
+    title: 'Wide Assortment',
+    description:
+      'Choose from 5000+ products across food, personal care, household, bakery, veg and non-veg & other categories.',
+    icon: Squares2X2Icon,
+  },
+  {
+    id: 4,
+    title: 'Easy Returns',
+    description:
+      'Not satisfied with a product? Return it at the doorstep & get a refund within hours. No questions asked policy.',
+    icon: ArrowUturnLeftIcon,
+  },
+];
+
 export default function EcommerceShoesSite({ pageData }: EcommerceSiteShoesProps) {
   const {
+    heroSlides ,
     StoreCategory = [],
     marketplaceListings = [],
     testimonials = [],
     awards = [],
     promotions = [],
+    themeSettings = {},
+    slug = '',
+    CoreValues = [],
   } = pageData || {};
 
   const products = marketplaceListings.length;
@@ -40,18 +76,18 @@ export default function EcommerceShoesSite({ pageData }: EcommerceSiteShoesProps
 
   return (
     <>
-      <HeroSlider storeFormData={pageData} />
-      <CategorySection  storeFormData={pageData} />
+      <HeroSlider heroSlides={heroSlides} themeSettings={themeSettings} />
+      <CategorySection promotions={promotions} themeSettings={themeSettings} />
       <PromoSection promotions={promotions} />
-      <PopularProducts />
-      <MetricsSection  storeFormData={pageData} />
-      <DailyBestSells />
-      <SleepTapeAd />
-      <Trending />
-      <FeaturesSection />
-      <AllProducts /> 
+      <PopularProducts themeSettings={themeSettings} marketplaceListings={marketplaceListings} slug={slug} />
+      <MetricsSection  coreValues={CoreValues} />
+      <DailyBestSells marketplaceListings={marketplaceListings}/>
+      <SleepTapeAd promotions={promotions} themeSettings={themeSettings} />
+      <Trending promotions={promotions} themeSettings={themeSettings}  />
+      <FeaturesSection features={features} themeSettings={themeSettings} />
+      <AllProducts martketplaceListings={marketplaceListings} themeSettings={themeSettings} />
       <AwardsSection awards={awards} />
-      <TestimonialsSection />
+      <TestimonialsSection testimonials={testimonials} />
       <BannerSection />
       <NewsletterSection />
     </>

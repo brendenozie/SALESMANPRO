@@ -5,40 +5,60 @@ import { AnimatePresence, motion, PanInfo } from 'framer-motion';
 import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import Link from 'next/link';
-import { StoreForm } from '@/types/typings';
+import { HeroSlide, StoreForm } from '@/types/typings';
 
 // Loader remains the same for Next.js image optimization
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
 // Interface for each slide
-interface Slide {
-  imageUrl: string;
-  headline: string;
-  subline: string;
-  badgeText: string;
-  ctaText: string;
-  ctaLink: string;
-}
+// interface Slide {
+//   imageUrl: string;
+//   headline: string;
+//   subline: string;
+//   badgeText: string;
+//   ctaText: string;
+//   ctaLink: string;
+// }
 
-const defaultSlides: Slide[] = [
+const defaultSlides: HeroSlide[] = [
   {
     imageUrl: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80',
     headline: 'STEP INTO STYLE & COMFORT',
     subline: 'Shoes',
-    badgeText:
-      'Out too the been like hard off. Improve enquire welcome own beloved matters her. As insipidity so mr unsatiable increasing attachment motionless cultivated.',
+    badgeText: 'Out too the been like hard off. Improve enquire welcome own beloved matters her. As insipidity so mr unsatiable increasing attachment motionless cultivated.',
     ctaText: 'Buy Now',
     ctaLink: '/shop',
+    id: '',
+    companyId: '',
+    type: null,
+    productImageUrl: null,
+    videoLink: null,
+    price: null,
+    endsAt: null,
+    order: 0,
+    iconKey: null,
+    backgroundColor: null,
+    textColor: null
   },
   {
     imageUrl: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80',
     headline: 'ELEVATE YOUR LOOK TODAY',
     subline: 'Awesome',
-    badgeText:
-      'Discover fresh drops and timeless classics. Comfort and style perfectly combined.',
+    badgeText: 'Discover fresh drops and timeless classics. Comfort and style perfectly combined.',
     ctaText: 'Shop Now',
     ctaLink: '/collection',
+    id: '',
+    companyId: '',
+    type: null,
+    productImageUrl: null,
+    videoLink: null,
+    price: null,
+    endsAt: null,
+    order: 0,
+    iconKey: null,
+    backgroundColor: null,
+    textColor: null
   },
 ];
 
@@ -46,20 +66,32 @@ const transitionDuration = 0.6;
 const autoAdvanceDelay = 6000;
 
 export interface HeroSliderProps {
-  storeFormData: StoreForm | null;
+  heroSlides?: HeroSlide[];
+  themeSettings?: any;
 }
 
-export default function HeroSlider({ storeFormData }: HeroSliderProps) {
-  // Map the store data to the Slide interface, providing fallbacks for missing data
-  const slides: Slide[] =
-    (storeFormData?.heroSlides && storeFormData.heroSlides.length > 0
-      ? storeFormData.heroSlides.map((slide) => ({
+export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProps) {
+  // Map the store data to the Slide interface,providing fallbacks for missing data
+  const slides: HeroSlide[] =
+    (heroSlides && heroSlides.length > 0
+      ? heroSlides.map((slide) => ({
           imageUrl: slide.imageUrl || defaultSlides[0].imageUrl,
           headline: slide.headline || defaultSlides[0].headline,
           subline: slide.subline || defaultSlides[0].subline,
           badgeText: (slide as any).badgeText || defaultSlides[0].badgeText, // Safely handle the description property
           ctaText: slide.ctaText || defaultSlides[0].ctaText,
           ctaLink: slide.ctaLink || defaultSlides[0].ctaLink,
+          id: slide.id,
+          companyId: slide.companyId,
+          type: slide.type,
+          productImageUrl: slide.productImageUrl,
+          videoLink: slide.videoLink,
+          price: slide.price,
+          endsAt: slide.endsAt,
+          order: slide.order,
+          iconKey: slide.iconKey,
+          backgroundColor: slide.backgroundColor,
+          textColor: slide.textColor
         }))
       : defaultSlides);
 
@@ -116,7 +148,7 @@ export default function HeroSlider({ storeFormData }: HeroSliderProps) {
     <section className="relative mt-12 py-20 overflow-hidden bg-gradient-to-br from-gray-50 to-white">
       <div className="container mx-auto px-6 md:px-12 lg:px-20 relative">
         <AnimatePresence initial={false} custom={direction}>
-          {slides.map((slide, idx) =>
+          {slides && slides.map((slide, idx) =>
             idx === current ? (
               <motion.div
                 key={idx}
@@ -140,7 +172,7 @@ export default function HeroSlider({ storeFormData }: HeroSliderProps) {
                   >
                     <Image
                       src={slide.imageUrl || defaultSlides[0].imageUrl || ''}
-                      alt={slide.headline}
+                      alt={slide.headline || 'Hero Slide Image'}
                       loader={loader}
                       width={600}
                       height={600}
@@ -156,7 +188,7 @@ export default function HeroSlider({ storeFormData }: HeroSliderProps) {
                 {/* Content */}
                 <div className="w-full md:w-1/2 relative z-10 text-center md:text-left mt-10 md:mt-0 px-4">
                   <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight tracking-tight text-black">
-                    {slide.headline.split(' ').map((word, i, arr) => (
+                    {slide?.headline?.split(' ').map((word, i, arr) => (
                       <span key={i} className="inline-block">
                         {word}
                         {i === arr.length - 1 && (
@@ -172,7 +204,7 @@ export default function HeroSlider({ storeFormData }: HeroSliderProps) {
                   </p>
 
                   <Link
-                    href={slide.ctaLink}
+                    href={slide.ctaLink || '/shop'}
                     className="inline-block mt-8 font-semibold text-sm sm:text-base px-8 py-4 rounded-full bg-red-500 text-white shadow-lg transition-all hover:bg-red-600 hover:scale-105"
                   >
                     {slide.ctaText}
