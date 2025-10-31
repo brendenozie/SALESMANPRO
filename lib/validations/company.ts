@@ -120,6 +120,7 @@ export const companySchema = z.object({
   tagline: z.string().optional(),
   description: z.string().optional(),
   category: z.string().min(1),
+  variant: z.string().optional(),
   logoUrl: z.string().optional().or(z.literal('')),//.url().optional().or(z.literal('')),
   bannerUrl: z.string().url().optional().or(z.literal('')),
   videoUrl: z.string().url().optional().or(z.literal('')),

@@ -67,6 +67,7 @@ async function createCompany(req: Request, context: HandlerContext) {
         tagline: data.tagline,
         description: data.description,
         category: data.category,
+        variant: data.variant,
         logoUrl: data.logoUrl,
         bannerUrl: data.bannerUrl,
         videoUrl: data.videoUrl,
