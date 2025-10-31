@@ -1,13 +1,12 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   PaintBrushIcon,
   ChevronUpIcon,
   ChevronDownIcon,
   ArrowPathIcon,
   MagnifyingGlassIcon,
-  EyeIcon,
   LockClosedIcon,
   LockOpenIcon,
   XMarkIcon,
@@ -26,8 +25,8 @@ export interface ThemeSettingsAccordionProps {
 }
 
 const DEFAULTS: ThemeSettings = {
-  primaryColor: '#6366F1', // Indigo
-  secondaryColor: '#F59E0B', // Amber
+  primaryColor: '#6366F1',
+  secondaryColor: '#F59E0B',
   fontFamily: 'Inter, sans-serif',
 };
 
@@ -54,12 +53,9 @@ export default function ThemeSettingsAccordion({
   themeSettings,
   onChange,
 }: ThemeSettingsAccordionProps) {
-  
   const [isOpen, setIsOpen] = useState(true);
   const [lockPreview, setLockPreview] = useState(false);
   const [fontFilter, setFontFilter] = useState('');
-  const [showFontList, setShowFontList] = useState(false);
-  
   const [isFontModalOpen, setIsFontModalOpen] = useState(false);
 
   const filteredFonts = useMemo(
@@ -74,6 +70,47 @@ export default function ThemeSettingsAccordion({
     onChange({ ...themeSettings, [key]: value });
 
   const resetDefaults = () => onChange({ ...DEFAULTS });
+
+  // 🧩 Dynamically load selected Google font
+  useEffect(() => {
+    if (!themeSettings?.fontFamily) return;
+
+    const cleanFont = themeSettings.fontFamily
+      .replace(/, (sans-serif|serif)/, '')
+      .replace(/['"]+/g, '')
+      .trim();
+
+    const fontUrl = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(
+      cleanFont
+    )}:wght@400;500;600;700&display=swap`;
+
+    // Remove existing dynamic font links before adding a new one
+    const existing = document.getElementById('dynamic-font');
+    if (existing) existing.remove();
+
+    const link = document.createElement('link');
+    link.id = 'dynamic-font';
+    link.rel = 'stylesheet';
+    link.href = fontUrl;
+    document.head.appendChild(link);
+  }, [themeSettings?.fontFamily]);
+
+  // 🎨 Apply colors globally for live theme preview
+  useEffect(() => {
+    if (!themeSettings) return;
+    document.documentElement.style.setProperty(
+      '--primary-color',
+      themeSettings.primaryColor || DEFAULTS.primaryColor!
+    );
+    document.documentElement.style.setProperty(
+      '--secondary-color',
+      themeSettings.secondaryColor || DEFAULTS.secondaryColor!
+    );
+    document.documentElement.style.setProperty(
+      '--font-family',
+      themeSettings.fontFamily || DEFAULTS.fontFamily!
+    );
+  }, [themeSettings]);
 
   return (
     <motion.div
@@ -128,17 +165,13 @@ export default function ThemeSettingsAccordion({
                   <input
                     type="color"
                     value={themeSettings?.primaryColor}
-                    onChange={(e) =>
-                      updateField('primaryColor', e.target.value)
-                    }
+                    onChange={(e) => updateField('primaryColor', e.target.value)}
                     className="h-10 w-10 rounded cursor-pointer border border-gray-300"
                   />
                   <input
                     type="text"
                     value={themeSettings?.primaryColor}
-                    onChange={(e) =>
-                      updateField('primaryColor', e.target.value)
-                    }
+                    onChange={(e) => updateField('primaryColor', e.target.value)}
                     className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-400"
                   />
                 </div>
@@ -153,17 +186,13 @@ export default function ThemeSettingsAccordion({
                   <input
                     type="color"
                     value={themeSettings?.secondaryColor}
-                    onChange={(e) =>
-                      updateField('secondaryColor', e.target.value)
-                    }
+                    onChange={(e) => updateField('secondaryColor', e.target.value)}
                     className="h-10 w-10 rounded cursor-pointer border border-gray-300"
                   />
                   <input
                     type="text"
                     value={themeSettings?.secondaryColor}
-                    onChange={(e) =>
-                      updateField('secondaryColor', e.target.value)
-                    }
+                    onChange={(e) => updateField('secondaryColor', e.target.value)}
                     className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-400"
                   />
                 </div>
@@ -173,12 +202,16 @@ export default function ThemeSettingsAccordion({
             {/* ---------- Theme Presets ---------- */}
             <div className="mt-6 flex flex-wrap gap-3">
               {themePresets.map((preset) => (
-                <button
+                <motion.button
                   key={preset.name}
-                  onClick={() => {
-                    updateField('primaryColor', preset.primary);
-                    updateField('secondaryColor', preset.secondary);
-                  }}
+                  whileHover={{ scale: 1.05 }}
+                  onClick={() =>
+                    onChange({
+                      ...themeSettings,
+                      primaryColor: preset.primary,
+                      secondaryColor: preset.secondary,
+                    })
+                  }
                   className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-2 text-sm font-medium hover:bg-gray-50 transition"
                 >
                   <span
@@ -190,12 +223,12 @@ export default function ThemeSettingsAccordion({
                     style={{ backgroundColor: preset.secondary }}
                   />
                   {preset.name}
-                </button>
+                </motion.button>
               ))}
             </div>
 
-            {/* Font Picker Trigger */}
-            <div className="sm:col-span-2">
+            {/* ---------- Font Picker ---------- */}
+            <div className="sm:col-span-2 mt-6">
               <label className="block text-sm font-semibold text-gray-700 mb-1">
                 Font Family
               </label>
@@ -222,7 +255,7 @@ export default function ThemeSettingsAccordion({
               <div className="flex justify-between items-start">
                 <div>
                   <h3
-                    className="text-xl font-bold mb-2"
+                    className="text-xl font-bold mb-2 transition-colors"
                     style={{ color: themeSettings?.primaryColor }}
                   >
                     Live Theme Preview
@@ -258,66 +291,66 @@ export default function ThemeSettingsAccordion({
         )}
       </AnimatePresence>
 
-      {/* Font Picker Modal */}
-            <AnimatePresence>
-              {isFontModalOpen && (
-                <motion.div
-                  className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                >
+      {/* ---------- Font Picker Modal ---------- */}
+      <AnimatePresence>
+        {isFontModalOpen && (
+          <motion.div
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="bg-white rounded-xl shadow-xl max-w-3xl w-full p-6 relative"
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+            >
+              <button
+                onClick={() => setIsFontModalOpen(false)}
+                className="absolute top-4 right-4 p-2 rounded hover:bg-gray-100"
+              >
+                <XMarkIcon className="h-5 w-5 text-gray-500" />
+              </button>
+
+              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                <MagnifyingGlassIcon className="h-5 w-5 mr-2 text-indigo-600" />
+                Choose a Font
+              </h3>
+
+              <input
+                type="text"
+                placeholder="Search fonts…"
+                value={fontFilter}
+                onChange={(e) => setFontFilter(e.target.value)}
+                className="w-full border border-gray-300 rounded px-3 py-2 mb-4 text-sm focus:ring-2 focus:ring-indigo-500"
+              />
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-h-[400px] overflow-y-auto">
+                {filteredFonts.map((font) => (
                   <motion.div
-                    className="bg-white rounded-xl shadow-xl max-w-3xl w-full p-6 relative"
-                    initial={{ scale: 0.9, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    exit={{ scale: 0.9, opacity: 0 }}
+                    key={font}
+                    whileHover={{ scale: 1.05 }}
+                    onClick={() => {
+                      updateField('fontFamily', font);
+                      setIsFontModalOpen(false);
+                    }}
+                    style={{ fontFamily: font }}
+                    className="border rounded-lg p-4 cursor-pointer hover:border-indigo-500 transition"
                   >
-                    <button
-                      onClick={() => setIsFontModalOpen(false)}
-                      className="absolute top-4 right-4 p-2 rounded hover:bg-gray-100"
-                    >
-                      <XMarkIcon className="h-5 w-5 text-gray-500" />
-                    </button>
-      
-                    <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                      <MagnifyingGlassIcon className="h-5 w-5 mr-2 text-indigo-600" />
-                      Choose a Font
-                    </h3>
-      
-                    <input
-                      type="text"
-                      placeholder="Search fonts…"
-                      value={fontFilter}
-                      onChange={(e) => setFontFilter(e.target.value)}
-                      className="w-full border border-gray-300 rounded px-3 py-2 mb-4 text-sm focus:ring-2 focus:ring-indigo-500"
-                    />
-      
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 max-h-[400px] overflow-y-auto">
-                      {filteredFonts.map((font) => (
-                        <motion.div
-                          key={font}
-                          whileHover={{ scale: 1.05 }}
-                          onClick={() => {
-                            updateField('fontFamily', font);
-                            setIsFontModalOpen(false);
-                          }}
-                          style={{ fontFamily: font }}
-                          className="border rounded-lg p-4 cursor-pointer hover:border-indigo-500 transition"
-                        >
-                          <p className="text-lg font-semibold mb-1">
-                            {font.replace(/, (sans-serif|serif)/, '')}
-                          </p>
-                          <p className="text-sm text-gray-600">
-                            The quick brown fox jumps over the lazy dog.
-                          </p>
-                        </motion.div>
-                      ))}
-                    </div>
+                    <p className="text-lg font-semibold mb-1">
+                      {font.replace(/, (sans-serif|serif)/, '')}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      The quick brown fox jumps over the lazy dog.
+                    </p>
                   </motion.div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                ))}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
