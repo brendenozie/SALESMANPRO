@@ -1888,50 +1888,52 @@ const handleSubmit = async (e: FormEvent) => {
   const percent = Math.min(((stepIndex + 1) / totalSteps) * 100, 100);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row relative">
-      {/* Full-Page Submitting Overlay - Enhanced Version */}
-      {isSubmitting && (
+  <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row relative">
+    {/* Full-Page Submitting Overlay - Enhanced Version */}
+    {isSubmitting && (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.3 }}
+        className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-indigo-700 to-purple-800 bg-opacity-95 backdrop-blur-md"
+      >
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.3 }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-indigo-700 to-purple-800 bg-opacity-95 backdrop-blur-md"
+          initial={{ y: -50, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.2, duration: 0.5, type: "spring", stiffness: 100 }}
+          className="bg-white p-10 rounded-xl shadow-2xl flex flex-col items-center max-w-sm text-center transform scale-105"
         >
-          <motion.div
-            initial={{ y: -50, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.2, duration: 0.5, type: "spring", stiffness: 100 }}
-            className="bg-white p-10 rounded-xl shadow-2xl flex flex-col items-center max-w-sm text-center transform scale-105"
-          >
-            {/* Advanced Spinner: Concentric Circles */}
-            <div className="relative w-16 h-16 mb-6">
-              <div className="absolute inset-0 border-4 border-t-4 border-indigo-200 rounded-full animate-spin-slow"></div>
-              <div className="absolute inset-2 border-4 border-r-4 border-indigo-400 rounded-full animate-spin-medium"></div>
-              <div className="absolute inset-4 border-4 border-b-4 border-indigo-600 rounded-full animate-spin-fast"></div>
-            </div>
+          {/* Advanced Spinner: Concentric Circles */}
+          <div className="relative w-16 h-16 mb-6">
+            <div className="absolute inset-0 border-4 border-t-4 border-indigo-200 rounded-full animate-spin-slow"></div>
+            <div className="absolute inset-2 border-4 border-r-4 border-indigo-400 rounded-full animate-spin-medium"></div>
+            <div className="absolute inset-4 border-4 border-b-4 border-indigo-600 rounded-full animate-spin-fast"></div>
+          </div>
 
-            <p className="text-2xl font-bold text-gray-900 mb-2 leading-snug">
-              Just a moment, we're uploading...
-            </p>
-            <p className="text-md text-gray-600 font-medium">
-              Please hold tight! We're preparing everything for you.
-            </p>
-            <p className="text-sm text-gray-400 mt-4 animate-pulse">
-              This might take a moment, grab a coffee!
-            </p>
-          </motion.div>
+          <p className="text-2xl font-bold text-gray-900 mb-2 leading-snug">
+            Just a moment, we're uploading...
+          </p>
+          <p className="text-md text-gray-600 font-medium">
+            Please hold tight! We're preparing everything for you.
+          </p>
+          <p className="text-sm text-gray-400 mt-4 animate-pulse">
+            This might take a moment, grab a coffee!
+          </p>
         </motion.div>
-      )}
-      {/* Mobile Top Bar with Step Info */}
-      <div className="md:hidden bg-indigo-600 text-white py-2 px-4 flex justify-between items-center shadow-sm sticky top-0 z-30">
-        <span className="font-medium text-sm">
-          Step {Math.min(stepIndex + 1, totalSteps)} of {totalSteps}
-        </span>
-        <span className="text-xs truncate max-w-[60%]">{currentTitle}</span>
-      </div>
+      </motion.div>
+    )}
+    
+    {/* Mobile Top Bar with Step Info - REMAINS FOR MOBILE CONTEXT */}
+    <div className="md:hidden bg-indigo-600 text-white py-2 px-4 flex justify-between items-center shadow-sm sticky top-0 z-30">
+      <span className="font-medium text-sm">
+        Step {Math.min(stepIndex + 1, totalSteps)} of {totalSteps}
+      </span>
+      <span className="text-xs truncate max-w-[60%]">{currentTitle}</span>
+    </div>
 
-      {/* Sidebar */}
+    {/* Sidebar - CONDITIONAL RENDERING ADDED HERE */}
+    {stepIndex > 0 && (
       <aside className="hidden md:flex w-64 flex-col bg-white shadow-lg p-4 sticky top-0 h-screen z-10">
         <h2 className="text-xl font-semibold mb-6 text-indigo-700">
           Setup Wizard
@@ -1985,10 +1987,12 @@ const handleSubmit = async (e: FormEvent) => {
           </button>
         </nav>
       </aside>
+    )}
 
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col px-2 sm:px-2 py-6 relative">
-        {/* Progress Bar */}
+    {/* Main Content - CLASS ADJUSTMENT ADDED HERE */}
+    <main className={`flex-1 flex flex-col px-2 sm:px-2 py-6 relative ${stepIndex === 0 ? 'md:w-full' : ''}`}>
+      {/* Progress Bar - CONDITIONAL RENDERING ADDED HERE */}
+      {stepIndex > 0 && (
         <div className="relative mb-4">
           <div className="h-2 bg-gray-200 rounded-full">
             <div
@@ -2011,60 +2015,63 @@ const handleSubmit = async (e: FormEvent) => {
             ))}
           </div>
         </div>
+      )}
 
-        {/* Step Info (Desktop only) */}
+      {/* Step Info (Desktop only) - CONDITIONAL RENDERING ADDED HERE */}
+      {stepIndex > 0 && (
         <div className="hidden md:flex justify-between mb-2 text-sm text-gray-500">
           <span>
             Step {Math.min(stepIndex + 1, totalSteps)} of {totalSteps}
           </span>
           <span>{currentTitle}</span>
         </div>
+      )}
 
-        {/* Step Content */}
-        <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-6 flex-1 overflow-auto min-h-[60vh]">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={stepIndex}
-              initial={{ opacity: 0, x: 30 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -30 }}
-              transition={{ duration: 0.3 }}
-            >
-              {StepContent}
-            </motion.div>
-          </AnimatePresence>
-        </div>
+      {/* Step Content */}
+      <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-6 flex-1 overflow-auto min-h-[60vh]">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={stepIndex}
+            initial={{ opacity: 0, x: 30 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -30 }}
+            transition={{ duration: 0.3 }}
+          >
+            {StepContent}
+          </motion.div>
+        </AnimatePresence>
+      </div>
 
-        {/* Navigation Buttons (Sticky on Mobile) */}
-        <div className="sticky bottom-0 bg-white border-t pt-3 mt-6 flex justify-between px-4 sm:px-6 py-3 md:static md:bg-transparent md:border-0 md:pt-6">
+      {/* Navigation Buttons (Sticky on Mobile) */}
+      <div className="sticky bottom-0 bg-white border-t pt-3 mt-6 flex justify-between px-4 sm:px-6 py-3 md:static md:bg-transparent md:border-0 md:pt-6">
+        <button
+          type="button"
+          disabled={stepIndex === 0}
+          onClick={prev}
+          className="px-4 py-2 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 disabled:opacity-50 text-sm"
+        >
+          ← Back
+        </button>
+
+        {stepIndex < allSteps.length ? (
           <button
             type="button"
-            disabled={stepIndex === 0}
-            onClick={prev}
-            className="px-4 py-2 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-100 disabled:opacity-50 text-sm"
+            onClick={next}
+            className="px-4 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 text-sm"
           >
-            ← Back
+            Continue →
           </button>
-
-          {stepIndex < allSteps.length ? (
-            <button
-              type="button"
-              onClick={next}
-              className="px-4 py-2 rounded-md bg-indigo-600 text-white hover:bg-indigo-700 text-sm"
-            >
-              Continue →
-            </button>
-          ) : (
-            <button
-              onClick={handleSubmit}
-              className="px-4 py-2 rounded-md bg-green-600 text-white hover:bg-green-700 text-sm"
-            >
-              {isSubmitting ? "Uploading..." : "Submit Store"}
-            </button>
-          )}
-        </div>
-      </main>
-    </div>
+        ) : (
+          <button
+            onClick={handleSubmit}
+            className="px-4 py-2 rounded-md bg-green-600 text-white hover:bg-green-700 text-sm"
+          >
+            {isSubmitting ? "Uploading..." : "Submit Store"}
+          </button>
+        )}
+      </div>
+    </main>
+  </div>
   );
 }
 
