@@ -158,6 +158,7 @@ export default function CreateStoreForm({
     tagline: "",
     description: "",
     category: "E-commerce",
+    variant:"Standard",
     logoUrl: "",
     bannerUrl: "",
     videoUrl: "",
