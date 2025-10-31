@@ -130,6 +130,7 @@ export default async function EditStorePage({
     sEOId: store.sEOId,
     site: store.site,
     category: store.category,
+    variant: store.variant,
     tagline: store.tagline ?? "",
     description: store.description ?? "",
     hasWebsite: store.hasWebsite ?? false,

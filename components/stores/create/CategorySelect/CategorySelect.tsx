@@ -240,6 +240,18 @@ export default function CategoryStep({
   const selectedTemplate = selectedCategory?.variants.find(
     (v) => v.name === variant
   );
+  // Auto-select the first variant when category changes and no variant is set
+  useEffect(() => {
+    if (selectedCategory && !variant) {
+      const defaultVariant = selectedCategory.variants[0];
+      if (defaultVariant) {
+        handleChange({
+          target: { name: "variant", value: defaultVariant.name } as HTMLSelectElement,
+        } as ChangeEvent<HTMLSelectElement>);
+      }
+    }
+  }, [selectedCategory, variant, handleChange]);
+
 
   const filteredCategories = useMemo(
     () =>
