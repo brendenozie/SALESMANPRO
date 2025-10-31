@@ -241,7 +241,7 @@ export default function CategoryStep({
 
   return (
     <section 
-      className="max-w-7xl mx-auto p-4 grid grid-cols-1 lg:grid-cols-3 gap-8"
+      className="mx-auto p-4 grid grid-cols-1 lg:grid-cols-3 gap-8"
       // ACCESSIBILITY IMPROVEMENT: Adding a clear context role for the screen reader
       role="region" 
       aria-label="Template and Category Selection"
@@ -383,7 +383,7 @@ export default function CategoryStep({
       <motion.div
         key={selectedTemplate?.name || "placeholder"}
         layout
-        className="mt-8 lg:mt-0 bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100 p-5"
+        className="mt-8 lg:mt-0 lg:col-span-2 bg-white overflow-hidden "
       >
         <h3 className="text-2xl font-bold mb-2 text-gray-800">
           {selectedTemplate
