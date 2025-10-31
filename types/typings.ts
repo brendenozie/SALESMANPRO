@@ -777,7 +777,15 @@ export interface StoreForm {
   description: string | null;
   hasWebsite: boolean | null | undefined;
   companyCategoryId: string | null;
+  /** 
+   * The broad business category (e.g. "E-commerce", "Health & Fitness") 
+   */
   category: string;
+
+  /** 
+   * The specific design variant chosen (e.g. "Modern Shop (v1)") 
+   */
+  variant?: string | null;
   logoUrl: string | null;
   bannerUrl: string | null;
   videoUrl: string | null;
