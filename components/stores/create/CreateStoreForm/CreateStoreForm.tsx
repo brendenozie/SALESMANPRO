@@ -1650,11 +1650,18 @@ const handleSubmit = async (e: FormEvent) => {
       </motion.div>
 
       {/* Step Content */}
+      {/* Step Content */}
       <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-6 flex-1 overflow-auto min-h-[60vh]">
         <AnimatePresence mode="wait">
-          <div key={stepIndex}>
+          <motion.div
+            key={stepIndex}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
             {StepContent}
-          </div>
+          </motion.div>
         </AnimatePresence>
       </div>
 
