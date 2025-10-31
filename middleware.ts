@@ -180,7 +180,8 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
     host !== PRIMARY_HOST &&
     !host.endsWith(".salesmanpro.site") &&
     !host.startsWith("127.0.0.1") &&
-    !host.startsWith("localhost")
+    !host.startsWith("localhost") && 
+    !pathname.startsWith("/api/")
   ) {
     // Normalize host
     const normalizedHost = host.replace(/^www\./, "").toLowerCase();
