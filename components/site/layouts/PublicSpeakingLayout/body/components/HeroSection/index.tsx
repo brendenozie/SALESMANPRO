@@ -182,7 +182,7 @@ const HeroSection = ({ heroSlides, themeSettings } : Props) => {
             <a
               href={ctaLink}
               style={{ backgroundColor: CTA_BG_COLOR }}
-              className="inline-flex items-center justify-center w-full px-6 py-3 text-base font-bold text-white rounded shadow-lg transition-all duration-300 hover:bg-red-800"
+              className="inline-flex items-center justify-center  px-6 py-3 text-base font-bold text-white rounded shadow-lg transition-all duration-300 hover:bg-red-800"
             >
               {ctaText}
               <ArrowRightIcon className="ml-2" />

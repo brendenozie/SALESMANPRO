@@ -339,7 +339,7 @@ export default function ProgramsSection({ listings, storeSlug }: ProgramsSection
         >
           Our Transformative{" "}
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
-            "Stepping Out" Programs
+            Stepping Out Programs
           </span>
         </motion.h2>
 
@@ -351,7 +351,7 @@ export default function ProgramsSection({ listings, storeSlug }: ProgramsSection
           viewport={{ once: true, amount: 0.5 }}
           transition={{ delay: 0.2 }}
         >
-          Empowering students for **life, learning, and leadership**. We equip young people with the mindset, habits, and tools they need to **thrive** through transitions with confidence and purpose.
+          Empowering students for life, learning, and leadership. We equip young people with the mindset, habits, and tools they need to thrive through transitions with confidence and purpose.
         </motion.p>
         
         {/* Program Cards Grid */}
