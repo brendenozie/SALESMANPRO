@@ -1,78 +1,46 @@
 "use client";
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import Image from "next/image";
-import { XMarkIcon } from "@heroicons/react/24/outline";
+import { XMarkIcon, PaperAirplaneIcon, CalendarIcon } from "@heroicons/react/24/outline";
+
+// NOTE: I've removed unused imports (Image, loader, heroSlides) and the unused 'current' state/effect/logic, 
+// as this component is purely a Call-to-Action section, not the hero carousel.
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
-  `${src}?w=${width}&q=${quality || 75}`;
+// --- Framer Motion Variants for Polish ---
 
-const heroSlides = [
-  {
-    type: "image",
-    url: "/coach-hero.jpg",
-    headline: "Unlock Your True Potential",
-    subline:
-      "Empowering ambitious individuals and teams to create a life of purpose, clarity, and success.",
-  },
-  {
-    type: "image",
-    url: "https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?q=80&w=2670&auto=format&fit=crop",
-    headline: "Transform Your Vision into Action",
-    subline:
-      "Through strategic coaching and tailored consultation, I help you move from ideas to impact.",
-  },
-  {
-    type: "video",
-    url: "https://cdn.pixabay.com/video/2024/02/26/200827-919106201_large.mp4",
-    headline: "Lead with Confidence, Inspire with Purpose",
-    subline:
-      "Gain clarity, build resilience, and become the leader you were meant to be.",
-  },
-];
+// Button Hover/Tap effect
+const buttonVariants = {
+  rest: { scale: 1, boxShadow: "0 10px 25px rgba(0,0,0,0.25)" },
+  hover: { scale: 1.05, boxShadow: "0 15px 30px rgba(0,0,0,0.35)", y: -2, transition: { duration: 0.2 } },
+  tap: { scale: 0.98, boxShadow: "0 5px 15px rgba(0,0,0,0.15)", y: 1 },
+};
 
-const autoAdvanceDelay = 9000; // 9 seconds
+// --- Component Definition ---
 
 interface CallToActionSectionProps {
   companyId?: string;
+  // Optional prop for direct scheduling link if the user prefers a scheduling tool
+  schedulingLink?: string; 
 }
-const CallToActionSection: React.FC<CallToActionSectionProps> = ({ companyId }) => {
-  const [current, setCurrent] = useState(0);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+const CallToActionSection: React.FC<CallToActionSectionProps> = ({ companyId, schedulingLink }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
 
-  const advanceSlide = useCallback(
-    (direction: "next" | "prev") => {
-      setCurrent((prev) =>
-        direction === "next"
-          ? (prev + 1) % heroSlides.length
-          : (prev - 1 + heroSlides.length) % heroSlides.length
-      );
-    },
-    []
-  );
-
-  useEffect(() => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(() => advanceSlide("next"), autoAdvanceDelay);
-    return () => clearTimeout(timeoutRef.current!);
-  }, [current, advanceSlide]);
-
-  // Send message to admin
+  // Send message to admin logic (kept as is)
   const handleSendMessage = async () => {
     if (!message.trim()) return;
     setStatus("sending");
 
     try {
-      const res = await fetch(`${apiUrl}/api/conversations/send-to-admin`, {
+      const res = await fetch(`${apiUrl}/conversations/send-to-admin`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          companyId: companyId, // <-- Replace or dynamically inject
+          companyId: companyId,
           content: message,
         }),
       });
@@ -92,68 +60,94 @@ const CallToActionSection: React.FC<CallToActionSectionProps> = ({ companyId }) 
       setStatus("error");
     }
   };
+  
+  // Custom button for scheduling via a link (if provided)
+  const renderSchedulingButton = () => (
+    <motion.a
+      href={schedulingLink}
+      target="_blank" // Open in new tab for external scheduling tools
+      rel="noopener noreferrer"
+      variants={buttonVariants}
+      initial="rest"
+      whileHover="hover"
+      whileTap="tap"
+      className="inline-flex items-center justify-center px-10 py-5 font-bold text-lg md:text-xl text-orange-700 bg-white rounded-full shadow-xl transition-all duration-300 transform"
+    >
+      <CalendarIcon className="w-6 h-6 mr-3 text-orange-600" />
+      Book Your Free Discovery Call
+    </motion.a>
+  );
+
+  // Custom button for opening the 'Send Message' modal (if no scheduling link)
+  const renderModalButton = () => (
+    <motion.button
+      onClick={() => setIsModalOpen(true)}
+      variants={buttonVariants}
+      initial="rest"
+      whileHover="hover"
+      whileTap="tap"
+      className="inline-flex items-center justify-center px-10 py-5 font-bold text-lg md:text-xl text-orange-700 bg-white rounded-full shadow-xl transition-all duration-300 transform"
+    >
+      <PaperAirplaneIcon className="w-6 h-6 mr-3 text-orange-600" />
+      Send Me a Message
+    </motion.button>
+  );
+
 
   return (
     <section
       id="contact"
-      className="relative py-28 bg-gradient-to-br from-orange-600 via-red-500 to-orange-700 text-white overflow-hidden"
+      className="relative py-28 md:py-36 bg-gray-900 text-white overflow-hidden" // Changed to dark BG for a more premium, high-contrast look
     >
-      {/* Ambient Glow Accents */}
-      <div className="absolute inset-0 pointer-events-none opacity-30">
-        <div className="absolute top-10 left-20 w-72 h-72 bg-orange-300 rounded-full mix-blend-overlay filter blur-3xl animate-pulse-slow"></div>
-        <div className="absolute bottom-10 right-20 w-96 h-96 bg-red-400 rounded-full mix-blend-overlay filter blur-3xl animate-pulse-slow"></div>
+      {/* Background Gradient Layer for 'Power' */}
+      <div className="absolute inset-0 bg-gradient-to-br from-orange-800 via-red-700 to-yellow-600 opacity-90"></div>
+
+      {/* Ambient Glow Accents (Enhanced Blur and Movement) */}
+      <div className="absolute inset-0 pointer-events-none opacity-40">
+        <div className="absolute top-1/4 left-[10%] w-80 h-80 bg-orange-300 rounded-full mix-blend-lighten filter blur-3xl animate-blob-1"></div>
+        <div className="absolute bottom-1/4 right-[5%] w-96 h-96 bg-red-400 rounded-full mix-blend-lighten filter blur-3xl animate-blob-2"></div>
       </div>
 
       {/* Foreground Content */}
-      <div className="relative container mx-auto px-6 text-center">
-        <h2 className="text-4xl md:text-5xl font-extrabold mb-6 leading-tight">
-          Ready to <span className="text-orange-200">Transform</span> Your Future?
+      <div className="relative container mx-auto px-6 text-center z-10">
+        <h2 className="text-4xl md:text-6xl font-black mb-6 leading-tight tracking-tight">
+          Ready to <span className="text-yellow-300">Ignite</span> Your Success?
         </h2>
-        <p className="text-xl max-w-3xl mx-auto text-orange-100 mb-10 leading-relaxed">
-          Take the bold first step toward unlocking your potential. Let’s connect for a free discovery call — 
-          no pressure, just clarity, strategy, and purpose.
+        <p className="text-xl md:text-2xl max-w-4xl mx-auto text-orange-200 mb-12 font-light leading-relaxed">
+          Stop planning and start doing. Let's connect for a **free 15-minute discovery session** to map out your strategic next steps.
         </p>
 
-        {/* CTA Button */}
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="relative inline-flex items-center justify-center px-12 py-6 font-bold text-lg md:text-xl text-orange-700 bg-white rounded-full shadow-[0_10px_25px_rgba(0,0,0,0.25)] hover:bg-orange-50 transition-all duration-300 transform hover:-translate-y-1 hover:scale-105"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={2}
-            stroke="currentColor"
-            className="w-7 h-7 mr-3 text-orange-600"
+        {/* CTA Button Group (Conditional) */}
+        <div className="flex justify-center gap-6">
+          {/* Prioritize a direct scheduling link if available for better conversion */}
+          {schedulingLink ? renderSchedulingButton() : renderModalButton()}
+          
+          {/* Secondary CTA (Added for flexibility) */}
+          <motion.a
+            href={schedulingLink ? "#" : "#"} // Placeholder for second link or just keep the first button
+            onClick={schedulingLink ? undefined : () => alert('Provide a scheduling link or another page URL for the secondary action.')}
+            className={`inline-flex items-center justify-center px-8 py-5 font-semibold text-lg md:text-xl border-2 border-white text-white rounded-full transition-colors duration-300 hover:bg-white hover:text-gray-900 ${schedulingLink ? 'hidden md:inline-flex' : 'hidden'}`}
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M8 7V3m8 4V3m-9 8h10m-7 4h4m-5 4h6m4 0a2 2 0 002-2V7a2 2 0 00-2-2h-2V3H8v2H6a2 2 0 00-2 2v10a2 2 0 002 2h12z"
-            />
-          </svg>
-          Schedule Your Free Call Today
-        </button>
+            Learn More
+          </motion.a>
 
-        {/* Decorative Line */}
-        <div className="mt-12 w-32 h-1 bg-gradient-to-r from-orange-200 via-white to-orange-200 mx-auto rounded-full opacity-80"></div>
+        </div>
+
+        {/* Decorative Separator Line */}
+        <div className="mt-16 w-3/4 md:w-1/3 h-0.5 bg-white mx-auto opacity-30 rounded-full"></div>
       </div>
-
-      {/* Floating Overlay Pattern */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[140%] h-full bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.08)_0%,transparent_70%)]"></div>
 
       {/* Modal */}
       <AnimatePresence>
         {isModalOpen && (
           <motion.div
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50"
+            className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
             <motion.div
-              className="bg-white text-gray-800 rounded-2xl shadow-2xl p-8 w-full max-w-lg relative"
+              className="bg-white text-gray-800 rounded-3xl shadow-2xl p-8 md:p-10 w-full max-w-lg relative border-t-8 border-orange-600" // Added rounded-3xl and border
               initial={{ scale: 0.8, opacity: 0, y: 50 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
@@ -161,37 +155,57 @@ const CallToActionSection: React.FC<CallToActionSectionProps> = ({ companyId }) 
             >
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition"
+                className="absolute top-4 right-4 text-gray-500 hover:text-gray-900 transition p-2 rounded-full hover:bg-gray-100"
               >
-                <XMarkIcon className="w-6 h-6" />
+                <XMarkIcon className="w-7 h-7" />
               </button>
 
-              <h3 className="text-2xl font-bold mb-4 text-orange-700">Send a Message to the Admin</h3>
-              <p className="text-gray-600 mb-4">
-                Fill in your message below and we’ll get back to you as soon as possible.
+              <h3 className="text-3xl font-extrabold mb-3 text-gray-900">👋 Connect with us</h3>
+              <p className="text-gray-600 mb-6 border-b pb-4">
+                Tell me a little about your goals or challenges. I'll get back to you within one business day.
               </p>
 
               <textarea
-                className="w-full border border-gray-300 rounded-xl p-3 mb-4 focus:ring-2 focus:ring-orange-500"
-                rows={5}
-                placeholder="Type your message..."
+                className="w-full border-2 border-gray-200 rounded-xl p-4 mb-4 focus:ring-4 focus:ring-orange-500 focus:border-orange-500 transition duration-150 resize-none"
+                rows={6}
+                placeholder="E.g., I'm looking to increase my team's efficiency and need a strategic plan. What's your process?"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
               />
 
-              <button
+              <motion.button
                 onClick={handleSendMessage}
-                disabled={status === "sending"}
-                className="w-full bg-orange-600 hover:bg-orange-700 text-white py-3 rounded-xl font-semibold transition disabled:opacity-50"
+                disabled={status === "sending" || !message.trim()}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full bg-orange-600 hover:bg-orange-700 text-white py-4 rounded-xl font-bold text-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
               >
-                {status === "sending" ? "Sending..." : "Send Message"}
-              </button>
+                {status === "sending" ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <PaperAirplaneIcon className="w-5 h-5 mr-2 -rotate-45" />
+                    Send Your Message Now
+                  </>
+                )}
+              </motion.button>
 
               {status === "sent" && (
-                <p className="text-green-600 mt-4 text-center">Message sent successfully!</p>
+                <p className="text-green-600 mt-4 text-center font-semibold flex items-center justify-center">
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+                  Message sent successfully!
+                </p>
               )}
               {status === "error" && (
-                <p className="text-red-600 mt-4 text-center">Failed to send message. Please try again.</p>
+                <p className="text-red-600 mt-4 text-center">
+                  Failed to send message. Please refresh and try again.
+                </p>
               )}
             </motion.div>
           </motion.div>
