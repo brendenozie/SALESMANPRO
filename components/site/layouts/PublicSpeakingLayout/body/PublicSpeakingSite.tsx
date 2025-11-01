@@ -63,7 +63,7 @@ export default function PublicSpeakingSite({ pageData }: { pageData: StoreForm }
 
       <TestimonialsCarouselSection  testimonials={pageData?.testimonials || []} />
 
-      <CallToActionSection />
+      <CallToActionSection companyId={siteData?.id || ''} />
 
       {/* <PromotionSection/> */}
 

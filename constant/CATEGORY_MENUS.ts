@@ -859,6 +859,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
         { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
         { label: "Ebooks", href: `/admin/${adminSlug}/ebooks` },
         { label: "Programs", href: `/admin/${adminSlug}/programs` },
+        { label: "blogs", href: `/admin/${adminSlug}/blogs`, icon: WrenchScrewdriverIcon },
         // { label: "Course Builder", href: `/admin/${adminSlug}/course-builder` },
         // { label: "Content Library", href: `/admin/${adminSlug}/content-library` },
         // { label: "Resource Downloads", href: `/admin/${adminSlug}/resources` },

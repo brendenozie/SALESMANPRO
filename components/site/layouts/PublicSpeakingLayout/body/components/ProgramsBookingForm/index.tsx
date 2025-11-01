@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname  } from "next/navigation";
 import { useState } from "react";
 import { MarketListingForm } from "@/types/typings";
 import { CalendarDaysIcon, ClockIcon } from "@heroicons/react/24/outline";
@@ -16,6 +16,7 @@ export default function ProgramsBookingForm({ service, slug }: BookingFormProps)
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
+  const pathname = usePathname(); 
 
   // Determine if the price is effectively zero (e.g., Free program)
   const isFree = (service.finalPrice === 0 || service.finalPrice === null || service.finalPrice === undefined);
@@ -23,6 +24,9 @@ export default function ProgramsBookingForm({ service, slug }: BookingFormProps)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // e.g. "/site/something"
+    // const params = new URLSearchParams({ plan: "premium" });
 
     if (!date || !timeSlot) {
       setError("Please select both a preferred date and time slot for the program.");
@@ -45,7 +49,7 @@ export default function ProgramsBookingForm({ service, slug }: BookingFormProps)
 
     // Navigate to the checkout/enrollment finalization page
     // Using `/site/booking/checkout` (standard path) or `/site/program/enrollment`
-    router.push(`/bookings/checkout?${params.toString()}`);
+    router.push(`${pathname}/bookings/checkout?${params.toString()}`);
   };
 
   return (
