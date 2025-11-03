@@ -40,8 +40,8 @@ const ServiceMediaTab: React.FC<ServiceMediaTabProps> = ({
                 <input
                     type="text"
                     name="images[0]" // Assuming first image is main
-                    value={MarketListingForm.images[0].url || ''}
-                    
+                    value={MarketListingForm.images?.[0]?.url || ''}
+                    onChange={handleChange}
                     className={`mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-600 p-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2`}
                     style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
                     placeholder="e.g., [https://example.com/main-service.jpg](https://example.com/main-service.jpg)"
@@ -92,7 +92,7 @@ const ServiceMediaTab: React.FC<ServiceMediaTabProps> = ({
                 <input
                     type="text"
                     name="video"
-                    value={MarketListingForm.videos?.[0].url || ''}
+                    value={MarketListingForm.videos?.[0]?.url || ''}
                     onChange={handleChange}
                     className={`mt-1 block w-full rounded-lg border border-gray-300 dark:border-gray-600 p-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2`}
                     style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}

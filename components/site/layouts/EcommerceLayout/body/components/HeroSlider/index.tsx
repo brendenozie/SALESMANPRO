@@ -15,8 +15,10 @@ const transitionDuration = 0.8;
 const autoAdvanceDelay = 5000;
 
 export interface HeroSliderProps {
-  storeFormData: StoreForm | null;
+  heroSlides: HeroSlide[] | null;
+  themeSettings: any;
 }
+
 
 // Default slides... (Remains the same)
 const defaultSlides: HeroSlide[] = [
@@ -60,12 +62,11 @@ const defaultSlides: HeroSlide[] = [
   },
 ];
 
-export default function HeroSlider({ storeFormData }: HeroSliderProps) {
-  const storeSlides: HeroSlide[] | undefined = storeFormData?.heroSlides;
+export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProps) {
   const defaultPrimaryColor = '#6B46C1'; // deep purple
   const defaultSecondaryColor = '#D53F8C'; // vibrant pink
 
-  const heroSlides: HeroSlide[] = (storeSlides && storeSlides.length > 0 ? storeSlides : defaultSlides).map((slide, index) => ({
+  const heroSlidesToShow: HeroSlide[] = (heroSlides && heroSlides.length > 0 ? heroSlides : defaultSlides).map((slide, index) => ({
     // ... (Mapping logic remains the same)
     imageUrl: slide.imageUrl || defaultSlides[index]?.imageUrl || defaultSlides[0].imageUrl,
     subline: slide.subline || 'Exclusive Offer',
@@ -86,8 +87,8 @@ export default function HeroSlider({ storeFormData }: HeroSliderProps) {
     type: slide.type || null
   }));
 
-  const primary = storeFormData?.themeSettings?.primaryColor || defaultPrimaryColor;
-  const secondary = storeFormData?.themeSettings?.secondaryColor || defaultSecondaryColor;
+  const primary = themeSettings?.primaryColor || defaultPrimaryColor;
+  const secondary = themeSettings?.secondaryColor || defaultSecondaryColor;
 
   const [current, setCurrent] = useState(0);
   const [direction, setDirection] = useState(0);
@@ -96,7 +97,7 @@ export default function HeroSlider({ storeFormData }: HeroSliderProps) {
 
   const resetTimer = useCallback(() => {
     clearTimeout(timeoutRef.current);
-    if (heroSlides.length > 0) {
+    if (heroSlidesToShow.length > 0) {
       if (progressRef.current) {
         progressRef.current.style.transition = 'none';
         progressRef.current.style.width = '0%';
@@ -108,10 +109,10 @@ export default function HeroSlider({ storeFormData }: HeroSliderProps) {
       }
       timeoutRef.current = setTimeout(() => {
         setDirection(1);
-        setCurrent((prev) => (prev + 1) % heroSlides.length);
+        setCurrent((prev) => (prev + 1) % heroSlidesToShow.length);
       }, autoAdvanceDelay);
     }
-  }, [heroSlides.length]);
+  }, [heroSlidesToShow.length]);
 
   useEffect(() => {
     resetTimer();
@@ -125,14 +126,14 @@ export default function HeroSlider({ storeFormData }: HeroSliderProps) {
   };
 
   const prevSlide = () => {
-    if (heroSlides.length > 0) {
-      goTo((current - 1 + heroSlides.length) % heroSlides.length, -1);
+    if (heroSlidesToShow.length > 0) {
+      goTo((current - 1 + heroSlidesToShow.length) % heroSlidesToShow.length, -1);
     }
   };
 
   const nextSlide = () => {
-    if (heroSlides.length > 0) {
-      goTo((current + 1) % heroSlides.length, 1);
+    if (heroSlidesToShow.length > 0) {
+      goTo((current + 1) % heroSlidesToShow.length, 1);
     }
   };
 
@@ -176,7 +177,7 @@ export default function HeroSlider({ storeFormData }: HeroSliderProps) {
     <section className="relative mt-20 py-16 overflow-hidden min-h-[500px] md:min-h-0"> 
       <div className="container mx-auto px-4 md:px-8 lg:px-16 relative z-10">
         <AnimatePresence initial={false} custom={direction}>
-          {heroSlides.map((slide, idx) =>
+          {heroSlidesToShow.map((slide, idx) =>
             idx === current ? (
               <motion.div
                 key={idx}
@@ -368,7 +369,7 @@ export default function HeroSlider({ storeFormData }: HeroSliderProps) {
 
         {/* ========= PAGINATION DOTS with Progress Bar (Remains the same) ========= */}
         <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-3 z-30">
-          {heroSlides.map((_, idx) => (
+          {heroSlidesToShow.map((_, idx) => (
             <button
               key={idx}
               onClick={() => goTo(idx, idx > current ? 1 : -1)}

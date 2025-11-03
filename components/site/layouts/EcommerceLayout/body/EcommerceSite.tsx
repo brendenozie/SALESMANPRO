@@ -28,7 +28,9 @@ export default function EcommerceSite({ pageData }: EcommerceSiteProps) {
   // const { storeFormData } = useStoreContext();
 
   const {
-    slug, themeSettings = {},
+    heroSlides,
+    slug, 
+    themeSettings = {},
     StoreCategory = [],
     marketplaceListings = [],
     testimonials = [],
@@ -40,8 +42,8 @@ export default function EcommerceSite({ pageData }: EcommerceSiteProps) {
 
   return (
     <>
-      <HeroSlider storeFormData={pageData} />
-      <CategorySection  storeFormData={pageData} />
+      <HeroSlider heroSlides={heroSlides} themeSettings={themeSettings}/>
+      <CategorySection  StoreCategory={StoreCategory}  themeSettings={themeSettings}/>
       <PromoSection promotions={promotions} />
       <PopularProducts slug={slug} marketplaceListings={marketplaceListings} themeSettings={themeSettings} />
       <MetricsSection coreValues={CoreValues}  />

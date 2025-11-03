@@ -3,16 +3,16 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRightCircleIcon } from '@heroicons/react/24/outline';
-import { useStoreContext } from '@/contexts/StoreContext';
-import { IStoreCategory, StoreForm } from '@/types/typings';
+import { IStoreCategory } from '@/types/typings';
 
 export interface HeroSliderProps {
-  storeFormData: StoreForm | null;
+  StoreCategory: IStoreCategory[] | null;
+  themeSettings: any;
 }
 
-export default function CategorySection({ storeFormData }: HeroSliderProps) {
+export default function CategorySection({ StoreCategory , themeSettings }: HeroSliderProps) {
 
-  const { StoreCategory = [], themeSettings = {} } = storeFormData || {};
+  // const { StoreCategory = [], themeSettings = {} } = storeFormData || {};
 
   const primary = themeSettings?.primaryColor || '#10B981';
   const secondary = themeSettings?.secondaryColor || '#3B82F6';
@@ -32,7 +32,7 @@ export default function CategorySection({ storeFormData }: HeroSliderProps) {
 
         {/* Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-          {StoreCategory.map((cat: IStoreCategory) => (
+          {StoreCategory && StoreCategory.map((cat: IStoreCategory) => (
             <motion.div
               key={cat.id}
               whileHover={{ scale: 1.05 }}
