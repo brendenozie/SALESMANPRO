@@ -167,10 +167,11 @@ export default function SignUpClient({ providers }: { providers: Provider[] }) {
             </div>
             
             <h2 className="mt-2 text-3xl font-extrabold text-gray-900 dark:text-white">
-              Create Your SalesmanPro Account
+              Create Your Account
             </h2>
             <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-              Start your today.
+              Start your today.<br/>
+              <span className="text-xs text-yellow-500">powered by salesmanpro</span>
             </p>
           </div>
 
