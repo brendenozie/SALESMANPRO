@@ -189,74 +189,74 @@ const PublicSpeakingHeader: React.FC<HeaderProps> = ({ storeFormData }) => {
           </div>
 
           {/* CTA + Profile / Mobile Toggle */}
-          <div className="flex items-center space-x-4">
-            {/* CTA */}
-            <motion.div
-              className="hidden md:block"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.4, duration: 0.5 }}
-            >
-              <a
-                href={ctaItem.href}
-                className="inline-flex items-center px-6 py-3 text-base font-bold rounded-full shadow-xl text-white bg-orange-600 ring-4 ring-orange-300/50 hover:bg-orange-700 transition-all duration-300 transform hover:scale-105 group"
-              >
-                {ctaItem.label}
-                <SparklesIcon className="w-5 h-5 ml-2 transition-transform duration-300 group-hover:rotate-12" />
-              </a>
-            </motion.div>
+          <div className="flex items-center space-x-3 sm:space-x-4">
+              {/* --- Primary CTA / Sign Up (Only visible when user is NOT logged in) --- */}
+              {!user && (
+                  <motion.div
+                      className="hidden md:block"
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ type: "spring", stiffness: 100, delay: 0.3 }}
+                  >
+                      <a
+                          // Decide between CTA and Sign Up based on context, here we default to Sign Up
+                          href={user ? "/profile" : "/signup"}
+                          className="inline-flex items-center px-6 py-3 text-base font-bold rounded-xl shadow-2xl text-white bg-orange-600 ring-4 ring-orange-300/50 hover:bg-orange-700 transition-all duration-300 transform hover:scale-[1.02] active:scale-100 group whitespace-nowrap"
+                      >
+                          {/* Use ctaItem.label if it's your main CTA, otherwise 'Sign Up' */}
+                          {ctaItem ? ctaItem.label : "Start for Free"}
+                          <SparklesIcon className="w-5 h-5 ml-2 transition-transform duration-300 group-hover:rotate-12" />
+                      </a>
+                  </motion.div>
+              )}
 
-            {/* User Session Button */}
-            <motion.button
-              onClick={handleUserAction}
-              whileTap={{ scale: 0.95 }}
-              className="hidden md:flex items-center px-4 py-2 rounded-full bg-orange-50 border border-orange-200 text-orange-700 font-semibold hover:bg-orange-100 transition-all"
-            >
-              <UserCircleIcon className="w-5 h-5 mr-2" />
-              {status === "loading"
-                ? "Loading..."
-                : user
-                ? user.role === "admin"
-                  ? "Admin Dashboard"
-                  : "My Profile"
-                : "Sign In"}
-            </motion.button>
-
-            {/* Mobile Menu Toggle */}
-            <div className="md:hidden z-50">
+              {/* --- User Session Button (Sign In / My Profile / Admin Dashboard) --- */}
               <motion.button
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className={`p-3 rounded-full text-gray-800 transition-colors shadow-lg border ${
-                  mobileMenuOpen
-                    ? "bg-white border-gray-200"
-                    : "bg-orange-50/80 border-orange-200 hover:bg-orange-100"
-                }`}
-                aria-label="Toggle menu"
-                whileTap={{ scale: 0.9 }}
+                  onClick={handleUserAction}
+                  whileTap={{ scale: 0.95 }}
+                  className={`hidden md:flex items-center px-4 py-2 rounded-full font-semibold transition-all shadow-md whitespace-nowrap ${
+                      user
+                          ? "bg-white border border-gray-200 text-gray-700 hover:bg-gray-50" // Logged In Style
+                          : "bg-orange-50 border border-orange-200 text-orange-600 hover:bg-orange-100" // Logged Out Style
+                  }`}
               >
-                <AnimatePresence mode="wait">
-                  {mobileMenuOpen ? (
-                    <motion.div
-                      key="close"
-                      initial={{ rotate: -90, opacity: 0 }}
-                      animate={{ rotate: 0, opacity: 1 }}
-                      exit={{ rotate: 90, opacity: 0 }}
-                    >
-                      <XMarkIcon className="h-6 w-6 text-orange-600" />
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key="open"
-                      initial={{ rotate: 90, opacity: 0 }}
-                      animate={{ rotate: 0, opacity: 1 }}
-                      exit={{ rotate: -90, opacity: 0 }}
-                    >
-                      <Bars3BottomRightIcon className="h-6 w-6 text-orange-600" />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                  <UserCircleIcon className="w-5 h-5 mr-2" />
+                  {status === "loading"
+                      ? "Loading..."
+                      : user
+                          ? user.role === "admin"
+                              ? "Admin Portal" // Changed from Dashboard for better clarity
+                              : "My Account" // Changed from Profile for wider use
+                          : "Log In"}
               </motion.button>
-            </div>
+
+              {/* --- Mobile Menu Toggle --- */}
+              <div className="md:hidden z-50">
+                  <motion.button
+                      onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                      className={`p-3 rounded-full transition-colors shadow-lg border ${
+                          mobileMenuOpen
+                              ? "bg-white border-gray-300 text-gray-800"
+                              : "bg-white/80 border-orange-200 text-orange-600 hover:bg-orange-50"
+                      }`}
+                      aria-label="Toggle menu"
+                      whileTap={{ scale: 0.9 }}
+                  >
+                      <AnimatePresence mode="wait">
+                          {mobileMenuOpen ? (
+                              <motion.div key="close" initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: 90, opacity: 0 }} >
+                                  {/* Use XMarkIcon (or equivalent) for closing */}
+                                  <XMarkIcon className="h-6 w-6" /> 
+                              </motion.div>
+                          ) : (
+                              <motion.div key="open" initial={{ rotate: 90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} exit={{ rotate: -90, opacity: 0 }} >
+                                  {/* Use Bars3Icon (or equivalent) for opening */}
+                                  <Bars3BottomRightIcon className="h-6 w-6" />
+                              </motion.div>
+                          )}
+                      </AnimatePresence>
+                  </motion.button>
+              </div>
           </div>
         </div>
       </nav>
