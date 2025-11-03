@@ -144,39 +144,37 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
   };
 
   const slideVariants = {
-    // ... (framer-motion variants remain the same)
     enter: (dir: number) => ({
-      x: dir > 0 ? '100%' : '-100%',
+      x: dir > 0 ? "100%" : "-100%",
       opacity: 0,
-      scale: 0.98,
+      scale: 1, // No scaling — removes stretch distortion
     }),
     center: {
-      x: '0%',
+      x: 0,
       opacity: 1,
       scale: 1,
       transition: {
-        x: { duration: transitionDuration, ease: 'easeInOut' },
-        opacity: { duration: transitionDuration * 0.7, ease: 'easeOut' },
-        scale: { duration: transitionDuration, ease: 'easeOut' },
+        x: { duration: transitionDuration, ease: [0.45, 0, 0.55, 1] },
+        opacity: { duration: transitionDuration * 0.8, ease: "easeOut" },
       },
     },
     exit: (dir: number) => ({
-      x: dir < 0 ? '100%' : '-100%',
+      x: dir < 0 ? "100%" : "-100%",
       opacity: 0,
-      scale: 0.98,
+      scale: 1,
       transition: {
-        x: { duration: transitionDuration, ease: 'easeInOut' },
-        opacity: { duration: transitionDuration * 0.7, ease: 'easeOut' },
-        scale: { duration: transitionDuration, ease: 'easeOut' },
+        x: { duration: transitionDuration, ease: [0.45, 0, 0.55, 1] },
+        opacity: { duration: transitionDuration * 0.7, ease: "easeInOut" },
       },
     }),
   };
+
 
   return (
     // Increased mt-16 to mt-20 for more space, min-h-[500px] ensures it's tall on mobile
     <section className="relative mt-20 py-16 overflow-hidden min-h-[500px] md:min-h-0"> 
       <div className="container mx-auto px-4 md:px-8 lg:px-16 relative z-10">
-        <AnimatePresence initial={false} custom={direction}>
+        <AnimatePresence initial={false} custom={direction}  mode="wait">
           {heroSlidesToShow.map((slide, idx) =>
             idx === current ? (
               <motion.div
@@ -185,6 +183,7 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
                 // and the image takes full height, with content absolutely positioned.
                 // Re-introduced flex-row for 'md' screens.
                 className="relative overflow-hidden rounded-3xl shadow-2xl transition-all duration-300 transform group h-[500px] md:h-auto md:min-h-[500px] flex md:flex-row"
+                style={{ willChange: "transform, opacity" }}
                 custom={direction}
                 variants={slideVariants}
                 initial="enter"
@@ -214,14 +213,17 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
                   </svg>
 
                   {/* Product image */}
-                  <Image
-                    src={slide.imageUrl || 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80'}
-                    alt={slide.headline || 'Hero Image'}
-                    fill
-                    className="object-cover object-center transition-transform duration-500 ease-out group-hover:scale-105"
-                    loader={loader}
-                    priority
-                  />
+                  <div className="w-full relative overflow-hidden h-full md:w-1/2 md:min-h-full will-change-transform">
+                    <Image
+                      src={slide.imageUrl || 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80'}
+                      alt={slide.headline || 'Hero Image'}
+                      fill
+                      className="object-cover object-center transition-transform duration-500 ease-out group-hover:scale-105"
+                      loader={loader}
+                      priority
+                    />
+                  </div>
+
                   
                   {/* Mobile-Only Text Content - ABSOLUTELY POSITIONED OVER IMAGE */}
                   <div className="absolute bottom-0 left-0 right-0 p-6 z-20 text-white md:hidden">
