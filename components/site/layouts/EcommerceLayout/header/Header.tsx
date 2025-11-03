@@ -329,7 +329,7 @@ export default function Header() {
             exit={{ height: 0, opacity: 0 }}
             transition={{ type: 'tween', duration: 0.25 }}
             className="
-              fixed top-0 left-0 w-full
+              absolute top-full left-0 w-full
               bg-white/90 backdrop-blur-lg
               ring-1 ring-gray-200
               rounded-b-3xl
@@ -339,6 +339,7 @@ export default function Header() {
             id="mobile-menu"
             ref={mobileMenuRef}
           >
+
             <div className="pt-20 pb-8 px-6 space-y-6">
               {/* Nav Links */}
               {navLinks.map((item, idx) => (
