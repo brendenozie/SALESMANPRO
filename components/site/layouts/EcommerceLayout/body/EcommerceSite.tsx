@@ -37,7 +37,7 @@ type EcommerceSiteProps = {
 export default function EcommerceSite({ pageData }: EcommerceSiteProps) {
   const {
     heroSlides,
-    slug,
+    id,
     themeSettings = {},
     StoreCategory = [],
     marketplaceListings = [],
@@ -58,12 +58,12 @@ export default function EcommerceSite({ pageData }: EcommerceSiteProps) {
     <div className="space-y-12">
       <HeroSlider heroSlides={heroSlides} themeSettings={themeSettings} />
       <CategorySection StoreCategory={StoreCategory} themeSettings={themeSettings} />
-      <DynamicPopularProducts slug={slug} />
+      <DynamicPopularProducts id={id} />
       <PromoSection promotions={promotions} />
-      <DynamicTrending slug={slug} />
-      <DynamicDailyBestSells slug={slug} />
+      <DynamicTrending id={id} />
+      <DynamicDailyBestSells id={id} />
       <SleepTapeAd bannerUrl={bannerUrl} themeSettings={themeSettings} />
-      <AllProducts slug={slug} marketplaceListings={featured} themeSettings={themeSettings} />
+      <AllProducts id={id} marketplaceListings={featured} themeSettings={themeSettings} />
       <FeaturesSection />
       <MetricsSection coreValues={CoreValues} />
       <AwardsSection awards={awards} />

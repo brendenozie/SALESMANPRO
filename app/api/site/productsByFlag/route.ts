@@ -1,67 +1,92 @@
-import { NextResponse } from "next/server";
+import { NextResponse } from 'next/server';
 import prisma from "@/server/db/prismadb";
+import { unstable_cache } from 'next/cache';
 
-import { formatResponse } from "@/lib/formatResponse";
-import { request } from "http";
+// Helper to map flag → Prisma condition
+const flagMap: Record<string, Record<string, any>> = {
+  isFeatured: { isFeatured: true },
+  isOnOffer: { isOnOffer: true },
+  isFlashDeal: { isFlashDeal: true },
+  isNewArrival: { isNewArrival: true },
+  isDiscounted: { isDiscounted: true },
+  trending: { providerRating: { gte: 4.5 } },
+};
 
-// GET /api/site/productsByFlag?agentId=&flag=&page=&limit=&sortBy=&order=
-export async function GET(req: Request) {
-  try {
-    
-    const { searchParams } = new URL(req.url);
-    const agentId = searchParams.get("agentId");
-    const flag = searchParams.get("flag") || "";
+export const revalidate = 60; // Revalidate cached data every 60 seconds
 
-    // Pagination params
-    const pageParam = parseInt(searchParams.get("page") || "1", 10);
-    const limitParam = parseInt(searchParams.get("limit") || "25", 10);
-    if (isNaN(pageParam) || pageParam < 1 || isNaN(limitParam) || limitParam < 1) {
-      return NextResponse.json({ error: "Invalid pagination parameters." }, { status: 400 });
-    }
-    const skip = (pageParam - 1) * limitParam;
-    const take = limitParam;
+// ✅ Caching wrapper — ensures repeated calls don’t hit the DB
+const getProductsByFlag = unstable_cache(
+  async (id: string, flag: string, limit: number, page: number) => {
+    const where: any = {
+      company: { id: id },
+      ...(flagMap[flag] || {}),
+    };
 
-    // Sorting params
-    const sortBy = searchParams.get("sortBy") || "createdAt";
-    const orderParam = (searchParams.get("order") || "desc").toLowerCase();
-    const order = orderParam === "asc" ? "asc" : "desc";
+    const skip = (page - 1) * limit;
 
-    // Build where filter
-    const whereFilter: any = {};
-    if (flag) whereFilter[flag] = true;
-    if (agentId) whereFilter.companyId = agentId;
-
-    // Fetch data and count in parallel
-    const [total, listings] = await Promise.all([
-      prisma.marketplaceListings.count({ where: whereFilter }),
+    const [items, total] = await Promise.all([
       prisma.marketplaceListings.findMany({
-        where: whereFilter,
+        where,
+        take: limit,
         skip,
-        take,
-        orderBy: { [sortBy]: order },
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          sellingPrice: true,
+          finalPrice: true,
+          brand: true,
+          images: true,
+          isFeatured: true,
+          isOnOffer: true,
+          isDiscounted: true,
+          isFlashDeal: true,
+          isNewArrival: true,
+        },
       }),
+      prisma.marketplaceListings.count({ where }),
     ]);
 
-    const totalPages = Math.ceil(total / take);
-
-    return NextResponse.json(
-      {
-        data: listings,
-        meta: {
-          total,
-          perPage: take,
-          currentPage: pageParam,
-          totalPages,
-          sortBy,
-          order,
-        },
+    return {
+      data: items,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
       },
-      { status: 200 }
-    );
-  } catch (error: any) {
-    console.error("Error fetching marketplace listings:", error);
+    };
+  },
+  ['products-by-flag'], // cache key
+  { revalidate: 60 }
+);
+
+export async function GET(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+    const flag = searchParams.get('flag') || 'isFeatured';
+    const limit = parseInt(searchParams.get('limit') || '8');
+    const page = parseInt(searchParams.get('page') || '1');
+
+    if (!id) {
+      return NextResponse.json({ error: 'Missing agentId' }, { status: 400 });
+    }
+
+    const response = await getProductsByFlag(id, flag, limit, page);
+
+    return NextResponse.json(response, {
+      status: 200,
+      headers: {
+        // ✅ Cache at edge for 2 min, allow stale reads for 10 min
+        'Cache-Control': 's-maxage=120, stale-while-revalidate=600',
+      },
+    });
+  } catch (error) {
+    console.error('Error fetching products:', error);
     return NextResponse.json(
-      { error: "Failed to fetch listings", detail: error.message },
+      { error: 'Failed to load products' },
       { status: 500 }
     );
   }

@@ -214,7 +214,7 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
                   </svg>
 
                   {/* Product image */}
-                  <div className="relative w-full md:w-1/2 aspect-[16/9] md:aspect-auto md:h-full overflow-hidden will-change-transform">
+                  <div className="relative w-full md:w-1/2 h-[250px] sm:h-[350px] md:h-[500px] overflow-hidden will-change-transform">
                     <Image
                       src={slide.imageUrl || 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=1600&q=80'}
                       alt={slide.headline || 'Hero Image'}
@@ -225,8 +225,6 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
                       priority
                     />
                   </div>
-
-
                   
                   {/* Mobile-Only Text Content - ABSOLUTELY POSITIONED OVER IMAGE */}
                   <div className="absolute bottom-0 left-0 right-0 p-6 z-20 text-white md:hidden">
