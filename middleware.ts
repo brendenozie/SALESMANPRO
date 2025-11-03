@@ -7,6 +7,16 @@ import { NextFetchEvent, NextRequest, NextResponse } from "next/server";
 const PRIMARY_HOST = "salesmanpro.site";
 const AUTH_DOMAIN = "auth.salesmanpro.site"; // Central auth domain
 
+// Protected paths that require authentication
+const protectedPaths = [
+  "/admin",
+  "/clients",
+  "/agents",
+  "/users",
+  "/dashboards",
+  "/stores",
+];
+
 // Middleware config
 export const config = {
   matcher: [
