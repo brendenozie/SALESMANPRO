@@ -165,8 +165,10 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
                   onDragEnd={handleDragEnd}
                 >
                   {/* IMAGE PANEL */}
-                  <div className="relative w-full md:w-1/2 overflow-hidden will-change-transform">
-                    <div className="relative h-[280px] sm:h-[360px] md:h-[500px] lg:h-[550px] w-full overflow-hidden">
+                  {/* IMAGE PANEL */}
+                  <div className="relative w-full md:w-1/2 overflow-hidden will-change-transform h-full"> 
+                    {/* FIX 1: Set inner image wrapper to h-full (no fixed pixel heights for mobile) */}
+                    <div className="relative h-full w-full overflow-hidden">
                       <Image
                         src={
                           slide.imageUrl ||
@@ -181,10 +183,11 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
                       />
                     </div>
 
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/25 to-transparent z-10 md:hidden" />
+                    {/* FIX 2: Mobile Gradient for Contrast (kept the to-black/70 fix) */}
+                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/70 z-10 md:hidden" />
 
-                    {/* Mobile Text */}
-                    <div className="absolute bottom-0 left-0 right-0 p-6 z-20 text-white md:hidden">
+                    {/* Mobile Text - Z-INDEX CONFIRMATION */}
+                    <div className="absolute bottom-0 left-0 right-0 p-6 z-30 text-white md:hidden"> 
                       <h2 className="text-2xl font-bold">{slide.headline}</h2>
                       {slide.badgeText && (
                         <p className="text-sm mt-2 line-clamp-3">{slide.badgeText}</p>
