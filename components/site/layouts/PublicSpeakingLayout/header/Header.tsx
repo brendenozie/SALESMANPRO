@@ -204,7 +204,8 @@ const PublicSpeakingHeader: React.FC<HeaderProps> = ({ storeFormData }) => {
                           className="inline-flex items-center px-6 py-3 text-base font-bold rounded-xl shadow-2xl text-white bg-orange-600 ring-4 ring-orange-300/50 hover:bg-orange-700 transition-all duration-300 transform hover:scale-[1.02] active:scale-100 group whitespace-nowrap"
                       >
                           {/* Use ctaItem.label if it's your main CTA, otherwise 'Sign Up' */}
-                          {ctaItem ? ctaItem.label : "signup"}
+                          {/* {ctaItem ? ctaItem.label : "signup"} */}
+                          {"Signup"}
                           <SparklesIcon className="w-5 h-5 ml-2 transition-transform duration-300 group-hover:rotate-12" />
                       </a>
                   </motion.div>
