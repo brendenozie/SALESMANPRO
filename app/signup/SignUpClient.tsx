@@ -114,7 +114,21 @@ export default function SignUpClient({ providers }: { providers: Provider[] }) {
 
       if (!res.ok) throw new Error(json.message || "Registration failed");
 
-      router.push("/signin?registered=true");
+      // router.push("/signin?registered=true");
+
+      // ✅ Automatically sign in the user
+      const loginRes = await signIn("credentials", {
+        redirect: false,
+        email:data.email,
+        password: data.password,
+      });
+
+      if (loginRes?.error) {
+        alert("Registered but failed to auto-login");
+      } else {
+        // ✅ Redirect after successful auto-login
+        router.push("/dashboards");
+      }
     } catch (err: any) {
       setError(err.message || "Something went wrong.");
     } finally {
