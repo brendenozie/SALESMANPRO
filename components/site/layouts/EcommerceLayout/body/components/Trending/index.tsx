@@ -10,14 +10,22 @@ export default function Trending({ id }: { id: string }) {
   const url = `/api/site/productsByFlag?id=${id}&flag=trending&limit=8`;
   const fetcher = createCachedFetcher(`products-${id}-trending`);
 
+  const fallbackData = typeof window !== 'undefined' ? (() => {
+          try {
+            return JSON.parse(
+              localStorage.getItem(`swr-cache:products-${id}-isFeatured:${url}`) || 'null'
+            );
+          } catch {
+            return null;
+          }
+        })()
+      : null;
+
   const { data, error, isLoading } = useSWR(url, fetcher, {
     revalidateOnFocus: true, // Background refresh on tab focus
     dedupingInterval: 30000, // Prevent duplicate calls within 30s
     refreshInterval: 120000, // Revalidate every 2 minutes
-    fallbackData:
-      typeof window !== 'undefined'
-        ? JSON.parse(localStorage.getItem(`swr-cache:products-${id}-trending:${url}`) || 'null')
-        : null,
+    fallbackData: fallbackData || undefined,
   });
 
   if (isLoading) return <SkeletonGrid count={8} />;

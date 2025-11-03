@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import prisma from "@/server/db/prismadb";
 import { unstable_cache } from 'next/cache';
 
+export const dynamic = 'force-dynamic';
+
 // Helper to map flag → Prisma condition
 const flagMap: Record<string, Record<string, any>> = {
   isFeatured: { isFeatured: true },
