@@ -4,7 +4,7 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { NextAuthOptions } from "next-auth";
 import { getServerSession } from "next-auth/next";
 import GoogleProvider from "next-auth/providers/google";
-import { cookies } from "next/headers"; // optional if you store in cookie
+import { cookies, headers } from "next/headers"; // optional if you store in cookie
 import CredentialsProvider from "next-auth/providers/credentials";
 // import FacebookProvider from "next-auth/providers/facebook";
 // import AppleProvider from "next-auth/providers/apple";
@@ -368,11 +368,22 @@ export const authOptions: NextAuthOptions = {
     //   }
     // },
 
-    async signIn({ user, account }) {
+    async signIn({ user, account, profile, credentials }) {
       // Skip if not OAuth
       if (!account || account.provider === "credentials") return true;
 
       if (!user.email) return false;
+
+      // Determine the origin (which domain the request came from)
+      // Use Next.js server headers() because NextAuth's signIn callback type does not provide `req`
+      let origin = "";
+      try {
+        const reqHeaders = await headers();
+        origin = reqHeaders?.get("origin") ?? reqHeaders?.get("referer") ?? "";
+      } catch (e) {
+        origin = "";
+      }
+      const isSalesmanPro = origin.includes("salesmanpro.site") || baseUrl.includes("salesmanpro.site");
 
       const existingUser = await prisma.user.findUnique({
         where: { email: user.email },
@@ -412,13 +423,16 @@ export const authOptions: NextAuthOptions = {
         return true;
       }
 
+      // New OAuth signup → decide role based on origin
+      const assignedRole = isSalesmanPro ? "ADMIN" : "USER";
+
       // ✅ If no existing user, create a new one
       await prisma.user.create({
         data: {
           email: user.email,
           name: user.name ?? "",
           image: user.image,
-          role: "ADMIN", // Default role
+          role: assignedRole, // Default role
           accounts: {
             create: {
               provider: account.provider,

