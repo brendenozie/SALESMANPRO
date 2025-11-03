@@ -164,9 +164,10 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
       scale: 1,
       transition: {
         x: { duration: transitionDuration, ease: [0.45, 0, 0.55, 1] },
-        opacity: { duration: transitionDuration * 0.7, ease: "easeInOut" },
+        opacity: { duration: transitionDuration * 0.9, ease: "easeInOut" },
       },
     }),
+
   };
 
 
@@ -213,16 +214,18 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
                   </svg>
 
                   {/* Product image */}
-                  <div className="w-full relative overflow-hidden h-full md:w-1/2 md:min-h-full will-change-transform">
+                  <div className="relative w-full md:w-1/2 aspect-[16/9] md:aspect-auto md:h-full overflow-hidden will-change-transform">
                     <Image
-                      src={slide.imageUrl || 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80'}
+                      src={slide.imageUrl || 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=1600&q=80'}
                       alt={slide.headline || 'Hero Image'}
                       fill
+                      sizes="100vw"
                       className="object-cover object-center transition-transform duration-500 ease-out group-hover:scale-105"
                       loader={loader}
                       priority
                     />
                   </div>
+
 
                   
                   {/* Mobile-Only Text Content - ABSOLUTELY POSITIONED OVER IMAGE */}

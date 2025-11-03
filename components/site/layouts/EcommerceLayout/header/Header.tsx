@@ -324,30 +324,35 @@ export default function Header() {
         {mobileMenuOpen && (
           <motion.div
             key="mobile-menu"
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ type: 'tween', duration: 0.25 }}
+            initial={{ clipPath: 'inset(0% 0% 100% 0%)', opacity: 0 }}
+            animate={{ clipPath: 'inset(0% 0% 0% 0%)', opacity: 1 }}
+            exit={{ clipPath: 'inset(0% 0% 100% 0%)', opacity: 0 }}
+            transition={{
+              duration: 0.45,
+              ease: [0.25, 0.8, 0.25, 1], // smooth ease-in-out curve
+            }}
             className="
-              absolute top-full left-0 w-full
+              fixed top-[72px] left-0 w-full
               bg-white/90 backdrop-blur-lg
               ring-1 ring-gray-200
               rounded-b-3xl
-              overflow-hidden z-40
+              overflow-hidden 
+              z-[60]
               md:hidden
+              origin-top
+              shadow-lg
             "
             id="mobile-menu"
             ref={mobileMenuRef}
           >
-
-            <div className="pt-20 pb-8 px-6 space-y-6">
+            <div className="pt-6 pb-8 px-6 space-y-6">
               {/* Nav Links */}
               {navLinks.map((item, idx) => (
                 <motion.div
                   key={item.label}
-                  initial={{ x: -20, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  transition={{ delay: idx * 0.1, type: 'spring', stiffness: 300 }}
+                  initial={{ y: 10, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: idx * 0.07, type: 'spring', stiffness: 300, damping: 24 }}
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   <Link
@@ -360,7 +365,6 @@ export default function Header() {
                 </motion.div>
               ))}
 
-              {/* Separator */}
               <div className="border-t border-gray-200" />
 
               {/* Social Links */}
@@ -393,9 +397,10 @@ export default function Header() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-black/30 z-30 md:hidden"
+            className="fixed inset-x-0 top-[72px] bottom-0 bg-black/30 z-30 md:hidden"
             onClick={toggleMobileMenu}
           />
+
         )}
       </AnimatePresence>
     </>
