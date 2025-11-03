@@ -201,76 +201,75 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
                   </div>
 
                   {/* TEXT PANEL (Desktop) */}
-                  {/* ========= DESKTOP-ONLY LEFT PANEL: TEXT CONTENT ========= */}
-<div className="hidden md:flex md:w-1/2 px-6 py-20 md:px-12 lg:px-20 flex-col justify-center relative overflow-hidden">
-  {/* Translucent gradient overlay */}
-  <div className="absolute inset-0 bg-gradient-to-br from-white/70 via-white/60 to-white/30 backdrop-blur-[2px]" />
+                  <div className="hidden md:flex md:w-1/2 px-6 py-20 md:px-12 lg:px-20 flex-col justify-center relative overflow-hidden">
+                    {/* Translucent gradient overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/70 via-white/60 to-white/30 backdrop-blur-[2px]" />
 
-  <div className="relative z-10 space-y-6 text-gray-900">
-    {/* Badge */}
-    <motion.span
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.2, duration: 0.5 }}
-      className="inline-block px-4 py-1.5 rounded-full text-sm sm:text-base font-semibold shadow-md"
-      style={{ background: primary, color: 'white' }}
-    >
-      {slide.subline}
-    </motion.span>
+                    <div className="relative z-10 space-y-6 text-gray-900">
+                      {/* Badge */}
+                      <motion.span
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2, duration: 0.5 }}
+                        className="inline-block px-4 py-1.5 rounded-full text-sm sm:text-base font-semibold shadow-md"
+                        style={{ background: primary, color: 'white' }}
+                      >
+                        {slide.subline}
+                      </motion.span>
 
-    {/* Headline */}
-    <motion.h2
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.4, duration: 0.5 }}
-      className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight drop-shadow-md"
-    >
-      {(slide.headline ?? '').split('\n').map((line, i, arr) => (
-                          <React.Fragment key={i}>
-                            {line.includes('$') ? (
-                              <>
-                                {line.split('$')[0]}
-                                <span style={{ color: secondary }}>{line.split('$')[1]}</span>
-                              </>
-                            ) : (
-                              line
-                            )}
-                            {i < arr.length - 1 && <br />}
-                          </React.Fragment>
-                        ))}      
-    </motion.h2>
+                      {/* Headline */}
+                      <motion.h2
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.4, duration: 0.5 }}
+                        className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight drop-shadow-md"
+                      >
+                        {(slide.headline ?? '').split('\n').map((line, i, arr) => (
+                                            <React.Fragment key={i}>
+                                              {line.includes('$') ? (
+                                                <>
+                                                  {line.split('$')[0]}
+                                                  <span style={{ color: secondary }}>{line.split('$')[1]}</span>
+                                                </>
+                                              ) : (
+                                                line
+                                              )}
+                                              {i < arr.length - 1 && <br />}
+                                            </React.Fragment>
+                                          ))}      
+                      </motion.h2>
 
-    {/* Description */}
-    {slide.badgeText && (
-      <motion.p
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.6, duration: 0.5 }}
-        className="text-gray-800 text-base sm:text-lg max-w-md drop-shadow-sm"
-      >
-        {slide.badgeText}
-      </motion.p>
-    )}
+                      {/* Description */}
+                      {slide.badgeText && (
+                        <motion.p
+                          initial={{ opacity: 0, y: -20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.6, duration: 0.5 }}
+                          className="text-gray-800 text-base sm:text-lg max-w-md drop-shadow-sm"
+                        >
+                          {slide.badgeText}
+                        </motion.p>
+                      )}
 
-    {/* CTA Button */}
-    {slide.ctaLink && slide.ctaText && (
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.8, duration: 0.5 }}
-      >
-        <Link
-          href={slide.ctaLink}
-          className="inline-block font-semibold text-sm sm:text-base px-8 py-4 rounded-xl shadow-lg transition transform duration-300 hover:scale-105 hover:shadow-xl relative overflow-hidden"
-          style={{ background: primary, color: 'white' }}
-        >
-          {slide.ctaText}
-          <span className="absolute inset-0 bg-white opacity-0 transition-opacity duration-300 group-hover:opacity-10" />
-        </Link>
-      </motion.div>
-    )}
-  </div>
-</div>
+                      {/* CTA Button */}
+                      {slide.ctaLink && slide.ctaText && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.8, duration: 0.5 }}
+                        >
+                          <Link
+                            href={slide.ctaLink}
+                            className="inline-block font-semibold text-sm sm:text-base px-8 py-4 rounded-xl shadow-lg transition transform duration-300 hover:scale-105 hover:shadow-xl relative overflow-hidden"
+                            style={{ background: primary, color: 'white' }}
+                          >
+                            {slide.ctaText}
+                            <span className="absolute inset-0 bg-white opacity-0 transition-opacity duration-300 group-hover:opacity-10" />
+                          </Link>
+                        </motion.div>
+                      )}
+                    </div>
+                  </div>
 
                 </motion.div>
               )
