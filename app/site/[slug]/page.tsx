@@ -185,7 +185,7 @@ function pageDataInclude() {
     appPromos: true,
 
     marketplaceListings: {
-      take: 50,
+      take: 12,
       select: {
         id: true,
         name: true,

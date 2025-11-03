@@ -1,44 +1,27 @@
 'use client';
-
-import { useStateContext } from '@/contexts/ContextProvider';
-import { useStoreContext } from '@/contexts/StoreContext';
-import { ArrowRightCircleIcon } from '@heroicons/react/24/outline';
-import React from 'react';
+import useSWR from 'swr';
 import ProductCard from '../ProductCard';
+import { SkeletonGrid } from '@/components/site/SkeletonGrid/SkeletonGrid';
 
-interface DailyBestSellsProps {
-  // Define any props if needed
-  slug: string;
-  marketplaceListings: any[];
-  themeSettings: Record<string, any> | null;
-}
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-export default function DailyBestSells( { slug, marketplaceListings, themeSettings }: DailyBestSellsProps) {
+export default function DailyBestSells({ slug }: { slug: string }) {
+  const { data, error, isLoading } = useSWR(
+    `/api/site/productsByFlag?slug=${slug}&flag=isOnOffer&limit=8`,
+    fetcher,
+    { revalidateOnFocus: false }
+  );
 
-  const { cart, addToCart, decreaseQuantity, removeFromCart } = useStateContext();
-  // const { storeFormData } = useStoreContext();
-  // const { slug, marketplaceListings = [], themeSettings = {} } = storeFormData || {};
-  const primary = themeSettings?.primaryColor || '#f97316';
-  const secondary = themeSettings?.secondaryColor || '#3b82f6';
-
-  const getQuantity = (id: string) => cart.find((item: any) => item.id === id)?.quantity || 0;
+  if (isLoading) return <SkeletonGrid count={8} />;
+  if (error) return <div className="text-center text-gray-500">Error loading deals</div>;
 
   return (
-    <section className="py-12 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4">
-        {/* Section Header */}
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-900">Daily Best Sells</h2>
-          <button className="flex items-center text-green-600 font-semibold hover:underline">
-            See All <ArrowRightCircleIcon className="w-6 h-6 ml-2" />
-          </button>
-        </div>
-        {/* Products Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {marketplaceListings.map((product) => (
-              <ProductCard key={product.id} product={product}  />
-          ))}
-        </div>
+    <section className="py-10 bg-gray-50">
+      <h2 className="text-2xl font-semibold mb-6 px-4">Daily Best Sells</h2>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-6 px-4">
+        {data?.data?.map((product:any) => (
+          <ProductCard key={product.id} product={product} />
+        ))}
       </div>
     </section>
   );
