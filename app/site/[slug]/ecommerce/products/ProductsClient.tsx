@@ -164,7 +164,7 @@ export default function ProductsClient({
               <span className="text-gray-500 animate-pulse">Loading more...</span>
             </div>
           ) : (
-            <div className="text-center text-gray-400 py-6">You’ve reached the end.</div>
+            <div className="text-center text-gray-400 py-6">You've reached the end.</div>
           )}
         </Section>
       </div>
