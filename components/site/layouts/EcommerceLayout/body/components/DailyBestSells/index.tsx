@@ -15,7 +15,7 @@ export default function DailyBestSells({ slug }: { slug: string }) {
 
   if (isLoading) return <SkeletonGrid count={8} />;
   if (error) return <div className="text-center text-gray-500">Error loading deals</div>;  
-  if (data.data.length == 0) return  <div className="text-center text-gray-500"></div>;
+  if (data?.data?.length == 0) return  <div className="text-center text-gray-500"></div>;
 
   return (
     <section className="py-12 bg-gray-50">
