@@ -207,12 +207,29 @@ const LogoutButton = () => (
 
 // --- Main Admin Dashboard Component ---
 const AdminDashboardPage = () => {
+  
   const { data: session, status } = useSession(); // Use simulated hook
   const data = SIMULATED_DATA;
 
   // Use session name or default to 'Admin'
   const userName = session?.user?.name || 'Admin'; 
   const [greeting, setGreeting] = useState('');
+
+  useEffect(() => {
+    // Only run client-side
+    if (typeof window === "undefined") return;
+
+    // If user is not authenticated, redirect to Google Sign-In
+    if (status === "unauthenticated" || !session) {
+      const handleGoogleSignIn = () => {
+        const authUrl = new URL("https://salesmanpro.site/signin");
+        authUrl.searchParams.set("callbackUrl", window.location.origin);
+        window.location.href = authUrl.toString();
+      };
+      handleGoogleSignIn();
+    }
+  }, [status, session]);
+
 
   useEffect(() => {
     setGreeting(getGreeting(userName));
@@ -228,6 +245,15 @@ const AdminDashboardPage = () => {
         ...m,
         value: 'N/A',
       }));
+
+  if (status === "loading") {
+    return (
+      <div className="flex items-center justify-center min-h-screen text-gray-600">
+        Checking session...
+      </div>
+    );
+  }
+
 
   return (
     <div className="min-h-screen bg-gray-50 font-inter text-gray-800 p-4 sm:p-6 lg:p-10">
