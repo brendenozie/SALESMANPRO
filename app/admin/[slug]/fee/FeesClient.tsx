@@ -35,7 +35,7 @@ import {
 // ✨ Import the Chart.js configuration file to ensure components are registered
 import "@/lib/chartConfig"; // Adjust path if your chartConfig.ts is elsewhere
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+const apiBaseUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
 // Define the extended StudentFeeRecord type for the frontend, including calculated fields
 export type StudentFeeRecord = Omit<PrismaStudentFeeRecord, 'appliedFeeItems' | 'payments'> & {

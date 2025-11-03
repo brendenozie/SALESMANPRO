@@ -12,7 +12,7 @@ import { useStateContext } from '@/contexts/ContextProvider';
 import Shop from "@/components/site/layouts/GhubaLayout/body/components/shops/Shop";
 // import PricingTable from "@/components/pricingTable";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+const apiBaseUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
 const HomePage = () => {
   const [categories, setCategories] = useState<any>([]);

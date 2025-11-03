@@ -8,7 +8,7 @@ import { Chart as ChartJS, LinearScale, CategoryScale, PointElement, LineElement
 
 ChartJS.register(LinearScale, CategoryScale, PointElement, LineElement, Title, Tooltip, Legend);
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+const apiBaseUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
 const ProductsPage = () => {
   const [reportType, setReportType] = useState('total-revenue');

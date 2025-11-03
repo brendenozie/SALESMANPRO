@@ -12,7 +12,7 @@ import {
 } from '@heroicons/react/24/outline';
 
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+const apiBaseUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
 
 // Define the types (you should put these in a shared types file in a real app)

@@ -8,7 +8,7 @@ import { PlusIcon } from '@heroicons/react/24/solid';
 import { BuildingLibraryIcon, ChevronDoubleDownIcon, ChevronDoubleUpIcon, GlobeAltIcon, MapIcon, PencilSquareIcon, PlusCircleIcon, SquaresPlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+const apiBaseUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
 // --- Types and Interfaces (for better type safety) ---
 interface Location {

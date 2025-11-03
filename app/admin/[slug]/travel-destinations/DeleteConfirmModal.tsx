@@ -16,7 +16,7 @@ import {
   HashtagIcon,
 } from '@heroicons/react/24/outline';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+const apiBaseUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
 // --- Types and Interfaces ---
 // These types are consistent with the Prisma schema and the user's code.

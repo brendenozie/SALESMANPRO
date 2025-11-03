@@ -13,7 +13,7 @@ import {
 } from '@heroicons/react/24/outline';
 
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+const apiBaseUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
 const sectionVariants = {
   hidden: { opacity: 0, y: 30 },

@@ -6,7 +6,7 @@ import { XMarkIcon } from '@heroicons/react/24/solid';
 import Image from 'next/image';
 import toast from 'react-hot-toast';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+const apiBaseUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
 // Define the VirtualTourData interface to match the expected API response
 export interface VirtualTourData {

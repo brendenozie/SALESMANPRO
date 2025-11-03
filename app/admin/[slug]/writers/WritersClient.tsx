@@ -33,7 +33,7 @@ import {
 import Modal from "@/components/Modal"; // Assuming you have a generic Modal component
 
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+const apiBaseUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
 // ✨ Register Chart.js components
 ChartJS.register(

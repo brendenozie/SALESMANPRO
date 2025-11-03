@@ -12,7 +12,7 @@ import ExpertModal, { ExpertData } from './ExpertModal';
 // import { toast } from 'react-toastify'; // Use a toast library for better feedback
 // import 'react-toastify/dist/ReactToastify.css'; // Don't forget to import the CSS
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
+const apiBaseUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
 // Define the ExpertData interface to match the API response
 // interface ExpertData {
