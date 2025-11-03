@@ -62,6 +62,26 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
     }
   }
 
+  
+
+  if(pathname.startsWith("/dashboards")) {
+
+    // if (subdomain && subdomain !== "www") {
+    //   if (pathname === "/" || pathname === "") {
+    //     url.pathname = `/site/${subdomain}`;
+    //   } else {
+    //     url.pathname = `/site/${subdomain}${pathname}`;
+    //   }
+      
+    //   const res = NextResponse.rewrite(url);
+    //   res.headers.set("x-requested-subdomain", subdomain);
+    //   res.headers.set("x-original-path", pathname);
+    //   res.headers.set("x-requested-host", host);
+    //   return res;
+    // }
+    return NextResponse.next();
+  }
+
   // ---- 4. AUTH DOMAIN HANDLING ----
   // Allow auth.salesmanpro.site to resolve normally
   if (host === AUTH_DOMAIN) {
