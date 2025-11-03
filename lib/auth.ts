@@ -4,7 +4,6 @@ import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { NextAuthOptions } from "next-auth";
 import { getServerSession } from "next-auth/next";
 import GoogleProvider from "next-auth/providers/google";
-import { cookies, headers } from "next/headers"; // optional if you store in cookie
 import CredentialsProvider from "next-auth/providers/credentials";
 // import FacebookProvider from "next-auth/providers/facebook";
 // import AppleProvider from "next-auth/providers/apple";
@@ -377,12 +376,15 @@ export const authOptions: NextAuthOptions = {
       // Determine the origin (which domain the request came from)
       // Use Next.js server headers() because NextAuth's signIn callback type does not provide `req`
       let origin = "";
-      try {
-        const reqHeaders = await headers();
-        origin = reqHeaders?.get("origin") ?? reqHeaders?.get("referer") ?? "";
-      } catch (e) {
-        origin = "";
+      
+      if (typeof window === "undefined") {
+        // We're on the server – use process.env or baseUrl fallback
+        origin = baseUrl;
+      } else {
+        // We're on the client
+        origin = window.location.origin;
       }
+
       const isSalesmanPro = origin.includes("salesmanpro.site") || baseUrl.includes("salesmanpro.site");
 
       const existingUser = await prisma.user.findUnique({
