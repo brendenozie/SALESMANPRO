@@ -98,23 +98,27 @@ export default function SignUpClient({ providers }: { providers: Provider[] }) {
       return;
     }
 
-    // --- MOCK API CALL FOR REGISTRATION (Replace with actual backend call) ---
-    console.log("Attempting to register user:", { name: data.name, email: data.email });
-    
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 1500)); 
+    if (!data.name || !data.email || !data.password || !data.confirmPassword)
+      return setError("Please fill in all required fields."), setIsLoading(false);
+    if (data.password !== data.confirmPassword)
+      return setError("Passwords do not match."), setIsLoading(false);
 
-    // MOCK: Assuming registration is successful for the demo
-    const mockRegistrationSuccess = true; 
+    try {
+      // Replace this with actual API request (to your backend)
+      const res = await fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      const json = await res.json();
 
-    setIsLoading(false);
+      if (!res.ok) throw new Error(json.message || "Registration failed");
 
-    if (mockRegistrationSuccess) {
-        // Redirect to a confirmation page or the dashboard/sign-in page
-        router.push("/success?message=registration_successful"); 
-    } else {
-        // Handle mock failure
-        setError("Registration failed. Email might already be in use.");
+      router.push("/signin?registered=true");
+    } catch (err: any) {
+      setError(err.message || "Something went wrong.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -122,7 +126,7 @@ export default function SignUpClient({ providers }: { providers: Provider[] }) {
     setError(null);
     setIsLoading(true);
     // Use signIn with the provider for sign-up/link accounts
-    await signIn(providerId, { redirect: true, callbackUrl: "/dashboard" });
+    await signIn(providerId, { redirect: true, callbackUrl: "/dashboards" });
   };
   
   // Update function helper

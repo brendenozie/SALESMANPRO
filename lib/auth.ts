@@ -6,8 +6,8 @@ import { getServerSession } from "next-auth/next";
 import GoogleProvider from "next-auth/providers/google";
 import { cookies } from "next/headers"; // optional if you store in cookie
 import CredentialsProvider from "next-auth/providers/credentials";
-import FacebookProvider from "next-auth/providers/facebook";
-import AppleProvider from "next-auth/providers/apple";
+// import FacebookProvider from "next-auth/providers/facebook";
+// import AppleProvider from "next-auth/providers/apple";
 // import EmailProvider from "next-auth/providers/email";
 import prisma from "@/server/db/prismadb";
 import { randomBytes, randomUUID } from "crypto";
@@ -132,6 +132,7 @@ export const authOptions: NextAuthOptions = {
         else if (salesAgentCheck) determinedRole = "SALES_AGENT";
         else if (clientCheck) determinedRole = "CLIENT";
         else if (educatorCheck) determinedRole = "EDUCATOR";
+        else determinedRole = userFoundInDb.role || "ADMIN";
 
         return {
           id: userFoundInDb.id,
@@ -212,8 +213,6 @@ export const authOptions: NextAuthOptions = {
 
     async redirect({ url, baseUrl }) {
       try {
-        console.log("[Redirect Callback] Received URL:", url);
-        console.log("[Redirect Callback] Received BaseURL:", baseUrl);
 
         let isTenantRedirect = false;
         let tenantUrl: URL | null = null;
@@ -234,13 +233,11 @@ export const authOptions: NextAuthOptions = {
 
         // ✅ If it's a redirect back to a tenant (e.g., https://domain.com)
         if (isTenantRedirect && tenantUrl) {
-          console.log("[Redirect Callback] Tenant redirect detected. Attaching token...");
 
           // --- BEGIN FIX ---
           // Check if the URL *already* has the token. If so, we're in a loop.
           // Just return the URL as-is and let the tenant app handle it.
           if (tenantUrl.searchParams.has("auth_token")) {
-            console.warn("[Redirect Callback] Loop detected. URL already has token. Returning as-is.");
             return tenantUrl.toString();
           }
           // --- END FIX ---
@@ -263,7 +260,7 @@ export const authOptions: NextAuthOptions = {
           tenantUrl.searchParams.set("auth_token", token); // Use a clear name
           
           const finalUrl = tenantUrl.toString();
-          console.log("[Redirect Callback] Redirecting to tenant:", finalUrl);
+          
           return finalUrl; // e.g., "https://domain.com?auth_token=..."
         }
 
@@ -372,75 +369,75 @@ export const authOptions: NextAuthOptions = {
     // },
 
     async signIn({ user, account }) {
-  // Skip if not OAuth
-  if (!account || account.provider === "credentials") return true;
+      // Skip if not OAuth
+      if (!account || account.provider === "credentials") return true;
 
-  if (!user.email) return false;
+      if (!user.email) return false;
 
-  const existingUser = await prisma.user.findUnique({
-    where: { email: user.email },
-  });
+      const existingUser = await prisma.user.findUnique({
+        where: { email: user.email },
+      });
 
-  if (existingUser) {
-    // ✅ Check if this OAuth provider is already linked
-    const existingAccount = await prisma.account.findUnique({
-      where: {
-        provider_providerAccountId: {
-          provider: account.provider,
-          providerAccountId: account.providerAccountId,
-        },
-      },
-    });
+      if (existingUser) {
+        // ✅ Check if this OAuth provider is already linked
+        const existingAccount = await prisma.account.findUnique({
+          where: {
+            provider_providerAccountId: {
+              provider: account.provider,
+              providerAccountId: account.providerAccountId,
+            },
+          },
+        });
 
-    if (!existingAccount) {
-      // ✅ Link the new OAuth provider to the existing user
-      await prisma.account.create({
+        if (!existingAccount) {
+          // ✅ Link the new OAuth provider to the existing user
+          await prisma.account.create({
+            data: {
+              userId: existingUser.id,
+              provider: account.provider,
+              providerAccountId: account.providerAccountId,
+              type: account.type,
+              access_token: account.access_token,
+              refresh_token: account.refresh_token,
+              expires_at: account.expires_at,
+              token_type: account.token_type,
+              scope: account.scope,
+              id_token: account.id_token,
+              session_state: account.session_state,
+            },
+          });
+        }
+
+        // ✅ Allow sign in — this fixes OAuthAccountNotLinked
+        return true;
+      }
+
+      // ✅ If no existing user, create a new one
+      await prisma.user.create({
         data: {
-          userId: existingUser.id,
-          provider: account.provider,
-          providerAccountId: account.providerAccountId,
-          type: account.type,
-          access_token: account.access_token,
-          refresh_token: account.refresh_token,
-          expires_at: account.expires_at,
-          token_type: account.token_type,
-          scope: account.scope,
-          id_token: account.id_token,
-          session_state: account.session_state,
+          email: user.email,
+          name: user.name ?? "",
+          image: user.image,
+          role: "ADMIN", // Default role
+          accounts: {
+            create: {
+              provider: account.provider,
+              providerAccountId: account.providerAccountId,
+              type: account.type,
+              access_token: account.access_token,
+              refresh_token: account.refresh_token,
+              expires_at: account.expires_at,
+              token_type: account.token_type,
+              scope: account.scope,
+              id_token: account.id_token,
+              session_state: account.session_state,
+            },
+          },
         },
       });
-    }
 
-    // ✅ Allow sign in — this fixes OAuthAccountNotLinked
-    return true;
-  }
-
-  // ✅ If no existing user, create a new one
-  await prisma.user.create({
-    data: {
-      email: user.email,
-      name: user.name ?? "",
-      image: user.image,
-      role: "ADMIN", // Default role
-      accounts: {
-        create: {
-          provider: account.provider,
-          providerAccountId: account.providerAccountId,
-          type: account.type,
-          access_token: account.access_token,
-          refresh_token: account.refresh_token,
-          expires_at: account.expires_at,
-          token_type: account.token_type,
-          scope: account.scope,
-          id_token: account.id_token,
-          session_state: account.session_state,
-        },
-      },
+      return true;
     },
-  });
-
-  return true;
-},
 
 
     // async signIn({ user, account }) {
