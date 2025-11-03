@@ -5,9 +5,8 @@ import { AnimatePresence, motion, PanInfo } from 'framer-motion';
 import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 import Link from 'next/link';
-import { HeroSlide, StoreForm } from '@/types/typings';
+import { HeroSlide } from '@/types/typings';
 
-// Loader remains the same for Next.js image optimization
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
@@ -19,14 +18,13 @@ export interface HeroSliderProps {
   themeSettings: any;
 }
 
-
-// Default slides... (Remains the same)
 const defaultSlides: HeroSlide[] = [
   {
     imageUrl: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80',
     subline: 'Exclusive Offer',
     headline: 'STEP INTO\nSTYLE & COMFORT',
-    badgeText: 'Out too the been like hard off. Improve enquire welcome own beloved matters her. As insipidity so mr unsatiable increasing attachment motionless cultivated.',
+    badgeText:
+      'Out too the been like hard off. Improve enquire welcome own beloved matters her. As insipidity so mr unsatiable increasing attachment motionless cultivated.',
     ctaText: 'Buy Now',
     ctaLink: '/shop',
     id: '',
@@ -39,7 +37,7 @@ const defaultSlides: HeroSlide[] = [
     backgroundColor: null,
     textColor: null,
     videoLink: null,
-    type: null
+    type: null,
   },
   {
     imageUrl: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80',
@@ -58,34 +56,28 @@ const defaultSlides: HeroSlide[] = [
     backgroundColor: null,
     textColor: null,
     videoLink: null,
-    type: null
+    type: null,
   },
 ];
 
 export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProps) {
-  const defaultPrimaryColor = '#6B46C1'; // deep purple
-  const defaultSecondaryColor = '#D53F8C'; // vibrant pink
+  const defaultPrimaryColor = '#6B46C1';
+  const defaultSecondaryColor = '#D53F8C';
 
-  const heroSlidesToShow: HeroSlide[] = (heroSlides && heroSlides.length > 0 ? heroSlides : defaultSlides).map((slide, index) => ({
-    // ... (Mapping logic remains the same)
-    imageUrl: slide.imageUrl || defaultSlides[index]?.imageUrl || defaultSlides[0].imageUrl,
-    subline: slide.subline || 'Exclusive Offer',
-    headline: slide.headline || defaultSlides[index]?.headline || 'Unlock Amazing Deals Now!',
-    badgeText: slide.badgeText || defaultSlides[index]?.badgeText || 'Discover curated collections and exceptional savings on your favorite products.',
-    ctaText: slide.ctaText || 'Explore Collections',
-    ctaLink: slide.ctaLink || '/shop',
-    id: slide.id || '',
-    companyId: slide.companyId || '',
-    productImageUrl: slide.productImageUrl || null,
-    price: slide.price || null,
-    endsAt: slide.endsAt || null,
-    order: slide.order || 0,
-    iconKey: slide.iconKey || null,
-    backgroundColor: slide.backgroundColor || null,
-    textColor: slide.textColor || null,
-    videoLink: slide.videoLink || null,
-    type: slide.type || null
-  }));
+  const heroSlidesToShow: HeroSlide[] = (heroSlides && heroSlides.length > 0 ? heroSlides : defaultSlides).map(
+    (slide, index) => ({
+      ...slide,
+      imageUrl: slide.imageUrl || defaultSlides[index]?.imageUrl || defaultSlides[0].imageUrl,
+      subline: slide.subline || 'Exclusive Offer',
+      headline: slide.headline || defaultSlides[index]?.headline || 'Unlock Amazing Deals Now!',
+      badgeText:
+        slide.badgeText ||
+        defaultSlides[index]?.badgeText ||
+        'Discover curated collections and exceptional savings on your favorite products.',
+      ctaText: slide.ctaText || 'Explore Collections',
+      ctaLink: slide.ctaLink || '/shop',
+    })
+  );
 
   const primary = themeSettings?.primaryColor || defaultPrimaryColor;
   const secondary = themeSettings?.secondaryColor || defaultSecondaryColor;
@@ -101,7 +93,7 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
       if (progressRef.current) {
         progressRef.current.style.transition = 'none';
         progressRef.current.style.width = '0%';
-        // Force reflow
+        // force reflow
         // @ts-ignore
         progressRef.current.offsetWidth;
         progressRef.current.style.transition = `width ${autoAdvanceDelay}ms linear`;
@@ -125,17 +117,9 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
     setCurrent(idx);
   };
 
-  const prevSlide = () => {
-    if (heroSlidesToShow.length > 0) {
-      goTo((current - 1 + heroSlidesToShow.length) % heroSlidesToShow.length, -1);
-    }
-  };
-
-  const nextSlide = () => {
-    if (heroSlidesToShow.length > 0) {
-      goTo((current + 1) % heroSlidesToShow.length, 1);
-    }
-  };
+  const prevSlide = () =>
+    goTo((current - 1 + heroSlidesToShow.length) % heroSlidesToShow.length, -1);
+  const nextSlide = () => goTo((current + 1) % heroSlidesToShow.length, 1);
 
   const handleDragEnd = (_: any, info: PanInfo) => {
     const offset = info.offset.x;
@@ -145,109 +129,104 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
 
   const slideVariants = {
     enter: (dir: number) => ({
-      x: dir > 0 ? "100%" : "-100%",
+      x: dir > 0 ? '100%' : '-100%',
       opacity: 0,
-      scale: 1, // No scaling — removes stretch distortion
     }),
     center: {
       x: 0,
       opacity: 1,
-      scale: 1,
-      transition: {
-        x: { duration: transitionDuration, ease: [0.45, 0, 0.55, 1] },
-        opacity: { duration: transitionDuration * 0.8, ease: "easeOut" },
-      },
+      transition: { duration: transitionDuration, ease: 'easeOut' },
     },
     exit: (dir: number) => ({
-      x: dir < 0 ? "100%" : "-100%",
+      x: dir < 0 ? '100%' : '-100%',
       opacity: 0,
-      scale: 1,
-      transition: {
-        x: { duration: transitionDuration, ease: [0.45, 0, 0.55, 1] },
-        opacity: { duration: transitionDuration * 0.9, ease: "easeInOut" },
-      },
+      transition: { duration: transitionDuration, ease: 'easeInOut' },
     }),
-
   };
 
-
   return (
-    // Increased mt-16 to mt-20 for more space, min-h-[500px] ensures it's tall on mobile
-    <section className="relative mt-20 py-16 overflow-hidden min-h-[500px] md:min-h-0"> 
+    <section className="relative mt-20 py-16 overflow-hidden min-h-[500px]">
       <div className="container mx-auto px-4 md:px-8 lg:px-16 relative z-10">
-        <AnimatePresence initial={false} custom={direction}  mode="wait">
-          {heroSlidesToShow.map((slide, idx) =>
-            idx === current ? (
-              <motion.div
-                key={idx}
-                // New: Removed flex-col/flex-row for mobile. The layout is now stacked with Image/Content, 
-                // and the image takes full height, with content absolutely positioned.
-                // Re-introduced flex-row for 'md' screens.
-                className="relative overflow-hidden rounded-3xl shadow-2xl transition-all duration-300 transform group h-[500px] md:h-auto md:min-h-[500px] flex md:flex-row"
-                style={{ willChange: "transform, opacity" }}
-                custom={direction}
-                variants={slideVariants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                drag="x"
-                dragConstraints={{ left: 0, right: 0 }}
-                onDragEnd={handleDragEnd}
-              >
-                {/* ========= IMAGE PANEL (Now full-width on mobile) ========= */}
-                <div className="w-full relative overflow-hidden h-full md:w-1/2 md:min-h-full">
-                  
-                  {/* Image Overlay: Dark gradient for better mobile text contrast */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/20 to-transparent z-10 md:hidden" />
-                  
-                  {/* Faint SVG blob accent (Hidden on mobile for cleaner look) */}
-                  <svg
-                    className="absolute -bottom-10 -right-20 w-[400px] h-[400px] opacity-20 hidden md:block" // Hidden on mobile
-                    viewBox="0 0 400 400"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M314.5 92.7C332 157.2 289 218.3 234.6 254.6C180.2 290.8 115.3 302.2 63.8 273C12.3 243.8 -2.1 175.1 11.8 118.7C25.7 62.3 68.1 18.2 122.3 7.8C176.5 -2.6 247 28.2 314.5 92.7Z"
-                      fill={secondary}
-                    />
-                  </svg>
+        <AnimatePresence initial={false} custom={direction} mode="wait">
+          {heroSlidesToShow.map(
+            (slide, idx) =>
+              idx === current && (
+                <motion.div
+                  key={idx}
+                  className="relative overflow-hidden rounded-3xl shadow-2xl group flex flex-col md:flex-row h-[500px]"
+                  style={{ willChange: 'transform, opacity' }}
+                  custom={direction}
+                  variants={slideVariants}
+                  initial="enter"
+                  animate="center"
+                  exit="exit"
+                  drag="x"
+                  dragConstraints={{ left: 0, right: 0 }}
+                  onDragEnd={handleDragEnd}
+                >
+                  {/* IMAGE PANEL */}
+                  <div className="relative w-full md:w-1/2 overflow-hidden will-change-transform">
+                    <div className="relative h-[280px] sm:h-[360px] md:h-[500px] lg:h-[550px] w-full overflow-hidden">
+                      <Image
+                        src={
+                          slide.imageUrl ||
+                          'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=1600&q=80'
+                        }
+                        alt={slide.headline || 'Hero Image'}
+                        fill
+                        sizes="100vw"
+                        className="object-cover object-center transition-transform duration-500 ease-out group-hover:scale-105"
+                        loader={loader}
+                        priority
+                      />
+                    </div>
 
-                  {/* Product image */}
-                  <div className="relative w-full md:w-1/2 h-[250px] sm:h-[350px] md:h-[500px] overflow-hidden will-change-transform">
-                    <Image
-                      src={slide.imageUrl || 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=1600&q=80'}
-                      alt={slide.headline || 'Hero Image'}
-                      fill
-                      sizes="100vw"
-                      className="object-cover object-center transition-transform duration-500 ease-out group-hover:scale-105"
-                      loader={loader}
-                      priority
-                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/25 to-transparent z-10 md:hidden" />
+
+                    {/* Mobile Text */}
+                    <div className="absolute bottom-0 left-0 right-0 p-6 z-20 text-white md:hidden">
+                      <h2 className="text-2xl font-bold">{slide.headline}</h2>
+                      {slide.badgeText && (
+                        <p className="text-sm mt-2 line-clamp-3">{slide.badgeText}</p>
+                      )}
+                      {slide.ctaLink && slide.ctaText && (
+                        <Link
+                          href={slide.ctaLink}
+                          className="inline-block mt-3 bg-white text-black font-medium px-4 py-2 rounded-md"
+                        >
+                          {slide.ctaText}
+                        </Link>
+                      )}
+                    </div>
                   </div>
-                  
-                  {/* Mobile-Only Text Content - ABSOLUTELY POSITIONED OVER IMAGE */}
-                  <div className="absolute bottom-0 left-0 right-0 p-6 z-20 text-white md:hidden">
-                    <div className="relative space-y-3">
-                       {/* Badge */}
-                      <motion.span
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2, duration: 0.5 }}
-                        className="inline-block px-3 py-1 text-xs font-semibold rounded-full shadow-md"
-                        style={{ background: primary, color: 'white' }}
-                      >
-                        {slide.subline}
-                      </motion.span>
-                       {/* Headline */}
-                      <motion.h2
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.4, duration: 0.5 }}
-                        className="text-2xl font-extrabold leading-snug drop-shadow-lg"
-                      >
-                        {slide.headline?.split('\n').map((line, lineIdx) => (
-                          <React.Fragment key={lineIdx}>
+
+                  {/* TEXT PANEL (Desktop) */}
+                  {/* ========= DESKTOP-ONLY LEFT PANEL: TEXT CONTENT ========= */}
+<div className="hidden md:flex md:w-1/2 px-6 py-20 md:px-12 lg:px-20 flex-col justify-center relative overflow-hidden">
+  {/* Translucent gradient overlay */}
+  <div className="absolute inset-0 bg-gradient-to-br from-white/70 via-white/60 to-white/30 backdrop-blur-[2px]" />
+
+  <div className="relative z-10 space-y-6 text-gray-900">
+    {/* Badge */}
+    <motion.span
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.2, duration: 0.5 }}
+      className="inline-block px-4 py-1.5 rounded-full text-sm sm:text-base font-semibold shadow-md"
+      style={{ background: primary, color: 'white' }}
+    >
+      {slide.subline}
+    </motion.span>
+
+    {/* Headline */}
+    <motion.h2
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.4, duration: 0.5 }}
+      className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight drop-shadow-md"
+    >
+      {(slide.headline ?? '').split('\n').map((line, i, arr) => (
+                          <React.Fragment key={i}>
                             {line.includes('$') ? (
                               <>
                                 {line.split('$')[0]}
@@ -256,139 +235,82 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
                             ) : (
                               line
                             )}
-                            {slide.headline && slide.headline?.length > 0 && lineIdx < slide.headline?.split('\n').length - 1 && <br />}
+                            {i < arr.length - 1 && <br />}
                           </React.Fragment>
-                        ))}
-                      </motion.h2>
-                       {/* CTA Button */}
-                       {slide.ctaLink && slide.ctaText && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.6, duration: 0.5 }}
-                        >
-                          <Link
-                            href={slide.ctaLink}
-                            className="inline-block font-semibold text-sm px-6 py-3 rounded-lg shadow-lg transition transform duration-300 hover:scale-105 relative overflow-hidden"
-                            style={{ background: primary, color: 'white' }}
-                          >
-                            {slide.ctaText}
-                          </Link>
-                        </motion.div>
-                      )}
-                    </div>
-                  </div>
-                </div>
+                        ))}      
+    </motion.h2>
 
-                {/* ========= DESKTOP-ONLY LEFT PANEL: TEXT CONTENT ========= */}
-                <div className="hidden md:block md:w-1/2 px-6 py-20 md:px-12 lg:px-20 flex flex-col justify-center relative bg-white md:bg-gradient-to-br md:from-white md:to-gray-50 text-gray-900">
-                  <div className="relative z-10 space-y-6">
-                    {/* Badge */}
-                    <motion.span
-                      initial={{ opacity: 0, y: -20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.2, duration: 0.5 }}
-                      className="inline-block px-4 py-1.5 rounded-full text-sm sm:text-base font-semibold shadow-md"
-                      style={{ background: primary, color: 'white' }}
-                    >
-                      {slide.subline}
-                    </motion.span>
+    {/* Description */}
+    {slide.badgeText && (
+      <motion.p
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.6, duration: 0.5 }}
+        className="text-gray-800 text-base sm:text-lg max-w-md drop-shadow-sm"
+      >
+        {slide.badgeText}
+      </motion.p>
+    )}
 
-                    {/* Headline */}
-                    <motion.h2
-                      initial={{ opacity: 0, y: -20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.4, duration: 0.5 }}
-                      className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight drop-shadow-lg"
-                    >
-                      {slide.headline?.split('\n').map((line, lineIdx) => (
-                        <React.Fragment key={lineIdx}>
-                          {line.includes('$') ? (
-                            <>
-                              {line.split('$')[0]}
-                              <span style={{ color: secondary }}>{line.split('$')[1]}</span>
-                            </>
-                          ) : (
-                            line
-                          )}
-                          {slide.headline && slide.headline?.length > 0 && lineIdx < slide.headline?.split('\n').length - 1 && <br />}
-                        </React.Fragment>
-                      ))}
-                    </motion.h2>
+    {/* CTA Button */}
+    {slide.ctaLink && slide.ctaText && (
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.8, duration: 0.5 }}
+      >
+        <Link
+          href={slide.ctaLink}
+          className="inline-block font-semibold text-sm sm:text-base px-8 py-4 rounded-xl shadow-lg transition transform duration-300 hover:scale-105 hover:shadow-xl relative overflow-hidden"
+          style={{ background: primary, color: 'white' }}
+        >
+          {slide.ctaText}
+          <span className="absolute inset-0 bg-white opacity-0 transition-opacity duration-300 group-hover:opacity-10" />
+        </Link>
+      </motion.div>
+    )}
+  </div>
+</div>
 
-                    {/* Description (Hidden on mobile) */}
-                    {slide.badgeText && (
-                      <motion.p
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.6, duration: 0.5 }}
-                        className="text-gray-700 text-base sm:text-lg max-w-md line-clamp-3"
-                      >
-                        {slide.badgeText}
-                      </motion.p>
-                    )}
-
-                    {/* CTA Button */}
-                    {slide.ctaLink && slide.ctaText && (
-                      <motion.div
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.8, duration: 0.5 }}
-                      >
-                        <Link
-                          href={slide.ctaLink}
-                          className="inline-block font-semibold text-sm sm:text-base px-8 py-4 rounded-xl shadow-lg transition transform duration-300 hover:scale-105 hover:shadow-xl relative overflow-hidden"
-                          style={{ background: primary, color: 'white' }}
-                        >
-                          {slide.ctaText}
-                          <span className="absolute inset-0 bg-white opacity-0 transition-opacity duration-300 group-hover:opacity-10" />
-                        </Link>
-                      </motion.div>
-                    )}
-                  </div>
-                </div>
-              </motion.div>
-            ) : null
+                </motion.div>
+              )
           )}
         </AnimatePresence>
 
-        {/* ========= PREV / NEXT BUTTONS (Positioned inside the container) ========= */}
+        {/* ARROWS */}
         <button
           onClick={prevSlide}
-          // New: Moved inside the container, adjusted position and shadow.
-          className="absolute top-1/2 left-8 md:left-10 transform -translate-y-1/2 bg-white/50 hover:bg-white p-3 md:p-4 rounded-full text-gray-800 shadow-xl transition-all duration-200 z-30 backdrop-blur-sm focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-white focus:ring-offset-gray-900"
+          className="absolute top-1/2 left-8 md:left-10 transform -translate-y-1/2 bg-white/50 hover:bg-white p-3 md:p-4 rounded-full text-gray-800 shadow-xl transition-all duration-200 z-30 backdrop-blur-sm"
           aria-label="Previous slide"
         >
           <ArrowLeftIcon className="h-5 w-5 md:h-6 md:w-6" />
         </button>
+
         <button
           onClick={nextSlide}
-          // New: Moved inside the container, adjusted position and shadow.
-          className="absolute top-1/2 right-8 md:right-10 transform -translate-y-1/2 bg-white/50 hover:bg-white p-3 md:p-4 rounded-full text-gray-800 shadow-xl transition-all duration-200 z-30 backdrop-blur-sm focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-white focus:ring-offset-gray-900"
+          className="absolute top-1/2 right-8 md:right-10 transform -translate-y-1/2 bg-white/50 hover:bg-white p-3 md:p-4 rounded-full text-gray-800 shadow-xl transition-all duration-200 z-30 backdrop-blur-sm"
           aria-label="Next slide"
         >
           <ArrowRightIcon className="h-5 w-5 md:h-6 md:w-6" />
         </button>
 
-        {/* ========= PAGINATION DOTS with Progress Bar (Remains the same) ========= */}
+        {/* PAGINATION DOTS */}
         <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-3 z-30">
           {heroSlidesToShow.map((_, idx) => (
             <button
               key={idx}
               onClick={() => goTo(idx, idx > current ? 1 : -1)}
-              className={`relative w-3.5 h-3.5 rounded-full overflow-hidden transition-all duration-300 ease-in-out border-2 ${
-                idx === current ? 'border-white scale-125' : 'border-gray-400 opacity-70 hover:scale-110'
-              } focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-900`}
-              aria-label={`Go to slide ${idx + 1}`}
+              className={`relative w-3.5 h-3.5 rounded-full overflow-hidden transition-all duration-300 border-2 ${
+                idx === current
+                  ? 'border-white scale-125'
+                  : 'border-gray-400 opacity-70 hover:scale-110'
+              }`}
             >
               {idx === current && (
                 <div
                   ref={progressRef}
                   className="absolute left-0 top-0 h-full rounded-full"
-                  style={{
-                    backgroundColor: 'white',
-                    width: '0%',
-                  }}
+                  style={{ backgroundColor: 'white', width: '0%' }}
                 />
               )}
             </button>
