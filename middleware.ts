@@ -62,7 +62,7 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
     }
   }
 
-  if(pathname.startsWith("/signin") || pathname.startsWith("/signup") || pathname.startsWith("/dashboards")){
+  if(pathname.startsWith("/signin") || pathname.startsWith("/signup") || pathname.startsWith("/dashboards") || pathname.startsWith("/stores")){
     return NextResponse.next();
   }
   
