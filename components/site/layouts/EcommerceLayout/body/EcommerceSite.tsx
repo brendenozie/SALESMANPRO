@@ -56,7 +56,6 @@ export default function EcommerceSite({ pageData }: EcommerceSiteProps) {
 
   return (
     <div className="space-y-12">
-      {/* 🔝 Critical above-the-fold content (SSR) */}
       <HeroSlider heroSlides={heroSlides} themeSettings={themeSettings} />
       <CategorySection StoreCategory={StoreCategory} themeSettings={themeSettings} />
       <DynamicPopularProducts slug={slug} />
@@ -64,11 +63,7 @@ export default function EcommerceSite({ pageData }: EcommerceSiteProps) {
       <DynamicTrending slug={slug} />
       <DynamicDailyBestSells slug={slug} />
       <SleepTapeAd bannerUrl={bannerUrl} themeSettings={themeSettings} />
-      <AllProducts
-        slug={slug}
-        marketplaceListings={featured}
-        themeSettings={themeSettings}
-      />
+      <AllProducts slug={slug} marketplaceListings={featured} themeSettings={themeSettings} />
       <FeaturesSection />
       <MetricsSection coreValues={CoreValues} />
       <AwardsSection awards={awards} />
