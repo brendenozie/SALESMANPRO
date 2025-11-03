@@ -45,6 +45,48 @@ const AlertTriangle = (props: React.SVGProps<SVGSVGElement>) => (
 // --- types ---
 export type Provider = { id: string; name: string };
 
+ const InputField = ({
+    label,
+    name,
+    type,
+    icon: Icon,
+    value,
+    onChange,
+    placeholder,
+  }: {
+    label: string;
+    name: string;
+    type: string;
+    icon: React.FC<React.SVGProps<SVGSVGElement>>;
+    value: string;
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    placeholder: string;
+  }) => (
+    <div>
+      <label
+        htmlFor={name}
+        className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+      >
+        {label}
+      </label>
+      <div className="relative">
+        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <Icon className="h-5 w-5 text-gray-400 dark:text-gray-500" />
+        </div>
+        <input
+          id={name}
+          name={name}
+          type={type}
+          value={value}
+          onChange={onChange}
+          placeholder={placeholder}
+          required
+          className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 rounded-xl shadow-inner focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition duration-150 ease-in-out"
+        />
+      </div>
+    </div>
+  );
+  
 export default function SignInClient({ providers }: { providers: Provider[] }) {
   const router = useRouter();
   const params = useSearchParams();
@@ -107,47 +149,7 @@ export default function SignInClient({ providers }: { providers: Provider[] }) {
     }
   };
 
-  const InputField = ({
-    label,
-    name,
-    type,
-    icon: Icon,
-    value,
-    onChange,
-    placeholder,
-  }: {
-    label: string;
-    name: string;
-    type: string;
-    icon: React.FC<React.SVGProps<SVGSVGElement>>;
-    value: string;
-    onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    placeholder: string;
-  }) => (
-    <div>
-      <label
-        htmlFor={name}
-        className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
-      >
-        {label}
-      </label>
-      <div className="relative">
-        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <Icon className="h-5 w-5 text-gray-400 dark:text-gray-500" />
-        </div>
-        <input
-          id={name}
-          name={name}
-          type={type}
-          value={value}
-          onChange={onChange}
-          placeholder={placeholder}
-          required
-          className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 rounded-xl shadow-inner focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 transition duration-150 ease-in-out"
-        />
-      </div>
-    </div>
-  );
+ 
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 overflow-auto py-12 px-4 sm:px-6 lg:px-8 relative">
