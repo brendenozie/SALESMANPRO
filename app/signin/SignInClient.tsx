@@ -120,8 +120,10 @@ export default function SignInClient({ providers }: { providers: Provider[] }) {
       setIsLoading(false);
       return;
     }
+    
     localStorage.setItem("callbackUrl", callbackUrl);
-    const res = await signIn("credentials-email-password", {
+    
+    await signIn("credentials-email-password", {
       email: data.email,
       password: data.password,
       redirect: true,
@@ -130,10 +132,10 @@ export default function SignInClient({ providers }: { providers: Provider[] }) {
 
     setIsLoading(false);
 
-    if (res?.error) {
-      setError("Login failed. Please check your credentials.");
-      return;
-    }
+    // if (res?.error) {
+    //   setError("Login failed. Please check your credentials.");
+    //   return;
+    // }
 
   };
 
