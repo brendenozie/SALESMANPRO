@@ -302,6 +302,8 @@ export const authOptions: NextAuthOptions = {
       // ignore
     }
 
+    console.log("[Redirect Callback] Extracted callbackUrl:", callbackUrl);
+
     // Case 2: fallback — sometimes stored in the URL from the previous step
     if (!callbackUrl && process?.env?.NEXTAUTH_CALLBACK_URL) {
       callbackUrl = process.env.NEXTAUTH_CALLBACK_URL;
