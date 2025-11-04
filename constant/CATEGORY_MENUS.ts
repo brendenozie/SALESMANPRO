@@ -843,15 +843,15 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
 
   "Public Speaking": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
-    {
-      label: "Clients",
-      icon: UsersIcon, // Icon for people/groups
-      subItems: [
-        { label: "Client List", href: `/admin/${adminSlug}/clients` },
-        // { label: "Leads/Prospects", href: `/admin/${adminSlug}/leads` },
-        // { label: "Client History", href: `/admin/${adminSlug}/client-history` },
-      ],
-    },
+    // {
+    //   label: "Clients",
+    //   icon: UsersIcon, // Icon for people/groups
+    //   subItems: [
+    //     { label: "Client List", href: `/admin/${adminSlug}/clients` },
+    //     // { label: "Leads/Prospects", href: `/admin/${adminSlug}/leads` },
+    //     // { label: "Client History", href: `/admin/${adminSlug}/client-history` },
+    //   ],
+    // },
     {
       label: "Programs & Courses",
       icon: BookOpenIcon, // Icon for a book or learning
@@ -877,7 +877,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     //     { label: "Payment History", href: `/admin/${adminSlug}/payments` },
     //   ],
     // },
-    { label: "Reports & Analytics", href: `/admin/${adminSlug}/analytics`, icon: ChartBarIcon }, // Icon for charts/graphs
+    // { label: "Reports & Analytics", href: `/admin/${adminSlug}/analytics`, icon: ChartBarIcon }, // Icon for charts/graphs
     { label: "Messaging", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleBottomCenterTextIcon }, // Icon for chat/messages
     { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon }, // Icon for gear/settings
   ],
