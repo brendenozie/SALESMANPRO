@@ -8,7 +8,7 @@ import UserNav from '@/components/UserNav';
 const ProductRequestModal = dynamic(() => import('@/components/ProductRequestModal'));
 const AddToProductMarketModal = dynamic(() => import('@/components/AddToProductMarketModal'));
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;
 
 type Product = {
   clientInventoryId: string;

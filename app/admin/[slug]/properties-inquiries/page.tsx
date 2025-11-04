@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import { ChatBubbleLeftRightIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import { cookies } from 'next/headers';
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;
 
 // Import the Client Component and Type Definitions
 import InquiriesClientPage, { Inquiry } from './InquiriesClientPage'; 

@@ -86,7 +86,7 @@ export default function OffersClientPage({
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [offerToView, setOfferToView] = useState<OfferContract | null>(null);
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+  const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;
 
   // --- Data Fetching/Refetching (Client-side) ---
   const fetchOffers = useCallback(async (showToast = false) => {

@@ -55,7 +55,7 @@ export default function PropertyClientPage({
   const [selectedProperty, setSelectedProperty] = useState<MarketListingForm | null>(null);
   const [showAddToMarketProductModal, setShowAddToMarketProductModal] = useState(false);
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+  const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;
 
 
   // --- Data Refetching (Client-side) ---

@@ -18,7 +18,7 @@ import LessonFormModal from './LessonFormModal';
 import { TimetableGrid } from './TimetableGrid';
 import TimetableHeader from './Header';
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;
 
 // --- Type Definitions (Aligned with ClassSchedule API) ---
 export type TimetableEntry = {

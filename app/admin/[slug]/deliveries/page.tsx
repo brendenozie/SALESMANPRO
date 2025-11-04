@@ -27,7 +27,7 @@ import toast, { Toaster } from 'react-hot-toast';
 import { useParams } from 'next/navigation';
 
 // Using the provided environment variable
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;
 
 // --- Type Definitions (Refined for Clarity and Schema Alignment) ---
 type RiderInfo = {
