@@ -12,8 +12,11 @@ import {
   UserIcon,
 } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
+// Assuming these contexts exist and provide the necessary data
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
+// Assuming NextAuth is available in this environment
+import { useSession, signIn, signOut } from 'next-auth/react'; 
 
 // Helper for image loader
 const imageLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
@@ -34,12 +37,16 @@ export default function Header() {
   const { storeFormData } = useStoreContext();
   const router = useRouter();
 
+  // --- Auth State & Hooks ---
+  const { data: session, status } = useSession(); // Get session data
+  const user = session?.user as { role?: string; name?: string } | undefined;
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const searchInputRef = useRef<HTMLInputElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
-  const mobileMenuToggleButtonRef = useRef<HTMLButtonElement>(null); // Ref for the toggle button
+  const mobileMenuToggleButtonRef = useRef<HTMLButtonElement>(null);
 
   // Destructure relevant fields with default empty objects for safety
   const {
@@ -51,8 +58,30 @@ export default function Header() {
   } = storeFormData || {};
 
   // Fallback to emerald/blue if no colors are provided
-  const primaryColor = themeSettings?.primaryColor || '#10B981';   // Emerald
+  const primaryColor = themeSettings?.primaryColor || '#10B981';    // Emerald
   const secondaryColor = themeSettings?.secondaryColor || '#3B82F6'; // Blue
+
+  // --- Auth Handlers (copied from the first component) ---
+  const handleUserAction = () => {
+    if (!user) return handleGoogleSignIn(); // Fallback in case button logic is missed
+    if (user.role?.toLowerCase() === 'admin') router.push('/dashboards');
+    else router.push(`/site/${slug}/ecommerce/profile`); // Navigate to profile for non-admin
+  };
+
+  const handleSignOut = () => signOut({ callbackUrl: `/site/${slug}/ecommerce` });
+
+  const handleGoogleSignIn = () => {
+    // Assuming 'salesmanpro.site' is the external auth provider
+    const authUrl = new URL("https://auth.salesmanpro.site/signin");
+    authUrl.searchParams.set("callbackUrl", `${window.location.origin}/site/${slug}/ecommerce`); // Adjusted callback
+    window.location.href = authUrl.toString();
+  };
+
+  const handleGoogleSignUp = () => {
+    const authUrl = new URL("https://auth.salesmanpro.site/signup");
+    authUrl.searchParams.set("callbackUrl", `${window.location.origin}/site/${slug}/ecommerce`); // Adjusted callback
+    window.location.href = authUrl.toString();
+  };
 
   // Handle outside clicks for closing search and mobile menu
   useEffect(() => {
@@ -94,8 +123,7 @@ export default function Header() {
     };
   }, [mobileMenuOpen]);
 
-  // We’ll hide the header shadow when the page is at top,
-  // and add a tiny shadow once you scroll down a bit.
+  // Handle scroll for header shadow
   const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
     const onScroll = () => {
@@ -108,19 +136,16 @@ export default function Header() {
 
   // Define navigation links as constants
   const navLinks = [
-    { label: 'Home', href: `/site/${slug}` },
-    { label: 'Shop', href: `/site/${slug}/ecommerceshoes/products` },
-    { label: 'Categories', href: `/site/${slug}/ecommerceshoes/categories` },
+    { label: 'Home', href: `/site/${slug}/ecommerce` },
+    { label: 'Shop', href: `/site/${slug}/ecommerce/products` },
+    { label: 'Categories', href: `/site/${slug}/ecommerce/categories` },
   ];
 
   // Debounced search handler (simulate API call)
   const handleSearch = useCallback(
     debounce((query: string) => {
-      if (query.length > 2) { // Only search if query is at least 3 characters
+      if (query.length > 2) { 
         console.log('Performing search for:', query);
-        // In a real application, you would dispatch an action or fetch data here
-        // e.g., router.push(`/site/${slug}/ecommerceshoes/search?q=${query}`);
-        // Or fetch suggestions and display them in a dropdown.
       }
     }, 300),
     [slug]
@@ -134,17 +159,13 @@ export default function Header() {
 
   const handleClearSearch = () => {
     setSearchQuery('');
-    // Optionally close search or keep it open for new input
-    // setSearchOpen(false);
   };
 
   const toggleMobileMenu = () => {
-    const wasOpen = mobileMenuOpen; // Capture current state before updating
+    const wasOpen = mobileMenuOpen;
     setMobileMenuOpen((prev) => !prev);
-
-    // When menu closes, return focus to the toggle button
-    if (wasOpen) { // Check if it *was* open, meaning it's now closing
-      mobileMenuToggleButtonRef.current?.focus(); // Use the ref for focus
+    if (wasOpen) {
+      mobileMenuToggleButtonRef.current?.focus();
     }
   };
 
@@ -229,7 +250,7 @@ export default function Header() {
             <div className="relative">
               <motion.button
                 whileHover={{ scale: 1.1, color: primaryColor }}
-                className="transition-colors text-gray-900 search-toggle-button" // Added class for click outside
+                className="transition-colors text-gray-900 search-toggle-button"
                 onClick={() => setSearchOpen((p) => !p)}
                 aria-label="Toggle search input"
                 aria-expanded={searchOpen}
@@ -275,12 +296,12 @@ export default function Header() {
               </AnimatePresence>
             </div>
 
-            {/* Profile */}
+            {/* Profile / Sign In/Up Button */}
             <motion.button
               whileHover={{ scale: 1.1, color: primaryColor }}
               className="transition-colors text-gray-900"
-              onClick={() => router.push(`/site/${slug}/ecommerceshoes/profile`)}
-              aria-label="Profile page"
+              onClick={handleUserAction} // Use the combined handler
+              aria-label={user ? "Profile page" : "Log In or Sign Up"}
             >
               <UserIcon className="h-6 w-6" />
             </motion.button>
@@ -289,7 +310,7 @@ export default function Header() {
             <motion.button
               whileHover={{ scale: 1.1, color: primaryColor }}
               className="relative transition-colors text-gray-900"
-              onClick={() => router.push(`/site/${slug}/ecommerceshoes/checkout`)}
+              onClick={() => router.push(`/site/${slug}/ecommerce/checkout`)}
               aria-label={`Shopping cart with ${cart.length} items`}
             >
               <ShoppingBagIcon className="h-6 w-6" />
@@ -307,7 +328,7 @@ export default function Header() {
               aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
               aria-controls="mobile-menu"
               aria-expanded={mobileMenuOpen}
-              ref={mobileMenuToggleButtonRef} // Attach ref to the button
+              ref={mobileMenuToggleButtonRef}
             >
               {mobileMenuOpen ? (
                 <XMarkIcon className="h-6 w-6" />
@@ -324,29 +345,35 @@ export default function Header() {
         {mobileMenuOpen && (
           <motion.div
             key="mobile-menu"
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ type: 'tween', duration: 0.25 }}
+            initial={{ clipPath: 'inset(0% 0% 100% 0%)', opacity: 0 }}
+            animate={{ clipPath: 'inset(0% 0% 0% 0%)', opacity: 1 }}
+            exit={{ clipPath: 'inset(0% 0% 100% 0%)', opacity: 0 }}
+            transition={{
+              duration: 0.45,
+              ease: [0.25, 0.8, 0.25, 1],
+            }}
             className="
-              fixed top-0 left-0 w-full
+              fixed top-[72px] left-0 w-full
               bg-white/90 backdrop-blur-lg
               ring-1 ring-gray-200
               rounded-b-3xl
-              overflow-hidden z-40
+              overflow-hidden 
+              z-[60]
               md:hidden
+              origin-top
+              shadow-lg
             "
             id="mobile-menu"
             ref={mobileMenuRef}
           >
-            <div className="pt-20 pb-8 px-6 space-y-6">
+            <div className="pt-6 pb-8 px-6 space-y-6">
               {/* Nav Links */}
               {navLinks.map((item, idx) => (
                 <motion.div
                   key={item.label}
-                  initial={{ x: -20, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  transition={{ delay: idx * 0.1, type: 'spring', stiffness: 300 }}
+                  initial={{ y: 10, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: idx * 0.07, type: 'spring', stiffness: 300, damping: 24 }}
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   <Link
@@ -359,7 +386,54 @@ export default function Header() {
                 </motion.div>
               ))}
 
-              {/* Separator */}
+              <div className="border-t border-gray-200" />
+              
+              {/* --- Authentication Buttons for Mobile --- */}
+              {user ? (
+                // User is logged in
+                <motion.div
+                    initial={{ y: 10, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: navLinks.length * 0.07, type: 'spring', stiffness: 300, damping: 24 }}
+                >
+                    <button
+                        onClick={() => { setMobileMenuOpen(false); handleUserAction(); }}
+                        className="w-full text-center px-4 py-2 rounded-lg text-white font-medium shadow-md transition-colors hover:brightness-90"
+                        style={{ backgroundColor: `var(--primary-color)` }}
+                    >
+                        {user.role === 'admin' ? 'Admin Portal' : 'My Account'}
+                    </button>
+                    <button
+                        onClick={() => { setMobileMenuOpen(false); handleSignOut(); }}
+                        className="w-full mt-3 text-gray-600 underline hover:text-[var(--primary-color)] text-base"
+                    >
+                        Sign Out
+                    </button>
+                </motion.div>
+              ) : (
+                // User is NOT logged in (Log In & Sign Up)
+                <motion.div
+                    initial={{ y: 10, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: navLinks.length * 0.07, type: 'spring', stiffness: 300, damping: 24 }}
+                    className='flex flex-col space-y-3'
+                >
+                    <button
+                        onClick={() => { setMobileMenuOpen(false); handleGoogleSignIn(); }}
+                        className="w-full text-center px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100 font-medium border border-gray-200 transition-colors"
+                    >
+                        Log In
+                    </button>
+                    <button
+                        onClick={() => { setMobileMenuOpen(false); handleGoogleSignUp(); }}
+                        className="w-full text-center px-4 py-2 rounded-lg text-white font-medium shadow-md transition-colors hover:brightness-90"
+                        style={{ backgroundColor: `var(--primary-color)` }}
+                    >
+                        Sign Up
+                    </button>
+                </motion.div>
+              )}
+
               <div className="border-t border-gray-200" />
 
               {/* Social Links */}
@@ -392,7 +466,7 @@ export default function Header() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-black/30 z-30 md:hidden"
+            className="fixed inset-x-0 top-[72px] bottom-0 bg-black/30 z-30 md:hidden"
             onClick={toggleMobileMenu}
           />
         )}
