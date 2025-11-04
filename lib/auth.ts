@@ -199,12 +199,12 @@ export const authOptions: NextAuthOptions = {
     //   from: process.env.EMAIL_FROM,
     // }),
   ],
-  session: {
-    strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60,
-    updateAge: 24 * 60 * 60,
-    generateSessionToken: () => randomUUID?.() ?? randomBytes(32).toString("hex"),
-  },
+  // session: {
+  //   strategy: "jwt",
+  //   maxAge: 30 * 24 * 60 * 60,
+  //   updateAge: 24 * 60 * 60,
+  //   generateSessionToken: () => randomUUID?.() ?? randomBytes(32).toString("hex"),
+  // },
 
   // ✅ AUTO-LINK OAUTH LOGINS HERE
   callbacks: {
@@ -215,7 +215,7 @@ export const authOptions: NextAuthOptions = {
       console.log("INCOMING url:", url);
       console.log("INCOMING baseUrl:", baseUrl);
       // --------------------------
-      
+
       try {
 
         let isTenantRedirect = false;
@@ -502,39 +502,76 @@ export const authOptions: NextAuthOptions = {
     //   return true;
     // },
 
-    async jwt({ token, user }) {
-      if (user) {
-        Object.assign(token, {
+    // async jwt({ token, user }) {
+    //   if (user) {
+    //     Object.assign(token, {
+    //       id: user.id,
+    //       name: user.name,
+    //       email: user.email,
+    //       phone: (user as any).phone,
+    //       username: (user as any).username,
+    //       bio: (user as any).bio,
+    //       address: (user as any).address,
+    //       role: (user as any).role,
+    //       profilePicture: (user as any).profilePicture,
+    //     });
+    //   }
+    //   return token;
+    // },
+
+    // ✅ MODIFY THIS
+    async session({ session, user }) {
+      // 'user' is the user object from the database
+      
+      // --- START DYNAMIC ROLE LOGIC ---
+      // This is the same logic from your 'authorize' function
+      let determinedRole: string | undefined = user.role || undefined;
+      const studentCheck = await prisma.student.findUnique({ where: { userId: user.id } });
+      const educatorCheck = await prisma.educator.findUnique({ where: { userId: user.id } });
+      const consumerCheck = await prisma.consumer.findUnique({ where: { userId: user.id } });
+      const salesAgentCheck = await prisma.salesAgent.findUnique({ where: { userId: user.id } });
+      const clientCheck = await prisma.client.findUnique({ where: { userId: user.id } });
+
+      if (studentCheck) determinedRole = "STUDENT";
+      else if (consumerCheck) determinedRole = "CONSUMER";
+      else if (salesAgentCheck) determinedRole = "SALES_AGENT";
+      else if (clientCheck) determinedRole = "CLIENT";
+      else if (educatorCheck) determinedRole = "EDUCATOR";
+      else determinedRole = user.role || "ADMIN";
+      // --- END DYNAMIC ROLE LOGIC ---
+      
+      if (session.user) {
+        Object.assign(session.user, {
           id: user.id,
           name: user.name,
           email: user.email,
-          phone: (user as any).phone,
-          username: (user as any).username,
-          bio: (user as any).bio,
-          address: (user as any).address,
-          role: (user as any).role,
-          profilePicture: (user as any).profilePicture,
-        });
-      }
-      return token;
-    },
-
-    async session({ session, token }) {
-      if (session.user) {
-        Object.assign(session.user, {
-          id: token.id as string,
-          name: token.name,
-          email: token.email,
-          phone: token.phone,
-          username: token.username,
-          bio: token.bio,
-          address: token.address,
-          role: token.role,
-          profilePicture: token.profilePicture,
+          phone: user.phone,
+          username: user.username,
+          bio: user.bio,
+          address: user.address,
+          role: determinedRole, // Assign the dynamic role
+          profilePicture: user.profilePicture ?? user.image,
         });
       }
       return session;
     },
+
+    // async session({ session, token }) {
+    //   if (session.user) {
+    //     Object.assign(session.user, {
+    //       id: token.id as string,
+    //       name: token.name,
+    //       email: token.email,
+    //       phone: token.phone,
+    //       username: token.username,
+    //       bio: token.bio,
+    //       address: token.address,
+    //       role: token.role,
+    //       profilePicture: token.profilePicture,
+    //     });
+    //   }
+    //   return session;
+    // },
   },
 
   secret: process.env.NEXTAUTH_SECRET,
