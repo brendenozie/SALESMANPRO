@@ -120,7 +120,7 @@ export default function SignInClient({ providers }: { providers: Provider[] }) {
       setIsLoading(false);
       return;
     }
-
+    localStorage.setItem("callbackUrl", callbackUrl);
     const res = await signIn("credentials-email-password", {
       ...data,
       redirect: true,

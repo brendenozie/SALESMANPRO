@@ -117,11 +117,11 @@ export default function SignUpClient({ providers }: { providers: Provider[] }) {
       if (!res.ok) throw new Error(json.message || "Registration failed");
 
       // router.push("/signin?registered=true");
-
+      localStorage.setItem("callbackUrl", callbackUrl);
       // ✅ Automatically sign in the user
       const loginRes = await signIn("credentials", {
         redirect: true,
-        callbackUrl: "/dashboards",
+        callbackUrl: callbackUrl,
         email: data.email,
         password: data.password,
       });
@@ -143,7 +143,8 @@ export default function SignUpClient({ providers }: { providers: Provider[] }) {
     setError(null);
     setIsLoading(true);
     // Use signIn with the provider for sign-up/link accounts
-    await signIn(providerId, { redirect: true, callbackUrl: "/dashboards" });
+    localStorage.setItem("callbackUrl", callbackUrl);
+    await signIn(providerId, { redirect: true, callbackUrl });
   };
   
   // Update function helper
