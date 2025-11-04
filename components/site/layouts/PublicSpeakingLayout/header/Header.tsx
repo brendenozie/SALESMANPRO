@@ -142,13 +142,13 @@ const PublicSpeakingHeader: React.FC<HeaderProps> = ({ storeFormData }) => {
   const handleSignOut = () => signOut({ callbackUrl: "/" });
 
   const handleGoogleSignIn = () => {
-    const authUrl = new URL("https://auth.salesmanpro.site/auth/signin");
+    const authUrl = new URL("https://auth.salesmanpro.site/signin");
     authUrl.searchParams.set("callbackUrl", window.location.origin);
     window.location.href = authUrl.toString();
   };
 
   const handleGoogleSignUp = () => {
-    const authUrl = new URL("https://auth.salesmanpro.site/auth/signup");
+    const authUrl = new URL("https://auth.salesmanpro.site/signup");
     authUrl.searchParams.set("callbackUrl", window.location.origin);
     window.location.href = authUrl.toString();
   };

@@ -123,7 +123,8 @@ export default function SignInClient({ providers }: { providers: Provider[] }) {
 
     const res = await signIn("credentials-email-password", {
       ...data,
-      redirect: false,
+      redirect: true,
+      callbackUrl,
     });
 
     setIsLoading(false);
