@@ -30,6 +30,22 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
   const host = request.headers.get("host")?.split(":")[0] || "";
   const origin = request.headers.get("origin");
 
+   if (url.pathname === "/signin" && url.searchParams.has("callbackUrl")) {
+    const callbackUrl = url.searchParams.get("callbackUrl");
+    const res = NextResponse.next();
+
+    // Store it in a short-lived cookie (5 minutes)
+    res.cookies.set("nextauth_callback_url", callbackUrl!, {
+      path: "/",
+      maxAge: 60 * 5,
+      httpOnly: true,
+      sameSite: "lax",
+      secure: true,
+    });
+
+    return res;
+  }
+
   // ---- 1. API & CORS HANDLING ----
   if (pathname.startsWith("/api/")) {
     const responseHeaders = new Headers();
