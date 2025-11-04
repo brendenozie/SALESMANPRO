@@ -287,62 +287,66 @@ export const authOptions: NextAuthOptions = {
     //   }
     // },
 
-    async redirect({ url, baseUrl }) {
-  try {
-    let finalRedirect = baseUrl;
-
-    // Try to extract the callbackUrl manually (from url or environment)
-    let callbackUrl: string | null = null;
-
-    // Case 1: callbackUrl embedded in query string of 'url'
+    
+  async redirect({ url, baseUrl }) {
     try {
-      const u = new URL(url, baseUrl);
-      callbackUrl = u.searchParams.get("callbackUrl");
-    } catch {
-      // ignore
-    }
+      // Try to extract callbackUrl manually
+      const currentUrl = new URL(url, baseUrl);
+      let callbackUrl =
+        currentUrl.searchParams.get("callbackUrl") ||
+        currentUrl.searchParams.get("redirect") ||
+        null;
 
-    console.log("[Redirect Callback] Extracted callbackUrl:", callbackUrl);
+      console.log("[Redirect Callback] Extracted callbackUrl:", callbackUrl);
 
-    // Case 2: fallback — sometimes stored in the URL from the previous step
-    if (!callbackUrl && process?.env?.NEXTAUTH_CALLBACK_URL) {
-      callbackUrl = process.env.NEXTAUTH_CALLBACK_URL;
-    }
+      let isTenantRedirect = false;
+      let tenantUrl: URL | null = null;
 
-    if (callbackUrl) {
-      const tenantUrl = new URL(decodeURIComponent(callbackUrl));
+      try {
+        tenantUrl = new URL(callbackUrl || url);
+        if (tenantUrl.origin !== new URL(baseUrl).origin) {
+          isTenantRedirect = true;
+        }
+      } catch {
+        isTenantRedirect = false;
+      }
 
-      // Prevent redirect loops
-      if (tenantUrl.searchParams.has("auth_token")) {
-        console.log("[Redirect Callback] Already has auth_token, returning tenantUrl.");
+      // ✅ If redirecting to tenant (external domain)
+      if (isTenantRedirect && tenantUrl) {
+        if (tenantUrl.searchParams.has("auth_token")) {
+          return tenantUrl.toString();
+        }
+
+        const session = await getServerSession(authOptions);
+        if (!session || !session.user) {
+          console.error("[Redirect Callback] No session found after sign-in. Redirecting to base.");
+          return baseUrl;
+        }
+
+        const token = await encode({
+          token: { ...session.user, sub: (session.user as any).id },
+          secret: process.env.NEXTAUTH_SECRET!,
+        });
+
+        tenantUrl.searchParams.set("auth_token", token);
         return tenantUrl.toString();
       }
 
-      // Create lightweight token
-      const { encode } = await import("next-auth/jwt");
-      const token = await encode({
-        token: {
-          id: "",
-          iss: "auth.salesmanpro.site",
-          aud: tenantUrl.origin,
-          exp: Math.floor(Date.now() / 1000) + 60 * 10,
-        },
-        secret: process.env.NEXTAUTH_SECRET!,
-      });
+      // 🔁 Internal redirects
+      if (url.startsWith("/")) {
+        return `${baseUrl}${url}`;
+      }
+      if (url.startsWith(baseUrl)) {
+        return url;
+      }
 
-      tenantUrl.searchParams.set("auth_token", token);
-      finalRedirect = tenantUrl.toString();
-      console.log("[Redirect Callback] Redirecting to tenant:", finalRedirect);
-    } else {
-      console.log("[Redirect Callback] No callbackUrl found, using baseUrl.");
+      // Fallback to callbackUrl if available, else baseUrl
+      return callbackUrl || baseUrl;
+    } catch (error) {
+      console.error("Redirect error:", error);
+      return baseUrl;
     }
-
-    return finalRedirect;
-  } catch (error) {
-    console.error("Redirect error:", error);
-    return baseUrl;
-  }
-},
+  },
 
 
     //  async redirect({ url, baseUrl }) {
