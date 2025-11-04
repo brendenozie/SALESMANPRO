@@ -1,8 +1,8 @@
 "use client";
 
-import { signIn } from "next-auth/react"; // We use signIn for social sign-up
-import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react"; 
 import { useState, useMemo } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 // --- PLACEHOLDER ICONS (Reused for consistent styling) ---
 const MailIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -61,6 +61,7 @@ const InputField = ({ label, name, type, icon: Icon, value, onChange, placeholde
 
 
 export default function SignUpClient({ providers }: { providers: Provider[] }) {
+  const params = useSearchParams();
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -70,6 +71,7 @@ export default function SignUpClient({ providers }: { providers: Provider[] }) {
     password: "", 
     confirmPassword: "" 
   });
+  const callbackUrl = params.get("callbackUrl") || "/";
 
   // Separate credentials providers from social providers
   const { credentialProvider, socialProviders } = useMemo(() => {
@@ -118,17 +120,18 @@ export default function SignUpClient({ providers }: { providers: Provider[] }) {
 
       // ✅ Automatically sign in the user
       const loginRes = await signIn("credentials", {
-        redirect: false,
-        email:data.email,
+        redirect: true,
+        callbackUrl: "/dashboards",
+        email: data.email,
         password: data.password,
       });
 
-      if (loginRes?.error) {
-        alert("Registered but failed to auto-login");
-      } else {
-        // ✅ Redirect after successful auto-login
-        router.push("/dashboards");
-      }
+      // if (loginRes?.error) {
+      //   alert("Registered but failed to auto-login");
+      // } else {
+      //   // ✅ Redirect after successful auto-login
+      //   router.push("/dashboards");
+      // }
     } catch (err: any) {
       setError(err.message || "Something went wrong.");
     } finally {

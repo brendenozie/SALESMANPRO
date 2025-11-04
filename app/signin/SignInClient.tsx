@@ -90,7 +90,7 @@ export type Provider = { id: string; name: string };
 export default function SignInClient({ providers }: { providers: Provider[] }) {
   const router = useRouter();
   const params = useSearchParams();
-  const callbackUrl = params.get("callbackUrl") || "https://salesmanpro.site";
+  const callbackUrl = params.get("callbackUrl") || "/";
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -133,7 +133,6 @@ export default function SignInClient({ providers }: { providers: Provider[] }) {
       return;
     }
 
-    router.push("/");
   };
 
   const handleSocialSignIn = async (providerId: string) => {
