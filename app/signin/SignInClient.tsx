@@ -120,7 +120,7 @@ export default function SignInClient({ providers }: { providers: Provider[] }) {
       setIsLoading(false);
       return;
     }
-    
+
     localStorage.setItem("callbackUrl", callbackUrl);
     
     await signIn("credentials-email-password", {
@@ -144,7 +144,7 @@ export default function SignInClient({ providers }: { providers: Provider[] }) {
       setIsLoading(true);
       setError(null);
       localStorage.setItem("callbackUrl", callbackUrl);
-      await signIn(providerId, { redirect: true, callbackUrl });
+      await signIn(providerId, { redirect: true, callbackUrl: encodeURIComponent(callbackUrl), });
     } catch (err) {
       console.error(err);
       setError("Sign-In failed. Please check your connection and try again.");

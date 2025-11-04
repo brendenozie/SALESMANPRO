@@ -127,7 +127,7 @@ export default function SignUpClient({ providers }: { providers: Provider[] }) {
       // });
       await signIn("credentials-email-password", {
         redirect: true,
-        callbackUrl,
+        callbackUrl: encodeURIComponent(callbackUrl),
         email: data.email,
         password: data.password,
       });
@@ -151,7 +151,7 @@ export default function SignUpClient({ providers }: { providers: Provider[] }) {
     setIsLoading(true);
     // Use signIn with the provider for sign-up/link accounts
     localStorage.setItem("callbackUrl", callbackUrl);
-    await signIn(providerId, { redirect: true, callbackUrl });
+    await signIn(providerId, { redirect: true, callbackUrl: encodeURIComponent(callbackUrl), });
   };
   
   // Update function helper
