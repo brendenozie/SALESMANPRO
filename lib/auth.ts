@@ -209,79 +209,132 @@ export const authOptions: NextAuthOptions = {
   // ✅ AUTO-LINK OAUTH LOGINS HERE
   callbacks: {
 
-    async redirect({ url, baseUrl }) {
-      try {
+    // async redirect({ url, baseUrl }) {
+    //   try {
 
-        let isTenantRedirect = false;
-        let tenantUrl: URL | null = null;
+    //     let isTenantRedirect = false;
+    //     let tenantUrl: URL | null = null;
 
-        try {
-          // 1. Check if 'url' is an absolute URL
-          tenantUrl = new URL(url);
+    //     try {
+    //       // 1. Check if 'url' is an absolute URL
+    //       tenantUrl = new URL(url);
           
-          // 2. Check if its origin is DIFFERENT from the auth app's origin
-          if (tenantUrl.origin !== new URL(baseUrl).origin) {
-            isTenantRedirect = true;
-          }
-        } catch (e) {
-          // 'url' was relative (e.g., "/dashboard"), so it's an internal redirect.
-          isTenantRedirect = false;
-        }
+    //       // 2. Check if its origin is DIFFERENT from the auth app's origin
+    //       if (tenantUrl.origin !== new URL(baseUrl).origin) {
+    //         isTenantRedirect = true;
+    //       }
+    //     } catch (e) {
+    //       // 'url' was relative (e.g., "/dashboard"), so it's an internal redirect.
+    //       isTenantRedirect = false;
+    //     }
 
 
-        // ✅ If it's a redirect back to a tenant (e.g., https://domain.com)
-        if (isTenantRedirect && tenantUrl) {
+    //     // ✅ If it's a redirect back to a tenant (e.g., https://domain.com)
+    //     if (isTenantRedirect && tenantUrl) {
 
-          // --- BEGIN FIX ---
-          // Check if the URL *already* has the token. If so, we're in a loop.
-          // Just return the URL as-is and let the tenant app handle it.
-          if (tenantUrl.searchParams.has("auth_token")) {
-            return tenantUrl.toString();
-          }
-          // --- END FIX ---
+    //       // --- BEGIN FIX ---
+    //       // Check if the URL *already* has the token. If so, we're in a loop.
+    //       // Just return the URL as-is and let the tenant app handle it.
+    //       if (tenantUrl.searchParams.has("auth_token")) {
+    //         return tenantUrl.toString();
+    //       }
+    //       // --- END FIX ---
 
-          // Get the session that was just created
-          const session = await getServerSession(authOptions);
-          if (!session || !session.user) {
-            console.error("[Redirect Callback] No session found after sign-in. Redirecting to base.");
-            return baseUrl; // Fallback
-          }
+    //       // Get the session that was just created
+    //       const session = await getServerSession(authOptions);
+    //       if (!session || !session.user) {
+    //         console.error("[Redirect Callback] No session found after sign-in. Redirecting to base.");
+    //         return baseUrl; // Fallback
+    //       }
 
-          // Create the JWT token
-          const token = await encode({
-            token: { ...session.user, sub: (session.user as any).id }, // Pass user data
-            secret: process.env.NEXTAUTH_SECRET!,
-          });
+    //       // Create the JWT token
+    //       const token = await encode({
+    //         token: { ...session.user, sub: (session.user as any).id }, // Pass user data
+    //         secret: process.env.NEXTAUTH_SECRET!,
+    //       });
 
-          // Build the final redirect URL
-          // 'tenantUrl' is already a URL object for "https://domain.com"
-          tenantUrl.searchParams.set("auth_token", token); // Use a clear name
+    //       // Build the final redirect URL
+    //       // 'tenantUrl' is already a URL object for "https://domain.com"
+    //       tenantUrl.searchParams.set("auth_token", token); // Use a clear name
           
-          const finalUrl = tenantUrl.toString();
+    //       const finalUrl = tenantUrl.toString();
           
-          return finalUrl; // e.g., "https://domain.com?auth_token=..."
-        }
+    //       return finalUrl; // e.g., "https://domain.com?auth_token=..."
+    //     }
 
-        // ❌ If it's an internal redirect (e.g., user signed in on auth.salesmanpro.site)
-        console.log("[Redirect Callback] Internal redirect detected.");
-        // Handle relative URLs
-        if (url.startsWith("/")) {
-          return `${baseUrl}${url}`;
-        }
-        // Handle absolute URLs that are just our own base URL
-        if (url.startsWith(baseUrl)) {
-          return url;
-        }
+    //     // ❌ If it's an internal redirect (e.g., user signed in on auth.salesmanpro.site)
+    //     console.log("[Redirect Callback] Internal redirect detected.");
+    //     // Handle relative URLs
+    //     if (url.startsWith("/")) {
+    //       return `${baseUrl}${url}`;
+    //     }
+    //     // Handle absolute URLs that are just our own base URL
+    //     if (url.startsWith(baseUrl)) {
+    //       return url;
+    //     }
 
-        // Fallback for any other case
-        return baseUrl;
+    //     // Fallback for any other case
+    //     return baseUrl;
 
-      } catch (error) {
-        console.error("Redirect error:", error);
-        return baseUrl;
-      }
-    },
+    //   } catch (error) {
+    //     console.error("Redirect error:", error);
+    //     return baseUrl;
+    //   }
+    // },
     
+    async redirect({ url, baseUrl }) {
+  try {
+    // Try to extract the callbackUrl manually
+    let callbackUrl: string | null = null;
+
+    try {
+      const parsed = new URL(url, baseUrl);
+      callbackUrl = parsed.searchParams.get("callbackUrl");
+    } catch {
+      // ignore parse errors
+    }
+
+    // ✅ If a callbackUrl exists — it’s your tenant redirect target
+    if (callbackUrl) {
+      const tenantUrl = new URL(decodeURIComponent(callbackUrl));
+
+      // Prevent redirect loop
+      if (tenantUrl.searchParams.has("auth_token")) {
+        console.log("[Redirect Callback] Already has auth_token, returning tenantUrl.");
+        return tenantUrl.toString();
+      }
+
+      // Create a lightweight token manually — no need for getServerSession()
+      const { encode } = await import("next-auth/jwt");
+      const token = await encode({
+        token: {
+          id: "", // required by JWT type; empty string for redirect token (no user id)
+          iss: "auth.salesmanpro.site",
+          aud: tenantUrl.origin,
+          exp: Math.floor(Date.now() / 1000) + 60 * 10, // 10 min expiry
+        },
+        secret: process.env.NEXTAUTH_SECRET!,
+      });
+
+      tenantUrl.searchParams.set("auth_token", token);
+
+      console.log("[Redirect Callback] Redirecting to tenant:", tenantUrl.toString());
+      return tenantUrl.toString();
+    }
+
+    // Internal redirects (e.g., same origin)
+    if (url.startsWith("/")) return `${baseUrl}${url}`;
+    if (url.startsWith(baseUrl)) return url;
+
+    // Fallback
+    console.log("[Redirect Callback] No callbackUrl found, using baseUrl.");
+    return baseUrl;
+  } catch (error) {
+    console.error("Redirect error:", error);
+    return baseUrl;
+  }
+},
+
 
     //  async redirect({ url, baseUrl }) {
     //     try {
