@@ -119,12 +119,19 @@ export default function SignUpClient({ providers }: { providers: Provider[] }) {
       // router.push("/signin?registered=true");
       localStorage.setItem("callbackUrl", callbackUrl);
       // ✅ Automatically sign in the user
-      await signIn("credentials", {
+      // await signIn("credentials", {
+      //   redirect: true,
+      //   callbackUrl: callbackUrl,
+      //   email: data.email,
+      //   password: data.password,
+      // });
+      await signIn("credentials-email-password", {
         redirect: true,
-        callbackUrl: callbackUrl,
+        callbackUrl,
         email: data.email,
         password: data.password,
       });
+
 
       // if (loginRes?.error) {
       //   alert("Registered but failed to auto-login");
