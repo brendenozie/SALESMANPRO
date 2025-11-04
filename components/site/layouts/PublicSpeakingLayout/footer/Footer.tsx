@@ -19,9 +19,6 @@ import {
   FaYoutube,
 } from "react-icons/fa";
 import type { IconType } from "react-icons";
-import { useStoreContext } from "@/contexts/StoreContext";
-import ClientCookieWrapper from "@/components/site/ClientCookieWrapper";
-import SignInModal from "../../GhubaLayout/body/components/SignInModal/SignInModal";
 
 interface FooterProps {
   storeFormData: any;
@@ -239,9 +236,6 @@ export default function Footer({ storeFormData }: FooterProps) {
           </motion.p>
         </div>
       </footer>
-
-      <SignInModal />
-      <ClientCookieWrapper />
     </>
   );
 }
