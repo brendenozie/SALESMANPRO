@@ -29,7 +29,7 @@ export default function ConsultancySite({ pageData }: { pageData: StoreForm }) {
   console.log("ConsultancySite - siteData:", siteData.marketplaceListings);
 
   return (
-    <div className="space-y-24 font-sans bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
+    <div className="space-y-24 font-sans bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200  justify-self-center">
 
       <div className="bg-gradient-to-br from-gray-50 to-orange-50 font-sans antialiased">
       
