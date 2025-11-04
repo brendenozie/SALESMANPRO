@@ -322,7 +322,7 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
       try {
         isLoading = true;
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/dashboard/student?userId=${encodeURIComponent(currentUserId)}`,
+          `/api/dashboard/student?userId=${encodeURIComponent(currentUserId)}`,
           { cache: 'no-store', headers: { cookie: cookiesHeader } }
         );
         isLoading = false;
@@ -367,7 +367,7 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
         try {
           isLoading = true;
           const res = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/dashboard/principal?userId=${encodeURIComponent(currentUserId)}`,
+            `/api/dashboard/principal?userId=${encodeURIComponent(currentUserId)}`,
             { cache: 'no-store' }
           );
           isLoading = false;
@@ -412,7 +412,7 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
         try {
           isLoading = true;
           const res = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/dashboard/tutor?userId=${encodeURIComponent(currentUserId)}`,
+            `/api/dashboard/tutor?userId=${encodeURIComponent(currentUserId)}`,
             { cache: 'no-store' }
           );
           isLoading = false;
