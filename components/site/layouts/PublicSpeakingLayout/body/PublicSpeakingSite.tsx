@@ -31,46 +31,58 @@ export default function PublicSpeakingSite({ pageData }: { pageData: StoreForm }
   console.log("ConsultancySite - siteData:", siteData.marketplaceListings);
 
   return (
-    <div className="space-y-24 font-sans bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 justify-self-center">
-
-      <div className="bg-gradient-to-br from-gray-50 to-orange-50 font-sans antialiased">
+    // This outer div provides the full-width background color
+    <div className="font-sans bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
       
-      {/* Hero */}
-      <HeroSection heroSlides={siteData?.heroSlides} themeSettings={siteData?.themeSettings} />
+      {/* 
+        This new inner div acts as the main content container.
+        - `max-w-7xl`: Sets a maximum width (e.g., 1280px). You can adjust this (e.g., max-w-6xl).
+        - `mx-auto`: Centers the container horizontally.
+        - `px-4 sm:px-6 lg:px-8`: Adds padding on the sides for smaller screens.
+        - `space-y-24`: Adds vertical spacing between your section components.
+      */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-24 py-12">
+        {/* 
+          The gradient background is now gone from this example, 
+          as it's often better to have backgrounds inside each section 
+          if they need to be full-width (a common design pattern).
 
-      <SocialProofSection />
+          If you want the gradient on the entire page, apply it to the outermost div.
+        */}
       
+        {/* Hero */}
+        <HeroSection heroSlides={siteData?.heroSlides} themeSettings={siteData?.themeSettings} />
 
-      {/* <SteppingOutSection storeSlug={siteData?.slug || ''} /> */}
+        <SocialProofSection />
+        
+        {/* <SteppingOutSection storeSlug={siteData?.slug || ''} /> */}
 
-      {/* <ServicesSection />  
-      
-      <FeaturedListings listings={Ebookslistings} slug={siteData?.slug || ''} />
+        {/* <ServicesSection />  
+        
+        <FeaturedListings listings={Ebookslistings} slug={siteData?.slug || ''} />
 
-      <HowItWorks /> */}
+        <HowItWorks /> */}
 
-      <BrowseByCategory listings={Programslisting} storeSlug={siteData?.slug || ''} /> 
-      
-      <AboutSection />  
+        <BrowseByCategory listings={Programslisting} storeSlug={siteData?.slug || ''} /> 
+        
+        <AboutSection />  
 
-      {/* <ProgramModulesSection /> */}
+        {/* <ProgramModulesSection /> */}
 
-      {/* Featured  */}
-      {/* <FeaturedProgramsSection  listings={Programslisting} slug=""/> */}
+        {/* Featured  */}
+        {/* <FeaturedProgramsSection  listings={Programslisting} slug=""/> */}
 
-      {/* If videos are stored under latestVideos */}
-      {/* {<VideoShowcaseSection blogs={(pageData?.blogs || []).map(b => ({ ...b, excerpt: b.excerpt ?? "", coverImage: b.coverImage ?? "", videoAlbumId: b.videoAlbumId ?? undefined }))} />} */}
+        {/* If videos are stored under latestVideos */}
+        {/* {<VideoShowcaseSection blogs={(pageData?.blogs || []).map(b => ({ ...b, excerpt: b.excerpt ?? "", coverImage: b.coverImage ?? "", videoAlbumId: b.videoAlbumId ?? undefined }))} />} */}
 
-      <TestimonialsCarouselSection  testimonials={pageData?.testimonials || []} />
+        <TestimonialsCarouselSection  testimonials={pageData?.testimonials || []} />
 
-      <CallToActionSection companyId={siteData?.id || ''} />
+        <CallToActionSection companyId={siteData?.id || ''} />
 
-      {/* <PromotionSection/> */}
+        {/* <PromotionSection/> */}
 
-      {/* <AppPromoSection /> */}
-    </div>
-     
+        {/* <AppPromoSection /> */}
+      </div>
     </div>
   );
 }
-
