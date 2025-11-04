@@ -199,94 +199,149 @@ export const authOptions: NextAuthOptions = {
     //   from: process.env.EMAIL_FROM,
     // }),
   ],
-  // session: {
-  //   strategy: "jwt",
-  //   maxAge: 30 * 24 * 60 * 60,
-  //   updateAge: 24 * 60 * 60,
-  //   generateSessionToken: () => randomUUID?.() ?? randomBytes(32).toString("hex"),
-  // },
+  session: {
+    strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60,
+    updateAge: 24 * 60 * 60,
+    generateSessionToken: () => randomUUID?.() ?? randomBytes(32).toString("hex"),
+  },
 
   // ✅ AUTO-LINK OAUTH LOGINS HERE
   callbacks: {
 
+    // async redirect({ url, baseUrl }) {
+    //   // --- ADD THESE LINES ---
+    //   console.log("--- REDIRECT CALLBACK ---");
+    //   console.log("INCOMING url:", url);
+    //   console.log("INCOMING baseUrl:", baseUrl);
+    //   // --------------------------
+    //   try {
+
+    //     let isTenantRedirect = false;
+    //     let tenantUrl: URL | null = null;
+
+    //     try {
+    //       // 1. Check if 'url' is an absolute URL
+    //       tenantUrl = new URL(url);
+          
+    //       // 2. Check if its origin is DIFFERENT from the auth app's origin
+    //       if (tenantUrl.origin !== new URL(baseUrl).origin) {
+    //         isTenantRedirect = true;
+    //       }
+    //     } catch (e) {
+    //       // 'url' was relative (e.g., "/dashboard"), so it's an internal redirect.
+    //       isTenantRedirect = false;
+    //     }
+
+
+    //     // ✅ If it's a redirect back to a tenant (e.g., https://domain.com)
+    //     if (isTenantRedirect && tenantUrl) {
+
+    //       // --- BEGIN FIX ---
+    //       // Check if the URL *already* has the token. If so, we're in a loop.
+    //       // Just return the URL as-is and let the tenant app handle it.
+    //       if (tenantUrl.searchParams.has("auth_token")) {
+    //         return tenantUrl.toString();
+    //       }
+    //       // --- END FIX ---
+
+    //       // Get the session that was just created
+    //       const session = await getServerSession(authOptions);
+    //       if (!session || !session.user) {
+    //         console.error("[Redirect Callback] No session found after sign-in. Redirecting to base.");
+    //         return baseUrl; // Fallback
+    //       }
+
+    //       // Create the JWT token
+    //       const token = await encode({
+    //         token: { ...session.user, sub: (session.user as any).id }, // Pass user data
+    //         secret: process.env.NEXTAUTH_SECRET!,
+    //       });
+
+    //       // Build the final redirect URL
+    //       // 'tenantUrl' is already a URL object for "https://domain.com"
+    //       tenantUrl.searchParams.set("auth_token", token); // Use a clear name
+          
+    //       const finalUrl = tenantUrl.toString();
+          
+    //       return finalUrl; // e.g., "https://domain.com?auth_token=..."
+    //     }
+
+    //     // ❌ If it's an internal redirect (e.g., user signed in on auth.salesmanpro.site)
+    //     console.log("[Redirect Callback] Internal redirect detected.");
+    //     // Handle relative URLs
+    //     if (url.startsWith("/")) {
+    //       return `${baseUrl}${url}`;
+    //     }
+    //     // Handle absolute URLs that are just our own base URL
+    //     if (url.startsWith(baseUrl)) {
+    //       return url;
+    //     }
+
+    //     // Fallback for any other case
+    //     return baseUrl;
+
+    //   } catch (error) {
+    //     console.error("Redirect error:", error);
+    //     return baseUrl;
+    //   }
+    // },
+
     async redirect({ url, baseUrl }) {
-      // --- ADD THESE LINES ---
-      console.log("--- REDIRECT CALLBACK ---");
-      console.log("INCOMING url:", url);
-      console.log("INCOMING baseUrl:", baseUrl);
-      // --------------------------
+  try {
+    let finalRedirect = baseUrl;
 
-      try {
+    // Try to extract the callbackUrl manually (from url or environment)
+    let callbackUrl: string | null = null;
 
-        let isTenantRedirect = false;
-        let tenantUrl: URL | null = null;
+    // Case 1: callbackUrl embedded in query string of 'url'
+    try {
+      const u = new URL(url, baseUrl);
+      callbackUrl = u.searchParams.get("callbackUrl");
+    } catch {
+      // ignore
+    }
 
-        try {
-          // 1. Check if 'url' is an absolute URL
-          tenantUrl = new URL(url);
-          
-          // 2. Check if its origin is DIFFERENT from the auth app's origin
-          if (tenantUrl.origin !== new URL(baseUrl).origin) {
-            isTenantRedirect = true;
-          }
-        } catch (e) {
-          // 'url' was relative (e.g., "/dashboard"), so it's an internal redirect.
-          isTenantRedirect = false;
-        }
+    // Case 2: fallback — sometimes stored in the URL from the previous step
+    if (!callbackUrl && process?.env?.NEXTAUTH_CALLBACK_URL) {
+      callbackUrl = process.env.NEXTAUTH_CALLBACK_URL;
+    }
 
+    if (callbackUrl) {
+      const tenantUrl = new URL(decodeURIComponent(callbackUrl));
 
-        // ✅ If it's a redirect back to a tenant (e.g., https://domain.com)
-        if (isTenantRedirect && tenantUrl) {
-
-          // --- BEGIN FIX ---
-          // Check if the URL *already* has the token. If so, we're in a loop.
-          // Just return the URL as-is and let the tenant app handle it.
-          if (tenantUrl.searchParams.has("auth_token")) {
-            return tenantUrl.toString();
-          }
-          // --- END FIX ---
-
-          // Get the session that was just created
-          const session = await getServerSession(authOptions);
-          if (!session || !session.user) {
-            console.error("[Redirect Callback] No session found after sign-in. Redirecting to base.");
-            return baseUrl; // Fallback
-          }
-
-          // Create the JWT token
-          const token = await encode({
-            token: { ...session.user, sub: (session.user as any).id }, // Pass user data
-            secret: process.env.NEXTAUTH_SECRET!,
-          });
-
-          // Build the final redirect URL
-          // 'tenantUrl' is already a URL object for "https://domain.com"
-          tenantUrl.searchParams.set("auth_token", token); // Use a clear name
-          
-          const finalUrl = tenantUrl.toString();
-          
-          return finalUrl; // e.g., "https://domain.com?auth_token=..."
-        }
-
-        // ❌ If it's an internal redirect (e.g., user signed in on auth.salesmanpro.site)
-        console.log("[Redirect Callback] Internal redirect detected.");
-        // Handle relative URLs
-        if (url.startsWith("/")) {
-          return `${baseUrl}${url}`;
-        }
-        // Handle absolute URLs that are just our own base URL
-        if (url.startsWith(baseUrl)) {
-          return url;
-        }
-
-        // Fallback for any other case
-        return baseUrl;
-
-      } catch (error) {
-        console.error("Redirect error:", error);
-        return baseUrl;
+      // Prevent redirect loops
+      if (tenantUrl.searchParams.has("auth_token")) {
+        console.log("[Redirect Callback] Already has auth_token, returning tenantUrl.");
+        return tenantUrl.toString();
       }
-    },
+
+      // Create lightweight token
+      const { encode } = await import("next-auth/jwt");
+      const token = await encode({
+        token: {
+          id: "",
+          iss: "auth.salesmanpro.site",
+          aud: tenantUrl.origin,
+          exp: Math.floor(Date.now() / 1000) + 60 * 10,
+        },
+        secret: process.env.NEXTAUTH_SECRET!,
+      });
+
+      tenantUrl.searchParams.set("auth_token", token);
+      finalRedirect = tenantUrl.toString();
+      console.log("[Redirect Callback] Redirecting to tenant:", finalRedirect);
+    } else {
+      console.log("[Redirect Callback] No callbackUrl found, using baseUrl.");
+    }
+
+    return finalRedirect;
+  } catch (error) {
+    console.error("Redirect error:", error);
+    return baseUrl;
+  }
+},
+
 
     //  async redirect({ url, baseUrl }) {
     //     try {
@@ -502,76 +557,39 @@ export const authOptions: NextAuthOptions = {
     //   return true;
     // },
 
-    // async jwt({ token, user }) {
-    //   if (user) {
-    //     Object.assign(token, {
-    //       id: user.id,
-    //       name: user.name,
-    //       email: user.email,
-    //       phone: (user as any).phone,
-    //       username: (user as any).username,
-    //       bio: (user as any).bio,
-    //       address: (user as any).address,
-    //       role: (user as any).role,
-    //       profilePicture: (user as any).profilePicture,
-    //     });
-    //   }
-    //   return token;
-    // },
-
-    // ✅ MODIFY THIS
-    async session({ session, user }) {
-      // 'user' is the user object from the database
-      
-      // --- START DYNAMIC ROLE LOGIC ---
-      // This is the same logic from your 'authorize' function
-      let determinedRole: string | undefined = user.role || undefined;
-      const studentCheck = await prisma.student.findUnique({ where: { userId: user.id } });
-      const educatorCheck = await prisma.educator.findUnique({ where: { userId: user.id } });
-      const consumerCheck = await prisma.consumer.findUnique({ where: { userId: user.id } });
-      const salesAgentCheck = await prisma.salesAgent.findUnique({ where: { userId: user.id } });
-      const clientCheck = await prisma.client.findUnique({ where: { userId: user.id } });
-
-      if (studentCheck) determinedRole = "STUDENT";
-      else if (consumerCheck) determinedRole = "CONSUMER";
-      else if (salesAgentCheck) determinedRole = "SALES_AGENT";
-      else if (clientCheck) determinedRole = "CLIENT";
-      else if (educatorCheck) determinedRole = "EDUCATOR";
-      else determinedRole = user.role || "ADMIN";
-      // --- END DYNAMIC ROLE LOGIC ---
-      
-      if (session.user) {
-        Object.assign(session.user, {
+    async jwt({ token, user }) {
+      if (user) {
+        Object.assign(token, {
           id: user.id,
           name: user.name,
           email: user.email,
-          phone: user.phone,
-          username: user.username,
-          bio: user.bio,
-          address: user.address,
-          role: determinedRole, // Assign the dynamic role
-          profilePicture: user.profilePicture ?? user.image,
+          phone: (user as any).phone,
+          username: (user as any).username,
+          bio: (user as any).bio,
+          address: (user as any).address,
+          role: (user as any).role,
+          profilePicture: (user as any).profilePicture,
+        });
+      }
+      return token;
+    },
+
+    async session({ session, token }) {
+      if (session.user) {
+        Object.assign(session.user, {
+          id: token.id as string,
+          name: token.name,
+          email: token.email,
+          phone: token.phone,
+          username: token.username,
+          bio: token.bio,
+          address: token.address,
+          role: token.role,
+          profilePicture: token.profilePicture,
         });
       }
       return session;
     },
-
-    // async session({ session, token }) {
-    //   if (session.user) {
-    //     Object.assign(session.user, {
-    //       id: token.id as string,
-    //       name: token.name,
-    //       email: token.email,
-    //       phone: token.phone,
-    //       username: token.username,
-    //       bio: token.bio,
-    //       address: token.address,
-    //       role: token.role,
-    //       profilePicture: token.profilePicture,
-    //     });
-    //   }
-    //   return session;
-    // },
   },
 
   secret: process.env.NEXTAUTH_SECRET,
