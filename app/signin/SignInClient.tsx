@@ -90,7 +90,7 @@ export type Provider = { id: string; name: string };
 export default function SignInClient({ providers }: { providers: Provider[] }) {
   const router = useRouter();
   const params = useSearchParams();
-  const callbackUrl = params.get("callbackUrl") || "/";
+  const callbackUrl = params.get("callbackUrl") || "https://salesmanpro.site";
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

@@ -71,7 +71,7 @@ export default function SignUpClient({ providers }: { providers: Provider[] }) {
     password: "", 
     confirmPassword: "" 
   });
-  const callbackUrl = params.get("callbackUrl") || "/";
+  const callbackUrl = params.get("callbackUrl") || "https://salesmanpro.site";
 
   // Separate credentials providers from social providers
   const { credentialProvider, socialProviders } = useMemo(() => {
@@ -119,7 +119,7 @@ export default function SignUpClient({ providers }: { providers: Provider[] }) {
       // router.push("/signin?registered=true");
       localStorage.setItem("callbackUrl", callbackUrl);
       // ✅ Automatically sign in the user
-      const loginRes = await signIn("credentials", {
+      await signIn("credentials", {
         redirect: true,
         callbackUrl: callbackUrl,
         email: data.email,
