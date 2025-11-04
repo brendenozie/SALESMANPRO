@@ -7,10 +7,10 @@ import { authOptions, getAuthSession } from "@/lib/auth";
 export const dynamic = "force-dynamic";
 
 export default async function SignInPage() {
-  const session = await getAuthSession();
-  if (session) {
-    redirect("/");
-  }
+  // const session = await getAuthSession();
+  // if (session) {
+  //   redirect("/");
+  // }
 
   const raw = await getProviders();
   const providers: ClientSafeProvider[] = raw ? Object.values(raw) : [];
