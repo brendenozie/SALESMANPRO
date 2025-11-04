@@ -201,87 +201,129 @@ const PublicSpeakingHeader: React.FC<HeaderProps> = ({ storeFormData }) => {
           </div>
 
           {/* CTA + Profile / Mobile Toggle */}
-          <div className="flex items-center space-x-3 sm:space-x-4">
-            {/* --- Primary CTA / Sign Up (Only visible when user is NOT logged in) --- */}
-            {!user && (
-              <motion.div
-                className="hidden md:block"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ type: "spring", stiffness: 100, delay: 0.3 }}
-              >
-                <button
-                  onClick={handleGoogleSignUp}
-                  className="inline-flex items-center px-6 py-3 text-base font-bold rounded-xl shadow-2xl text-white bg-orange-600 ring-4 ring-orange-300/50 hover:bg-orange-700 transition-all duration-300 transform hover:scale-[1.02] active:scale-100 group whitespace-nowrap"
-                >
-                  {"Signup"}
-                  <SparklesIcon className="w-5 h-5 ml-2 transition-transform duration-300 group-hover:rotate-12" />
-                </button>
-              </motion.div>
-            )}
+          {/* CTA + Profile / Mobile Toggle */}
+<div className="flex items-center space-x-3 sm:space-x-4">
+  {/* --- Primary CTA / Sign Up (Only visible when user is NOT logged in) --- */}
+  {!user && (
+    <motion.div
+      className="hidden md:block"
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ type: "spring", stiffness: 100, delay: 0.3 }}
+    >
+      <button
+        onClick={handleGoogleSignUp}
+        className="inline-flex items-center px-6 py-3 text-base font-bold rounded-xl shadow-2xl text-white bg-orange-600 ring-4 ring-orange-300/50 hover:bg-orange-700 transition-all duration-300 transform hover:scale-[1.02] active:scale-100 group whitespace-nowrap"
+      >
+        Signup
+        <SparklesIcon className="w-5 h-5 ml-2 transition-transform duration-300 group-hover:rotate-12" />
+      </button>
+    </motion.div>
+  )}
 
-            {/* --- User Session Button (Sign In / My Profile / Admin Dashboard) --- */}
-            <motion.button
-              onClick={
-                status === "loading"
-                  ? undefined
-                  : user
-                  ? handleUserAction // still your internal handler for logged-in users
-                  : handleGoogleSignIn // new external auth for login
-              }
-              whileTap={{ scale: 0.95 }}
-              className={`hidden md:flex items-center px-4 py-2 rounded-full font-semibold transition-all shadow-md whitespace-nowrap ${
-                user
-                  ? "bg-white border border-gray-200 text-gray-700 hover:bg-gray-50"
-                  : "bg-orange-50 border border-orange-200 text-orange-600 hover:bg-orange-100"
-              }`}
-            >
-              <UserCircleIcon className="w-5 h-5 mr-2" />
-              {status === "loading"
-                ? "Loading..."
-                : user
-                ? user.role === "admin"
-                  ? "Admin Portal"
-                  : "My Account"
-                : "Log In"}
-            </motion.button>
+  {/* --- User Session Button (Sign In / My Profile / Admin Dashboard) --- */}
+  <motion.button
+    onClick={
+      status === "loading"
+        ? undefined
+        : user
+        ? handleUserAction // internal handler for logged-in users
+        : handleGoogleSignIn // Google Auth for login
+    }
+    whileTap={{ scale: 0.95 }}
+    className={`hidden md:flex items-center px-4 py-2 rounded-full font-semibold transition-all shadow-md whitespace-nowrap ${
+      user
+        ? "bg-white border border-gray-200 text-gray-700 hover:bg-gray-50"
+        : "bg-orange-50 border border-orange-200 text-orange-600 hover:bg-orange-100"
+    }`}
+  >
+    <UserCircleIcon className="w-5 h-5 mr-2" />
+    {status === "loading"
+      ? "Loading..."
+      : user
+      ? user.role === "admin"
+        ? "Admin Portal"
+        : "My Account"
+      : "Log In"}
+  </motion.button>
 
-            {/* --- Mobile Menu Toggle --- */}
-            <div className="md:hidden z-50">
-              <motion.button
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className={`p-3 rounded-full transition-colors shadow-lg border ${
-                  mobileMenuOpen
-                    ? "bg-white border-gray-300 text-gray-800"
-                    : "bg-white/80 border-orange-200 text-orange-600 hover:bg-orange-50"
-                }`}
-                aria-label="Toggle menu"
-                whileTap={{ scale: 0.9 }}
+  {/* --- Mobile Menu Toggle --- */}
+  <div className="md:hidden z-50 relative">
+    <motion.button
+      onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+      className={`p-3 rounded-full transition-colors shadow-lg border ${
+        mobileMenuOpen
+          ? "bg-white border-gray-300 text-gray-800"
+          : "bg-white/80 border-orange-200 text-orange-600 hover:bg-orange-50"
+      }`}
+      aria-label="Toggle menu"
+      whileTap={{ scale: 0.9 }}
+    >
+      <AnimatePresence mode="wait">
+        {mobileMenuOpen ? (
+          <motion.div
+            key="close"
+            initial={{ rotate: -90, opacity: 0 }}
+            animate={{ rotate: 0, opacity: 1 }}
+            exit={{ rotate: 90, opacity: 0 }}
+          >
+            <XMarkIcon className="h-6 w-6" />
+          </motion.div>
+        ) : (
+          <motion.div
+            key="open"
+            initial={{ rotate: 90, opacity: 0 }}
+            animate={{ rotate: 0, opacity: 1 }}
+            exit={{ rotate: -90, opacity: 0 }}
+          >
+            <Bars3BottomRightIcon className="h-6 w-6" />
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.button>
+
+    {/* --- Mobile Menu Dropdown --- */}
+    <AnimatePresence>
+      {mobileMenuOpen && (
+        <motion.div
+          key="mobile-menu"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.25 }}
+          className="absolute right-0 mt-3 w-48 bg-white rounded-2xl shadow-2xl border border-gray-100 p-3 flex flex-col space-y-2 z-50"
+        >
+          {user ? (
+            <>
+              <button
+                onClick={handleUserAction}
+                className="w-full text-left px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100 font-medium"
               >
-                <AnimatePresence mode="wait">
-                  {mobileMenuOpen ? (
-                    <motion.div
-                      key="close"
-                      initial={{ rotate: -90, opacity: 0 }}
-                      animate={{ rotate: 0, opacity: 1 }}
-                      exit={{ rotate: 90, opacity: 0 }}
-                    >
-                      <XMarkIcon className="h-6 w-6" />
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key="open"
-                      initial={{ rotate: 90, opacity: 0 }}
-                      animate={{ rotate: 0, opacity: 1 }}
-                      exit={{ rotate: -90, opacity: 0 }}
-                    >
-                      <Bars3BottomRightIcon className="h-6 w-6" />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.button>
-            </div>
-          </div>
+                {user.role === "admin" ? "Admin Portal" : "My Account"}
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={handleGoogleSignIn}
+                className="w-full text-left px-4 py-2 rounded-lg text-orange-600 hover:bg-orange-50 font-medium"
+              >
+                Log In
+              </button>
+              <button
+                onClick={handleGoogleSignUp}
+                className="w-full text-left px-4 py-2 rounded-lg text-white bg-orange-600 hover:bg-orange-700 font-medium shadow-md"
+              >
+                Sign Up
+              </button>
+            </>
+          )}
+        </motion.div>
+      )}
+    </AnimatePresence>
+  </div>
+</div>
+
 
         </div>
       </nav>
