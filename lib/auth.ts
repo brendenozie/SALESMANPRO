@@ -210,78 +210,121 @@ export const authOptions: NextAuthOptions = {
   // ✅ AUTO-LINK OAUTH LOGINS HERE
   callbacks: {
 
+    // async redirect({ url, baseUrl }) {
+    //   try {
+
+    //     let isTenantRedirect = false;
+    //     let tenantUrl: URL | null = null;
+
+    //     try {
+    //       // 1. Check if 'url' is an absolute URL
+    //       tenantUrl = new URL(url);
+          
+    //       // 2. Check if its origin is DIFFERENT from the auth app's origin
+    //       if (tenantUrl.origin !== new URL(baseUrl).origin) {
+    //         isTenantRedirect = true;
+    //       }
+    //     } catch (e) {
+    //       // 'url' was relative (e.g., "/dashboard"), so it's an internal redirect.
+    //       isTenantRedirect = false;
+    //     }
+
+
+    //     // ✅ If it's a redirect back to a tenant (e.g., https://domain.com)
+    //     if (isTenantRedirect && tenantUrl) {
+
+    //       // --- BEGIN FIX ---
+    //       // Check if the URL *already* has the token. If so, we're in a loop.
+    //       // Just return the URL as-is and let the tenant app handle it.
+    //       if (tenantUrl.searchParams.has("auth_token")) {
+    //         return tenantUrl.toString();
+    //       }
+    //       // --- END FIX ---
+
+    //       // Get the session that was just created
+    //       const session = await getServerSession(authOptions);
+    //       if (!session || !session.user) {
+    //         console.error("[Redirect Callback] No session found after sign-in. Redirecting to base.");
+    //         return baseUrl; // Fallback
+    //       }
+
+    //       // Create the JWT token
+    //       const token = await encode({
+    //         token: { ...session.user, sub: (session.user as any).id }, // Pass user data
+    //         secret: process.env.NEXTAUTH_SECRET!,
+    //       });
+
+    //       // Build the final redirect URL
+    //       // 'tenantUrl' is already a URL object for "https://domain.com"
+    //       tenantUrl.searchParams.set("auth_token", token); // Use a clear name
+          
+    //       const finalUrl = tenantUrl.toString();
+          
+    //       return finalUrl; // e.g., "https://domain.com?auth_token=..."
+    //     }
+
+    //     // ❌ If it's an internal redirect (e.g., user signed in on auth.salesmanpro.site)
+    //     console.log("[Redirect Callback] Internal redirect detected.");
+    //     // Handle relative URLs
+    //     if (url.startsWith("/")) {
+    //       return `${baseUrl}${url}`;
+    //     }
+    //     // Handle absolute URLs that are just our own base URL
+    //     if (url.startsWith(baseUrl)) {
+    //       return url;
+    //     }
+
+    //     // Fallback for any other case
+    //     return baseUrl;
+
+    //   } catch (error) {
+    //     console.error("Redirect error:", error);
+    //     return baseUrl;
+    //   }
+    // },
+
+
+    // ... (keep the rest of your authOptions file)
+
     async redirect({ url, baseUrl }) {
-      try {
+      // The `url` parameter is the destination URL after a successful login.
+      // It's already the `callbackUrl` you passed to `signIn`.
+      
+      // `url` might be a relative path (e.g., "/dashboard").
+      // Check if the URL is relative.
+      const isRelative = url.startsWith("/");
+      
+      // If it's relative, combine it with the baseUrl to make it absolute.
+      // Otherwise, the `url` is already the absolute `callbackUrl` from the client.
+      const finalRedirectUrl = isRelative ? `${baseUrl}${url}` : url;
 
-        let isTenantRedirect = false;
-        let tenantUrl: URL | null = null;
+      // The problem is that after the first login, the session isn't available
+      // yet to generate a token inside the redirect callback.
+      // The better pattern is to just return the URL and have the
+      // client-side handle the token.
+      
+      // For your cross-domain authentication, you need to append the token.
+      // Instead of getting the session here, we will redirect to an
+      // intermediary page on your auth domain that will have the session.
+      
+      // 1. Redirect to a page on your auth domain, like `/redirecting`
+      const tempRedirect = new URL("/redirecting", baseUrl);
+      
+      // 2. Pass the final destination (the tenant URL) as a query parameter.
+      tempRedirect.searchParams.set("callbackUrl", finalRedirectUrl);
 
-        try {
-          // 1. Check if 'url' is an absolute URL
-          tenantUrl = new URL(url);
-          
-          // 2. Check if its origin is DIFFERENT from the auth app's origin
-          if (tenantUrl.origin !== new URL(baseUrl).origin) {
-            isTenantRedirect = true;
-          }
-        } catch (e) {
-          // 'url' was relative (e.g., "/dashboard"), so it's an internal redirect.
-          isTenantRedirect = false;
-        }
-
-
-        // ✅ If it's a redirect back to a tenant (e.g., https://domain.com)
-        if (isTenantRedirect && tenantUrl) {
-
-          // --- BEGIN FIX ---
-          // Check if the URL *already* has the token. If so, we're in a loop.
-          // Just return the URL as-is and let the tenant app handle it.
-          if (tenantUrl.searchParams.has("auth_token")) {
-            return tenantUrl.toString();
-          }
-          // --- END FIX ---
-
-          // Get the session that was just created
-          const session = await getServerSession(authOptions);
-          if (!session || !session.user) {
-            console.error("[Redirect Callback] No session found after sign-in. Redirecting to base.");
-            return baseUrl; // Fallback
-          }
-
-          // Create the JWT token
-          const token = await encode({
-            token: { ...session.user, sub: (session.user as any).id }, // Pass user data
-            secret: process.env.NEXTAUTH_SECRET!,
-          });
-
-          // Build the final redirect URL
-          // 'tenantUrl' is already a URL object for "https://domain.com"
-          tenantUrl.searchParams.set("auth_token", token); // Use a clear name
-          
-          const finalUrl = tenantUrl.toString();
-          
-          return finalUrl; // e.g., "https://domain.com?auth_token=..."
-        }
-
-        // ❌ If it's an internal redirect (e.g., user signed in on auth.salesmanpro.site)
-        console.log("[Redirect Callback] Internal redirect detected.");
-        // Handle relative URLs
-        if (url.startsWith("/")) {
-          return `${baseUrl}${url}`;
-        }
-        // Handle absolute URLs that are just our own base URL
-        if (url.startsWith(baseUrl)) {
-          return url;
-        }
-
-        // Fallback for any other case
-        return baseUrl;
-
-      } catch (error) {
-        console.error("Redirect error:", error);
-        return baseUrl;
+      // Let next-auth handle the session creation, then send the user to this temp page.
+      // This works because by the time the user hits "/redirecting", the session cookie is set.
+      if (finalRedirectUrl.startsWith(baseUrl)) {
+        // It's an internal redirect, just go there.
+        return finalRedirectUrl;
+      } else {
+         // It's an external redirect, go via the temp page.
+        return tempRedirect.toString();
       }
     },
+    
+    // ... (rest of your callbacks like signIn, jwt, session)
 
     //  async redirect({ url, baseUrl }) {
     //     try {
