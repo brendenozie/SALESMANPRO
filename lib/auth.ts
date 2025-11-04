@@ -282,29 +282,48 @@ export const authOptions: NextAuthOptions = {
     //   }
     // },
 
-    
-
     async redirect({ url, baseUrl }) {
         try {
-          // If NextAuth already includes a callbackUrl param in the url, restore it
-          const parsed = new URL(url, baseUrl);
-          const callback = parsed.searchParams.get("callbackUrl");
+          // Step 1: Try to extract the callbackUrl manually
+          let callbackUrl: string | null = null;
 
-          if (callback) {
-            const decoded = decodeURIComponent(callback);
-            // ✅ Allow external redirects (tenant or custom domain)
-            if (decoded.startsWith("https://")) return decoded;
+          try {
+            const parsedUrl = new URL(url, baseUrl);
+            callbackUrl = parsedUrl.searchParams.get("callbackUrl");
+          } catch {
+            // Ignore parsing errors
           }
 
-          // ✅ Fallback to base if no callbackUrl found
+          // Step 2: If callbackUrl exists, redirect there (even if it’s external)
+          if (callbackUrl) {
+            const tenantUrl = new URL(decodeURIComponent(callbackUrl));
+
+            // Prevent redirect loops
+            if (!tenantUrl.searchParams.has("auth_token")) {
+              const session = await getServerSession(authOptions);
+              if (session?.user) {
+                const token = await encode({
+                  token: { ...session.user, sub: (session.user as any).id },
+                  secret: process.env.NEXTAUTH_SECRET!,
+                });
+                tenantUrl.searchParams.set("auth_token", token);
+              }
+            }
+
+            return tenantUrl.toString(); // ✅ e.g., https://flourishhub.co.ke?auth_token=...
+          }
+
+          // Step 3: Handle internal redirects normally
           if (url.startsWith("/")) return `${baseUrl}${url}`;
           if (url.startsWith(baseUrl)) return url;
+
           return baseUrl;
         } catch (err) {
-          console.error("Redirect callback failed:", err);
+          console.error("Redirect error:", err);
           return baseUrl;
         }
       },
+
 
     //  async redirect({ url, baseUrl }) {
     //     try {
