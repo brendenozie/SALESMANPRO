@@ -54,12 +54,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 interface StoreLayoutProps {
-  params: { slug: string }; // No longer a Promise
+  params: { slug: string };
   children: ReactNode;
 }
 
 export default async function StoreLayout({ params, children }: StoreLayoutProps) {
-  const { slug } = params;
+  const { slug } = await params;
   const hdrs = await headers();
   const requestedHost = hdrs.get('x-requested-host');
   const requestedSubdomain = hdrs.get('x-requested-subdomain');
