@@ -1,6 +1,24 @@
 
 import { StoreForm, ILocation, ICompanyLocation } from '../types/typings'; // Ensure Location and CompanyLocationType are imported
 
+// A safe utility to convert a Date or a string into an ISO string
+function safeDateToString(date: Date | string | null | undefined): string | undefined {
+  if (!date) {
+    return undefined;
+  }
+  // If it's already a string, return it.
+  if (typeof date === 'string') {
+    return date;
+  }
+  // If it has toISOString, it's a Date object.
+  if (typeof date.toISOString === 'function') {
+    return date.toISOString();
+  }
+  // Otherwise, we can't be sure what it is.
+  return undefined;
+}
+
+
 export function transformCompanyToStoreForm(raw: any): StoreForm {
   return {
   id: raw.id,
@@ -67,8 +85,8 @@ export function transformCompanyToStoreForm(raw: any): StoreForm {
     code: p.code ?? undefined,
     title: p.title,
     description: p.description ?? '',
-    startsAt: p.startsAt?.toISOString() ?? undefined,
-    endsAt: p.endsAt?.toISOString() ?? undefined,
+    startsAt: safeDateToString( p.startsAt),//?.toISOString() ?? undefined,
+    endsAt: safeDateToString(p.endsAt), //?.toISOString() ?? undefined,
     bannerUrl: p.bannerUrl ?? '',
     ctaText: p.ctaText ?? '',
     ctaLink: p.ctaLink ?? '',

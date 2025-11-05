@@ -1,0 +1,412 @@
+import 'server-only';
+import { unstable_cache } from 'next/cache';
+import prisma from '@/server/db/prismadb';
+
+/**
+ * -----------------------------------------------------
+ * 🔍 Cached, Reusable Company Finder
+ * -----------------------------------------------------
+ * Using `unstable_cache` to de-duplicate data fetches across a single request.
+ * Any call to `findCompany` with the same arguments in a single request
+ * will hit the cache instead of the database.
+ */
+const findCompanyFn = async (
+  slug: string,
+  requestedHost?: string | null,
+  requestedSubdomain?: string | null,
+  include?: any
+) => {
+  let company = null;
+
+  // 1. Lookup by custom domain
+  if (requestedHost) {
+    const normalizedHost = requestedHost.replace(/^www\./, '').toLowerCase();
+    company = await prisma.company.findFirst({
+      where: {
+        OR: [
+          { domain: normalizedHost },
+          { domain: `www.${normalizedHost}` },
+          { domain: `https://${normalizedHost}` },
+          { domain: `https://www.${normalizedHost}` },
+        ],
+      },
+      include,
+    });
+  }
+
+  // 2. Lookup by subdomain
+  if (!company && requestedSubdomain) {
+    company = await prisma.company.findFirst({
+      where: { slug: requestedSubdomain },
+      include,
+    });
+  }
+
+  // 3. Fallback to slug
+  if (!company) {
+    company = await prisma.company.findFirst({
+      where: { slug },
+      include,
+    });
+  }
+
+  return company;
+};
+
+// Wrap the function with unstable_cache
+export const findCompany = unstable_cache(
+  findCompanyFn,
+  ['company-details'], // A unique key part for this cache
+  {
+    // You can add revalidation tags if you use on-demand revalidation
+    // tags: ['companies'], 
+  }
+);
+
+
+/**
+ * -----------------------------------------------------
+ * 🧩 Prisma Include Objects
+ * -----------------------------------------------------
+ */
+
+// Data needed for the main layout (Header, Footer, Context)
+export function leanShellInclude() {
+  return {
+    SEO: true,
+    AnalyticsConfig: true,
+    StoreCategory: { 
+      orderBy: { sortOrder: "asc" as const }, 
+      include: { 
+        category: { 
+          select: { id: true, name: true, slug: true, image: true, icon: true } 
+        } 
+      } 
+    },
+    Announcement: { 
+      orderBy: { publishedAt: "desc" as const },
+      take: 1,
+    },
+    socialLinks: true,
+    policies: true,
+    CompanyLocation: { 
+      include: { 
+        location: true 
+      } 
+    },
+  };
+}
+
+// Data needed for the main content of the page
+export function pageDataInclude() {
+  const userSelect = {
+    select: {
+      id: true,
+      name: true,
+      image: true,
+    },
+  };
+
+  const orderedAsc = { orderBy: { order: "asc" as const } };
+
+  return {
+    // Relations for page content
+    blogs: { orderBy: { publishedAt: "desc" as const } },
+    faqs: orderedAsc,
+    testimonials: orderedAsc,
+    heroSlides: orderedAsc,
+    StoreCategory: true,
+    promotions: {
+      select: {
+        title: true, description: true, startsAt: true, endsAt: true, badgeText: true,
+        price: true, ctaText: true, ctaLink: true, bannerUrl: true, featureImage1: true,
+        featureImage2: true, featureImage3: true, perks: true, trustLogos: true,
+      },
+    },
+    PageSection: orderedAsc,
+    Collection: orderedAsc,
+    appPromos: true,
+    marketplaceListings: {
+      take: 12,
+      select: {
+        id: true, name: true, description: true, finalPrice: true, type: true,
+        sellingPrice: true, images: true, pricingTiers: true, isAvailable: true,
+        isFeatured: true, category: true,
+      },
+    },
+    Writer:      { where: { user: { isNot: null } }, include: { user: userSelect } },
+    Expert:      { where: { user: { isNot: null } }, include: { user: userSelect } },
+    Doctor:      { where: { User: { isNot: null } }, include: { User: userSelect } },
+    salesAgents: { where: { user: { isNot: null } }, include: { user: userSelect } },
+    educators:   { where: { user: { isNot: null } }, include: { user: userSelect } },
+    Podcast: true,
+    courses: true,
+    events: true,
+    Package: true,
+    Project: true,
+    services: true,
+    CoreValues: true,
+    CompanyLocation: { include: { location: true } },
+    Destination: true,
+    TourPackage: true,
+    PaymentSettings: true,
+    ShippingSettings: true,
+  };
+}
+
+// import 'server-only';
+// // Change the import from 'react' to 'next/cache'
+// import { unstable_cache } from 'next/cache';
+// import prisma from '@/server/db/prismadb';
+
+// /**
+//  * -----------------------------------------------------
+//  * 🔍 Cached, Reusable Company Finder
+//  * -----------------------------------------------------
+//  * Using `unstable_cache` from Next.js for compatibility with older versions.
+//  * It de-duplicates data fetches across a single request.
+//  */
+// const findCompanyFn = async (
+//   slug: string,
+//   requestedHost?: string | null,
+//   requestedSubdomain?: string | null,
+//   include?: any
+// ) => {
+//   let company = null;
+
+//   // 1. Lookup by custom domain
+//   if (requestedHost) {
+//     const normalizedHost = requestedHost.replace(/^www\./, '').toLowerCase();
+//     company = await prisma.company.findFirst({
+//       where: {
+//         OR: [
+//           { domain: normalizedHost },
+//           { domain: `www.${normalizedHost}` },
+//           { domain: `https://${normalizedHost}` },
+//           { domain: `https://www.${normalizedHost}` },
+//         ],
+//       },
+//       include,
+//     });
+//   }
+
+//   // 2. Lookup by subdomain
+//   if (!company && requestedSubdomain) {
+//     company = await prisma.company.findFirst({
+//       where: { slug: requestedSubdomain },
+//       include,
+//     });
+//   }
+
+//   // 3. Fallback to slug
+//   if (!company) {
+//     company = await prisma.company.findFirst({
+//       where: { slug },
+//       include,
+//     });
+//   }
+
+//   return company;
+// };
+
+// // Wrap the function with unstable_cache
+// export const findCompany = unstable_cache(
+//   findCompanyFn,
+//   ['company-details'], // A unique key part for this cache
+//   {
+//     // You can add revalidation tags if you use on-demand revalidation
+//     // tags: ['companies'], 
+//   }
+// );
+
+
+
+// /**
+//  * -----------------------------------------------------
+//  * 🧩 Prisma Include Objects (No changes here)
+//  * -----------------------------------------------------
+//  */
+// function leanShellIncludeV2() {
+//   return {
+//     name: true,
+//     logoUrl: true,
+//     StoreCategory: {
+//       select: {
+//         category: {
+//           select: { name: true },
+//         },
+//       },
+//     },
+//     sEO: true, // For metadata
+//     SEO: true, // For metadata (legacy casing)
+//   };
+// }
+
+// export function aboveTheFoldIncludeV2() {
+//   const orderedAsc = { orderBy: { order: 'asc' as const } };
+//   return {
+//     id: true,
+//     themeSettings: true,
+//     heroSlides: orderedAsc,
+//     StoreCategory: {
+//       orderBy: { sortOrder: 'asc' as const },
+//       include: {
+//         category: {
+//           select: { id: true, name: true, slug: true, image: true, icon: true },
+//         },
+//       },
+//     },
+//     promotions: {
+//       take: 1,
+//       select: {
+//         title: true,
+//         description: true,
+//         badgeText: true,
+//         price: true,
+//         ctaText: true,
+//         ctaLink: true,
+//         bannerUrl: true,
+//       },
+//     },
+//   };
+// }
+
+// export function leanShellInclude() {
+//   return {
+//     // Essential for theme and branding
+    
+//     // description: true,
+//     SEO: true,
+//     AnalyticsConfig: true,
+    
+//     // Navigation categories (needed for header menu)
+//     StoreCategory: { 
+//       orderBy: { sortOrder: "asc" as const }, 
+//       include: { 
+//         category: { 
+//           select: { id: true, name: true, slug: true, image: true, icon: true } 
+//         } 
+//       } 
+//     },
+    
+//     // Latest announcement (often shown in header/banner)
+//     Announcement: { 
+//       orderBy: { publishedAt: "desc" as const },
+//       take: 1, // Only get the latest one
+//     },
+    
+//     // Social links for footer
+//     socialLinks: true,
+    
+//     // Policies for footer
+//     policies: true,
+    
+//     // Company locations for footer/contact
+//     CompanyLocation: { 
+//       include: { 
+//         location: true 
+//       } 
+//     },
+//   };
+// }
+
+// export function aboveTheFoldInclude() {
+//   const userSelect = {
+//     select: {
+//       id: true,
+//       name: true,
+//       image: true,
+//     },
+//   };
+
+//   const orderedAsc = { orderBy: { order: "asc" as const } };
+
+//   return {
+//     blogs: { orderBy: { publishedAt: "desc" as const } },
+//     faqs: orderedAsc,
+//     testimonials: orderedAsc,
+//     heroSlides: orderedAsc,
+
+//     StoreCategory: true,
+
+//     promotions: {
+//       select: {
+//         title: true,
+//         description: true,
+//         startsAt: true,
+//         endsAt: true,
+//         badgeText: true,
+//         price: true,
+//         ctaText: true,
+//         ctaLink: true,
+//         bannerUrl: true,
+//         featureImage1: true,
+//         featureImage2: true,
+//         featureImage3: true,
+//         perks: true,
+//         trustLogos: true,
+//       },
+//     },
+
+//     PageSection: orderedAsc,
+//     Collection: orderedAsc,
+//     appPromos: true,
+
+//     marketplaceListings: {
+//       take: 12,
+//       select: {
+//         id: true,
+//         name: true,
+//         description: true,
+//         finalPrice: true,
+//         type: true,
+//         sellingPrice: true,
+//         images: true,
+//         pricingTiers: true,
+//         isAvailable: true,
+//         isFeatured: true,
+//         category: true,
+//       },
+//     },
+
+//     // 👇 FIX: Filter out null user relations
+//     Writer: {
+//       where: { user: { isNot: null } },
+//       include: { user: userSelect },
+//     },
+//     Expert: {
+//       where: { user: { isNot: null } },
+//       include: { user: userSelect },
+//     },
+//     Doctor: {
+//       where: { User: { isNot: null } }, // Use 'User' (uppercase)
+//       include: { User: userSelect },
+//     },
+//     salesAgents: {
+//       where: { user: { isNot: null } },
+//       include: { user: userSelect },
+//     },
+//     educators: {
+//       where: { user: { isNot: null } },
+//       include: { user: userSelect },
+//     },
+
+//     // ✅ Other relations
+//     Podcast: true,
+//     courses: true,
+//     events: true,
+//     Package: true,
+//     Project: true,
+//     services: true,
+//     CoreValues: true,
+
+//     CompanyLocation: { include: { location: true } },
+//     Destination: true,
+//     TourPackage: true,
+
+//     // PricingTiers: true,
+
+//     PaymentSettings: true,
+//     ShippingSettings: true,
+//   };
+// }

@@ -12,7 +12,7 @@ export async function GET(req: Request) {
   try {
     const testimonials = await prisma.testimonial.findMany({
       where: { companyId: id },
-      orderBy: { createdAt: 'desc' },
+      // orderBy: { createdAt: 'desc' },
     });
 
     return NextResponse.json({ data: testimonials });

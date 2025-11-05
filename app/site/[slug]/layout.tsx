@@ -1,16 +1,14 @@
-// // app/site/[slug]/layout.tsx
-
-// app/site/[slug]/layout.tsx
 import { notFound } from 'next/navigation';
 import { ReactNode, Suspense } from 'react';
 import { headers } from 'next/headers';
-import prisma from '@/server/db/prismadb';
+import type { Metadata } from 'next';
+
 import { StoreContextProvider } from '@/contexts/StoreContext';
 import categoryHeaderFooterLayoutMap from '@/components/site/layouts/categoryHeaderFooterLayoutMap';
 import { transformCompanyToStoreForm } from '@/utils/transformPrismaToStoreForm';
 import LoadingSpinner from '@/components/site/LoadingSpinner';
-import type { Metadata } from 'next';
 import { SITE_CATEGORIES } from '@/utils/sitedata';
+import { findCompany, leanShellInclude } from '@/lib/company-fetcher';
 
 // Cache for ISR (60 seconds)
 export const revalidate = 60;
@@ -25,20 +23,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const requestedHost = hdrs.get('x-requested-host');
   const requestedSubdomain = hdrs.get('x-requested-subdomain');
 
-  // Request related data (SEO, etc.) so company.SEO/sEO is present on the returned object
-  let company = await findCompany(slug, requestedHost, requestedSubdomain, true);
+  // Request only data needed for shell & SEO. The cached `findCompany` is used.
+  let company = await findCompany(slug, requestedHost, requestedSubdomain, leanShellInclude());
 
   if (!company) {
     return { title: 'Store not found' };
   }
 
-  // Prisma may generate relation property names with different casing (e.g. SEO or sEO).
-  // Normalize access by reading whichever one exists.
+  // Normalize access to SEO data
   const seo = (company as any).SEO ?? (company as any).sEO;
-
   const title = seo?.title || company.name || 'Ghuba';
-  const description =
-    seo?.description || 'Discover our exclusive collection of products/services.';
+  const description = seo?.description || 'Discover our exclusive collection.';
 
   return {
     title,
@@ -59,17 +54,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 interface StoreLayoutProps {
-  params: Promise<{ slug: string }>;
+  params: { slug: string }; // No longer a Promise
   children: ReactNode;
 }
 
 export default async function StoreLayout({ params, children }: StoreLayoutProps) {
-  const { slug } = await params;
+  const { slug } = params;
   const hdrs = await headers();
   const requestedHost = hdrs.get('x-requested-host');
   const requestedSubdomain = hdrs.get('x-requested-subdomain');
 
-  const raw = await findCompany(slug, requestedHost, requestedSubdomain, true);
+  // This call will be de-duplicated by React.cache, hitting the cache instead of the DB again.
+  const raw = await findCompany(slug, requestedHost, requestedSubdomain, leanShellInclude());
   if (!raw) {
     console.log('Store layout: Company not found for', slug, requestedHost, requestedSubdomain);
     notFound();
@@ -78,30 +74,18 @@ export default async function StoreLayout({ params, children }: StoreLayoutProps
   const storeFormData = transformCompanyToStoreForm(raw);
   const category = normalize(storeFormData.category || 'other');
   const variant = normalize(storeFormData.variant || '');
-
-  // --- 1️⃣ Try variant-based layout first
-  let LayoutComponent = categoryHeaderFooterLayoutMap[variant];
-
-  // --- 2️⃣ Fall back to category-based layout
-  if (!LayoutComponent) {
-    LayoutComponent = categoryHeaderFooterLayoutMap[category];
-  }
-
-  // --- 3️⃣ If still not found, try to match from SITE_CATEGORIES default variant
-  if (!LayoutComponent) {
-    const matchedCategory = SITE_CATEGORIES.find(
-      (c) => normalize(c.name) === category
-    );
-    if (matchedCategory?.variants?.length) {
-      const firstVariant = normalize(matchedCategory.variants[0].name);
-      LayoutComponent = categoryHeaderFooterLayoutMap[firstVariant];
-    }
-  }
-
-  // --- 4️⃣ Final fallback
-  if (!LayoutComponent) {
-    LayoutComponent = categoryHeaderFooterLayoutMap['default'];
-  }
+  
+  // --- Layout selection logic (remains the same) ---
+  let LayoutComponent = categoryHeaderFooterLayoutMap[variant]
+    || categoryHeaderFooterLayoutMap[category]
+    || (() => {
+      const matchedCategory = SITE_CATEGORIES.find((c) => normalize(c.name) === category);
+      if (matchedCategory?.variants?.length) {
+        const firstVariant = normalize(matchedCategory.variants[0].name);
+        return categoryHeaderFooterLayoutMap[firstVariant];
+      }
+    })()
+    || categoryHeaderFooterLayoutMap['default'];
 
   const userId = ''; // TODO: Replace with session data
 
@@ -109,6 +93,7 @@ export default async function StoreLayout({ params, children }: StoreLayoutProps
     <StoreContextProvider initialStore={storeFormData} userRole="ADMIN" userId={userId}>
       <div className="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
         <LayoutComponent params={{ storeFormData }}>
+          {/* Suspense is key for streaming UI while page data loads */}
           <Suspense fallback={<LoadingSpinner />}>{children}</Suspense>
         </LayoutComponent>
       </div>
@@ -116,56 +101,7 @@ export default async function StoreLayout({ params, children }: StoreLayoutProps
   );
 }
 
-/* -----------------------------------------------------
- * 🔍 Reusable company finder logic
- * ----------------------------------------------------- */
-async function findCompany(
-  slug: string,
-  requestedHost?: string | null,
-  requestedSubdomain?: string | null,
-  withRelations = false
-) {
-  const include = withRelations ? leanShellInclude() : undefined;
-  let company = null;
-
-  // 1. Lookup by custom domain
-  if (requestedHost) {
-    const normalizedHost = requestedHost.replace(/^www\./, '').toLowerCase();
-    company = await prisma.company.findFirst({
-      where: {
-        OR: [
-          { domain: normalizedHost },
-          { domain: `www.${normalizedHost}` },
-          { domain: `https://${normalizedHost}` },
-          { domain: `https://www.${normalizedHost}` },
-        ],
-      },
-      include,
-    });
-  }
-
-  // 2. Lookup by subdomain
-  if (!company && requestedSubdomain) {
-    company = await prisma.company.findUnique({
-      where: { slug: requestedSubdomain },
-      include,
-    });
-  }
-
-  // 3. Fallback to slug
-  if (!company) {
-    company = await prisma.company.findUnique({
-      where: { slug },
-      include,
-    });
-  }
-
-  return company;
-}
-
-/* -----------------------------------------------------
- * 🧩 Shared Helpers
- * ----------------------------------------------------- */
+// Helper can remain or be moved to a utils file
 function normalize(raw: string) {
   return raw
     .trim()
@@ -173,267 +109,3 @@ function normalize(raw: string) {
     .replace(/[^a-z0-9&() ]/g, '')
     .replace(/\s+/g, ' ');
 }
-
-function leanShellInclude() {
-  return {
-    SEO: true,
-    AnalyticsConfig: true,
-    StoreCategory: {
-      orderBy: { sortOrder: 'asc' as const },
-      include: {
-        category: {
-          select: { id: true, name: true, slug: true, image: true, icon: true },
-        },
-      },
-    },
-    Announcement: { orderBy: { publishedAt: 'desc' as const }, take: 1 },
-    socialLinks: true,
-    policies: true,
-    CompanyLocation: { include: { location: true } },
-  };
-}
-
-// // LEAN LAYOUT: Only fetches essential data for the app shell (header/footer)
-// import { notFound } from 'next/navigation';
-// import { ReactNode, Suspense } from 'react';
-// import { headers } from 'next/headers';
-// import prisma from '@/server/db/prismadb';
-// import { StoreContextProvider } from '@/contexts/StoreContext';
-// import categoryHeaderFooterLayoutMap from '@/components/site/layouts/categoryHeaderFooterLayoutMap';
-// import { transformCompanyToStoreForm } from '@/utils/transformPrismaToStoreForm';
-// import LoadingSpinner from '@/components/site/LoadingSpinner';
-// import type { Metadata } from "next";
-
-// // Cache the page and its data for 60 seconds (ISR)
-// export const revalidate = 60;
-
-// interface Props{
-//   params: Promise<{ slug: string }>;
-// }
-
-// export async function generateMetadata({ params }: Props): Promise<Metadata> {
-
-//   const { slug } = await params;
-
-//   const hdrs = await headers();
-//   const requestedHost = hdrs.get("x-requested-host");
-//   const requestedSubdomain = hdrs.get("x-requested-subdomain");
-
-//   let company = null;
-
-//   // ---- 1. Lookup by forwarded custom domain ----
-//   if (requestedHost) {
-//     const normalizedHost = requestedHost.replace(/^www\./, "").toLowerCase();
-
-//     company = await prisma.company.findFirst({
-//       where: {
-//         OR: [
-//           { domain: normalizedHost },
-//           { domain: `www.${normalizedHost}` },
-//           { domain: `https://${normalizedHost}` },
-//           { domain: `https://www.${normalizedHost}` },
-//         ],
-//       },
-//       select: {
-//         name: true,
-//         SEO: {
-//           select: { title: true, description: true, keywords: true }
-//         },
-//         logoUrl: true,
-//         // description: true,
-//       },
-//     });
-//   }
-
-//   // ---- 2. Lookup by forwarded subdomain ----
-//   if (!company && requestedSubdomain) {
-//     company = await prisma.company.findUnique({
-//       where: { slug: requestedSubdomain },
-//       select: {
-//         name: true,
-//         SEO: {
-//           select: { title: true, description: true, keywords: true }
-//         },
-//         logoUrl: true,
-//         // description: true,
-//       },
-//     });
-//   }
-
-//   // ---- 3. Fallback to slug param ----
-//   if (!company) {
-//     company = await prisma.company.findUnique({
-//       where: { slug: slug },
-//       select: {
-//         name: true,
-//         SEO: {
-//           select: { title: true, description: true, keywords: true }
-//         },
-//         logoUrl: true,
-//         // description: true,
-//       },
-//     });
-//   }
-
-//   if (!company) {
-//     return { title: 'Store not found' };
-//   }
-
-//   const title = company.SEO?.title || company.name || "Ghuba";
-//   const description = company.SEO?.description ||`Discover our exclusive collection of products/services.`;
-
-//   return {
-//     title,
-//     // description,
-//     keywords: company.SEO?.keywords || "ecommerce, ghuba, shops, marketplace",
-//     openGraph: {
-//       title,
-//       description,
-//       images: [company.logoUrl || ''],
-//     },
-//     twitter: {
-//       card: 'summary_large_image',
-//       title,
-//       description,
-//       images: [company.logoUrl || ''],
-//     },
-//   };
-// }
-
-// interface StoreLayoutProps {
-//   params: Promise<{ slug: string }>;
-//   children: ReactNode;
-// }
-
-// export default async function StoreLayout({
-//   params,
-//   children,
-// }: StoreLayoutProps) {
-
-//   const { slug } = await params;
-
-//   const hdrs = await headers();
-//   const requestedHost = hdrs.get("x-requested-host");
-//   const requestedSubdomain = hdrs.get("x-requested-subdomain");
-
-//   let raw = null;
-
-//   // ---- 1. Lookup by forwarded custom domain ----
-//   if (requestedHost) {
-//     const normalizedHost = requestedHost.replace(/^www\./, "").toLowerCase();
-
-//     raw = await prisma.company.findFirst({
-//       where: {
-//         OR: [
-//           { domain: normalizedHost },
-//           { domain: `www.${normalizedHost}` },
-//           { domain: `https://${normalizedHost}` },
-//           { domain: `https://www.${normalizedHost}` },
-//         ],
-//       },
-//       include: leanShellInclude(),
-//     });
-//   }
-
-//   // if (requestedHost) {
-//   //   raw = await prisma.company.findUnique({
-//   //     where: { domain: requestedHost },
-//   //     include: leanShellInclude(),
-//   //   });
-//   // }
-
-//   // ---- 2. Lookup by forwarded subdomain ----
-//   if (!raw && requestedSubdomain) {
-//     raw = await prisma.company.findUnique({
-//       where: { slug: requestedSubdomain },
-//       include: leanShellInclude(),
-//     });
-//   }
-
-//   // ---- 3. Fallback to slug param ----
-//   if (!raw) {
-//     raw = await prisma.company.findUnique({
-//       where: { slug: slug },
-//       include: leanShellInclude(),
-//     });
-//   }
-
-//   if (!raw) {
-//     console.log("Store layout: Company not found for slug", slug, "or host", requestedHost, "or subdomain", requestedSubdomain);
-//     notFound();
-//   }
-
-//   const storeFormData = transformCompanyToStoreForm(raw);
-
-//   const type = normalizeHeaderFooterCategory(storeFormData.category || 'other');
-//   const LayoutComponent = categoryHeaderFooterLayoutMap[type] ?? categoryHeaderFooterLayoutMap['default'];
-
-//   // TODO: Replace hardcoded userId with actual session data if available
-//   const userId = '';
-
-//   return (
-//     <StoreContextProvider initialStore={storeFormData} userRole="ADMIN" userId={userId}>
-//       <div className="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
-//         {/* Header/Footer wrapper with shell data */}
-//         <LayoutComponent params={{ storeFormData }}>
-//           {/* Wrap children in Suspense to enable streaming */}
-//           <Suspense fallback={<LoadingSpinner />}>
-//             {children}
-//           </Suspense>
-//         </LayoutComponent>
-//       </div>
-//     </StoreContextProvider>
-//   );
-// }
-
-// /**
-//  * LEAN SHELL INCLUDE: Only fetch data needed for header, footer, and global theme
-//  * Page-specific data (listings, testimonials, blogs, etc.) will be fetched in page.tsx
-//  */
-// function leanShellInclude() {
-//   return {
-//     // Essential for theme and branding
-    
-//     // description: true,
-//     SEO: true,
-//     AnalyticsConfig: true,
-    
-//     // Navigation categories (needed for header menu)
-//     StoreCategory: { 
-//       orderBy: { sortOrder: "asc" as const }, 
-//       include: { 
-//         category: { 
-//           select: { id: true, name: true, slug: true, image: true, icon: true } 
-//         } 
-//       } 
-//     },
-    
-//     // Latest announcement (often shown in header/banner)
-//     Announcement: { 
-//       orderBy: { publishedAt: "desc" as const },
-//       take: 1, // Only get the latest one
-//     },
-    
-//     // Social links for footer
-//     socialLinks: true,
-    
-//     // Policies for footer
-//     policies: true,
-    
-//     // Company locations for footer/contact
-//     CompanyLocation: { 
-//       include: { 
-//         location: true 
-//       } 
-//     },
-//   };
-// }
-
-// function normalizeHeaderFooterCategory(raw: string) {
-//   return raw
-//     .trim()
-//     .toLowerCase()
-//     .replace(/[^a-z0-9& ]/g, '')
-//     .replace(/\s+/g, ' ');
-// }
- 

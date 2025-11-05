@@ -7,8 +7,10 @@ import {
   LinkIcon,
   ArrowRightIcon,
   ChevronRightIcon,
+  EyeIcon,
 } from "@heroicons/react/24/outline";
 import { motion, AnimatePresence } from "framer-motion";
+import PreviewModal from "../PreviewModal/PreviewModal";
 
 interface CategoryVariant {
   name: string;
@@ -226,21 +228,41 @@ const PreviewSkeleton = () => (
   </motion.div>
 );
 
+// components/CategoryStep.tsx
+// import {
+//   ChangeEvent,
+//   useEffect,
+//   useMemo,
+//   useState,
+// } from "react";
+// import { AnimatePresence, motion } from "framer-motion";
+// import {
+//   InformationCircleIcon,
+//   MagnifyingGlassIcon,
+//   ChevronRightIcon,
+//   EyeIcon, // <-- Added this
+// } from "@heroicons/react/24/solid";
+// import PreviewModal from "./PreviewModal"; // <-- Import the modal
+// // Import your types and constants
+// // import { SITE_CATEGORIES, CategorySelectProps } from './your-types';
+
+
 export default function CategoryStep({
   category,
   variant,
   handleChange,
 }: CategorySelectProps) {
   const [search, setSearch] = useState("");
-  const [showIframe, setShowIframe] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false); // <-- State for modal
 
+  // --- This logic is all unchanged ---
   const selectedCategory = SITE_CATEGORIES.find(
     (c) => c.name === category
   );
   const selectedTemplate = selectedCategory?.variants.find(
     (v) => v.name === variant
   );
-  // Auto-select the first variant when category changes and no variant is set
+
   useEffect(() => {
     if (selectedCategory && !variant) {
       const defaultVariant = selectedCategory.variants[0];
@@ -252,7 +274,6 @@ export default function CategoryStep({
     }
   }, [selectedCategory, variant, handleChange]);
 
-
   const filteredCategories = useMemo(
     () =>
       SITE_CATEGORIES.filter((c) =>
@@ -260,19 +281,8 @@ export default function CategoryStep({
       ),
     [search]
   );
-
-  useEffect(() => {
-    if (selectedTemplate) {
-      setShowIframe(false);
-      const timeout = setTimeout(() => setShowIframe(true), 800);
-      return () => clearTimeout(timeout);
-    }
-  }, [selectedTemplate?.link]);
-
+  
   const handleVariantSelect = (categoryName: string, variantName: string) => {
-    // handleChange({ target: { name: "category", value: categoryName } } as any);
-    // handleChange({ target: { name: "variant", value: variantName } } as any);
-
     handleChange({
       target: { name: 'category', value: categoryName } as HTMLSelectElement
     } as ChangeEvent<HTMLSelectElement>);
@@ -280,236 +290,463 @@ export default function CategoryStep({
       target: { name: 'variant', value: variantName } as HTMLSelectElement
     } as ChangeEvent<HTMLSelectElement>);
   };
+  // --- End of unchanged logic ---
+
+  // Helper to open the modal
+  const handlePreviewClick = () => {
+    if (selectedTemplate) {
+      setIsModalOpen(true);
+    }
+  };
 
   return (
-    <section 
-      className="mx-auto p-4 grid grid-cols-1 lg:grid-cols-3 gap-8"
-      // ACCESSIBILITY IMPROVEMENT: Adding a clear context role for the screen reader
-      role="region" 
-      aria-label="Template and Category Selection"
-    >
-      {/* LEFT PANEL: CATEGORY SELECTION */}
-      <div className="lg:col-span-1">
-        <header className="mb-6">
-          <h2 className="text-3xl font-extrabold text-gray-900">
-            Select Your Business <span className="text-indigo-600">Focus</span>
-          </h2>
-          <p className="mt-2 text-gray-600 flex items-start">
-            <InformationCircleIcon className="h-5 w-5 text-indigo-500 mr-2 mt-1 flex-shrink-0" />
-            Pick a category to see its template variants.
-          </p>
-        </header>
+    <>
+      {/* --- Main layout changed to a single, centered column --- */}
+      <section 
+        className="mx-auto p-4 max-w-2xl"
+        role="region" 
+        aria-label="Template and Category Selection"
+      >
+        {/* This is now the only content panel */}
+        <div>
+          <header className="mb-6">
+            <h2 className="text-3xl font-extrabold text-gray-900">
+              Select Your Business <span className="text-indigo-600">Focus</span>
+            </h2>
+            <p className="mt-2 text-gray-600 flex items-start">
+              <InformationCircleIcon className="h-5 w-5 text-indigo-500 mr-2 mt-1 flex-shrink-0" />
+              Pick a category to see its template variants.
+            </p>
+          </header>
 
-        {/* Search */}
-        <div className="mb-4 relative">
-          <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-          <input
-            type="text"
-            placeholder="Search categories..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            // A11Y IMPROVEMENT: Added aria-label for clear search context
-            aria-label="Search categories" 
-            className="w-full pl-10 pr-4 py-2 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition shadow-lg shadow-gray-50/10"
-          />
-        </div>
-        
-        {/* Category List */}
-        <div 
-            className="grid grid-cols-2 gap-3 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar"
-            // A11Y IMPROVEMENT: Treating this as a button group selection
+          {/* Search (Unchanged) */}
+          <div className="mb-4 relative">
+            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search categories..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              aria-label="Search categories" 
+              className="w-full pl-10 pr-4 py-2 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition shadow-lg shadow-gray-50/10"
+            />
+          </div>
+          
+          {/* Category List (Unchanged) */}
+          <div 
+            // Added sm:grid-cols-3 for better use of space
+            className="grid grid-cols-2 sm:grid-cols-3 gap-3 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar"
             role="radiogroup"
             aria-label="Site categories"
-        >
-          {filteredCategories.map((cat) => {
-            const isSelected = selectedCategory?.name === cat.name;
-            return (
-              <motion.button
-                key={cat.name}
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                onClick={() =>
-                  // NOTE: Ensure handleVariantSelect is updated to take both category and variant
-                  handleVariantSelect(cat.name, cat.variants[0].name)
-                }
-                // A11Y IMPROVEMENT: Keyboard access and ARIA roles for buttons
-                role="radio"
-                aria-checked={isSelected}
-                tabIndex={isSelected ? 0 : -1} // Only selected item is directly focusable in radiogroup
-                className={`flex flex-col items-center justify-center p-3 h-28 text-sm rounded-xl border-2 transition duration-200 ease-in-out font-medium ${
-                  isSelected
-                    ? "bg-indigo-600 border-indigo-700 text-white shadow-xl ring-4 ring-indigo-300/50"
-                    : "bg-white border-gray-200 text-gray-800 hover:bg-indigo-50 hover:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500" // Added focus ring
-                }`}
+          >
+            {filteredCategories.map((cat) => {
+              const isSelected = selectedCategory?.name === cat.name;
+              return (
+                <motion.button
+                  key={cat.name}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() =>
+                    handleVariantSelect(cat.name, cat.variants[0].name)
+                  }
+                  role="radio"
+                  aria-checked={isSelected}
+                  tabIndex={isSelected ? 0 : -1} 
+                  className={`flex flex-col items-center justify-center p-3 h-28 text-sm rounded-xl border-2 transition duration-200 ease-in-out font-medium ${
+                    isSelected
+                      ? "bg-indigo-600 border-indigo-700 text-white shadow-xl ring-4 ring-indigo-300/50"
+                      : "bg-white border-gray-200 text-gray-800 hover:bg-indigo-50 hover:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  }`}
+                >
+                  <span className="text-3xl mb-1">{cat.icon}</span>
+                  <span>{cat.name}</span>
+                </motion.button>
+              );
+            })}
+          </div>
+
+          {/* VARIANTS (With Preview Button Added) */}
+          <AnimatePresence>
+            {selectedCategory && (
+              <motion.div
+                key="variant-selector"
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+                className="p-4 bg-white rounded-xl shadow-lg border border-indigo-100 mt-6"
               >
-                <span className="text-3xl mb-1">{cat.icon}</span>
-                <span>{cat.name}</span>
-              </motion.button>
-            );
-          })}
-        </div>
+                <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
+                  <ChevronRightIcon className="h-5 w-5 mr-2 text-indigo-500" />
+                  Choose a Template Variant:
+                </h3>
+                
+                {/* Variant selection list (Unchanged) */}
+                <div 
+                  className="flex space-x-3 overflow-x-auto pb-2 -mx-4 px-4 custom-scrollbar-horizontal"
+                  role="radiogroup"
+                  aria-label="Template variants for selected category"
+                >
+                  {selectedCategory.variants.map((variantl) => {
+                    const isVariantSelected = variantl.name === variant; 
+                    let tagColor = "";
+                    if (variantl.tag === "New")
+                      tagColor = "bg-green-100 text-green-700";
+                    else if (variantl.tag === "Popular")
+                      tagColor = "bg-orange-100 text-orange-700";
 
-        {/* VARIANTS */}
-        <AnimatePresence>
-          {selectedCategory && (
-            <motion.div
-              key="variant-selector"
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.3 }}
-              className="p-4 bg-white rounded-xl shadow-lg border border-indigo-100 mt-6"
-            >
-              <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
-                <ChevronRightIcon className="h-5 w-5 mr-2 text-indigo-500" />
-                Choose a Template Variant:
-              </h3>
-              {/* VISUAL POLISH: Added padding to the side for the scrollable container on mobile to match parent padding */}
-              <div 
-                className="flex space-x-3 overflow-x-auto pb-2 -mx-4 px-4 custom-scrollbar-horizontal"
-                role="radiogroup"
-                aria-label="Template variants for selected category"
-              >
-                {selectedCategory.variants.map((variantl) => {
-                  // NOTE: Assuming 'variant' is the currently selected variant name state
-                  const isVariantSelected = variantl.name === variant; 
-                  let tagColor = "";
-                  if (variantl.tag === "New")
-                    tagColor = "bg-green-100 text-green-700";
-                  else if (variantl.tag === "Popular")
-                    tagColor = "bg-orange-100 text-orange-700";
-
-                  return (
-                    <motion.button
-                      key={variantl.name}
-                      onClick={() =>
-                        handleVariantSelect(selectedCategory.name, variantl.name)
-                      }
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.98 }}
-                      role="radio"
-                      aria-checked={isVariantSelected}
-                      tabIndex={isVariantSelected ? 0 : -1} // Only selected item is directly focusable
-                      className={`flex-shrink-0 px-4 py-2 text-sm rounded-full font-medium transition duration-200 whitespace-nowrap border-2 ${
-                        isVariantSelected
-                          ? "bg-indigo-600 text-white border-indigo-700 shadow-md ring-2 ring-indigo-300 focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-indigo-500" // Enhanced focus ring for selected
-                          : "bg-gray-100 text-gray-700 border-gray-200 hover:bg-indigo-50 hover:text-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500" // Added focus ring for unselected
-                      }`}
-                    >
-                      {variantl.name}
-                      {variantl.tag && (
-                        <span
-                          className={`ml-2 px-2 py-0.5 text-xs font-semibold rounded-full ${tagColor} ${
-                            isVariantSelected ? "bg-white/20 text-white" : ""
-                          }`}
-                        >
-                          {variantl.tag}
-                        </span>
-                      )}
-                    </motion.button>
-                  );
-                })}
-              </div>
-
-              {selectedTemplate && (
-                <p className="mt-4 text-sm text-gray-600 border-t pt-3">
-                  <strong>Focus:</strong> {selectedTemplate.description}
-                </p>
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* RIGHT PANEL: LIVE PREVIEW */}
-      <motion.div
-        key={selectedTemplate?.name || "placeholder"}
-        layout
-        className="mt-8 lg:mt-0 lg:col-span-2 bg-white overflow-hidden "
-      >
-        <h3 className="text-2xl font-bold mb-2 text-gray-800">
-          {selectedTemplate
-            ? `Preview: ${selectedTemplate.name}`
-            : "Template Preview Area"}
-        </h3>
-        {selectedCategory && (
-          <p className="text-sm text-gray-500 mb-4">
-            Category: {selectedCategory.name}
-          </p>
-        )}
-
-        <div className="h-[50vh] lg:h-[75vh] rounded-2xl overflow-hidden border-4 border-gray-100 flex flex-col">
-          {selectedTemplate ? (
-            <>
-              {/* Browser Bar */}
-              <div className="bg-gray-100 p-3 flex items-center justify-between shadow-md">
-                <div className="flex items-center space-x-2">
-                  <div className="h-3 w-3 rounded-full bg-red-400"></div>
-                  <div className="h-3 w-3 rounded-full bg-yellow-400"></div>
-                  <div className="h-3 w-3 rounded-full bg-green-400"></div>
+                    return (
+                      <motion.button
+                        key={variantl.name}
+                        onClick={() =>
+                          handleVariantSelect(selectedCategory.name, variantl.name)
+                        }
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.98 }}
+                        role="radio"
+                        aria-checked={isVariantSelected}
+                        tabIndex={isVariantSelected ? 0 : -1} 
+                        className={`flex-shrink-0 px-4 py-2 text-sm rounded-full font-medium transition duration-200 whitespace-nowrap border-2 ${
+                          isVariantSelected
+                            ? "bg-indigo-600 text-white border-indigo-700 shadow-md ring-2 ring-indigo-300 focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-indigo-500"
+                            : "bg-gray-100 text-gray-700 border-gray-200 hover:bg-indigo-50 hover:text-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        }`}
+                      >
+                        {variantl.name}
+                        {variantl.tag && (
+                          <span
+                            className={`ml-2 px-2 py-0.5 text-xs font-semibold rounded-full ${tagColor} ${
+                              isVariantSelected ? "bg-white/20 text-white" : ""
+                            }`}
+                          >
+                            {variantl.tag}
+                          </span>
+                        )}
+                      </motion.button>
+                    );
+                  })}
                 </div>
 
-                <span className="text-sm font-medium bg-white rounded-full px-4 py-1 border border-gray-200 max-w-[150px] sm:max-w-md truncate">
-                  <LinkIcon className="h-4 w-4 mr-1 inline-block text-indigo-600" />
-                  <a
-                    href={selectedTemplate.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:underline truncate text-indigo-600"
-                    // A11Y IMPROVEMENT: Added aria-label for external link
-                    aria-label={`Open ${selectedTemplate.name} link in a new tab`}
-                  >
-                    {selectedTemplate.link
-                      .replace("https://", "")
-                      .replace("http://", "")
-                      .split("/")[0]}
-                  </a>
-                </span>
-
-                <a
-                  href={selectedTemplate.link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs text-indigo-600 font-semibold flex items-center hover:text-indigo-800 transition hidden sm:flex"
-                  aria-label={`Open ${selectedTemplate.name} link in a new tab`}
-                >
-                  Full Screen <ArrowRightIcon className="h-4 w-4 ml-1" />
-                </a>
-              </div>
-
-              {/* Iframe */}
-              <AnimatePresence mode="wait">
-                {showIframe ? (
-                  <motion.iframe
-                    key="iframe-live"
-                    src={selectedTemplate.link}
-                    // A11Y IMPROVEMENT: Title is crucial for iframes
-                    title={`${selectedTemplate.name} Live Template Preview`} 
-                    className="flex-1 w-full h-full border-0 bg-white"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.5 }}
-                    loading="lazy"
-                  />
-                ) : (
-                  <PreviewSkeleton />
+                {/* --- MODIFIED SECTION --- */}
+                {/* This block now shows description AND preview button */}
+                {selectedTemplate && (
+                  <div className="mt-4 border-t pt-4">
+                    <p className="text-sm text-gray-600">
+                      <strong>Focus:</strong> {selectedTemplate.description}
+                    </p>
+                    
+                    {/* --- ADDED PREVIEW BUTTON --- */}
+                    <button
+                      onClick={handlePreviewClick}
+                      className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                    >
+                      <EyeIcon className="h-5 w-5" />
+                      View Live Preview
+                    </button>
+                  </div>
                 )}
-              </AnimatePresence>
-            </>
-          ) : (
-            <div className="flex-1 flex flex-col items-center justify-center bg-gray-50 text-gray-500 text-center p-10 border border-dashed border-gray-300 rounded-xl m-4">
-              <MagnifyingGlassIcon className="h-10 w-10 text-gray-400 mb-3" />
-              <p className="text-lg font-semibold text-gray-700">
-                Explore Templates
-              </p>
-              <p className="mt-1">
-                Click a variant on the left to preview its design.
-              </p>
-            </div>
-          )}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
-      </motion.div>
-    </section>
+
+      </section>
+
+      {/* --- RENDER THE MODAL (At the root of the component) --- */}
+      <PreviewModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        url={selectedTemplate?.link || ""}
+        name={selectedTemplate?.name || ""}
+      />
+    </>
   );
 }
+
+// export default function CategoryStep({
+//   category,
+//   variant,
+//   handleChange,
+// }: CategorySelectProps) {
+//   const [search, setSearch] = useState("");
+//   const [showIframe, setShowIframe] = useState(false);
+
+//   const selectedCategory = SITE_CATEGORIES.find(
+//     (c) => c.name === category
+//   );
+//   const selectedTemplate = selectedCategory?.variants.find(
+//     (v) => v.name === variant
+//   );
+//   // Auto-select the first variant when category changes and no variant is set
+//   useEffect(() => {
+//     if (selectedCategory && !variant) {
+//       const defaultVariant = selectedCategory.variants[0];
+//       if (defaultVariant) {
+//         handleChange({
+//           target: { name: "variant", value: defaultVariant.name } as HTMLSelectElement,
+//         } as ChangeEvent<HTMLSelectElement>);
+//       }
+//     }
+//   }, [selectedCategory, variant, handleChange]);
+
+
+//   const filteredCategories = useMemo(
+//     () =>
+//       SITE_CATEGORIES.filter((c) =>
+//         c.name.toLowerCase().includes(search.toLowerCase())
+//       ),
+//     [search]
+//   );
+
+//   useEffect(() => {
+//     if (selectedTemplate) {
+//       setShowIframe(false);
+//       const timeout = setTimeout(() => setShowIframe(true), 800);
+//       return () => clearTimeout(timeout);
+//     }
+//   }, [selectedTemplate?.link]);
+
+//   const handleVariantSelect = (categoryName: string, variantName: string) => {
+//     // handleChange({ target: { name: "category", value: categoryName } } as any);
+//     // handleChange({ target: { name: "variant", value: variantName } } as any);
+
+//     handleChange({
+//       target: { name: 'category', value: categoryName } as HTMLSelectElement
+//     } as ChangeEvent<HTMLSelectElement>);
+//     handleChange({
+//       target: { name: 'variant', value: variantName } as HTMLSelectElement
+//     } as ChangeEvent<HTMLSelectElement>);
+//   };
+
+//   return (
+//     <section 
+//       className="mx-auto p-4 grid grid-cols-1 lg:grid-cols-3 gap-8"
+//       // ACCESSIBILITY IMPROVEMENT: Adding a clear context role for the screen reader
+//       role="region" 
+//       aria-label="Template and Category Selection"
+//     >
+//       {/* LEFT PANEL: CATEGORY SELECTION */}
+//       <div className="lg:col-span-1">
+//         <header className="mb-6">
+//           <h2 className="text-3xl font-extrabold text-gray-900">
+//             Select Your Business <span className="text-indigo-600">Focus</span>
+//           </h2>
+//           <p className="mt-2 text-gray-600 flex items-start">
+//             <InformationCircleIcon className="h-5 w-5 text-indigo-500 mr-2 mt-1 flex-shrink-0" />
+//             Pick a category to see its template variants.
+//           </p>
+//         </header>
+
+//         {/* Search */}
+//         <div className="mb-4 relative">
+//           <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+//           <input
+//             type="text"
+//             placeholder="Search categories..."
+//             value={search}
+//             onChange={(e) => setSearch(e.target.value)}
+//             // A11Y IMPROVEMENT: Added aria-label for clear search context
+//             aria-label="Search categories" 
+//             className="w-full pl-10 pr-4 py-2 border-2 border-gray-300 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition shadow-lg shadow-gray-50/10"
+//           />
+//         </div>
+        
+//         {/* Category List */}
+//         <div 
+//             className="grid grid-cols-2 gap-3 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar"
+//             // A11Y IMPROVEMENT: Treating this as a button group selection
+//             role="radiogroup"
+//             aria-label="Site categories"
+//         >
+//           {filteredCategories.map((cat) => {
+//             const isSelected = selectedCategory?.name === cat.name;
+//             return (
+//               <motion.button
+//                 key={cat.name}
+//                 whileHover={{ scale: 1.03 }}
+//                 whileTap={{ scale: 0.97 }}
+//                 onClick={() =>
+//                   // NOTE: Ensure handleVariantSelect is updated to take both category and variant
+//                   handleVariantSelect(cat.name, cat.variants[0].name)
+//                 }
+//                 // A11Y IMPROVEMENT: Keyboard access and ARIA roles for buttons
+//                 role="radio"
+//                 aria-checked={isSelected}
+//                 tabIndex={isSelected ? 0 : -1} // Only selected item is directly focusable in radiogroup
+//                 className={`flex flex-col items-center justify-center p-3 h-28 text-sm rounded-xl border-2 transition duration-200 ease-in-out font-medium ${
+//                   isSelected
+//                     ? "bg-indigo-600 border-indigo-700 text-white shadow-xl ring-4 ring-indigo-300/50"
+//                     : "bg-white border-gray-200 text-gray-800 hover:bg-indigo-50 hover:border-indigo-300 focus:outline-none focus:ring-2 focus:ring-indigo-500" // Added focus ring
+//                 }`}
+//               >
+//                 <span className="text-3xl mb-1">{cat.icon}</span>
+//                 <span>{cat.name}</span>
+//               </motion.button>
+//             );
+//           })}
+//         </div>
+
+//         {/* VARIANTS */}
+//         <AnimatePresence>
+//           {selectedCategory && (
+//             <motion.div
+//               key="variant-selector"
+//               initial={{ opacity: 0, height: 0 }}
+//               animate={{ opacity: 1, height: "auto" }}
+//               exit={{ opacity: 0, height: 0 }}
+//               transition={{ duration: 0.3 }}
+//               className="p-4 bg-white rounded-xl shadow-lg border border-indigo-100 mt-6"
+//             >
+//               <h3 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
+//                 <ChevronRightIcon className="h-5 w-5 mr-2 text-indigo-500" />
+//                 Choose a Template Variant:
+//               </h3>
+//               {/* VISUAL POLISH: Added padding to the side for the scrollable container on mobile to match parent padding */}
+//               <div 
+//                 className="flex space-x-3 overflow-x-auto pb-2 -mx-4 px-4 custom-scrollbar-horizontal"
+//                 role="radiogroup"
+//                 aria-label="Template variants for selected category"
+//               >
+//                 {selectedCategory.variants.map((variantl) => {
+//                   // NOTE: Assuming 'variant' is the currently selected variant name state
+//                   const isVariantSelected = variantl.name === variant; 
+//                   let tagColor = "";
+//                   if (variantl.tag === "New")
+//                     tagColor = "bg-green-100 text-green-700";
+//                   else if (variantl.tag === "Popular")
+//                     tagColor = "bg-orange-100 text-orange-700";
+
+//                   return (
+//                     <motion.button
+//                       key={variantl.name}
+//                       onClick={() =>
+//                         handleVariantSelect(selectedCategory.name, variantl.name)
+//                       }
+//                       whileHover={{ scale: 1.05 }}
+//                       whileTap={{ scale: 0.98 }}
+//                       role="radio"
+//                       aria-checked={isVariantSelected}
+//                       tabIndex={isVariantSelected ? 0 : -1} // Only selected item is directly focusable
+//                       className={`flex-shrink-0 px-4 py-2 text-sm rounded-full font-medium transition duration-200 whitespace-nowrap border-2 ${
+//                         isVariantSelected
+//                           ? "bg-indigo-600 text-white border-indigo-700 shadow-md ring-2 ring-indigo-300 focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-indigo-500" // Enhanced focus ring for selected
+//                           : "bg-gray-100 text-gray-700 border-gray-200 hover:bg-indigo-50 hover:text-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500" // Added focus ring for unselected
+//                       }`}
+//                     >
+//                       {variantl.name}
+//                       {variantl.tag && (
+//                         <span
+//                           className={`ml-2 px-2 py-0.5 text-xs font-semibold rounded-full ${tagColor} ${
+//                             isVariantSelected ? "bg-white/20 text-white" : ""
+//                           }`}
+//                         >
+//                           {variantl.tag}
+//                         </span>
+//                       )}
+//                     </motion.button>
+//                   );
+//                 })}
+//               </div>
+
+//               {selectedTemplate && (
+//                 <p className="mt-4 text-sm text-gray-600 border-t pt-3">
+//                   <strong>Focus:</strong> {selectedTemplate.description}
+//                 </p>
+//               )}
+//             </motion.div>
+//           )}
+//         </AnimatePresence>
+//       </div>
+
+//       {/* RIGHT PANEL: LIVE PREVIEW */}
+//       <motion.div
+//         key={selectedTemplate?.name || "placeholder"}
+//         layout
+//         className="mt-8 lg:mt-0 lg:col-span-2 bg-white overflow-hidden "
+//       >
+//         <h3 className="text-2xl font-bold mb-2 text-gray-800">
+//           {selectedTemplate
+//             ? `Preview: ${selectedTemplate.name}`
+//             : "Template Preview Area"}
+//         </h3>
+//         {selectedCategory && (
+//           <p className="text-sm text-gray-500 mb-4">
+//             Category: {selectedCategory.name}
+//           </p>
+//         )}
+
+//         <div className="h-[50vh] lg:h-[75vh] rounded-2xl overflow-hidden border-4 border-gray-100 flex flex-col">
+//           {selectedTemplate ? (
+//             <>
+//               {/* Browser Bar */}
+//               <div className="bg-gray-100 p-3 flex items-center justify-between shadow-md">
+//                 <div className="flex items-center space-x-2">
+//                   <div className="h-3 w-3 rounded-full bg-red-400"></div>
+//                   <div className="h-3 w-3 rounded-full bg-yellow-400"></div>
+//                   <div className="h-3 w-3 rounded-full bg-green-400"></div>
+//                 </div>
+
+//                 <span className="text-sm font-medium bg-white rounded-full px-4 py-1 border border-gray-200 max-w-[150px] sm:max-w-md truncate">
+//                   <LinkIcon className="h-4 w-4 mr-1 inline-block text-indigo-600" />
+//                   <a
+//                     href={selectedTemplate.link}
+//                     target="_blank"
+//                     rel="noopener noreferrer"
+//                     className="hover:underline truncate text-indigo-600"
+//                     // A11Y IMPROVEMENT: Added aria-label for external link
+//                     aria-label={`Open ${selectedTemplate.name} link in a new tab`}
+//                   >
+//                     {selectedTemplate.link
+//                       .replace("https://", "")
+//                       .replace("http://", "")
+//                       .split("/")[0]}
+//                   </a>
+//                 </span>
+
+//                 <a
+//                   href={selectedTemplate.link}
+//                   target="_blank"
+//                   rel="noopener noreferrer"
+//                   className="text-xs text-indigo-600 font-semibold flex items-center hover:text-indigo-800 transition hidden sm:flex"
+//                   aria-label={`Open ${selectedTemplate.name} link in a new tab`}
+//                 >
+//                   Full Screen <ArrowRightIcon className="h-4 w-4 ml-1" />
+//                 </a>
+//               </div>
+
+//               {/* Iframe */}
+//               <AnimatePresence mode="wait">
+//                 {showIframe ? (
+//                   <motion.iframe
+//                     key="iframe-live"
+//                     src={selectedTemplate.link}
+//                     // A11Y IMPROVEMENT: Title is crucial for iframes
+//                     title={`${selectedTemplate.name} Live Template Preview`} 
+//                     className="flex-1 w-full h-full border-0 bg-white"
+//                     initial={{ opacity: 0 }}
+//                     animate={{ opacity: 1 }}
+//                     exit={{ opacity: 0 }}
+//                     transition={{ duration: 0.5 }}
+//                     loading="lazy"
+//                   />
+//                 ) : (
+//                   <PreviewSkeleton />
+//                 )}
+//               </AnimatePresence>
+//             </>
+//           ) : (
+//             <div className="flex-1 flex flex-col items-center justify-center bg-gray-50 text-gray-500 text-center p-10 border border-dashed border-gray-300 rounded-xl m-4">
+//               <MagnifyingGlassIcon className="h-10 w-10 text-gray-400 mb-3" />
+//               <p className="text-lg font-semibold text-gray-700">
+//                 Explore Templates
+//               </p>
+//               <p className="mt-1">
+//                 Click a variant on the left to preview its design.
+//               </p>
+//             </div>
+//           )}
+//         </div>
+//       </motion.div>
+//     </section>
+//   );
+// }
