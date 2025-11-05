@@ -369,7 +369,7 @@ export default function CategoryStep({
           {/* Category List - UI Refinements */}
           <div 
             // Increased grid columns for larger screens
-            className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-4 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar" 
+            className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-4  overflow-y-auto pr-2 custom-scrollbar" 
             role="radiogroup"
             aria-label="Site categories"
           >
