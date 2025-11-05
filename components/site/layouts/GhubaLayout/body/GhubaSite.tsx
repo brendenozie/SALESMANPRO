@@ -10,11 +10,12 @@ import Annocument from "./components/annocument/Annocument";
 import Wrapper from "./components/wrapper/Wrapper";
 import { useStateContext } from '@/contexts/ContextProvider';
 import Shop from "@/components/site/layouts/GhubaLayout/body/components/shops/Shop";
+import { StoreForm } from '@/types/typings';
 // import PricingTable from "@/components/pricingTable";
 
 const apiBaseUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
-const HomePage = () => {
+const HomePage = ({ pageData, companyId }: { pageData: StoreForm, companyId: string }) => {
   const [categories, setCategories] = useState<any>([]);
   const [productsByCategory, setProductsByCategory] = useState<any>({});
   const [offers, setOffers] = useState<any>([]);

@@ -12,7 +12,7 @@ export async function GET(req: Request) {
   try {
     const events = await prisma.event.findMany({
       where: { companyId: id },
-      orderBy: { startDate: 'desc' },
+      orderBy: { createdAt: 'desc' },
     });
 
     return NextResponse.json({ data: events });
