@@ -1,20 +1,28 @@
-"use client";
+'use client';
 // File: components/site/layouts/ServicesLayout/ServiceSite.tsx
 
-import React, {  } from "react";
-
+import React from "react";
+import dynamic from 'next/dynamic';
+import useSWR from 'swr';
 import { useStoreContext } from "@/contexts/StoreContext";
-import HeroSection from "../components/HeroSection";
-import AboutSection from "../components/aboutUs";
-import ExcellenceSection from "../components/ExcellenceSection";
-import ServicesSection from "../components/ServicesSection";
-import PricingSection from "../components/PricingSection";
-import TestimonialSection from "../components/TestimonialSection";
-import FAQSection from "../components/FAQSection";
-import CleaningTipsSection from "../components/CleaningTipsSection";
-import GetStartedSection from "../components/GetStartedSection";
-import BookingFormSection from "../components/BookingFormSection";
 import { StoreForm } from "@/types/typings";
+
+// Above-the-fold components - statically imported
+import HeroSection from "../components/HeroSection";
+
+// Loading skeleton
+const SectionSkeleton = () => <div className="h-96 w-full animate-pulse bg-gray-200 rounded-lg my-12" />;
+
+// Dynamically import below-the-fold components
+const AboutSection = dynamic(() => import('../components/aboutUs'), { loading: () => <SectionSkeleton />, ssr: false });
+const ExcellenceSection = dynamic(() => import('../components/ExcellenceSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const ServicesSection = dynamic(() => import('../components/ServicesSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const PricingSection = dynamic(() => import('../components/PricingSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const TestimonialSection = dynamic(() => import('../components/TestimonialSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const FAQSection = dynamic(() => import('../components/FAQSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const CleaningTipsSection = dynamic(() => import('../components/CleaningTipsSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const GetStartedSection = dynamic(() => import('../components/GetStartedSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const BookingFormSection = dynamic(() => import('../components/BookingFormSection'), { loading: () => <SectionSkeleton />, ssr: false });
 
 const loader = ({
   src,
@@ -26,10 +34,16 @@ const loader = ({
   quality?: number;
 }) => `${src}?w=${width}&q=${quality || 75}`;
 
+// Generic fetcher
+const fetcher = (url: string) => fetch(url).then(res => res.json());
 
-export default function ServiceSite({ pageData }: { pageData: StoreForm }) {
+export default function ServiceSite({ pageData, companyId }: { pageData: StoreForm, companyId: string }) {
   
   const { storeFormData } = useStoreContext(); // Use for global theme settings only
+  
+  // Fetch client-side data
+  const { data: testimonialsData } = useSWR(`/api/site/testimonials?id=${companyId}`, fetcher);
+  const { data: faqsData } = useSWR(`/api/site/faqs?id=${companyId}`, fetcher);
   
   // Use pageData for all content
   const siteData = pageData || storeFormData;
@@ -56,9 +70,9 @@ export default function ServiceSite({ pageData }: { pageData: StoreForm }) {
 
       <PricingSection />
 
-      <TestimonialSection />
+      {testimonialsData?.data && <TestimonialSection />}
 
-      <FAQSection />
+      {faqsData?.data && <FAQSection />}
 
       <CleaningTipsSection />
      

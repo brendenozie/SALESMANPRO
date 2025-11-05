@@ -407,7 +407,7 @@ const DUMMY_DATA = {
 };
 
 
-export default function FitnessSite({ pageData }: { pageData: StoreForm }) {
+export default function FitnessSite({ pageData, companyId }: { pageData: StoreForm, companyId: string }) {
     const router = useRouter();
     // Use pageData prop instead of context for content data
     const { storeFormData } = useStoreContext(); // Keep for global theme settings

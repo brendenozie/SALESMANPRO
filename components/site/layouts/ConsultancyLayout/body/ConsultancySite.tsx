@@ -1,26 +1,39 @@
-"use client";
+'use client';
 
-import React, {  } from "react";
+import React from "react";
+import dynamic from 'next/dynamic';
+import useSWR from 'swr';
 import { useStoreContext } from "@/contexts/StoreContext";
 import { StoreForm } from "@/types/typings";
-import FeaturedProgramsSection from "./components/FeaturedProgramsSection";
-import HeroSection from "./components/HeroSection";
-import VideoShowcaseSection from "./components/VideoShowcaseSection";
-import BrowseByCategory from "./components/BrowseByCategorySection";
-import FeaturedListings from "./components/FeaturedListingsSection";
-import HowItWorks from "./components/HowItWorksSection";
-import TestimonialsCarouselSection from "./components/TestimonialsCarouselSection";
-import SocialProofSection from "./components/SocialProofSection";
-import AboutSection from "./components/AboutSection";
-import ServicesSection from "./components/ServicesSection";
-import CallToActionSection from "./components/CallToActionSection";
 
-export default function ConsultancySite({ pageData }: { pageData: StoreForm }) {
+// Above-the-fold components - statically imported
+import HeroSection from "./components/HeroSection";
+
+// Loading skeleton
+const SectionSkeleton = () => <div className="h-96 w-full animate-pulse bg-gray-200 rounded-lg my-12" />;
+
+// Dynamically import below-the-fold components
+const SocialProofSection = dynamic(() => import('./components/SocialProofSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const AboutSection = dynamic(() => import('./components/AboutSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const ServicesSection = dynamic(() => import('./components/ServicesSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const FeaturedListings = dynamic(() => import('./components/FeaturedListingsSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const HowItWorks = dynamic(() => import('./components/HowItWorksSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const BrowseByCategory = dynamic(() => import('./components/BrowseByCategorySection'), { loading: () => <SectionSkeleton />, ssr: false });
+const VideoShowcaseSection = dynamic(() => import('./components/VideoShowcaseSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const TestimonialsCarouselSection = dynamic(() => import('./components/TestimonialsCarouselSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const CallToActionSection = dynamic(() => import('./components/CallToActionSection'), { loading: () => <SectionSkeleton />, ssr: false });
+
+// Generic fetcher
+const fetcher = (url: string) => fetch(url).then(res => res.json());
+
+export default function ConsultancySite({ pageData, companyId }: { pageData: StoreForm, companyId: string }) {
   
-  // const { storeFormData } = useStoreContext(); // Use for global theme settings only
+  // Fetch client-side data
+  const { data: testimonialsData } = useSWR(`/api/site/testimonials?id=${companyId}`, fetcher);
+  const { data: blogsData } = useSWR(`/api/site/blogs?id=${companyId}`, fetcher);
 
   // Use pageData for all content
-  const siteData = pageData;// || storeFormData;
+  const siteData = pageData;
   
   // marketplaceListings from siteData → map to VehicleCardProps
   const Ebookslistings = siteData?.marketplaceListings.filter(listing => listing.type === "ebook") || [];
@@ -48,19 +61,13 @@ export default function ConsultancySite({ pageData }: { pageData: StoreForm }) {
 
       <BrowseByCategory listings={Programslisting} storeSlug={siteData?.slug || ''} />   
 
-      {/* Featured  */}
-      {/* <FeaturedProgramsSection  listings={listings} slug=""/> */}
-
       {/* If videos are stored under latestVideos */}
-      {<VideoShowcaseSection blogs={(pageData?.blogs || []).map(b => ({ ...b, excerpt: b.excerpt ?? "", coverImage: b.coverImage ?? "", videoAlbumId: b.videoAlbumId ?? undefined }))} />}
+      {blogsData?.data && <VideoShowcaseSection blogs={(blogsData.data || []).map((b: any) => ({ ...b, excerpt: b.excerpt ?? "", coverImage: b.coverImage ?? "", videoAlbumId: b.videoAlbumId ?? undefined }))} />}
 
-      <TestimonialsCarouselSection  testimonials={pageData?.testimonials || []} />
+      {testimonialsData?.data && <TestimonialsCarouselSection  testimonials={testimonialsData.data || []} />}
 
       <CallToActionSection />
 
-      {/* <PromotionSection/> */}
-
-      {/* <AppPromoSection /> */}
     </div>
      
     </div>

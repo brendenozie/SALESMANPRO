@@ -353,7 +353,7 @@ const sampleStoreData : StoreForm = {
 //──────────────────────────────────────────────────────────────────────────────
 // Main RealEstateSite Component
 //──────────────────────────────────────────────────────────────────────────────
-export default function RealEstateSite({ pageData }: { pageData: StoreForm }) {
+export default function RealEstateSite({ pageData, companyId }: { pageData: StoreForm, companyId: string }) {
 
   const router = useRouter();
   const { storeFormData } = useStoreContext(); // Use for global theme settings only

@@ -17,7 +17,7 @@ import CallToActionSection from "./components/CallToActionSection";
 import ProgramModulesSection from "./components/ProgramModulesSection";
 import SteppingOutSection from "./components/SteppingOutSection";
 
-export default function PublicSpeakingSite({ pageData }: { pageData: StoreForm }) {
+export default function PublicSpeakingSite({ pageData, companyId }: { pageData: StoreForm, companyId: string }) {
   
   // const { storeFormData } = useStoreContext(); // Use for global theme settings only
 

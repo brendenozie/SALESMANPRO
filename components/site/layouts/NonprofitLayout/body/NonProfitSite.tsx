@@ -1,22 +1,41 @@
-"use client";
+'use client';
 
 import React from 'react';
-import AboutUsSpotlight from './components/AboutUsSpotlight';
-import CoreHighlightsSection from './components/CoreHighlightsSection';
-import CtaBoldSection from './components/CtaBoldSection';
-import FAQSection from './components/FAQSection';
-import HeroSection from './components/HeroSection';
-import ImpactStatsSection from './components/ImpactStatsSection';
-import ProgramsCausesSection from './components/ProgramsCausesSection';
-import TestimonialsNewsSection from './components/TestimonialsNewsSection';
-import EventsUpdatesSection from './components/EventsUpdatesSection';
-import NewsSection from './components/NewsSection';
+import dynamic from 'next/dynamic';
+import useSWR from 'swr';
 import { StoreForm } from '@/types/typings';
 
-export default function NonProfitSite({ pageData }: { pageData: StoreForm }) {
+// Above-the-fold components - statically imported
+import HeroSection from './components/HeroSection';
+
+// Loading skeleton
+const SectionSkeleton = () => <div className="h-96 w-full animate-pulse bg-gray-200 rounded-lg my-12" />;
+
+// Dynamically import below-the-fold components
+const CoreHighlightsSection = dynamic(() => import('./components/CoreHighlightsSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const AboutUsSpotlight = dynamic(() => import('./components/AboutUsSpotlight'), { loading: () => <SectionSkeleton />, ssr: false });
+const ProgramsCausesSection = dynamic(() => import('./components/ProgramsCausesSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const ImpactStatsSection = dynamic(() => import('./components/ImpactStatsSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const EventsUpdatesSection = dynamic(() => import('./components/EventsUpdatesSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const NewsSection = dynamic(() => import('./components/NewsSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const TestimonialsNewsSection = dynamic(() => import('./components/TestimonialsNewsSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const CtaBoldSection = dynamic(() => import('./components/CtaBoldSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const FAQSection = dynamic(() => import('./components/FAQSection'), { loading: () => <SectionSkeleton />, ssr: false });
+
+// Generic fetcher
+const fetcher = (url: string) => fetch(url).then(res => res.json());
+
+// Updated component signature
+export default function NonProfitSite({ pageData, companyId }: { pageData: StoreForm, companyId: string }) {
+  // Fetch client-side data
+  const { data: testimonialsData } = useSWR(`/api/site/testimonials?id=${companyId}`, fetcher);
+  const { data: blogsData } = useSWR(`/api/site/blogs?id=${companyId}`, fetcher);
+  const { data: faqsData } = useSWR(`/api/site/faqs?id=${companyId}`, fetcher);
+  const { data: eventsData } = useSWR(`/api/site/events?id=${companyId}`, fetcher);
+
   return (
       <main className="min-h-screen bg-gray-100 font-sans">
-        {/* Hero Section */}
+        {/* Hero Section - Render immediately */}
         <HeroSection />
 
         {/* Core Highlights / Impact Areas */}
@@ -31,19 +50,20 @@ export default function NonProfitSite({ pageData }: { pageData: StoreForm }) {
         {/* Impact Stats */}
         <ImpactStatsSection />
 
-        {/* Impact Stats */}
-        <EventsUpdatesSection />/
+        {/* Events & Updates - Render when data is ready */}
+        {eventsData?.data && <EventsUpdatesSection />}
 
-        <NewsSection />
+        {/* News - Render when data is ready */}
+        {blogsData?.data && <NewsSection />}
 
-        {/* Testimonials & News */}
-        <TestimonialsNewsSection />
+        {/* Testimonials & News - Render when data is ready */}
+        {testimonialsData?.data && <TestimonialsNewsSection />}
 
         {/* Call to Action - Bold */}
         <CtaBoldSection />
 
-        {/* FAQs */}
-        <FAQSection />
+        {/* FAQs - Render when data is ready */}
+        {faqsData?.data && <FAQSection />}
       </main>
   );
 }

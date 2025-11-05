@@ -73,7 +73,7 @@ const mockStoreData : any= {
 // --- End Mock Data ---
 
 
-export default function MediaSite({ pageData }: { pageData: StoreForm }) {
+export default function MediaSite({ pageData, companyId }: { pageData: StoreForm, companyId: string }) {
   const router = useRouter();
   const { storeFormData } = useStoreContext(); // Use for global theme settings only
 

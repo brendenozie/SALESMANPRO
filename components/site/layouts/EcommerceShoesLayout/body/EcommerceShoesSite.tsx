@@ -23,6 +23,7 @@ import { ClockIcon, TagIcon, Squares2X2Icon, ArrowUturnLeftIcon } from '@heroico
 
 type EcommerceSiteShoesProps = {
   pageData: StoreForm;
+  companyId: string;
 };
 
 const features = [
@@ -56,7 +57,7 @@ const features = [
   },
 ];
 
-export default function EcommerceShoesSite({ pageData }: EcommerceSiteShoesProps) {
+export default function EcommerceShoesSite({ pageData, companyId }: EcommerceSiteShoesProps) {
   const {
     heroSlides ,
     StoreCategory = [],
