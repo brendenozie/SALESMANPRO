@@ -309,7 +309,7 @@ interface TravelSiteProps {
 // const travelTypes = ["Adventure", "Relaxation", "Cultural", "Family"];
 // const regions = ["Europe", "Asia", "South America", "Africa", "Oceania"];
 
-export default function TravelSite({ pageData }: { pageData: StoreForm }) {
+export default function TravelSite({ pageData, companyId }: { pageData: StoreForm, companyId: string }) {
   const router = useRouter();
   const { storeFormData } = useStoreContext(); // Use for global theme settings only
 

@@ -2,39 +2,50 @@
 
 import React, { useMemo } from 'react';
 import dynamic from 'next/dynamic';
+import useSWR from 'swr';
 import HeroSlider from '@/components/site/layouts/EcommerceLayout/body/components/HeroSlider';
-import NewsletterSection from '@/components/site/NewsletterSection/NewsletterSection';
-import MetricsSection from '@/components/site/MetricsSection';
-import AwardsSection from '@/components/site/AwardsSection';
-import TestimonialsSection from '@/components/site/TestimonialsSection/TestimonialsSection';
-import CategorySection from './components/CategorySection';
-import PromoSection from './components/PromoSection';
-import FeaturesSection from './components/FeaturesSection';
-import SleepTapeAd from './components/SleepTapeAd';
-import AllProducts from './components/AllProducts';
 import { StoreForm, MarketListingForm } from '@/types/typings';
+
+// Above-the-fold components - statically imported
+import CategorySection from './components/CategorySection';
+
+// Loading skeleton
+const SectionSkeleton = () => <div className="h-96 w-full animate-pulse bg-gray-200 rounded-lg my-12" />;
 
 // 🧠 Dynamically import client-side sections (with skeleton fallback)
 const DynamicPopularProducts = dynamic(() => import('./components/PopularProducts'), {
-  loading: () => <div className="h-56 animate-pulse bg-gray-100 rounded-xl" />,
+  loading: () => <SectionSkeleton />,
   ssr: false,
 });
 
 const DynamicDailyBestSells = dynamic(() => import('./components/DailyBestSells'), {
-  loading: () => <div className="h-56 animate-pulse bg-gray-100 rounded-xl" />,
+  loading: () => <SectionSkeleton />,
   ssr: false,
 });
 
 const DynamicTrending = dynamic(() => import('./components/Trending'), {
-  loading: () => <div className="h-56 animate-pulse bg-gray-100 rounded-xl" />,
+  loading: () => <SectionSkeleton />,
   ssr: false,
 });
 
+const PromoSection = dynamic(() => import('./components/PromoSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const SleepTapeAd = dynamic(() => import('./components/SleepTapeAd'), { loading: () => <SectionSkeleton />, ssr: false });
+const AllProducts = dynamic(() => import('./components/AllProducts'), { loading: () => <SectionSkeleton />, ssr: false });
+const FeaturesSection = dynamic(() => import('./components/FeaturesSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const MetricsSection = dynamic(() => import('@/components/site/MetricsSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const AwardsSection = dynamic(() => import('@/components/site/AwardsSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const TestimonialsSection = dynamic(() => import('@/components/site/TestimonialsSection/TestimonialsSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const NewsletterSection = dynamic(() => import('@/components/site/NewsletterSection/NewsletterSection'), { loading: () => <SectionSkeleton />, ssr: false });
+
 type EcommerceSiteProps = {
   pageData: StoreForm;
+  companyId: string;
 };
 
-export default function EcommerceSite({ pageData }: EcommerceSiteProps) {
+// Generic fetcher
+const fetcher = (url: string) => fetch(url).then(res => res.json());
+
+export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProps) {
   const {
     heroSlides,
     id,
@@ -47,6 +58,9 @@ export default function EcommerceSite({ pageData }: EcommerceSiteProps) {
     bannerUrl,
     CoreValues = [],
   } = pageData;
+
+  // Fetch client-side data
+  const { data: testimonialsData } = useSWR(`/api/site/testimonials?id=${companyId}`, fetcher);
 
   // ⚙️ Only include featured listings on SSR
   const featured = useMemo(
@@ -67,7 +81,7 @@ export default function EcommerceSite({ pageData }: EcommerceSiteProps) {
       <FeaturesSection />
       <MetricsSection coreValues={CoreValues} />
       <AwardsSection awards={awards} />
-      <TestimonialsSection testimonials={testimonials} />
+      {testimonialsData?.data && <TestimonialsSection testimonials={testimonialsData.data} />}
       <NewsletterSection />
     </div>
   );

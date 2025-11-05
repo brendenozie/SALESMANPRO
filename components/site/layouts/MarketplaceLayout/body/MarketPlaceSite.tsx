@@ -47,7 +47,7 @@ const loader = ({ src, width, quality }: { src: string; width: number; quality?:
 
 
 
-export default function MarketPlaceSite({ pageData }: { pageData: StoreForm }) {
+export default function MarketPlaceSite({ pageData, companyId }: { pageData: StoreForm, companyId: string }) {
 
   const { storeFormData } = useStoreContext(); // Use for global theme settings only
   

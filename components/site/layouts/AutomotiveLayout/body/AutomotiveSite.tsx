@@ -1,20 +1,28 @@
-"use client";
+'use client';
 
 import React, { useState, useEffect } from "react";
+import dynamic from 'next/dynamic';
+import useSWR from 'swr';
 import { useRouter } from "next/navigation";
 import { useStoreContext } from "@/contexts/StoreContext";
 import { StoreForm } from "@/types/typings";
-import FeaturedVehicleSection from "./components/FeaturedVehicleSection";
+
+// Above-the-fold components - statically imported
 import HeroSection from "./components/HeroSection";
-import TrendingLocations from "./components/TrendingLocationsSection";
-import VideoShowcaseSection from "./components/VideoShowcaseSection";
-import FilterBarSection from "./components/FilterBarSection";
-import MarketInsightsSection from "./components/MarketInsightsSection";
-// import Testimonials from "./components/TestimonialsSection";
-import BrowseByCategory from "./components/BrowseByCategorySection";
-import FeaturedListings from "./components/FeaturedListingsSection";
-import HowItWorks from "./components/HowItWorksSection";
-import TestimonialsCarouselSection from "./components/TestimonialsCarouselSection";
+
+// Loading skeleton
+const SectionSkeleton = () => <div className="h-96 w-full animate-pulse bg-gray-200 rounded-lg my-12" />;
+
+// Dynamically import below-the-fold components
+const FeaturedListings = dynamic(() => import('./components/FeaturedListingsSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const HowItWorks = dynamic(() => import('./components/HowItWorksSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const BrowseByCategory = dynamic(() => import('./components/BrowseByCategorySection'), { loading: () => <SectionSkeleton />, ssr: false });
+const FilterBarSection = dynamic(() => import('./components/FilterBarSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const TrendingLocations = dynamic(() => import('./components/TrendingLocationsSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const FeaturedVehicleSection = dynamic(() => import('./components/FeaturedVehicleSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const VideoShowcaseSection = dynamic(() => import('./components/VideoShowcaseSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const MarketInsightsSection = dynamic(() => import('./components/MarketInsightsSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const TestimonialsCarouselSection = dynamic(() => import('./components/TestimonialsCarouselSection'), { loading: () => <SectionSkeleton />, ssr: false });
 
 interface VehicleCardProps {
   id: string;
@@ -49,16 +57,18 @@ const tours = [
   },
 ]
 
+// Generic fetcher
+const fetcher = (url: string) => fetch(url).then(res => res.json());
 
-
-
-
-
-export default function AutomotiveSite({ pageData }: { pageData: StoreForm }) {
+export default function AutomotiveSite({ pageData, companyId }: { pageData: StoreForm, companyId: string }) {
   const { storeFormData } = useStoreContext(); // Use for global theme settings only
   const [promos, setPromos] = useState<any[]>([]);
   const [vehicles, setVehicles] = useState<VehicleCardProps[]>([]);
   const [testimonials, setTestimonials] = useState<any[]>([]);
+
+  // Fetch client-side data
+  const { data: testimonialsData } = useSWR(`/api/site/testimonials?id=${companyId}`, fetcher);
+  const { data: blogsData } = useSWR(`/api/site/blogs?id=${companyId}`, fetcher);
 
   // Use pageData for all content
   const siteData = pageData || storeFormData;
@@ -69,24 +79,13 @@ export default function AutomotiveSite({ pageData }: { pageData: StoreForm }) {
   useEffect(() => {
     // Pull promotions from siteData.promotions
     setPromos(siteData?.promotions || []);
+  }, [siteData]);
 
-
-    // const formattedVehicles: VehicleCardProps[] = listings.map((listing: any) => ({
-    //   id: listing.id,
-    //   make: listing.product.brand || "Unknown",
-    //   model: listing.product.name,
-    //   year: new Date().getFullYear(), // or derive from listing if available
-    //   price: listing.finalPrice,
-    //   image: listing.images[0] || "/assets/placeholder.png",
-    //   type: listing.product.color || "Vehicle",
-    //   mileage: listing.product.size ? Number(listing.product.size) : 0, // fallback if size used as mileage
-    //   badge: listing.isFeatured ? "Hot" : undefined,
-    // }));
-    // setVehicles(formattedVehicles);
-
-    // Testimonials from storeFormData.testimonials
-    setTestimonials(storeFormData?.testimonials || []);
-  }, [storeFormData]);
+  useEffect(() => {
+    if (testimonialsData?.data) {
+      setTestimonials(testimonialsData.data);
+    }
+  }, [testimonialsData]);
 
   return (
     <div className="space-y-24 font-sans bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
@@ -165,15 +164,12 @@ export default function AutomotiveSite({ pageData }: { pageData: StoreForm }) {
       <FeaturedVehicleSection  listings={listings} slug=""/>
 
       {/* If videos are stored under latestVideos */}
-      {storeFormData?.blogs && <VideoShowcaseSection blogs={storeFormData?.blogs || []} />}
+      {blogsData?.data && <VideoShowcaseSection blogs={blogsData.data || []} />}
 
       <MarketInsightsSection />
 
-      <TestimonialsCarouselSection  testimonials={storeFormData?.testimonials || []} />
+      {testimonialsData?.data && <TestimonialsCarouselSection  testimonials={testimonials} />}
 
-      {/* <PromotionSection/> */}
-
-      {/* <AppPromoSection /> */}
     </div>
   );
 }

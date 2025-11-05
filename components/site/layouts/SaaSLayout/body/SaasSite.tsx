@@ -231,7 +231,7 @@ const loader = ({
   quality?: number;
 }) => `${src}?w=${width}&q=${quality || 75}`;
 
-export default function SaaSSite({ pageData }: { pageData: StoreForm }) {
+export default function SaaSSite({ pageData, companyId }: { pageData: StoreForm, companyId: string }) {
   const router = useRouter();
   // Using useStoreContext for global theme settings only
   const { storeFormData } = useStoreContext();
