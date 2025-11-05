@@ -1,17 +1,31 @@
 // File: components/site/layouts/BlogLayout/BlogSite.tsx
 'use client';
 
-import React, {  } from 'react';
-import HeroSection from './components/HeroSection';
-import LatestPodcastSection from './components/LatestPodcastSection';
-import PopularBlogsSection from './components/PopularBlogsSection';
-import StaffWritersSection from './components/StaffWritersSection';
-import LatestNewsSection from './components/LatestNewsSection';
-import CtaSection from './components/CtaSection';
-import FeaturedCategoriesSection from './components/FeaturedCategoriesSection';
+import React from 'react';
+import dynamic from 'next/dynamic';
+import useSWR from 'swr';
 import { StoreForm } from '@/types/typings';
 
-export default function BlogSite({ pageData }: { pageData: StoreForm }) {
+// Above-the-fold components - statically imported
+import HeroSection from './components/HeroSection';
+
+// Loading skeleton
+const SectionSkeleton = () => <div className="h-96 w-full animate-pulse bg-gray-200 rounded-lg my-12" />;
+
+// Dynamically import below-the-fold components
+const FeaturedCategoriesSection = dynamic(() => import('./components/FeaturedCategoriesSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const LatestNewsSection = dynamic(() => import('./components/LatestNewsSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const StaffWritersSection = dynamic(() => import('./components/StaffWritersSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const PopularBlogsSection = dynamic(() => import('./components/PopularBlogsSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const LatestPodcastSection = dynamic(() => import('./components/LatestPodcastSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const CtaSection = dynamic(() => import('./components/CtaSection'), { loading: () => <SectionSkeleton />, ssr: false });
+
+// Generic fetcher
+const fetcher = (url: string) => fetch(url).then(res => res.json());
+
+export default function BlogSite({ pageData, companyId }: { pageData: StoreForm, companyId: string }) {
+  // Fetch client-side data
+  const { data: blogsData } = useSWR(`/api/site/blogs?id=${companyId}`, fetcher);
   
   return (
     <>
@@ -20,11 +34,11 @@ export default function BlogSite({ pageData }: { pageData: StoreForm }) {
 
       <FeaturedCategoriesSection />
 
-      <LatestNewsSection />
+      {blogsData?.data && <LatestNewsSection />}
 
       <StaffWritersSection />
 
-      <PopularBlogsSection />
+      {blogsData?.data && <PopularBlogsSection />}
 
       <LatestPodcastSection />
 

@@ -2,18 +2,33 @@
 'use client';
 
 import React from 'react';
+import dynamic from 'next/dynamic';
+import useSWR from 'swr';
 import 'react-datepicker/dist/react-datepicker.css';
-import Hero from './components/HeroSection';
-import FeaturesSection from './components/FeaturesSection';
-import BenefitsSection from './components/BenefitsSection';
-import PricingAndStatsSection from './components/PricingAndStatsSection';
-import MassageFeatures from './components/MessagesSection';
-import TestimonialsSection from './components/TestimonialsSection';
-import CtaSection from './components/CtaSection';
-import FAQsSection from './components/FAQsSection';
 import { StoreForm } from '@/types/typings';
 
-export default function BookingsSite({ pageData }: { pageData: StoreForm }) {
+// Above-the-fold components - statically imported
+import Hero from './components/HeroSection';
+
+// Loading skeleton
+const SectionSkeleton = () => <div className="h-96 w-full animate-pulse bg-gray-200 rounded-lg my-12" />;
+
+// Dynamically import below-the-fold components
+const FeaturesSection = dynamic(() => import('./components/FeaturesSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const BenefitsSection = dynamic(() => import('./components/BenefitsSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const PricingAndStatsSection = dynamic(() => import('./components/PricingAndStatsSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const MassageFeatures = dynamic(() => import('./components/MessagesSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const TestimonialsSection = dynamic(() => import('./components/TestimonialsSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const CtaSection = dynamic(() => import('./components/CtaSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const FAQsSection = dynamic(() => import('./components/FAQsSection'), { loading: () => <SectionSkeleton />, ssr: false });
+
+// Generic fetcher
+const fetcher = (url: string) => fetch(url).then(res => res.json());
+
+export default function BookingsSite({ pageData, companyId }: { pageData: StoreForm, companyId: string }) {
+  // Fetch client-side data
+  const { data: testimonialsData } = useSWR(`/api/site/testimonials?id=${companyId}`, fetcher);
+  const { data: faqsData } = useSWR(`/api/site/faqs?id=${companyId}`, fetcher);
 
   return (
     <>
@@ -28,11 +43,11 @@ export default function BookingsSite({ pageData }: { pageData: StoreForm }) {
 
       <BenefitsSection />
 
-      <TestimonialsSection />
+      {testimonialsData?.data && <TestimonialsSection />}
 
       <CtaSection />
 
-      <FAQsSection />
+      {faqsData?.data && <FAQsSection />}
       
     </>
   );

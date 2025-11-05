@@ -1,29 +1,41 @@
-"use client";
+'use client';
 
 import React, { useEffect, useState } from "react";
+import dynamic from 'next/dynamic';
+import useSWR from 'swr';
 import { useRouter } from "next/navigation";
-// Assuming useStoreContext provides data for the site; if not, remove or adjust.
 import { useStoreContext } from "@/contexts/StoreContext";
 import { StoreForm } from "@/types/typings";
 
-// Import all your transformed child components
+// Above-the-fold components - statically imported
 import HeroSection from "./components/heroSection";
-import PracticeAreasSection from "./components/PracticeAreasSection";
-import WhyChooseUsSection from "./components/WhyChooseUsSection";
-import CaseStudiesTestimonials from "./components/CaseStudiesTestimonialsSection";
-import ProcessWorkflowSection from "./components/ProcessWorkflowSection";
-import MeetOurExperts from "./components/MeetOurExperts";
-import ConsultationPackagesSection from "./components/ConsultationPackagesSection";
-import FAQSection from "./components/FAQSection";
-import ContactSection from "./components/ContactSection";
+
+// Loading skeleton
+const SectionSkeleton = () => <div className="h-96 w-full animate-pulse bg-gray-200 rounded-lg my-12" />;
+
+// Dynamically import below-the-fold components
+const PracticeAreasSection = dynamic(() => import('./components/PracticeAreasSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const WhyChooseUsSection = dynamic(() => import('./components/WhyChooseUsSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const CaseStudiesTestimonials = dynamic(() => import('./components/CaseStudiesTestimonialsSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const ProcessWorkflowSection = dynamic(() => import('./components/ProcessWorkflowSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const MeetOurExperts = dynamic(() => import('./components/MeetOurExperts'), { loading: () => <SectionSkeleton />, ssr: false });
+const ConsultationPackagesSection = dynamic(() => import('./components/ConsultationPackagesSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const FAQSection = dynamic(() => import('./components/FAQSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const ContactSection = dynamic(() => import('./components/ContactSection'), { loading: () => <SectionSkeleton />, ssr: false });
 
 // --- Global Theme Colors (for Navbar and Footer consistency) ---
 const darkBackground = "#0A192F"; // Main background for sections, navbar, footer
 
+// Generic fetcher
+const fetcher = (url: string) => fetch(url).then(res => res.json());
 
-export default function FinanceSite({ pageData }: { pageData: StoreForm }) {
+export default function FinanceSite({ pageData, companyId }: { pageData: StoreForm, companyId: string }) {
   // Using context for global theme settings only
   const { storeFormData } = useStoreContext(); 
+
+  // Fetch client-side data
+  const { data: testimonialsData } = useSWR(`/api/site/testimonials?id=${companyId}`, fetcher);
+  const { data: faqsData } = useSWR(`/api/site/faqs?id=${companyId}`, fetcher);
 
   // Use pageData for all content, with fallback to hardcoded data
   const siteData = pageData && Object.keys(pageData).length > 0 ? pageData : {
@@ -151,20 +163,24 @@ export default function FinanceSite({ pageData }: { pageData: StoreForm }) {
   };
 
   // State initialization: Use the combined siteData for child components
-  // const [metrics, setMetrics] = useState<any[]>(siteData.metrics);
-  // const [services, setServices] = useState<any[]>(siteData.services);
   const [testimonials, setTestimonials] = useState<any[]>(siteData.testimonials);
   const [faqs, setFaqs] = useState<any[]>(siteData.faqs);
   const [experts, setExperts] = useState<any[]>(siteData.Expert);
   const [packages, setPackages] = useState<any[]>(siteData.packages);
 
+  // useEffect to update states if data is fetched
+  useEffect(() => {
+    if (testimonialsData?.data) {
+      setTestimonials(testimonialsData.data);
+    }
+    if (faqsData?.data) {
+      setFaqs(faqsData.data);
+    }
+  }, [testimonialsData, faqsData]);
 
   // useEffect to update states if storeFormData changes (e.g., from a CMS)
   useEffect(() => {
     if (storeFormData && Object.keys(storeFormData).length > 0) {
-      // setServices(storeFormData.services || []);
-      setTestimonials(storeFormData.testimonials || []);
-      setFaqs(storeFormData.faqs || []);
       setExperts(storeFormData.Expert || []);
       setPackages(storeFormData.packages || []);
     }
@@ -182,11 +198,11 @@ export default function FinanceSite({ pageData }: { pageData: StoreForm }) {
         <div className="space-y-24 lg:space-y-36"> {/* Consistent vertical spacing between sections */}
           <PracticeAreasSection/>
           <WhyChooseUsSection />
-          <CaseStudiesTestimonials testimonials={testimonials} />
+          {testimonialsData?.data && <CaseStudiesTestimonials testimonials={testimonials} />}
           <ProcessWorkflowSection />
           <MeetOurExperts experts={experts} />
           <ConsultationPackagesSection packages={packages} />
-          <FAQSection faqs={faqs} />
+          {faqsData?.data && <FAQSection faqs={faqs} />}
           <ContactSection />
         </div>
       </main>

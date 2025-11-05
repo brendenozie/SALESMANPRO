@@ -1,16 +1,25 @@
-"use client";
+'use client';
 
 import React from "react";
-import HeroComponent from "./components/HeroSection";
-import AboutSection from "./components/AboutSection";
-import FeaturesSection from "./components/FeaturesSection";
-import HowItWorksSection from "./components/HowItWorksSection";
-import LiveEventsSection from "./components/LiveEventsSection";
-import TestimonialsSection from "./components/TestimonialsSection";
-import PricingSection from "./components/PricingSection";
-import FAQSection from "./components/FAQSection";
-import CallToActionSection from "./components/CallToActionSection";
+import dynamic from 'next/dynamic';
+import useSWR from 'swr';
 import { StoreForm } from "@/types/typings";
+
+// Above-the-fold components - statically imported
+import HeroComponent from "./components/HeroSection";
+
+// Loading skeleton
+const SectionSkeleton = () => <div className="h-96 w-full animate-pulse bg-gray-200 rounded-lg my-12" />;
+
+// Dynamically import below-the-fold components
+const AboutSection = dynamic(() => import('./components/AboutSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const FeaturesSection = dynamic(() => import('./components/FeaturesSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const HowItWorksSection = dynamic(() => import('./components/HowItWorksSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const LiveEventsSection = dynamic(() => import('./components/LiveEventsSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const TestimonialsSection = dynamic(() => import('./components/TestimonialsSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const PricingSection = dynamic(() => import('./components/PricingSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const FAQSection = dynamic(() => import('./components/FAQSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const CallToActionSection = dynamic(() => import('./components/CallToActionSection'), { loading: () => <SectionSkeleton />, ssr: false });
 
 //----------------------------------------------
 // Image loader (same as elsewhere)
@@ -25,10 +34,17 @@ const loader = ({
   quality?: number;
 }) => `${src}?w=${width}&q=${quality || 75}`;
 
+// Generic fetcher
+const fetcher = (url: string) => fetch(url).then(res => res.json());
+
 //----------------------------------------------
 // EventsSite component, using StoreContext
 //----------------------------------------------
-export default function EventsSite({ pageData }: { pageData: StoreForm }) {
+export default function EventsSite({ pageData, companyId }: { pageData: StoreForm, companyId: string }) {
+  // Fetch client-side data
+  const { data: eventsData } = useSWR(`/api/site/events?id=${companyId}`, fetcher);
+  const { data: testimonialsData } = useSWR(`/api/site/testimonials?id=${companyId}`, fetcher);
+  const { data: faqsData } = useSWR(`/api/site/faqs?id=${companyId}`, fetcher);
 
   return (
     <div className="font-sans">
@@ -44,17 +60,17 @@ export default function EventsSite({ pageData }: { pageData: StoreForm }) {
       {/* How It Works */}
       <HowItWorksSection />
 
-      {/* Live Events */}
-      <LiveEventsSection/>
+      {/* Live Events - Render when data is ready */}
+      {eventsData?.data && <LiveEventsSection/>}
 
-      {/* Testimonials */}
-      <TestimonialsSection />
+      {/* Testimonials - Render when data is ready */}
+      {testimonialsData?.data && <TestimonialsSection />}
 
       {/* Pricing (for event organizers) */}
       <PricingSection />
 
-      {/* FAQ */}
-      <FAQSection />
+      {/* FAQ - Render when data is ready */}
+      {faqsData?.data && <FAQSection />}
 
       <CallToActionSection />
 

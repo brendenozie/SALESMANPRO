@@ -1,18 +1,33 @@
-"use client";
+'use client';
 
-import React, {  } from "react";
-import RestaurantHero from "../components/RestaurantSite";
-import SignatureDishes from "../components/SignatureDishes";
-import WhyDineWithUs from "../components/WhyDineWithUs";
-import Testimonials from "../components/Testimonials";
-import RestaurantGallery from "../components/RestaurantGallery";
-import RestaurantFAQs from "../components/RestaurantFAQs";
+import React from "react";
+import dynamic from 'next/dynamic';
+import useSWR from 'swr';
 import { StoreForm } from "@/types/typings";
 
+// Above-the-fold components - statically imported
+import RestaurantHero from "../components/RestaurantSite";
+
+// Loading skeleton
+const SectionSkeleton = () => <div className="h-96 w-full animate-pulse bg-gray-200 rounded-lg my-12" />;
+
+// Dynamically import below-the-fold components
+const SignatureDishes = dynamic(() => import('../components/SignatureDishes'), { loading: () => <SectionSkeleton />, ssr: false });
+const WhyDineWithUs = dynamic(() => import('../components/WhyDineWithUs'), { loading: () => <SectionSkeleton />, ssr: false });
+const Testimonials = dynamic(() => import('../components/Testimonials'), { loading: () => <SectionSkeleton />, ssr: false });
+const RestaurantGallery = dynamic(() => import('../components/RestaurantGallery'), { loading: () => <SectionSkeleton />, ssr: false });
+const RestaurantFAQs = dynamic(() => import('../components/RestaurantFAQs'), { loading: () => <SectionSkeleton />, ssr: false });
+
+// Generic fetcher
+const fetcher = (url: string) => fetch(url).then(res => res.json());
+
 //----------------------------------------------
-// RestaurantSite component, now using StoreContext
+// RestaurantSite component with hybrid rendering
 //----------------------------------------------
-export default function RestaurentSite({ pageData }: { pageData: StoreForm }) {
+export default function RestaurentSite({ pageData, companyId }: { pageData: StoreForm, companyId: string }) {
+  // Fetch client-side data
+  const { data: testimonialsData } = useSWR(`/api/site/testimonials?id=${companyId}`, fetcher);
+  const { data: faqsData } = useSWR(`/api/site/faqs?id=${companyId}`, fetcher);
 
   return (
       <div className="relative bg-cream min-h-screen text-gray-900">
@@ -26,11 +41,11 @@ export default function RestaurentSite({ pageData }: { pageData: StoreForm }) {
 
         <WhyDineWithUs />
 
-        <Testimonials />
+        {testimonialsData?.data && <Testimonials />}
         
         <RestaurantGallery />
 
-        <RestaurantFAQs />
+        {faqsData?.data && <RestaurantFAQs />}
         
       </div>
   );

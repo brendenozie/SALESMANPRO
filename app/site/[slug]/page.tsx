@@ -38,7 +38,7 @@ import SaaSSite from '@/components/site/layouts/SaaSLayout/body/SaasSite';
 import PublicSpeakingSite from '@/components/site/layouts/PublicSpeakingLayout/body/PublicSpeakingSite';
 
 // Map component names to actual components
-const componentMap: Record<string, React.ComponentType<{ pageData: StoreForm }>> = {
+const componentMap: Record<string, React.ComponentType<{ pageData: StoreForm; companyId: string }>> = {
   'GhubaSite': GhubaSite,
   'PublicSpeakingSite': PublicSpeakingSite,
   'AutomotiveSite': AutomotiveSite,
@@ -133,7 +133,7 @@ export default async function StorePage({ params }: StorePageProps) {
 
   return (
     <main className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 min-h-screen">
-      <BodyComponent pageData={pageData} />
+      <BodyComponent pageData={pageData} companyId={raw.id} />
     </main>
   );
 }

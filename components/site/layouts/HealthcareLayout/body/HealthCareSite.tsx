@@ -2,21 +2,27 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import dynamic from 'next/dynamic';
+import useSWR from 'swr';
 import { useRouter } from 'next/navigation';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { StoreForm } from '@/types/typings';
 
-// Import all your stunning components
-import AboutSection from './components/AboutSection';
-import ContactSection from './components/ContactSection'; 
-import CTASection from './components/CTASection'; 
-import DoctorsSection from './components/DoctorsSection';
+// Above-the-fold components - statically imported
 import HealthcareHero from './components/HeroSection';
-import MedicalServicesSection from './components/MedicalServicesSection';
-import FAQsSection from './components/FAQsSections';
-import HealthTipsSection from './components/HealthTipsSections';
-import PatientSection from './components/PatientSections';
 
+// Loading skeleton
+const SectionSkeleton = () => <div className="h-96 w-full animate-pulse bg-gray-200 rounded-lg my-12" />;
+
+// Dynamically import below-the-fold components
+const AboutSection = dynamic(() => import('./components/AboutSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const MedicalServicesSection = dynamic(() => import('./components/MedicalServicesSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const HealthTipsSection = dynamic(() => import('./components/HealthTipsSections'), { loading: () => <SectionSkeleton />, ssr: false });
+const DoctorsSection = dynamic(() => import('./components/DoctorsSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const PatientSection = dynamic(() => import('./components/PatientSections'), { loading: () => <SectionSkeleton />, ssr: false });
+const FAQsSection = dynamic(() => import('./components/FAQsSections'), { loading: () => <SectionSkeleton />, ssr: false });
+const ContactSection = dynamic(() => import('./components/ContactSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const CTASection = dynamic(() => import('./components/CTASection'), { loading: () => <SectionSkeleton />, ssr: false });
 
 // --- Sample Data (for when storeFormData is empty or specific fields are missing) ---
 const defaultStoreName = "Harmony Health Clinic";
@@ -65,10 +71,16 @@ const defaultContactInfo = {
   mapLink: 'https://www.google.com/maps/place/New+York,+NY' // Example Google Maps link
 };
 
+// Generic fetcher
+const fetcher = (url: string) => fetch(url).then(res => res.json());
 
-export default function HealthCareSite({ pageData }: { pageData: StoreForm }) {
+export default function HealthCareSite({ pageData, companyId }: { pageData: StoreForm, companyId: string }) {
   const { storeFormData } = useStoreContext(); // Use for global theme settings only
   const router = useRouter();
+
+  // Fetch client-side data
+  const { data: testimonialsData } = useSWR(`/api/site/testimonials?id=${companyId}`, fetcher);
+  const { data: faqsData } = useSWR(`/api/site/faqs?id=${companyId}`, fetcher);
 
   // Use pageData for all content
   const siteData = pageData || storeFormData;
@@ -100,8 +112,18 @@ export default function HealthCareSite({ pageData }: { pageData: StoreForm }) {
   // Use state to manage the data passed to components, defaulting to sample data if store data is null/empty
   const servicesData = svcFromStore && svcFromStore.length > 0 ? svcFromStore : sampleServices;
   const doctorsData = docFromStore && docFromStore.length > 0 ? docFromStore : sampleDoctors;
-  const testimonialsData = tFromStore && tFromStore.length > 0 ? tFromStore : sampleTestimonials;
-  const faqsData = faqFromStore && faqFromStore.length > 0 ? faqFromStore : sampleFaqs;
+  const [testimonialsDataState, setTestimonialsDataState] = useState<any[]>(tFromStore && tFromStore.length > 0 ? tFromStore : sampleTestimonials);
+  const [faqsDataState, setFaqsDataState] = useState<any[]>(faqFromStore && faqFromStore.length > 0 ? faqFromStore : sampleFaqs);
+
+  // Update states when data is fetched
+  useEffect(() => {
+    if (testimonialsData?.data) {
+      setTestimonialsDataState(testimonialsData.data);
+    }
+    if (faqsData?.data) {
+      setFaqsDataState(faqsData.data);
+    }
+  }, [testimonialsData, faqsData]);
 
   // Merge default contact info with any provided from storeFormData
   const contactInfoData = {
@@ -132,11 +154,11 @@ export default function HealthCareSite({ pageData }: { pageData: StoreForm }) {
         {/* Doctors Section */}
         <DoctorsSection doctors={doctorsData} storeSlug={slug} />
 
-        {/* Patient Testimonials */}
-        <PatientSection name={name} slug={slug} testimonials={testimonialsData} />
+        {/* Patient Testimonials - Render when data is ready */}
+        {testimonialsData?.data && <PatientSection name={name} slug={slug} testimonials={testimonialsDataState} />}
 
-        {/* FAQs Section */}
-        <FAQsSection name={name} slug={slug} faqs={faqsData} />
+        {/* FAQs Section - Render when data is ready */}
+        {faqsData?.data && <FAQsSection name={name} slug={slug} faqs={faqsDataState} />}
 
         {/* Contact Section */}
         <ContactSection
