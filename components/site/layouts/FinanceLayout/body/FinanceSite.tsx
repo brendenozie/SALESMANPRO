@@ -165,8 +165,8 @@ export default function FinanceSite({ pageData, companyId }: { pageData: StoreFo
   // State initialization: Use the combined siteData for child components
   const [testimonials, setTestimonials] = useState<any[]>(siteData.testimonials);
   const [faqs, setFaqs] = useState<any[]>(siteData.faqs);
-  const [experts, setExperts] = useState<any[]>(siteData.Expert);
-  const [packages, setPackages] = useState<any[]>(siteData.packages);
+  const experts = siteData.Expert || [];
+  const packages = siteData.packages || [];
 
   // useEffect to update states if data is fetched
   useEffect(() => {
@@ -177,14 +177,6 @@ export default function FinanceSite({ pageData, companyId }: { pageData: StoreFo
       setFaqs(faqsData.data);
     }
   }, [testimonialsData, faqsData]);
-
-  // useEffect to update states if storeFormData changes (e.g., from a CMS)
-  useEffect(() => {
-    if (storeFormData && Object.keys(storeFormData).length > 0) {
-      setExperts(storeFormData.Expert || []);
-      setPackages(storeFormData.packages || []);
-    }
-  }, [storeFormData]);
 
   return (
     <div className="min-h-screen relative" style={{ backgroundColor: darkBackground }}>
