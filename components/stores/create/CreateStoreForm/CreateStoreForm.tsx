@@ -891,7 +891,7 @@ const onUpdateTrustLogo = (
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-+|-+$/g, "");
-    setForm((f) => ({ ...f, slug, domain: `https://www.${slug}.salesmanpro.site` }));
+    setForm((f) => ({ ...f, slug, domain: `${slug}.salesmanpro.site` }));
   }, [form.name, initialData]);
 
   // the locations below are for the selection of locations for items like travel and vehicle 

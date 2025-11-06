@@ -192,6 +192,7 @@ export const websiteSteps: StepConfig[] = [
       <BannerLogoAccordion
         logoUrl={f.logoUrl}
         bannerUrl={f.bannerUrl}
+        videoUrl={f.videoUrl}
         onUpload={h.handleMediaUpload}
         onRemove={h.handleMediaRemove}
         coreValues={f.CoreValues} // ← you also need to pass this in!
