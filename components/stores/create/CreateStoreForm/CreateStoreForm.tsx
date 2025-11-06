@@ -1033,15 +1033,28 @@ const onUpdatePaymentSettings = useCallback(
     });
   };
 
+  // const onAddArray = <T,>(key: keyof StoreForm, item: T) => {
+  //   setForm((f) => ({ ...f, [key]: [...(f[key] as any), item] }));
+  // };
+
+  // const onRemoveArray = (key: keyof StoreForm, idx: number) => {
+  //   setForm((f) => ({
+  //     ...f,
+  //     [key]: (f[key] as any).filter((_: any, i: number) => i !== idx),
+  //   }));
+  // };
   const onAddArray = <T,>(key: keyof StoreForm, item: T) => {
-    setForm((f) => ({ ...f, [key]: [...(f[key] as any), item] }));
+    setForm((f) => {
+      const arr = Array.isArray(f[key]) ? (f[key] as T[]) : [];
+      return { ...f, [key]: [...arr, item] };
+    });
   };
 
   const onRemoveArray = (key: keyof StoreForm, idx: number) => {
-    setForm((f) => ({
-      ...f,
-      [key]: (f[key] as any).filter((_: any, i: number) => i !== idx),
-    }));
+    setForm((f) => {
+      const arr = Array.isArray(f[key]) ? (f[key] as any[]) : [];
+      return { ...f, [key]: arr.filter((_, i) => i !== idx) };
+    });
   };
 
   const onToggleDay = (key: string) => {
