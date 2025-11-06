@@ -8,6 +8,7 @@ import React, {
   useMemo,
   useCallback,
   useReducer,
+  useRef,
 } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -329,25 +330,67 @@ export default function CreateStoreForm({
   // ADD THIS useEffect hook to handle category changes
   const [categoryChanged, setCategoryChanged] = useState(false);
 
-  useEffect(() => {
-    // Don't run on initial load or in edit mode
-    if (!categoryChanged || initialData) return;
+  // useEffect(() => {
+  //   // Don't run on initial load or in edit mode
+  //   if (!categoryChanged || initialData) return;
 
-    // Get the sample data for the newly selected category
+  //   // Get the sample data for the newly selected category
+  //   const sampleData = getCategoryDefaultData(form.category);
+
+  //   // Merge the sample data into the form state
+  //   // This preserves basic info like 'name' and 'slug' while updating
+  //   // content arrays like 'faqs', 'heroSlides', etc.
+  //   setForm(prevForm => ({
+  //     ...prevForm,
+  //     ...sampleData,
+  //   }));
+
+  //   // Reset the flag
+  //   setCategoryChanged(false);
+
+  // }, [form.category, categoryChanged, initialData,stepIndex]);
+
+  // ----------------------------------------------------------------
+  // REFACTORED HOOK: This now works without the 'categoryChanged' flag
+  // ----------------------------------------------------------------
+  // Use a ref to track the previous category to detect a *real* change
+  const prevCategoryRef = useRef<string | undefined>(form.category);
+
+  useEffect(() => {
+    // 1. Don't run this logic if we are editing (initialData is present)
+    if (initialData) return;
+
+    // 2. Check if the category has *actually* changed from the previous render.
+    //    This prevents it from running on the initial load.
+    const prevCategory = prevCategoryRef.current;
+    if (prevCategory === form.category) return;
+    
+    // 3. Update the ref for the next render
+    prevCategoryRef.current = form.category;
+
+    console.log(`Loading sample data for new category: ${form.category}`);
+    
+    // 4. Get the sample data
     const sampleData = getCategoryDefaultData(form.category);
 
-    // Merge the sample data into the form state
-    // This preserves basic info like 'name' and 'slug' while updating
-    // content arrays like 'faqs', 'heroSlides', etc.
+    // 5. Merge the sample data into the form state
     setForm(prevForm => ({
       ...prevForm,
       ...sampleData,
+      // CRITICAL: Preserve key fields the user already entered
+      // The sample data should not overwrite these.
+      name: prevForm.name,
+      slug: prevForm.slug,
+      category: form.category, // Ensure we keep the one just selected
+      contactEmail: prevForm.contactEmail, // Already set by session
     }));
 
-    // Reset the flag
-    setCategoryChanged(false);
+  }, [form.category, initialData]); // Only depends on these!
+  // ----------------------------------------------------------------
+  // END OF REFACTORED HOOK
+  // ----------------------------------------------------------------
 
-  }, [form.category, categoryChanged, initialData,stepIndex]);
+
 
   // ─────────────────────────────────────────────────────────────────────
   // 1) File state (logo, banner, hero slides, promotion slides)
