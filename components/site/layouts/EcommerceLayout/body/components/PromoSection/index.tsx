@@ -18,7 +18,7 @@ export default function PromoSection({ promotions }: PromotionsSectionProps) {
   if (!promotions || promotions.length === 0) return null;
 
   // Render a full-width hero banner for a single promotion
-  if (promotions.length === 1) {
+  if (promotions.length >= 1) {
     const promotion = promotions[0];
     return (
       <section className="py-16 bg-gray-50">

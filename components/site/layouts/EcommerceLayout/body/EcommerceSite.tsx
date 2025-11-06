@@ -29,9 +29,8 @@ const DynamicTrending = dynamic(() => import('./components/Trending'), {
 });
 
 const PromoSection = dynamic(() => import('./components/PromoSection'), { loading: () => <SectionSkeleton />, ssr: false });
-const SleepTapeAd = dynamic(() => import('./components/SleepTapeAd'), { loading: () => <SectionSkeleton />, ssr: false });
+const SecondPromoSection = dynamic(() => import('./components/SecondPromoSection'), { loading: () => <SectionSkeleton />, ssr: false });
 const AllProducts = dynamic(() => import('./components/AllProducts'), { loading: () => <SectionSkeleton />, ssr: false });
-const FeaturesSection = dynamic(() => import('./components/FeaturesSection'), { loading: () => <SectionSkeleton />, ssr: false });
 const MetricsSection = dynamic(() => import('@/components/site/MetricsSection'), { loading: () => <SectionSkeleton />, ssr: false });
 const AwardsSection = dynamic(() => import('@/components/site/AwardsSection'), { loading: () => <SectionSkeleton />, ssr: false });
 const TestimonialsSection = dynamic(() => import('@/components/site/TestimonialsSection/TestimonialsSection'), { loading: () => <SectionSkeleton />, ssr: false });
@@ -76,9 +75,8 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
       <PromoSection promotions={promotions} />
       <DynamicTrending id={id} />
       <DynamicDailyBestSells id={id} />
-      <SleepTapeAd bannerUrl={bannerUrl} themeSettings={themeSettings} />
+      <SecondPromoSection promotions={promotions} />
       <AllProducts id={id} marketplaceListings={featured} themeSettings={themeSettings} />
-      <FeaturesSection />
       <MetricsSection coreValues={CoreValues} />
       <AwardsSection awards={awards} />
       {testimonialsData?.data && <TestimonialsSection testimonials={testimonialsData.data} />}
