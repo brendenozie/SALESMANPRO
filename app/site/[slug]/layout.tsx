@@ -8,7 +8,7 @@ import categoryHeaderFooterLayoutMap from '@/components/site/layouts/categoryHea
 import { transformCompanyToStoreForm } from '@/utils/transformPrismaToStoreForm';
 import LoadingSpinner from '@/components/site/LoadingSpinner';
 import { SITE_CATEGORIES } from '@/utils/sitedata';
-import { findCompany, leanShellInclude } from '@/lib/company-fetcher';
+import { findCompanyCached, leanShellInclude } from '@/lib/company-fetcher';
 
 // Cache for ISR (60 seconds)
 export const revalidate = 60;
@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const requestedSubdomain = hdrs.get('x-requested-subdomain');
 
   // Request only data needed for shell & SEO. The cached `findCompany` is used.
-  let company = await findCompany(slug, requestedHost, requestedSubdomain, leanShellInclude());
+  let company = await findCompanyCached(slug, requestedHost, requestedSubdomain, leanShellInclude());
 
   if (!company) {
     return { title: 'Store not found' };
@@ -65,7 +65,7 @@ export default async function StoreLayout({ params, children }: StoreLayoutProps
   const requestedSubdomain = hdrs.get('x-requested-subdomain');
 
   // This call will be de-duplicated by React.cache, hitting the cache instead of the DB again.
-  const raw = await findCompany(slug, requestedHost, requestedSubdomain, leanShellInclude());
+  const raw = await findCompanyCached(slug, requestedHost, requestedSubdomain, leanShellInclude());
   if (!raw) {
     console.log('Store layout: Company not found for', slug, requestedHost, requestedSubdomain);
     notFound();

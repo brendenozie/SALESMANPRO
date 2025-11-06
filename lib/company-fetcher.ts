@@ -1,40 +1,40 @@
+// company-fetcher.ts
 import 'server-only';
-import { unstable_cache } from 'next/cache';
+import { unstable_cache, revalidateTag } from 'next/cache';
 import prisma from '@/server/db/prismadb';
 
 /**
  * -----------------------------------------------------
- * 🔍 Cached, Reusable Company Finder
+ * 🔍 Base Company Finder (no caching)
  * -----------------------------------------------------
- * Using `unstable_cache` to de-duplicate data fetches across a single request.
- * Any call to `findCompany` with the same arguments in a single request
- * will hit the cache instead of the database.
  */
-const findCompanyFn = async (
+async function findCompanyFn(
   slug: string,
   requestedHost?: string | null,
   requestedSubdomain?: string | null,
   include?: any
-) => {
+) {
   let company = null;
 
-  // 1. Lookup by custom domain
+  // 1️⃣ Lookup by custom domain
   if (requestedHost) {
-    const normalizedHost = requestedHost.replace(/^www\./, '').toLowerCase();
+    const normalizedHost = requestedHost
+      .replace(/^https?:\/\//, '')
+      .replace(/^www\./, '')
+      .toLowerCase();
+
     company = await prisma.company.findFirst({
       where: {
         OR: [
           { domain: normalizedHost },
           { domain: `www.${normalizedHost}` },
-          { domain: `https://${normalizedHost}` },
-          { domain: `https://www.${normalizedHost}` },
         ],
       },
       include,
     });
   }
 
-  // 2. Lookup by subdomain
+  // 2️⃣ Lookup by subdomain
   if (!company && requestedSubdomain) {
     company = await prisma.company.findFirst({
       where: { slug: requestedSubdomain },
@@ -42,7 +42,7 @@ const findCompanyFn = async (
     });
   }
 
-  // 3. Fallback to slug
+  // 3️⃣ Fallback to slug
   if (!company) {
     company = await prisma.company.findFirst({
       where: { slug },
@@ -51,18 +51,48 @@ const findCompanyFn = async (
   }
 
   return company;
-};
+}
 
-// Wrap the function with unstable_cache
-export const findCompany = unstable_cache(
-  findCompanyFn,
-  ['company-details'], // A unique key part for this cache
-  {
-    // You can add revalidation tags if you use on-demand revalidation
-    // tags: ['companies'], 
-  }
-);
+/**
+ * -----------------------------------------------------
+ * 🧩 Tenant-aware Cached Fetcher
+ * -----------------------------------------------------
+ * This builds a unique cache key per tenant (slug, host, subdomain)
+ * while still using revalidation tags for instant invalidation.
+ */
+export async function findCompanyCached(
+  slug: string,
+  requestedHost?: string | null,
+  requestedSubdomain?: string | null,
+  include?: any
+) {
+  // 🪄 Build a stable, tenant-specific cache key
+  const key = [
+    'company-details',
+    slug ?? 'none',
+    requestedHost ?? 'none',
+    requestedSubdomain ?? 'none',
+  ].join(':');
 
+  // ⚙️ Create a cached version of the base fetcher
+  const cachedFetcher = unstable_cache(findCompanyFn, [key], {
+    tags: [`company:${slug}`], // tag for bulk + per-tenant revalidation
+    revalidate: false, // disable auto revalidation; we'll use tag invalidation instead
+  });
+
+  return cachedFetcher(slug, requestedHost, requestedSubdomain, include);
+}
+
+/**
+ * -----------------------------------------------------
+ * ♻️ Revalidation helper (for admin use)
+ * -----------------------------------------------------
+ * Call this after updating a company's data in the admin panel.
+ */
+export async function revalidateCompanyCache(slug: string) {
+  revalidateTag('companies');      // invalidate all companies
+  revalidateTag(`company:${slug}`); // invalidate this specific company
+}
 
 /**
  * -----------------------------------------------------

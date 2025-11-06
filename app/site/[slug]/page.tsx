@@ -3,7 +3,7 @@
 import { notFound } from 'next/navigation';
 import { headers } from 'next/headers';
 import { transformCompanyToStoreForm } from '@/utils/transformPrismaToStoreForm';
-import { findCompany, pageDataInclude } from '@/lib/company-fetcher';
+import { findCompanyCached, pageDataInclude } from '@/lib/company-fetcher';
 import { getComponentNameForCategory } from '@/components/site/layouts/siteBodyComponentMap';
 import { BodyComponentMap } from '@/components/site/BodyComponentMap';
 
@@ -20,7 +20,7 @@ export default async function StorePage({ params }: StorePageProps) {
   // --- 1. Use the cached findCompany function ---
   // This call uses the same cache as the layout but requests more data.
   // Next.js is smart enough to merge the data requirements and only make one DB call.
-  const raw = await findCompany(slug, requestedHost, requestedSubdomain, pageDataInclude());
+  const raw = await findCompanyCached(slug, requestedHost, requestedSubdomain, pageDataInclude());
 
   if (!raw) {
     console.log("Store page: Company not found for", slug, "or host", requestedHost, "or subdomain", requestedSubdomain);
