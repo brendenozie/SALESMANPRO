@@ -75,6 +75,7 @@ export enum SocialChannel {
   INSTAGRAM,
   FACEBOOK,
   LINKEDIN,
+  YOUTUBE,
 }
 
 export enum PolicyType {
