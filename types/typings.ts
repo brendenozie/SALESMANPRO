@@ -189,32 +189,32 @@ export interface IPromotion {
   id?: string;
   companyId: string;
 
-  code?: string | null;
+  code?: string | null | undefined;
   title: string;
-  description?: string | null;
+  description?: string | null | undefined;
 
-  startsAt?: Date | string | null;
-  endsAt?: Date | string | null;
+  startsAt?: Date | string | null | undefined;
+  endsAt?: Date | string | null | undefined;
 
-  ctaText?: string | null;
-  ctaLink?: string | null;
-  bannerUrl?: string | null;
+  ctaText?: string | null | undefined;
+  ctaLink?: string | null | undefined;
+  bannerUrl?: string | null | undefined;
 
-  featureImage1?: string | null;
-  featureImage2?: string | null;
-  featureImage3?: string | null;
+  featureImage1?: string | null | undefined;
+  featureImage2?: string | null | undefined;
+  featureImage3?: string | null | undefined;
 
-  badgeText?: string | null;
-  price?: string | null;
+  badgeText?: string | null | undefined;
+  price?: string | null | undefined;
 
   perks: { id:string; icon: string; label: string }[];
   trustLogos: { id:string; url: string }[];
 
-  themePrimary?: string | null;
-  themeSecondary?: string | null;
+  themePrimary?: string | null | undefined;
+  themeSecondary?: string | null | undefined;
 
-  createdAt?: Date | string;
-  updatedAt?: Date | string;
+  createdAt?: Date | string | null | undefined;
+  updatedAt?: Date | string | null | undefined;
 }
 
 // export interface Award {

@@ -1,12 +1,12 @@
-import React, { useRef, ChangeEvent } from "react";
-import imageCompression from "browser-image-compression"; // Import the library
+import React, { useRef, ChangeEvent, useState } from "react";
+import imageCompression from "browser-image-compression";
 import {
   PhotoIcon,
   PencilIcon,
   TrashIcon,
   PlusCircleIcon,
-  PlayCircleIcon,
   FilmIcon,
+  ArrowPathIcon, // Added for loading state
 } from "@heroicons/react/24/outline";
 import { motion } from "framer-motion";
 import { ICoreValue } from "@/types/typings";
@@ -42,6 +42,9 @@ export default function BannerLogoAccordion({
   const bannerInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
 
+  // 1. NEW STATE: Manage compression status for visual feedback
+  const [isCompressing, setIsCompressing] = useState<boolean>(false);
+
   // Make the function async to await compression
   const handleFileChange = async (
     field: "logoUrl" | "bannerUrl" | "videoUrl",
@@ -52,15 +55,22 @@ export default function BannerLogoAccordion({
 
     // Define size limits
     const VIDEO_MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
-    const IMAGE_MAX_SIZE_MB = 0.48; // ~480KB, to ensure it's under 500KB
+    const IMAGE_MAX_SIZE_MB = 0.48; // ~480KB
 
     if (field === "logoUrl" || field === "bannerUrl") {
+      // Start loading state
+      setIsCompressing(true);
+
+      // Define optimal resolution based on field for better visual quality
+      // Logos need less resolution than banners
+      const maxWidth = field === "logoUrl" ? 500 : 1600; 
+
       // --- Image Compression Logic ---
       console.log(`Original image size: ${(file.size / 1024).toFixed(2)} KB`);
 
       const options = {
         maxSizeMB: IMAGE_MAX_SIZE_MB,
-        maxWidthOrHeight: 1920, // Keep quality
+        maxWidthOrHeight: maxWidth, 
         useWebWorker: true,
       };
 
@@ -76,7 +86,10 @@ export default function BannerLogoAccordion({
       } catch (error) {
         console.error("Image compression failed:", error);
         alert("Image compression failed. Please try another file.");
-        e.target.value = ""; // Clear input
+      } finally {
+        // Stop loading state and clear input regardless of success/fail
+        setIsCompressing(false);
+        e.target.value = ""; 
       }
     } else if (field === "videoUrl") {
       // --- Video Validation Logic (no compression) ---
@@ -90,6 +103,8 @@ export default function BannerLogoAccordion({
     }
   };
 
+  const commonButtonClasses = "px-4 py-2 rounded-xl flex items-center gap-2 shadow transition disabled:opacity-50 disabled:cursor-wait";
+
   return (
     <section className="max-w-5xl mx-auto px-4 py-8 space-y-10">
       <motion.h2
@@ -100,12 +115,22 @@ export default function BannerLogoAccordion({
         Company Media & Values
       </motion.h2>
 
-      {/* Logo Upload */}
+      {/* 🛑 Visual Feedback Overlay for Compression */}
+      {isCompressing && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-xl shadow-2xl flex items-center space-x-3">
+            <ArrowPathIcon className="w-6 h-6 text-indigo-600 animate-spin" />
+            <p className="text-lg font-medium text-gray-800">Compressing Image for Optimal Performance...</p>
+          </div>
+        </div>
+      )}
+      {/* 🛑 END Visual Feedback Overlay */}
+
+      {/* --- Logo Upload --- */}
       <motion.div
         whileHover={{ scale: 1.02 }}
         className="bg-white/70 backdrop-blur-lg rounded-2xl shadow-md p-6 flex items-center gap-6 transition"
       >
-        {/* ... (Logo preview) ... */}
         <div className="w-28 h-28 bg-gray-100 rounded-2xl overflow-hidden flex items-center justify-center shadow-inner">
           {logoUrl ? (
             <img
@@ -120,11 +145,11 @@ export default function BannerLogoAccordion({
         
         <div className="flex-1 space-y-3">
           <p className="font-semibold text-gray-700">Company Logo</p>
-          {/* ... (Buttons) ... */}
           <div className="flex gap-3">
             <button
               onClick={() => logoInputRef.current?.click()}
-              className="px-4 py-2 rounded-xl bg-indigo-600 text-white flex items-center gap-2 hover:bg-indigo-700 shadow transition"
+              className={`${commonButtonClasses} bg-indigo-600 text-white hover:bg-indigo-700`}
+              disabled={isCompressing} // Disabled when compressing
             >
               <PencilIcon className="w-5 h-5" />
               {logoUrl ? "Change" : "Upload"}
@@ -132,7 +157,8 @@ export default function BannerLogoAccordion({
             {logoUrl && (
               <button
                 onClick={() => onRemove("logoUrl")}
-                className="px-4 py-2 rounded-xl bg-red-100 text-red-600 flex items-center gap-2 hover:bg-red-200 shadow transition"
+                className={`${commonButtonClasses} bg-red-100 text-red-600 hover:bg-red-200`}
+                disabled={isCompressing} // Disabled when compressing
               >
                 <TrashIcon className="w-5 h-5" />
                 Remove
@@ -143,7 +169,7 @@ export default function BannerLogoAccordion({
             PNG/JPG, Rec. 200×200px.
             <span className="font-medium">
               {" "}
-              Large images compressed to &lt; 500KB.
+              Images are automatically compressed.
             </span>
           </p>
         </div>
@@ -156,16 +182,15 @@ export default function BannerLogoAccordion({
         />
       </motion.div>
 
-      {/* Banner Upload */}
+      {/* --- Banner Upload --- */}
       <motion.div
         whileHover={{ scale: 1.01 }}
         className="bg-white/70 backdrop-blur-lg rounded-2xl shadow-md p-6 space-y-3"
       >
         <p className="font-semibold text-gray-700">Company Banner</p>
-        {/* ... (Banner preview and buttons) ... */}
         <div
           className="relative w-full h-56 bg-gray-100 rounded-xl overflow-hidden flex items-center justify-center cursor-pointer group"
-          onClick={() => bannerInputRef.current?.click()}
+          onClick={() => !isCompressing && bannerInputRef.current?.click()} // Prevent click when compressing
         >
           {bannerUrl ? (
             <img
@@ -185,9 +210,10 @@ export default function BannerLogoAccordion({
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  bannerInputRef.current?.click();
+                  !isCompressing && bannerInputRef.current?.click(); // Prevent click when compressing
                 }}
                 className="p-2 bg-white/80 rounded-full shadow hover:bg-white transition"
+                disabled={isCompressing}
               >
                 <PencilIcon className="w-5 h-5 text-gray-700" />
               </button>
@@ -197,6 +223,7 @@ export default function BannerLogoAccordion({
                   onRemove("bannerUrl");
                 }}
                 className="p-2 bg-white/80 rounded-full shadow hover:bg-red-100 transition"
+                disabled={isCompressing}
               >
                 <TrashIcon className="w-5 h-5 text-red-600" />
               </button>
@@ -208,7 +235,7 @@ export default function BannerLogoAccordion({
           Rec. 1200×300px.
           <span className="font-medium">
             {" "}
-            Large images compressed to &lt; 500KB.
+            Images are automatically compressed.
           </span>
         </p>
         <input
@@ -220,16 +247,15 @@ export default function BannerLogoAccordion({
         />
       </motion.div>
 
-      {/* Video Upload */}
+      {/* --- Video Upload --- */}
       <motion.div
         whileHover={{ scale: 1.01 }}
         className="bg-white/70 backdrop-blur-lg rounded-2xl shadow-md p-6 space-y-3"
       >
         <p className="font-semibold text-gray-700">Company Intro Video</p>
-        {/* ... (Video preview and buttons) ... */}
         <div
           className="relative w-full h-64 bg-gray-100 rounded-xl overflow-hidden flex items-center justify-center cursor-pointer group"
-          onClick={() => videoInputRef.current?.click()}
+          onClick={() => !isCompressing && videoInputRef.current?.click()}
         >
           {videoUrl ? (
             <video
@@ -249,9 +275,10 @@ export default function BannerLogoAccordion({
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  videoInputRef.current?.click();
+                  !isCompressing && videoInputRef.current?.click();
                 }}
                 className="p-2 bg-white/80 rounded-full shadow hover:bg-white transition"
+                disabled={isCompressing}
               >
                 <PencilIcon className="w-5 h-5 text-gray-700" />
               </button>
@@ -261,6 +288,7 @@ export default function BannerLogoAccordion({
                   onRemove("videoUrl");
                 }}
                 className="p-2 bg-white/80 rounded-full shadow hover:bg-red-100 transition"
+                disabled={isCompressing}
               >
                 <TrashIcon className="w-5 h-5 text-red-600" />
               </button>
@@ -269,7 +297,7 @@ export default function BannerLogoAccordion({
         </div>
         <p className="text-xs text-gray-500">
           Recommended format: <span className="font-medium">MP4, MOV</span> —
-          under 5MB
+          under 5MB (no compression applied)
         </p>
         <input
           ref={videoInputRef}
@@ -280,13 +308,12 @@ export default function BannerLogoAccordion({
         />
       </motion.div>
 
-      {/* Core Values */}
+      {/* --- Core Values --- */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         className="bg-white/70 backdrop-blur-lg rounded-2xl shadow-md p-6 space-y-6"
       >
-        {/* ... (Core values content) ... */}
         <div className="flex justify-between items-center">
           <p className="font-semibold text-gray-700">Core Values</p>
           <button
