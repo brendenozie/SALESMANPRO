@@ -1647,7 +1647,7 @@ const handleSubmit = async (e: FormEvent) => {
     </motion.aside>
 
     {/* Main Content - CLASS ADJUSTMENT MADE */}
-    <main className="flex-1 flex flex-col px-2 sm:px-2 py-6 relative">
+    <main className="flex-1 flex flex-col py-6 relative">
       
       {/* Progress Bar & Step Info - ANIMATED WRAPPER */}
       <motion.div
@@ -1693,7 +1693,7 @@ const handleSubmit = async (e: FormEvent) => {
       </motion.div>
 
       {/* Step Content */}
-      <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-6 flex-1 overflow-auto min-h-[60vh]">
+      <div className="bg-white flex-1 overflow-auto min-h-[60vh]">
         {StepContent}
       </div>
 

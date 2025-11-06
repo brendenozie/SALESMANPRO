@@ -270,6 +270,17 @@ const PreviewSkeleton = () => (
 // ); 
 // --- END DUMMY ---
 
+// import React, { useState, useMemo, useEffect, ChangeEvent } from 'react';
+// Assuming you have these imports for types, data, and components
+// import { CategorySelectProps, SITE_CATEGORIES } from 'your-data-source'; 
+// import PreviewModal from './PreviewModal'; 
+// import { motion, AnimatePresence } from 'framer-motion';
+// import { MagnifyingGlassIcon, SparklesIcon, InformationCircleIcon, ChevronRightIcon, EyeIcon } from '@heroicons/react/24/outline'; 
+
+// NOTE: I am assuming your SITE_CATEGORIES, CategorySelectProps, 
+// PreviewModal, and icon imports are correctly set up.
+// I've kept the logic (useEffect, useMemo, handlers) identical as requested.
+
 export default function CategoryStep({
   category,
   variant,
@@ -324,52 +335,56 @@ export default function CategoryStep({
   return (
     <>
       <section 
-        // INCREASED MAX-WIDTH to better accommodate the card layout on desktop
-        className="mx-auto p-6 max-w-4xl" 
+        // Mobile-friendly full width, larger desktop max-width
+        className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto" 
         role="region" 
         aria-label="Template and Category Selection"
       >
-        <div className="bg-white rounded-3xl shadow-2xl p-8 lg:p-10 border border-gray-100"> 
+        <div className="bg-white rounded-3xl shadow-2xl p-4 sm:p-6 lg:p-10 border border-gray-100"> 
           
-          {/* Header - ENHANCED for punchier headline */}
-          <header className="mb-8 text-center">
+          {/* Header - Bolder headline and clear instruction */}
+          <header className="mb-6 text-center">
             <motion.h2 
               initial={{ y: -20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ duration: 0.5 }}
-              className="text-4xl font-extrabold text-gray-900 flex items-center justify-center gap-3"
+              className="text-3xl sm:text-4xl font-extrabold text-gray-900 flex flex-col sm:flex-row items-center justify-center gap-2"
             >
-              <SparklesIcon className="h-8 w-8 text-indigo-500" />
+              <SparklesIcon className="h-7 w-7 text-indigo-500 flex-shrink-0" />
               Choose Your <span className="text-indigo-600">Perfect Template</span>
             </motion.h2>
-            <p className="mt-3 text-lg text-gray-600 flex items-center justify-center">
+            <p className="mt-2 text-md sm:text-lg text-gray-600 flex items-center justify-center">
               <InformationCircleIcon className="h-5 w-5 text-indigo-500 mr-2 flex-shrink-0" />
-              First, pick your business category. Then, select a variant.
+              Step 1: Pick your category. Step 2: Select a template variant.
             </p>
           </header>
 
-          {/* Search - Slight border improvement and focus ring */}
-          <div className="mb-6 relative">
-            <MagnifyingGlassIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search categories..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              aria-label="Search categories" 
-              // INCREASED padding and roundedness, SLIGHTLY softer shadow
-              className="w-full pl-12 pr-6 py-3 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition shadow-inner shadow-gray-100/50" 
-            />
+          {/* Sticky Search and Category Header for mobile - BETTER UX */}
+          <div className="sticky top-0 z-10 bg-white pt-2 pb-4 border-b border-gray-200">
+            {/* Search - Visually clean and accessible */}
+            <div className="mb-4 relative">
+              <MagnifyingGlassIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search categories..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                aria-label="Search categories" 
+                className="w-full pl-12 pr-6 py-3 border-2 border-gray-200 rounded-xl focus:ring-4 focus:ring-indigo-100 focus:border-indigo-500 transition shadow-lg shadow-gray-100/50" 
+              />
+            </div>
+            
+            <h3 className="text-lg sm:text-xl font-bold text-gray-800 flex justify-between items-center">
+              Business Categories 
+              <span className="text-indigo-600 font-semibold text-sm bg-indigo-100 px-3 py-1 rounded-full">
+                {filteredCategories.length} Available
+              </span>
+            </h3>
           </div>
           
-          <h3 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2">
-            Categories ({filteredCategories.length})
-          </h3>
-
-          {/* Category List - UI Refinements */}
+          {/* Category List - Mobile-first grid (2 columns) */}
           <div 
-            // Increased grid columns for larger screens
-            className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-5 gap-4  overflow-y-auto pr-2 custom-scrollbar" 
+            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mt-4" 
             role="radiogroup"
             aria-label="Site categories"
           >
@@ -378,23 +393,25 @@ export default function CategoryStep({
               return (
                 <motion.button
                   key={cat.name}
-                  whileHover={{ scale: 1.05, boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)" }} // More prominent hover shadow
-                  whileTap={{ scale: 0.95 }} // More noticeable tap effect
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.3, type: "spring", stiffness: 300 }}
+                  whileHover={{ scale: 1.05, boxShadow: "0 10px 20px rgba(99, 102, 241, 0.4)" }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() =>
                     handleVariantSelect(cat.name, cat.variants[0].name)
                   }
                   role="radio"
                   aria-checked={isSelected}
                   tabIndex={isSelected ? 0 : -1} 
-                  className={`flex flex-col items-center justify-center p-4 h-32 text-sm rounded-2xl border-2 transition duration-300 ease-in-out font-semibold ${ // Slightly taller, rounder, longer transition
+                  className={`flex flex-col items-center justify-center p-3 sm:p-4 h-28 sm:h-36 text-sm rounded-2xl border-2 transition duration-300 ease-in-out font-semibold text-center leading-tight ${
                     isSelected
-                      // Darker blue for punchier selection, stronger ring
-                      ? "bg-indigo-700 border-indigo-800 text-white shadow-xl ring-4 ring-indigo-400/70" 
+                      ? "bg-indigo-600 border-indigo-700 text-white shadow-xl ring-4 ring-indigo-300" 
                       : "bg-gray-50 border-gray-100 text-gray-700 hover:bg-indigo-50 hover:border-indigo-300 focus:outline-none focus:ring-4 focus:ring-indigo-500/50"
                   }`}
                 >
-                  <span className="text-4xl mb-1 transition duration-300">{cat.icon}</span> {/* Larger icon */}
-                  <span className="text-center mt-1">{cat.name}</span>
+                  <span className="text-3xl sm:text-5xl mb-1 transition duration-300">{cat.icon}</span> 
+                  <span className="mt-1 text-xs sm:text-sm">{cat.name}</span>
                 </motion.button>
               );
             })}
@@ -405,22 +422,21 @@ export default function CategoryStep({
             {selectedCategory && (
               <motion.div
                 key="variant-selector"
-                initial={{ opacity: 0, y: 20 }} // Starts lower
+                initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }} // Exits upwards
-                transition={{ duration: 0.4 }}
-                // Separated the variant section with a distinct background
-                className="p-6 bg-indigo-50 rounded-2xl shadow-inner border border-indigo-200 mt-8" 
+                exit={{ opacity: 0, y: -30 }}
+                transition={{ duration: 0.5, type: "spring", stiffness: 100 }}
+                className="p-4 sm:p-6 bg-indigo-50 rounded-2xl shadow-inner border border-indigo-200 mt-8" 
               >
                 <h3 className="text-xl font-bold text-indigo-800 mb-4 flex items-center">
-                  <ChevronRightIcon className="h-6 w-6 mr-2 text-indigo-600" />
-                  Template Variants for {selectedCategory.name}:
+                  <ChevronRightIcon className="h-6 w-6 mr-2 text-indigo-600 flex-shrink-0" />
+                  Template Variants for <span className='text-indigo-900 ml-1'>{selectedCategory.name}</span>:
                 </h3>
                 
-                {/* Variant selection list - UI Refinements */}
+                {/* Variant selection list - Horizontal Scroll, full bleed on mobile */}
                 <div 
-                  // Added space-x-4
-                  className="flex space-x-4 overflow-x-auto pb-3 -mx-6 px-6 custom-scrollbar-horizontal" 
+                  // Use negative margin/padding for full-bleed horizontal scroll on mobile
+                  className="flex space-x-3 sm:space-x-4 overflow-x-auto pb-4 -mx-4 px-4 sm:mx-0 sm:px-0 custom-scrollbar-horizontal" 
                   role="radiogroup"
                   aria-label="Template variants for selected category"
                 >
@@ -442,15 +458,14 @@ export default function CategoryStep({
                         onClick={() =>
                           handleVariantSelect(selectedCategory.name, variantl.name)
                         }
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
                         role="radio"
                         aria-checked={isVariantSelected}
                         tabIndex={isVariantSelected ? 0 : -1} 
-                        className={`group flex-shrink-0 px-5 py-2.5 text-base rounded-full font-medium transition duration-200 whitespace-nowrap border-2 ${ // Slightly larger text, more padding
+                        className={`group flex-shrink-0 px-4 sm:px-5 py-2 text-sm sm:text-base rounded-full font-medium transition duration-200 whitespace-nowrap border-2 ${
                           isVariantSelected
-                            ? "bg-indigo-600 text-white border-indigo-700 shadow-lg ring-4 ring-indigo-400 focus:outline-none"
-                            // Softer default background, stronger hover
+                            ? "bg-indigo-600 text-white border-indigo-700 shadow-xl ring-4 ring-indigo-400 focus:outline-none"
                             : "bg-white text-gray-800 border-indigo-200 hover:bg-indigo-100 hover:text-indigo-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         }`}
                       >
@@ -459,7 +474,6 @@ export default function CategoryStep({
                           <span
                             className={`ml-2 px-2 py-0.5 text-xs font-bold rounded-full transition duration-200 ${
                               isVariantSelected 
-                                // Tag is slightly dimmed when selected for contrast
                                 ? "bg-white/30 text-white" 
                                 : `${tagBg} ${tagColor}`
                             }`}
@@ -472,24 +486,24 @@ export default function CategoryStep({
                   })}
                 </div>
 
-                {/* Description and Preview - Combined and styled as a card */}
+                {/* Description and Preview - Stacked on Mobile */}
                 {selectedTemplate && (
                   <motion.div 
                     initial={{ opacity: 0, y: 10 }} 
                     animate={{ opacity: 1, y: 0 }} 
                     transition={{ delay: 0.1 }}
-                    className="mt-6 p-4 bg-white rounded-xl shadow-md flex items-center justify-between border border-gray-200"
+                    className="mt-6 p-4 bg-white rounded-xl shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border border-gray-200"
                   >
-                    <p className="text-sm text-gray-700 max-w-md">
+                    <p className="text-sm text-gray-700">
                       <strong className="text-indigo-600">Variant Focus:</strong> {selectedTemplate.description}
                     </p>
                     
-                    {/* Preview Button - Consistent look and feel */}
+                    {/* Preview Button - Full width on mobile, consistent style */}
                     <motion.button
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       onClick={handlePreviewClick}
-                      className="flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white shadow-xl transition hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-indigo-50"
+                      className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-xl transition hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-indigo-50"
                     >
                       <EyeIcon className="h-5 w-5" />
                       View Live Preview
