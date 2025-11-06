@@ -37,7 +37,7 @@ const SITE_CATEGORIES: Category[] = [
     name: "E-commerce", 
     icon: "🛒", 
     variants: [
-      { name: "Modern Shop (v1)", link: "https://my-duka.salesmanpro.site", description: "Sleek design for apparel and accessories.", tag: 'Popular' },
+      { name: "Modern Shop (v1)", link: "https://duka-yangu.salesmanpro.site", description: "Sleek design for apparel and accessories.", tag: 'Popular' },
       { name: "Digital Goods Store (v2)", link: "https://digital-shop.salesmanpro.site", description: "Optimized for selling software and courses.", tag: 'New' },
       { name: "Artisan Marketplace (v3)", link: "https://artisan-shop.salesmanpro.site", description: "Focuses on handcrafted and unique items.", tag: 'Standard' },
     ]

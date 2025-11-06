@@ -1,4 +1,5 @@
 import React, { useRef, ChangeEvent } from "react";
+import imageCompression from "browser-image-compression"; // Import the library
 import {
   PhotoIcon,
   PencilIcon,
@@ -41,12 +42,52 @@ export default function BannerLogoAccordion({
   const bannerInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileChange = (
+  // Make the function async to await compression
+  const handleFileChange = async (
     field: "logoUrl" | "bannerUrl" | "videoUrl",
     e: ChangeEvent<HTMLInputElement>
   ) => {
     const file = e.target.files?.[0];
-    if (file) onUpload(field, file);
+    if (!file) return;
+
+    // Define size limits
+    const VIDEO_MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
+    const IMAGE_MAX_SIZE_MB = 0.48; // ~480KB, to ensure it's under 500KB
+
+    if (field === "logoUrl" || field === "bannerUrl") {
+      // --- Image Compression Logic ---
+      console.log(`Original image size: ${(file.size / 1024).toFixed(2)} KB`);
+
+      const options = {
+        maxSizeMB: IMAGE_MAX_SIZE_MB,
+        maxWidthOrHeight: 1920, // Keep quality
+        useWebWorker: true,
+      };
+
+      try {
+        // This will compress the file, or return it if it's already small
+        const compressedFile = await imageCompression(file, options);
+        console.log(
+          `Compressed image size: ${(compressedFile.size / 1024).toFixed(2)} KB`
+        );
+        
+        // Pass the *compressed* file to the onUpload handler
+        onUpload(field, compressedFile);
+      } catch (error) {
+        console.error("Image compression failed:", error);
+        alert("Image compression failed. Please try another file.");
+        e.target.value = ""; // Clear input
+      }
+    } else if (field === "videoUrl") {
+      // --- Video Validation Logic (no compression) ---
+      if (file.size > VIDEO_MAX_SIZE_BYTES) {
+        alert("Video file must be less than 5MB.");
+        e.target.value = ""; // Clear input
+      } else {
+        // Pass the valid video file
+        onUpload(field, file);
+      }
+    }
   };
 
   return (
@@ -64,6 +105,7 @@ export default function BannerLogoAccordion({
         whileHover={{ scale: 1.02 }}
         className="bg-white/70 backdrop-blur-lg rounded-2xl shadow-md p-6 flex items-center gap-6 transition"
       >
+        {/* ... (Logo preview) ... */}
         <div className="w-28 h-28 bg-gray-100 rounded-2xl overflow-hidden flex items-center justify-center shadow-inner">
           {logoUrl ? (
             <img
@@ -75,8 +117,10 @@ export default function BannerLogoAccordion({
             <PhotoIcon className="w-12 h-12 text-gray-300" />
           )}
         </div>
+        
         <div className="flex-1 space-y-3">
           <p className="font-semibold text-gray-700">Company Logo</p>
+          {/* ... (Buttons) ... */}
           <div className="flex gap-3">
             <button
               onClick={() => logoInputRef.current?.click()}
@@ -96,7 +140,11 @@ export default function BannerLogoAccordion({
             )}
           </div>
           <p className="text-xs text-gray-500">
-            Recommended size: <span className="font-medium">200×200px</span> PNG/JPG
+            PNG/JPG, Rec. 200×200px.
+            <span className="font-medium">
+              {" "}
+              Large images compressed to &lt; 500KB.
+            </span>
           </p>
         </div>
         <input
@@ -114,6 +162,7 @@ export default function BannerLogoAccordion({
         className="bg-white/70 backdrop-blur-lg rounded-2xl shadow-md p-6 space-y-3"
       >
         <p className="font-semibold text-gray-700">Company Banner</p>
+        {/* ... (Banner preview and buttons) ... */}
         <div
           className="relative w-full h-56 bg-gray-100 rounded-xl overflow-hidden flex items-center justify-center cursor-pointer group"
           onClick={() => bannerInputRef.current?.click()}
@@ -154,8 +203,13 @@ export default function BannerLogoAccordion({
             </div>
           )}
         </div>
+        
         <p className="text-xs text-gray-500">
-          Recommendation: <span className="font-medium">1200×300px</span> for best display
+          Rec. 1200×300px.
+          <span className="font-medium">
+            {" "}
+            Large images compressed to &lt; 500KB.
+          </span>
         </p>
         <input
           ref={bannerInputRef}
@@ -172,6 +226,7 @@ export default function BannerLogoAccordion({
         className="bg-white/70 backdrop-blur-lg rounded-2xl shadow-md p-6 space-y-3"
       >
         <p className="font-semibold text-gray-700">Company Intro Video</p>
+        {/* ... (Video preview and buttons) ... */}
         <div
           className="relative w-full h-64 bg-gray-100 rounded-xl overflow-hidden flex items-center justify-center cursor-pointer group"
           onClick={() => videoInputRef.current?.click()}
@@ -213,7 +268,8 @@ export default function BannerLogoAccordion({
           )}
         </div>
         <p className="text-xs text-gray-500">
-          Recommended format: <span className="font-medium">MP4, MOV</span> — under 1MB
+          Recommended format: <span className="font-medium">MP4, MOV</span> —
+          under 5MB
         </p>
         <input
           ref={videoInputRef}
@@ -230,6 +286,7 @@ export default function BannerLogoAccordion({
         animate={{ opacity: 1 }}
         className="bg-white/70 backdrop-blur-lg rounded-2xl shadow-md p-6 space-y-6"
       >
+        {/* ... (Core values content) ... */}
         <div className="flex justify-between items-center">
           <p className="font-semibold text-gray-700">Core Values</p>
           <button

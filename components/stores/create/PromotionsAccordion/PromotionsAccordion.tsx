@@ -8,6 +8,7 @@ import {
   TagIcon,
 } from '@heroicons/react/24/outline';
 import clsx from 'clsx';
+import imageCompression from 'browser-image-compression'; // Import the library
 import { IPromotion } from '@/types/typings';
 import { PerksAndTrustSection } from './PromotionsPerksSection';
 
@@ -393,10 +394,36 @@ interface ImageUploadFieldProps {
 const ImageUploadField: React.FC<ImageUploadFieldProps> = ({ label, src, onFile }) => {
   const inputId = `file-input-${label.replace(/\s+/g, '-').toLowerCase()}`;
   
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+  // UPDATED: Now async and handles compression
+  const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) onFile(file);
-    e.target.value = ''; // Reset input to allow re-uploading the same file
+    if (!file) return;
+
+    // --- Image Compression Logic ---
+    const IMAGE_MAX_SIZE_MB = 0.48; // ~480KB
+    const options = {
+      maxSizeMB: IMAGE_MAX_SIZE_MB,
+      maxWidthOrHeight: 1920,
+      useWebWorker: true,
+    };
+
+    try {
+      console.log(`[ImageUploadField] Original size: ${(file.size / 1024).toFixed(2)} KB`);
+      
+      const compressedFile = await imageCompression(file, options);
+      
+      console.log(`[ImageUploadField] Compressed size: ${(compressedFile.size / 1024).toFixed(2)} KB`);
+
+      // Pass the *compressed* file up
+      onFile(compressedFile);
+
+    } catch (error) {
+      console.error("Image compression failed:", error);
+      alert("Image compression failed. Please try another file.");
+    } finally {
+      // Reset input to allow re-uploading the same file
+      e.target.value = ''; 
+    }
   };
 
   return (
