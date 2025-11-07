@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { motion } from 'framer-motion'; // Using Framer Motion for entrance effects
 
 interface BannerSectionProps {
   promotions?: any[];
@@ -10,19 +11,19 @@ interface BannerSectionProps {
 
 // --- Fallback for when no promo is provided ---
 const dummyBanner = {
-  title: 'PERFORMANCE FIRST',
-  subtitle: 'The Apex Drop',
+  title: 'THE LEGEND REBORN',
+  subtitle: 'Limited Edition Drop',
   description:
-    'Forget comfort zones. This collection is stripped down, ultra-light, and engineered for maximum speed and raw power. Get ready to break records.',
-  ctaText: 'Unlock Speed',
-  ctaLink: '/shop/apex',
+    'Experience the fusion of heritage design and cutting-edge technology. This exclusive release offers unparalleled comfort and collector-grade aesthetics.',
+  ctaText: 'Explore Exclusive Access',
+  ctaLink: '/shop/legend',
   bannerUrl:
-    'https://images.unsplash.com/photo-1622327599042-3714571d0548?auto=format&fit=crop&w=1500&q=80', // Close-up, raw texture image
+    'https://images.unsplash.com/photo-1549298980-043125e8340d?auto=format&fit=crop&w=1500&q=80', // Premium, dramatic product shot
   secondaryImage:
-    'https://images.unsplash.com/photo-1626027551062-a27926b66804?auto=format&fit=crop&w=1500&q=80', // A technical or schematic image
-  themePrimary: '#FF0000', // Striking Red
-  themeSecondary: '#F7F7F7', // Off-White/Light Gray
-  themeAccent: '#000000', // Black for text and contrast
+    'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1500&q=80', // Abstract background texture/pattern
+  themePrimary: '#000000', // Deep Black/Void
+  themeSecondary: '#FFD700', // Gold/Vibrant Accent
+  themeAccent: '#FFFFFF', // White for primary text
 };
 
 export default function BannerSection({ promotions = [], themeSettings = {} }: BannerSectionProps) {
@@ -32,103 +33,99 @@ export default function BannerSection({ promotions = [], themeSettings = {} }: B
   const promo = promotions?.[2] || dummyBanner;
 
   // Theme colors hierarchy: promo > themeSettings > fallback
-  const primary = promo.themePrimary || themeSettings?.primaryColor || '#FF0000';
-  const secondary = promo.themeSecondary || themeSettings?.secondaryColor || '#F7F7F7';
-  const accent = promo.themeAccent || themeSettings?.accentColor || '#000000';
-  
-  // Text color based on secondary background (assuming it's light)
-  const textColor = accent; 
+  const primary = promo.themePrimary || themeSettings?.primaryColor || '#000000'; // Dark Background
+  const secondary = promo.themeSecondary || themeSettings?.secondaryColor || '#FFD700'; // Gold/Accent
+  const accent = promo.themeAccent || themeSettings?.accentColor || '#FFFFFF'; // White Text
+
+  // Animation variants
+  const fadeInUp = {
+    initial: { y: 20, opacity: 0 },
+    animate: { y: 0, opacity: 1, transition: { duration: 0.6, ease: "easeOut" } },
+  };
 
   return (
     <section
-      className="relative min-h-[500px] lg:min-h-[70vh] flex items-stretch border-8 border-black shadow-2xl"
+      className="relative min-h-[70vh] flex items-center justify-center py-20 overflow-hidden group"
       style={{
-        backgroundColor: secondary,
+        backgroundColor: primary,
+        color: accent,
       }}
     >
-      {/* --- Left Block: Image & Accent --- */}
-      <div className="relative w-full lg:w-1/2 overflow-hidden flex items-end justify-start p-10 md:p-16"
-           style={{ backgroundColor: primary }}>
-        
-        {/* Main Image - Full bleed with bold color overlay for mood */}
-        <div className="absolute inset-0 z-0">
-          <img
-            src={promo.bannerUrl || dummyBanner.bannerUrl}
-            alt={promo.title || 'Primary Banner Image'}
-            className="w-full h-full object-cover opacity-30 mix-blend-multiply transition-transform duration-700 ease-out group-hover:scale-105"
-            style={{ filter: 'grayscale(100%)' }} // Black and white image under red
-            onError={(e) => { e.currentTarget.src = 'https://placehold.co/800x600/FF0000/000000?text=CORE+VISUAL'; }}
-          />
-        </div>
-        
-        {/* Secondary Image - Technical detail (Hidden on small screens) */}
-        <div className="absolute top-10 right-10 z-10 hidden md:block w-32 h-32 lg:w-40 lg:h-40 border-4 border-black p-2 bg-white/50 backdrop-blur-sm">
-          <img
-            src={promo.secondaryImage || dummyBanner.secondaryImage}
-            alt="Technical Detail"
-            className="w-full h-full object-cover object-center"
-            onError={(e) => { e.currentTarget.src = 'https://placehold.co/150x150/000000/F7F7F7?text=DETAIL'; }}
-          />
-        </div>
-        
-        {/* Watermark/Subtitle in High Contrast */}
-        <p className="relative z-20 text-4xl lg:text-5xl font-extrabold text-black opacity-90 rotate-[-90deg] origin-bottom-left whitespace-nowrap bottom-[-50px] left-0">
-          {promo.subtitle || 'BRANDING'}
-        </p>
+      
+      {/* --- Background Image & Shadow Effect (Captivating) --- */}
+      <div className="absolute inset-0 z-0 opacity-20 group-hover:opacity-30 transition-opacity duration-700">
+        <img
+          src={promo.secondaryImage || dummyBanner.secondaryImage}
+          alt="Background Texture"
+          className="w-full h-full object-cover blur-sm mix-blend-lighten"
+        />
+      </div>
+      
+      {/* Large central product image - Positioned for cinematic depth */}
+      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-4/5 md:w-1/2 lg:w-2/5 z-10 pointer-events-none">
+        <img
+          src={promo.bannerUrl || dummyBanner.bannerUrl}
+          alt={promo.title || 'Primary Product Image'}
+          // Subtle parallax/scale effect on group hover
+          className="w-full object-cover transform scale-[1.1] rotate-[-5deg] transition-all duration-700 ease-in-out opacity-80 group-hover:scale-[1.15] group-hover:rotate-[-2deg] drop-shadow-2xl"
+          style={{ filter: `drop-shadow(0 0 15px ${secondary})` }} // Light glow around the product
+        />
       </div>
 
-      {/* --- Right Block: Content & CTA --- */}
-      <div className="w-full lg:w-1/2 flex flex-col justify-center p-10 md:p-16 relative z-10">
+      
+      {/* --- Main Content Block (Intuitive & Engaging) --- */}
+      <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-10 items-center relative z-20 backdrop-blur-sm p-4 lg:p-0">
         
-        {/* Title Block with Text Mask Effect (Captivating) */}
-        <div className="relative overflow-hidden mb-6">
-            <h1 
-                className="text-6xl sm:text-7xl lg:text-8xl xl:text-9xl font-black uppercase leading-tight transform hover:scale-[1.01] transition-transform duration-300 ease-out"
-                style={{ color: accent, WebkitTextStroke: `2px ${primary}` }}
-            >
-                {/* The main title text */}
-                {promo.title || 'BOLD STATEMENT'}
+        {/* Left Spacer (Focus on Product) */}
+        <div className="hidden lg:block"></div>
+
+        {/* Right Content */}
+        <div className="text-center lg:text-left">
+          <motion.div initial="initial" whileInView="animate" variants={fadeInUp} viewport={{ once: true }}>
+            <p className="text-lg font-medium tracking-widest uppercase mb-2" style={{ color: secondary }}>
+              {promo.subtitle || 'Experience The Difference'}
+            </p>
+          </motion.div>
+          
+          <motion.div initial="initial" whileInView="animate" variants={{ ...fadeInUp, transition: { delay: 0.2 } }} viewport={{ once: true }}>
+            <h1 className="text-5xl md:text-8xl font-black leading-tight drop-shadow-lg" style={{ color: accent }}>
+              {promo.title || 'THE NEW RELEASE'}
             </h1>
-            
-            {/* The colored mask layer that shifts on hover for an engaging reveal */}
-            <h1 
-                className="absolute inset-0 text-6xl sm:text-7xl lg:text-8xl xl:text-9xl font-black uppercase leading-tight transition-transform duration-300 ease-out transform translate-x-0 group-hover:translate-x-4"
-                style={{ color: primary }}
-            >
-                {promo.title || 'BOLD STATEMENT'}
-            </h1>
+          </motion.div>
+          
+          <motion.div initial="initial" whileInView="animate" variants={{ ...fadeInUp, transition: { delay: 0.4 } }} viewport={{ once: true }}>
+            <p className="mt-6 text-xl max-w-lg font-light text-white/80">
+              {promo.description || dummyBanner.description}
+            </p>
+          </motion.div>
+
+          {/* CTA Button with Glow Effect */}
+          <motion.div initial="initial" whileInView="animate" variants={{ ...fadeInUp, transition: { delay: 0.6 } }} viewport={{ once: true }}>
+            {promo.ctaLink && (
+              <Link href={promo.ctaLink} passHref>
+                <button
+                  onMouseEnter={() => setIsHovered(true)}
+                  onMouseLeave={() => setIsHovered(false)}
+                  className="mt-10 px-12 py-5 font-bold text-lg rounded-full shadow-2xl transition-all duration-300 transform hover:scale-[1.03] focus:ring-4 focus:ring-offset-2"
+                  style={{
+                    backgroundColor: secondary, // Gold
+                    color: primary, // Black text on Gold
+                    boxShadow: isHovered ? `0 0 20px 5px ${secondary}` : `0 10px 15px rgba(0, 0, 0, 0.5)`,
+                    borderColor: secondary,
+                    // Focus ring uses accent color
+                    '--tw-ring-color': secondary,
+                  } as React.CSSProperties}
+                >
+                  {isHovered ? 'VIEW DETAILS' : promo.ctaText || 'Shop Now'}
+                </button>
+              </Link>
+            )}
+          </motion.div>
         </div>
-
-        {/* Description (Intuitive) */}
-        {promo.description && (
-          <p className="mt-4 text-xl font-medium max-w-lg" style={{ color: textColor }}>
-            {promo.description}
-          </p>
-        )}
-
-        {/* CTA Button (Intuitive & Engaging) */}
-        {promo.ctaLink && (
-          <Link href={promo.ctaLink} passHref>
-            <button
-              onMouseEnter={() => setIsHovered(true)}
-              onMouseLeave={() => setIsHovered(false)}
-              className="mt-10 px-10 py-4 border-4 font-extrabold text-xl shadow-brutal transform transition-all duration-200 ease-in-out hover:translate-x-1 hover:translate-y-1"
-              style={{
-                backgroundColor: primary,
-                color: secondary,
-                borderColor: accent,
-                // Custom "lifted" shadow for Neo-Brutalism
-                boxShadow: `8px 8px 0px ${accent}`,
-              }}
-            >
-              {isHovered ? 'ACCESS GRANTED' : promo.ctaText || 'Shop Now'}
-            </button>
-          </Link>
-        )}
-        
-        {/* Bottom accent line */}
-        <div className="absolute bottom-0 left-0 w-full h-3" style={{ backgroundColor: primary }} />
       </div>
+      
+      {/* Subtle light effect at the bottom for mood */}
+      <div className="absolute bottom-0 w-full h-1/4 bg-gradient-to-t from-black/80 to-transparent z-10 pointer-events-none" />
       
     </section>
   );

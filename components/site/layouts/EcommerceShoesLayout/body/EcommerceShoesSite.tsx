@@ -84,8 +84,8 @@ export default function EcommerceShoesSite({ pageData, companyId }: EcommerceSit
       <MetricsSection  coreValues={CoreValues} />
       <DailyBestSells marketplaceListings={marketplaceListings}/>
       <SleepTapeAd promotions={promotions} themeSettings={themeSettings} />
-      <Trending promotions={promotions} themeSettings={themeSettings}  />
       <FeaturesSection features={features} themeSettings={themeSettings} />
+      <Trending promotions={promotions} themeSettings={themeSettings}  />
       <AllProducts martketplaceListings={marketplaceListings} themeSettings={themeSettings} />
       <AwardsSection awards={awards} />
       <TestimonialsSection testimonials={testimonials} />
