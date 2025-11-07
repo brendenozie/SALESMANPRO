@@ -66,11 +66,18 @@ const itemVariants = {
   },
 };
 
-export default function FeaturesClient() {
-  const { storeFormData } = useStoreContext() as { storeFormData: StoreForm };
+interface FeaturesSectionProps { 
+  themeSettings: { 
+    primaryColor?: string; 
+    secondaryColor?: string; 
+  } | undefined | null;
+  name?: string | undefined | null;
+  promotions?: any[];
+  tagline?: string | undefined | null;
+}
 
-  // Use storeFormData with a fallback to the static storeData
-  const { themeSettings = {}, name, promotions, tagline } = storeFormData || storeData;
+export default function FeaturesClient({ themeSettings, name, promotions, tagline }: FeaturesSectionProps) {
+
   const primary = themeSettings?.primaryColor || "#00A880";
   const secondary = themeSettings?.secondaryColor || "#10B981";
   const accentBg = `${primary}20`;
@@ -87,7 +94,7 @@ export default function FeaturesClient() {
 
   // Dynamic data from promotions, with a fallback to static features
   const features = promotions?.[0]?.perks?.length > 0
-    ? promotions[0].perks.map((perk: any) => ({
+    ? promotions?.[0].perks.map((perk: any) => ({
       // Use a generic icon, since the API likely doesn't provide one
       icon: "StarIcon",
       title: perk.label,
@@ -158,7 +165,7 @@ export default function FeaturesClient() {
           whileInView="visible"
           viewport={{ once: true }}
         >
-          {features.map(({ icon, title, desc }, idx) => {
+          {features.map(({ icon, title, desc }:{ icon: any; title: string; desc: string }, idx:number) => {
             const Icon = icons[icon as IconKey];
             return (
               <motion.div

@@ -7,24 +7,12 @@ import { QuestionMarkCircleIcon } from '@heroicons/react/24/outline';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { Testimonial } from '@/types/typings';
 
-
-interface ThemeSettings {
-  primaryColor?: string;
-  secondaryColor?: string;
-  backgroundColor?: string; // Allowing for a specific background color for this section
-}
-
-interface StoreFormData {
-  themeSettings?: ThemeSettings;
-  testimonials?: Testimonial[];
-  name?: string; // Company/Personal name
-}
-
 // Static fallback testimonials with more detail
-const staticTestimonials = [
+const staticTestimonials:any[] = [
   {
     authorName: "Sarah L.",
     text: "“Working with our team has been a game-changer for my business. Their insights and strategies are incredibly practical and have led to tangible growth. The service is seamless, and their dedication is truly inspiring!”",
+    quote: "“Working with our team has been a game-changer for my business. Their insights and strategies are incredibly practical and have led to tangible growth. The service is seamless, and their dedication is truly inspiring!”",
     rating: 5,
     image: "https://placehold.co/128x128/9CA3AF/ffffff?text=SL",
     company: "Founder, InnovateCorp",
@@ -32,6 +20,7 @@ const staticTestimonials = [
   {
     authorName: "James K.",
     text: "“From the very first discovery call, I knew I was in capable hands. The personalized coaching sessions helped me overcome my biggest challenges and achieve goals I thought were out of reach. Absolutely top-tier support!”",
+    quote: "“From the very first discovery call, I knew I was in capable hands. The personalized coaching sessions helped me overcome my biggest challenges and achieve goals I thought were out of reach. Absolutely top-tier support!”",
     rating: 5,
     image: "https://placehold.co/128x128/FBBF24/ffffff?text=JK",
     company: "CEO, GrowthPath Solutions",
@@ -39,6 +28,7 @@ const staticTestimonials = [
   {
     authorName: "Aisha R.",
     text: "“I was hesitant at first, but our team exceeded all my expectations. Their unique approach transformed my understanding of leadership, and the results speak for themselves. Highly recommend for anyone serious about growth.”",
+    quote: "“I was hesitant at first, but our team exceeded all my expectations. Their unique approach transformed my understanding of leadership, and the results speak for themselves. Highly recommend for anyone serious about growth.”",
     rating: 5,
     image: "https://placehold.co/128x128/EC4899/ffffff?text=AR",
     company: "Director, FutureMakers Inc.",
@@ -46,6 +36,7 @@ const staticTestimonials = [
   {
     authorName: "Michael B.",
     text: "“The clarity and direction I gained from these sessions are invaluable. It’s not just about advice; it's about empowerment. My team and I are more aligned and productive than ever before.”",
+    quote: "“The clarity and direction I gained from these sessions are invaluable. It’s not just about advice; it's about empowerment. My team and I are more aligned and productive than ever before.”",
     rating: 4,
     image: "https://placehold.co/128x128/8B5CF6/ffffff?text=MB",
     company: "Team Lead, Synergy Tech",
@@ -53,22 +44,13 @@ const staticTestimonials = [
   {
     authorName: "Emily C.",
     text: "“Exceptional guidance! Our team provided actionable strategies that directly impacted our bottom line. Truly a partner in success.”",
+    quote: "“Exceptional guidance! Our team provided actionable strategies that directly impacted our bottom line. Truly a partner in success.”",
     rating: 5,
     image: "https://placehold.co/128x128/10B981/ffffff?text=EC",
     company: "Marketing Manager, BrightIdea Co.",
   },
 ];
 
-// Fallback data for a standalone preview
-const storeData = {
-  themeSettings: {
-    primaryColor: '#00A880',
-    secondaryColor: '#10B981',
-    backgroundColor: '#F3F4F6',
-  },
-  testimonials: staticTestimonials,
-  name: 'Our Team',
-};
 
 // Framer Motion variants for staggered animations
 const sectionVariants = {
@@ -101,18 +83,22 @@ const ratingStars = (rating: number) => (
   </div>
 );
 
-export default function TestimonialsSection() {
-  const { storeFormData } = useStoreContext() as { storeFormData: StoreFormData };
-  const { themeSettings = {}, testimonials: dynamicTestimonials, name } = storeFormData || storeData;
+interface TestimonialsSectionProps { 
+  themeSettings: Record<string, any> | undefined | null;
+  testimonials: Testimonial[] | undefined | null;
+  name: string | undefined | null;
+}
 
-  const primaryColor = themeSettings.primaryColor || '#00A880';
-  const secondaryColor = themeSettings.secondaryColor || '#10B981';
-  const sectionBgColor = themeSettings.backgroundColor || '#F3F4F6';
+export default function TestimonialsSection({themeSettings, testimonials, name}:TestimonialsSectionProps) {
+
+  const primaryColor = themeSettings?.primaryColor || '#00A880';
+  const secondaryColor = themeSettings?.secondaryColor || '#10B981';
+  const sectionBgColor = themeSettings?.backgroundColor || '#F3F4F6';
   const accentColor = primaryColor;
   const accentBgOpacity = `${primaryColor}15`;
 
-  const testimonialsData = Array.isArray(dynamicTestimonials) && dynamicTestimonials.length > 0
-    ? dynamicTestimonials.map((t) => ({
+  const testimonialsData = Array.isArray(testimonials) && testimonials.length > 0
+    ? testimonials.map((t) => ({
         authorName: t.authorName || 'Anonymous',
         text: t.quote || '',
         rating: typeof t.rating === 'number' ? Math.max(0, Math.min(5, t.rating)) : 5,

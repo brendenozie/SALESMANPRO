@@ -38,7 +38,11 @@ export default function PortfolioSite({ pageData, companyId }: { pageData: Store
     awards = [],  
     tagline,
     marketplaceListings = [],
-    projects
+    promotions = [],
+    stats=[],
+    projects,
+    contactEmail,
+    CoreValues
   } = pageData;
 
   return (
@@ -52,15 +56,15 @@ export default function PortfolioSite({ pageData, companyId }: { pageData: Store
 
       <GettingStartedSection />
 
-      <FeaturesSection /> 
+      <FeaturesSection themeSettings={themeSettings} name={name} promotions={promotions} tagline={tagline}/> 
 
-      <AboutSection />
+      <AboutSection  name={name} slug={slug} contactEmail={contactEmail} stats={stats} themeSettings={themeSettings} description={description} tagline={tagline} heroSlides={heroSlides}/>
 
-      <CaseStudiesSection />
+      <CaseStudiesSection themeSettings={themeSettings} CoreValues={CoreValues} />
 
       <DiscoveryCallSection/>
-      
-      <TestimonialsSection/> 
+
+      <TestimonialsSection themeSettings={themeSettings} testimonials={testimonials} name={name} />
 
       {/* <FeaturedProjects projects={[]} slug={''} loader={function (_: any): string {
         throw new Error('Function not implemented.');

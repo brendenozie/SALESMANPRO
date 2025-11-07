@@ -12,37 +12,9 @@ import {
   SparklesIcon,
 } from '@heroicons/react/24/outline';
 import Image from 'next/image';
+import { HeroSlide, Stat } from '@/types/typings';
 
 // Type definitions for clarity
-interface ThemeSettings {
-  primaryColor?: string;
-  secondaryColor?: string;
-  accentColor?: string;
-}
-
-interface HeroSlide {
-  imageUrl?: string;
-  productImageUrl?: string;
-}
-
-interface Stat {
-  label: string;
-  value: string | number;
-}
-
-interface StoreFormData {
-  name: string;
-  tagline?: string;
-  description?: string;
-  themeSettings?: ThemeSettings;
-  stats?: Stat[];
-  heroSlides?: HeroSlide[];
-  bannerUrl?: string;
-  logoUrl?: string;
-  slug: string;
-  contactEmail?: string;
-}
-
 // Fallback data for a standalone preview
 const storeData = {
   name: 'John Doe',
@@ -109,28 +81,28 @@ const statVariants = {
   },
 };
 
-export default function AboutSectionLight() {
-  const { storeFormData } = useStoreContext() as { storeFormData: StoreFormData };
+interface AboutSectionLightProps {
+    name: string;
+    tagline: string | undefined | null;
+    description: string | undefined | null;
+    themeSettings: Record<string, any> | undefined | null;
+    stats:Stat[] | undefined | null;
+    heroSlides: HeroSlide[] | undefined | null;
+    slug:string  | undefined | null;
+    contactEmail:string  | undefined | null;
+  }
 
-  const {
-    name,
-    tagline,
-    description,
-    themeSettings = {},
-    stats = [],
-    heroSlides = [],
-    slug,
-    contactEmail,
-  } = storeFormData || storeData;
+export default function AboutSectionLight({ name, tagline, description, themeSettings, stats, heroSlides, slug, contactEmail }:AboutSectionLightProps) {
+  
 
-  const primaryColor = themeSettings.primaryColor || '#6366F1';
-  const secondaryColor = themeSettings.secondaryColor || '#EC4899';
-  const accentColor = themeSettings.accentColor || '#F97316';
+  const primaryColor = themeSettings?.primaryColor || '#6366F1';
+  const secondaryColor = themeSettings?.secondaryColor || '#EC4899';
+  // const accentColor = themeSettings?.accentColor || '#F97316';
 
   const title = name || 'John Doe';
   const aboutText = description || storeData.description;
 
-  const defaultStatsData = [
+  const defaultStatsData:any[] = [
     { label: 'Years Experience', value: '10+' },
     { label: 'Clients Served', value: '250+' },
     { label: 'Projects Completed', value: '300+' },
@@ -138,7 +110,7 @@ export default function AboutSectionLight() {
   ];
   const statsData = Array.isArray(stats) && stats.length > 0 ? stats : defaultStatsData;
 
-  const imgSrc = heroSlides[0]?.productImageUrl || heroSlides[0]?.imageUrl || storeData.heroSlides[0]?.productImageUrl;
+  const imgSrc = heroSlides?.[0]?.productImageUrl || heroSlides?.[0]?.imageUrl || storeData.heroSlides[0]?.productImageUrl;
 
   const contactHref = contactEmail ? `mailto:${contactEmail}` : slug ? `/${slug}/contact` : '/contact';
 
@@ -238,9 +210,9 @@ export default function AboutSectionLight() {
                 href={contactHref}
                 className="inline-flex items-center justify-center px-8 py-4 rounded-full text-lg font-semibold shadow-xl transition-all duration-300 transform hover:scale-105"
                 style={{
-                  backgroundColor: accentColor,
+                  backgroundColor: secondaryColor,
                   color: 'white',
-                  boxShadow: `0 8px 25px ${accentColor}44`,
+                  boxShadow: `0 8px 25px ${secondaryColor}44`,
                 }}
               >
                 Learn More About Us

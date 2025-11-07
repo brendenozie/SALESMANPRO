@@ -45,22 +45,21 @@ const imageLoader = ({
   quality?: number;
 }) => `${src}?w=${width}&q=${quality || 75}`;
 
-export default function CoreValuesSection() {
-  const { storeFormData } = useStoreContext();
+interface CoreValuesSectionProps {
+  themeSettings: Record<string, any> | undefined | null;
+  CoreValues: ICoreValue[];
+}
 
-  const themeSettings = storeFormData?.themeSettings || {
-    primaryColor: "#00A880",
-    secondaryColor: "#10B981",
-  };
+export default function CoreValuesSection({ themeSettings, CoreValues }: CoreValuesSectionProps) {
 
-  const primaryColor = themeSettings.primaryColor;
-  const secondaryColor = themeSettings.secondaryColor;
+  const primaryColor = themeSettings?.primaryColor || "#00A880";
+  const secondaryColor = themeSettings?.secondaryColor || "#10B981";
   const accentBg = `${primaryColor}20`;
 
   // Use CoreValues instead of caseStudies
   const coreValuesToRender: ICoreValue[] =
-    storeFormData?.CoreValues && storeFormData.CoreValues.length > 0
-      ? storeFormData.CoreValues
+    CoreValues && CoreValues.length > 0
+      ? CoreValues
       : [
           {
             id: "cv1",
