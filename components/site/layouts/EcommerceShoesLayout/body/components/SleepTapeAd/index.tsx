@@ -1,25 +1,26 @@
 'use client';
 
-import { useStoreContext } from '@/contexts/StoreContext';
 import React from 'react';
 import Link from 'next/link';
+import { TruckIcon, ShieldCheckIcon, PhoneIcon } from '@heroicons/react/24/outline';
 
 // Dummy data for when no promotions are available
 const dummyPromotionData = {
-  title: 'Discover Something New Sample',
-  description:'Explore our latest collection and find items designed to fit your lifestyle. Quality, comfort, and style combined for everyday living.',
-  bannerUrl: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30', // a neutral lifestyle/product image
-  ctaText: 'Shop Now',
-  ctaLink: '/shop',
-  themePrimary: '#0A192F', // Deep Navy
-  themeSecondary: '#532D93', // Muted Lavender
-  featureImage1: 'https://images.unsplash.com/photo-1513708925885-1e3a4f3bfbf2',
-  featureImage2: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb',
-  featureImage3: 'https://images.unsplash.com/photo-1513708925885-1e3a4f3bfbf2',
+  title: 'Unlock Your Deepest Sleep',
+  subtitle: 'The Science of Silent Breathing', // Added a strong subtitle
+  description:
+    'Naturally improve your breathing and transform your sleep quality tonight. Experience stillness, reduce snoring, and wake up genuinely refreshed. It’s simple, comfortable, and effective.',
+  bannerUrl: 'https://images.unsplash.com/photo-1542315668-3be3a7d2e626?auto=format&fit=crop&w=800&q=80', // A calming, bedroom-focused image
+  ctaText: 'Start 30-Day Trial',
+  ctaLink: '/shop/sleep-tape',
+  themePrimary: '#C9D4FF', // Soft Sky Blue (Light)
+  themeSecondary: '#3B82F6', // Vibrant Blue (Accent)
+  featureImage1: 'https://images.unsplash.com/photo-1541893041908-1643c7b889a9?auto=format&fit=crop&w=400&q=80', // Image of a person sleeping peacefully
+  featureImage2: 'https://images.unsplash.com/photo-1579621970588-a35d0e7ab93b?auto=format&fit=crop&w=400&q=80', // Close-up of comfortable fabric/texture
   perks: [
-    { icon: 'TruckIcon', text: 'Fast & Reliable Delivery' },
-    { icon: 'ShieldCheckIcon', text: 'Secure Checkout' },
-    { icon: 'PhoneIcon', text: '24/7 Customer Support' },
+    { icon: TruckIcon, text: 'Free Shipping Over $50' },
+    { icon: ShieldCheckIcon, text: '30-Day Money-Back Guarantee' },
+    { icon: PhoneIcon, text: 'Dedicated Sleep Support' },
   ],
   trustLogos: [],
 };
@@ -31,84 +32,123 @@ interface SleepTapeAdProps {
 
 
 export default function SleepTapeAd({ promotions, themeSettings }: SleepTapeAdProps) {
-  // const { storeFormData } = useStoreContext();
-  // const { promotions = [], themeSettings = {} } = storeFormData || {};
-
-  // Find an active promotion to use for the ad.
-  // We can use the first promotion in the list for this component.
-  const promotion = promotions.length >= 1 ? promotions[1] : null;
-
-  // Use the promotion data if available, otherwise fall back to dummy data
+  const promotion = promotions?.length >= 1 ? promotions[1] : null;
   const adData = promotion || dummyPromotionData;
 
   // Use the promotion's theme colors, or fall back to store settings, then to defaults
-  const primary = adData.themePrimary || themeSettings?.primaryColor || '#f97316';
-  const secondary = adData.themeSecondary || themeSettings?.secondaryColor || '#3b82f6';
+  const primary = adData.themePrimary || themeSettings?.primaryColor || '#C9D4FF';
+  const secondary = adData.themeSecondary || themeSettings?.secondaryColor || '#3B82F6';
+  const accentText = '#1f2937'; // Dark gray text for contrast on light background
 
   return (
-    <section
-      className="relative py-20 overflow-hidden"
-      style={{
-        background: `linear-gradient(135deg, ${primary}, ${secondary})`,
-      }}
+    <section 
+      className="relative py-24 md:py-32 overflow-hidden"
+      // style={{
+      //   backgroundColor: primary, // Soft, light primary color
+      // }}
     >
-      <div className="max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
-        {/* Text Block */}
-        <div className="text-center md:text-left z-10">
-          <h1 className="text-4xl md:text-6xl font-extrabold text-white leading-tight">
+      <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10">
+        
+        {/* --- Left Block: Images & Value --- */}
+        <div className="lg:col-span-5 flex flex-col items-center lg:items-end space-y-8">
+            {/* Main Product Image (Intuitive) */}
+            <div className="relative w-full max-w-sm">
+                <img
+                  src={adData.bannerUrl || dummyPromotionData.bannerUrl}
+                  alt={adData.title || 'Ad Image'}
+                  className="w-full rounded-3xl shadow-3xl transform rotate-3 transition-transform duration-500 hover:rotate-0 hover:scale-[1.03] border-4 border-white"
+                />
+            </div>
+            
+            {/* Feature Images (Engaging - layered and floating) */}
+            <div className="flex -space-x-12 relative w-full justify-center lg:justify-end pr-10">
+                <img 
+                    src={adData.featureImage1 || dummyPromotionData.featureImage1} 
+                    alt="Feature 1" 
+                    className="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover shadow-xl border-4 border-white transform translate-y-4 hover:translate-y-0 transition-transform duration-500"
+                />
+                <img 
+                    src={adData.featureImage2 || dummyPromotionData.featureImage2} 
+                    alt="Feature 2" 
+                    className="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover shadow-xl border-4 border-white transform -translate-y-4 hover:translate-y-0 transition-transform duration-500 delay-150"
+                />
+            </div>
+        </div>
+
+        {/* --- Right Block: Text, CTA, & Perks --- */}
+        <div className="lg:col-span-7 text-center lg:text-left z-10">
+          
+          {/* Subtitle */}
+          <p className="text-xl font-medium tracking-widest uppercase mb-3" style={{ color: secondary }}>
+            {adData.subtitle || dummyPromotionData.subtitle}
+          </p>
+          
+          {/* Title (Captivating) */}
+          <h1 className="text-5xl md:text-7xl font-extrabold leading-tight animate-fade-in-down" style={{ color: accentText }}>
             {adData.title || dummyPromotionData.title}
           </h1>
-          <h2 className="mt-4 text-2xl md:text-4xl font-semibold text-white/90 font-serif">
-            Experience Tranquility
-          </h2>
-          <p className="mt-6 text-base md:text-lg text-white/80 max-w-xl">
+          
+          {/* Description */}
+          <p className="mt-6 text-lg md:text-xl max-w-2xl" style={{ color: accentText }}>
             {adData.description || dummyPromotionData.description}
           </p>
+
+          {/* CTA Button */}
           {adData.ctaLink && (
             <Link href={adData.ctaLink || '/shop'} passHref>
-              <button className="mt-8 inline-block bg-white text-black font-semibold py-4 px-10 rounded-full shadow-lg hover:bg-gray-200 transition duration-300 transform hover:scale-105">
+              <button 
+                className="mt-10 inline-block text-white font-bold py-4 px-12 rounded-full shadow-2xl transition duration-300 transform hover:scale-[1.03] hover:shadow-primary-glow border-2 border-transparent"
+                style={{ 
+                    backgroundColor: secondary,
+                    '--shadow-color': secondary // Custom CSS variable for glow
+                } as React.CSSProperties}
+              >
                 {adData.ctaText || 'Learn More'}
               </button>
             </Link>
           )}
-        </div>
 
-        {/* Image Block */}
-        <div className="flex justify-center md:justify-end relative z-10">
-          <div className="relative">
-            {(
-              <img
-                src={adData.bannerUrl || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30'}
-                alt={adData.title || 'Ad Image'}
-                className="w-72 md:w-80 lg:w-96 rounded-2xl shadow-2xl transform hover:scale-105 transition-transform duration-300 border-2 border-white/20"
-              />
-            )}
-            {/* Soft, glowing orb effect */}
-            <div
-              className="absolute -bottom-10 -right-10 w-48 h-48 rounded-full opacity-40 blur-3xl animate-pulse-slow"
-              style={{ background: secondary }}
-            />
+          {/* Perks/Trust Block (Intuitive) */}
+          <div className="mt-12 pt-6 border-t border-gray-300 grid grid-cols-3 gap-6 text-left">
+            {(adData.perks || dummyPromotionData.perks).map((perk: { icon: React.ElementType; text: string }, index: number) => {
+              const IconComponent = perk.icon; // Assuming the icon is passed as a component or similar
+              return (
+                <div key={index} className="flex flex-col items-center lg:items-start text-sm md:text-base">
+                  <IconComponent className="w-8 h-8 mb-2" style={{ color: secondary }} />
+                  <p className="font-semibold" style={{ color: accentText }}>{perk.text}</p>
+                </div>
+              );
+            })}
           </div>
+
         </div>
       </div>
+      
+      {/* Background Decor: Subtle white wave/mask effect at the bottom */}
+      <div className="absolute bottom-0 w-full h-1/4 bg-white opacity-50 transform skew-y-[-2deg] origin-bottom-left" />
 
-      {/* Background Starry Effect (Decorative) */}
-      <div className="absolute top-0 left-0 w-full h-full z-0 pointer-events-none">
-        <div className="absolute inset-0 bg-[url('https://example.com/starry-night-texture.png')] opacity-10" />
-      </div>
-
-      {/* CSS for custom animation */}
+      {/* Custom Animations */}
       <style jsx>{`
-        @keyframes pulse-slow {
-          0%, 100% {
-            transform: scale(1);
+        @keyframes fadeInDown {
+          from {
+            opacity: 0;
+            transform: translateY(-20px);
           }
-          50% {
-            transform: scale(1.05);
+          to {
+            opacity: 1;
+            transform: translateY(0);
           }
         }
-        .animate-pulse-slow {
-          animation: pulse-slow 5s infinite;
+        .animate-fade-in-down {
+          animation: fadeInDown 0.8s ease-out;
+        }
+
+        .shadow-3xl {
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+        
+        .hover\\:shadow-primary-glow:hover {
+            box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.3), 0 0 20px 8px var(--shadow-color); /* Subtle blue glow */
         }
       `}</style>
     </section>
