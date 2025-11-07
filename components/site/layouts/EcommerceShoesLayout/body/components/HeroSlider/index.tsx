@@ -75,7 +75,7 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
   const slides: HeroSlide[] =
     (heroSlides && heroSlides.length > 0
       ? heroSlides.map((slide) => ({
-          imageUrl: slide.imageUrl || defaultSlides[0].imageUrl,
+          imageUrl: slide.productImageUrl || slide.imageUrl  || defaultSlides[0].imageUrl || defaultSlides[0].productImageUrl || 'https://via.placeholder.com/800x600',
           headline: slide.headline || defaultSlides[0].headline,
           subline: slide.subline || defaultSlides[0].subline,
           badgeText: (slide as any).badgeText || defaultSlides[0].badgeText, // Safely handle the description property
