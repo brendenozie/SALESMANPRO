@@ -67,15 +67,19 @@ const itemVariants = {
   },
 };
 
-export default function ServicesSection() {
-  const { storeFormData } = useStoreContext() as { storeFormData: StoreForm };
-  const {
-    name,
-    slug,
-    description,
-    themeSettings = {},
-    StoreCategory = [],
-  } = storeFormData;
+interface BusinessSectionProps {
+    name: string | undefined | null;
+    slug: string | undefined | null;
+    description: string | undefined | null;
+    themeSettings: {
+      primaryColor?: string;
+      secondaryColor?: string;
+    } | undefined | null;
+    StoreCategory: IStoreCategory[];
+  }
+
+export default function ServicesSection({name, slug, description, themeSettings, StoreCategory}: BusinessSectionProps) {
+  
 
   const primaryColor = themeSettings?.primaryColor || '#00A880';
   const secondaryColor = themeSettings?.secondaryColor || '#10B981';

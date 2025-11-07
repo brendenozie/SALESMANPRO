@@ -154,14 +154,19 @@ const itemVariants = {
   },
 };
 
-export default function MarketplaceListingsSection() {
-  const { storeFormData } = useStoreContext() as { storeFormData: StoreForm };
-  const {
-    name,
-    slug,
-    themeSettings = {},
-    marketplaceListings = [],
-  } = storeFormData;
+interface MarketplaceListingsSectionProps {
+    name: string | undefined | null;
+    slug: string | undefined | null;
+    themeSettings: { 
+      primaryColor?: string; 
+      secondaryColor?: string; 
+    } | undefined | null;
+    marketplaceListings: MarketListingForm[] | undefined | null;
+  }
+
+
+export default function MarketplaceListingsSection({ name, slug, themeSettings, marketplaceListings }: MarketplaceListingsSectionProps) {
+  
 
   const primaryColor = themeSettings?.primaryColor || '#00A880';
   const secondaryColor = themeSettings?.secondaryColor || '#10B981';

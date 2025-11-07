@@ -27,20 +27,28 @@ const loader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality 
 
 export default function PortfolioSite({ pageData, companyId }: { pageData: StoreForm, companyId: string }) {
 
-  //   const router = useRouter();
-  // const { storeFormData } = useStoreContext();
-  // const {
-  //   projects
-  // } = pageData;
+  const {
+    name,
+    slug,
+    description,
+    StoreCategory,
+    themeSettings = {},
+    heroSlides = [],
+    testimonials = [],
+    awards = [],  
+    tagline,
+    marketplaceListings = [],
+    projects
+  } = pageData;
 
   return (
     <div className=" font-sans text-gray-800">
-      
-      <HeroSection /> 
 
-      <BusinessSection/>
+      <HeroSection name={name} themeSettings={themeSettings} tagline={tagline} heroSlides={heroSlides} testimonials={testimonials} awards={awards} />
 
-      <MarketplaceListingsSection/>
+      <BusinessSection name={name} slug={slug} description={description} themeSettings={themeSettings} StoreCategory={StoreCategory} />
+
+      <MarketplaceListingsSection name={name} slug={slug} themeSettings={themeSettings} marketplaceListings={marketplaceListings} />
 
       <GettingStartedSection />
 
