@@ -153,7 +153,7 @@ export const companySchema = z.object({
       title: z.string().optional(),
       description: z.string().optional(),
       keywords: z.array(z.string()).optional(),
-  }),//z.array().optional(),
+  }).nullable().optional(),//z.array().optional(),
   
   analyticsConfig: z.object({
       googleTag: z.string().nullable().optional(),
@@ -202,19 +202,19 @@ export const companySchema = z.object({
   }).nullable().optional(),//z.array().optional(),
   
   // -- Many-to-Many through explicit join table --
-  StoreCategory: z.array(storeCategorySchema).optional(),
-  CompanyLocation: z.array(companyLocationSchema).optional(),
+  StoreCategory: z.array(storeCategorySchema).nullable().optional(),
+  CompanyLocation: z.array(companyLocationSchema).nullable().optional(),
 
-  founderName: z.string().min(2).max(100).optional(),
-  founderQuote: z.string().max(500).optional(),
-  founderImage: z.string().optional(),
+  founderName: z.string().min(2).max(100).nullable().optional(),
+  founderQuote: z.string().max(500).nullable().optional(),
+  founderImage: z.string().nullable().optional(),
   partnerLogos: z.array(z.object({
       url: z.string().optional(),
       altText: z.string().max(100).optional(),
-  })).optional(),
+  })).nullable().optional(),
 
-  sectionSubtitle: z.string().max(150).optional(),
-  sectionTitle: z.string().max(100).optional(),
-  sectionDescription: z.string().max(500).optional(),
+  sectionSubtitle: z.string().max(150).nullable().optional(),
+  sectionTitle: z.string().max(100).nullable().optional(),
+  sectionDescription: z.string().max(500).nullable().optional(),
 
 });
