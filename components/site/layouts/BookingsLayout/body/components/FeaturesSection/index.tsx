@@ -12,17 +12,18 @@ import {
   SparklesIcon, // Added an icon for a new feature suggestion
 } from '@heroicons/react/24/outline'; // Switched to outline for a modern touch
 import { motion, useInView } from 'framer-motion';
+import { ICoreValue } from '@/types/typings';
 
 // --- Sample Data & Types (Defined for a self-contained, runnable example) ---
 // Placeholder types for context integration
-type ICoreValue = {
-  icon: string;
-  title: string;
-  description: string;
-};
-const useStoreContext = () => ({
-  storeFormData: null, // Assume no data for this example
-});
+// type ICoreValue = {
+//   icon: string;
+//   title: string;
+//   description: string;
+// };
+// const useStoreContext = () => ({
+//   storeFormData: null, // Assume no data for this example
+// });
 // ------------------------------------------------------------------------
 
 // Animation variants for staggered appearance
@@ -64,8 +65,25 @@ const IconMap: { [key: string]: React.ElementType } = {
   SparklesIcon,
 };
 
-export default function FeaturesSection() {
-  const { storeFormData } = useStoreContext();
+interface FeaturesSectionProps {
+    name : string | null | undefined;
+    description : string | null | undefined;
+    themeSettings: Record<string, any> | null | undefined;
+    CoreValues: ICoreValue[] | null | undefined ;
+  }
+
+// Sample props for demonstration
+const sampleProps: FeaturesSectionProps = {
+    name: 'SwiftCare',
+    description: 'Experience seamless booking and unparalleled service quality for all your needs—fast, flexible, and utterly reliable. Simplify your life with us.',
+    themeSettings: {
+      primaryColor: '#059669', // A darker, richer teal/emerald for better contrast
+    },
+    CoreValues: [] , // Empty to trigger default features
+  }
+
+export default function FeaturesSection({ name, description, themeSettings, CoreValues }: FeaturesSectionProps = sampleProps) {
+  // const { storeFormData } = useStoreContext();
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, amount: 0.3 }); // Use isInView hook
 
@@ -112,16 +130,11 @@ export default function FeaturesSection() {
     CoreValues: defaultFeatures,
   };
 
-  const {
-    name,
-    description,
-    themeSettings,
-    CoreValues = [],
-  } = storeFormData || sampleData;
+  
 
   const primaryColor = themeSettings?.primaryColor || '#059669';
 
-  const processCoreValues = CoreValues.length ? CoreValues : defaultFeatures;
+  const processCoreValues = CoreValues?.length ? CoreValues : defaultFeatures;
 
   return (
     // 🌟 VISUAL: Changed background to a subtle texture or pattern for depth
@@ -189,7 +202,8 @@ export default function FeaturesSection() {
         animate={isInView ? 'visible' : 'hidden'} // Only animate when in view
       >
         {processCoreValues.map(({ icon, title, description }, i) => {
-          const FeatureIcon = IconMap[icon];
+          // Ensure we never index IconMap with null/undefined by defaulting to 'CheckIcon'
+          const FeatureIcon = IconMap[(icon ?? 'CheckIcon') as keyof typeof IconMap] ?? CheckIcon;
           return (
             <motion.div
               key={title}

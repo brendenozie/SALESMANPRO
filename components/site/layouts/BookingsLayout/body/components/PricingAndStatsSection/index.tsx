@@ -12,22 +12,10 @@ import {
     BriefcaseIcon,  
 } from '@heroicons/react/24/solid'; 
 import { ArrowLongRightIcon } from '@heroicons/react/24/outline';
+import { PricingTier, Stat } from '@/types/typings';
 
 // --- Helper Types & Maps ---
-type ITier = {
-    name: string;
-    monthlyPrice: number | string;
-    annualPrice: number | string; 
-    description: string;
-    features: string[];
-    isFeatured: boolean;
-};
-type IStat = {
-    label: string;
-    value: number | string;
-    icon: string;
-    suffix?: string;
-};
+
 
 const StatIconMap: { [key: string]: React.ElementType } = {
     "Bookings Completed": CalendarDaysIcon,
@@ -67,10 +55,12 @@ const CountUp = ({ end, duration = 2000, decimals = 0 }: { end: number; duration
     return <span ref={ref}>{formattedCount}</span>;
 };
 
+interface PricingAndStatsSectionProps { stats: Stat[] | null; pricingTiers: PricingTier[]; themeSettings: Record<string, any> | null; }
+
 // --- START: Main Component ---
-export default function PricingAndStatsSection() {
+export default function PricingAndStatsSection({ stats, pricingTiers, themeSettings }: PricingAndStatsSectionProps) {
     // Assuming context provides data; falling back to comprehensive sample data
-    const { storeFormData } = useStoreContext();
+    // const { storeFormData } = useStoreContext();
     
     const [billingCycle, setBillingCycle] = useState<'monthly' | 'annually'>('monthly');
 
@@ -80,12 +70,12 @@ export default function PricingAndStatsSection() {
             { label: "Verified Professionals", value: 12.5, icon: "BriefcaseIcon", suffix: 'K+' },
             { label: "Happy Customers", value: 98.4, icon: "UsersIcon", suffix: 'K+' },
             { label: "Average Rating", value: 4.9, icon: "StarIcon" },
-        ] as IStat[],
+        ] as Stat[],
         pricingTiers: [
             {
                 name: "Basic",
                 monthlyPrice: 9,
-                annualPrice: 9 * 12 * 0.8, // 20% Discount
+                // annualPrice: 9 * 12 * 0.8, // 20% Discount
                 description: "Jumpstart your presence with essential booking tools.",
                 features: [
                     "5 client bookings/month limit",
@@ -97,8 +87,8 @@ export default function PricingAndStatsSection() {
             },
             {
                 name: "Pro",
-                monthlyPrice: 29,
-                annualPrice: 29 * 12 * 0.8, // 20% Discount
+                price: 29,
+                // annualPrice: 29 * 12 * 0.8, // 20% Discount
                 description: "Maximize growth with unlimited scheduling and advanced branding.",
                 features: [
                     "Unlimited client bookings",
@@ -112,8 +102,10 @@ export default function PricingAndStatsSection() {
             },
             {
                 name: "Enterprise",
-                monthlyPrice: 'Custom',
-                annualPrice: 'Custom',
+                // Use a numeric monthlyPrice to match the PricingTier shape;
+                // display can still treat this as "Custom" where needed.
+                monthlyPrice: 0,
+                // annualPrice: 0, // or provide a numeric annual price if available
                 description: "Tailored infrastructure for high-volume operations and large teams.",
                 features: [
                     "Dedicated account manager",
@@ -125,13 +117,12 @@ export default function PricingAndStatsSection() {
                 ],
                 isFeatured: false,
             },
-        ] as ITier[],
+        ] as PricingTier[],
         themeSettings: {
             primaryColor: '#059669', // Emerald 600
         },
     };
 
-    const { stats = [], pricingTiers = [], themeSettings } = storeFormData || sampleData;
     const primaryColor = themeSettings?.primaryColor || '#059669';
 
     const sectionRef = useRef(null);
@@ -156,8 +147,8 @@ export default function PricingAndStatsSection() {
     // Split stats for distinct visual treatment
     // Ensure stats is always a proper IStat[] array
     // Safely normalize stats (null-proof)
-const normalizedStats: IStat[] = Array.isArray(storeFormData?.stats)
-  ? ((storeFormData?.stats ?? []) as IStat[])
+const normalizedStats: Stat[] = Array.isArray(stats)
+  ? ((stats ?? []) as Stat[])
   : sampleData.stats;
 
 // Split stats for distinct visual treatment

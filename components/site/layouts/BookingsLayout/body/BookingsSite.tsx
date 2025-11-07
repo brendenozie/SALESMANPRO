@@ -14,7 +14,7 @@ import Hero from './components/HeroSection';
 const SectionSkeleton = () => <div className="h-96 w-full animate-pulse bg-gray-200 rounded-lg my-12" />;
 
 // Dynamically import below-the-fold components
-const FeaturesSection = dynamic(() => import('./components/FeaturesSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const FeaturesSection = dynamic<any>(() => import('./components/FeaturesSection'), { loading: () => <SectionSkeleton />, ssr: false });
 const BenefitsSection = dynamic(() => import('./components/BenefitsSection'), { loading: () => <SectionSkeleton />, ssr: false });
 const PricingAndStatsSection = dynamic(() => import('./components/PricingAndStatsSection'), { loading: () => <SectionSkeleton />, ssr: false });
 const MassageFeatures = dynamic(() => import('./components/MessagesSection'), { loading: () => <SectionSkeleton />, ssr: false });
@@ -29,17 +29,17 @@ export default function BookingsSite({ pageData, companyId }: { pageData: StoreF
   // Fetch client-side data
   const { data: testimonialsData } = useSWR(`/api/site/testimonials?id=${companyId}`, fetcher);
   const { data: faqsData } = useSWR(`/api/site/faqs?id=${companyId}`, fetcher);
-  
-  const { name, description, bannerUrl, marketplaceListings, heroSlides } = pageData;
+
+  const { name, description, bannerUrl, marketplaceListings, heroSlides, themeSettings, CoreValues, stats, pricingTiers } = pageData;
 
   return (
     <>
       {/* Hero */}
       <Hero name={name} description={description} bannerUrl={bannerUrl} marketplaceListings={marketplaceListings} heroSlides={heroSlides} />
 
-      <FeaturesSection />
+      <FeaturesSection name={name} description={description} themeSettings={themeSettings} CoreValues={CoreValues} />
 
-      <PricingAndStatsSection />
+      <PricingAndStatsSection stats={stats} pricingTiers={pricingTiers} themeSettings={themeSettings} />
 
       <MassageFeatures />
 
