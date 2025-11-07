@@ -89,7 +89,7 @@ export default function EcommerceShoesSite({ pageData, companyId }: EcommerceSit
       <AllProducts martketplaceListings={marketplaceListings} themeSettings={themeSettings} />
       <AwardsSection awards={awards} />
       <TestimonialsSection testimonials={testimonials} />
-      <BannerSection />
+      <BannerSection promotions={promotions} themeSettings={themeSettings}/>
       <NewsletterSection />
     </>
   );
