@@ -30,7 +30,7 @@ export default function BookingsSite({ pageData, companyId }: { pageData: StoreF
   const { data: testimonialsData } = useSWR(`/api/site/testimonials?id=${companyId}`, fetcher);
   const { data: faqsData } = useSWR(`/api/site/faqs?id=${companyId}`, fetcher);
 
-  const { name, description, bannerUrl, marketplaceListings, heroSlides, themeSettings, CoreValues, stats, pricingTiers } = pageData;
+  const { name, slug, description, bannerUrl, marketplaceListings, heroSlides, themeSettings, CoreValues, stats, pricingTiers, promotions } = pageData;
 
   return (
     <>
@@ -41,15 +41,15 @@ export default function BookingsSite({ pageData, companyId }: { pageData: StoreF
 
       <PricingAndStatsSection stats={stats} pricingTiers={pricingTiers} themeSettings={themeSettings} />
 
-      <MassageFeatures />
+      <MassageFeatures marketplaceListings={marketplaceListings} slug={slug} themeSettings={themeSettings} />
 
-      <BenefitsSection />
+      <BenefitsSection name={name} description={description} bannerUrl={bannerUrl} themeSettings={themeSettings} promotions={promotions} />
 
-      {testimonialsData?.data && <TestimonialsSection />}
+      {testimonialsData?.data && <TestimonialsSection name={name} testimonials={testimonialsData.data} themeSettings={themeSettings} />}
 
       <CtaSection />
 
-      {faqsData?.data && <FAQsSection />}
+      {faqsData?.data && <FAQsSection faqs={faqsData.data} name={name} themeSettings={themeSettings} />}
       
     </>
   );

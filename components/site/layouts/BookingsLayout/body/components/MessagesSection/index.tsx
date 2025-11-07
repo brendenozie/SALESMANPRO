@@ -6,26 +6,27 @@ import { motion } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
 import Link from 'next/link';
 import { XMarkIcon, MagnifyingGlassIcon, ArrowRightIcon } from '@heroicons/react/24/outline'; // Added ArrowRightIcon
+import { MarketListingForm } from '@/types/typings';
 // Assuming BookingForm and MarketListingForm types/components exist
 // import BookingForm from '../../../components/BookingForm'; 
 // import { MarketListingForm } from '@/types/typings'; 
 
 // Placeholder types for external dependencies to make the component runnable
-type MarketListingForm = {
-    id: string;
-    name: string;
-    description: string;
-    images?: string[];
-    finalPrice: number;
-    isAvailable: boolean;
-};
+// type MarketListingForm = {
+//     id: string;
+//     name: string;
+//     description: string;
+//     images?: string[];
+//     finalPrice: number;
+//     isAvailable: boolean;
+// };
 
 // Placeholder for BookingForm component (assumed to be complex and imported)
 const BookingForm = ({ service, slug }: { service: MarketListingForm, slug: string }) => (
     <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
         <p className="text-sm font-medium text-gray-700 mb-2">Booking Integration Placeholder:</p>
         <p className="text-xs text-gray-500">Service: **{service.name}**</p>
-        <p className="text-xs text-gray-500">Price: **KES {service.finalPrice.toFixed(2)}**</p>
+        <p className="text-xs text-gray-500">Price: **KES {service.finalPrice?.toFixed(2)}**</p>
         <button
             className="mt-3 w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-200"
             disabled={!service.isAvailable}
@@ -38,8 +39,16 @@ const BookingForm = ({ service, slug }: { service: MarketListingForm, slug: stri
 
 const loader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality || 75}`;
 
-export default function ServicesSection() {
-    const { storeFormData } = useStoreContext();
+interface servicesSectionProps {
+    marketplaceListings?: MarketListingForm[] | null;
+    slug?: string;
+    themeSettings?: {
+        primaryColor?: string;
+    } | null;
+}
+
+export default function ServicesSection({marketplaceListings, slug, themeSettings}: servicesSectionProps) {
+    // const { storeFormData } = useStoreContext();
 
     // Sample data (Refined descriptions and added a slightly different image for variety)
     const sampleData = {
@@ -99,7 +108,6 @@ export default function ServicesSection() {
         slug: 'default-service-slug'
     } as any;
 
-    const { marketplaceListings = [], themeSettings, slug } = storeFormData || sampleData;
 
     const [search, setSearch] = useState('');
     const [selected, setSelected] = useState<MarketListingForm | null>(null);
@@ -107,7 +115,7 @@ export default function ServicesSection() {
     const primaryColor = themeSettings?.primaryColor || '#059669';
 
     // Filter logic has been fully implemented here
-    const filteredListings = marketplaceListings.filter((item: MarketListingForm) =>
+    const filteredListings = marketplaceListings && marketplaceListings.filter((item: MarketListingForm) =>
         item.name.toLowerCase().includes(search.toLowerCase()) ||
         item.description?.toLowerCase().includes(search.toLowerCase())
     );
@@ -188,7 +196,7 @@ export default function ServicesSection() {
                 </div>
 
                 {/* --- SERVICES CARDS GRID --- */}
-                {filteredListings.length > 0 ? (
+                {filteredListings && filteredListings.length > 0 ? (
                     <motion.div
                         className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
                         variants={containerVariants}

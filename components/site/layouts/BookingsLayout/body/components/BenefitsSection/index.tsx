@@ -41,8 +41,20 @@ const defaultBenefits = [
     },
 ];
 
-export default function AboutAndBenefitsSection() {
-    const { storeFormData } = useStoreContext();
+interface AboutAndBenefitsSectionProps {
+    // storeFormData?: any; // Define a proper type if available
+    name?: string | undefined | null;
+    description?: string | undefined | null;
+    bannerUrl?: string | undefined | null;
+    themeSettings?: {
+        primaryColor?: string;
+        secondaryColor?: string;
+    } | null;
+    promotions?: any[]; // Define a proper type if available
+}
+
+export default function AboutAndBenefitsSection({name, description, bannerUrl, themeSettings, promotions}: AboutAndBenefitsSectionProps) {
+    // const { storeFormData } = useStoreContext();
 
     // Sample data (Using our established Emerald/Amber colors)
     const sampleData = {
@@ -56,19 +68,14 @@ export default function AboutAndBenefitsSection() {
         promotions: [],
     };
 
-    const {
-        description,
-        bannerUrl,
-        themeSettings,
-        promotions,
-    } = storeFormData || sampleData;
+    // const  = storeFormData || sampleData;
 
     const primaryColor = themeSettings?.primaryColor || '#059669';
     const secondaryColor = themeSettings?.secondaryColor || '#FBBF24';
 
     // Logic to determine benefits
     const brandBenefits = promotions?.[0]?.perks?.length > 0
-        ? promotions[0].perks.map((perk: any) => ({
+        ? promotions?.[0].perks.map((perk: any) => ({
             title: perk.label,
             description: perk.description || '',
             Icon: StarIcon, // Generic icon for dynamic perks
@@ -182,7 +189,7 @@ export default function AboutAndBenefitsSection() {
                             className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-10 pt-8"
                             variants={containerVariants}
                         >
-                            {brandBenefits.map(({ title, description, Icon }, i) => (
+                            {brandBenefits.map(({ title, description, Icon }:{ title: string; description: string; Icon: React.ElementType }, i : number) => (
                                 <motion.div
                                     key={title}
                                     // Removed border/shadow from card body to emphasize the icon block

@@ -27,17 +27,25 @@ const defaultFaqs = [
   },
 ];
 
-export default function FAQsSection() {
-  const { storeFormData } = useStoreContext();
+interface FAQProps {
+  faqs?: { question: string; answer: string }[];
+  name?: string | null;
+  themeSettings?: {
+    primaryColor?: string;
+  } | null;
+}
+
+export default function FAQsSection({ faqs, name, themeSettings }: FAQProps) {
+  // const { storeFormData } = useStoreContext();
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   const toggleFAQ = (index: number) => {
     setOpenIndex(openIndex === index ? null : index);
   };
 
-  const faqs = storeFormData?.faqs?.length ? storeFormData.faqs : defaultFaqs;
-  const storeName = storeFormData?.name || 'our platform';
-  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#00A880'; // Consistent primary color
+  // const faqs = storeFormData?.faqs?.length ? storeFormData.faqs : defaultFaqs;
+  const storeName = name || 'our platform';
+  const primaryColor = themeSettings?.primaryColor || '#00A880'; // Consistent primary color
 
   // Variants for FAQ answer animation
   const answerVariants = {
@@ -79,7 +87,7 @@ export default function FAQsSection() {
         </motion.div>
 
         <div className="space-y-6"> {/* Increased space between FAQ items */}
-          {faqs.map((faq, index) => (
+          {faqs && faqs.map((faq, index) => (
             <motion.div
               key={index}
               initial={{ opacity: 0, y: 30 }}

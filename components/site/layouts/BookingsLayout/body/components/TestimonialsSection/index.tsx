@@ -194,10 +194,18 @@ const CustomSlider = ({ items, primaryColor }: { items: typeof staticTestimonial
 };
 // End Custom Slider Implementation
 
-export default function TestimonialsSection() {
+interface TestimonialsSectionProps {
+    name?: string | undefined | null;
+    testimonials?: typeof staticTestimonials;
+    themeSettings?: {
+        primaryColor?: string;
+    } | null;
+}
+
+export default function TestimonialsSection({ name = 'Our Platform', testimonials = [], themeSettings }: TestimonialsSectionProps) {
     // Mock Context Access
-    const { storeFormData } = useStoreContext();
-    const { name = 'Our Platform', testimonials = [], themeSettings } = storeFormData || {};
+    // const { storeFormData } = useStoreContext();
+    // const { name = 'Our Platform', testimonials = [], themeSettings } = storeFormData || {};
     const items = testimonials.length ? testimonials : staticTestimonials;
 
     // Use a slightly darker primary color for text/accents for better contrast
