@@ -5,6 +5,7 @@ import { getAuthSession } from "@/lib/auth";
 import { companySchema } from "@/lib/validations/company";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { revalidateCompanyCache } from "@/lib/company-fetcher";
 
 export const dynamic = "force-dynamic";
 
@@ -199,6 +200,8 @@ async function updateCompany(req: Request, { params }: { params: { id: string } 
         
     },
   });
+
+  revalidateCompanyCache(updatedCompany.slug || "");
 
   return formatResponse(true, updatedCompany, "Company updated successfully");
 }

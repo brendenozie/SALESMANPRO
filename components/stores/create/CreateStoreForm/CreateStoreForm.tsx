@@ -37,6 +37,7 @@ import { CompanyLocation } from "@prisma/client";
 import { categoryReducer } from "@/hooks/categoryReducer";
 import toast from "react-hot-toast";
 import { PaymentSettings } from "../PaymentAccordion/PaymentAccordion";
+import { revalidateCompanyCache } from "@/lib/company-fetcher";
 
 const SITE_CATEGORIES_WITH_PRICING = [
   "service provider",
@@ -1472,6 +1473,9 @@ const handleSubmit = async (e: FormEvent) => {
       toast.error(`Error saving store: ${text}`);
       return;
     }
+
+    let data = await res.json();
+    console.log("🟢 Store data saved successfully:", data);
 
     console.log("✅ Store saved successfully!");
     toast.success(isEdit ? "Store updated successfully!" : "Store created!");
