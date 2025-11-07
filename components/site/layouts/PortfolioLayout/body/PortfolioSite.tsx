@@ -42,7 +42,8 @@ export default function PortfolioSite({ pageData, companyId }: { pageData: Store
     stats=[],
     projects,
     contactEmail,
-    CoreValues
+    CoreValues,
+    faqs
   } = pageData;
 
   return (
@@ -70,7 +71,7 @@ export default function PortfolioSite({ pageData, companyId }: { pageData: Store
         throw new Error('Function not implemented.');
       } } /> */}
 
-      <FAQSection/>
+      <FAQSection faqs={faqs} themeSettings={themeSettings}/>
 
       <CtaSection/>
 

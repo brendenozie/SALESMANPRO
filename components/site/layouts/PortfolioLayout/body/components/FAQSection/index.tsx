@@ -20,21 +20,19 @@ interface ThemeSettings {
   sectionBgColor?: string;
 }
 
-interface StoreFormData {
+interface FAQsSectionProps {
   faqs?: FAQItem[];
-  themeSettings?: ThemeSettings;
+  themeSettings?: ThemeSettings | undefined | null;
 }
 
-export default function FAQsSection() {
-  const { storeFormData } = useStoreContext() as { storeFormData: StoreFormData };
-  const { faqs: dynamicFaqs, themeSettings = {} } = storeFormData;
+export default function FAQsSection({faqs, themeSettings}:FAQsSectionProps) {
 
   // Robust theme color fallbacks
-  const primaryColor = themeSettings.primaryColor || '#007bff'; // Vibrant blue
-  const secondaryColor = themeSettings.secondaryColor || '#6c757d'; // Complementary gray
-  const sectionBgColor = themeSettings.sectionBgColor || '#f8f9fa'; // Light gray background for contrast
-  const textColor = themeSettings.textColor || '#1a202c'; // Dark text for headings (tailwind: gray-900)
-  const answerTextColor = themeSettings.answerTextColor || '#4a5568'; // Slightly lighter text for answers (tailwind: gray-700)
+  const primaryColor = themeSettings?.primaryColor || '#007bff'; // Vibrant blue
+  const secondaryColor = themeSettings?.secondaryColor || '#6c757d'; // Complementary gray
+  const sectionBgColor = themeSettings?.sectionBgColor || '#f8f9fa'; // Light gray background for contrast
+  const textColor = themeSettings?.textColor || '#1a202c'; // Dark text for headings (tailwind: gray-900)
+  const answerTextColor = themeSettings?.answerTextColor || '#4a5568'; // Slightly lighter text for answers (tailwind: gray-700)
   const borderColor = '#e2e8f0'; // Tailwind: gray-200 for borders
   const accentLight = `${primaryColor}20`; // Primary color with 20% opacity for light accents
 
@@ -68,8 +66,8 @@ export default function FAQsSection() {
   ];
 
   const faqsData: FAQItem[] =
-    Array.isArray(dynamicFaqs) && dynamicFaqs.length > 0
-      ? [...dynamicFaqs].sort((a, b) => (a.order || 0) - (b.order || 0))
+    Array.isArray(faqs) && faqs.length > 0
+      ? [...faqs].sort((a, b) => (a.order || 0) - (b.order || 0))
       : staticFaqs;
 
   const [openIndex, setOpenIndex] = useState<number | null>(null);
