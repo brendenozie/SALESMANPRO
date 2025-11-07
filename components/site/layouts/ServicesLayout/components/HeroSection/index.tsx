@@ -135,70 +135,94 @@ export default function HeroSection({
         </div>
 
         {/* Right: Content */}
-        {/* 3. Increased Vertical Padding on Large Screens */}
-        <div className="relative w-full lg:w-1/2 p-8 md:p-12 lg:py-32 lg:px-20 flex flex-col justify-center text-center lg:text-left">
-          <motion.div
-            className="flex flex-col items-center lg:items-start"
-            variants={contentVariants}
-            initial="hidden"
-            animate="visible"
-          >
-            <motion.h1
-              className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight tracking-tight"
-              variants={wordReveal}
-            >
-              {firstSlide.headline}
-            </motion.h1>
+       {/* Right: Content - Optimized for Contrast and Hierarchy */}
+<div className="relative w-full lg:w-1/2 p-8 md:p-14 lg:py-40 lg:px-16 flex flex-col justify-center text-center lg:text-left">
+    
+    <motion.div
+        className="flex flex-col items-center lg:items-start"
+        variants={contentVariants}
+        initial="hidden"
+        animate="visible"
+    >
+        {/* 1. Introductory Badge/Tag (Optional, but adds structure) */}
+        <motion.p
+            className="mb-4 inline-block px-4 py-1.5 text-sm font-semibold rounded-full bg-black/5 text-gray-800 tracking-wider uppercase" 
+            variants={wordReveal}
+        >
+            {firstSlide.badgeText || description}
+        </motion.p>
 
-            <AnimatePresence mode="wait">
-              <motion.h2
+        {/* 2. H1: Main Headline (The punchiest phrase, now in high-contrast dark text) */}
+        <motion.h1
+            // Use the dark color seen in your image for maximum contrast
+            className="text-5xl sm:text-6xl lg:text-7xl font-extrabold leading-tight tracking-tighter text-gray-900" 
+            variants={wordReveal}
+        >
+            {firstSlide.headline}
+        </motion.h1>
+
+        {/* 3. H2: Dynamic Subline (Service Name or secondary benefit) - Uses the bright primary color */}
+        <AnimatePresence mode="wait">
+            {/* <motion.h2
                 key={firstSlide.subline}
-                className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight tracking-tight mt-2"
+                className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight tracking-tight mt-4" 
                 style={{
-                  // Subtle color change on gradient for richer secondary color pop
-                  backgroundImage: `linear-gradient(45deg, ${secondaryColor}DD, ${secondaryColor}AA)`,
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
+                    // Use the Primary Color (the bright orange/yellow) for this text
+                    color: primaryColor, 
                 }}
                 variants={dynamicTextFade}
                 initial="initial"
                 animate="animate"
                 exit="exit"
-              >
-                {firstSlide.subline}
-              </motion.h2>
-            </AnimatePresence>
-
-            <motion.p
-              className="mt-6 text-lg sm:text-xl max-w-lg font-normal text-gray-800 leading-relaxed" // 4. Stronger Font Weight and Darker Color
-              variants={wordReveal}
             >
-              {firstSlide.badgeText}
-            </motion.p>
+                {firstSlide.subline || "Schedule Your Pickup Today"}
+            </motion.h2> */}
 
-            <motion.div
-              className="mt-10 flex flex-col sm:flex-row gap-4 sm:gap-6"
-              variants={wordReveal}
-            >
-              <Link href={firstSlide.ctaLink || `/${slug}/services`}>
+        {/* 4. Paragraph/Description - Now dark and highly readable */}
+        <motion.p
+            key={firstSlide.subline}
+                // className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight tracking-tight mt-4" 
+                // style={{
+                //     // Use the Primary Color (the bright orange/yellow) for this text
+                //     color: primaryColor, 
+                // }}
+                // variants={dynamicTextFade}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+            className="mt-8 text-xl max-w-xl font-medium text-gray-800 leading-relaxed" 
+            variants={wordReveal}
+        >
+            {/* The original descriptive text, now legible: */}
+            {/* Enjoy crisp, clean clothes without lifting a finger. **Schedule your pickup and get them back same day.** */}
+            {firstSlide.subline || "Schedule Your Pickup Today"}
+        </motion.p>
+        
+        </AnimatePresence>
+
+        {/* 5. CTA Buttons - Clean, high-impact button retained */}
+        <motion.div
+            className="mt-12 flex flex-col sm:flex-row gap-5 sm:gap-7"
+            variants={wordReveal}
+        >
+            <Link href={firstSlide.ctaLink || `/${slug}/services`}>
                 <motion.button
-                  className="px-8 py-4 font-bold rounded-full text-lg shadow-xl transition-all duration-300" // 5. Increased default shadow
-                  style={{
-                    background: primaryColor,
-                    color: "white",
-                  }}
-                  whileHover={{ 
+                    className="w-full sm:w-auto px-10 py-5 font-bold rounded-xl text-lg shadow-2xl transition-all duration-300" 
+                    style={{
+                        background: primaryColor,
+                        color: "white",
+                    }}
+                    whileHover={{ 
                         scale: 1.05, 
-                        // Enhanced hover effect with shadow incorporating primary color
-                        boxShadow: `0 10px 15px -3px ${primaryColor}4D, 0 4px 6px -4px ${primaryColor}4D` 
+                        boxShadow: `0 15px 30px -5px ${primaryColor}77, 0 4px 6px -4px ${primaryColor}4D` 
                     }}
                 >
-                  {firstSlide.ctaText}
+                    {firstSlide.ctaText || "Book a Pickup"}
                 </motion.button>
-              </Link>
-            </motion.div>
-          </motion.div>
-        </div>
+            </Link>
+        </motion.div>
+    </motion.div>
+</div>
       </div>
 
       {/* Scroll Down Indicator (Unchanged) */}
