@@ -13,6 +13,7 @@ import {
   ClockIcon,
   ChevronDownIcon, // Added for dropdown visual cue
 } from "@heroicons/react/24/outline"; // Changed to outline for a lighter feel
+import { MarketListingForm } from "@/types/typings";
 
 // We'll assume these types and contexts exist for a complete example
 // NOTE: Make sure to include the type definition for MarketListingForm
@@ -22,13 +23,13 @@ import {
 
 // --- Sample Data & Types (Added for self-contained, runnable example) ---
 // Define a placeholder type for the Marketplace Listing
-type MarketListingForm = {
-  id: string;
-  name: string;
-  isAvailable: boolean;
-  finalPrice: number;
-  images: string[];
-};
+// type MarketListingForm = {
+//   id: string;
+//   name: string;
+//   isAvailable: boolean;
+//   finalPrice: number;
+//   images: string[];
+// };
 
 // Placeholder context hook
 const useStoreContext = () => ({
@@ -43,8 +44,15 @@ const loader = ({ src, width, quality }: any) =>
 // Dynamic Hero Text
 const heroText = "Effortlessly book your next service with vetted local pros.";
 
-export default function Hero() {
-  const { storeFormData } = useStoreContext();
+interface HeroProps {
+    name: string | undefined | null;
+    description: string | undefined | null;
+    bannerUrl: string | undefined | null;
+    marketplaceListings: MarketListingForm[] | undefined | null;
+}
+
+export default function Hero({name, description, bannerUrl, marketplaceListings }: HeroProps) {
+
 
   // 🌟 ENHANCEMENT: Provided sample data with a more cinematic banner and diverse service images.
   const defaultFormData = {
@@ -53,24 +61,18 @@ export default function Hero() {
     // A high-impact, moodier image for better contrast with the booking bar
     bannerUrl: "https://images.unsplash.com/photo-1517436336340-27a3c3c78897?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     marketplaceListings: [
-      { id: "1", name: "Hair Stylist", isAvailable: true, finalPrice: 75, images: ["https://images.unsplash.com/photo-1596461404986-e88e404b4c73?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"] },
-      { id: "2", name: "Electrician", isAvailable: true, finalPrice: 150, images: ["https://images.unsplash.com/photo-1581094042850-25e40733d31b?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"] },
-      { id: "3", name: "Plumber", isAvailable: true, finalPrice: 120, images: ["https://images.unsplash.com/photo-1587569145888-0f1e8e8f8c7e?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"] },
-      { id: "4", name: "Lawn Care Service", isAvailable: true, finalPrice: 80, images: ["https://images.unsplash.com/photo-1591871638656-e910609315d1?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"] },
-      { id: "5", name: "Massage Therapist", isAvailable: true, finalPrice: 100, images: ["https://images.unsplash.com/photo-1570172619660-f192b950886f?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"] },
+      { id: "1", name: "Hair Stylist", isAvailable: true, finalPrice: "75", images: ["https://images.unsplash.com/photo-1596461404986-e88e404b4c73?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"] },
+      { id: "2", name: "Electrician", isAvailable: true, finalPrice: "150", images: ["https://images.unsplash.com/photo-1581094042850-25e40733d31b?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"] },
+      { id: "3", name: "Plumber", isAvailable: true, finalPrice: "120", images: ["https://images.unsplash.com/photo-1587569145888-0f1e8e8f8c7e?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"] },
+      { id: "4", name: "Lawn Care Service", isAvailable: true, finalPrice: "80", images: ["https://images.unsplash.com/photo-1591871638656-e910609315d1?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"] },
+      { id: "5", name: "Massage Therapist", isAvailable: true, finalPrice: "100", images: ["https://images.unsplash.com/photo-1570172619660-f192b950886f?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"] },
     ],
   };
 
-  const {
-    name = defaultFormData.name,
-    bannerUrl = defaultFormData.bannerUrl,
-    marketplaceListings = defaultFormData.marketplaceListings as unknown as MarketListingForm[],
-  }: {
-    name: string;
-    description: string;
-    bannerUrl: string;
-    marketplaceListings: MarketListingForm[];
-  } = storeFormData || ({} as any);
+  name = name || defaultFormData.name;
+  description = description || defaultFormData.description;
+  bannerUrl = bannerUrl || defaultFormData.bannerUrl;
+  let marketplaceListingsToShow  = marketplaceListings || defaultFormData.marketplaceListings;
 
   const [searchTerm, setSearchTerm] = useState("");
   const [date, setDate] = useState(new Date());
@@ -82,7 +84,7 @@ export default function Hero() {
 
   // Filter listings based on search term
   const filteredListings = useMemo(() => {
-    return (marketplaceListings ?? [])
+    return (marketplaceListingsToShow ?? [])
       .filter((item) => item.name?.toLowerCase().includes(searchTerm.toLowerCase()))
       .map((item) => ({
         id: item.id,
@@ -90,7 +92,7 @@ export default function Hero() {
         imageUrl: item.images?.[0] ?? null,
       }))
       .slice(0, 5); // Limit to 5 for a clean dropdown
-  }, [searchTerm, marketplaceListings]);
+  }, [searchTerm, marketplaceListingsToShow]);
 
   // Handle click outside to close dropdown
   useEffect(() => {

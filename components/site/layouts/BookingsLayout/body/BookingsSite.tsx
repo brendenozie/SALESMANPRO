@@ -29,11 +29,13 @@ export default function BookingsSite({ pageData, companyId }: { pageData: StoreF
   // Fetch client-side data
   const { data: testimonialsData } = useSWR(`/api/site/testimonials?id=${companyId}`, fetcher);
   const { data: faqsData } = useSWR(`/api/site/faqs?id=${companyId}`, fetcher);
+  
+  const { name, description, bannerUrl, marketplaceListings } = pageData;
 
   return (
     <>
       {/* Hero */}
-      <Hero />
+      <Hero name={name} description={description} bannerUrl={bannerUrl} marketplaceListings={marketplaceListings} />
 
       <FeaturesSection />
 
