@@ -90,7 +90,7 @@ export async function findCompanyCached(
  * Call this after updating a company's data in the admin panel.
  */
 export async function revalidateCompanyCache(slug: string) {
-  revalidateTag('companies');      // invalidate all companies
+  // revalidateTag('companies');      // invalidate all companies
   revalidateTag(`company:${slug}`); // invalidate this specific company
 }
 
