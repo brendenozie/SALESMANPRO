@@ -30,12 +30,12 @@ export default function BookingsSite({ pageData, companyId }: { pageData: StoreF
   const { data: testimonialsData } = useSWR(`/api/site/testimonials?id=${companyId}`, fetcher);
   const { data: faqsData } = useSWR(`/api/site/faqs?id=${companyId}`, fetcher);
   
-  const { name, description, bannerUrl, marketplaceListings } = pageData;
+  const { name, description, bannerUrl, marketplaceListings, heroSlides } = pageData;
 
   return (
     <>
       {/* Hero */}
-      <Hero name={name} description={description} bannerUrl={bannerUrl} marketplaceListings={marketplaceListings} />
+      <Hero name={name} description={description} bannerUrl={bannerUrl} marketplaceListings={marketplaceListings} heroSlides={heroSlides} />
 
       <FeaturesSection />
 
