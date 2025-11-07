@@ -205,16 +205,16 @@ export const companySchema = z.object({
   StoreCategory: z.array(storeCategorySchema).nullable().optional(),
   CompanyLocation: z.array(companyLocationSchema).nullable().optional(),
 
-  founderName: z.string().min(2).max(100).nullable().optional(),
-  founderQuote: z.string().max(500).nullable().optional(),
-  founderImage: z.string().nullable().optional(),
+  founderName: z.string().min(2).max(100).nullable().optional().or(z.literal('')),
+  founderQuote: z.string().max(500).nullable().optional().or(z.literal('')),
+  founderImage: z.string().nullable().optional().or(z.literal('')),
   partnerLogos: z.array(z.object({
       url: z.string().optional(),
       altText: z.string().max(100).optional(),
   })).nullable().optional(),
 
-  sectionSubtitle: z.string().max(150).nullable().optional(),
-  sectionTitle: z.string().max(100).nullable().optional(),
-  sectionDescription: z.string().max(500).nullable().optional(),
+  sectionSubtitle: z.string().max(150).nullable().optional().or(z.literal('')),
+  sectionTitle: z.string().max(100).nullable().optional().or(z.literal('')),
+  sectionDescription: z.string().max(500).nullable().optional().or(z.literal('')),
 
 });
