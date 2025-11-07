@@ -38,8 +38,8 @@ const SITE_CATEGORIES: Category[] = [
     icon: "🛒", 
     variants: [
       { name: "Modern Shop (v1)", link: "https://duka-yangu.salesmanpro.site", description: "Sleek design for apparel and accessories.", tag: 'Popular' },
-      { name: "Digital Goods Store (v2)", link: "https://digital-shop.salesmanpro.site", description: "Optimized for selling software and courses.", tag: 'New' },
-      { name: "Artisan Marketplace (v3)", link: "https://artisan-shop.salesmanpro.site", description: "Focuses on handcrafted and unique items.", tag: 'Standard' },
+      // { name: "Digital Goods Store (v2)", link: "https://digital-shop.salesmanpro.site", description: "Optimized for selling software and courses.", tag: 'New' },
+      // { name: "Artisan Marketplace (v3)", link: "https://artisan-shop.salesmanpro.site", description: "Focuses on handcrafted and unique items.", tag: 'Standard' },
     ]
   },
   { 
@@ -47,7 +47,7 @@ const SITE_CATEGORIES: Category[] = [
     icon: "💡", 
     variants: [
       { name: "Executive Coach (v1)", link: "https://flourishhub.salesmanpro.site", description: "Professional, high-conversion landing page.", tag: 'Popular' },
-      { name: "Wellness Retreat (v2)", link: "https://wellness-coach.salesmanpro.site", description: "Calm and inviting design for wellness services.", tag: 'Standard' },
+      // { name: "Wellness Retreat (v2)", link: "https://wellness-coach.salesmanpro.site", description: "Calm and inviting design for wellness services.", tag: 'Standard' },
     ]
   },
   { name: "Public Speaking", 
@@ -57,7 +57,7 @@ const SITE_CATEGORIES: Category[] = [
     ] 
   },
   { name: "Shoes Store", icon: "👟", variants: [
-    { name: "Shoes Store Classic", link: "https://shoesstore.salesmanpro.site", description: "Grid-based product layout.", tag: 'Standard' }
+    { name: "Shoes Store Classic", link: "https://shoes-store.salesmanpro.site", description: "Grid-based product layout.", tag: 'Standard' }
   ] 
 },
   { name: "Service Provider", 
