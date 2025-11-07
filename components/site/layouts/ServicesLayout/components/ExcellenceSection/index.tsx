@@ -19,20 +19,26 @@ const loader = ({
   quality?: number;
 }) => `${src}?w=${width}&q=${quality || 75}`;
 
-export default function ExcellenceSection() {
-  const { storeFormData } = useStoreContext();
+interface ExcellenceSectionProps {
+  slug: string;
+  themeSettings: any;
+  promotions: IPromotion[];
+}
 
-  if (!storeFormData) {
-    return (
-      <div className="flex items-center justify-center h-64 bg-gray-50 dark:bg-gray-900">
-        <p className="text-gray-600 dark:text-gray-300 text-lg animate-pulse">
-          Crafting excellence...
-        </p>
-      </div>
-    );
-  }
+export default function ExcellenceSection({slug, themeSettings, promotions}: ExcellenceSectionProps) {
+  // const { storeFormData } = useStoreContext();
 
-  const { slug, themeSettings, promotions } = storeFormData;
+  // if (!storeFormData) {
+  //   return (
+  //     <div className="flex items-center justify-center h-64 bg-gray-50 dark:bg-gray-900">
+  //       <p className="text-gray-600 dark:text-gray-300 text-lg animate-pulse">
+  //         Crafting excellence...
+  //       </p>
+  //     </div>
+  //   );
+  // }
+
+  // const { slug, themeSettings, promotions } = storeFormData;
 
   // Take first promotion if available
   const promotion: IPromotion | null =
@@ -43,10 +49,7 @@ export default function ExcellenceSection() {
   const secondaryColor = "#FFB300";
 
   // Feature Image
-  const featureImage =
-    promotion?.featureImage1 ??
-    storeFormData?.themeSettings?.aboutImage ??
-    "/images/placeholders/feature-main.jpg";
+  const featureImage = promotion?.bannerUrl ?? promotion?.featureImage1 ?? themeSettings?.aboutImage ?? "https://via.placeholder.com/600x400";
 
   // Fallback perks if no promotion data
   const defaultPerks = [
@@ -187,7 +190,7 @@ export default function ExcellenceSection() {
       {/* Content */}
       <div className="relative z-10 max-w-7xl mx-auto px-6">
         {/* Trust Logos */}
-        <motion.div
+        {/* <motion.div
           className="mb-16 text-center"
           initial="hidden"
           whileInView="visible"
@@ -225,7 +228,7 @@ export default function ExcellenceSection() {
               </motion.div>
             ))}
           </div>
-        </motion.div>
+        </motion.div> */}
 
         {/* Excellence Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">

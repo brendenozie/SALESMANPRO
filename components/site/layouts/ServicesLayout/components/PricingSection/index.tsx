@@ -4,9 +4,19 @@ import React, { useState } from 'react';
 import { CheckCircleIcon, SparklesIcon, RocketLaunchIcon, CubeTransparentIcon } from '@heroicons/react/24/solid';
 import { useStoreContext } from '@/contexts/StoreContext';
 import { motion } from 'framer-motion';
+import { PricingTier } from '@/types/typings';
 
 // Placeholder for default pricing plans with Heroicons
-const defaultPricingPlans = [
+const defaultPricingPlans: Array<{
+  name: string;
+  price: number;
+  description: string;
+  features: string[];
+  isFeatured: boolean;
+  frequency: 'Monthly' | 'Yearly' | 'One-time';
+  badge?: string;
+  icon: React.ReactNode;
+}> = [
   {
     name: 'Standard',
     price: 99,
@@ -37,12 +47,14 @@ const defaultPricingPlans = [
   },
 ];
 
-export default function PricingSection() {
+interface PricingSectionProps {
+  pricingTiers?: PricingTier[];
+  themeSettings?: any;
+}
+
+export default function PricingSection( { pricingTiers, themeSettings }: PricingSectionProps) {
   const [billingCycle, setBillingCycle] = useState<'Monthly' | 'Yearly' | 'One-time'>('Monthly');
 
-  const { storeFormData } = useStoreContext();
-
-  const { pricingTiers, themeSettings } = storeFormData || {};
   const primaryColor = themeSettings?.primaryColor || '#4CAF50';
   const secondaryColor = themeSettings?.secondaryColor || '#FFC107';
 

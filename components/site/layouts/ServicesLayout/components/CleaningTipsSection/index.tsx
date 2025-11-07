@@ -37,14 +37,19 @@ const defaultTips : any = [
   },
 ];
 
-export default function CleaningTipsSection() {
-  const { storeFormData } = useStoreContext(); // Access storeFormData for theme settings
+interface CleaningTipsSectionProps {
+  blogs?: any[];
+  themeSettings?: any;
+}
+
+export default function CleaningTipsSection({ blogs, themeSettings }: CleaningTipsSectionProps) {
+  // const { storeFormData } = useStoreContext(); // Access storeFormData for theme settings
 
   // Use dynamic tips from storeFormData if available, otherwise fallback to default
-  const tips = storeFormData?.blogs || defaultTips;
+  const tips = blogs || defaultTips;
 
-  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#0d9488'; // teal-600 fallback
-  const secondaryColor = storeFormData?.themeSettings?.secondaryColor || '#f97316'; // orange-500 fallback
+  const primaryColor = themeSettings?.primaryColor || '#0d9488'; // teal-600 fallback
+  const secondaryColor = themeSettings?.secondaryColor || '#f97316'; // orange-500 fallback
 
   // Animation variants for section and cards
   const sectionVariants = {

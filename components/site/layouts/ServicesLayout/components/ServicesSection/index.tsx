@@ -11,21 +11,27 @@ import { MarketListingForm } from "@/types/typings";
 
 const loader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality || 75}`;
 
-export default function ServicesSection() {
-  const { storeFormData } = useStoreContext();
+interface ServicesSectionProps {
+  marketplaceListings: MarketListingForm[];
+  themeSettings: any;
+  slug: string;
+}
+
+export default function ServicesSection({ marketplaceListings, themeSettings, slug }: ServicesSectionProps) {
+  // const { storeFormData } = useStoreContext();
   const [selectedService, setSelectedService] = useState<MarketListingForm | null>(null);
 
-  console.log(storeFormData);
+  // console.log(storeFormData);
 
-  if (!storeFormData || !storeFormData.marketplaceListings) {
-    return (
-      <div className="flex items-center justify-center h-64 bg-gray-50 dark:bg-gray-900">
-        <p className="text-gray-600 dark:text-gray-300 text-lg animate-pulse">Curating our premium services...</p>
-      </div>
-    );
-  }
+  // if (!storeFormData || !storeFormData.marketplaceListings) {
+  //   return (
+  //     <div className="flex items-center justify-center h-64 bg-gray-50 dark:bg-gray-900">
+  //       <p className="text-gray-600 dark:text-gray-300 text-lg animate-pulse">Curating our premium services...</p>
+  //     </div>
+  //   );
+  // }
 
-  const { marketplaceListings, themeSettings, slug } = storeFormData;
+  // const { marketplaceListings, themeSettings, slug } = storeFormData;
   const primaryColor = themeSettings?.primaryColor ?? "#4CAF50";
   const secondaryColor = themeSettings?.secondaryColor ?? "#FFC107";
 

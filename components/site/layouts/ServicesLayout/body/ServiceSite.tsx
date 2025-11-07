@@ -60,15 +60,15 @@ export default function ServiceSite({ pageData, companyId }: { pageData: StoreFo
   return (
     <>
       {/* Hero Section */}
-      <HeroSection storeFormData={siteData} />
+      <HeroSection storeFormData={siteData} heroSlides={siteData.heroSlides}/>
 
       <AboutSection />
 
-      <ExcellenceSection />
+      <ExcellenceSection slug={siteData.slug} themeSettings={siteData.themeSettings} promotions={siteData.promotions} />
 
-      <ServicesSection />
+      <ServicesSection slug={siteData.slug} themeSettings={siteData.themeSettings} marketplaceListings={siteData.marketplaceListings} />
 
-      <PricingSection />
+      <PricingSection pricingTiers={siteData.pricingTiers} themeSettings={siteData.themeSettings} />
 
       {testimonialsData?.data && <TestimonialSection />}
 

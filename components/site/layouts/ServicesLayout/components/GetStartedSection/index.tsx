@@ -21,7 +21,7 @@ export default function GetStartedSection() {
     );
   }
 
-  const { slug, themeSettings } = storeFormData;
+  const { slug, themeSettings, bannerUrl } = storeFormData;
 
   const primaryColor = themeSettings?.primaryColor || '#0d9488'; // Teal-600 fallback
   const secondaryColor = themeSettings?.secondaryColor || '#f97316'; // Orange-500 fallback
@@ -145,7 +145,7 @@ export default function GetStartedSection() {
           >
             <Image
               loader={loader}
-              src="/images/abstract-sparkle.png" // Replace with an aspirational, abstract "clean" image
+              src={bannerUrl || 'https://via.placeholder.com/550'} // Replace with an aspirational, abstract "clean" image
               alt="Abstract representation of sparkling clean results"
               fill
               className="object-cover rounded-2xl shadow-2xl saturate-125" // Adjusted objectFit and added saturation
