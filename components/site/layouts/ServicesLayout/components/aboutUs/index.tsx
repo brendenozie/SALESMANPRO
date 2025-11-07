@@ -13,7 +13,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { useStoreContext } from "@/contexts/StoreContext";
 
-// Utility function for Next.js Image loader (Kept unchanged)
+// Utility function for Next.js Image loader (Unchanged)
 const loader = ({
   src,
   width,
@@ -23,6 +23,14 @@ const loader = ({
   width: number;
   quality?: number;
 }) => `${src}?w=${width}&q=${quality || 75}`;
+
+// Custom Card Hover Variant for Interactivity
+const cardHover = {
+    scale: 1.05,
+    y: -5,
+    boxShadow: "0 15px 30px rgba(0, 0, 0, 0.15)",
+    transition: { type: "spring", stiffness: 200, damping: 12 },
+};
 
 export default function AboutSection() {
   const { storeFormData } = useStoreContext();
@@ -40,16 +48,17 @@ export default function AboutSection() {
   const { slug, bannerUrl, name, description, themeSettings, CoreValues } =
     storeFormData;
 
+  // Colors
   const primaryColor = themeSettings?.primaryColor ?? "#43A047";
   const secondaryColor = themeSettings?.secondaryColor ?? "#FFB300";
 
-  // Animation variants (Kept unchanged - they are great)
+  // Animation variants (Adjusted timing slightly for snappier feel)
   const fadeIn = {
     hidden: { opacity: 0, y: 50 },
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.8, ease: "easeOut" },
+      transition: { duration: 0.7, ease: "easeOut" },
     },
   };
 
@@ -58,21 +67,21 @@ export default function AboutSection() {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.15,
+        staggerChildren: 0.1, // Faster stagger for engagement
       },
     },
   };
 
   const itemSlideIn = {
-    hidden: { opacity: 0, y: 30 },
+    hidden: { opacity: 0, y: 20 }, // Less vertical shift for subtlety
     visible: {
       opacity: 1,
       y: 0,
-      transition: { type: "spring", stiffness: 100, damping: 12 },
+      transition: { type: "spring", stiffness: 120, damping: 14 },
     },
   };
 
-  // --- Core Values Logic (Kept unchanged) ---
+  // --- Core Values Logic (Unchanged) ---
   const values = CoreValues ?? [];
   let listValues = values;
   let guaranteedValue: typeof values[number] | null = null;
@@ -86,109 +95,113 @@ export default function AboutSection() {
   }
 
   return (
-    <section className="relative overflow-hidden py-28 lg:py-40 bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-50">
+    <section className="relative overflow-hidden py-28 lg:py-40 bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-50">
       
-      {/* Background Blob Shapes (Unchanged) */}
-      <div className="absolute inset-0 z-0 opacity-15 blur-3xl"> 
+      {/* Dynamic Background Blobs (More captivating motion) */}
+      <div className="absolute inset-0 z-0 opacity-15 blur-3xl pointer-events-none"> 
         <motion.div
-          className="absolute rounded-full -top-20 -left-20 w-96 h-96"
+          className="absolute rounded-full -top-40 -left-40 w-96 h-96"
           style={{ backgroundColor: primaryColor }}
-          animate={{ x: [0, 60, 0], y: [0, -40, 0], scale: [1, 1.1, 1] }}
-          transition={{ duration: 30, repeat: Infinity, ease: "easeInOut", repeatType: "mirror" }}
+          animate={{ x: [0, 80, 0], y: [0, -50, 0], scale: [1, 1.1, 1], rotate: [0, 30, 0] }} // Added rotation
+          transition={{ duration: 35, repeat: Infinity, ease: "easeInOut", repeatType: "mirror" }}
         />
         <motion.div
-          className="absolute rounded-full -bottom-30 -right-30 w-[400px] h-[400px]"
+          className="absolute rounded-full -bottom-40 -right-40 w-[450px] h-[450px]"
           style={{ backgroundColor: secondaryColor }}
-          animate={{ x: [0, -50, 0], y: [0, 30, 0], scale: [1, 1.1, 1] }}
-          transition={{ duration: 35, repeat: Infinity, ease: "easeInOut", repeatType: "mirror", delay: 5 }}
+          animate={{ x: [0, -70, 0], y: [0, 50, 0], scale: [1, 1.1, 1], rotate: [0, -45, 0] }} // Added rotation
+          transition={{ duration: 40, repeat: Infinity, ease: "easeInOut", repeatType: "mirror", delay: 5 }}
         />
       </div>
 
-      {/* Subtle Background Pattern (Unchanged) */}
+      {/* Subtle Background Pattern (Increased density for visual texture) */}
       <div
-        className="absolute inset-0 z-0 opacity-10"
+        className="absolute inset-0 z-0 opacity-10 dark:opacity-5 pointer-events-none"
         style={{
           background: `radial-gradient(circle, ${primaryColor}50 1px, transparent 1px)`,
-          backgroundSize: "30px 30px",
+          backgroundSize: "20px 20px", // Reduced size for higher density
         }}
       />
 
       {/* Content Container */}
       <div className="relative z-10 max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
         
-        {/* Left: Text Content */}
+        {/* Left: Text Content & Values (Intuitive & Engaging) */}
         <motion.div
           initial="hidden"
           whileInView="visible"
           variants={staggerContainer}
           viewport={{ once: true, amount: 0.3 }}
-          className="space-y-8 order-2 lg:order-1 text-center lg:text-left"
+          className="space-y-10 order-2 lg:order-1 text-center lg:text-left" // Increased space-y for better flow
         >
-            {/* NEW: Intro container for subtle visual separation and focus */}
-            <motion.div variants={itemSlideIn} className="flex flex-col items-center lg:items-start">
-                <span
-                  className="inline-block text-base font-semibold tracking-widest uppercase text-gray-600 dark:text-gray-400"
-                >
-                    Our Journey & Commitment
-                </span>
+          
+          {/* Header Block */}
+          <motion.div variants={itemSlideIn} className="flex flex-col items-center lg:items-start">
+            <span
+              className="inline-block text-lg font-bold tracking-widest uppercase mb-1"
+              style={{ color: primaryColor }} // Used primary color for emphasis
+            >
+              🤝 Our Story, Our Promise
+            </span>
 
-                <motion.h2
-                  className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight mt-2"
-                  variants={itemSlideIn}
-                >
-                    About{" "}
-                    <span
-                      className="bg-clip-text text-transparent"
-                      style={{ 
-                        backgroundImage: `linear-gradient(45deg, ${primaryColor}, ${secondaryColor})` 
-                      }}
-                    >
-                      {name}
-                    </span>
-                </motion.h2>
-            </motion.div>
-            
-
-            <motion.p
-              className="text-lg sm:text-xl leading-relaxed max-w-xl mx-auto lg:mx-0 text-gray-700 dark:text-gray-300"
+            <motion.h2
+              className="text-5xl sm:text-6xl lg:text-7xl font-extrabold leading-none tracking-tighter"
               variants={itemSlideIn}
             >
-              {description ||
-                `At **${name}**, we're passionate about simplifying your life through **exceptional service**. With a dedication to quality and a team of trusted professionals, we ensure every interaction is seamless and satisfying.`}
-            </motion.p>
+              Who is{" "}
+              <span
+                className="bg-clip-text text-transparent"
+                style={{ 
+                  backgroundColor: primaryColor,
+                }}
+              >
+                {name}
+              </span>
+              ?
+            </motion.h2>
+          </motion.div>
+          
+          {/* Description */}
+          <motion.p
+            className="text-xl leading-relaxed max-w-xl mx-auto lg:mx-0 text-gray-700 dark:text-gray-300 border-l-4 pl-4" // Added left border for visual depth
+            style={{ borderColor: primaryColor }}
+            variants={itemSlideIn}
+          >
+            {description ||
+              `At **${name}**, we're passionate about simplifying your life through **exceptional service**. With a dedication to quality and a team of trusted professionals, we ensure every interaction is seamless and satisfying. We're more than a service provider; we're your dedicated partner in achieving your goals.`}
+          </motion.p>
 
-          {/* Core Values Section */}
+          {/* Core Values Section (Visually Appealing & Interactive) */}
           <motion.div
             variants={staggerContainer}
-            className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4"
+            className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-4"
           >
             {listValues.map((value, index) => (
               <motion.div
                 key={value.title}
                 variants={itemSlideIn}
+                whileHover={cardHover} // Apply custom hover effect
                 custom={index}
-                // Glassmorphism and border refinement
-                className="flex flex-col items-center p-6 rounded-2xl transition-all duration-500 transform bg-white/50 dark:bg-gray-700/50 shadow-2xl hover:shadow-primary-lg hover:-translate-y-1 group relative overflow-hidden backdrop-blur-sm border border-gray-200/50 dark:border-gray-700/50"
-                style={{ 
-                    // Removed individual border style since we added a Tailwind border
-                    "--tw-shadow-primary-lg": `0 10px 15px -3px ${primaryColor}30, 0 4px 6px -4px ${primaryColor}30`,
-                } as React.CSSProperties}
+                className="flex flex-col items-center p-6 rounded-2xl transition-all duration-500 transform **bg-white/70 dark:bg-gray-800/70** shadow-lg **hover:shadow-xl** group relative overflow-hidden **backdrop-blur-md** border border-gray-100 dark:border-gray-700" // Enhanced Glassmorphism effect
               >
-                {/* Subtle Primary Color Accent Bar on Top (Unchanged) */}
-                <div className="absolute top-0 left-0 w-full h-1" style={{ backgroundColor: primaryColor, opacity: 0.7 }} />
-
-                <div className="absolute inset-0 rounded-2xl bg-white/5 opacity-0 group-hover:opacity-10 transition-opacity duration-300" />
+                {/* Primary Color Shadow/Glow on Hover */}
+                <div 
+                    className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-10 transition-opacity duration-500" 
+                    style={{ 
+                        background: `radial-gradient(circle at center, ${primaryColor} 0%, transparent 70%)` 
+                    }} 
+                />
+                
                 <div className="relative z-10 flex flex-col items-center">
                   <div
-                    className="mb-4 text-white p-3 rounded-full flex items-center justify-center transition-transform duration-300 group-hover:scale-110"
-                    style={{ backgroundColor: primaryColor }}
+                    className="mb-4 text-white p-4 rounded-full flex items-center justify-center transition-all duration-300 **ring-4 ring-offset-2 dark:ring-offset-gray-800** group-hover:scale-105" // Added a ring effect
+                    style={{ backgroundColor: primaryColor, ["--tw-ring-color"]: secondaryColor } as React.CSSProperties}
                   >
                     {value.icon}
                   </div>
-                  <h3 className="text-xl font-bold mb-1 text-gray-900 dark:text-gray-50">
+                  <h3 className="text-xl font-extrabold mb-1 text-gray-900 dark:text-gray-50 text-center">
                     {value.title}
                   </h3>
-                  <p className="text-md opacity-80 text-center text-gray-700 dark:text-gray-300">
+                  <p className="text-sm opacity-80 text-center text-gray-700 dark:text-gray-300 mt-1">
                     {value.description}
                   </p>
                 </div>
@@ -196,27 +209,27 @@ export default function AboutSection() {
             ))}
           </motion.div>
 
-          {/* Guaranteed Section (Unchanged) */}
+          {/* Guaranteed Section (Slightly enhanced border/shadow) */}
           {guaranteedValue && (
             <motion.div
               variants={itemSlideIn}
-              className="relative col-span-1 md:col-span-3 p-6 sm:p-8 rounded-3xl overflow-hidden cursor-pointer group transition-transform duration-300 hover:scale-[1.01] flex flex-col sm:flex-row items-center justify-between mt-8 shadow-xl"
+              className="relative col-span-1 md:col-span-3 p-6 sm:p-8 rounded-3xl overflow-hidden cursor-pointer group transition-transform duration-300 hover:scale-[1.01] flex flex-col sm:flex-row items-center justify-between mt-8 shadow-2xl"
               style={{ 
-                    backgroundColor: primaryColor,
-                    borderBottom: `6px solid ${secondaryColor}`,
-                }}
-              >
+                backgroundColor: primaryColor,
+                border: `4px solid ${secondaryColor}`, // Changed to full border for better framing
+              }}
+            >
               <div className="absolute inset-0 bg-white/10 group-hover:bg-black/10 transition-colors duration-300"></div>
-              <div className="relative text-white text-center sm:text-left flex-grow">
-                <h3 className="text-2xl font-extrabold mb-1">
-                  {guaranteedValue.title || "Guaranteed Satisfaction"}
+              <div className="relative text-white text-center sm:text-left flex-grow space-y-1">
+                <h3 className="text-2xl font-extrabold leading-snug">
+                  🎉 {guaranteedValue.title || "Guaranteed Satisfaction"}
                 </h3>
                 <p className="text-base opacity-95 font-medium">
                   {guaranteedValue.description ||
-                    "We stand behind our work. Your complete satisfaction is our ultimate priority."}
+                    "We stand behind our work. Your complete satisfaction is our ultimate priority. Experience the difference today."}
                 </p>
               </div>
-              <div className="w-16 h-16 mt-4 sm:mt-0 flex items-center justify-center rounded-full bg-white transition-colors duration-300 flex-shrink-0 shadow-inner">
+              <div className="w-16 h-16 mt-4 sm:mt-0 flex items-center justify-center rounded-full bg-white transition-colors duration-300 flex-shrink-0 shadow-lg">
                 {guaranteedValue.icon || (
                   <ShieldCheckIcon className="w-9 h-9" style={{ color: secondaryColor }} />
                 )}
@@ -224,28 +237,28 @@ export default function AboutSection() {
             </motion.div>
           )}
 
-          {/* CTA Buttons (Unchanged) */}
+          {/* CTA Buttons (Stronger visual impact) */}
           <motion.div
-            className="flex flex-wrap justify-center lg:justify-start gap-4 pt-8"
+            className="flex flex-wrap justify-center lg:justify-start gap-6 pt-8"
             variants={itemSlideIn}
           >
             <Link
               href={`/${slug}/contact`}
-              className="px-8 py-4 rounded-full text-white font-bold shadow-xl transition-all duration-300 ease-in-out hover:scale-[1.03] hover:shadow-2xl focus:outline-none focus:ring-4 focus:ring-opacity-50 flex items-center justify-center gap-2"
+              className="px-10 py-4 rounded-full text-white font-extrabold text-lg tracking-wider shadow-2xl transition-all duration-300 ease-in-out hover:scale-[1.05] focus:outline-none focus:ring-4 focus:ring-opacity-70 flex items-center justify-center gap-2"
               style={
                 {
                   backgroundColor: primaryColor,
-                  boxShadow: `0 10px 15px -3px ${primaryColor}40, 0 4px 6px -4px ${primaryColor}40`,
+                  boxShadow: `0 10px 20px -5px ${primaryColor}60`, // Stronger primary shadow
                   "--tw-ring-color": primaryColor,
                 } as React.CSSProperties
               }
             >
-              Get a Quote
-              <ArrowRightIcon className="h-5 w-5" />
+              Start Your Journey
+              <ArrowRightIcon className="h-5 w-5 ml-1" />
             </Link>
             <Link
               href={`/${slug}/faq`}
-              className="px-8 py-4 border-2 rounded-full font-bold transition-all duration-300 ease-in-out hover:bg-gray-100 hover:scale-[1.03] dark:hover:bg-gray-800"
+              className="px-10 py-4 border-2 rounded-full font-bold text-lg transition-all duration-300 ease-in-out hover:bg-gray-100 hover:scale-[1.05] dark:hover:bg-gray-800"
               style={
                 {
                   borderColor: primaryColor,
@@ -254,12 +267,12 @@ export default function AboutSection() {
                 } as React.CSSProperties
               }
             >
-              Read FAQs
+              Learn More
             </Link>
           </motion.div>
         </motion.div>
 
-        {/* Right: Image Section */}
+        {/* Right: Image Section (More polished) */}
         <motion.div
           initial="hidden"
           whileInView="visible"
@@ -267,10 +280,14 @@ export default function AboutSection() {
           viewport={{ once: true, amount: 0.3 }}
           className="flex justify-center lg:justify-end order-1 lg:order-2"
         >
-          <div className="relative w-full max-w-lg aspect-[4/3] lg:aspect-[3/4] rounded-3xl overflow-hidden group shadow-2xl">
-            {/* Background "Frame" Enhancement (Unchanged) */}
+          <div className="relative w-full max-w-lg aspect-[4/3] lg:aspect-[3/4] rounded-3xl overflow-hidden group shadow-2xl transition-all duration-500 hover:shadow-primary-lg"
+             style={{ 
+                "--tw-shadow-primary-lg": `0 25px 50px -12px ${primaryColor}60`, // Added a shadow variable for stronger glow
+            } as React.CSSProperties}>
+            
+            {/* Background "Frame" Enhancement */}
             <div
-              className="absolute inset-0 rounded-3xl -z-10 transition-all duration-500 transform translate-x-4 translate-y-4 group-hover:translate-x-0 group-hover:translate-y-0"
+              className="absolute inset-0 rounded-3xl -z-10 transition-all duration-700 transform translate-x-5 translate-y-5 group-hover:translate-x-0 group-hover:translate-y-0" // Increased offset for drama
               style={{ background: primaryColor }}
             />
 
@@ -280,12 +297,12 @@ export default function AboutSection() {
               alt={`${name} About Image`}
               layout="fill"
               objectFit="cover"
-              className="rounded-3xl transition-all duration-500 ease-in-out group-hover:scale-[1.03] **border-4 border-white dark:border-gray-950**" // Added border for crisp edge
+              className="rounded-3xl transition-all duration-700 ease-in-out group-hover:scale-[1.05] saturate-[0.9] hover:saturate-100 border-4 border-white dark:border-gray-950" 
               loader={loader}
             />
 
-            {/* Gradient Overlay (Unchanged) */}
-            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-transparent to-black/20" />
+            {/* Gradient Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent" />
           </div>
         </motion.div>
       </div>
