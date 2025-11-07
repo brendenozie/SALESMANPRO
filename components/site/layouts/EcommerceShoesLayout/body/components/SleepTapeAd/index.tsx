@@ -36,7 +36,7 @@ export default function SleepTapeAd({ promotions, themeSettings }: SleepTapeAdPr
 
   // Find an active promotion to use for the ad.
   // We can use the first promotion in the list for this component.
-  const promotion = promotions.length > 1 ? promotions[2] : null;
+  const promotion = promotions.length > 1 ? promotions[1] : null;
 
   // Use the promotion data if available, otherwise fall back to dummy data
   const adData = promotion || dummyPromotionData;
