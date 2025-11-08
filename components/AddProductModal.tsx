@@ -39,7 +39,7 @@ interface UnifiedBookItem {
 }
 
 // NOTE: keep API constants consistent with your app's env
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Utilities: lightweight Toast + debounce
@@ -540,7 +540,7 @@ const handleSave = useCallback(async () => {
         // 6. Build final payload
         const payload = { ...formData, images: finalImageUrls, videos: finalVideoUrls, ebooks: finalBookUrls };
         
-        const res = await fetch(`${API_URL}/admin/post-product`, {
+        const res = await fetch(`${apiBaseUrl}/admin/post-product`, {
             method: 'POST',
             credentials: 'include',
             headers: { 'Content-Type': 'application/json' },

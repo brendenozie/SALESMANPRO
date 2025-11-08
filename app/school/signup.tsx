@@ -3,6 +3,8 @@ import { useRouter } from "next/router";
 import { motion } from "framer-motion";
   import { signIn } from "next-auth/react";
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:3000/api";
+
 export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -21,7 +23,7 @@ export default function SignupPage() {
     }
 
     try {
-      const res = await fetch(`${apiBaseUrl}/auth/signup", {
+      const res = await fetch(`${apiBaseUrl}/auth/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password, role }),

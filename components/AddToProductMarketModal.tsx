@@ -47,7 +47,7 @@ import { UnifiedMediaItem } from "./ImageUploader";
 ////////////////////////////////////////////////////////////////////////////////
 // Constants & API
 ////////////////////////////////////////////////////////////////////////////////
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 ////////////////////////////////////////////////////////////////////////////////
 // Small utilities reused from the product modal design
@@ -825,7 +825,7 @@ export default function ProductMarketModal({
         finalBookUrls
       );
 
-      const res = await fetch(`${API_URL}/admin/post-market-list`, {
+      const res = await fetch(`${apiBaseUrl}/admin/post-market-list`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
