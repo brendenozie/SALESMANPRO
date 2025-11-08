@@ -42,11 +42,11 @@ const heroSlideSchema = z.object({
 });
 
 const promotionSchema = z.object({
-    title: z.string().min(1),
+    title: z.string().nullable().optional(),
     code: z.string().nullable().optional(),
     description: z.string().nullable().optional(),
-    startsAt: z.string().datetime().optional().nullable(),
-    endsAt: z.string().datetime().optional().nullable(),
+    startsAt: z.string().optional().nullable(),//.datetime()
+    endsAt: z.string().optional().nullable(),//.datetime()
     ctaText: z.string().nullable().optional(),
     ctaLink: z.string().url().nullable().optional().or(z.literal('')),
     bannerUrl: z.string().url().nullable().optional().or(z.literal('')),
@@ -132,7 +132,7 @@ export const companySchema = z.object({
   locale: z.string().optional(),
   
   // -- JSON fields --
-  geoLocation: z.object({ lat: z.number(), lng: z.number() }).optional(),
+  geoLocation: z.object({ lat: z.number(), lng: z.number() }).nullable().optional(),
   openingHours: z.any().optional(),
   themeSettings: z.any().optional(),
   awards: z.any().optional(),
@@ -141,12 +141,12 @@ export const companySchema = z.object({
   pricingTiers: z.any().optional(),
   
   // -- Relational fields --
-  socialLinks: z.array(socialLinkSchema).optional(),
-  policies: z.array(policySchema).optional(),
-  faqs: z.array(faqSchema).optional(),
-  testimonials: z.array(testimonialSchema).optional(),
-  heroSlides: z.array(heroSlideSchema).optional(),
-  promotions: z.array(promotionSchema).optional(),
+  socialLinks: z.array(socialLinkSchema).nullable().optional(),
+  policies: z.array(policySchema).nullable().optional(),
+  faqs: z.array(faqSchema).nullable().optional(),
+  testimonials: z.array(testimonialSchema).nullable().optional(),
+  heroSlides: z.array(heroSlideSchema).nullable().optional(),
+  promotions: z.array(promotionSchema).nullable().optional(),
   
   // -- These are arrays in the schema --
   seo: z.object({
