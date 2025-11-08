@@ -11,14 +11,14 @@ import {
 } from "@heroicons/react/24/outline";
 import { MagnifyingGlassIcon, PlayCircleIcon } from "@heroicons/react/24/solid";
 import Image from "next/image";
-import { IStoreCategory, ISubcategory, StoreForm } from "@/types/typings"; // Assuming you have these types
+import { HeroSlide, IStoreCategory, ISubcategory, StoreForm } from "@/types/typings"; // Assuming you have these types
 
 // --- Types ---
-interface HeroSlide {
-  imageUrl: string;
-  headline: string;
-  subline: string;
-}
+// interface HeroSlide {
+//   imageUrl: string;
+//   headline: string;
+//   subline: string;
+// }
 
 interface TrendingLocation {
   name: string;
@@ -56,24 +56,62 @@ interface HeroSectionProps {
 // --- Defaults ---
 const defaultHeroSlides: HeroSlide[] = [
   {
-    imageUrl:
-      "https://images.unsplash.com/photo-1560518883-ffc4573f0053?q=80&w=2670&auto=format&fit=crop",
+    imageUrl: "https://images.unsplash.com/photo-1560518883-ffc4573f0053?q=80&w=2670&auto=format&fit=crop",
+    productImageUrl: "https://images.unsplash.com/photo-1560518883-ffc4573f0053?q=80&w=2670&auto=format&fit=crop",
     headline: "Find Your Perfect\nUrban Oasis",
     subline: "Explore modern apartments and stylish lofts in the city's heart.",
+    id: "",
+    companyId: "",
+    type: null,
+    price: null,
+    order: 0,
+    ctaText: null,
+    ctaLink: null,
+    videoLink: null,
+    badgeText: null,
+    endsAt: null,
+    iconKey: null,
+    backgroundColor: null,
+    textColor: null
   },
-  {
-    imageUrl:
-      "https://images.unsplash.com/photo-1594950939511-b76964a35043?q=80&w=2670&auto=format&fit=crop",
-    headline: "Escape to Serene\nCountry Living",
-    subline:
-      "Discover spacious homes with sprawling gardens and tranquil views.",
-  },
-  {
-    imageUrl:
-      "https://images.unsplash.com/photo-1579621970795-92683058860b?q=80&w=2670&auto=format&fit=crop",
-    headline: "Luxury Awaits\nby the Coast",
-    subline: "Browse stunning waterfront properties and exclusive seaside villas.",
-  },
+    {
+      imageUrl: "https://images.unsplash.com/photo-1594950939511-b76964a35043?q=80&w=2670&auto=format&fit=crop",
+      productImageUrl: "https://images.unsplash.com/photo-1594950939511-b76964a35043?q=80&w=2670&auto=format&fit=crop",
+      headline: "Escape to Serene\nCountry Living",
+      subline: "Discover spacious homes with sprawling gardens and tranquil views.",
+      id: "",
+      companyId: "",
+      type: null,
+      ctaText: null,
+      ctaLink: null,
+      videoLink: null,
+      badgeText: null,
+      price: null,
+      endsAt: null,
+      order: 0,
+      iconKey: null,
+      backgroundColor: null,
+      textColor: null
+    },
+      {
+        imageUrl: "https://images.unsplash.com/photo-1579621970795-92683058860b?q=80&w=2670&auto=format&fit=crop",
+        productImageUrl: "https://images.unsplash.com/photo-1579621970795-92683058860b?q=80&w=2670&auto=format&fit=crop",
+        headline: "Luxury Awaits\nby the Coast",
+        subline: "Browse stunning waterfront properties and exclusive seaside villas.",
+        id: "",
+        companyId: "",
+        type: null,
+        ctaText: null,
+        ctaLink: null,
+        videoLink: null,
+        badgeText: null,
+        price: null,
+        endsAt: null,
+        order: 0,
+        iconKey: null,
+        backgroundColor: null,
+        textColor: null
+      },
 ];
 
 const defaultTrendingLocations: TrendingLocation[] = [
@@ -314,7 +352,7 @@ export default function HeroSection({
               onDragEnd={handleDragEnd}
             >
               <Image
-                src={slide.imageUrl|| "https://images.unsplash.com/photo-1560518883-ffc4573f0053?q=80&w=2670&auto=format&fit=crop"}
+                src={slide.productImageUrl || slide.imageUrl|| "https://images.unsplash.com/photo-1560518883-ffc4573f0053?q=80&w=2670&auto=format&fit=crop"}
                 alt={slide.headline || "Real Estate Hero"}
                 layout="fill"
                 priority
