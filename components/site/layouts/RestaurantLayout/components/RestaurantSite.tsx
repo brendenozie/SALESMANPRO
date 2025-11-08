@@ -6,24 +6,25 @@ import Image from "next/image";
 import Link from "next/link";
 import { PlayCircleIcon } from "@heroicons/react/24/solid";
 import { useStoreContext } from "@/contexts/StoreContext";
+import { HeroSlide } from "@/types/typings";
 
 // New type definition based on the Prisma Banner model
-export type Banner = {
-  id: string;
-  imageUrl: string;
-  headline?: string | null;
-  subline?: string | null;
-  ctaText?: string | null;
-  ctaLink?: string | null;
-  videoLink?: string | null;
-  badgeText?: string | null;
-  price?: string | null;
-  endsAt?: Date | null;
-  order?: number;
-  iconKey?: string | null;
-  backgroundColor?: string | null;
-  textColor?: string | null;
-};
+// export type Banner = {
+//   id: string;
+//   imageUrl: string;
+//   headline?: string | null;
+//   subline?: string | null;
+//   ctaText?: string | null;
+//   ctaLink?: string | null;
+//   videoLink?: string | null;
+//   badgeText?: string | null;
+//   price?: string | null;
+//   endsAt?: Date | null;
+//   order?: number;
+//   iconKey?: string | null;
+//   backgroundColor?: string | null;
+//   textColor?: string | null;
+// };
 
 // Define types for the data expected from StoreContext
 export type ThemeSettings = {
@@ -37,40 +38,67 @@ export type StoreForm = {
   slug?: string;
   description?: string;
   themeSettings?: ThemeSettings;
-  banners?: Banner[]; // Use the new Banner type for the hero slider
+  banners?: HeroSlide[]; // Use the new HeroSlide type for the hero slider
 };
 
 // Mock slider data for demonstration and as a fallback
-const defaultSliderItems: Banner[] = [
+const defaultSliderItems: HeroSlide[] = [
   {
     id: "1",
     headline: "Mouth-Watering Truffle Pasta",
     subline: "A creamy, decadent pasta dish you won't forget.",
-    imageUrl:
-      "https://images.unsplash.com/photo-1543360641-f09b2e0e9803?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    imageUrl: "https://images.unsplash.com/photo-1543360641-f09b2e0e9803?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    productImageUrl: "https://images.unsplash.com/photo-1543360641-f09b2e0e9803?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     ctaText: "Order Now",
     ctaLink: "/menu/truffle-pasta",
     badgeText: "NEW MENU ITEM",
+    companyId: "",
+    type: null,
+    videoLink: null,
+    price: null,
+    endsAt: null,
+    order: 0,
+    iconKey: null,
+    backgroundColor: null,
+    textColor: null
   },
   {
     id: "2",
     headline: "Fresh Catch of the Day",
     subline: "Locally sourced seafood, prepared with a zesty lemon-herb marinade.",
-    imageUrl:
-      "https://images.unsplash.com/photo-1579227129535-64d1f2e96d38?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    imageUrl: "https://images.unsplash.com/photo-1579227129535-64d1f2e96d38?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    productImageUrl: "https://images.unsplash.com/photo-1579227129535-64d1f2e96d38?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     ctaText: "View Today's Special",
     ctaLink: "/specials",
     badgeText: "DAILY SPECIAL",
+    companyId: "",
+    type: null,
+    videoLink: null,
+    price: null,
+    endsAt: null,
+    order: 0,
+    iconKey: null,
+    backgroundColor: null,
+    textColor: null
   },
   {
     id: "3",
     headline: "Signature Cocktails & Bites",
     subline: "Join us from 4-6 PM for amazing deals on drinks and appetizers!",
-    imageUrl:
-      "https://images.unsplash.com/photo-1551030230-c3d38e7894a4?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    imageUrl: "https://images.unsplash.com/photo-1551030230-c3d38e7894a4?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    productImageUrl: "https://images.unsplash.com/photo-1551030230-c3d38e7894a4?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     ctaText: "See Happy Hour Menu",
     ctaLink: "/happy-hour",
     badgeText: "HAPPY HOUR",
+    companyId: "",
+    type: null,
+    videoLink: null,
+    price: null,
+    endsAt: null,
+    order: 0,
+    iconKey: null,
+    backgroundColor: null,
+    textColor: null
   },
 ];
 
@@ -85,12 +113,20 @@ const loader = ({
   quality?: number;
 }) => `${src}?w=${width}&q=${quality || 75}`;
 
-export default function RestaurantHero() {
-  const { storeFormData } = useStoreContext();
+interface RestaurantHeroProps {
+  heroSlides?: HeroSlide[];
+  themeSettings?: Record<string, any> | null;
+  slug?: string;
+}
+
+export default function RestaurantHero({ heroSlides, themeSettings, slug }: RestaurantHeroProps) {
+  // const { storeFormData } = useStoreContext();
+
+  console.log("RestaurantHero heroSlides:", heroSlides);
 
   // Determine the slider items to use, sorting by 'order' and falling back to default
-  const sortedBanners = storeFormData?.heroSlides
-    ? [...storeFormData.heroSlides].sort((a, b) => (a.order || 0) - (b.order || 0))
+  const sortedBanners = heroSlides
+    ? [...heroSlides].sort((a, b) => (a.order || 0) - (b.order || 0))
     : [];
   const sliderItems = sortedBanners.length > 0 ? sortedBanners : defaultSliderItems;
 
@@ -107,9 +143,9 @@ export default function RestaurantHero() {
     return () => clearInterval(interval);
   }, [sliderItems.length]);
 
-  const primaryColor = storeFormData?.themeSettings?.primaryColor || "#FF5722";
-  const secondaryColor = storeFormData?.themeSettings?.secondaryColor || "#3F51B5";
-  const restaurantSlug = storeFormData?.slug || "restaurant-slug";
+  const primaryColor = themeSettings?.primaryColor || "#FF5722";
+  const secondaryColor = themeSettings?.secondaryColor || "#3F51B5";
+  const restaurantSlug = slug || "restaurant-slug";
 
   const currentItem = sliderItems[currentIndex];
 
@@ -132,7 +168,7 @@ export default function RestaurantHero() {
           transition={{ duration: 1.5 }}
         >
           <Image
-            src={currentItem.imageUrl || "https://images.unsplash.com/photo-1543360641-f09b2e0e9803?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"}
+            src={currentItem.productImageUrl || currentItem.imageUrl ||  "https://images.unsplash.com/photo-1543360641-f09b2e0e9803?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"}
             alt={currentItem.headline || "Hero Image"}
             fill
             className="object-cover brightness-[0.7] saturate-125"

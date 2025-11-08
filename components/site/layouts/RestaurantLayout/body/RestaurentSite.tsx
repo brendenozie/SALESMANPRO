@@ -36,7 +36,7 @@ export default function RestaurentSite({ pageData, companyId }: { pageData: Stor
         <div className="fixed inset-y-0 left-0 w-8 bg-teal-200 bg-[url('/images/pattern.svg')]"></div>
         <div className="fixed inset-y-0 right-0 w-8 bg-teal-200 bg-[url('/images/pattern.svg')]"></div>
 
-        <RestaurantHero />
+        <RestaurantHero heroSlides={pageData.heroSlides} themeSettings={pageData.themeSettings} slug={pageData.slug} />
 
         <SignatureDishes />
 
