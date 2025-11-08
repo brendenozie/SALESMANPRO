@@ -107,7 +107,7 @@ export default function SignUpClient({ providers }: { providers: Provider[] }) {
 
     try {
       // Replace this with actual API request (to your backend)
-      const res = await fetch("/api/register", {
+      const res = await fetch(`${apiBaserUrl}/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),

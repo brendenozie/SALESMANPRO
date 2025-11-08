@@ -14,7 +14,7 @@ interface Props {
 }
 
 // Define the API URL based on the environment
-const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 /**
  * Server Component for the Admin Check-in page.
@@ -35,7 +35,7 @@ export default async function AdminCheckinPage({ params }: Props) {
 
   try {
     // 2. Server-side fetch for the initial list of events
-    const fetchUrl = `${apiUrl}/admin/${adminSlug}/events?status=SCHEDULED&fields=id,title,startDateTime`;
+    const fetchUrl = `${apiBaserUrl}/admin/${adminSlug}/events?status=SCHEDULED&fields=id,title,startDateTime`;
 
     const response = await fetch(fetchUrl, {
       next: { revalidate: 60 }, // Ensure we get fresh data

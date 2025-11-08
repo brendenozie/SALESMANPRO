@@ -3,7 +3,7 @@
 import React from "react";
 import WeeklyTimetable, { TimetableEntry, CourseOption, EducatorOption, AcademicLevelOption } from "./WeeklyTimetable";
 
-const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface PageProps {
   params:Promise<{ slug: string }>
@@ -130,7 +130,7 @@ export default async function TimetableManagerPage({ params }: PageProps) {
   try {
     // Fetch timetable entries with related course and educator info
     const timetableRes = await fetch(
-      `${apiUrl}/admin/class-schedules?companyId=${encodeURIComponent(companyId)}`, // Corrected API path
+      `${apiBaserUrl}/admin/class-schedules?companyId=${encodeURIComponent(companyId)}`, // Corrected API path
       { next: { revalidate: 60 } } // SSR on every request
     );
     if (timetableRes.ok) {
@@ -146,7 +146,7 @@ export default async function TimetableManagerPage({ params }: PageProps) {
 
     // Fetch all courses for dropdowns
     const coursesRes = await fetch(
-      `${apiUrl}/admin/courses?companyId=${encodeURIComponent(companyId)}`, // Corrected API path
+      `${apiBaserUrl}/admin/courses?companyId=${encodeURIComponent(companyId)}`, // Corrected API path
       { next: { revalidate: 60 } }
     );
     if (coursesRes.ok) {
@@ -168,7 +168,7 @@ export default async function TimetableManagerPage({ params }: PageProps) {
 
     // Fetch all educators for dropdowns
     const educatorsRes = await fetch(
-      `${apiUrl}/admin/educators?companyId=${encodeURIComponent(companyId)}`, // Corrected API path
+      `${apiBaserUrl}/admin/educators?companyId=${encodeURIComponent(companyId)}`, // Corrected API path
       { next: { revalidate: 60 } }
     );
     if (educatorsRes.ok) {
@@ -189,7 +189,7 @@ export default async function TimetableManagerPage({ params }: PageProps) {
 
     // Fetch all academic levels (for display in course options)
     const academicLevelsRes = await fetch(
-      `${apiUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`, // Corrected API path
+      `${apiBaserUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`, // Corrected API path
       { next: { revalidate: 60 } }
     );
     if (academicLevelsRes.ok) {

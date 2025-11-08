@@ -33,7 +33,7 @@ import Link from 'next/link';
 import Image from 'next/image'; // For optimized image handling
 import toast, { Toaster } from 'react-hot-toast'; // For notifications
 import { Agent } from './page';
-const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // --- Basic Modal Component (If you have your own, replace this) ---
 interface ModalProps {
@@ -602,15 +602,15 @@ export default function AgentsPage({ params }: AgentsPageProps) {
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
   const [agentToDelete, setAgentToDelete] = useState<any | null>(null);
 
-  // In a real application, apiUrl would be used to fetch and mutate data
-  // const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+  // In a real application, apiBaserUrl would be used to fetch and mutate data
+  // const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
   const fetchAgents = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
       // Simulate API call with a delay
-      const res = await fetch(`${apiUrl}/admin/agents?companyId=${companyId}`, { method: 'GET', credentials: 'include' });
+      const res = await fetch(`${apiBaserUrl}/admin/agents?companyId=${companyId}`, { method: 'GET', credentials: 'include' });
       if (!res.ok) throw new Error(`Error fetching agents: ${res.statusText}`);
       const rawData = await res.json();
       let data = Array.isArray(rawData.data) ? rawData.data.map((agent: any) => ({
@@ -653,7 +653,7 @@ export default function AgentsPage({ params }: AgentsPageProps) {
     try {
       // Simulate API call for saving/updating
       // await new Promise(resolve => setTimeout(resolve, 1200)); // Simulate network latency
-      const res = await fetch(`${apiUrl}/admin/agents`, {
+      const res = await fetch(`${apiBaserUrl}/admin/agents`, {
         method: editingAgent ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

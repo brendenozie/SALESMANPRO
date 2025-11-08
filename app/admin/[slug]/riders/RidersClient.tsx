@@ -32,7 +32,7 @@ import toast, { Toaster } from 'react-hot-toast';
 
 // Assuming this is still used from the outer component's type definition
 // export type Rider = { /* ... */ }; 
-const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // --- Basic Modal Component (Kept same) ---
 interface ModalProps {
@@ -572,7 +572,7 @@ export default function RidersPage({ params }: RidersPageProps) { // Renamed
     setError(null);
     try {
       // Simulate API call with a delay
-      const res = await fetch(`${apiUrl}/admin/riders?companyId=${companyId}`, { method: 'GET' }); // Updated endpoint
+      const res = await fetch(`${apiBaserUrl}/admin/riders?companyId=${companyId}`, { method: 'GET' }); // Updated endpoint
       if (!res.ok) throw new Error(`Error fetching riders: ${res.statusText}`);
       const rawData = await res.json();
       let data = Array.isArray(rawData.data) ? rawData.data : [];
@@ -608,7 +608,7 @@ export default function RidersPage({ params }: RidersPageProps) { // Renamed
     try {
       // await new Promise(resolve => setTimeout(resolve, 1200));
 
-      const res = await fetch(`${apiUrl}/admin/riders`, {
+      const res = await fetch(`${apiBaserUrl}/admin/riders`, {
         method: editingRider ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',

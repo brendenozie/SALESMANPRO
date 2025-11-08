@@ -14,7 +14,7 @@ import {
 
 
 
-const apiBaseUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
 
 // Types
@@ -64,7 +64,7 @@ export default function DocumentsPage() {
   const fetchDocuments = async (): Promise<void> => {
     setLoading(true);
     try {
-      const res = await fetch("/api/documents");
+      const res = await fetch(`${apiBaserUrl}/documents");
       const data: DocumentItem[] = await res.json();
       setDocuments(data);
     } catch (error) {
@@ -94,7 +94,7 @@ export default function DocumentsPage() {
     };
 
     try {
-      const res = await fetch("/api/documents", {
+      const res = await fetch(`${apiBaserUrl}/documents", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

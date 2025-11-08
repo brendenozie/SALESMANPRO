@@ -25,7 +25,7 @@ import { OfferFormModal } from './OfferFormModal';
 import { OfferDetailsModal } from './OfferDetailsModal';
 
 // Use a proper environment variable for your API base URL
-const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';; // Ensure this points to your actual backend API
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';; // Ensure this points to your actual backend API
 
 // --- Type Definitions ---
 // Ensure this type matches your backend API's expected structure for OfferContract
@@ -72,7 +72,7 @@ export default async function OffersPage() {
     setError(null);
     try {
       // Replace with your actual API endpoint for fetching offers
-      const res = await fetch(`${apiUrl}/admin/offers?companyId=${encodeURIComponent(adminSlug)}`, { credentials: 'include' });
+      const res = await fetch(`${apiBaserUrl}/admin/offers?companyId=${encodeURIComponent(adminSlug)}`, { credentials: 'include' });
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.message || 'Failed to fetch offers.');
@@ -86,7 +86,7 @@ export default async function OffersPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [adminSlug, apiUrl]);
+  }, [adminSlug, apiBaserUrl]);
 
   useEffect(() => {
     fetchOffers();
@@ -121,7 +121,7 @@ export default async function OffersPage() {
     setError(null);
     try {
       // Replace with your actual API endpoint for deleting an offer
-      const res = await fetch(`${apiUrl}/admin/offers/${encodeURIComponent(offerToDelete.id)}`, {
+      const res = await fetch(`${apiBaserUrl}/admin/offers/${encodeURIComponent(offerToDelete.id)}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json', 'credentials': 'include' },
       });
@@ -149,7 +149,7 @@ export default async function OffersPage() {
       if (offerToEdit) {
         // Edit existing offer
         // Replace with your actual API endpoint for updating an offer
-        res = await fetch(`${apiUrl}/admin/offers/${encodeURIComponent(offerToEdit.id)}`, {
+        res = await fetch(`${apiBaserUrl}/admin/offers/${encodeURIComponent(offerToEdit.id)}`, {
           method: 'PATCH', // Or PUT, depending on your API
           headers: { 'Content-Type': 'application/json', 'credentials': 'include' },
           body: JSON.stringify(formData),
@@ -157,7 +157,7 @@ export default async function OffersPage() {
       } else {
         // Create new offer
         // Replace with your actual API endpoint for creating a new offer
-        res = await fetch(`${apiUrl}/admin/offers`, {
+        res = await fetch(`${apiBaserUrl}/admin/offers`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'credentials': 'include' },
           body: JSON.stringify({ ...formData, companyId: adminSlug }), // Ensure companyId is sent for creation
@@ -191,7 +191,7 @@ export default async function OffersPage() {
       }
 
       // Replace with your actual API endpoint for updating offer status
-      const res = await fetch(`${apiUrl}/admin/offers/${encodeURIComponent(offerId)}`, {
+      const res = await fetch(`${apiBaserUrl}/admin/offers/${encodeURIComponent(offerId)}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', 'credentials': 'include' },
         body: JSON.stringify(payload),

@@ -4,7 +4,7 @@ import React from "react";
 import CoursesClient, { CourseType, EducatorOption, DepartmentOption, AcademicLevelOption } from "./CoursesClient";
 import { cookies } from "next/headers";
 
-const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface PageProps {
   params:Promise<{ slug: string }>
@@ -150,7 +150,7 @@ export default async function AdminCoursesPage({ params }: PageProps) {
   try {
     // Fetch all courses for this company
     const coursesRes = await fetch(
-      `${apiUrl}/admin/courses?companyId=${encodeURIComponent(companyId)}`,
+      `${apiBaserUrl}/admin/courses?companyId=${encodeURIComponent(companyId)}`,
       { next: { revalidate: 60 }, headers: { cookie: cookieHeader } } // equivalent to SSR on every request
     );
     if (coursesRes.ok) {
@@ -164,7 +164,7 @@ export default async function AdminCoursesPage({ params }: PageProps) {
 
     // Fetch all educators for this company
     const educatorsRes = await fetch(
-      `${apiUrl}/admin/educators?companyId=${encodeURIComponent(companyId)}`,
+      `${apiBaserUrl}/admin/educators?companyId=${encodeURIComponent(companyId)}`,
       { next: { revalidate: 60 }, headers: { cookie: cookieHeader } }
     );
     if (educatorsRes.ok) {
@@ -183,7 +183,7 @@ export default async function AdminCoursesPage({ params }: PageProps) {
 
     // Fetch all departments for this company
     const departmentsRes = await fetch(
-      `${apiUrl}/admin/departments?companyId=${encodeURIComponent(companyId)}`,
+      `${apiBaserUrl}/admin/departments?companyId=${encodeURIComponent(companyId)}`,
       { next: { revalidate: 60 }, headers: { cookie: cookieHeader } }
     );
     if (departmentsRes.ok) {
@@ -197,7 +197,7 @@ export default async function AdminCoursesPage({ params }: PageProps) {
 
     // Fetch all academic levels for this company
     const academicLevelsRes = await fetch(
-      `${apiUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`,
+      `${apiBaserUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`,
       { next: { revalidate: 60 }, headers: { cookie: cookieHeader } }
     );
     if (academicLevelsRes.ok) {
@@ -231,7 +231,7 @@ export default async function AdminCoursesPage({ params }: PageProps) {
       allDepartments={allDepartments}
       allAcademicLevels={allAcademicLevels}
       companyId={companyId}
-      apiUrl={apiUrl}
+      apiBaserUrl={apiBaserUrl}
     />
   );
 }

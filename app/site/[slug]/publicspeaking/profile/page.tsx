@@ -53,8 +53,8 @@ export default function UserDashboard() {
       try {
         setLoading(true);
         const [programRes, ebookRes] = await Promise.all([
-          fetch(`/api/${slug}/user/enrollments`),
-          fetch(`/api/${slug}/user/resources`),
+          fetch(`${apiBaserUrl}/${slug}/user/enrollments`),
+          fetch(`${apiBaserUrl}/${slug}/user/resources`),
         ]);
         const [programData, ebookData] = await Promise.all([
           programRes.json(),

@@ -33,7 +33,7 @@ const ProductRequestsPage = () => {
 
   const itemsPerPage = 5;
   const salesAgentId = "63f7c9e2d91b1b2a5e80b016";
-  const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+  const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
   // --- Fetch Requests ---
   useEffect(() => {
@@ -41,7 +41,7 @@ const ProductRequestsPage = () => {
       try {
         setIsLoading(true);
         const response = await fetch(
-          `${apiUrl}/agent/clientproductrequests?agentId=${salesAgentId}`,
+          `${apiBaserUrl}/agent/clientproductrequests?agentId=${salesAgentId}`,
           { cache: "no-store" }
         );
 
@@ -58,7 +58,7 @@ const ProductRequestsPage = () => {
     };
 
     fetchRequests();
-  }, [apiUrl]);
+  }, [apiBaserUrl]);
 
   // --- Filters and Pagination ---
   const filteredRequests = requests.filter((req) => {
@@ -82,7 +82,7 @@ const ProductRequestsPage = () => {
     newStatus: "APPROVED" | "DECLINED"
   ) => {
     try {
-      await fetch(`${apiUrl}/agent/updateRequestStatus`, {
+      await fetch(`${apiBaserUrl}/agent/updateRequestStatus`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ requestId, status: newStatus }),

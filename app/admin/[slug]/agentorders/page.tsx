@@ -4,7 +4,7 @@ import React from "react";
 import ProductRequestsClient from "./ProductRequestsClient";
 import { cookies } from "next/headers";
 
-const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface ProductRequest {
   requestId: string;
@@ -33,7 +33,7 @@ export default async function ProductRequestsPage({ params }: PageProps) {
   let requestsData: ProductRequest[] = [];
 
   try {
-    const res = await fetch(`${apiUrl}/admin/agent-product-request`, {
+    const res = await fetch(`${apiBaserUrl}/admin/agent-product-request`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

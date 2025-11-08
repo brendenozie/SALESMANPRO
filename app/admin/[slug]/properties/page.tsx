@@ -7,10 +7,10 @@ import { cookies } from 'next/headers';
 import PropertyClientPage from './PropertyClientPage'; 
 
 import { ILocation, IStoreCategory, MarketListingForm } from '@/types/typings';
-const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;
 
 
-const apiBaseUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
 
 // --- Sample Data Generation (MOCKUPS FOR FALLBACK) ---
@@ -153,7 +153,7 @@ const fetchData = async <T,>(
     fallbackData: () => T,
     queryParam = 'companyId'
 ): Promise<{ data: T | null; error: string | null }> => {
-    const url = `${apiUrl}/${endpoint}?${queryParam}=${encodeURIComponent(companyId)}`;
+    const url = `${apiBaserUrl}/${endpoint}?${queryParam}=${encodeURIComponent(companyId)}`;
     try {
         const res = await fetch(url, { cache: 'no-store', headers: { cookie: cookiesHeaders } });
 

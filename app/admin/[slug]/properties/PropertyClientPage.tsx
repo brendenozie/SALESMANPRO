@@ -55,7 +55,7 @@ export default function PropertyClientPage({
   const [selectedProperty, setSelectedProperty] = useState<MarketListingForm | null>(null);
   const [showAddToMarketProductModal, setShowAddToMarketProductModal] = useState(false);
 
-  const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;
+  const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;
 
 
   // --- Data Refetching (Client-side) ---
@@ -64,7 +64,7 @@ export default function PropertyClientPage({
     setError(null);
     const toastId = showToast ? toast.loading("Refreshing listings...") : undefined;
     try {
-      const response = await fetch(`${apiUrl}/admin/my-market-place?companyId=${encodeURIComponent(companyId)}`, { cache: 'no-store' });
+      const response = await fetch(`${apiBaserUrl}/admin/my-market-place?companyId=${encodeURIComponent(companyId)}`, { cache: 'no-store' });
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || `Failed to fetch listings. Status: ${response.status}`);
@@ -79,7 +79,7 @@ export default function PropertyClientPage({
     } finally {
       setIsLoading(false);
     }
-  }, [companyId, apiUrl]); 
+  }, [companyId, apiBaserUrl]); 
   
   // NOTE: In a real app, you would also refetch categories/locations here if needed.
 
@@ -111,7 +111,7 @@ export default function PropertyClientPage({
     const deleteToastId = toast.loading(`Deleting listing: ${selectedProperty?.name || '...'}`);
     
     try {
-        const response = await fetch(`${apiUrl}/admin/my-market-place/${encodeURIComponent(propertyId)}`, {
+        const response = await fetch(`${apiBaserUrl}/admin/my-market-place/${encodeURIComponent(propertyId)}`, {
             method: 'DELETE',
         });
         if (!response.ok) {
@@ -129,7 +129,7 @@ export default function PropertyClientPage({
         setSelectedProperty(null);
         setIsSubmitting(false);
     }
-  }, [apiUrl, selectedProperty]);
+  }, [apiBaserUrl, selectedProperty]);
 
 
   // --- Modal Handlers ---

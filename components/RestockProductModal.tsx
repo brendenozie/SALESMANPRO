@@ -6,12 +6,12 @@ const RestockProductModal = ({ showRestockProductModal, setShowRestockProductMod
    const [restockQuantity, setRestockQuantity] = useState(0);
    const [damagedQuantity, setDamagedQuantity] = useState(0);
 
-  const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+  const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 //
   const handleRestock = async () => {
     try {
       
-      const response = await fetch(`${apiUrl}/admin/post-restock`, {
+      const response = await fetch(`${apiBaserUrl}/admin/post-restock`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

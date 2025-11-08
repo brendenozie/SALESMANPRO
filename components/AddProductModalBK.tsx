@@ -15,7 +15,7 @@ import { STEP_LABELS } from "@/constant/STEP_LABELS";
 // MAPPINGS
 // -------------------
 
-const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface AddProductModalProps {
   showRequestProductModal: boolean;
@@ -237,7 +237,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
     const data = new FormData();
     data.append("file", file);
     data.append("type", type);
-    const res = await fetch("/api/upload", {
+    const res = await fetch(`${apiBaserUrl}/upload", {
       method: "POST",
       body: data,
     });
@@ -423,7 +423,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
     
 
     try {
-      const resp = await fetch(`${apiUrl}/admin/post-product`, {
+      const resp = await fetch(`${apiBaserUrl}/admin/post-product`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(listing),

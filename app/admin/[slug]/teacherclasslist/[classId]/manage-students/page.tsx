@@ -2,7 +2,7 @@
 import React from "react";
 import StudentRosterPage, { StudentRosterStudent } from "./StudentRosterPage";
 
-const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface Props {
   params: Promise<{
@@ -25,7 +25,7 @@ export default async function StudentRosterPageServer({ params }: Props) {
 
   try {
     const res = await fetch(
-      `${apiUrl}/teacher/academic-levels/${encodeURIComponent(academicLevelId)}/students?teacherId=${teacherId}`,
+      `${apiBaserUrl}/teacher/academic-levels/${encodeURIComponent(academicLevelId)}/students?teacherId=${teacherId}`,
       { next: { revalidate: 60 } } // equivalent to SSR on every request
     );
 

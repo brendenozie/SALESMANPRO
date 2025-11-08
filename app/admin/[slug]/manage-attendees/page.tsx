@@ -3,7 +3,7 @@ import React from "react";
 import { cookies } from "next/headers";
 import AdminOrdersClient from "./AdminOrdersClient"; // Ensure this path is correct
 
-const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // The types should ideally be more detailed/shared, but we use the provided ones for structure
 type Agent = {
@@ -47,7 +47,7 @@ export default async function AdminOrdersPage({ params }: Props) {
   try {
     // 1. Fetch organizers (Unchanged)
     const organizersRes = await fetch(
-      `${apiUrl}/admin/agents?companyId=${encodeURIComponent(companyId)}`,
+      `${apiBaserUrl}/admin/agents?companyId=${encodeURIComponent(companyId)}`,
       { next: { revalidate: 60 }, headers: { cookie: cookiesHeader } }
     );
     if (organizersRes.ok) {
@@ -59,7 +59,7 @@ export default async function AdminOrdersPage({ params }: Props) {
     // NOTE: The API endpoint used by the Server Component must return all orders for the admin.
     const ordersRes = await fetch(
       // Assuming your API endpoint for all orders is simply /admin/{slug}/orders
-      `${apiUrl}/admin/${companyId}/orders`, 
+      `${apiBaserUrl}/admin/${companyId}/orders`, 
       { next: { revalidate: 60 }, headers: { cookie: cookiesHeader } }
     );
     if (ordersRes.ok) {

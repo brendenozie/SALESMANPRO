@@ -28,10 +28,10 @@ const fetcher = (url: string) => fetch(url).then(res => res.json());
 // Updated component signature
 export default function NonProfitSite({ pageData, companyId }: { pageData: StoreForm, companyId: string }) {
   // Fetch client-side data
-  const { data: testimonialsData } = useSWR(`/api/site/testimonials?id=${companyId}`, fetcher);
-  const { data: blogsData } = useSWR(`/api/site/blogs?id=${companyId}`, fetcher);
-  const { data: faqsData } = useSWR(`/api/site/faqs?id=${companyId}`, fetcher);
-  const { data: eventsData } = useSWR(`/api/site/events?id=${companyId}`, fetcher);
+  const { data: testimonialsData } = useSWR(`${apiBaserUrl}/site/testimonials?id=${companyId}`, fetcher);
+  const { data: blogsData } = useSWR(`${apiBaserUrl}/site/blogs?id=${companyId}`, fetcher);
+  const { data: faqsData } = useSWR(`${apiBaserUrl}/site/faqs?id=${companyId}`, fetcher);
+  const { data: eventsData } = useSWR(`${apiBaserUrl}/site/events?id=${companyId}`, fetcher);
 
   return (
       <main className="min-h-screen bg-gray-100 font-sans">

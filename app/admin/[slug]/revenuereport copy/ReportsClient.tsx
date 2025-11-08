@@ -74,19 +74,19 @@ const ReportsClient: React.FC = () => {
         totalRes,
       ] = await Promise.all([
         axios.get<OrdersByStatusResponse[]>(
-          "/api/admin/reports/order-by-status",
+          `${apiBaserUrl}/admin/reports/order-by-status",
           { params }
         ),
         axios.get<SalesAgentRevenueResponse[]>(
-          "/api/admin/reports/sales-agent-revenue",
+          `${apiBaserUrl}/admin/reports/sales-agent-revenue",
           { params }
         ),
         axios.get<BestSellingProductsResponse[]>(
-          "/api/admin/reports/best-selling-products",
+          `${apiBaserUrl}/admin/reports/best-selling-products",
           { params }
         ),
         axios.get<TotalRevenueResponse>(
-          "/api/admin/reports/total-revenue",
+          `${apiBaserUrl}/admin/reports/total-revenue",
           { params }
         ),
       ]);

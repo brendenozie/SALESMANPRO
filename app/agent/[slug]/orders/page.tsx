@@ -43,12 +43,12 @@ const OrderSummaryPage = () => {
   >("all");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
-  const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+  const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const response = await fetch(`${apiUrl}/agent/orders?agentId=63f7c9e2d91b1b2a5e80b016`, {
+        const response = await fetch(`${apiBaserUrl}/agent/orders?agentId=63f7c9e2d91b1b2a5e80b016`, {
           cache: "no-store",
         });
 
@@ -78,7 +78,7 @@ const OrderSummaryPage = () => {
     };
 
     fetchOrders();
-  }, [apiUrl]);
+  }, [apiBaserUrl]);
 
   if (!ordersData) {
     return (

@@ -36,8 +36,8 @@ export default function DirectorySite({ pageData, companyId }: { pageData: Store
   const [searchTerm, setSearchTerm] = useState('');
 
   // Fetch client-side data
-  const { data: testimonialsData } = useSWR(`/api/site/testimonials?id=${companyId}`, fetcher);
-  const { data: faqsData } = useSWR(`/api/site/faqs?id=${companyId}`, fetcher);
+  const { data: testimonialsData } = useSWR(`${apiBaserUrl}/site/testimonials?id=${companyId}`, fetcher);
+  const { data: faqsData } = useSWR(`${apiBaserUrl}/site/faqs?id=${companyId}`, fetcher);
 
   const handleSearch = () => {
     // router.push(`/${pageData.slug}/search?q=${encodeURIComponent(searchTerm)}`);

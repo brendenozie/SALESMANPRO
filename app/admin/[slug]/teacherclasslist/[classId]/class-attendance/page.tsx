@@ -4,7 +4,7 @@ import TakeAttendancePage from "./TakeAttendancePage";
 
 // Define the API base URL
 // Ensure this matches where your Next.js API routes are served
-const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface Props {
   params: Promise<{

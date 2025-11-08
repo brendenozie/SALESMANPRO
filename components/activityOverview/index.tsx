@@ -18,7 +18,7 @@ const tabs = [
   { id: "downloads", label: "Downloads", icon: BookOpenIcon },
 ];
 
-const apiBaseUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
 const ActivityOverview: React.FC = () => {
   const { data: session, status } = useSession();

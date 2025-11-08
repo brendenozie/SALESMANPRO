@@ -21,7 +21,7 @@ import 'react-quill-new/dist/quill.snow.css';
 import { set } from "lodash";
 
 
-const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 const modules = {
   toolbar: [
@@ -48,6 +48,59 @@ const STEP_LABELS: Record<number, string> = {
 //   source: "local" | "server";
 // }
 
+export async function uploadFiles(
+  files: File[],
+  type: "image" | "video" | "book",
+  onProgress?: (progress: number, file: File) => void
+): Promise<{ url: string; key: string; contentType: string }[]> {
+  if (!files?.length) return [];
+
+  const uploads = files.map(async (file) => {
+    try {
+      // ✅ Step 1: Request a signed upload URL from your API
+      const res = await fetch(
+        `${apiBaserUrl}/upload-url?filename=${encodeURIComponent(file.name)}&type=${type}&contentType=${encodeURIComponent(file.type)}`
+      );
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Failed to get signed URL: ${text}`);
+      }
+
+      const { uploadUrl, publicUrl, key, contentType } = await res.json();
+
+      // ✅ Step 2: Upload directly to S3
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("PUT", uploadUrl);
+        xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
+
+        xhr.upload.onprogress = (event) => {
+          if (event.lengthComputable && onProgress) {
+            const progress = Math.round((event.loaded / event.total) * 100);
+            onProgress(progress, file);
+          }
+        };
+
+        xhr.onload = () => {
+          if (xhr.status === 200) resolve();
+          else reject(new Error(`Upload failed for ${file.name}: ${xhr.status}`));
+        };
+
+        xhr.onerror = () => reject(new Error(`Network error during upload for ${file.name}`));
+        xhr.send(file);
+      });
+
+      console.log(`✅ Uploaded: ${file.name} (${contentType}) → ${publicUrl}`);
+      return { url: publicUrl, key, contentType };
+    } catch (err) {
+      console.error("❌ Upload error:", err);
+      throw err;
+    }
+  });
+
+  return Promise.all(uploads);
+}
 interface AddEditBlogModalProps {
   show: boolean;
   onClose: () => void;
@@ -92,22 +145,24 @@ export default function AddEditBlogModal({
 
   // const [newImages, setNewImages] = useState<UnifiedMediaItem[]>([]);
   // const [newImages, setNewImages] = useState<UnifiedMediaItem[]>([]);
-  const [images, setImages] = useState<UnifiedMediaItem[]>([]);
+   const [images, setImages] = useState<UnifiedMediaItem[]>(
+      formData?.images?.map((img: any, idx: number) => ({ index: idx, url: img.url, source: 'server' })) || []
+    );
   // Sync unified media state when formData changes
-    useEffect(() => {
-      setImages(
-        formData.images?.map((img: any, idx: number) => ({
-          id: img.url || `server-img-${idx}`,
-          url: typeof img === 'string' ? img : img.url,
-          source: 'server',
-          file: undefined,
-          title: "Untitled Image",
-          author: "Unknown",
-          coverPreviewUrl: undefined,
-          fileName: undefined,
-        })) || []
-      );
-    }, [formData.images]);
+    // useEffect(() => {
+    //   setImages(
+    //     formData.images?.map((img: any, idx: number) => ({
+    //       id: img.url || `server-img-${idx}`,
+    //       url: typeof img === 'string' ? img : img.url,
+    //       source: 'server',
+    //       file: undefined,
+    //       title: "Untitled Image",
+    //       author: "Unknown",
+    //       coverPreviewUrl: undefined,
+    //       fileName: undefined,
+    //     })) || []
+    //   );
+    // }, [formData.images]);
     
    // Generic handler
    const handleChange = (
@@ -138,45 +193,53 @@ export default function AddEditBlogModal({
     return true;
   }, [step, formData, images]);
 
-  const uploadFile = async (file: File, type: string): Promise<string> => {
-    try {
-      const fd = new FormData();
-      fd.append("file", file);
-      fd.append("type", type);
+  // const uploadFile = async (file: File, type: string): Promise<string> => {
+  //   try {
+  //     const fd = new FormData();
+  //     fd.append("file", file);
+  //     fd.append("type", type);
 
-      const res = await fetch(`${apiUrl}/admin/upload`, {
-        method: "POST",
-        body: fd,
-      });
+  //     const res = await fetch(`${apiBaserUrl}/admin/upload`, {
+  //       method: "POST",
+  //       body: fd,
+  //     });
 
-      if (!res.ok) {
-        console.error("File upload failed", await res.text());
-        return "";
-      }
+  //     if (!res.ok) {
+  //       console.error("File upload failed", await res.text());
+  //       return "";
+  //     }
 
-      const data = await res.json();
-      // expect the upload endpoint to return { url: "https://..." } or similar
-      return data?.url ?? data?.path ?? "";
-    } catch (err) {
-      console.error("Upload error", err);
-      return "";
-    }
-  };
+  //     const data = await res.json();
+  //     // expect the upload endpoint to return { url: "https://..." } or similar
+  //     return data?.url ?? data?.path ?? "";
+  //   } catch (err) {
+  //     console.error("Upload error", err);
+  //     return "";
+  //   }
+  // };
 
   const handleSubmit = async () => {
-    let coverUrl = images[0]?.url || "";
-    if (images[0]) {
-      // UnifiedMediaItem may wrap the actual File in a .file property or already be a File-like URL;
-      // try to extract a File, otherwise fall back to url/string if present.
-      const candidate: any = (images[0] as any).file ?? images[0];
-      if (candidate instanceof File) {
-        coverUrl = await uploadFile(candidate, "blog-cover");
-      } else if (typeof candidate === "string") {
-        coverUrl = candidate;
-      } else if ((images[0] as any).url) {
-        coverUrl = (images[0] as any).url;
-      }
-    }
+    const newImageItems = images.filter(i => i.source === "local" && i.file);
+    
+    // 2. Create upload promises for new files
+    const uploadImagePromises = newImageItems.map(item =>
+      uploadFiles([item.file!], "image", (progress, file) => {
+        console.log(`Uploading image ${file.name}: ${progress}%`);
+      }).then(result => ({ id: item.id, url: result[0].url }))
+    );
+
+    // 3. Run all uploads in parallel
+    const [uploadedImages] = await Promise.all([
+      Promise.all(uploadImagePromises),
+    ]);
+
+    // 4. Create lookup maps for quick access
+    const imageUrlMap = new Map(uploadedImages.map(i => [i.id, i.url]));
+
+    // 5. Build final URL arrays (server + newly uploaded)
+    const finalImageUrls = images
+      .map(img => (img.source === "server" ? img.url : imageUrlMap.get(img.id)!))
+      .filter(Boolean);
 
     const payload = {
       id: formData.id,
@@ -188,7 +251,7 @@ export default function AddEditBlogModal({
       status: formData.status,
       categories: [formData.category?.displayName],
       tags: formData.tags,
-      coverImage: coverUrl,
+      coverImage: finalImageUrls[0] || "",
       seo: {
         title: formData.seoTitle,
         description: formData.seoDescription,
@@ -198,7 +261,7 @@ export default function AddEditBlogModal({
       author: formData.author,
     };
 
-    await fetch(`${apiUrl}/admin/post-blog`, {
+    await fetch(`${apiBaserUrl}/admin/post-blog`, {
       method: formData.id ? "PUT" : "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),

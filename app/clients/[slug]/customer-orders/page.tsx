@@ -1,13 +1,13 @@
 import React from "react";
 import OrderSummaryClient from "./OrderSummaryClient";
 
-const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 export default async function OrderSummaryPage() {
   let ordersData = [];
 
   try {
-    const res = await fetch(`${apiUrl}/orders`, { cache: "no-store" });
+    const res = await fetch(`${apiBaserUrl}/orders`, { cache: "no-store" });
     if (res.ok) {
       ordersData = await res.json();
     }

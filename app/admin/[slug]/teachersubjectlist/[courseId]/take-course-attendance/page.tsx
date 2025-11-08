@@ -2,7 +2,7 @@
 import React from "react";
 import TakeAttendancePageClient from "./TakeAttendancePageClient"; // Renamed client component
 
-const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // IMPORTANT: In a real application, the currentTeacherUserId would come from an authentication context (e.g., NextAuth.js session).
 // For this example, we'll use a hardcoded mock ID.
@@ -49,7 +49,7 @@ export default async function TakeAttendanceServerPage({ params }: PageProps) {
     const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD for initial fetch
 
     const res = await fetch(
-      `${apiUrl}/teacher/courses/${courseId}/attendance-data?educatorId=${encodeURIComponent(educatorId)}&companyId=${encodeURIComponent(companyId)}&date=${encodeURIComponent(today)}`,
+      `${apiBaserUrl}/teacher/courses/${courseId}/attendance-data?educatorId=${encodeURIComponent(educatorId)}&companyId=${encodeURIComponent(companyId)}&date=${encodeURIComponent(today)}`,
       { next: { revalidate: 60 } } // Ensure fresh data
     );
 

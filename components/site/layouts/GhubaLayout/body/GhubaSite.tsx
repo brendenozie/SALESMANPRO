@@ -13,7 +13,7 @@ import Shop from "@/components/site/layouts/GhubaLayout/body/components/shops/Sh
 import { StoreForm } from '@/types/typings';
 // import PricingTable from "@/components/pricingTable";
 
-const apiBaseUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
 const HomePage = ({ pageData, companyId }: { pageData: StoreForm, companyId: string }) => {
   const [categories, setCategories] = useState<any>([]);

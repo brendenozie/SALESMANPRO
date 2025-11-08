@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import UserLayout from '@/components/UserLayout';
 import UserNav from '@/components/UserNav';
 
-const apiBaseUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
 const ProductRequestsPage = () => {
   const [requests, setRequests] = useState([]);

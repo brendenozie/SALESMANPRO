@@ -83,7 +83,7 @@ export default function CheckoutClient({ searchParams }: CheckoutClientProps) {
     if (!validate()) return;
     setLoading(true);
     try {
-      const res = await fetch("/api/shop/orders", {
+      const res = await fetch(`${apiBaserUrl}/shop/orders", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

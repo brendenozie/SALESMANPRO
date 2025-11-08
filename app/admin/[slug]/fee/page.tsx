@@ -4,7 +4,7 @@ import FeesClient, { StudentFeeRecord } from "./FeesClient"; // Import client co
 import { Student, FeeItem } from "@/lib/data"; // Import types from lib/data.ts
 
 // Assuming your API URL is correctly set in environment variables
-const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 /**
  * Server Component: fetches initial data for the Student Fee Dashboard.
@@ -20,7 +20,7 @@ export default async function FeesPage() {
 
   try {
     // Fetch Student Fee Records
-    const feesRes = await fetch(`${apiUrl}/admin/student-fee-records`, {
+    const feesRes = await fetch(`${apiBaserUrl}/admin/student-fee-records`, {
       next: { revalidate: 60 }, // Ensure fresh data on each request
     });
     if (feesRes.ok) {
@@ -34,7 +34,7 @@ export default async function FeesPage() {
     }
 
     // Fetch Students (needed for the "Create New Fee Record" modal)
-    const studentsRes = await fetch(`${apiUrl}/admin/students`, {
+    const studentsRes = await fetch(`${apiBaserUrl}/admin/students`, {
       next: { revalidate: 60 },
     });
     if (studentsRes.ok) {
@@ -48,7 +48,7 @@ export default async function FeesPage() {
     }
 
     // Fetch Fee Items (useful for reference, perhaps for a future "Fee Item Management" page)
-    const feeItemsRes = await fetch(`${apiUrl}/admin/fee-items`, {
+    const feeItemsRes = await fetch(`${apiBaserUrl}/admin/fee-items`, {
       next: { revalidate: 60 },
     });
     if (feeItemsRes.ok) {

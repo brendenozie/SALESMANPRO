@@ -12,7 +12,7 @@ import {
 
 import { useParams } from "next/navigation";
 
-const apiBaseUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
 interface PageProps {
   params:Promise<{ slug: string }>
@@ -121,7 +121,7 @@ export default function CasesPage() {
     e.preventDefault();
     const url = isEditing
       ? `${apiBaseUrl}/admin/cases/${currentCase?.id}`
-      : "/api/admin/cases";
+      : `${apiBaserUrl}/admin/cases";
     const method = isEditing ? "PUT" : "POST";
 
     try {

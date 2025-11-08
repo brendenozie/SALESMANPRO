@@ -5,7 +5,7 @@ import AdminEventsClient from "./AdminEventsClient";
 import { IStoreCategory, IEvent } from "@/types/typings";
 import { cookies } from "next/headers";
 
-const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 
 type Tag = {
@@ -44,7 +44,7 @@ export default async function AdminInventoryPage({ params }: Props) {
     // Fetch all products for this company
    
     // Fetch all categories for this company
-    const categoriesRes = await fetch(`${apiUrl}/admin/get-store-categories?companyId=${encodeURIComponent(companyId )}`,
+    const categoriesRes = await fetch(`${apiBaserUrl}/admin/get-store-categories?companyId=${encodeURIComponent(companyId )}`,
       { next: { revalidate: 60 }, headers: { cookie: cookiesHeader } }
     );
 
@@ -56,7 +56,7 @@ export default async function AdminInventoryPage({ params }: Props) {
 
     // Fetch all agents for this company
     const allOrganizersRes = await fetch(
-      `${apiUrl}/admin/agents?companyId=${encodeURIComponent(companyId)}`,
+      `${apiBaserUrl}/admin/agents?companyId=${encodeURIComponent(companyId)}`,
       { next: { revalidate: 60 }, headers: { cookie: cookiesHeader } }
     );
     if (allOrganizersRes.ok) {
@@ -66,7 +66,7 @@ export default async function AdminInventoryPage({ params }: Props) {
     }
 
      // Fetch all users who can be organizers (e.g., Admins, Educators, Staff)
-    const organizersRes = await fetch(`${apiUrl}/admin/agents?companyId=${encodeURIComponent(companyId)}`, { // Assuming /api/users endpoint
+    const organizersRes = await fetch(`${apiBaserUrl}/admin/agents?companyId=${encodeURIComponent(companyId)}`, { // Assuming /api/users endpoint
       next: { revalidate: 60 },
       headers: { cookie: cookiesHeader }
     });
@@ -79,7 +79,7 @@ export default async function AdminInventoryPage({ params }: Props) {
       // fetchError = true;
     }
 
-    const eventsRes = await fetch(`${apiUrl}/admin/events?companyId=${encodeURIComponent(companyId)}`, { // Assuming /api/users endpoint
+    const eventsRes = await fetch(`${apiBaserUrl}/admin/events?companyId=${encodeURIComponent(companyId)}`, { // Assuming /api/users endpoint
       next: { revalidate: 60 },
       headers: { cookie: cookiesHeader }
     });

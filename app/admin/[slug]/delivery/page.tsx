@@ -3,7 +3,7 @@ import React from "react";
 import DeliveryClient from "./DeliveryClient";
 import { cookies } from "next/headers";
 
-const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // Re-using CustomerOrder and OrderItem types from Orders module for consistency
 export type OrderItem = {
@@ -59,7 +59,7 @@ export default async function DeliveryPage({ params }: PageProps) {
   let error: string | null = null;
 
   try {
-    const ordersRes = await fetch(`${apiUrl}/admin/customer-orders?companyId=${companyId}&delivery=true`, { next: { revalidate: 60 }, headers: { Cookie: cookieHeader } });
+    const ordersRes = await fetch(`${apiBaserUrl}/admin/customer-orders?companyId=${companyId}&delivery=true`, { next: { revalidate: 60 }, headers: { Cookie: cookieHeader } });
     if (ordersRes.ok) {
       let data = await ordersRes.json();
       deliveryOrdersData = data.data.orders || [];

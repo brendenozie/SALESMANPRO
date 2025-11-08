@@ -8,7 +8,7 @@ import { cookies } from 'next/headers';
 // Import the Type Definition from the new Client Component
 import ShowingsClientPage, { Showing, SelectOption } from './ShowingsClientPage';
 
-const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;
 
 // --- Interface for Server Component Props ---
 interface ShowingsPageProps {
@@ -72,7 +72,7 @@ const fetchData = async <T,>(
     cookiesHeaders: string,
     fallbackData: () => T
 ): Promise<{ data: T | null; error: string | null }> => {
-    const url = `${apiUrl}/${endpoint}?companyId=${slug}`;
+    const url = `${apiBaserUrl}/${endpoint}?companyId=${slug}`;
     try {
         const res = await fetch(url, { cache: 'no-store', headers: { cookie: cookiesHeaders } });
 

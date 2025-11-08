@@ -5,7 +5,7 @@ import ProductsClient from "./ProductsClient";
 import { MarketListingForm } from "@/types/typings";
 import { cookies } from "next/headers";
 
-const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // --- Type Definitions ---
 
@@ -56,13 +56,13 @@ export default async function ProductsPage({ params }: Props) {
   try {
     // Fetch both orders and riders concurrently for better performance
     const [ordersResponse, ridersResponse] = await Promise.all([
-      fetch(`${apiUrl}/admin/orders?companyId=${encodeURIComponent(companyId)}`, {
+      fetch(`${apiBaserUrl}/admin/orders?companyId=${encodeURIComponent(companyId)}`, {
         method: "GET",
         headers: { Cookie: cookieStore || "" },
         next: { revalidate: 60 },
       }),
       // Fetch from the riders API endpoint we created previously
-      fetch(`${apiUrl}/admin/riders?companyId=${encodeURIComponent(companyId)}`, {
+      fetch(`${apiBaserUrl}/admin/riders?companyId=${encodeURIComponent(companyId)}`, {
         method: "GET",
         headers: { Cookie: cookieStore || "" },
         next: { revalidate: 3600 }, // Riders list doesn't change as often

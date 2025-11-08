@@ -2,7 +2,7 @@
 import React from "react";
 import AdminPOSClient from "./AdminPOSClient";
 
-const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // Re-using Product and ProductCategory types from Menu module for consistency
 export type ProductCategory = {
@@ -54,7 +54,7 @@ export default async function PosPage({ params }: PageProps) {
 
   try {
     // Fetch Product Categories for the company
-    const categoriesRes = await fetch(`${apiUrl}/admin/menu-categories?companyId=${companyId}`, { next: { revalidate: 60 } });
+    const categoriesRes = await fetch(`${apiBaserUrl}/admin/menu-categories?companyId=${companyId}`, { next: { revalidate: 60 } });
     if (categoriesRes.ok) {
       categoriesData = (await categoriesRes.json()) as ProductCategory[];
     } else {
@@ -62,7 +62,7 @@ export default async function PosPage({ params }: PageProps) {
     }
 
     // Fetch Products (dishes) for the company
-    const productsRes = await fetch(`${apiUrl}/admin/products?companyId=${companyId}`, { next: { revalidate: 60 } });
+    const productsRes = await fetch(`${apiBaserUrl}/admin/products?companyId=${companyId}`, { next: { revalidate: 60 } });
     if (productsRes.ok) {
       productsData = (await productsRes.json()) as Product[];
     } else {

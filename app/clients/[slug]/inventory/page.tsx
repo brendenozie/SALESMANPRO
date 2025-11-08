@@ -8,7 +8,7 @@ import UserNav from '@/components/UserNav';
 const ProductRequestModal = dynamic(() => import('@/components/ProductRequestModal'));
 const AddToProductMarketModal = dynamic(() => import('@/components/AddToProductMarketModal'));
 
-const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;
 
 type Product = {
   clientInventoryId: string;
@@ -32,7 +32,7 @@ const ClientInventoryPage = async ({ params }: Props) => {
 
   React.useEffect(() => {
     const fetchData = async () => {
-      const res = await fetch(`${apiUrl}/clients/${companyId}/inventory`);
+      const res = await fetch(`${apiBaserUrl}/clients/${companyId}/inventory`);
       const data = await res.json();
       setProductsData(data);
     };

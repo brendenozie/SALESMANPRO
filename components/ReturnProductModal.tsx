@@ -10,12 +10,12 @@ const ReturnProductModal = ({ showReturnProductModal, setShowReturnProductModal,
   const [damagedQuantity, setDamagedQuantity] = useState(0);
   const [condition, setCondition] = useState('Good');
 
-  const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+  const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
    useEffect(() => {
       const fetchAgents = async () => {
         try {
-          const response = await fetch(`${apiUrl}/admin/getAllAgents`);
+          const response = await fetch(`${apiBaserUrl}/admin/getAllAgents`);
           if (!response.ok) throw new Error("Failed to load agents.");
   
           const data = await response.json();
@@ -31,7 +31,7 @@ const ReturnProductModal = ({ showReturnProductModal, setShowReturnProductModal,
 
   const handleReturn = async () => {
     try {
-      const response = await fetch(`${apiUrl}/admin/post-restock`, {
+      const response = await fetch(`${apiBaserUrl}/admin/post-restock`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

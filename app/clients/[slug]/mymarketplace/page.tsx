@@ -1,6 +1,6 @@
 import ClientMarketplacePage from "./ClientMarketplacePage";
 
-const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 
 // export type MarketplaceProduct = {
@@ -26,7 +26,7 @@ const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:300
 
 // export async function getMarketplaceProducts(clientId: string): Promise<MarketplaceProduct[]> {
 //   try {
-//     const response = await fetch(`${apiUrl}/clients/my-market-place?sellerId=${clientId}`, {
+//     const response = await fetch(`${apiBaserUrl}/clients/my-market-place?sellerId=${clientId}`, {
 //       cache: "no-store",
 //     });
 

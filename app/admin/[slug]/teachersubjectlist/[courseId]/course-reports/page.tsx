@@ -2,7 +2,7 @@
 import React from "react";
 import CourseReportsPageClient from "./CourseReportsPageClient";
 
-const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 const MOCK_CURRENT_EDUCATOR_ID = "clx023j0d00003b6033877d9c"; // Example: Educator User ID
 
@@ -63,7 +63,7 @@ export default async function CourseReportsServerPage({ params }: PageProps) {
 
   try {
     const res = await fetch(
-      `${apiUrl}/teacher/courses-for-reports?educatorId=${encodeURIComponent(educatorId)}`,
+      `${apiBaserUrl}/teacher/courses-for-reports?educatorId=${encodeURIComponent(educatorId)}`,
       { next: { revalidate: 60 } } // Ensure fresh data
     );
 

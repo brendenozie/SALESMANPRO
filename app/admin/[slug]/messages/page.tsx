@@ -7,7 +7,7 @@ import MessagesPageClient, {
 import { cookies } from "next/headers";
 
 
-const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface Props {
   params:Promise<{ slug: string }>
@@ -122,7 +122,7 @@ export default async function MessagesManagerPage({ params }: Props) {
   try {
     // Fetch conversations for the current user
     const conversationsRes = await fetch(
-      `${apiUrl}/admin/conversations?userId=${encodeURIComponent(currentUserId)}&companyId=${encodeURIComponent(companyId)}`,
+      `${apiBaserUrl}/admin/conversations?userId=${encodeURIComponent(currentUserId)}&companyId=${encodeURIComponent(companyId)}`,
       { next: { revalidate: 60 }, headers: { cookie: cookieHeader } }
     );
     if (conversationsRes.ok) {
@@ -136,7 +136,7 @@ export default async function MessagesManagerPage({ params }: Props) {
 
     // Fetch all users in the company (for recipient selection in compose)
     const usersRes = await fetch(
-      `${apiUrl}/admin/users?companyId=${encodeURIComponent(companyId)}`, // Assuming an /api/users endpoint
+      `${apiBaserUrl}/admin/users?companyId=${encodeURIComponent(companyId)}`, // Assuming an /api/users endpoint
       { next: { revalidate: 60 }, headers: { cookie: cookieHeader } }
     );
     if (usersRes.ok) {

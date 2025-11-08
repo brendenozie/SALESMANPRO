@@ -42,9 +42,9 @@ const fetcher = (url: string) => fetch(url).then(res => res.json());
 //----------------------------------------------
 export default function EventsSite({ pageData, companyId }: { pageData: StoreForm, companyId: string }) {
   // Fetch client-side data
-  const { data: eventsData } = useSWR(`/api/site/events?id=${companyId}`, fetcher);
-  const { data: testimonialsData } = useSWR(`/api/site/testimonials?id=${companyId}`, fetcher);
-  const { data: faqsData } = useSWR(`/api/site/faqs?id=${companyId}`, fetcher);
+  const { data: eventsData } = useSWR(`${apiBaserUrl}/site/events?id=${companyId}`, fetcher);
+  const { data: testimonialsData } = useSWR(`${apiBaserUrl}/site/testimonials?id=${companyId}`, fetcher);
+  const { data: faqsData } = useSWR(`${apiBaserUrl}/site/faqs?id=${companyId}`, fetcher);
 
   return (
     <div className="font-sans">

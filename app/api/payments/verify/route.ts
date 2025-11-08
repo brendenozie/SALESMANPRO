@@ -319,7 +319,7 @@ export async function GET(req: Request) {
 // Verify payment manually
 // async function verifyPayment(provider: "paystack" | "mpesa", id: string) {
 //   const param = provider === "paystack" ? `reference=${id}` : `checkoutRequestId=${id}`;
-//   const res = await fetch(`/api/payments/verify?provider=${provider}&${param}`);
+//   const res = await fetch(`${apiBaserUrl}/payments/verify?provider=${provider}&${param}`);
 //   const data = await res.json();
 //   return data;
 // }

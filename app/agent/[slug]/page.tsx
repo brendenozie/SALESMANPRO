@@ -48,7 +48,7 @@ const calculateProgress = (currentValue: number, goal: number) => {
 // ✅ Server Component (no "use client")
 export default async function AgentDashboardPage() {
   const session = await getServerSession(authOptions);
-  const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+  const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
   if (!session) {
     return (
@@ -67,7 +67,7 @@ export default async function AgentDashboardPage() {
       (session as any)?.user?.token ||
       "";
 
-    const res = await fetch(`${apiUrl}/agent/dashboard`, {
+    const res = await fetch(`${apiBaserUrl}/agent/dashboard`, {
       cache: "no-store", // always fresh data
       headers: {
         Authorization: token ? `Bearer ${token}` : "",

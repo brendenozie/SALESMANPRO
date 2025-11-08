@@ -15,7 +15,7 @@ import {
 } from "@/types/typings";
 import { cookies } from "next/headers";
 
-const apiBaserUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 export const dynamic = "force-dynamic";
 

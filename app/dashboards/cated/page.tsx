@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 
-const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface Subcategory {
   id: string | null;
@@ -86,7 +86,7 @@ export default function CategoryManager() {
   });
 
   useEffect(() => {
-    fetch(`${apiUrl}/admin/get-all-categories`, {
+    fetch(`${apiBaserUrl}/admin/get-all-categories`, {
       method: "GET",
       headers: { 
         "Content-Type": "application/json", 
@@ -241,8 +241,8 @@ export default function CategoryManager() {
 
     const method = selected ? "PUT" : "POST";
     const url = selected
-      ? `${apiUrl}/admin/product-categories/${selected.id}`
-      : `${apiUrl}/admin/product-categories`;
+      ? `${apiBaserUrl}/admin/product-categories/${selected.id}`
+      : `${apiBaserUrl}/admin/product-categories`;
 
     try {
       const res = await fetch(url, {

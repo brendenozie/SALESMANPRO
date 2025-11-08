@@ -29,7 +29,7 @@ ChartJS.register(
   ArcElement
 );
 
-const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface ClientProps {
   projectsData: Project[];
@@ -54,7 +54,7 @@ const ProjectsClient: React.FC<ClientProps> = ({ projectsData: initialProjectsDa
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/admin/projects`, { next: { revalidate: 60 } }); // Use the admin endpoint
+      const res = await fetch(`${apiBaserUrl}/admin/projects`, { next: { revalidate: 60 } }); // Use the admin endpoint
       if (res.ok) {
         const data = await res.json();
         setProjectsData(data);
@@ -130,7 +130,7 @@ const ProjectsClient: React.FC<ClientProps> = ({ projectsData: initialProjectsDa
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/admin/projects`, { // Use admin endpoint
+      const res = await fetch(`${apiBaserUrl}/admin/projects`, { // Use admin endpoint
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -160,7 +160,7 @@ const ProjectsClient: React.FC<ClientProps> = ({ projectsData: initialProjectsDa
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/admin/projects/${updatedProject.id}`, { // Use admin endpoint
+      const res = await fetch(`${apiBaserUrl}/admin/projects/${updatedProject.id}`, { // Use admin endpoint
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -193,7 +193,7 @@ const ProjectsClient: React.FC<ClientProps> = ({ projectsData: initialProjectsDa
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/admin/projects/${id}`, { // Use admin endpoint
+      const res = await fetch(`${apiBaserUrl}/admin/projects/${id}`, { // Use admin endpoint
         method: 'DELETE',
       });
 

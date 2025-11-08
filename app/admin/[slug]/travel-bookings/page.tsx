@@ -23,7 +23,7 @@ import ConfirmationModal from '@/components/ConfirmationModal';
 import TravelBookingModal from './TravelBookingModal';
 import toast from 'react-hot-toast'; // Replaced native alerts with a modern toast library
 
-const apiBaseUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
 // Define the TravelBookingData interface to match the API response
 export interface TravelBookingData {

@@ -7,7 +7,7 @@ import { ArrowRightCircleIcon } from '@heroicons/react/24/outline';
 import { createCachedFetcher } from '@/lib/swrCachedFetcher';
 
 export default function Trending({ id }: { id: string }) {
-  const url = `/api/site/productsByFlag?id=${id}&flag=trending&limit=8`;
+  const url = `${apiBaserUrl}/site/productsByFlag?id=${id}&flag=trending&limit=8`;
   const fetcher = createCachedFetcher(`products-${id}-trending`);
 
   const fallbackData = typeof window !== 'undefined' ? (() => {

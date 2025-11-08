@@ -27,7 +27,7 @@ import Image from 'next/image';
 import toast, { Toaster } from 'react-hot-toast';
 
 
-const apiBaseUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
 
 // --- Type Definitions (Defined here for the client's internal use and export to parent) ---
@@ -504,7 +504,7 @@ export default function AgentsClientPage({ adminSlug, initialAgents, isInitialLo
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
   const [agentToDelete, setAgentToDelete] = useState<AgentProfile | null>(null);
 
-  const apiUrl = `${apiBaseUrl}/admin/sales-agents`; // Base URL for your API routes
+  const apiBaserUrl = `${apiBaseUrl}/admin/sales-agents`; // Base URL for your API routes
 
   // --- Handlers for CRUD Operations (Require re-fetch to keep client state synced) ---
   
@@ -514,7 +514,7 @@ export default function AgentsClientPage({ adminSlug, initialAgents, isInitialLo
     setError(null);
     try {
       // NOTE: Use a *client-side* fetch for subsequent data updates after initial server load
-      const res = await fetch(`${apiUrl}?companyId=${adminSlug}`,{ integrity: 'same-origin' });
+      const res = await fetch(`${apiBaserUrl}?companyId=${adminSlug}`,{ integrity: 'same-origin' });
       if (!res.ok) {
         throw new Error(`Data fetch failed after update. (Status: ${res.status})`);
       }
@@ -552,7 +552,7 @@ export default function AgentsClientPage({ adminSlug, initialAgents, isInitialLo
       let response;
       if (editingAgent) {
         // Update existing agent (PUT request)
-        response = await fetch(`${apiUrl}/${editingAgent.id}`, {
+        response = await fetch(`${apiBaserUrl}/${editingAgent.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -564,7 +564,7 @@ export default function AgentsClientPage({ adminSlug, initialAgents, isInitialLo
         });
       } else {
         // Add new agent (POST request)
-        response = await fetch(apiUrl, {
+        response = await fetch(apiBaserUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -607,7 +607,7 @@ export default function AgentsClientPage({ adminSlug, initialAgents, isInitialLo
     const deleteToastId = toast.loading(`Deleting ${agentToDelete.name}...`);
 
     try {
-      const response = await fetch(`${apiUrl}/${agentToDelete.id}`, {
+      const response = await fetch(`${apiBaserUrl}/${agentToDelete.id}`, {
         method: 'DELETE',
       });
 

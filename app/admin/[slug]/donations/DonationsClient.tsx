@@ -19,7 +19,7 @@ import AddDonationForm from "./AddDonationForm";
 // Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // Placeholder types for dropdowns - In a real app, these would be fetched from your APIs
 type UserOption = { id: string; name: string; email: string };
@@ -58,7 +58,7 @@ const DonationsClient: React.FC<ClientProps> = ({
     setError(null);
 
     try {
-      const res = await fetch(`${apiUrl}/admin/donations`, { next: { revalidate: 60 } }); // Adjust for companyId if needed
+      const res = await fetch(`${apiBaserUrl}/admin/donations`, { next: { revalidate: 60 } }); // Adjust for companyId if needed
       if (res.ok) {
         const data = await res.json();
         setDonationsData(data);
@@ -132,7 +132,7 @@ const DonationsClient: React.FC<ClientProps> = ({
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/admin/donations`, {
+      const res = await fetch(`${apiBaserUrl}/admin/donations`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

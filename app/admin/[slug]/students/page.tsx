@@ -3,7 +3,7 @@
 import React from "react";
 import StudentsClient, { StudentType, ParentOption, AcademicLevelOption, StudentLevelStatusOption } from "./StudentsClient"; // Import StudentLevelStatusOption
 
-const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface PageProps {
   params:Promise<{ slug: string }>
@@ -172,7 +172,7 @@ export default async function StudentsManagementPage({ params }: PageProps) {
   try {
     // Fetch all students for this company
     const studentsRes = await fetch(
-      `${apiUrl}/admin/students?companyId=${encodeURIComponent(companyId)}`,
+      `${apiBaserUrl}/admin/students?companyId=${encodeURIComponent(companyId)}`,
       { next: { revalidate: 60 } } // equivalent to SSR on every request
     );
     if (studentsRes.ok) {
@@ -186,7 +186,7 @@ export default async function StudentsManagementPage({ params }: PageProps) {
 
     // Fetch all parents for this company (or globally if not company-specific)
     const parentsRes = await fetch(
-      `${apiUrl}/admin/parents?companyId=${encodeURIComponent(companyId)}`,
+      `${apiBaserUrl}/admin/parents?companyId=${encodeURIComponent(companyId)}`,
       { next: { revalidate: 60 } }
     );
     if (parentsRes.ok) {
@@ -207,7 +207,7 @@ export default async function StudentsManagementPage({ params }: PageProps) {
 
     // Fetch all academic levels for this company
     const academicLevelsRes = await fetch(
-      `${apiUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`,
+      `${apiBaserUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`,
       { next: { revalidate: 60 } }
     );
     if (academicLevelsRes.ok) {
@@ -240,7 +240,7 @@ export default async function StudentsManagementPage({ params }: PageProps) {
       allAcademicLevels={allAcademicLevels}
       allStudentLevelStatusOptions={allStudentLevelStatusOptions} // Pass the new prop
       companyId={companyId}
-      apiUrl={apiUrl}
+      apiBaserUrl={apiBaserUrl}
     />
   );
 }

@@ -2,7 +2,7 @@
 import React from "react";
 import ExamQuestionsManagerPage, { ExamDetailsForQuestions, ExamQuestionData } from "./ExamQuestionsManagerPage";
 
-const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface PageProps {
   params: Promise<{
@@ -108,7 +108,7 @@ export default async function ExamQuestionsPage({ params }: PageProps) {
 
   try {
     // Fetch exam details
-    const examRes = await fetch(`${apiUrl}/admin/exams/${examId}`, {
+    const examRes = await fetch(`${apiBaserUrl}/admin/exams/${examId}`, {
       next: { revalidate: 60 },
     });
     if (examRes.ok) {
@@ -128,7 +128,7 @@ export default async function ExamQuestionsPage({ params }: PageProps) {
     }
 
     // Fetch exam questions
-    const questionsRes = await fetch(`${apiUrl}/admin/exam-questions?examId=${encodeURIComponent(examId)}`, {
+    const questionsRes = await fetch(`${apiBaserUrl}/admin/exam-questions?examId=${encodeURIComponent(examId)}`, {
       next: { revalidate: 60 },
     });
     if (questionsRes.ok) {

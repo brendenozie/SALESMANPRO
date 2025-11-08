@@ -4,7 +4,7 @@ import React from "react";
 import ListingsClient from "./ListingsClient";
 import { MarketListingForm, IStoreCategory } from "@/types/typings";
 
-const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 type MarketplaceProduct = {
   _id: string;
@@ -75,7 +75,7 @@ export default async function ClientInventoryPage({ params }: PageProps) {
 
   try {
     const res = await fetch(
-      `${apiUrl}/admin/my-market-place?companyId=${encodeURIComponent(companyId)}`,
+      `${apiBaserUrl}/admin/my-market-place?companyId=${encodeURIComponent(companyId)}`,
       { next: { revalidate: 60 } }
     );
 
@@ -95,7 +95,7 @@ export default async function ClientInventoryPage({ params }: PageProps) {
     
     // Fetch all categories for this company
     const categoriesRes = await fetch(
-      `${apiUrl}/admin/get-store-categories?companyId=${encodeURIComponent(
+      `${apiBaserUrl}/admin/get-store-categories?companyId=${encodeURIComponent(
         companyId
       )}`,
       { next: { revalidate: 60 } }

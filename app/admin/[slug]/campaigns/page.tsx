@@ -3,7 +3,7 @@ import React from "react";
 import CampaignsClient from "./CampaignsClient";
 import { cookies } from "next/headers";
 
-const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // Define the Campaign type based on your Prisma schema
 export type Campaign = {
@@ -36,7 +36,7 @@ export default async function CampaignsPage({ params }: PageProps) {
 
   try {
     // Adjust the API endpoint if your campaigns API supports companyId filtering
-    const res = await fetch(`${apiUrl}/campaigns?companyId=${companyId}`, { next: { revalidate: 60 }, headers: { cookie: cookieHeader } });
+    const res = await fetch(`${apiBaserUrl}/campaigns?companyId=${companyId}`, { next: { revalidate: 60 }, headers: { cookie: cookieHeader } });
     if (res.ok) {
       let data = await res.json();
       campaignsData = data.map((campaign: any) => ({

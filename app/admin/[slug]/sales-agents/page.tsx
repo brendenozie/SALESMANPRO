@@ -34,7 +34,7 @@ import toast, { Toaster } from 'react-hot-toast'; // For notifications
 import { useParams } from 'next/navigation';
 
 
-const apiBaseUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
 
 // Mocking the image loader - Keep if not fully in Next.js Image optimization
@@ -610,8 +610,8 @@ export default function AgentsPage() {
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
   const [agentToDelete, setAgentToDelete] = useState<AgentProfile | null>(null);
 
-  // In a real application, apiUrl would be used to fetch and mutate data
-  const apiUrl = `${apiBaseUrl}/admin/sales-agents`; // Base URL for your API routes
+  // In a real application, apiBaserUrl would be used to fetch and mutate data
+  const apiBaserUrl = `${apiBaseUrl}/admin/sales-agents`; // Base URL for your API routes
 
   const fetchAgents = useCallback(async () => {
     setIsLoading(true);
@@ -619,7 +619,7 @@ export default function AgentsPage() {
     try {
       // TODO: Replace this with an actual fetch to your GET /api/admin/agents endpoint
       // Example:
-      const res = await fetch(`${apiUrl}?companyId=${companyId}`, {
+      const res = await fetch(`${apiBaserUrl}?companyId=${companyId}`, {
         credentials: 'include'
       });
       if (!res.ok) {
@@ -670,7 +670,7 @@ export default function AgentsPage() {
       let response;
       if (editingAgent) {
         // Update existing agent (PUT request)
-        response = await fetch(`${apiUrl}/${editingAgent.id}`, {
+        response = await fetch(`${apiBaserUrl}/${editingAgent.id}`, {
           method: 'PUT',
           headers: { 
             'Content-Type': 'application/json',
@@ -690,7 +690,7 @@ export default function AgentsPage() {
         });
       } else {
         // Add new agent (POST request)
-        response = await fetch(apiUrl, {
+        response = await fetch(apiBaserUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Credentials': 'include' },
           body: JSON.stringify({
@@ -740,7 +740,7 @@ export default function AgentsPage() {
     const deleteToastId = toast.loading(`Deleting ${agentToDelete.name}...`);
 
     try {
-      const response = await fetch(`${apiUrl}/${agentToDelete.id}`, {
+      const response = await fetch(`${apiBaserUrl}/${agentToDelete.id}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json', 'Credentials': 'include' },
       });

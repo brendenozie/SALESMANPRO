@@ -15,7 +15,7 @@ const AssignCustomerProductModal = ({
   const [searchTerm, setSearchTerm] = useState("");
   const [assignQuantity, setAssignQuantity] = useState(0);
 
-  const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+  const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
   useEffect(() => {
     const fetchCustomers = async () => {
@@ -23,7 +23,7 @@ const AssignCustomerProductModal = ({
         if (!salesAgentId) {
           throw new Error("Sales agent ID is required.");
         }
-        const response = await fetch(`${apiUrl}/agent/getAllCustomers?id=${salesAgentId}`);
+        const response = await fetch(`${apiBaserUrl}/agent/getAllCustomers?id=${salesAgentId}`);
         if (!response.ok) throw new Error("Failed to load customers.");
         const data = await response.json();
         setAgents(data);
@@ -49,7 +49,7 @@ const AssignCustomerProductModal = ({
         return;
       }
 
-      const response = await fetch(`${apiUrl}/agent/assign-product`, {
+      const response = await fetch(`${apiBaserUrl}/agent/assign-product`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

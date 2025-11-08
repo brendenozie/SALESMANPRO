@@ -22,7 +22,7 @@ import { useParams } from 'next/navigation';
 import { ShowingFormModal } from './ShowingFormModal';
 import { ShowingDetailsModal } from './ShowingDetailsModal';
 
-const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;
 
 // --- Type Definitions ---
 export type Showing = {
@@ -125,7 +125,7 @@ export default function ShowingsPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/admin/showings?companyId=${encodeURIComponent(companyId)}`, { credentials: 'include' });
+      const res = await fetch(`${apiBaserUrl}/admin/showings?companyId=${encodeURIComponent(companyId)}`, { credentials: 'include' });
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.message || 'Failed to fetch showings.');
@@ -139,7 +139,7 @@ export default function ShowingsPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [companyId, apiUrl]);
+  }, [companyId, apiBaserUrl]);
 
   useEffect(() => {
     fetchShowings();
@@ -173,7 +173,7 @@ export default function ShowingsPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/admin/showings/${encodeURIComponent(showingToDelete.id)}`, {
+      const res = await fetch(`${apiBaserUrl}/admin/showings/${encodeURIComponent(showingToDelete.id)}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json', 'credentials': 'include' },
       });
@@ -200,14 +200,14 @@ export default function ShowingsPage() {
       let res;
       if (showingToEdit) {
         // Edit existing showing
-        res = await fetch(`${apiUrl}/admin/showings/${encodeURIComponent(showingToEdit.id)}`, {
+        res = await fetch(`${apiBaserUrl}/admin/showings/${encodeURIComponent(showingToEdit.id)}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json', 'credentials': 'include' },
           body: JSON.stringify(formData),
         });
       } else {
         // Create new showing
-        res = await fetch(`${apiUrl}/admin/showings`, {
+        res = await fetch(`${apiBaserUrl}/admin/showings`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'credentials': 'include' },
           body: JSON.stringify(formData),
@@ -233,7 +233,7 @@ export default function ShowingsPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/admin/showings/${encodeURIComponent(showingId)}`, {
+      const res = await fetch(`${apiBaserUrl}/admin/showings/${encodeURIComponent(showingId)}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', 'credentials': 'include' },
         body: JSON.stringify({ status: newStatus }),

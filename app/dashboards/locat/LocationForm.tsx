@@ -3,7 +3,7 @@
 import { CodeBracketIcon, HomeIcon, InformationCircleIcon, LinkIcon, MagnifyingGlassCircleIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 
-const apiBaseUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
 
 // --- Helper Functions ---

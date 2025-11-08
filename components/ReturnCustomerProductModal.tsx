@@ -14,7 +14,7 @@ const ReturnCustomerProductModal = ({
   const [returnQuantity, setReturnQuantity] = useState(0);
   const [returnReason, setReturnReason] = useState(""); // Field for return reason or notes
 
-  const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+  const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
   useEffect(() => {
     const fetchCustomers = async () => {
@@ -24,7 +24,7 @@ const ReturnCustomerProductModal = ({
         }
 
         // Fetch customers for the specific agent
-        const response = await fetch(`${apiUrl}/agent/getAllCustomers?id=${salesAgentId}`);
+        const response = await fetch(`${apiBaserUrl}/agent/getAllCustomers?id=${salesAgentId}`);
         if (!response.ok) throw new Error("Failed to load customers.");
 
         const data = await response.json();
@@ -64,7 +64,7 @@ const handleReturn = async () => {
     }
 
     // API call to process the return (deduct from client and add to agent)
-    const response = await fetch(`${apiUrl}/agent/return-product`, {
+    const response = await fetch(`${apiBaserUrl}/agent/return-product`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

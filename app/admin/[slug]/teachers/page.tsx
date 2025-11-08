@@ -3,7 +3,7 @@
 import React from "react";
 import TeachersClient, { EducatorType, DepartmentOption, AcademicLevelOption } from "./TeachersClient";
 
-const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface PageProps {
   params:Promise<{ slug: string }>
@@ -183,7 +183,7 @@ export default async function TeachersManagementPage({ params }: PageProps) {
   try {
     // Fetch all educators for this company
     const educatorsRes = await fetch(
-      `${apiUrl}/admin/educators?companyId=${encodeURIComponent(companyId)}`, // Corrected API path
+      `${apiBaserUrl}/admin/educators?companyId=${encodeURIComponent(companyId)}`, // Corrected API path
       { next: { revalidate: 60 } } // equivalent to SSR on every request
     );
     if (educatorsRes.ok) {
@@ -197,7 +197,7 @@ export default async function TeachersManagementPage({ params }: PageProps) {
 
     // Fetch all departments for this company (or globally if not company-specific)
     const departmentsRes = await fetch( // Fetch departments via API instead of direct prisma call
-      `${apiUrl}/admin/departments?companyId=${encodeURIComponent(companyId)}`, // Assuming departments API exists
+      `${apiBaserUrl}/admin/departments?companyId=${encodeURIComponent(companyId)}`, // Assuming departments API exists
       { next: { revalidate: 60 } }
     );
     if (departmentsRes.ok) {
@@ -212,7 +212,7 @@ export default async function TeachersManagementPage({ params }: PageProps) {
 
     // NEW: Fetch all academic levels for this company
     const academicLevelsRes = await fetch(
-      `${apiUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`, // Corrected API path
+      `${apiBaserUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`, // Corrected API path
       { next: { revalidate: 60 } }
     );
     if (academicLevelsRes.ok) {
@@ -244,7 +244,7 @@ export default async function TeachersManagementPage({ params }: PageProps) {
       allDepartments={allDepartments}
       allAcademicLevels={allAcademicLevels} // Pass academic levels
       companyId={companyId}
-      apiUrl={apiUrl}
+      apiBaserUrl={apiBaserUrl}
     />
   );
 }

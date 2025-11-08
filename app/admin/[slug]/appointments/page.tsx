@@ -7,7 +7,7 @@ import AdminAppointmentsClient, {
 } from "./AdminAppointementsClient";
 import { cookies } from "next/headers";
 
-const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface Props {
   params:Promise<{ slug: string }>
@@ -94,7 +94,7 @@ export default async function AppointmentsPage({ params }: Props) {
     
     // Example: Fetch Orders/Services
     const orderRes = await fetch(
-      `${apiUrl}/admin/orders?companyId=${encodeURIComponent(companyId)}`,
+      `${apiBaserUrl}/admin/orders?companyId=${encodeURIComponent(companyId)}`,
       {
         next: { revalidate: 60 },
         headers: { cookie: cookieHeader },

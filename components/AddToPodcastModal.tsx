@@ -14,7 +14,7 @@ import React, { useState, useEffect } from "react";
 //   status: string;
 // };
 
-const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // Define the Podcast type for the client side
 type Podcast = {
@@ -180,7 +180,7 @@ export default function AddToPodcastModal({
 
       if (podcastToEdit) {
         // Editing existing podcast
-        response = await fetch(`${apiUrl}/admin/podcasts/${podcastToEdit._id}`, {
+        response = await fetch(`${apiBaserUrl}/admin/podcasts/${podcastToEdit._id}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -189,7 +189,7 @@ export default function AddToPodcastModal({
         });
       } else {
         // Adding new podcast
-        response = await fetch(`${apiUrl}/admin/podcasts`, {
+        response = await fetch(`${apiBaserUrl}/admin/podcasts`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

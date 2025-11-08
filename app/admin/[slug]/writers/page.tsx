@@ -4,7 +4,7 @@ import WritersClient from "./WritersClient"; // Make sure the path is correct
 
 import { cookies } from "next/headers";
 
-const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // Define nested types for User and Company as they will be included by Prisma
 export type UserForWriter = {
@@ -56,7 +56,7 @@ export default async function WritersPage({ params }: PageProps) {
   const cookieHeader = (await cookies()).toString();
 
   try {
-    const res = await fetch(`${apiUrl}/admin/writers?companyId=${companyId}`, {
+    const res = await fetch(`${apiBaserUrl}/admin/writers?companyId=${companyId}`, {
       next: { revalidate: 60 }, // Ensure fresh data on each request
       headers: { cookie: cookieHeader },
     });

@@ -5,7 +5,7 @@ import React, { useState, useMemo } from "react";
 import { Member, ProjectOption, ProjectMember } from "./page";
 import Modal from "@/components/Modal"; // Adjust path as needed
 
-const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface ClientProps {
   membersData: Member[];
@@ -30,9 +30,9 @@ const MembersClient: React.FC<ClientProps> = ({ membersData: initialMembersData,
     setLoading(true);
     setError(null);
     try {
-      const usersRes = await fetch(`${apiUrl}/users`, { next: { revalidate: 60 } }); // Assuming a /api/users endpoint
-      const projectsRes = await fetch(`${apiUrl}/projects`, { next: { revalidate: 60 } });
-      const projectMembersRes = await fetch(`${apiUrl}/project-members`, { next: { revalidate: 60 } });
+      const usersRes = await fetch(`${apiBaserUrl}/users`, { next: { revalidate: 60 } }); // Assuming a /api/users endpoint
+      const projectsRes = await fetch(`${apiBaserUrl}/projects`, { next: { revalidate: 60 } });
+      const projectMembersRes = await fetch(`${apiBaserUrl}/project-members`, { next: { revalidate: 60 } });
 
       if (usersRes.ok && projectsRes.ok && projectMembersRes.ok) {
         setMembersData(await usersRes.json());
@@ -73,7 +73,7 @@ const MembersClient: React.FC<ClientProps> = ({ membersData: initialMembersData,
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/project-members`, {
+      const res = await fetch(`${apiBaserUrl}/project-members`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

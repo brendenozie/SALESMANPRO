@@ -2,7 +2,7 @@ import React from "react";
 import AgentsClient from "./AgentsClient";
 
 import { cookies } from "next/headers";
-const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // ✨ Updated Agent type to include the loginCode
 export type Agent = {
@@ -38,7 +38,7 @@ export default async function AgentsPage({ params }: PageProps) {
   const cookieHeader = (await cookies()).toString();
   
   try {
-    const res = await fetch(`${apiUrl}/admin/agents?companyId=${companyId}`, {
+    const res = await fetch(`${apiBaserUrl}/admin/agents?companyId=${companyId}`, {
       next: { revalidate: 60 },
       headers: {
         "Content-Type": "application/json",

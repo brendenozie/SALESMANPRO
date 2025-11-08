@@ -19,7 +19,7 @@ import {
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 
-const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // --- Type Definitions (Aligned with ExamSubmission GET for Admin Overview) ---
 export type ExamSubmissionDataForAdmin = {
@@ -109,7 +109,7 @@ const SubmissionDetailsViewModal: React.FC<SubmissionDetailsViewModalProps> = ({
       setIsLoadingQuestions(true);
       setQuestionsError(null);
       try {
-        const res = await fetch(`${apiUrl}/exam-questions?examId=${encodeURIComponent(examId)}`);
+        const res = await fetch(`${apiBaserUrl}/exam-questions?examId=${encodeURIComponent(examId)}`);
         if (res.ok) {
           const data = await res.json();
           setQuestions(data.sort((a: any, b: any) => a.order - b.order));
@@ -254,7 +254,7 @@ export default function AdminResultsOverviewPage({
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/exam-submissions?companyId=${encodeURIComponent(companyId)}`, {
+      const res = await fetch(`${apiBaserUrl}/exam-submissions?companyId=${encodeURIComponent(companyId)}`, {
         next: { revalidate: 60 },
       });
       if (res.ok) {

@@ -32,7 +32,7 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
   
 
   // ---- 1. API & CORS HANDLING ----
-  if (pathname.startsWith("/api/")) {
+  if (pathname.startsWith(`${apiBaserUrl}/")) {
     const responseHeaders = new Headers();
     if (origin) {
       // Allow any subdomain of salesmanpro.site or any origin
@@ -219,7 +219,7 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
 //     // }
 
   
-//   if (pathname.startsWith("/api/")) {
+//   if (pathname.startsWith(`${apiBaserUrl}/")) {
 //     const responseHeaders = new Headers();
 //     if (origin) {
 //       // Allow any subdomain of salesmanpro.site automatically
@@ -253,7 +253,7 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
 //   //
 //   // ---- 3. API KEY PROTECTION ----
 //   //
-//   // if (pathname.startsWith("/api/")) {
+//   // if (pathname.startsWith(`${apiBaserUrl}/")) {
 //   //   if (!API_KEY_HEADER) {
 //   //     return new NextResponse(
 //   //       JSON.stringify({ error: "Server misconfiguration: API key header not set" }),
@@ -322,7 +322,7 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
 //     !host.endsWith(".salesmanpro.site") &&
 //     !host.startsWith("127.0.0.1") &&
 //     !host.startsWith("localhost") && 
-//     !pathname.startsWith("/api/")
+//     !pathname.startsWith(`${apiBaserUrl}/")
 //   ) {
 //     // Normalize host
 //     const normalizedHost = host.replace(/^www\./, "").toLowerCase();

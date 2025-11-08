@@ -38,7 +38,7 @@ export default function ProductsClient({
   const fetcher = createCachedFetcher(`products-${companyId}`);
   const getKey = (pageIndex: number, previousPageData: any) => {
     if (previousPageData && previousPageData.data.length === 0) return null; // reached end
-    return `/api/site/productsByFlag?id=${companyId}&flag=all&limit=${pageSize}&page=${pageIndex + 1}&search=${search}&category=${category}&sort=${sort}`;
+    return `${apiBaserUrl}/site/productsByFlag?id=${companyId}&flag=all&limit=${pageSize}&page=${pageIndex + 1}&search=${search}&category=${category}&sort=${sort}`;
   };
 
   const {
@@ -58,7 +58,7 @@ export default function ProductsClient({
   const {
     data: categoryData,
     isLoading: isCategoriesLoading,
-  } = useSWR(`/api/site/categories?companyId=${companyId}`, fetcher, {
+  } = useSWR(`${apiBaserUrl}/site/categories?companyId=${companyId}`, fetcher, {
     fallbackData: initialData.categories,
     dedupingInterval: 60000,
   });

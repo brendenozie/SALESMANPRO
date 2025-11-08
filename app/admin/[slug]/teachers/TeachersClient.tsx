@@ -76,10 +76,10 @@ interface TeachersClientProps {
   allDepartments: DepartmentOption[];
   allAcademicLevels: AcademicLevelOption[]; // Pass all academic levels
   companyId: string;
-  apiUrl: string;
+  apiBaserUrl: string;
 }
 
-export default function TeachersClient({ initialEducators, allDepartments, allAcademicLevels, companyId, apiUrl }: TeachersClientProps) {
+export default function TeachersClient({ initialEducators, allDepartments, allAcademicLevels, companyId, apiBaserUrl }: TeachersClientProps) {
   const [educators, setEducators] = useState<EducatorType[]>(initialEducators);
   const [departments, setDepartments] = useState<DepartmentOption[]>(allDepartments);
   const [academicLevels, setAcademicLevels] = useState<AcademicLevelOption[]>(allAcademicLevels); // State for academic levels
@@ -101,9 +101,9 @@ export default function TeachersClient({ initialEducators, allDepartments, allAc
     setIsLoading(true);
     setError(null);
     try {
-      const educatorsRes = await fetch(`${apiUrl}/admin/educators?companyId=${encodeURIComponent(companyId)}`);
-      const departmentsRes = await fetch(`${apiUrl}/admin/departments?companyId=${encodeURIComponent(companyId)}`); // Fetch departments here
-      const academicLevelsRes = await fetch(`${apiUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`);
+      const educatorsRes = await fetch(`${apiBaserUrl}/admin/educators?companyId=${encodeURIComponent(companyId)}`);
+      const departmentsRes = await fetch(`${apiBaserUrl}/admin/departments?companyId=${encodeURIComponent(companyId)}`); // Fetch departments here
+      const academicLevelsRes = await fetch(`${apiBaserUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`);
 
       if (educatorsRes.ok) {
         const data: EducatorType[] = await educatorsRes.json();
@@ -140,7 +140,7 @@ export default function TeachersClient({ initialEducators, allDepartments, allAc
     } finally {
       setIsLoading(false);
     }
-  }, [apiUrl, companyId, initialEducators, allDepartments, allAcademicLevels]);
+  }, [apiBaserUrl, companyId, initialEducators, allDepartments, allAcademicLevels]);
 
   useEffect(() => {
     // If initial data from server is empty, try fetching on client side
@@ -170,7 +170,7 @@ export default function TeachersClient({ initialEducators, allDepartments, allAc
     const method = educatorData.id ? 'PATCH' : 'POST';
     try {
 
-      const url = educatorData.id ? `${apiUrl}/admin/educators/${educatorData.id}` : `${apiUrl}/admin/educators`; // Corrected API path
+      const url = educatorData.id ? `${apiBaserUrl}/admin/educators/${educatorData.id}` : `${apiBaserUrl}/admin/educators`; // Corrected API path
 
       const payload = {
         ...educatorData,
@@ -207,7 +207,7 @@ export default function TeachersClient({ initialEducators, allDepartments, allAc
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/admin/educators/${educatorId}`, { // Corrected API path
+      const res = await fetch(`${apiBaserUrl}/admin/educators/${educatorId}`, { // Corrected API path
         method: 'DELETE',
       });
 

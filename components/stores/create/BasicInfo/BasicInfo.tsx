@@ -161,7 +161,7 @@ export default function BasicInfo({
         if (slug) params.set("slug", slug);
         if (domain && hasWebsite) params.set("domain", domain);
 
-        const res = await fetch(`/api/companies/check-unique?${params.toString()}`);
+        const res = await fetch(`${apiBaserUrl}/companies/check-unique?${params.toString()}`);
         const data = await res.json();
 
         // Update states based on API response, only if the input field is not empty

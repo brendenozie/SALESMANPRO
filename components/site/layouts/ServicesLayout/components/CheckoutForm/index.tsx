@@ -24,7 +24,7 @@ export default function CheckoutFormWrapper(props: CheckoutFormWrapperProps) {
 
   // 1) Create PaymentIntent + pass booking metadata
   useEffect(() => {
-    fetch("/api/create-payment-intent", {
+    fetch(`${apiBaserUrl}/create-payment-intent", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -88,7 +88,7 @@ function _CheckoutForm({
 
     // 3) On success, create your order record
     //    (you can also do this via a Stripe webhook on payment_intent.succeeded)
-    await fetch("/api/customer-orders", {
+    await fetch(`${apiBaserUrl}/customer-orders", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

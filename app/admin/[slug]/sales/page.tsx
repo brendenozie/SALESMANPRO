@@ -3,7 +3,7 @@
 import React from "react";
 import SalesSummaryClient from "./SalesSummaryClient";
 
-const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 export type Sale = {
   id: string;
@@ -28,7 +28,7 @@ export default async function SalesSummaryPage(_: PageProps) {
   let salesData: Sale[] = [];
 
   try {
-    const res = await fetch(`${apiUrl}/admin/sales`, { next: { revalidate: 60 } });
+    const res = await fetch(`${apiBaserUrl}/admin/sales`, { next: { revalidate: 60 } });
     if (res.ok) {
       salesData = (await res.json()) as Sale[];
     } else {

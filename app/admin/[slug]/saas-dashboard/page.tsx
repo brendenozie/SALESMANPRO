@@ -49,13 +49,13 @@ export default async function DashboardPage({ params }: PageProps) {
 
   try {
     // In a real app, you'd fetch from your API:
-    // const statsRes = await fetch(`/api/admin/dashboard/stats?companyId=${companyId}`, { next: { revalidate: 60 } });
+    // const statsRes = await fetch(`${apiBaserUrl}/admin/dashboard/stats?companyId=${companyId}`, { next: { revalidate: 60 } });
     // if (statsRes.ok) stats = await statsRes.json();
 
-    // const activityRes = await fetch(`/api/admin/dashboard/recent-activity?companyId=${companyId}`, { next: { revalidate: 60 } });
+    // const activityRes = await fetch(`${apiBaserUrl}/admin/dashboard/recent-activity?companyId=${companyId}`, { next: { revalidate: 60 } });
     // if (activityRes.ok) recentActivities = await activityRes.json();
 
-    // const reviewsRes = await fetch(`/api/admin/dashboard/latest-reviews?companyId=${companyId}`, { next: { revalidate: 60 } });
+    // const reviewsRes = await fetch(`${apiBaserUrl}/admin/dashboard/latest-reviews?companyId=${companyId}`, { next: { revalidate: 60 } });
     // if (reviewsRes.ok) latestReviews = await reviewsRes.json();
 
     // --- Dummy Data ---

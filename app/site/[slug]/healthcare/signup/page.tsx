@@ -10,7 +10,7 @@ import {
 import { useRouter } from 'next/navigation'; // For redirection
 
 
-const apiBaseUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
 // Animation variants for the main container and form
 const containerVariants = {

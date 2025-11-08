@@ -67,8 +67,8 @@ export default function AutomotiveSite({ pageData, companyId }: { pageData: Stor
   const [testimonials, setTestimonials] = useState<any[]>([]);
 
   // Fetch client-side data
-  const { data: testimonialsData } = useSWR(`/api/site/testimonials?id=${companyId}`, fetcher);
-  const { data: blogsData } = useSWR(`/api/site/blogs?id=${companyId}`, fetcher);
+  const { data: testimonialsData } = useSWR(`${apiBaserUrl}/site/testimonials?id=${companyId}`, fetcher);
+  const { data: blogsData } = useSWR(`${apiBaserUrl}/site/blogs?id=${companyId}`, fetcher);
 
   // Use pageData for all content
   const siteData = pageData || storeFormData;

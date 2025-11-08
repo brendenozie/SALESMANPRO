@@ -3,7 +3,7 @@ import React from "react";
 import AdminExamsOverviewPage, { ExamData, CourseOption, EducatorOption, AcademicLevelOption } from "./AdminExamsOverviewPage";
 import { cookies } from "next/headers";
 
-const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface PageProps {
   params:Promise<{ slug: string }>
@@ -171,7 +171,7 @@ export default async function ExamsManagerPage({ params }: PageProps) {
 
   try {
     // Fetch exams
-    const examsRes = await fetch(`${apiUrl}/admin/exams?companyId=${encodeURIComponent(companyId)}`, {
+    const examsRes = await fetch(`${apiBaserUrl}/admin/exams?companyId=${encodeURIComponent(companyId)}`, {
       next: { revalidate: 60 },
       headers: { 
         Cookie: cookieHeader
@@ -185,7 +185,7 @@ export default async function ExamsManagerPage({ params }: PageProps) {
     }
 
     // Fetch all courses
-    const coursesRes = await fetch(`${apiUrl}/admin/courses?companyId=${encodeURIComponent(companyId)}`, {
+    const coursesRes = await fetch(`${apiBaserUrl}/admin/courses?companyId=${encodeURIComponent(companyId)}`, {
       next: { revalidate: 60 },
       headers: {
         Cookie: cookieHeader
@@ -199,7 +199,7 @@ export default async function ExamsManagerPage({ params }: PageProps) {
     }
 
     // Fetch all educators
-    const educatorsRes = await fetch(`${apiUrl}/admin/educators?companyId=${encodeURIComponent(companyId)}`, {
+    const educatorsRes = await fetch(`${apiBaserUrl}/admin/educators?companyId=${encodeURIComponent(companyId)}`, {
       next: { revalidate: 60 },
       headers: {
         Cookie: cookieHeader
@@ -213,7 +213,7 @@ export default async function ExamsManagerPage({ params }: PageProps) {
     }
 
     // Fetch all academic levels (for display in course options)
-    const academicLevelsRes = await fetch(`${apiUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`, {
+    const academicLevelsRes = await fetch(`${apiBaserUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`, {
       next: { revalidate: 60 },
       headers: {
         Cookie: cookieHeader

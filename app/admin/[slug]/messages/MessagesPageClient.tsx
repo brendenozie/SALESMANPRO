@@ -20,7 +20,7 @@ import {
   EllipsisVerticalIcon, // More options
 } from '@heroicons/react/24/outline';
 
-const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // --- Type Definitions (Aligned with new API responses) ---
 export type MessageData = {
@@ -251,7 +251,7 @@ export default function MessagesPageClient({ initialConversations, allUsers, cur
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/conversations?userId=${encodeURIComponent(currentUserId)}&companyId=${encodeURIComponent(companyId)}`, {
+      const res = await fetch(`${apiBaserUrl}/conversations?userId=${encodeURIComponent(currentUserId)}&companyId=${encodeURIComponent(companyId)}`, {
         next: { revalidate: 60 },
       });
       if (res.ok) {
@@ -273,7 +273,7 @@ export default function MessagesPageClient({ initialConversations, allUsers, cur
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/conversations/${convId}/messages?userId=${encodeURIComponent(currentUserId)}`, {
+      const res = await fetch(`${apiBaserUrl}/conversations/${convId}/messages?userId=${encodeURIComponent(currentUserId)}`, {
         next: { revalidate: 60 },
       });
       if (res.ok) {
@@ -337,7 +337,7 @@ export default function MessagesPageClient({ initialConversations, allUsers, cur
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/conversations/${selectedConversationId}/messages`, {
+      const res = await fetch(`${apiBaserUrl}/conversations/${selectedConversationId}/messages`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -366,7 +366,7 @@ export default function MessagesPageClient({ initialConversations, allUsers, cur
     setError(null);
     try {
       // 1. Create the new conversation
-      const convRes = await fetch(`${apiUrl}/conversations`, {
+      const convRes = await fetch(`${apiBaserUrl}/conversations`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -387,7 +387,7 @@ export default function MessagesPageClient({ initialConversations, allUsers, cur
       const newConversationId = newConversation.id;
 
       // 2. Send the first message to the new conversation
-      const msgRes = await fetch(`${apiUrl}/conversations/${newConversationId}/messages`, {
+      const msgRes = await fetch(`${apiBaserUrl}/conversations/${newConversationId}/messages`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -422,7 +422,7 @@ export default function MessagesPageClient({ initialConversations, allUsers, cur
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/conversations/${convId}/participants?userId=${encodeURIComponent(currentUserId)}`, {
+      const res = await fetch(`${apiBaserUrl}/conversations/${convId}/participants?userId=${encodeURIComponent(currentUserId)}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isArchived: true }),
@@ -451,7 +451,7 @@ export default function MessagesPageClient({ initialConversations, allUsers, cur
     setError(null);
     try {
       // Soft delete for the current user
-      const res = await fetch(`${apiUrl}/conversations/${convId}/participants?userId=${encodeURIComponent(currentUserId)}`, {
+      const res = await fetch(`${apiBaserUrl}/conversations/${convId}/participants?userId=${encodeURIComponent(currentUserId)}`, {
         method: 'DELETE',
       });
       if (res.ok) {

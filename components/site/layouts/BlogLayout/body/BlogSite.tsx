@@ -25,7 +25,7 @@ const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 export default function BlogSite({ pageData, companyId }: { pageData: StoreForm, companyId: string }) {
   // Fetch client-side data
-  const { data: blogsData } = useSWR(`/api/site/blogs?id=${companyId}`, fetcher);
+  const { data: blogsData } = useSWR(`${apiBaserUrl}/site/blogs?id=${companyId}`, fetcher);
   
   return (
     <>

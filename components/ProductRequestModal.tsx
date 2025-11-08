@@ -11,7 +11,7 @@ const RequestProductModal = ({
   const [quantity, setQuantity] = useState(0);
   // const [salesAgentId, setSalesAgentId] = useState("");
 
-  const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+  const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
   const handleRequestProduct = async () => {
     try {
@@ -20,7 +20,7 @@ const RequestProductModal = ({
         return;
       }
 
-      const response = await fetch(`${apiUrl}/clients/requestproduct`, {
+      const response = await fetch(`${apiBaserUrl}/clients/requestproduct`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

@@ -59,7 +59,7 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
   } = pageData;
 
   // Fetch client-side data
-  const { data: testimonialsData } = useSWR(`/api/site/testimonials?id=${companyId}`, fetcher);
+  const { data: testimonialsData } = useSWR(`${apiBaserUrl}/site/testimonials?id=${companyId}`, fetcher);
 
   // ⚙️ Only include featured listings on SSR
   const featured = useMemo(

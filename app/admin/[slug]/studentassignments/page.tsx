@@ -2,7 +2,7 @@
 import React from "react";
 import StudentAssignmentsPageClient from "./StudentAssignmentsPageClient";
 
-const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // IMPORTANT: In a real application, these IDs would come from an authentication context (e.g., NextAuth.js session).
 // For this example, we'll use hardcoded mock IDs.
@@ -61,7 +61,7 @@ export default async function StudentAssignmentsServerPage({ params, searchParam
   let fetchError: string | null = null;
 
   try {
-    const url = new URL(`${apiUrl}/student/assignments`);
+    const url = new URL(`${apiBaserUrl}/student/assignments`);
     url.searchParams.append('studentId', studentId);
     // url.searchParams.append('companyId', companyId); // Always append companyId
     if (courseId) {

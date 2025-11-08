@@ -3,7 +3,7 @@ import ClientInventoryClient from "./ClientInventoryClient";
 import { IStoreCategory, MarketListingForm } from "@/types/typings";
 import { cookies } from "next/headers";
 
-const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 type Category = {
   id: string;
@@ -27,7 +27,7 @@ export default async function ClientInventoryPage({ params }: PageProps) {
   try {
     // --- Fetch marketplace listings ---
     const res = await fetch(
-      `${apiUrl}/admin/my-market-place?companyId=${encodeURIComponent(companyId)}`,
+      `${apiBaserUrl}/admin/my-market-place?companyId=${encodeURIComponent(companyId)}`,
       { next: { revalidate: 60 }, headers: { Cookie: cookieHeader } }
     );
     if (res.ok) {
@@ -44,7 +44,7 @@ export default async function ClientInventoryPage({ params }: PageProps) {
 
     // --- Fetch store categories ---
     const categoriesRes = await fetch(
-      `${apiUrl}/admin/get-store-categories?companyId=${encodeURIComponent(companyId)}`,
+      `${apiBaserUrl}/admin/get-store-categories?companyId=${encodeURIComponent(companyId)}`,
       { next: { revalidate: 60 }, headers: { Cookie: cookieHeader } }
     );
 

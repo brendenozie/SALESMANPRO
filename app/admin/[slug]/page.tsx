@@ -30,6 +30,9 @@ import PlaygroupDashboard from '@/components/admin/PlaygroupDashboard';
 // zod for runtime validation
 import { z } from 'zod';
 
+
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+
 // --- Loading/Error Boundary Components ---
 function LoadingDashboard() {
   return (
@@ -179,13 +182,13 @@ function logError(message: string, error?: unknown) {
 }
 
 // --- API URL Utility ---
-function getDashboardApiUrl(categoryKey: string, companyId: string) {
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL;
-  if (!baseUrl) {
+function getDashboardapiBaserUrl(categoryKey: string, companyId: string) {
+
+  if (!apiBaserUrl) {
     logError('NEXT_PUBLIC_API_URL not set.');
     return null;
   }
-  if (categoryKey === 'service provider') return `${baseUrl}/admin/dashboard/serviceprovider/${companyId}`;
+  if (categoryKey === 'service provider') return `${apiBaserUrl}/admin/dashboard/serviceprovider/${companyId}`;
   if (
     [
       'ecommerce', 'e-commerce', 'shoes store', 'directory & listings', 'marketplace',
@@ -194,7 +197,7 @@ function getDashboardApiUrl(categoryKey: string, companyId: string) {
       'healthcare & clinics', 'media & entertainment', 'finance & legal', 'automotive',
       'travel & tourism', 'fitness & wellness'
     ].includes(categoryKey)
-  ) return `${baseUrl}/admin/dashboard/ecommerce/${companyId}`;
+  ) return `${apiBaserUrl}/admin/dashboard/ecommerce/${companyId}`;
   return null;
 }
 
@@ -322,7 +325,7 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
       try {
         isLoading = true;
         const res = await fetch(
-          `/api/dashboard/student?userId=${encodeURIComponent(currentUserId)}`,
+          `${apiBaserUrl}/dashboard/student?userId=${encodeURIComponent(currentUserId)}`,
           { cache: 'no-store', headers: { cookie: cookiesHeader } }
         );
         isLoading = false;
@@ -367,7 +370,7 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
         try {
           isLoading = true;
           const res = await fetch(
-            `/api/dashboard/principal?userId=${encodeURIComponent(currentUserId)}`,
+            `${apiBaserUrl}/dashboard/principal?userId=${encodeURIComponent(currentUserId)}`,
             { cache: 'no-store' }
           );
           isLoading = false;
@@ -412,7 +415,7 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
         try {
           isLoading = true;
           const res = await fetch(
-            `/api/dashboard/tutor?userId=${encodeURIComponent(currentUserId)}`,
+            `${apiBaserUrl}/dashboard/tutor?userId=${encodeURIComponent(currentUserId)}`,
             { cache: 'no-store' }
           );
           isLoading = false;
@@ -445,11 +448,11 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
     let dashboardCategoryData: any = null;
 
     if (DashboardComponent) {
-      const apiUrl = getDashboardApiUrl(categoryKey, companyId);
-      if (apiUrl) {
+      const apiBaserUrl = getDashboardapiBaserUrl(categoryKey, companyId);
+      if (apiBaserUrl) {
         try {
           isLoading = true;
-          const res = await fetch(apiUrl, {
+          const res = await fetch(apiBaserUrl, {
             cache: 'no-store',
             headers: { cookie: cookiesHeader },
           });

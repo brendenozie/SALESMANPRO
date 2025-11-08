@@ -3,7 +3,7 @@
 
 import React, { useState } from "react";
 
-const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 type Podcast = {
   _id: string;
@@ -35,7 +35,7 @@ export default function PodcastDeleteModal({
     setError(null);
 
     try {
-      const response = await fetch(`${apiUrl}/admin/podcasts/${podcast._id}`, {
+      const response = await fetch(`${apiBaserUrl}/admin/podcasts/${podcast._id}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

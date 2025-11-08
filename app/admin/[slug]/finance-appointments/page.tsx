@@ -18,7 +18,7 @@ import {
 
 import { useParams } from "next/navigation";
 
-const apiBaseUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
 
 // ---------- Types ----------
@@ -223,7 +223,7 @@ export default function AppointmentsPage() {
       const res = await fetch(
         isEditing
           ? `${apiBaseUrl}/admin/finance-appointments/${currentAppointment?.id}`
-          : "/api/admin/finance-appointments",
+          : `${apiBaserUrl}/admin/finance-appointments",
         {
           method: isEditing ? "PUT" : "POST",
           headers: { "Content-Type": "application/json", 'Credentials': 'include' },

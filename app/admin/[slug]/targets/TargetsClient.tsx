@@ -39,7 +39,7 @@ const TargetsClient: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch("/api/admin/targets");
+        const response = await fetch(`${apiBaserUrl}/admin/targets");
         if (!response.ok) {
           throw new Error("Failed to fetch targets");
         }

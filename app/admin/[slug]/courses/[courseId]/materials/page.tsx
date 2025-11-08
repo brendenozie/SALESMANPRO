@@ -4,7 +4,7 @@ import React from "react";
 import MaterialsClient, { CourseMaterialType, CourseDetailsType, EducatorOption } from "./MaterialsClient";
 import { cookies } from "next/headers";
 
-const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface PageProps {
   params:Promise<{ 
@@ -126,7 +126,7 @@ export default async function CourseMaterialsManagementPage({ params }: PageProp
   try {
     // Fetch course details
     const courseRes = await fetch(
-      `${apiUrl}/courses/${encodeURIComponent(courseId)}`,
+      `${apiBaserUrl}/courses/${encodeURIComponent(courseId)}`,
       { next: { revalidate: 60 }, headers: { Cookie: cookieHeaders } }
     );
     if (courseRes.ok) {
@@ -140,7 +140,7 @@ export default async function CourseMaterialsManagementPage({ params }: PageProp
 
     // Fetch all materials for this specific course
     const materialsRes = await fetch(
-      `${apiUrl}/course-materials?courseId=${encodeURIComponent(courseId)}`,
+      `${apiBaserUrl}/course-materials?courseId=${encodeURIComponent(courseId)}`,
       { next: { revalidate: 60 }, headers: { Cookie: cookieHeaders } }
     );
     if (materialsRes.ok) {
@@ -154,7 +154,7 @@ export default async function CourseMaterialsManagementPage({ params }: PageProp
 
     // Fetch all educators (for the "uploaded by" dropdown)
     const educatorsRes = await fetch(
-      `${apiUrl}/educators?companyId=${encodeURIComponent(companyId)}`,
+      `${apiBaserUrl}/educators?companyId=${encodeURIComponent(companyId)}`,
       { next: { revalidate: 60 }, headers: { Cookie: cookieHeaders } }
     );
     if (educatorsRes.ok) {
@@ -201,7 +201,7 @@ export default async function CourseMaterialsManagementPage({ params }: PageProp
       courseDetails={courseDetails}
       allEducators={allEducators}
       companyId={companyId}
-      apiUrl={apiUrl}
+      apiBaserUrl={apiBaserUrl}
     />
   );
 }

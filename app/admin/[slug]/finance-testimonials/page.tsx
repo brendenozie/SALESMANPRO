@@ -17,7 +17,7 @@ import { headers } from "next/headers";
 
 
 
-const apiBaseUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
 
 // ---- Types ----
@@ -108,7 +108,7 @@ const TestimonialsPage = () => {
     try {
       const url = isEditing
         ? `${apiBaseUrl}/admin/testimonials/${currentTestimonial?.id}`
-        : "/api/admin/testimonials";
+        : `${apiBaserUrl}/admin/testimonials";
       const method = isEditing ? "PUT" : "POST";
 
       const res = await fetch(url, {

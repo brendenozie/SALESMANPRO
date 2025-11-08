@@ -54,10 +54,10 @@ interface CourseAssignmentsClientProps {
   allCourses: CourseOption[];
   allAcademicLevels: AcademicLevelOption[];
   companyId: string;
-  apiUrl: string;
+  apiBaserUrl: string;
 }
 
-export default function CourseAssignmentsClient({ initialAssignments, allCourses, allAcademicLevels, companyId, apiUrl }: CourseAssignmentsClientProps) {
+export default function CourseAssignmentsClient({ initialAssignments, allCourses, allAcademicLevels, companyId, apiBaserUrl }: CourseAssignmentsClientProps) {
   // Convert ISO strings to Date objects for initial data
   const parsedInitialAssignments = useMemo(() => initialAssignments.map(assign => ({
     ...assign,
@@ -88,9 +88,9 @@ export default function CourseAssignmentsClient({ initialAssignments, allCourses
     setIsLoading(true);
     setError(null);
     try {
-      const assignmentsRes = await fetch(`${apiUrl}/course-assignments?companyId=${encodeURIComponent(companyId)}`);
-      const coursesRes = await fetch(`${apiUrl}/courses?companyId=${encodeURIComponent(companyId)}`);
-      const academicLevelsRes = await fetch(`${apiUrl}/academic-levels?companyId=${encodeURIComponent(companyId)}`);
+      const assignmentsRes = await fetch(`${apiBaserUrl}/course-assignments?companyId=${encodeURIComponent(companyId)}`);
+      const coursesRes = await fetch(`${apiBaserUrl}/courses?companyId=${encodeURIComponent(companyId)}`);
+      const academicLevelsRes = await fetch(`${apiBaserUrl}/academic-levels?companyId=${encodeURIComponent(companyId)}`);
 
       if (assignmentsRes.ok) {
         const data: CourseAssignmentType[] = await assignmentsRes.json();
@@ -137,7 +137,7 @@ export default function CourseAssignmentsClient({ initialAssignments, allCourses
     } finally {
       setIsLoading(false);
     }
-  }, [apiUrl, companyId, parsedInitialAssignments, allCourses, allAcademicLevels]);
+  }, [apiBaserUrl, companyId, parsedInitialAssignments, allCourses, allAcademicLevels]);
 
   useEffect(() => {
     // If initial data from server is empty, try fetching on client side
@@ -171,7 +171,7 @@ export default function CourseAssignmentsClient({ initialAssignments, allCourses
     const method = assignmentData.id ? 'PATCH' : 'POST';
     try {
 
-      const url = assignmentData.id ? `${apiUrl}/course-assignments/${assignmentData.id}` : `${apiUrl}/course-assignments`;
+      const url = assignmentData.id ? `${apiBaserUrl}/course-assignments/${assignmentData.id}` : `${apiBaserUrl}/course-assignments`;
 
       const payload = {
         ...assignmentData,
@@ -207,7 +207,7 @@ export default function CourseAssignmentsClient({ initialAssignments, allCourses
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/course-assignments/${assignmentId}`, {
+      const res = await fetch(`${apiBaserUrl}/course-assignments/${assignmentId}`, {
         method: 'DELETE',
       });
 

@@ -17,7 +17,7 @@ import {
 import { format } from 'date-fns';
 import { toast, Toaster } from "react-hot-toast";
 
-const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // =================================================================================================
 // TYPE DEFINITIONS
@@ -271,7 +271,7 @@ export function PlansClient({
   const handleRefetchSubscriptions = useCallback(async (pageToFetch: number = currentSubscriptionPage) => {
     setLoading(true);
     try {
-      const url = new URL(`${apiUrl}/admin/subscriptions`);
+      const url = new URL(`${apiBaserUrl}/admin/subscriptions`);
       url.searchParams.append('companyId', companyId);
       url.searchParams.append('page', String(pageToFetch));
       url.searchParams.append('perPage', String(subscriptionsPerPage));
@@ -310,7 +310,7 @@ export function PlansClient({
     try {
       if (selectedPlan) {
         // Update existing plan
-        const res = await fetch(`${apiUrl}/admin/plan/${selectedPlan.id}`, {
+        const res = await fetch(`${apiBaserUrl}/admin/plan/${selectedPlan.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ ...newPlanData, companyId }),
@@ -320,7 +320,7 @@ export function PlansClient({
         setPlans(plans.map(p => p.id === selectedPlan.id ? { ...p, ...newPlanData } : p));
       } else {
         // Create new plan
-        const res = await fetch(`${apiUrl}/admin/plan`, {
+        const res = await fetch(`${apiBaserUrl}/admin/plan`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ ...newPlanData, companyId, features: ["Feature 1", "Feature 2"], isPopular: false }),
@@ -345,7 +345,7 @@ export function PlansClient({
     if (!selectedPlan) return;
     setLoading(true);
     try {
-      const res = await fetch(`${apiUrl}/admin/plan/${selectedPlan.id}`, {
+      const res = await fetch(`${apiBaserUrl}/admin/plan/${selectedPlan.id}`, {
         method: 'DELETE',
       });
       if (!res.ok) {
@@ -369,7 +369,7 @@ export function PlansClient({
     if (!selectedSubscription) return;
     setLoading(true);
     try {
-      const res = await fetch(`${apiUrl}/admin/subscriptions/${selectedSubscription.id}`, {
+      const res = await fetch(`${apiBaserUrl}/admin/subscriptions/${selectedSubscription.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updateData),
@@ -393,7 +393,7 @@ export function PlansClient({
     if (!selectedSubscription) return;
     setLoading(true);
     try {
-      const res = await fetch(`${apiUrl}/admin/subscriptions/${selectedSubscription.id}`, {
+      const res = await fetch(`${apiBaserUrl}/admin/subscriptions/${selectedSubscription.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: "CANCELLED" }),

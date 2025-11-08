@@ -18,7 +18,7 @@ const loader = ({ src, width, quality }: { src: string; width: number; quality?:
 // Define the PromotionData interface
 
 
-const apiBaseUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
 // Function to get the color for the status badge
 const getStatusColor = (status: PromotionData['status']) => {

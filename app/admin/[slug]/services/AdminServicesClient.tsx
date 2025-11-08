@@ -20,7 +20,7 @@ import { useStoreContext } from "@/contexts/StoreContext";
 import ServiceListingForm from "./components/ServiceListingForm"; 
 import { MarketListingForm } from "@/types/typings"; 
 
-const apiBaseUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
 
 // --- Props & Helper Definitions (Retained/Refined) ---

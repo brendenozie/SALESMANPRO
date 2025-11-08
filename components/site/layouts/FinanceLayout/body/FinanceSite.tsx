@@ -34,8 +34,8 @@ export default function FinanceSite({ pageData, companyId }: { pageData: StoreFo
   const { storeFormData } = useStoreContext(); 
 
   // Fetch client-side data
-  const { data: testimonialsData } = useSWR(`/api/site/testimonials?id=${companyId}`, fetcher);
-  const { data: faqsData } = useSWR(`/api/site/faqs?id=${companyId}`, fetcher);
+  const { data: testimonialsData } = useSWR(`${apiBaserUrl}/site/testimonials?id=${companyId}`, fetcher);
+  const { data: faqsData } = useSWR(`${apiBaserUrl}/site/faqs?id=${companyId}`, fetcher);
 
   // Use pageData for all content, with fallback to hardcoded data
   const siteData = pageData && Object.keys(pageData).length > 0 ? pageData : {

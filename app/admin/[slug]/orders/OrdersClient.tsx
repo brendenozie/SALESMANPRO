@@ -33,7 +33,7 @@ import { Bars3Icon } from "@heroicons/react/20/solid";
 // Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface ClientProps {
   ordersData: CustomerOrder[];
@@ -65,7 +65,7 @@ const OrdersClient: React.FC<ClientProps> = ({ ordersData: initialOrdersData, co
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/customer-orders?companyId=${companyId}`, { next: { revalidate: 60 } });
+      const res = await fetch(`${apiBaserUrl}/customer-orders?companyId=${companyId}`, { next: { revalidate: 60 } });
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.message || `Failed to fetch orders: ${res.statusText}`);
@@ -154,7 +154,7 @@ const OrdersClient: React.FC<ClientProps> = ({ ordersData: initialOrdersData, co
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/customer-orders/${orderId}`, {
+      const res = await fetch(`${apiBaserUrl}/customer-orders/${orderId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),

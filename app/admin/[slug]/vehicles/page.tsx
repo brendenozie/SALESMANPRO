@@ -31,7 +31,7 @@ import AddToProductMarketModal from "@/components/AddToProductMarketModal";
 
 import { IStoreCategory, ILocation, MarketListingForm } from '@/types/typings';
 
-const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;
+const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;
 
 interface VehicleManagementPageProps {
   params:Promise<{ slug: string }>
@@ -59,7 +59,7 @@ export default function VehicleManagementPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/admin/get-store-categories?companyId=${companyId}`, 
+      const res = await fetch(`${apiBaserUrl}/admin/get-store-categories?companyId=${companyId}`, 
         { headers: { 'Content-Type': 'application/json', 'Credentials': 'include' } });
 
       if (!res.ok) {
@@ -122,7 +122,7 @@ export default function VehicleManagementPage() {
   // --- Data Fetching for Locations ---
   const fetchLocations = useCallback(async () => {
     try {
-      const response = await fetch(`${apiUrl}/admin/locations`, { headers: { 'Content-Type': 'application/json', 'Credentials': 'include' } });
+      const response = await fetch(`${apiBaserUrl}/admin/locations`, { headers: { 'Content-Type': 'application/json', 'Credentials': 'include' } });
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || `HTTP error! Status: ${response.status}`);
@@ -144,7 +144,7 @@ export default function VehicleManagementPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${apiUrl}/admin/my-market-place?companyId=${companyId}`, { headers: { 'Content-Type': 'application/json', 'Credentials': 'include' } });
+      const response = await fetch(`${apiBaserUrl}/admin/my-market-place?companyId=${companyId}`, { headers: { 'Content-Type': 'application/json', 'Credentials': 'include' } });
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || `HTTP error! Status: ${response.status}`);
@@ -185,7 +185,7 @@ export default function VehicleManagementPage() {
   const handleDeleteVehicle = useCallback(async (vehicleId: string) => {
     try {
       // Uncomment and use your actual API call for deletion
-      // const response = await fetch(`${apiUrl}/admin/my-market-place/${vehicleId}`, {
+      // const response = await fetch(`${apiBaserUrl}/admin/my-market-place/${vehicleId}`, {
       //   method: 'DELETE',
       // });
       // if (!response.ok) {

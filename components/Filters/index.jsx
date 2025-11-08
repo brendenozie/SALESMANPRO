@@ -23,7 +23,7 @@ const Filters = ({ filters, setFilters }) => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await fetch("/api/shop/categories?limit=30");
+        const response = await fetch(`${apiBaserUrl}/shop/categories?limit=30");
         if (!response.ok) throw new Error("Failed to fetch categories.");
         const data = await response.json();
         setCategories(data.categories || []);

@@ -32,11 +32,11 @@ export type Subcategory = {
 
 interface Props {
   initialCategories: IStoreCategory[];
-  apiUrl: string;
+  apiBaserUrl: string;
   companyId: string;
 }
 
-export default function CategoryManagerClient({ initialCategories, apiUrl, companyId }: Props) {
+export default function CategoryManagerClient({ initialCategories, apiBaserUrl, companyId }: Props) {
   const [categories, setCategories] = useState<IStoreCategory[]>(initialCategories);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [showSubcategoryModal, setShowSubcategoryModal] = useState(false);
@@ -53,7 +53,7 @@ export default function CategoryManagerClient({ initialCategories, apiUrl, compa
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/admin/get-store-categories?companyId=${companyId}`, { cache: 'no-store' });
+      const res = await fetch(`${apiBaserUrl}/admin/get-store-categories?companyId=${companyId}`, { cache: 'no-store' });
       
         if (res.ok) {
               
@@ -133,7 +133,7 @@ export default function CategoryManagerClient({ initialCategories, apiUrl, compa
     } finally {
       setIsLoading(false);
     }
-  }, [apiUrl, companyId, initialCategories]);
+  }, [apiBaserUrl, companyId, initialCategories]);
 
   useEffect(() => {
     // Fetch categories on mount if initial data is empty or if we need to ensure freshness
@@ -146,7 +146,7 @@ export default function CategoryManagerClient({ initialCategories, apiUrl, compa
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/admin/reorder-store-categories`, {
+      const res = await fetch(`${apiBaserUrl}/admin/reorder-store-categories`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ companyId, categories: updatedCategories.map(c => ({ id: c.id, sortOrder: c.sortOrder })) })
@@ -163,14 +163,14 @@ export default function CategoryManagerClient({ initialCategories, apiUrl, compa
     } finally {
       setIsLoading(false);
     }
-  }, [apiUrl, companyId, initialCategories]);
+  }, [apiBaserUrl, companyId, initialCategories]);
 
   const saveCategory = useCallback(async (cat: IStoreCategory) => {
     setIsLoading(true);
     setError(null);
     
     const isEdit = Boolean(cat.id);///admin
-    const url = isEdit ? `${apiUrl}/admin/store-categories/${cat.id}` : `${apiUrl}/admin/store-categories`;
+    const url = isEdit ? `${apiBaserUrl}/admin/store-categories/${cat.id}` : `${apiBaserUrl}/admin/store-categories`;
 
     try {
       const res = await fetch(url, {
@@ -192,14 +192,14 @@ export default function CategoryManagerClient({ initialCategories, apiUrl, compa
     } finally {
       setIsLoading(false);
     }
-  }, [apiUrl, companyId, fetchCategories]);
+  }, [apiBaserUrl, companyId, fetchCategories]);
 
   const deleteCategory = useCallback(async (id: string) => {
     if (!confirm('Are you sure you want to delete this category? This action cannot be undone and may affect associated products.')) return;
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/admin/store-categories?id=${id}`, { method: 'DELETE' });
+      const res = await fetch(`${apiBaserUrl}/admin/store-categories?id=${id}`, { method: 'DELETE' });
       if (res.ok) {
         await fetchCategories();
       } else {
@@ -211,15 +211,15 @@ export default function CategoryManagerClient({ initialCategories, apiUrl, compa
     } finally {
       setIsLoading(false);
     }
-  }, [apiUrl, fetchCategories]);
+  }, [apiBaserUrl, fetchCategories]);
 
   const saveSubcategory = useCallback(async (parentId: string, sub: ISubcategory) => {
     setIsLoading(true);
     setError(null);
 
     const isEdit = Boolean(sub.id);
-    const url = isEdit ? `${apiUrl}/admin/store-categories/${parentId}/subcategories/${sub.id}`
-      : `${apiUrl}/admin/store-categories/${parentId}/subcategories`;
+    const url = isEdit ? `${apiBaserUrl}/admin/store-categories/${parentId}/subcategories/${sub.id}`
+      : `${apiBaserUrl}/admin/store-categories/${parentId}/subcategories`;
 
     try {
       const res = await fetch(url, {
@@ -241,14 +241,14 @@ export default function CategoryManagerClient({ initialCategories, apiUrl, compa
     } finally {
       setIsLoading(false);
     }
-  }, [apiUrl, fetchCategories]);
+  }, [apiBaserUrl, fetchCategories]);
 
   const deleteSubcategory = useCallback(async (parentId: string, subId: string) => {
     if (!confirm('Are you sure you want to delete this subcategory?')) return;
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiUrl}/admin/store-categories/${parentId}/subcategories/${subId}`, { method: 'DELETE' });
+      const res = await fetch(`${apiBaserUrl}/admin/store-categories/${parentId}/subcategories/${subId}`, { method: 'DELETE' });
       if (res.ok) {
         await fetchCategories();
       } else {
@@ -260,7 +260,7 @@ export default function CategoryManagerClient({ initialCategories, apiUrl, compa
     } finally {
       setIsLoading(false);
     }
-  }, [apiUrl, fetchCategories]);
+  }, [apiBaserUrl, fetchCategories]);
 
   // --- DnD Handlers ---
   const handleDragEnd = (event: DragEndEvent) => {
