@@ -4,7 +4,7 @@ import { useStoreContext } from '@/contexts/StoreContext';
 import { IStoreCategory } from '@/types/typings';
 
 // Mock data for blog categories to make the component runnable
-const categories = [
+const categories : any[] = [
   {
     name: 'Technology',
     count: 125,
@@ -101,15 +101,15 @@ const FeaturedCategoriesSection = ({ StoreCategory }: FeaturedCategoriesSectionP
           viewport={{ once: true, amount: 0.5 }}
           transition={{ staggerChildren: 0.2, duration: 0.6 }}
         >
-          {categories.map((category, idx) => (
+          {storecategories.map((category, idx) => (
             <motion.div
               key={idx}
               className="bg-slate-800 rounded-2xl p-6 text-center shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer flex flex-col items-center"
               variants={variants}
             >
               {category.icon}
-              <h4 className="mt-2 font-bold text-lg text-white">{category.name}</h4>
-              <p className="text-slate-400 text-sm mt-1">{category.count} articles</p>
+              <h4 className="mt-2 font-bold text-lg text-white">{category.displayName}</h4>
+              <p className="text-slate-400 text-sm mt-1">{category.count || '0'} articles</p>
             </motion.div>
           ))}
         </motion.div>
