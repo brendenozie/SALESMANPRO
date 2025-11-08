@@ -14,8 +14,6 @@ const parseJsonSafely = (data: any, fallback: any = null) => {
 };
 
 const createOrUpdateBlog = async (req: Request) => {
-  const auth = await verifyAuth(req);
-  if (!auth.success) return formatResponse(false, null, auth.error, 401);
 
   const {
     id,
@@ -139,3 +137,6 @@ const createOrUpdateBlog = async (req: Request) => {
 
 // Export wrapped handler
 export const POST = withApiHandler(createOrUpdateBlog);
+
+
+export const PUT = withApiHandler(createOrUpdateBlog);
