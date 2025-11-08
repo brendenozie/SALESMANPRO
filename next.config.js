@@ -4,12 +4,12 @@ const path = require('path');
 
 module.exports = {
   /* YOU MUST ADD ENV HERE*/
-  eslint: {
-    ignoreDuringBuilds: true, // optional but saves time
-  },
-  typescript: {
-    ignoreBuildErrors: true,  // disables heavy type checking during build
-  },
+  // eslint: {
+  //   ignoreDuringBuilds: true, // optional but saves time
+  // },
+  // typescript: {
+  //   ignoreBuildErrors: true,  // disables heavy type checking during build
+  // },
   productionBrowserSourceMaps: false,
   
   env: {
