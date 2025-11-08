@@ -97,7 +97,7 @@ export default async function AdminDashboardPage({ params }: AdminDashboardPageP
     // Fetch role-specific data
     if (userRole === 'STUDENT') {
       const studentRes = await fetch(
-        `${apiBaserUrl}/dashboard/student?userId=${encodeURIComponent(currentUserId)}`,
+        `${apiBaseUrl}/dashboard/student?userId=${encodeURIComponent(currentUserId)}`,
         { cache: 'no-store', headers: { cookie: cookiesHeader } }
       );
       if (studentRes.ok) {
@@ -114,7 +114,7 @@ export default async function AdminDashboardPage({ params }: AdminDashboardPageP
       // Check if this educator is a Principal/Head Teacher based on company category
       if (categoryKey === 'educational & online courses' || categoryKey === 'head teacher'  || categoryKey === 'consumer' || categoryKey === 'school head') {
         const principalRes = await fetch(
-          `${apiBaserUrl}/dashboard/principal?userId=${encodeURIComponent(currentUserId)}`,
+          `${apiBaseUrl}/dashboard/principal?userId=${encodeURIComponent(currentUserId)}`,
           { cache: 'no-store' }
         );
         if (principalRes.ok) {
@@ -126,7 +126,7 @@ export default async function AdminDashboardPage({ params }: AdminDashboardPageP
       } else {
         // Otherwise, fetch general tutor/teacher data
         const tutorRes = await fetch(
-          `${apiBaserUrl}/dashboard/tutor?userId=${encodeURIComponent(currentUserId)}`,
+          `${apiBaseUrl}/dashboard/tutor?userId=${encodeURIComponent(currentUserId)}`,
           { cache: 'no-store' }
         );
         if (tutorRes.ok) {
@@ -139,7 +139,7 @@ export default async function AdminDashboardPage({ params }: AdminDashboardPageP
     } else {
       if (categoryKey === 'service provider') {
         const res = await fetch(
-          `${apiBaserUrl}/admin/dashboard/serviceprovider/${companyId}`,
+          `${apiBaseUrl}/admin/dashboard/serviceprovider/${companyId}`,
           { cache: 'no-store', headers: { cookie: cookiesHeader } }
         );
 
@@ -155,7 +155,7 @@ export default async function AdminDashboardPage({ params }: AdminDashboardPageP
       else if (categoryKey === 'ecommerce') {
 
         const res = await fetch(
-          `${apiBaserUrl}/admin/dashboard/ecommerce/${companyId}`,
+          `${apiBaseUrl}/admin/dashboard/ecommerce/${companyId}`,
           { cache: 'no-store', headers: { cookie: cookiesHeader } }
         );
         if (res.ok) {
@@ -170,7 +170,7 @@ export default async function AdminDashboardPage({ params }: AdminDashboardPageP
       else if (categoryKey === 'e-commerce' || categoryKey === 'shoes store' || categoryKey === 'directory & listings' || categoryKey === 'marketplace' ) {
 
         const res = await fetch(
-          `${apiBaserUrl}/admin/dashboard/e-commerce/${companyId}`,
+          `${apiBaseUrl}/admin/dashboard/e-commerce/${companyId}`,
           { cache: 'no-store', headers: { cookie: cookiesHeader } }
         );
         if (res.ok) {
@@ -186,7 +186,7 @@ export default async function AdminDashboardPage({ params }: AdminDashboardPageP
       else if (categoryKey === 'real estate') {
 
         const res = await fetch(
-          `${apiBaserUrl}/admin/dashboard/ecommerce/${companyId}`,
+          `${apiBaseUrl}/admin/dashboard/ecommerce/${companyId}`,
           { cache: 'no-store', headers: { cookie: cookiesHeader } }
         );
         if (res.ok) {
@@ -201,7 +201,7 @@ export default async function AdminDashboardPage({ params }: AdminDashboardPageP
       else if (categoryKey === 'booking & appointments') {
 
         const res = await fetch(
-          `${apiBaserUrl}/admin/dashboard/ecommerce/${companyId}`,
+          `${apiBaseUrl}/admin/dashboard/ecommerce/${companyId}`,
           { cache: 'no-store', headers: { cookie: cookiesHeader } }
         );
         if (res.ok) {
@@ -216,7 +216,7 @@ export default async function AdminDashboardPage({ params }: AdminDashboardPageP
       else if (categoryKey === 'portfolio & personal branding') {
 
         const res = await fetch(
-          `${apiBaserUrl}/admin/dashboard/ecommerce/${companyId}`,
+          `${apiBaseUrl}/admin/dashboard/ecommerce/${companyId}`,
           { cache: 'no-store', headers: { cookie: cookiesHeader } }
         );
         if (res.ok) {
@@ -231,7 +231,7 @@ export default async function AdminDashboardPage({ params }: AdminDashboardPageP
       else if (categoryKey === 'blog & content') {
 
         const res = await fetch(
-          `${apiBaserUrl}/admin/dashboard/ecommerce/${companyId}`,
+          `${apiBaseUrl}/admin/dashboard/ecommerce/${companyId}`,
           { cache: 'no-store', headers: { cookie: cookiesHeader } }
         );
         if (res.ok) {
@@ -246,7 +246,7 @@ export default async function AdminDashboardPage({ params }: AdminDashboardPageP
       else if (categoryKey === 'nonprofit & community') {
 
         const res = await fetch(
-          `${apiBaserUrl}/admin/dashboard/ecommerce/${companyId}`,
+          `${apiBaseUrl}/admin/dashboard/ecommerce/${companyId}`,
           { cache: 'no-store', headers: { cookie: cookiesHeader } }
         );
         if (res.ok) {
@@ -261,7 +261,7 @@ export default async function AdminDashboardPage({ params }: AdminDashboardPageP
       else if (categoryKey === 'restaurant & food delivery') {
 
         const res = await fetch(
-          `${apiBaserUrl}/admin/dashboard/ecommerce/${companyId}`,
+          `${apiBaseUrl}/admin/dashboard/ecommerce/${companyId}`,
           { cache: 'no-store', headers: { cookie: cookiesHeader } }
         );
         if (res.ok) {
@@ -276,7 +276,7 @@ export default async function AdminDashboardPage({ params }: AdminDashboardPageP
       else if (categoryKey === 'event & ticketing') {
 
         const res = await fetch(
-          `${apiBaserUrl}/admin/dashboard/ecommerce/${companyId}`,
+          `${apiBaseUrl}/admin/dashboard/ecommerce/${companyId}`,
           { cache: 'no-store', headers: { cookie: cookiesHeader } }
         );
         if (res.ok) {
@@ -292,7 +292,7 @@ export default async function AdminDashboardPage({ params }: AdminDashboardPageP
       else if (categoryKey === 'healthcare & clinics') {
 
         const res = await fetch(
-          `${apiBaserUrl}/admin/dashboard/ecommerce/${companyId}`,
+          `${apiBaseUrl}/admin/dashboard/ecommerce/${companyId}`,
           { cache: 'no-store', headers: { cookie: cookiesHeader } }
         );
         if (res.ok) {
@@ -308,7 +308,7 @@ export default async function AdminDashboardPage({ params }: AdminDashboardPageP
       else if (categoryKey === 'media & entertainment') {
 
         const res = await fetch(
-          `${apiBaserUrl}/admin/dashboard/ecommerce/${companyId}`,
+          `${apiBaseUrl}/admin/dashboard/ecommerce/${companyId}`,
           { cache: 'no-store', headers: { cookie: cookiesHeader } }
         );
         if (res.ok) {
@@ -323,7 +323,7 @@ export default async function AdminDashboardPage({ params }: AdminDashboardPageP
       else if (categoryKey === 'finance & legal') {
 
         const res = await fetch(
-          `${apiBaserUrl}/admin/dashboard/ecommerce/${companyId}`,
+          `${apiBaseUrl}/admin/dashboard/ecommerce/${companyId}`,
           { cache: 'no-store', headers: { cookie: cookiesHeader } }
         );
         if (res.ok) {
@@ -338,7 +338,7 @@ export default async function AdminDashboardPage({ params }: AdminDashboardPageP
       else if (categoryKey === 'automotive') {
 
         const res = await fetch(
-          `${apiBaserUrl}/admin/dashboard/ecommerce/${companyId}`,
+          `${apiBaseUrl}/admin/dashboard/ecommerce/${companyId}`,
           { cache: 'no-store', headers: { cookie: cookiesHeader } }
         );
         if (res.ok) {
@@ -353,7 +353,7 @@ export default async function AdminDashboardPage({ params }: AdminDashboardPageP
       else if (categoryKey === 'travel & tourism') {
 
         const res = await fetch(
-          `${apiBaserUrl}/admin/dashboard/ecommerce/${companyId}`,
+          `${apiBaseUrl}/admin/dashboard/ecommerce/${companyId}`,
           { cache: 'no-store', headers: { cookie: cookiesHeader } }
         );
         if (res.ok) {
@@ -368,7 +368,7 @@ export default async function AdminDashboardPage({ params }: AdminDashboardPageP
       else if (categoryKey === 'fitness & wellness') {
 
         const res = await fetch(
-          `${apiBaserUrl}/admin/dashboard/ecommerce/${companyId}`,
+          `${apiBaseUrl}/admin/dashboard/ecommerce/${companyId}`,
           { cache: 'no-store', headers: { cookie: cookiesHeader } }
         );
         if (res.ok) {

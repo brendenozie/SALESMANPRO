@@ -4,7 +4,7 @@ import OrdersClient from "./OrdersClient";
 import { cookies } from "next/headers";
 
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // Define types based on your Prisma schema
 export type OrderItem = {
@@ -59,7 +59,7 @@ export default async function OrdersPage({ params }: PageProps) {
   let error: string | null = null;
 
   try {
-    const ordersRes = await fetch(`${apiBaserUrl}/admin/customer-orders?companyId=${companyId}`, { next: { revalidate: 60 }, headers: { Cookie: cookieHeader } });
+    const ordersRes = await fetch(`${apiBaseUrl}/admin/customer-orders?companyId=${companyId}`, { next: { revalidate: 60 }, headers: { Cookie: cookieHeader } });
     if (ordersRes.ok) {
       let data = await ordersRes.json();
       console.log("[OrdersPage] Fetched orders data →", data);

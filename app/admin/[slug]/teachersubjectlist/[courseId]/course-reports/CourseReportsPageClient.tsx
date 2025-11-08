@@ -26,7 +26,7 @@ interface CourseReportsPageClientProps {
   companyId: string;
 }
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 export default function CourseReportsPageClient({
   initialCourses,
@@ -65,7 +65,7 @@ export default function CourseReportsPageClient({
 
     try {
       const res = await fetch(
-        `${apiBaserUrl}/teacher/courses/${courseId}/reports?educatorId=${encodeURIComponent(educatorId)}&companyId=${encodeURIComponent(companyId)}`
+        `${apiBaseUrl}/teacher/courses/${courseId}/reports?educatorId=${encodeURIComponent(educatorId)}&companyId=${encodeURIComponent(companyId)}`
       );
 
       if (res.ok) {

@@ -64,7 +64,7 @@ export default function DocumentsPage() {
   const fetchDocuments = async (): Promise<void> => {
     setLoading(true);
     try {
-      const res = await fetch(`${apiBaserUrl}/documents");
+      const res = await fetch(`${apiBaseUrl}/documents`);
       const data: DocumentItem[] = await res.json();
       setDocuments(data);
     } catch (error) {
@@ -94,7 +94,7 @@ export default function DocumentsPage() {
     };
 
     try {
-      const res = await fetch(`${apiBaserUrl}/documents", {
+      const res = await fetch(`${apiBaseUrl}/documents`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -3,7 +3,7 @@
 import React from "react";
 import StudentExamsPage from "./StudentExamsPage";
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // Define your Category and Subcategory shapes (adjust fields if your API differs)
 export type Subcategory = {
@@ -42,7 +42,7 @@ export default async function CategoryManagerPage(_: PageProps) {
   let categoriesData: Category[] = [];
 
   try {
-    const res = await fetch(`${apiBaserUrl}/admin/get-categories`, {
+    const res = await fetch(`${apiBaseUrl}/admin/get-categories`, {
       next: { revalidate: 60 }, // SSR on every request
     });
 

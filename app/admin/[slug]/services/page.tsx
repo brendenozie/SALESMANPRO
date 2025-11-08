@@ -6,7 +6,7 @@ import { IStoreCategory, MarketListingForm } from "@/types/typings";
 import { cookies } from "next/headers";
 
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface PageProps {
   params:Promise<{ slug: string }>
@@ -23,13 +23,13 @@ export default async function ServicesPage({ params }: PageProps) {
   try {
     // Fetch marketplace listings for the given companyId
     const res = await fetch(
-      `${apiBaserUrl}/admin/my-market-place?companyId=${encodeURIComponent(companyId)}`,
+      `${apiBaseUrl}/admin/my-market-place?companyId=${encodeURIComponent(companyId)}`,
       { cache: 'no-store' , headers: { Cookie: cookieHeader } }
     );
 
     // Fetch all categories for this company
     const categoriesRes = await fetch(
-      `${apiBaserUrl}/admin/get-store-categories?companyId=${encodeURIComponent(
+      `${apiBaseUrl}/admin/get-store-categories?companyId=${encodeURIComponent(
         companyId
       )}`,
       { cache: 'no-store' , headers: { Cookie: cookieHeader } }

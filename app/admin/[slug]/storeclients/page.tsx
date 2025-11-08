@@ -3,7 +3,7 @@ import React from "react";
 import ClientsClient, { Client } from "./ClientsClient"; // Import the ClientsClient component and Client type
 import { cookies } from "next/headers";
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface PageProps {
   params:Promise<{ slug: string }>
@@ -21,7 +21,7 @@ export default async function ClientsPage({ params }: PageProps) {
 
   try {
     const res = await fetch(
-      `${apiBaserUrl}/admin/clients?companyId=${companyId}`,
+      `${apiBaseUrl}/admin/clients?companyId=${companyId}`,
       { 
         headers: { cookie: cookieStore }, 
         next: { revalidate: 60 } 

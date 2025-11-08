@@ -34,6 +34,8 @@ interface UserProgram extends MarketListingForm {
   nextSession: string;
 }
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000/api";
+
 export default function UserDashboard() {
   const { data: session } = useSession();
   const { slug } = useParams() as { slug: string };
@@ -53,8 +55,8 @@ export default function UserDashboard() {
       try {
         setLoading(true);
         const [programRes, ebookRes] = await Promise.all([
-          fetch(`${apiBaserUrl}/${slug}/user/enrollments`),
-          fetch(`${apiBaserUrl}/${slug}/user/resources`),
+          fetch(`${apiBaseUrl}/${slug}/user/enrollments`),
+          fetch(`${apiBaseUrl}/${slug}/user/resources`),
         ]);
         const [programData, ebookData] = await Promise.all([
           programRes.json(),

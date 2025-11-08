@@ -504,7 +504,7 @@ export default function AgentsClientPage({ adminSlug, initialAgents, isInitialLo
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
   const [agentToDelete, setAgentToDelete] = useState<AgentProfile | null>(null);
 
-  const apiBaserUrl = `${apiBaseUrl}/admin/sales-agents`; // Base URL for your API routes
+  const apiBaseUrl = `${apiBaseUrl}/admin/sales-agents`; // Base URL for your API routes
 
   // --- Handlers for CRUD Operations (Require re-fetch to keep client state synced) ---
   
@@ -514,7 +514,7 @@ export default function AgentsClientPage({ adminSlug, initialAgents, isInitialLo
     setError(null);
     try {
       // NOTE: Use a *client-side* fetch for subsequent data updates after initial server load
-      const res = await fetch(`${apiBaserUrl}?companyId=${adminSlug}`,{ integrity: 'same-origin' });
+      const res = await fetch(`${apiBaseUrl}?companyId=${adminSlug}`,{ integrity: 'same-origin' });
       if (!res.ok) {
         throw new Error(`Data fetch failed after update. (Status: ${res.status})`);
       }
@@ -552,7 +552,7 @@ export default function AgentsClientPage({ adminSlug, initialAgents, isInitialLo
       let response;
       if (editingAgent) {
         // Update existing agent (PUT request)
-        response = await fetch(`${apiBaserUrl}/${editingAgent.id}`, {
+        response = await fetch(`${apiBaseUrl}/${editingAgent.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -564,7 +564,7 @@ export default function AgentsClientPage({ adminSlug, initialAgents, isInitialLo
         });
       } else {
         // Add new agent (POST request)
-        response = await fetch(apiBaserUrl, {
+        response = await fetch(apiBaseUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -607,7 +607,7 @@ export default function AgentsClientPage({ adminSlug, initialAgents, isInitialLo
     const deleteToastId = toast.loading(`Deleting ${agentToDelete.name}...`);
 
     try {
-      const response = await fetch(`${apiBaserUrl}/${agentToDelete.id}`, {
+      const response = await fetch(`${apiBaseUrl}/${agentToDelete.id}`, {
         method: 'DELETE',
       });
 

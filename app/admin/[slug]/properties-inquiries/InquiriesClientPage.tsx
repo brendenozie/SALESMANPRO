@@ -41,10 +41,10 @@ interface InquiriesClientPageProps {
     serverLoadError: string | null;
 }
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;
 
 function fetchInquiries(slug: string): Promise<Inquiry[]> {
-  return fetch(`${apiBaserUrl}/admin/inquiries?companyId=${encodeURIComponent(slug)}`)
+  return fetch(`${apiBaseUrl}/admin/inquiries?companyId=${encodeURIComponent(slug)}`)
     .then(res => {
       if (!res.ok) throw new Error("Failed to fetch inquiries");
       return res.json();
@@ -60,7 +60,7 @@ function fetchInquiries(slug: string): Promise<Inquiry[]> {
   //   try {
   //     // For demonstration, we'll use a mocked API call that returns the sample data
   //     // In a real app, this would be a full client-side fetch:
-  //     const res = await fetch(`${apiBaserUrl}/admin/inquiries?companyId=${encodeURIComponent(slug)}`); 
+  //     const res = await fetch(`${apiBaseUrl}/admin/inquiries?companyId=${encodeURIComponent(slug)}`); 
       
   //     const data: Inquiry[] = initialInquiries; // Use the server's initial data as a mock refresh result
   //     setInquiries(data.sort((a, b) => new Date(b.receivedAt).getTime() - new Date(a.receivedAt).getTime()));
@@ -73,7 +73,7 @@ function fetchInquiries(slug: string): Promise<Inquiry[]> {
   //   } finally {
   //     setIsLoading(false);
   //   }
-  // }, [slug, apiBaserUrl, initialInquiries]); // initialInquiries dependency keeps the mock data accurate for re-fetch
+  // }, [slug, apiBaseUrl, initialInquiries]); // initialInquiries dependency keeps the mock data accurate for re-fetch
 
 export default function InquiriesClientPage({ slug, initialInquiries, isInitialLoadSuccessful, serverLoadError }: InquiriesClientPageProps) {
   
@@ -92,7 +92,7 @@ export default function InquiriesClientPage({ slug, initialInquiries, isInitialL
     const toastId = toast.loading(`Updating status to ${newStatus}...`);
     setError(null);
     try {
-      const res = await fetch(`${apiBaserUrl}/admin/inquiries/${encodeURIComponent(id)}/status`, { method: 'PUT', body: JSON.stringify({ status: newStatus }), headers: { 'Content-Type': 'application/json' } });
+      const res = await fetch(`${apiBaseUrl}/admin/inquiries/${encodeURIComponent(id)}/status`, { method: 'PUT', body: JSON.stringify({ status: newStatus }), headers: { 'Content-Type': 'application/json' } });
       
       if (!res.ok) throw new Error("Failed to update inquiry status");
       const updatedInquiry: Inquiry = await res.json();

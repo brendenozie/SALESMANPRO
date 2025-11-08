@@ -42,8 +42,8 @@ export default function ServiceSite({ pageData, companyId }: { pageData: StoreFo
   const { storeFormData } = useStoreContext(); // Use for global theme settings only
   
   // Fetch client-side data
-  const { data: testimonialsData } = useSWR(`${apiBaserUrl}/site/testimonials?id=${companyId}`, fetcher);
-  const { data: faqsData } = useSWR(`${apiBaserUrl}/site/faqs?id=${companyId}`, fetcher);
+  const { data: testimonialsData } = useSWR(`${apiBaseUrl}/site/testimonials?id=${companyId}`, fetcher);
+  const { data: faqsData } = useSWR(`${apiBaseUrl}/site/faqs?id=${companyId}`, fetcher);
   
   // Use pageData for all content
   const siteData = pageData || storeFormData;

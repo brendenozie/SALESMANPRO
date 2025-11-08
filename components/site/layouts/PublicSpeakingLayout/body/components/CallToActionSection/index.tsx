@@ -6,7 +6,7 @@ import { XMarkIcon, PaperAirplaneIcon, CalendarIcon } from "@heroicons/react/24/
 // NOTE: I've removed unused imports (Image, loader, heroSlides) and the unused 'current' state/effect/logic, 
 // as this component is purely a Call-to-Action section, not the hero carousel.
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // --- Framer Motion Variants for Polish ---
 
@@ -36,7 +36,7 @@ const CallToActionSection: React.FC<CallToActionSectionProps> = ({ companyId, sc
     setStatus("sending");
 
     try {
-      const res = await fetch(`${apiBaserUrl}/conversations/send-to-admin`, {
+      const res = await fetch(`${apiBaseUrl}/conversations/send-to-admin`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

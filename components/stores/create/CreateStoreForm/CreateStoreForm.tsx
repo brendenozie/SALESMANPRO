@@ -51,7 +51,7 @@ const SITE_CATEGORIES_WITH_LOCATIONS = [
   "travel & tourism",
 ];
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 export interface SelectedLocation {
   id: string;
@@ -1305,7 +1305,7 @@ async function uploadFile(files: File[], type: "image" | "video" | "book") {
     // );
 
     const res = await fetch(
-      `${apiBaserUrl}/upload-url?filename=${encodeURIComponent(file.name)}&type=${type}&contentType=${encodeURIComponent(file.type)}`
+      `${apiBaseUrl}/upload-url?filename=${encodeURIComponent(file.name)}&type=${type}&contentType=${encodeURIComponent(file.type)}`
     );
 
     if (!res.ok) throw new Error("Failed to get signed URL");
@@ -1452,8 +1452,8 @@ const handleSubmit = async (e: FormEvent) => {
     const isEdit = Boolean(initialData?.id);
     const method = isEdit ? "PUT" : "POST";
     const apiStoresUrl = isEdit
-      ? `${apiBaserUrl}/stores/${initialData!.id}`
-      : `${apiBaserUrl}/stores`;
+      ? `${apiBaseUrl}/stores/${initialData!.id}`
+      : `${apiBaseUrl}/stores`;
 
     const toSend = {
       ...payload,

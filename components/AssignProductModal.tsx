@@ -27,14 +27,14 @@ const AssignProductModal: React.FC<any> = ({ showAssignProductModal, setShowAssi
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [currentStep, setCurrentStep] = useState<number>(1); // New state for stepper
 
-  const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
   // --- Data Fetching ---
   useEffect(() => {
     const fetchAgents = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch(`${apiBaserUrl}/admin/get-all-agents?companyId=${encodeURIComponent(companyId)}`);
+        const response = await fetch(`${apiBaseUrl}/admin/get-all-agents?companyId=${encodeURIComponent(companyId)}`);
         if (!response.ok) throw new Error("Failed to load agents.");
 
         const agentsData = await response.json();
@@ -50,7 +50,7 @@ const AssignProductModal: React.FC<any> = ({ showAssignProductModal, setShowAssi
     if (showAssignProductModal && agents.length === 0) {
       fetchAgents();
     }
-  }, [showAssignProductModal, apiBaserUrl, agents.length]);
+  }, [showAssignProductModal, apiBaseUrl, agents.length]);
 
   // --- Handlers & Logic ---
   const handleAssign = async () => {
@@ -70,7 +70,7 @@ const AssignProductModal: React.FC<any> = ({ showAssignProductModal, setShowAssi
 
       setIsLoading(true);
 
-      const response = await fetch(`${apiBaserUrl}/admin/post-restock`, {
+      const response = await fetch(`${apiBaseUrl}/admin/post-restock`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

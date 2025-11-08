@@ -121,7 +121,7 @@ export default function CasesPage() {
     e.preventDefault();
     const url = isEditing
       ? `${apiBaseUrl}/admin/cases/${currentCase?.id}`
-      : `${apiBaserUrl}/admin/cases";
+      : `${apiBaseUrl}/admin/cases`;
     const method = isEditing ? "PUT" : "POST";
 
     try {

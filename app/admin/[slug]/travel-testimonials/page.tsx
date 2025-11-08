@@ -108,7 +108,7 @@ const TestimonialsPage = () => {
     try {
       const url = isEditing
         ? `${apiBaseUrl}/admin/testimonials/${currentTestimonial?.id}`
-        : `${apiBaserUrl}/admin/testimonials";
+        : `${apiBaseUrl}/admin/testimonials`;
       const method = isEditing ? "PUT" : "POST";
 
       const res = await fetch(url, {

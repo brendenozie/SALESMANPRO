@@ -22,7 +22,7 @@ import {
 import toast, { Toaster } from 'react-hot-toast';
 import { useParams } from 'next/navigation';
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // --- Type Definitions (Should match API response) ---
 type RiderInfo = {
@@ -320,8 +320,8 @@ export default function VehiclesPage() {
 
       // Fetch both vehicles and riders
       const [vehiclesRes, ridersRes] = await Promise.all([
-        fetch(`${apiBaserUrl}/admin/delivery-vehicles?${queryParams}`, { next: { revalidate: 60 }, headers: { 'Content-Type': 'application/json', 'Credential': 'include' } }),
-        fetch(`${apiBaserUrl}/admin/riders?companyId=${companyId}`, { next: { revalidate: 60 }, headers: { 'Content-Type': 'application/json', 'Credential': 'include' } }),
+        fetch(`${apiBaseUrl}/admin/delivery-vehicles?${queryParams}`, { next: { revalidate: 60 }, headers: { 'Content-Type': 'application/json', 'Credential': 'include' } }),
+        fetch(`${apiBaseUrl}/admin/riders?companyId=${companyId}`, { next: { revalidate: 60 }, headers: { 'Content-Type': 'application/json', 'Credential': 'include' } }),
       ]);
 
       if (!vehiclesRes.ok || !ridersRes.ok) throw new Error('Failed to fetch data.');
@@ -359,7 +359,7 @@ export default function VehiclesPage() {
     const toastId = toast.loading(isEdit ? 'Updating vehicle...' : 'Adding new vehicle...');
     
     try {
-      const url = isEdit ? `${apiBaserUrl}/admin/delivery-vehicles/${editingVehicle.id}` : `${apiBaserUrl}/admin/delivery-vehicles`;
+      const url = isEdit ? `${apiBaseUrl}/admin/delivery-vehicles/${editingVehicle.id}` : `${apiBaseUrl}/admin/delivery-vehicles`;
       const method = isEdit ? 'PUT' : 'POST';
 
       console.log('Submitting Vehicle Data:', { ...formData, companyId });
@@ -391,7 +391,7 @@ export default function VehiclesPage() {
     const toastId = toast.loading(`Deleting ${vehicleToDelete.plateNumber}...`);
 
     try {
-        const response = await fetch(`${apiBaserUrl}/vehicles/${vehicleToDelete.id}`, { method: 'DELETE' });
+        const response = await fetch(`${apiBaseUrl}/vehicles/${vehicleToDelete.id}`, { method: 'DELETE' });
         if (!response.ok) {
             const errorData = await response.json();
             throw new Error(errorData.message || 'Failed to delete.');

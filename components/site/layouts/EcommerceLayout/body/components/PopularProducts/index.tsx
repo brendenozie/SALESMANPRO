@@ -6,8 +6,9 @@ import { SkeletonGrid } from '@/components/site/SkeletonGrid/SkeletonGrid';
 import { ArrowRightCircleIcon } from '@heroicons/react/24/outline';
 import { createCachedFetcher } from '@/lib/swrCachedFetcher';
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000/api";
 export default function PopularProducts({ id }: { id: string }) {
-  const url = `${apiBaserUrl}/site/productsByFlag?id=${id}&flag=isFeatured&limit=8`;
+  const url = `${apiBaseUrl}/site/productsByFlag?id=${id}&flag=isFeatured&limit=8`;
   const fetcher = createCachedFetcher(`products-${id}-isFeatured`);
 
   const fallbackData = typeof window !== 'undefined' ? (() => {

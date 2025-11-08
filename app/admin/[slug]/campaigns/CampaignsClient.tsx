@@ -18,7 +18,7 @@ import Modal from "@/components/Modal"; // Adjust path as needed
 // Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface ClientProps {
   campaignsData: Campaign[];
@@ -39,7 +39,7 @@ const CampaignsClient: React.FC<ClientProps> = ({ campaignsData: initialCampaign
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaserUrl}/campaigns`, { next: { revalidate: 60 } }); // Adjust for companyId if needed
+      const res = await fetch(`${apiBaseUrl}/campaigns`, { next: { revalidate: 60 } }); // Adjust for companyId if needed
       if (res.ok) {
         const data = await res.json();
         setCampaignsData(data);
@@ -110,7 +110,7 @@ const CampaignsClient: React.FC<ClientProps> = ({ campaignsData: initialCampaign
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaserUrl}/campaigns`, {
+      const res = await fetch(`${apiBaseUrl}/campaigns`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

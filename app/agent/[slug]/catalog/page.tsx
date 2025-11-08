@@ -1,7 +1,7 @@
 import React from "react";
 import ProductsPageClient from "./ProductsPageClient";
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 async function getData() {
   let productsData = [];
@@ -10,9 +10,9 @@ async function getData() {
 
   try {
     const [productsRes, categoriesRes, agentsRes] = await Promise.all([
-      fetch(`${apiBaserUrl}/clients/getAllProducts`, { cache: "no-store" }),
-      fetch(`${apiBaserUrl}/admin/get-all-categories`, { cache: "no-store" }),
-      fetch(`${apiBaserUrl}/admin/get-all-agents`, { cache: "no-store" }),
+      fetch(`${apiBaseUrl}/clients/getAllProducts`, { cache: "no-store" }),
+      fetch(`${apiBaseUrl}/admin/get-all-categories`, { cache: "no-store" }),
+      fetch(`${apiBaseUrl}/admin/get-all-agents`, { cache: "no-store" }),
     ]);
 
     if (productsRes.ok) productsData = await productsRes.json();

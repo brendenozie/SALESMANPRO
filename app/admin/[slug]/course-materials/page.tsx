@@ -4,7 +4,7 @@ import React from "react";
 import MaterialsGlobalClient, { CourseMaterialType, CourseOption, EducatorOption, AcademicLevelOption } from "./MaterialsGlobalClient";
 import { cookies } from "next/headers";
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface PageProps {
   params:Promise<{ slug: string }>
@@ -143,7 +143,7 @@ export default async function GlobalCourseMaterialsManagementPage({ params }: Pa
     // Fetch all materials for this company
     // The API route /api/course-materials now supports filtering by companyId
     const materialsRes = await fetch(
-      `${apiBaserUrl}/course-materials?companyId=${encodeURIComponent(companyId)}`,
+      `${apiBaseUrl}/course-materials?companyId=${encodeURIComponent(companyId)}`,
       { next: { revalidate: 60 }, headers: { cookie: cookieHeader } }
     );
     if (materialsRes.ok) {
@@ -157,7 +157,7 @@ export default async function GlobalCourseMaterialsManagementPage({ params }: Pa
 
     // Fetch all courses for this company (for filtering and linking)
     const coursesRes = await fetch(
-      `${apiBaserUrl}/courses?companyId=${encodeURIComponent(companyId)}`,
+      `${apiBaseUrl}/courses?companyId=${encodeURIComponent(companyId)}`,
       { next: { revalidate: 60 }, headers: { cookie: cookieHeader } }
     );
     if (coursesRes.ok) {
@@ -177,7 +177,7 @@ export default async function GlobalCourseMaterialsManagementPage({ params }: Pa
 
     // Fetch all educators (for the "uploaded by" dropdown)
     const educatorsRes = await fetch(
-      `${apiBaserUrl}/educators?companyId=${encodeURIComponent(companyId)}`,
+      `${apiBaseUrl}/educators?companyId=${encodeURIComponent(companyId)}`,
       { next: { revalidate: 60 }, headers: { cookie: cookieHeader } }
     );
     if (educatorsRes.ok) {
@@ -196,7 +196,7 @@ export default async function GlobalCourseMaterialsManagementPage({ params }: Pa
 
     // Fetch all academic levels (for filtering)
     const academicLevelsRes = await fetch(
-      `${apiBaserUrl}/academic-levels?companyId=${encodeURIComponent(companyId)}`,
+      `${apiBaseUrl}/academic-levels?companyId=${encodeURIComponent(companyId)}`,
       { next: { revalidate: 60 }, headers: { cookie: cookieHeader } }
     );
     if (academicLevelsRes.ok) {
@@ -230,7 +230,7 @@ export default async function GlobalCourseMaterialsManagementPage({ params }: Pa
       allEducators={allEducators}
       allAcademicLevels={allAcademicLevels}
       companyId={companyId}
-      apiBaserUrl={apiBaserUrl}
+      apiBaseUrl={apiBaseUrl}
     />
   );
 }

@@ -42,10 +42,10 @@ export type ParentType = {
 interface ParentsClientProps {
   initialParents: ParentType[];
   companyId: string;
-  apiBaserUrl: string;
+  apiBaseUrl: string;
 }
 
-export default function ParentsClient({ initialParents, companyId, apiBaserUrl }: ParentsClientProps) {
+export default function ParentsClient({ initialParents, companyId, apiBaseUrl }: ParentsClientProps) {
   const [parents, setParents] = useState<ParentType[]>(initialParents);
   const [searchTerm, setSearchTerm] = useState('');
   const [showFormModal, setShowFormModal] = useState(false);
@@ -64,7 +64,7 @@ export default function ParentsClient({ initialParents, companyId, apiBaserUrl }
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaserUrl}/admin/parents?companyId=${encodeURIComponent(companyId)}`);
+      const res = await fetch(`${apiBaseUrl}/admin/parents?companyId=${encodeURIComponent(companyId)}`);
       if (res.ok) {
         const data: ParentType[] = await res.json();
         setParents(data);
@@ -79,7 +79,7 @@ export default function ParentsClient({ initialParents, companyId, apiBaserUrl }
     } finally {
       setIsLoading(false);
     }
-  }, [apiBaserUrl, companyId, initialParents]);
+  }, [apiBaseUrl, companyId, initialParents]);
 
   useEffect(() => {
     // If initial data from server is empty, try fetching on client side
@@ -107,7 +107,7 @@ export default function ParentsClient({ initialParents, companyId, apiBaserUrl }
     setError(null);
     const method = parentData.id ? 'PATCH' : 'POST';
     try {
-      const url = parentData.id ? `${apiBaserUrl}/admin/parents/${parentData.id}` : `${apiBaserUrl}/admin/parents`;
+      const url = parentData.id ? `${apiBaseUrl}/admin/parents/${parentData.id}` : `${apiBaseUrl}/admin/parents`;
 
       const payload = {
         ...parentData,
@@ -143,7 +143,7 @@ export default function ParentsClient({ initialParents, companyId, apiBaserUrl }
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaserUrl}/admin/parents/${parentId}`, {
+      const res = await fetch(`${apiBaseUrl}/admin/parents/${parentId}`, {
         method: 'DELETE',
       });
 

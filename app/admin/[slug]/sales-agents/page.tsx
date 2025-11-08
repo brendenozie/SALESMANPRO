@@ -610,8 +610,8 @@ export default function AgentsPage() {
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
   const [agentToDelete, setAgentToDelete] = useState<AgentProfile | null>(null);
 
-  // In a real application, apiBaserUrl would be used to fetch and mutate data
-  const apiBaserUrl = `${apiBaseUrl}/admin/sales-agents`; // Base URL for your API routes
+  // In a real application, apiBaseUrl would be used to fetch and mutate data
+  const apiBaseUrl = `${apiBaseUrl}/admin/sales-agents`; // Base URL for your API routes
 
   const fetchAgents = useCallback(async () => {
     setIsLoading(true);
@@ -619,7 +619,7 @@ export default function AgentsPage() {
     try {
       // TODO: Replace this with an actual fetch to your GET /api/admin/agents endpoint
       // Example:
-      const res = await fetch(`${apiBaserUrl}?companyId=${companyId}`, {
+      const res = await fetch(`${apiBaseUrl}?companyId=${companyId}`, {
         credentials: 'include'
       });
       if (!res.ok) {
@@ -670,7 +670,7 @@ export default function AgentsPage() {
       let response;
       if (editingAgent) {
         // Update existing agent (PUT request)
-        response = await fetch(`${apiBaserUrl}/${editingAgent.id}`, {
+        response = await fetch(`${apiBaseUrl}/${editingAgent.id}`, {
           method: 'PUT',
           headers: { 
             'Content-Type': 'application/json',
@@ -690,7 +690,7 @@ export default function AgentsPage() {
         });
       } else {
         // Add new agent (POST request)
-        response = await fetch(apiBaserUrl, {
+        response = await fetch(apiBaseUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Credentials': 'include' },
           body: JSON.stringify({
@@ -740,7 +740,7 @@ export default function AgentsPage() {
     const deleteToastId = toast.loading(`Deleting ${agentToDelete.name}...`);
 
     try {
-      const response = await fetch(`${apiBaserUrl}/${agentToDelete.id}`, {
+      const response = await fetch(`${apiBaseUrl}/${agentToDelete.id}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json', 'Credentials': 'include' },
       });

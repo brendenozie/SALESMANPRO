@@ -32,7 +32,7 @@ interface TakeAttendancePageClientProps {
   companyId: string;
 }
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 export default function TakeAttendancePageClient({
   course,
@@ -68,7 +68,7 @@ export default function TakeAttendancePageClient({
       setStatusMessage(null);
       try {
         const res = await fetch(
-          `${apiBaserUrl}/teacher/courses/${course.id}/attendance-data?educatorId=${encodeURIComponent(educatorId)}&companyId=${encodeURIComponent(companyId)}&date=${encodeURIComponent(attendanceDate)}`,
+          `${apiBaseUrl}/teacher/courses/${course.id}/attendance-data?educatorId=${encodeURIComponent(educatorId)}&companyId=${encodeURIComponent(companyId)}&date=${encodeURIComponent(attendanceDate)}`,
           { next: { revalidate: 60 } }
         );
 
@@ -129,7 +129,7 @@ export default function TakeAttendancePageClient({
         attendance: studentAttendance,
       };
 
-      const res = await fetch(`${apiBaserUrl}/teacher/attendance`, {
+      const res = await fetch(`${apiBaseUrl}/teacher/attendance`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

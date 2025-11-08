@@ -15,7 +15,7 @@ import {
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // --- Type Definitions (Aligned with ExamSubmission API Response) ---
 export type ExamSubmissionData = {
@@ -197,7 +197,7 @@ const SubmissionDetailsViewModal: React.FC<SubmissionDetailsViewModalProps> = ({
       setIsLoadingQuestions(true);
       setQuestionsError(null);
       try {
-        const res = await fetch(`${apiBaserUrl}/exam-questions?examId=${encodeURIComponent(examDetails.id)}`);
+        const res = await fetch(`${apiBaseUrl}/exam-questions?examId=${encodeURIComponent(examDetails.id)}`);
         if (res.ok) {
           const data = await res.json();
           setQuestions(data.sort((a: any, b: any) => a.order - b.order));
@@ -324,7 +324,7 @@ export default function ExamSubmissionsManagerPage({ examDetails, initialSubmiss
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaserUrl}/exam-submissions?examId=${encodeURIComponent(examDetails.id)}`, {
+      const res = await fetch(`${apiBaseUrl}/exam-submissions?examId=${encodeURIComponent(examDetails.id)}`, {
         next: { revalidate: 60 },
       });
       if (res.ok) {
@@ -371,7 +371,7 @@ export default function ExamSubmissionsManagerPage({ examDetails, initialSubmiss
     setError(null);
 
     try {
-      const res = await fetch(`${apiBaserUrl}/exam-submissions/${id}`, {
+      const res = await fetch(`${apiBaseUrl}/exam-submissions/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ score, feedback }),
@@ -400,7 +400,7 @@ export default function ExamSubmissionsManagerPage({ examDetails, initialSubmiss
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaserUrl}/exam-submissions/${submissionId}`, {
+      const res = await fetch(`${apiBaseUrl}/exam-submissions/${submissionId}`, {
         method: 'DELETE',
       });
 

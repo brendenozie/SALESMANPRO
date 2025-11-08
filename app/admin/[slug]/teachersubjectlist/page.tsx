@@ -70,7 +70,7 @@ interface TeacherClassesPageData {
   teacherClasses: TeacherAssignedCourse[];
 }
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface Props {
   params:Promise<{ slug: string }>
@@ -172,7 +172,7 @@ export default async function TeachersSubjectPage({ params }: Props) {
   try {
     // Call the new API route
     const res = await fetch(
-      `${apiBaserUrl}/teacher/teacher-assigned-subjects?teacherUserId=${encodeURIComponent(teacherUserId)}`,
+      `${apiBaseUrl}/teacher/teacher-assigned-subjects?teacherUserId=${encodeURIComponent(teacherUserId)}`,
       { next: { revalidate: 60 } } // equivalent to SSR on every request
     );
 

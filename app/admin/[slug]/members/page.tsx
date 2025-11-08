@@ -3,7 +3,7 @@ import React from "react";
 import MembersClient from "./MembersClient";
 import { cookies } from "next/headers";
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // Define a simplified User type for display in the members list
 export type Member = {
@@ -51,7 +51,7 @@ export default async function MembersPage({ params }: PageProps) {
     // Fetch Users (Members)
     // NOTE: You'll need an API endpoint for fetching users, e.g., /api/users
     // For now, this is a placeholder. You might need to adjust your backend to expose users.
-    const usersRes = await fetch(`${apiBaserUrl}/admin/users?companyId=${companyId}`, { next: { revalidate: 60 }, headers: { cookie: cookieHeader } });
+    const usersRes = await fetch(`${apiBaseUrl}/admin/users?companyId=${companyId}`, { next: { revalidate: 60 }, headers: { cookie: cookieHeader } });
     if (usersRes.ok) {
       let data = await usersRes.json();
       membersData = data.map((user: any) => ({
@@ -66,7 +66,7 @@ export default async function MembersPage({ params }: PageProps) {
     }
 
     // Fetch Projects (for Project Member dropdown)
-    const projectsRes = await fetch(`${apiBaserUrl}/admin/projects?companyId=${companyId}`, { next: { revalidate: 60 }, headers: { cookie: cookieHeader } });
+    const projectsRes = await fetch(`${apiBaseUrl}/admin/projects?companyId=${companyId}`, { next: { revalidate: 60 }, headers: { cookie: cookieHeader } });
     if (projectsRes.ok) {
       let data = await projectsRes.json();
       projectsData = data.map((project: any) => ({
@@ -78,7 +78,7 @@ export default async function MembersPage({ params }: PageProps) {
     }
 
     // Fetch Project Members
-    const projectMembersRes = await fetch(`${apiBaserUrl}/admin/project-members?companyId=${companyId}`, { next: { revalidate: 60 }, headers: { cookie: cookieHeader } });
+    const projectMembersRes = await fetch(`${apiBaseUrl}/admin/project-members?companyId=${companyId}`, { next: { revalidate: 60 }, headers: { cookie: cookieHeader } });
     if (projectMembersRes.ok) {
       let data = await projectMembersRes.json();
       projectMembersData = data.map((pm: any) => ({

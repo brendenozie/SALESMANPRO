@@ -3,7 +3,7 @@ import React from "react";
 import BillingClient from "./BillingClient";
 import { useParams } from "next/navigation";
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 export interface TransactionItem {
   id: string;
@@ -71,7 +71,7 @@ export default async function BillingPage({ params, searchParams }: PageProps) {
   try {
     // Fetch transactions from the new API route
     const transactionsResponse = await fetch(
-      `${apiBaserUrl}/admin/billing/transactions?page=${pageNumber}&limit=${limitNumber}&status=${transactionStatus}&type=${transactionType}`,
+      `${apiBaseUrl}/admin/billing/transactions?page=${pageNumber}&limit=${limitNumber}&status=${transactionStatus}&type=${transactionType}`,
       {
         headers: {
           'Content-Type': 'application/json',
@@ -87,7 +87,7 @@ export default async function BillingPage({ params, searchParams }: PageProps) {
     
     // Fetch invoices from the new API route
     const invoicesResponse = await fetch(
-      `${apiBaserUrl}/admin/billing/invoices?page=${pageNumber}&limit=${limitNumber}&status=${invoiceStatus}`,
+      `${apiBaseUrl}/admin/billing/invoices?page=${pageNumber}&limit=${limitNumber}&status=${invoiceStatus}`,
       {
         headers: {
           'Content-Type': 'application/json',

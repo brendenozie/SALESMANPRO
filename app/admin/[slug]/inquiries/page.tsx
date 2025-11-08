@@ -16,7 +16,7 @@ import {
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;
 
 // --- Type Definitions ---
 export type Inquiry = {
@@ -114,7 +114,7 @@ export default function InquiriesPage() {
     setError(null);
     try {
       // --- REPLACE WITH YOUR ACTUAL API CALL ---
-      const res = await fetch(`${apiBaserUrl}/admin/inquiries?companyId=${encodeURIComponent(companyId)}`, { credentials: 'include' });
+      const res = await fetch(`${apiBaseUrl}/admin/inquiries?companyId=${encodeURIComponent(companyId)}`, { credentials: 'include' });
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.message || 'Failed to fetch inquiries.');
@@ -132,7 +132,7 @@ export default function InquiriesPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [companyId, apiBaserUrl]);
+  }, [companyId, apiBaseUrl]);
 
   useEffect(() => {
     fetchInquiries();
@@ -143,7 +143,7 @@ export default function InquiriesPage() {
     setError(null);
     try {
       // --- REPLACE WITH YOUR ACTUAL API CALL ---
-      const res = await fetch(`${apiBaserUrl}/admin/inquiries/${encodeURIComponent(id)}/status`, { // Adjust endpoint as per your backend
+      const res = await fetch(`${apiBaseUrl}/admin/inquiries/${encodeURIComponent(id)}/status`, { // Adjust endpoint as per your backend
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -166,7 +166,7 @@ export default function InquiriesPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [apiBaserUrl]);
+  }, [apiBaseUrl]);
 
   const filteredInquiries = useMemo(() => {
     return inquiries.filter(inq => {

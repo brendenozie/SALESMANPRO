@@ -37,7 +37,7 @@ interface ManageAssignmentsPageClientProps {
   companyId: string;
 }
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 export default function ManageAssignmentsPageClient({
   course,
@@ -128,7 +128,7 @@ export default function ManageAssignmentsPageClient({
     };
 
     try {
-      const res = await fetch(`${apiBaserUrl}/teacher/assignments`, {
+      const res = await fetch(`${apiBaseUrl}/teacher/assignments`, {
         method: 'POST', // POST for upsert
         headers: {
           'Content-Type': 'application/json',
@@ -169,7 +169,7 @@ export default function ManageAssignmentsPageClient({
       setLoading(true);
       setStatusMessage(null);
       try {
-        const res = await fetch(`${apiBaserUrl}/teacher/assignments/${assignmentId}?educatorId=${encodeURIComponent(educatorId)}&companyId=${encodeURIComponent(companyId)}`, {
+        const res = await fetch(`${apiBaseUrl}/teacher/assignments/${assignmentId}?educatorId=${encodeURIComponent(educatorId)}&companyId=${encodeURIComponent(companyId)}`, {
           method: 'DELETE',
         });
 

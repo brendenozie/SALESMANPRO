@@ -3,7 +3,7 @@ import PodcastsClient from "./PodcastsClient"; // Assuming PodcastsClient is in 
 import { IStoreCategory } from "@/types/typings";
 
 import { cookies } from "next/headers";
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // Define the Podcast type
 type Podcast = {
@@ -69,7 +69,7 @@ export default async function PodcastsAdminPage({ params }: PageProps) {
   try {
     // Fetch podcasts
     const podcastsRes = await fetch(
-      `${apiBaserUrl}/admin/podcasts?companyId=${encodeURIComponent(companyId)}`,
+      `${apiBaseUrl}/admin/podcasts?companyId=${encodeURIComponent(companyId)}`,
       { next: { revalidate: 60 }, headers: { cookie: cookieHeader } }
     );
 
@@ -89,7 +89,7 @@ export default async function PodcastsAdminPage({ params }: PageProps) {
     // Fetch all categories relevant to podcasts (might be different from store categories)
     // --- Fetch store categories ---
     const categoriesRes = await fetch(
-      `${apiBaserUrl}/admin/get-store-categories?companyId=${encodeURIComponent(companyId)}`,
+      `${apiBaseUrl}/admin/get-store-categories?companyId=${encodeURIComponent(companyId)}`,
       { next: { revalidate: 60 } , headers: { cookie: cookieHeader } }
     );
 

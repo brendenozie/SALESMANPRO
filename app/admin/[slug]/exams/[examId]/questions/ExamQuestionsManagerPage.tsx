@@ -18,7 +18,7 @@ import {
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // --- Type Definitions (Aligned with ExamQuestion API Response) ---
 export type ExamQuestionData = {
@@ -437,7 +437,7 @@ export default function ExamQuestionsManagerPage({ examDetails, initialQuestions
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaserUrl}/admin/exam-questions?examId=${encodeURIComponent(examDetails.id)}`, {
+      const res = await fetch(`${apiBaseUrl}/admin/exam-questions?examId=${encodeURIComponent(examDetails.id)}`, {
         next: { revalidate: 60 },
       });
       if (res.ok) {
@@ -468,7 +468,7 @@ export default function ExamQuestionsManagerPage({ examDetails, initialQuestions
     setError(null);
 
     const method = questionData.id ? 'PATCH' : 'POST';
-    const url = questionData.id ? `${apiBaserUrl}/admin/exam-questions/${questionData.id}` : `${apiBaserUrl}/admin/exam-questions`;
+    const url = questionData.id ? `${apiBaseUrl}/admin/exam-questions/${questionData.id}` : `${apiBaseUrl}/admin/exam-questions`;
 
     try {
       const res = await fetch(url, {
@@ -500,7 +500,7 @@ export default function ExamQuestionsManagerPage({ examDetails, initialQuestions
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaserUrl}/admin/exam-questions/${questionId}`, {
+      const res = await fetch(`${apiBaseUrl}/admin/exam-questions/${questionId}`, {
         method: 'DELETE',
       });
 

@@ -121,7 +121,7 @@ export async function uploadFiles(
 
   const uploads = files.map(async (file) => {
     const res = await fetch(
-      `${apiBaserUrl}/upload-url?filename=${encodeURIComponent(file.name)}&type=${type}&contentType=${encodeURIComponent(file.type)}`
+      `${apiBaseUrl}/upload-url?filename=${encodeURIComponent(file.name)}&type=${type}&contentType=${encodeURIComponent(file.type)}`
     );
 
     if (!res.ok) {
@@ -169,7 +169,7 @@ export async function uploadFiles(
 //     try {
 //       // ✅ Step 1: Request a signed upload URL from your API
 //       const res = await fetch(
-//         `${apiBaserUrl}/upload-url?filename=${encodeURIComponent(file.name)}&type=${type}&contentType=${encodeURIComponent(file.type)}`
+//         `${apiBaseUrl}/upload-url?filename=${encodeURIComponent(file.name)}&type=${type}&contentType=${encodeURIComponent(file.type)}`
 //       );
 
 //       if (!res.ok) {

@@ -22,7 +22,7 @@ import {
 } from '@heroicons/react/24/outline';
 import EventFormModal from './EventFormModal';
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // --- Type Definitions (Aligned with Event API Response) ---
 export type EventData = {
@@ -135,7 +135,7 @@ export default function AdminEventsPage({
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaserUrl}/events?companyId=${encodeURIComponent(companyId)}`, {
+      const res = await fetch(`${apiBaseUrl}/events?companyId=${encodeURIComponent(companyId)}`, {
         next: { revalidate: 60 },
       });
       if (res.ok) {
@@ -241,7 +241,7 @@ export default function AdminEventsPage({
     setError(null);
 
     const method = eventData.id ? 'PATCH' : 'POST';
-    const url = eventData.id ? `${apiBaserUrl}/events/${eventData.id}` : `${apiBaserUrl}/events`;
+    const url = eventData.id ? `${apiBaseUrl}/events/${eventData.id}` : `${apiBaseUrl}/events`;
 
     try {
       const res = await fetch(url, {
@@ -273,7 +273,7 @@ export default function AdminEventsPage({
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaserUrl}/events/${eventId}`, {
+      const res = await fetch(`${apiBaseUrl}/events/${eventId}`, {
         method: 'DELETE',
       });
 
@@ -294,7 +294,7 @@ export default function AdminEventsPage({
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaserUrl}/events/${eventId}`, {
+      const res = await fetch(`${apiBaseUrl}/events/${eventId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ eventStatus: newStatus }),

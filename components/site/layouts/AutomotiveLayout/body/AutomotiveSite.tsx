@@ -55,7 +55,9 @@ const tours = [
     videoId: '3fumBcKC6RE',
     title: 'Suburban Family Home',
   },
-]
+];
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000/api";
 
 // Generic fetcher
 const fetcher = (url: string) => fetch(url).then(res => res.json());
@@ -67,8 +69,8 @@ export default function AutomotiveSite({ pageData, companyId }: { pageData: Stor
   const [testimonials, setTestimonials] = useState<any[]>([]);
 
   // Fetch client-side data
-  const { data: testimonialsData } = useSWR(`${apiBaserUrl}/site/testimonials?id=${companyId}`, fetcher);
-  const { data: blogsData } = useSWR(`${apiBaserUrl}/site/blogs?id=${companyId}`, fetcher);
+  const { data: testimonialsData } = useSWR(`${apiBaseUrl}/site/testimonials?id=${companyId}`, fetcher);
+  const { data: blogsData } = useSWR(`${apiBaseUrl}/site/blogs?id=${companyId}`, fetcher);
 
   // Use pageData for all content
   const siteData = pageData || storeFormData;

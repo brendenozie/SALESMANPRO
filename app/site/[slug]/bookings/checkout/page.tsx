@@ -9,6 +9,7 @@ import { CheckCircleIcon } from "@heroicons/react/24/outline";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000/api";
 const steps = ["Billing", "Payment", "Review"];
 
 export default function CheckoutPage() {
@@ -129,7 +130,7 @@ export default function CheckoutPage() {
 
     console.log("🔹 Sending checkout payload:", payload);
 
-    const res = await fetch(`${apiBaserUrl}/shop/orders", {
+    const res = await fetch(`${apiBaseUrl}/shop/orders`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -173,7 +174,7 @@ export default function CheckoutPage() {
   //       // TODO: trigger M-Pesa API or SDK
   //     }
 
-  //     const res = await fetch(`${apiBaserUrl}/shop/orders", {
+  //     const res = await fetch(`${apiBaseUrl}/shop/orders", {
   //       method: "POST",
   //       headers: {
   //         "Content-Type": "application/json",

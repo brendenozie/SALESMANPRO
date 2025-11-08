@@ -27,8 +27,8 @@ const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 export default function BookingsSite({ pageData, companyId }: { pageData: StoreForm, companyId: string }) {
   // Fetch client-side data
-  const { data: testimonialsData } = useSWR(`${apiBaserUrl}/site/testimonials?id=${companyId}`, fetcher);
-  const { data: faqsData } = useSWR(`${apiBaserUrl}/site/faqs?id=${companyId}`, fetcher);
+  const { data: testimonialsData } = useSWR(`${apiBaseUrl}/site/testimonials?id=${companyId}`, fetcher);
+  const { data: faqsData } = useSWR(`${apiBaseUrl}/site/faqs?id=${companyId}`, fetcher);
 
   const { name, slug, description, bannerUrl, marketplaceListings, heroSlides, themeSettings, CoreValues, stats, pricingTiers, promotions } = pageData;
 

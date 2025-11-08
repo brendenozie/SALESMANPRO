@@ -8,6 +8,7 @@ import {
   // If you need more social icons, add them here
   EnvelopeIcon // For email
 } from '@heroicons/react/24/solid'; // Or from another icon library if preferred
+import { Expert } from '@/types/typings';
 
 // Framer Motion variants (reusing from previous sections for consistency)
 const containerVariants = {
@@ -41,18 +42,18 @@ const textColorLight = "#E0E7FF"; // Lighter blue for text on dark background
 const textColorMuted = "#A7B8D6"; // Muted blue for secondary text
 
 // Define an interface for your expert data for better type safety
-interface Expert {
-  id: string | number;
-  name: string;
-  role: string;
-  img: string; // URL to the expert's image
-  bio: string;
-  linkedin?: string; // Optional LinkedIn profile URL
-  email?: string; // Optional email address
-}
+// interface Expert {
+//   id: string | number;
+//   name: string;
+//   role: string;
+//   img: string; // URL to the expert's image
+//   bio: string;
+//   linkedin?: string; // Optional LinkedIn profile URL
+//   email?: string; // Optional email address
+// }
 
 // Sample data for experts (replace with your actual team members)
-const sampleExperts: Expert[] = [
+const sampleExperts: any[] = [
   {
     id: 'exp1',
     name: 'Dr. Evelyn Reed',
@@ -92,7 +93,7 @@ const sampleExperts: Expert[] = [
 ];
 
 interface MeetOurExpertsProps {
-  experts?: Expert[]; // Allow experts to be passed as a prop
+  experts?: any[]; // Allow experts to be passed as a prop
 }
 
 export default function MeetOurExperts({ experts }: MeetOurExpertsProps) {
@@ -144,7 +145,7 @@ export default function MeetOurExperts({ experts }: MeetOurExpertsProps) {
           viewport={{ once: true, amount: 0.2 }} // Trigger animation when less of the section is visible
           className="grid gap-10 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" // Added xl: for larger screens
         >
-          {expertsToDisplay.map((member: Expert, i: number) => (
+          {expertsToDisplay.map((member: any, i: number) => (
             <motion.div
               key={member.id}
               variants={itemVariants}
@@ -153,8 +154,8 @@ export default function MeetOurExperts({ experts }: MeetOurExpertsProps) {
               {/* Member Image */}
               <div className="w-32 h-32 mx-auto mb-6 rounded-full overflow-hidden border-4 border-blue-500/30 shadow-lg group-hover:border-blue-400/50 transition-colors duration-300">
                 <Image
-                  src={member.img}
-                  alt={member.name}
+                  src={member.user.image || "https://placehold.co/128"} // Fallback to img if user.image is not available
+                  alt={member.user.name || 'Expert Image'}
                   width={128} // Matched w-32 (128px)
                   height={128} // Matched h-32 (128px)
                   className="object-cover w-full h-full"

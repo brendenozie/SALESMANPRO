@@ -4,7 +4,7 @@ import React from "react";
 import ClassesManagementPage from "./ClassesManagementPage";
 import { cookies } from "next/headers";
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 type Product = {
   id: string;
@@ -61,7 +61,7 @@ export default async function AdminInventoryPage({ params }: Props) {
   try {
     // Fetch all products for this company
     const productsRes = await fetch(
-      `${apiBaserUrl}/admin/get-all-products?companyId=${encodeURIComponent(companyId)}`,
+      `${apiBaseUrl}/admin/get-all-products?companyId=${encodeURIComponent(companyId)}`,
       { next: { revalidate: 60 },
         headers: { cookie: cookieHeaders }
      } // equivalent to SSR on every request
@@ -72,7 +72,7 @@ export default async function AdminInventoryPage({ params }: Props) {
 
     // Fetch all categories for this company
     const categoriesRes = await fetch(
-      `${apiBaserUrl}/admin/get-store-categories?companyId=${encodeURIComponent(
+      `${apiBaseUrl}/admin/get-store-categories?companyId=${encodeURIComponent(
         companyId
       )}`,
       { next: { revalidate: 60 }, headers: { cookie: cookieHeaders } }
@@ -86,7 +86,7 @@ export default async function AdminInventoryPage({ params }: Props) {
 
     // Fetch all agents for this company
     const agentsRes = await fetch(
-      `${apiBaserUrl}/admin/get-all-agents?companyId=${encodeURIComponent(companyId)}`,
+      `${apiBaseUrl}/admin/get-all-agents?companyId=${encodeURIComponent(companyId)}`,
       { next: { revalidate: 60 }, headers: { cookie: cookieHeaders } }
     );
     if (agentsRes.ok) {

@@ -66,10 +66,10 @@ interface MaterialsClientProps {
   courseDetails: CourseDetailsType;
   allEducators: EducatorOption[];
   companyId: string;
-  apiBaserUrl: string;
+  apiBaseUrl: string;
 }
 
-export default function MaterialsClient({ initialMaterials, courseDetails, allEducators, companyId, apiBaserUrl }: MaterialsClientProps) {
+export default function MaterialsClient({ initialMaterials, courseDetails, allEducators, companyId, apiBaseUrl }: MaterialsClientProps) {
   const [materials, setMaterials] = useState<CourseMaterialType[]>(initialMaterials);
   const [educators, setEducators] = useState<EducatorOption[]>(allEducators);
   const [searchTerm, setSearchTerm] = useState('');
@@ -100,8 +100,8 @@ export default function MaterialsClient({ initialMaterials, courseDetails, allEd
     setIsLoading(true);
     setError(null);
     try {
-      const materialsRes = await fetch(`${apiBaserUrl}/course-materials?courseId=${encodeURIComponent(courseDetails.id)}`);
-      const educatorsRes = await fetch(`${apiBaserUrl}/educators?companyId=${encodeURIComponent(companyId)}`);
+      const materialsRes = await fetch(`${apiBaseUrl}/course-materials?courseId=${encodeURIComponent(courseDetails.id)}`);
+      const educatorsRes = await fetch(`${apiBaseUrl}/educators?companyId=${encodeURIComponent(companyId)}`);
 
       if (materialsRes.ok) {
         const data: CourseMaterialType[] = await materialsRes.json();
@@ -128,7 +128,7 @@ export default function MaterialsClient({ initialMaterials, courseDetails, allEd
     } finally {
       setIsLoading(false);
     }
-  }, [apiBaserUrl, companyId, courseDetails.id, initialMaterials, allEducators]);
+  }, [apiBaseUrl, companyId, courseDetails.id, initialMaterials, allEducators]);
 
   useEffect(() => {
     // If initial data from server is empty, try fetching on client side
@@ -156,7 +156,7 @@ export default function MaterialsClient({ initialMaterials, courseDetails, allEd
     setError(null);
     const method = materialData.id ? 'PATCH' : 'POST';
     try {
-      const url = materialData.id ? `${apiBaserUrl}/course-materials/${materialData.id}` : `${apiBaserUrl}/course-materials`;
+      const url = materialData.id ? `${apiBaseUrl}/course-materials/${materialData.id}` : `${apiBaseUrl}/course-materials`;
 
       const payload = {
         ...materialData,
@@ -192,7 +192,7 @@ export default function MaterialsClient({ initialMaterials, courseDetails, allEd
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaserUrl}/course-materials/${materialId}`, {
+      const res = await fetch(`${apiBaseUrl}/course-materials/${materialId}`, {
         method: 'DELETE',
       });
 

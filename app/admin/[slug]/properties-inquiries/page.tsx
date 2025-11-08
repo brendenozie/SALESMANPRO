@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation';
 import { ChatBubbleLeftRightIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import { cookies } from 'next/headers';
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;
 
 // Import the Client Component and Type Definitions
 import InquiriesClientPage, { Inquiry } from './InquiriesClientPage'; 
@@ -66,7 +66,7 @@ export default async function InquiriesPage({ params }: InquiriesPageProps) {
   try {
     // Simulate API call using sample data
     // In a real app: 
-    const res = await fetch(`${apiBaserUrl}/admin/inquiries?companyId=${slug}`, { cache: 'no-store', headers: { cookie: cookiesHeader } });
+    const res = await fetch(`${apiBaseUrl}/admin/inquiries?companyId=${slug}`, { cache: 'no-store', headers: { cookie: cookiesHeader } });
     let data = await res.json();
     console.log("Fetched inquiries data from API:", data);
     if (res.ok) {

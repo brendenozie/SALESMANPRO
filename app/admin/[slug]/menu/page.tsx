@@ -4,7 +4,7 @@ import MenuClient from "./MenuClient";
 import { MarketListingForm, IStoreCategory } from "@/types/typings";
 import { cookies } from "next/headers";
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // Define types based on your Prisma schema
 // export type ProductCategory = {
@@ -69,7 +69,7 @@ export default async function MenuPage({ params }: PageProps) {
   
     try {
       const res = await fetch(
-        `${apiBaserUrl}/admin/my-market-place?companyId=${encodeURIComponent(companyId)}`,
+        `${apiBaseUrl}/admin/my-market-place?companyId=${encodeURIComponent(companyId)}`,
         { next: { revalidate: 60 }, headers: { cookie: cookieHeader } }
       );
   
@@ -94,7 +94,7 @@ export default async function MenuPage({ params }: PageProps) {
       
       // Fetch all categories for this company
       const categoriesRes = await fetch(
-        `${apiBaserUrl}/admin/get-store-categories?companyId=${encodeURIComponent(
+        `${apiBaseUrl}/admin/get-store-categories?companyId=${encodeURIComponent(
           companyId
         )}`,
         { next: { revalidate: 60 }, headers: { cookie: cookieHeader } }

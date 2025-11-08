@@ -11,7 +11,7 @@ import AdminAnnouncementsPage, {
   AuthorOption
 } from "./AdminAnnouncementsPage";
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface PageProps {
   params:Promise<{ slug: string }>
@@ -211,7 +211,7 @@ export default async function AnnouncementsManagerPage({ params }: PageProps) {
 
   try {
     // Fetch announcements
-    const announcementsRes = await fetch(`${apiBaserUrl}/announcements?companyId=${encodeURIComponent(companyId)}`, {
+    const announcementsRes = await fetch(`${apiBaseUrl}/announcements?companyId=${encodeURIComponent(companyId)}`, {
       next: { revalidate: 60 },
     });
     if (announcementsRes.ok) {
@@ -222,7 +222,7 @@ export default async function AnnouncementsManagerPage({ params }: PageProps) {
     }
 
     // Fetch all academic levels
-    const academicLevelsRes = await fetch(`${apiBaserUrl}/academic-levels?companyId=${encodeURIComponent(companyId)}`, {
+    const academicLevelsRes = await fetch(`${apiBaseUrl}/academic-levels?companyId=${encodeURIComponent(companyId)}`, {
       next: { revalidate: 60 },
     });
     if (academicLevelsRes.ok) {
@@ -233,7 +233,7 @@ export default async function AnnouncementsManagerPage({ params }: PageProps) {
     }
 
     // Fetch all courses
-    const coursesRes = await fetch(`${apiBaserUrl}/courses?companyId=${encodeURIComponent(companyId)}`, {
+    const coursesRes = await fetch(`${apiBaseUrl}/courses?companyId=${encodeURIComponent(companyId)}`, {
       next: { revalidate: 60 },
     });
     if (coursesRes.ok) {
@@ -244,7 +244,7 @@ export default async function AnnouncementsManagerPage({ params }: PageProps) {
     }
 
     // Fetch all educators
-    const educatorsRes = await fetch(`${apiBaserUrl}/educators?companyId=${encodeURIComponent(companyId)}`, {
+    const educatorsRes = await fetch(`${apiBaseUrl}/educators?companyId=${encodeURIComponent(companyId)}`, {
       next: { revalidate: 60 },
     });
     if (educatorsRes.ok) {
@@ -256,7 +256,7 @@ export default async function AnnouncementsManagerPage({ params }: PageProps) {
     }
 
     // Fetch all students
-    const studentsRes = await fetch(`${apiBaserUrl}/students?companyId=${encodeURIComponent(companyId)}`, {
+    const studentsRes = await fetch(`${apiBaseUrl}/students?companyId=${encodeURIComponent(companyId)}`, {
       next: { revalidate: 60 },
     });
     if (studentsRes.ok) {
@@ -268,7 +268,7 @@ export default async function AnnouncementsManagerPage({ params }: PageProps) {
     }
 
     // Fetch all departments (assuming a /api/departments endpoint exists)
-    const departmentsRes = await fetch(`${apiBaserUrl}/departments?companyId=${encodeURIComponent(companyId)}`, {
+    const departmentsRes = await fetch(`${apiBaseUrl}/departments?companyId=${encodeURIComponent(companyId)}`, {
       next: { revalidate: 60 },
     });
     if (departmentsRes.ok) {
@@ -279,7 +279,7 @@ export default async function AnnouncementsManagerPage({ params }: PageProps) {
     }
 
     // Fetch all parents (assuming a /api/parents endpoint exists)
-    const parentsRes = await fetch(`${apiBaserUrl}/parents?companyId=${encodeURIComponent(companyId)}`, {
+    const parentsRes = await fetch(`${apiBaseUrl}/parents?companyId=${encodeURIComponent(companyId)}`, {
       next: { revalidate: 60 },
     });
     if (parentsRes.ok) {
@@ -293,7 +293,7 @@ export default async function AnnouncementsManagerPage({ params }: PageProps) {
     // Fetch all users who can be authors (e.g., Admins and Educators)
     // This might be a combined endpoint or separate calls depending on your User roles.
     // For simplicity, we'll fetch all users and assume some can be authors.
-    const authorsRes = await fetch(`${apiBaserUrl}/users?companyId=${encodeURIComponent(companyId)}`, { // Assuming /api/users endpoint
+    const authorsRes = await fetch(`${apiBaseUrl}/users?companyId=${encodeURIComponent(companyId)}`, { // Assuming /api/users endpoint
       next: { revalidate: 60 },
     });
     if (authorsRes.ok) {

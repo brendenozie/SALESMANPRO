@@ -29,7 +29,7 @@ import AddToProductMarketModal from "@/components/AddToProductMarketModal";
 
 import { IStoreCategory, ILocation, MarketListingForm } from '@/types/typings';
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;
 
 interface TravelExperiencesManagementPageProps {
   params:Promise<{ slug: string }>
@@ -58,7 +58,7 @@ export default function TravelExperiencesManagementPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaserUrl}/admin/get-store-categories?companyId=${companyId}`, { credentials: 'include' });
+      const res = await fetch(`${apiBaseUrl}/admin/get-store-categories?companyId=${companyId}`, { credentials: 'include' });
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.message || "Failed to fetch categories.");
@@ -118,7 +118,7 @@ export default function TravelExperiencesManagementPage() {
   // --- Data Fetching for Locations ---
   const fetchLocations = useCallback(async () => {
     try {
-      const response = await fetch(`${apiBaserUrl}/admin/locations`);
+      const response = await fetch(`${apiBaseUrl}/admin/locations`);
       if (!response.ok) {
         const errorData = (await response.json()).data;
         throw new Error(errorData.error || `HTTP error! Status: ${response.status}`);
@@ -139,7 +139,7 @@ export default function TravelExperiencesManagementPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${apiBaserUrl}/admin/my-market-place?companyId=${companyId}`, { credentials: 'include' });
+      const response = await fetch(`${apiBaseUrl}/admin/my-market-place?companyId=${companyId}`, { credentials: 'include' });
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || `HTTP error! Status: ${response.status}`);
@@ -179,7 +179,7 @@ export default function TravelExperiencesManagementPage() {
   const handleDeleteTravelExperiences = useCallback(async (travelExperiencesId: string) => {
     try {
       // Uncomment and use your actual API call for deletion
-      // const response = await fetch(`${apiBaserUrl}/admin/my-market-place/${travelExperiencesId}`, {
+      // const response = await fetch(`${apiBaseUrl}/admin/my-market-place/${travelExperiencesId}`, {
       //   method: 'DELETE',
       // });
       // if (!response.ok) {

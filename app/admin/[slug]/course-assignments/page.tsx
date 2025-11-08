@@ -4,7 +4,7 @@ import React from "react";
 import CourseAssignmentsClient, { CourseAssignmentType, CourseOption, AcademicLevelOption } from "./CourseAssignmentsClient";
 import { cookies } from "next/headers";
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface PageProps {
   params:Promise<{ slug: string }>
@@ -111,7 +111,7 @@ export default async function GlobalCourseAssignmentsManagementPage({ params }: 
   try {
     // Fetch all assignments for this company
     const assignmentsRes = await fetch(
-      `${apiBaserUrl}/course-assignments?companyId=${encodeURIComponent(companyId)}`,
+      `${apiBaseUrl}/course-assignments?companyId=${encodeURIComponent(companyId)}`,
       { 
         next: { revalidate: 60 },
         headers: { cookie: cookieHeader }
@@ -128,7 +128,7 @@ export default async function GlobalCourseAssignmentsManagementPage({ params }: 
 
     // Fetch all courses for this company (for filtering and linking)
     const coursesRes = await fetch(
-      `${apiBaserUrl}/courses?companyId=${encodeURIComponent(companyId)}`,
+      `${apiBaseUrl}/courses?companyId=${encodeURIComponent(companyId)}`,
       { 
         next: { revalidate: 60 },
         headers: { cookie: cookieHeader }
@@ -152,7 +152,7 @@ export default async function GlobalCourseAssignmentsManagementPage({ params }: 
 
     // Fetch all academic levels (for filtering)
     const academicLevelsRes = await fetch(
-      `${apiBaserUrl}/academic-levels?companyId=${encodeURIComponent(companyId)}`,
+      `${apiBaseUrl}/academic-levels?companyId=${encodeURIComponent(companyId)}`,
       { 
         next: { revalidate: 60 },
         headers: { cookie: cookieHeader }
@@ -187,7 +187,7 @@ export default async function GlobalCourseAssignmentsManagementPage({ params }: 
       allCourses={allCourses}
       allAcademicLevels={allAcademicLevels}
       companyId={companyId}
-      apiBaserUrl={apiBaserUrl}
+      apiBaseUrl={apiBaseUrl}
     />
   );
 }

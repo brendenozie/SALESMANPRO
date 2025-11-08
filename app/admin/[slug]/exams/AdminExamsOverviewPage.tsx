@@ -21,7 +21,7 @@ import {
 } from '@heroicons/react/24/outline';
 import Link from 'next/link'; // For linking to exam questions page
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // --- Type Definitions (Aligned with Exam API Response) ---
 export type ExamData = {
@@ -367,7 +367,7 @@ export default function AdminExamsOverviewPage({ initialExams, allCourses, allEd
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaserUrl}/admin/exams?companyId=${encodeURIComponent(companyId)}`, {
+      const res = await fetch(`${apiBaseUrl}/admin/exams?companyId=${encodeURIComponent(companyId)}`, {
         next: { revalidate: 60 },
       });
       if (res.ok) {
@@ -507,7 +507,7 @@ export default function AdminExamsOverviewPage({ initialExams, allCourses, allEd
 
     const isEdit = !!examData.id;
     const method = isEdit ? 'PATCH' : 'POST';
-    const url = isEdit ? `${apiBaserUrl}/admin/exams/${examData.id}` : `${apiBaserUrl}/admin/exams`;
+    const url = isEdit ? `${apiBaseUrl}/admin/exams/${examData.id}` : `${apiBaseUrl}/admin/exams`;
 
     try {
       const res = await fetch(url, {
@@ -539,7 +539,7 @@ export default function AdminExamsOverviewPage({ initialExams, allCourses, allEd
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaserUrl}/admin/exams/${examId}`, {
+      const res = await fetch(`${apiBaseUrl}/admin/exams/${examId}`, {
         method: 'DELETE',
       });
 
@@ -560,7 +560,7 @@ export default function AdminExamsOverviewPage({ initialExams, allCourses, allEd
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaserUrl}/admin/exams/${examId}`, {
+      const res = await fetch(`${apiBaseUrl}/admin/exams/${examId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isPublished: !currentStatus }),

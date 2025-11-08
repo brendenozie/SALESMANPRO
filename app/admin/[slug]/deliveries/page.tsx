@@ -27,7 +27,7 @@ import toast, { Toaster } from 'react-hot-toast';
 import { useParams } from 'next/navigation';
 
 // Using the provided environment variable
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;
 
 // --- Type Definitions (Refined for Clarity and Schema Alignment) ---
 type RiderInfo = {
@@ -659,15 +659,15 @@ export default function DeliveriesPage() {
 
       // Fetch deliveries, riders and orders in parallel
       const [deliveriesRes, ridersRes, ordersRes] = await Promise.all([
-        fetch(`${apiBaserUrl}/admin/deliveries?${deliveryParams}`, {
+        fetch(`${apiBaseUrl}/admin/deliveries?${deliveryParams}`, {
           method: 'GET',
           headers: { 'Content-Type': 'application/json', 'Credentials': 'include' }
         }),
-        fetch(`${apiBaserUrl}/admin/riders?${riderParams}`, {
+        fetch(`${apiBaseUrl}/admin/riders?${riderParams}`, {
           method: 'GET',
           headers: { 'Content-Type': 'application/json', 'Credentials': 'include' }
         }),
-        fetch(`${apiBaserUrl}/admin/orders?${ordersParams}`, {
+        fetch(`${apiBaseUrl}/admin/orders?${ordersParams}`, {
           method: 'GET',
           headers: { 'Content-Type': 'application/json', 'Credentials': 'include' }
         }),
@@ -739,7 +739,7 @@ export default function DeliveriesPage() {
     const toastId = toast.loading(isEdit ? 'Updating delivery...' : 'Creating delivery...');
 
     try {
-      const url = isEdit ? `${apiBaserUrl}/admin/deliveries/${editingDelivery.id}` : `${apiBaserUrl}/admin/deliveries`;
+      const url = isEdit ? `${apiBaseUrl}/admin/deliveries/${editingDelivery.id}` : `${apiBaseUrl}/admin/deliveries`;
       const method = isEdit ? 'PUT' : 'POST';
 
       const safeCompanyId = Array.isArray(companyId) ? companyId[0] : (companyId ?? '');
@@ -781,7 +781,7 @@ export default function DeliveriesPage() {
     const toastId = toast.loading(`Deleting delivery ${deliveryToDelete.trackingNumber}...`);
 
     try {
-      const response = await fetch(`${apiBaserUrl}/admin/deliveries/${deliveryToDelete.id}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json', 'Credentials': 'include' } });
+      const response = await fetch(`${apiBaseUrl}/admin/deliveries/${deliveryToDelete.id}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json', 'Credentials': 'include' } });
       if (!response.ok) {
         const errorData = (await response.json()).data;
         throw new Error(errorData?.message || 'Failed to delete.');

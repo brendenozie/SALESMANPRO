@@ -76,10 +76,10 @@ interface CoursesClientProps {
   allDepartments: DepartmentOption[];
   allAcademicLevels: AcademicLevelOption[];
   companyId: string;
-  apiBaserUrl: string;
+  apiBaseUrl: string;
 }
 
-export default function CoursesClient({ initialCourses, allEducators, allDepartments, allAcademicLevels, companyId, apiBaserUrl }: CoursesClientProps) {
+export default function CoursesClient({ initialCourses, allEducators, allDepartments, allAcademicLevels, companyId, apiBaseUrl }: CoursesClientProps) {
   const [courses, setCourses] = useState<CourseType[]>(initialCourses);
   const [educators, setEducators] = useState<EducatorOption[]>(allEducators);
   const [departments, setDepartments] = useState<DepartmentOption[]>(allDepartments);
@@ -103,10 +103,10 @@ export default function CoursesClient({ initialCourses, allEducators, allDepartm
     setIsLoading(true);
     setError(null);
     try {
-      const coursesRes = await fetch(`${apiBaserUrl}/admin/courses?companyId=${encodeURIComponent(companyId)}`);
-      const educatorsRes = await fetch(`${apiBaserUrl}/admin/educators?companyId=${encodeURIComponent(companyId)}`);
-      const departmentsRes = await fetch(`${apiBaserUrl}/admin/departments?companyId=${encodeURIComponent(companyId)}`);
-      const academicLevelsRes = await fetch(`${apiBaserUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`);
+      const coursesRes = await fetch(`${apiBaseUrl}/admin/courses?companyId=${encodeURIComponent(companyId)}`);
+      const educatorsRes = await fetch(`${apiBaseUrl}/admin/educators?companyId=${encodeURIComponent(companyId)}`);
+      const departmentsRes = await fetch(`${apiBaseUrl}/admin/departments?companyId=${encodeURIComponent(companyId)}`);
+      const academicLevelsRes = await fetch(`${apiBaseUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`);
 
       if (coursesRes.ok) {
         const data: CourseType[] = await coursesRes.json();
@@ -153,7 +153,7 @@ export default function CoursesClient({ initialCourses, allEducators, allDepartm
     } finally {
       setIsLoading(false);
     }
-  }, [apiBaserUrl, companyId, initialCourses, allEducators, allDepartments, allAcademicLevels]);
+  }, [apiBaseUrl, companyId, initialCourses, allEducators, allDepartments, allAcademicLevels]);
 
   useEffect(() => {
     // If initial data from server is empty, try fetching on client side
@@ -189,7 +189,7 @@ export default function CoursesClient({ initialCourses, allEducators, allDepartm
     const method = courseData.id ? 'PATCH' : 'POST';
 
     try {
-      const url = courseData.id ? `${apiBaserUrl}/admin/courses/${courseData.id}` : `${apiBaserUrl}/admin/courses`;
+      const url = courseData.id ? `${apiBaseUrl}/admin/courses/${courseData.id}` : `${apiBaseUrl}/admin/courses`;
 
       const payload = {
         ...courseData,
@@ -226,7 +226,7 @@ export default function CoursesClient({ initialCourses, allEducators, allDepartm
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaserUrl}/admin/courses/${courseId}`, {
+      const res = await fetch(`${apiBaseUrl}/admin/courses/${courseId}`, {
         method: 'DELETE',
       });
 

@@ -18,7 +18,7 @@ import {
   ExclamationTriangleIcon, // For pending status
 } from '@heroicons/react/24/outline';
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // --- Type Definitions (Aligned with Announcement API Response) ---
 export type AnnouncementData = {
@@ -482,7 +482,7 @@ export default function AdminAnnouncementsPage({
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaserUrl}/announcements?companyId=${encodeURIComponent(companyId)}`, {
+      const res = await fetch(`${apiBaseUrl}/announcements?companyId=${encodeURIComponent(companyId)}`, {
         next: { revalidate: 60 },
       });
       if (res.ok) {
@@ -550,7 +550,7 @@ export default function AdminAnnouncementsPage({
     setError(null);
 
     const method = announcementData.id ? 'PATCH' : 'POST';
-    const url = announcementData.id ? `${apiBaserUrl}/announcements/${announcementData.id}` : `${apiBaserUrl}/announcements`;
+    const url = announcementData.id ? `${apiBaseUrl}/announcements/${announcementData.id}` : `${apiBaseUrl}/announcements`;
 
     try {
       const res = await fetch(url, {
@@ -587,7 +587,7 @@ export default function AdminAnnouncementsPage({
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaserUrl}/announcements/${announcementId}`, {
+      const res = await fetch(`${apiBaseUrl}/announcements/${announcementId}`, {
         method: 'DELETE',
       });
 
@@ -608,7 +608,7 @@ export default function AdminAnnouncementsPage({
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaserUrl}/announcements/${announcementId}`, {
+      const res = await fetch(`${apiBaseUrl}/announcements/${announcementId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),

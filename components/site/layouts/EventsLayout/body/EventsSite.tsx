@@ -8,6 +8,7 @@ import { StoreForm } from "@/types/typings";
 // Above-the-fold components - statically imported
 import HeroComponent from "./components/HeroSection";
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000/api";
 // Loading skeleton
 const SectionSkeleton = () => <div className="h-96 w-full animate-pulse bg-gray-200 rounded-lg my-12" />;
 
@@ -42,9 +43,9 @@ const fetcher = (url: string) => fetch(url).then(res => res.json());
 //----------------------------------------------
 export default function EventsSite({ pageData, companyId }: { pageData: StoreForm, companyId: string }) {
   // Fetch client-side data
-  const { data: eventsData } = useSWR(`${apiBaserUrl}/site/events?id=${companyId}`, fetcher);
-  const { data: testimonialsData } = useSWR(`${apiBaserUrl}/site/testimonials?id=${companyId}`, fetcher);
-  const { data: faqsData } = useSWR(`${apiBaserUrl}/site/faqs?id=${companyId}`, fetcher);
+  const { data: eventsData } = useSWR(`${apiBaseUrl}/site/events?id=${companyId}`, fetcher);
+  const { data: testimonialsData } = useSWR(`${apiBaseUrl}/site/testimonials?id=${companyId}`, fetcher);
+  const { data: faqsData } = useSWR(`${apiBaseUrl}/site/faqs?id=${companyId}`, fetcher);
 
   return (
     <div className="font-sans">

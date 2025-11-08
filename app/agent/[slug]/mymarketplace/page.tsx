@@ -7,7 +7,7 @@ import ProductRequestModal from "@/components/ProductRequestModal";
 import AddToProductMarketModal from "@/components/AddToProductMarketModal";
 import UserNav from "@/components/UserNav";
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 type MarketplaceProduct = {
   _id: string;
@@ -44,7 +44,7 @@ const ClientInventoryPage = () => {
       const clientId = "63f7c9e2d91b1b2a5e80b007";
 
       try {
-        const response = await fetch(`${apiBaserUrl}/clients/my-market-place?sellerId=${clientId}`, {
+        const response = await fetch(`${apiBaseUrl}/clients/my-market-place?sellerId=${clientId}`, {
           cache: "no-store",
         });
         if (!response.ok) throw new Error("Failed to fetch marketplace products");

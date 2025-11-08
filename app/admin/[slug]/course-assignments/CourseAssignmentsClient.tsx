@@ -54,10 +54,10 @@ interface CourseAssignmentsClientProps {
   allCourses: CourseOption[];
   allAcademicLevels: AcademicLevelOption[];
   companyId: string;
-  apiBaserUrl: string;
+  apiBaseUrl: string;
 }
 
-export default function CourseAssignmentsClient({ initialAssignments, allCourses, allAcademicLevels, companyId, apiBaserUrl }: CourseAssignmentsClientProps) {
+export default function CourseAssignmentsClient({ initialAssignments, allCourses, allAcademicLevels, companyId, apiBaseUrl }: CourseAssignmentsClientProps) {
   // Convert ISO strings to Date objects for initial data
   const parsedInitialAssignments = useMemo(() => initialAssignments.map(assign => ({
     ...assign,
@@ -88,9 +88,9 @@ export default function CourseAssignmentsClient({ initialAssignments, allCourses
     setIsLoading(true);
     setError(null);
     try {
-      const assignmentsRes = await fetch(`${apiBaserUrl}/course-assignments?companyId=${encodeURIComponent(companyId)}`);
-      const coursesRes = await fetch(`${apiBaserUrl}/courses?companyId=${encodeURIComponent(companyId)}`);
-      const academicLevelsRes = await fetch(`${apiBaserUrl}/academic-levels?companyId=${encodeURIComponent(companyId)}`);
+      const assignmentsRes = await fetch(`${apiBaseUrl}/course-assignments?companyId=${encodeURIComponent(companyId)}`);
+      const coursesRes = await fetch(`${apiBaseUrl}/courses?companyId=${encodeURIComponent(companyId)}`);
+      const academicLevelsRes = await fetch(`${apiBaseUrl}/academic-levels?companyId=${encodeURIComponent(companyId)}`);
 
       if (assignmentsRes.ok) {
         const data: CourseAssignmentType[] = await assignmentsRes.json();
@@ -137,7 +137,7 @@ export default function CourseAssignmentsClient({ initialAssignments, allCourses
     } finally {
       setIsLoading(false);
     }
-  }, [apiBaserUrl, companyId, parsedInitialAssignments, allCourses, allAcademicLevels]);
+  }, [apiBaseUrl, companyId, parsedInitialAssignments, allCourses, allAcademicLevels]);
 
   useEffect(() => {
     // If initial data from server is empty, try fetching on client side
@@ -171,7 +171,7 @@ export default function CourseAssignmentsClient({ initialAssignments, allCourses
     const method = assignmentData.id ? 'PATCH' : 'POST';
     try {
 
-      const url = assignmentData.id ? `${apiBaserUrl}/course-assignments/${assignmentData.id}` : `${apiBaserUrl}/course-assignments`;
+      const url = assignmentData.id ? `${apiBaseUrl}/course-assignments/${assignmentData.id}` : `${apiBaseUrl}/course-assignments`;
 
       const payload = {
         ...assignmentData,
@@ -207,7 +207,7 @@ export default function CourseAssignmentsClient({ initialAssignments, allCourses
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaserUrl}/course-assignments/${assignmentId}`, {
+      const res = await fetch(`${apiBaseUrl}/course-assignments/${assignmentId}`, {
         method: 'DELETE',
       });
 

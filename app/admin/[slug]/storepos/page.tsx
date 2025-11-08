@@ -5,7 +5,7 @@ import { MarketListingForm, IStoreCategory } from "@/types/typings";
 import { cookies } from "next/headers";
 import { getAuthSession } from "@/lib/auth";
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface PageProps {
   params:Promise<{ slug: string }>
@@ -31,7 +31,7 @@ export default async function PosPage({ params }: PageProps) {
   try {
     // Fetch Store Categories
     // Correcting the API path to match your provided route: /api/store-categories
-    const categoriesRes = await fetch(`${apiBaserUrl}/admin/pos-categories?companyId=${companyId}`, {
+    const categoriesRes = await fetch(`${apiBaseUrl}/admin/pos-categories?companyId=${companyId}`, {
       next: { revalidate: 60 },
       headers: { cookie: cookieHeaders }, // Forward cookies for authentication
     });
@@ -49,7 +49,7 @@ export default async function PosPage({ params }: PageProps) {
   try {
     // Fetch Marketplace Listings (Products)
     // Correcting the API path to match your provided route: /api/marketplace-list
-    const productsRes = await fetch(`${apiBaserUrl}/admin/pos-marketplace-listings?companyId=${companyId}`, {
+    const productsRes = await fetch(`${apiBaseUrl}/admin/pos-marketplace-listings?companyId=${companyId}`, {
       next: { revalidate: 60 },
       headers: { cookie: cookieHeaders }, // Forward cookies for authentication
     });

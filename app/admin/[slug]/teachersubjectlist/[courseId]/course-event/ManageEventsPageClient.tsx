@@ -24,7 +24,7 @@ import { useRouter } from 'next/navigation';
 // Import types from the server component file
 import type { EventData, CourseInfo } from './page';
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // Mocking context data for demonstration purposes (replace with actual context in your app)
 const useMockThemeSettings = () => ({
@@ -205,7 +205,7 @@ export default function ManageEventsPageClient({
     };
 
     try {
-      const res = await fetch(`${apiBaserUrl}/teacher/events`, {
+      const res = await fetch(`${apiBaseUrl}/teacher/events`, {
         method: 'POST', // Use POST for upsert
         headers: {
           'Content-Type': 'application/json',
@@ -255,7 +255,7 @@ export default function ManageEventsPageClient({
     setStatusMessage(null);
 
     try {
-      const res = await fetch(`${apiBaserUrl}/teacher/events/${eventToDelete.id}?educatorId=${encodeURIComponent(educatorId)}&companyId=${encodeURIComponent(companyId)}`, {
+      const res = await fetch(`${apiBaseUrl}/teacher/events/${eventToDelete.id}?educatorId=${encodeURIComponent(educatorId)}&companyId=${encodeURIComponent(companyId)}`, {
         method: 'DELETE',
       });
 

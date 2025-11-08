@@ -3,7 +3,7 @@ import React from "react";
 // import { Props } from "react-apexcharts";
 import AdminReportsPageClient,{ OverallStats, StudentPerformanceData, StaffReportsData, AcademicReportsData, UpcomingEventsSummaryItem }  from "./AdminReportsPageClient";
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface PageProps {
   params:Promise<{ slug: string }>
@@ -108,7 +108,7 @@ export default async function AdminReportsPage({ params }: PageProps) {
 
   try {
     const reportsRes = await fetch(
-      `${apiBaserUrl}/school-reports?companyId=${encodeURIComponent(companyId)}`,
+      `${apiBaseUrl}/school-reports?companyId=${encodeURIComponent(companyId)}`,
       { next: { revalidate: 60 } } // equivalent to SSR on every request
     );
 

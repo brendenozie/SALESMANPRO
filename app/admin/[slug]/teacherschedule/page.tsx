@@ -2,7 +2,7 @@
 import React from "react";
 import TeachersSchedulePageClient from "./TeachersSchedulePageClient";
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // IMPORTANT: In a real application, the currentEducatorId would come from an authentication context (e.g., NextAuth.js session).
 // For this example, we'll use a hardcoded mock ID.
@@ -58,7 +58,7 @@ export default async function TeachersScheduleServerPage({ params }: PageProps) 
 
   try {
     const res = await fetch(
-      `${apiBaserUrl}/teacher/schedule?educatorId=${encodeURIComponent(educatorId)}`,
+      `${apiBaseUrl}/teacher/schedule?educatorId=${encodeURIComponent(educatorId)}`,
       { next: { revalidate: 60 } } // Ensure fresh data
     );
 

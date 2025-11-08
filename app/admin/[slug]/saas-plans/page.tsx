@@ -1,7 +1,7 @@
 import { PlansClient } from "./PlansClient"; // Adjust this path as necessary
 
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // =================================================================================================
 // TYPE DEFINITIONS
@@ -68,7 +68,7 @@ export default async function DashboardPage({params }: PlansClientProps) {
 
   try {
     // Fetch Plans from the API
-    const plansRes = await fetch(`${apiBaserUrl}/admin/plan?companyId=${companyId}`, {
+    const plansRes = await fetch(`${apiBaseUrl}/admin/plan?companyId=${companyId}`, {
       cache: 'no-store', // Always fetch fresh data
     });
     const plansData = await plansRes.json();
@@ -76,7 +76,7 @@ export default async function DashboardPage({params }: PlansClientProps) {
 
     // Fetch Subscriptions from the API for the first page
     const subscriptionsRes = await fetch(
-      `${apiBaserUrl}/admin/subscriptions?companyId=${companyId}&page=${initialCurrentSubscriptionPage}&perPage=${subscriptionsPerPage}`,
+      `${apiBaseUrl}/admin/subscriptions?companyId=${companyId}&page=${initialCurrentSubscriptionPage}&perPage=${subscriptionsPerPage}`,
       { cache: 'no-store' }
     );
     const subscriptionsData = await subscriptionsRes.json();

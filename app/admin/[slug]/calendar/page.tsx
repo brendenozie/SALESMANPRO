@@ -3,7 +3,7 @@ import React from "react";
 import AdminAppointmentsClient, { AppointmentItem, OrderItem } from "./AdminAppointementsClient"; // Updated import to include OrderItem type
 import { cookies } from "next/headers";
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // export interface OrderItem {
 //   id: string;
@@ -166,7 +166,7 @@ export default async function AppointmentsPage({ params }: Props) {
   // based on the companyId from your API.
   try {
     const res = await fetch(
-      `${apiBaserUrl}/admin/orders?companyId=${encodeURIComponent(companyId)}`,
+      `${apiBaseUrl}/admin/orders?companyId=${encodeURIComponent(companyId)}`,
       { next: { revalidate: 60 },
         headers: {
           "Content-Type": "application/json",

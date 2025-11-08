@@ -66,7 +66,7 @@ interface PageProps {
   }>;
 }
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 export default async function ClassReportsPage({ params }: PageProps) {
 
@@ -97,7 +97,7 @@ export default async function ClassReportsPage({ params }: PageProps) {
       // Fetch Academic Level Info (assuming you have an API for this, e.g., /api/academic-levels/[id])
       // If not, you might need to add one or pass it as a prop from a parent page.
       // For now, let's mock it or assume it's fetched.
-      const academicLevelRes = await fetch(`${apiBaserUrl}/teacher/academic-levels?teacherId=${educatorId}`);
+      const academicLevelRes = await fetch(`${apiBaseUrl}/teacher/academic-levels?teacherId=${educatorId}`);
       if (academicLevelRes.ok) {
         setAcademicLevelInfo(await academicLevelRes.json());
       } else {
@@ -106,7 +106,7 @@ export default async function ClassReportsPage({ params }: PageProps) {
       }
 
       // Fetch Grades
-      const gradesUrl = new URL(`${apiBaserUrl}/teacher/academic-levels/${academicLevelId}/grades`);
+      const gradesUrl = new URL(`${apiBaseUrl}/teacher/academic-levels/${academicLevelId}/grades`);
       gradesUrl.searchParams.append('teacherId', educatorId);
       if (selectedCourse !== 'all') gradesUrl.searchParams.append('courseId', selectedCourse);
       if (selectedStudent !== 'all') gradesUrl.searchParams.append('studentId', selectedStudent);
@@ -117,17 +117,17 @@ export default async function ClassReportsPage({ params }: PageProps) {
       setGrades(await gradesRes.json());
 
       // Fetch Students for this academic level
-      const studentsRes = await fetch(`${apiBaserUrl}/teacher/academic-levels/${academicLevelId}/students?teacherId=${educatorId}`);
+      const studentsRes = await fetch(`${apiBaseUrl}/teacher/academic-levels/${academicLevelId}/students?teacherId=${educatorId}`);
       if (!studentsRes.ok) throw new Error(`Failed to fetch students: ${studentsRes.statusText}`);
       setStudents(await studentsRes.json());
 
       // Fetch Courses for this academic level
-      const coursesRes = await fetch(`${apiBaserUrl}/teacher/academic-levels/${academicLevelId}/courses?teacherId=${educatorId}`);
+      const coursesRes = await fetch(`${apiBaseUrl}/teacher/academic-levels/${academicLevelId}/courses?teacherId=${educatorId}`);
       if (!coursesRes.ok) throw new Error(`Failed to fetch courses: ${coursesRes.statusText}`);
       setCourses(await coursesRes.json());
 
       // Fetch Exams for this academic level
-      const examsRes = await fetch(`${apiBaserUrl}/teacher/academic-levels/${academicLevelId}/exams?teacherId=${educatorId}`);
+      const examsRes = await fetch(`${apiBaseUrl}/teacher/academic-levels/${academicLevelId}/exams?teacherId=${educatorId}`);
       if (!examsRes.ok) throw new Error(`Failed to fetch exams: ${examsRes.statusText}`);
       setExams(await examsRes.json());
 

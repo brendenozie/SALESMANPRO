@@ -4,7 +4,7 @@ import React from "react";
 import { cookies } from "next/headers";
 import PaymentsClient from "./PaymentsClient";
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 export type Client = {
   id: string;
@@ -30,7 +30,7 @@ export default async function ClientsPage(_: PageProps) {
   const cookieHeader = (await cookies()).toString();
 
   // try {
-  //   const res = await fetch(`${apiBaserUrl}/admin/clients`, { next: { revalidate: 60 }, headers: { cookie: cookieHeader } });
+  //   const res = await fetch(`${apiBaseUrl}/admin/clients`, { next: { revalidate: 60 }, headers: { cookie: cookieHeader } });
   //   if (res.ok) {
   //     clientsData = (await res.json()).data as Client[];
   //   } else {

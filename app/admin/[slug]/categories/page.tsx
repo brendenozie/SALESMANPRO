@@ -4,7 +4,7 @@ import { IStoreCategory } from '@/types/typings';
 import { cookies } from "next/headers";
 
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;
 
 interface PageProps {
   params:Promise<{ slug: string }>
@@ -22,7 +22,7 @@ export default async function CategoryManagerPage({ params }: PageProps) {
     const cookieHeader = (await cookies()).toString();
 
     const res = await fetch(
-      `${apiBaserUrl}/admin/get-store-categories?companyId=${companyId}`,
+      `${apiBaseUrl}/admin/get-store-categories?companyId=${companyId}`,
       { cache: 'no-store', headers: { Cookie: cookieHeader } },
     );
 
@@ -98,5 +98,5 @@ export default async function CategoryManagerPage({ params }: PageProps) {
     console.error('Error fetching store categories', e.message);
   }
 
-  return <CategoryManagerClient initialCategories={storeCategories} apiBaserUrl={apiBaserUrl} companyId={companyId} />;
+  return <CategoryManagerClient initialCategories={storeCategories} apiBaseUrl={apiBaseUrl} companyId={companyId} />;
 }

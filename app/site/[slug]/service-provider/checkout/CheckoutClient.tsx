@@ -22,6 +22,7 @@ interface CheckoutClientProps {
   };
 }
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000/api";
 const steps = ["Billing", "Payment", "Review"];
 
 export default function CheckoutClient({ searchParams }: CheckoutClientProps) {
@@ -83,7 +84,7 @@ export default function CheckoutClient({ searchParams }: CheckoutClientProps) {
     if (!validate()) return;
     setLoading(true);
     try {
-      const res = await fetch(`${apiBaserUrl}/shop/orders", {
+      const res = await fetch(`${apiBaseUrl}/shop/orders`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

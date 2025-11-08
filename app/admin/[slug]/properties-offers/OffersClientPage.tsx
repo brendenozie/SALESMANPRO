@@ -86,7 +86,7 @@ export default function OffersClientPage({
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [offerToView, setOfferToView] = useState<OfferContract | null>(null);
 
-  const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;
+  const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;
 
   // --- Data Fetching/Refetching (Client-side) ---
   const fetchOffers = useCallback(async (showToast = false) => {
@@ -94,7 +94,7 @@ export default function OffersClientPage({
     setError(null);
     const toastId = showToast ? toast.loading("Refreshing offers...") : undefined;
     try {
-      const res = await fetch(`${apiBaserUrl}/admin/offers?companyId=${encodeURIComponent(adminSlug)}`, { cache: 'no-store' });
+      const res = await fetch(`${apiBaseUrl}/admin/offers?companyId=${encodeURIComponent(adminSlug)}`, { cache: 'no-store' });
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.message || 'Failed to fetch offers.');
@@ -109,7 +109,7 @@ export default function OffersClientPage({
     } finally {
       setIsLoading(false);
     }
-  }, [adminSlug, apiBaserUrl]); 
+  }, [adminSlug, apiBaseUrl]); 
 
 
   // --- CRUD Handlers ---
@@ -143,7 +143,7 @@ export default function OffersClientPage({
     const deleteToastId = toast.loading(`Deleting offer for ${offerToDelete.propertyName}...`);
 
     try {
-      const res = await fetch(`${apiBaserUrl}/admin/offers/${encodeURIComponent(offerToDelete.id)}`, {
+      const res = await fetch(`${apiBaseUrl}/admin/offers/${encodeURIComponent(offerToDelete.id)}`, {
         method: 'DELETE',
       });
       if (!res.ok) {
@@ -169,13 +169,13 @@ export default function OffersClientPage({
     try {
       let res;
       if (offerToEdit) {
-        res = await fetch(`${apiBaserUrl}/admin/offers/${encodeURIComponent(offerToEdit.id)}`, {
+        res = await fetch(`${apiBaseUrl}/admin/offers/${encodeURIComponent(offerToEdit.id)}`, {
           method: 'PATCH', 
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(formData),
         });
       } else {
-        res = await fetch(`${apiBaserUrl}/admin/offers`, {
+        res = await fetch(`${apiBaseUrl}/admin/offers`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ ...formData, companyId: adminSlug }), 
@@ -209,7 +209,7 @@ export default function OffersClientPage({
         payload.closureDate = new Date().toISOString(); 
       }
       
-      const res = await fetch(`${apiBaserUrl}/admin/offers/${encodeURIComponent(offerId)}`, {
+      const res = await fetch(`${apiBaseUrl}/admin/offers/${encodeURIComponent(offerId)}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),

@@ -84,9 +84,9 @@ interface PaginatedListings {
 // --- API Configuration ---
 // In a real Next.js app, process.env.NEXT_PUBLIC_API_URL would be available.
 // For a self-contained Canvas example, we'll use a placeholder URL.
-// const apiBaserUrl = "[https://your-api-url.com/api](https://your-api-url.com/api)"; // Replace with your actual API URL
+// const apiBaseUrl = "[https://your-api-url.com/api](https://your-api-url.com/api)"; // Replace with your actual API URL
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // --- Image loader (for Next.js Image component) ---
 const loader = ({
@@ -111,8 +111,8 @@ const useMenuData = (companyId: string) => {
     setError(null);
     try {
       // Simulate API calls
-      const categoriesRes = await fetch(`${apiBaserUrl}/admin/my-market-place?companyId=${companyId}`, { next: { revalidate: 60 } });
-      const productsRes = await fetch(`${apiBaserUrl}/admin/get-store-categories?companyId=${companyId}`, { next: { revalidate: 60 } });
+      const categoriesRes = await fetch(`${apiBaseUrl}/admin/my-market-place?companyId=${companyId}`, { next: { revalidate: 60 } });
+      const productsRes = await fetch(`${apiBaseUrl}/admin/get-store-categories?companyId=${companyId}`, { next: { revalidate: 60 } });
 
       if (categoriesRes.ok && productsRes.ok) {
         
@@ -160,7 +160,7 @@ const menuApiService = {
     toast.loading('Adding dish...');
     try {
       // Simulate API call
-      const res = await fetch(`${apiBaserUrl}/products`, {
+      const res = await fetch(`${apiBaseUrl}/products`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newProduct),
@@ -182,7 +182,7 @@ const menuApiService = {
     toast.loading('Adding category...');
     try {
       // Simulate API call
-      const res = await fetch(`${apiBaserUrl}/product-categories`, {
+      const res = await fetch(`${apiBaseUrl}/product-categories`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newCategory),
@@ -204,7 +204,7 @@ const menuApiService = {
     toast.loading('Updating dish...');
     try {
       // Simulate API call
-      const res = await fetch(`${apiBaserUrl}/products/${productId}`, {
+      const res = await fetch(`${apiBaseUrl}/products/${productId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updates),
@@ -226,7 +226,7 @@ const menuApiService = {
     toast.loading('Deleting dish...');
     try {
       // Simulate API call
-      const res = await fetch(`${apiBaserUrl}/products/${productId}`, {
+      const res = await fetch(`${apiBaseUrl}/products/${productId}`, {
         method: 'DELETE',
       });
       if (!res.ok) {
@@ -245,7 +245,7 @@ const menuApiService = {
     toast.loading('Updating category...');
     try {
       // Simulate API call
-      const res = await fetch(`${apiBaserUrl}/product-categories/${categoryId}`, {
+      const res = await fetch(`${apiBaseUrl}/product-categories/${categoryId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updates),
@@ -267,7 +267,7 @@ const menuApiService = {
     toast.loading('Deleting category...');
     try {
       // Simulate API call
-      const res = await fetch(`${apiBaserUrl}/product-categories/${categoryId}`, {
+      const res = await fetch(`${apiBaseUrl}/product-categories/${categoryId}`, {
         method: 'DELETE',
       });
       if (!res.ok) {

@@ -2,7 +2,7 @@
 import React from "react";
 import StudentClassesPageClient from "./StudentClassesPageClient";
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // IMPORTANT: In a real application, the currentStudentId would come from an authentication context (e.g., NextAuth.js session).
 // For this example, we'll use a hardcoded mock ID.
@@ -43,7 +43,7 @@ export default async function StudentClassesServerPage({ params }: PageProps) {
 
   try {
     const res = await fetch(
-      `${apiBaserUrl}/student/classes?studentId=${encodeURIComponent(studentId)}`,
+      `${apiBaseUrl}/student/classes?studentId=${encodeURIComponent(studentId)}`,
       { next: { revalidate: 60 } } // Ensure fresh data
     );
 

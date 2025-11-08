@@ -42,7 +42,7 @@ interface ConsolidatedGradesPageClientProps {
   companyId: string;
 }
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 export default function ConsolidatedGradesPageClient({
   course,
@@ -181,9 +181,9 @@ export default function ConsolidatedGradesPageClient({
       // but the POST request here goes to /api/teacher/grades.
       // Assuming /api/teacher/grades is an existing or intended endpoint for grade saving,
       // or this POST should be directed to the same API route that has POST method:
-      // `${apiBaserUrl}/teacher/courses/${course.id}/grades-data`
+      // `${apiBaseUrl}/teacher/courses/${course.id}/grades-data`
       // For now, keeping the current path as per the original code.
-      const res = await fetch(`${apiBaserUrl}/teacher/grades`, { // Verify this endpoint is correct for POST
+      const res = await fetch(`${apiBaseUrl}/teacher/grades`, { // Verify this endpoint is correct for POST
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

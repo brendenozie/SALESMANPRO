@@ -18,7 +18,7 @@ import LessonFormModal from './LessonFormModal';
 import { TimetableGrid } from './TimetableGrid';
 import TimetableHeader from './Header';
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;
 
 // --- Type Definitions (Aligned with ClassSchedule API) ---
 export type TimetableEntry = {
@@ -230,7 +230,7 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
     setError(null);
     try {
       // Pass companyId to the API
-      const res = await fetch(`${apiBaserUrl}/admin/class-schedules?companyId=${encodeURIComponent(companyId)}`);
+      const res = await fetch(`${apiBaseUrl}/admin/class-schedules?companyId=${encodeURIComponent(companyId)}`);
       if (res.ok) {
         const data: TimetableEntry[] = await res.json();
         setTimetable(data); // Data from API should already be flattened and include course/educator details
@@ -249,7 +249,7 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
     } finally {
       setIsLoading(false);
     }
-  }, [apiBaserUrl, companyId]);
+  }, [apiBaseUrl, companyId]);
 
   useEffect(() => {
     // Initial fetch if no data provided from server or if sample data is needed
@@ -311,7 +311,7 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
         setIsLoading(true);
         setError(null);
         try {
-          const res = await fetch(`${apiBaserUrl}/admin/class-schedules/${draggedLesson.id}`, { // Corrected API path
+          const res = await fetch(`${apiBaseUrl}/admin/class-schedules/${draggedLesson.id}`, { // Corrected API path
             method: 'PATCH', // Use PATCH for updates
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -350,7 +350,7 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
     const method = lessonData.id ? 'PATCH' : 'POST'; // Use PATCH for existing, POST for new
 
     try {
-      const url = lessonData.id ? `${apiBaserUrl}/admin/class-schedules/${lessonData.id}` : `${apiBaserUrl}/admin/class-schedules`; // Corrected API path
+      const url = lessonData.id ? `${apiBaseUrl}/admin/class-schedules/${lessonData.id}` : `${apiBaseUrl}/admin/class-schedules`; // Corrected API path
 
       // Ensure times are sent as HH:MM strings to the API
       const apiStartTime = formatTimeToHHMM(lessonData.startTime);
@@ -391,7 +391,7 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaserUrl}/admin/class-schedules/${entryId}`, { // Corrected API path
+      const res = await fetch(`${apiBaseUrl}/admin/class-schedules/${entryId}`, { // Corrected API path
         method: 'DELETE',
       });
 

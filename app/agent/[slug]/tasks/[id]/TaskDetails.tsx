@@ -30,7 +30,7 @@ const TaskDetails = ({ task }: Props) => {
     const newStatus = e.target.value as Task["status"];
     setSelectedStatus(newStatus);
 
-    await fetch(`${apiBaserUrl}/tasks/${task.id}`, {
+    await fetch(`${apiBaseUrl}/tasks/${task.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: newStatus }),
@@ -41,7 +41,7 @@ const TaskDetails = ({ task }: Props) => {
 
   const handleDelete = async () => {
     if (confirm("Are you sure you want to delete this task?")) {
-      await fetch(`${apiBaserUrl}/tasks/${task.id}`, { method: "DELETE" });
+      await fetch(`${apiBaseUrl}/tasks/${task.id}`, { method: "DELETE" });
       router.push("/dashboard");
     }
   };

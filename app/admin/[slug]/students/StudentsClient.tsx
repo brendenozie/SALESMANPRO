@@ -82,10 +82,10 @@ interface StudentsClientProps {
   allAcademicLevels: AcademicLevelOption[];
   allStudentLevelStatusOptions: StudentLevelStatusOption[]; // NEW PROP
   companyId: string;
-  apiBaserUrl: string;
+  apiBaseUrl: string;
 }
 
-export default function StudentsClient({ initialStudents, allParents, allAcademicLevels, allStudentLevelStatusOptions, companyId, apiBaserUrl }: StudentsClientProps) {
+export default function StudentsClient({ initialStudents, allParents, allAcademicLevels, allStudentLevelStatusOptions, companyId, apiBaseUrl }: StudentsClientProps) {
   const [students, setStudents] = useState<StudentType[]>(initialStudents);
   const [parents, setParents] = useState<ParentOption[]>(allParents);
   const [academicLevels, setAcademicLevels] = useState<AcademicLevelOption[]>(allAcademicLevels);
@@ -108,9 +108,9 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
     setIsLoading(true);
     setError(null);
     try {
-      const studentsRes = await fetch(`${apiBaserUrl}/admin/students?companyId=${encodeURIComponent(companyId)}`);
-      const parentsRes = await fetch(`${apiBaserUrl}/admin/parents?companyId=${encodeURIComponent(companyId)}`);
-      const academicLevelsRes = await fetch(`${apiBaserUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`);
+      const studentsRes = await fetch(`${apiBaseUrl}/admin/students?companyId=${encodeURIComponent(companyId)}`);
+      const parentsRes = await fetch(`${apiBaseUrl}/admin/parents?companyId=${encodeURIComponent(companyId)}`);
+      const academicLevelsRes = await fetch(`${apiBaseUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`);
 
       if (studentsRes.ok) {
         const studentsData: StudentType[] = await studentsRes.json();
@@ -151,7 +151,7 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
     } finally {
       setIsLoading(false);
     }
-  }, [apiBaserUrl, companyId, initialStudents, allParents, allAcademicLevels]);
+  }, [apiBaseUrl, companyId, initialStudents, allParents, allAcademicLevels]);
 
   useEffect(() => {
     // If initial data from server is empty, try fetching on client side
@@ -213,7 +213,7 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
     const method = studentData.id ? 'PATCH' : 'POST';
 
     try {
-      const url = studentData.id ? `${apiBaserUrl}/admin/students/${studentData.id}` : `${apiBaserUrl}/admin/students`;
+      const url = studentData.id ? `${apiBaseUrl}/admin/students/${studentData.id}` : `${apiBaseUrl}/admin/students`;
 
       const payload = {
         ...studentData,
@@ -252,7 +252,7 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaserUrl}/admin/students/${studentId}`, {
+      const res = await fetch(`${apiBaseUrl}/admin/students/${studentId}`, {
         method: 'DELETE',
       });
 

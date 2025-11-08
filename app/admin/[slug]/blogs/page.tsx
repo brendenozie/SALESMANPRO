@@ -4,7 +4,7 @@ import React from "react";
 import BlogsClient from "./BlogsClient";
 import { cookies } from "next/headers";
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 export type BlogItem = {
   id: string;
@@ -55,7 +55,7 @@ export default async function BlogsPage({ params }: PageProps) {
 
   try {
     const res = await fetch(
-      `${apiBaserUrl}/admin/get-all-blogs?companyId=${encodeURIComponent(companyId)}&limit=${limit}&page=${page}`,
+      `${apiBaseUrl}/admin/get-all-blogs?companyId=${encodeURIComponent(companyId)}&limit=${limit}&page=${page}`,
       { next: { revalidate: 60 }, headers: { cookie: cookieHeader } }
     );
 
@@ -84,7 +84,7 @@ export default async function BlogsPage({ params }: PageProps) {
 
     // Fetch all categories for this company
     const categoriesRes = await fetch(
-      `${apiBaserUrl}/admin/get-store-categories?companyId=${encodeURIComponent(
+      `${apiBaseUrl}/admin/get-store-categories?companyId=${encodeURIComponent(
         companyId
       )}`,
       { next: { revalidate: 60 }, headers: { cookie: cookieHeader } }

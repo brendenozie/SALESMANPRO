@@ -66,10 +66,10 @@ interface MaterialsGlobalClientProps {
   allEducators: EducatorOption[];
   allAcademicLevels: AcademicLevelOption[];
   companyId: string;
-  apiBaserUrl: string;
+  apiBaseUrl: string;
 }
 
-export default function MaterialsGlobalClient({ initialMaterials, allCourses, allEducators, allAcademicLevels, companyId, apiBaserUrl }: MaterialsGlobalClientProps) {
+export default function MaterialsGlobalClient({ initialMaterials, allCourses, allEducators, allAcademicLevels, companyId, apiBaseUrl }: MaterialsGlobalClientProps) {
   const [materials, setMaterials] = useState<CourseMaterialType[]>(initialMaterials);
   const [courses, setCourses] = useState<CourseOption[]>(allCourses);
   const [educators, setEducators] = useState<EducatorOption[]>(allEducators);
@@ -104,10 +104,10 @@ export default function MaterialsGlobalClient({ initialMaterials, allCourses, al
     setIsLoading(true);
     setError(null);
     try {
-      const materialsRes = await fetch(`${apiBaserUrl}/course-materials?companyId=${encodeURIComponent(companyId)}`);
-      const coursesRes = await fetch(`${apiBaserUrl}/courses?companyId=${encodeURIComponent(companyId)}`);
-      const educatorsRes = await fetch(`${apiBaserUrl}/educators?companyId=${encodeURIComponent(companyId)}`);
-      const academicLevelsRes = await fetch(`${apiBaserUrl}/academic-levels?companyId=${encodeURIComponent(companyId)}`);
+      const materialsRes = await fetch(`${apiBaseUrl}/course-materials?companyId=${encodeURIComponent(companyId)}`);
+      const coursesRes = await fetch(`${apiBaseUrl}/courses?companyId=${encodeURIComponent(companyId)}`);
+      const educatorsRes = await fetch(`${apiBaseUrl}/educators?companyId=${encodeURIComponent(companyId)}`);
+      const academicLevelsRes = await fetch(`${apiBaseUrl}/academic-levels?companyId=${encodeURIComponent(companyId)}`);
 
       if (materialsRes.ok) {
         const data: CourseMaterialType[] = await materialsRes.json();
@@ -159,7 +159,7 @@ export default function MaterialsGlobalClient({ initialMaterials, allCourses, al
     } finally {
       setIsLoading(false);
     }
-  }, [apiBaserUrl, companyId, initialMaterials, allCourses, allEducators, allAcademicLevels]);
+  }, [apiBaseUrl, companyId, initialMaterials, allCourses, allEducators, allAcademicLevels]);
 
   useEffect(() => {
     // If initial data from server is empty, try fetching on client side
@@ -195,7 +195,7 @@ export default function MaterialsGlobalClient({ initialMaterials, allCourses, al
     
     try {
 
-      const url = materialData.id ? `${apiBaserUrl}/course-materials/${materialData.id}` : `${apiBaserUrl}/course-materials`;
+      const url = materialData.id ? `${apiBaseUrl}/course-materials/${materialData.id}` : `${apiBaseUrl}/course-materials`;
 
       const payload = {
         ...materialData,
@@ -230,7 +230,7 @@ export default function MaterialsGlobalClient({ initialMaterials, allCourses, al
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaserUrl}/course-materials/${materialId}`, {
+      const res = await fetch(`${apiBaseUrl}/course-materials/${materialId}`, {
         method: 'DELETE',
       });
 

@@ -39,7 +39,7 @@ interface StudentAssignmentsPageClientProps {
   courseInfo?: CourseInfo; // Optional: if filtering by a specific course
 }
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 export default function StudentAssignmentsPageClient({
   studentName,
@@ -166,7 +166,7 @@ export default function StudentAssignmentsPageClient({
     }
 
     try {
-      const res = await fetch(`${apiBaserUrl}/student/submit-assignment`, {
+      const res = await fetch(`${apiBaseUrl}/student/submit-assignment`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

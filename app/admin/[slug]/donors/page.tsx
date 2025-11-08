@@ -3,7 +3,7 @@ import React from "react";
 import DonorManagementPage from "./DonorManagementPage";
 import { cookies } from "next/headers";
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 type UserOption = { id: string; name: string; email: string };
 type ProjectOption = { id: string; name: string };
@@ -58,7 +58,7 @@ export default async function DonationsPage({ params }: PageProps) {
 
   try {
     // Adjust the API endpoint if your donations API supports companyId filtering
-    const res = await fetch(`${apiBaserUrl}/admin/donations?companyId=${companyId}`, { next: { revalidate: 60 }, headers: { cookie: cookieHeader } });
+    const res = await fetch(`${apiBaseUrl}/admin/donations?companyId=${companyId}`, { next: { revalidate: 60 }, headers: { cookie: cookieHeader } });
     if (res.ok) {
       let data = await res.json();
       console.log("Fetched donations data:", data);
@@ -82,7 +82,7 @@ export default async function DonationsPage({ params }: PageProps) {
   
   try {
     // Adjust the API endpoint if your donors API supports companyId filtering
-    const res = await fetch(`${apiBaserUrl}/admin/donors?companyId=${companyId}`, { next: { revalidate: 60 }, headers: { cookie: cookieHeader } });
+    const res = await fetch(`${apiBaseUrl}/admin/donors?companyId=${companyId}`, { next: { revalidate: 60 }, headers: { cookie: cookieHeader } });
     if (res.ok) {
       let data = await res.json();
       console.log("Fetched donors data:", data);
@@ -106,7 +106,7 @@ export default async function DonationsPage({ params }: PageProps) {
   
   try {
     // Adjust the API endpoint if your projects API supports companyId filtering
-    const res = await fetch(`${apiBaserUrl}/admin/projects?companyId=${companyId}`, { next: { revalidate: 60 }, headers: { cookie: cookieHeader } });
+    const res = await fetch(`${apiBaseUrl}/admin/projects?companyId=${companyId}`, { next: { revalidate: 60 }, headers: { cookie: cookieHeader } });
     if (res.ok) {
       let data = await res.json();
       console.log("Fetched projects data:", data);
@@ -128,7 +128,7 @@ export default async function DonationsPage({ params }: PageProps) {
   
   try {
     // Adjust the API endpoint if your campaigns API supports companyId filtering
-    const res = await fetch(`${apiBaserUrl}/admin/campaigns?companyId=${companyId}`, { next: { revalidate: 60 }, headers: { cookie: cookieHeader } });
+    const res = await fetch(`${apiBaseUrl}/admin/campaigns?companyId=${companyId}`, { next: { revalidate: 60 }, headers: { cookie: cookieHeader } });
     if (res.ok) {
       let data = await res.json();
       console.log("Fetched campaigns data:", data);

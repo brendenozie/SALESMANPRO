@@ -21,13 +21,14 @@ const RestaurantFAQs = dynamic(() => import('../components/RestaurantFAQs'), { l
 // Generic fetcher
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000/api";
 //----------------------------------------------
 // RestaurantSite component with hybrid rendering
 //----------------------------------------------
 export default function RestaurentSite({ pageData, companyId }: { pageData: StoreForm, companyId: string }) {
   // Fetch client-side data
-  const { data: testimonialsData } = useSWR(`${apiBaserUrl}/site/testimonials?id=${companyId}`, fetcher);
-  const { data: faqsData } = useSWR(`${apiBaserUrl}/site/faqs?id=${companyId}`, fetcher);
+  const { data: testimonialsData } = useSWR(`${apiBaseUrl}/site/testimonials?id=${companyId}`, fetcher);
+  const { data: faqsData } = useSWR(`${apiBaseUrl}/site/faqs?id=${companyId}`, fetcher);
 
   return (
       <div className="relative bg-cream min-h-screen text-gray-900">

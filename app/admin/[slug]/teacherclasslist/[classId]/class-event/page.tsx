@@ -3,7 +3,7 @@ import React from "react";
 import AddClassEventPage, { AcademicLevelOption, CourseOption, EducatorOption, StudentOption, DepartmentOption, ParentOption, OrganizerOption, EventData } from "./AddClassEventPage";
 
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface PageProps {
   params: Promise<{
@@ -231,7 +231,7 @@ export default async function EventsManagerPage({ params }: PageProps) {
 
   try {
     // Fetch events relevant to this academic level
-    const eventsRes = await fetch(`${apiBaserUrl}/teacher/class-events?academicLevelId=${encodeURIComponent(academicLevelId)}&teacherId=${encodeURIComponent(teacherId)}`, {
+    const eventsRes = await fetch(`${apiBaseUrl}/teacher/class-events?academicLevelId=${encodeURIComponent(academicLevelId)}&teacherId=${encodeURIComponent(teacherId)}`, {
       next: { revalidate: 60 },
     });
     if (eventsRes.ok) {
@@ -247,7 +247,7 @@ export default async function EventsManagerPage({ params }: PageProps) {
     // For now, I'll assume you might target other academic levels from this form.
     // If not, you can remove this fetch and simplify the form's academic level selection.
     
-    const academicLevelsRes = await fetch(`${apiBaserUrl}/teacher/academic-levels?teacherId=${encodeURIComponent(teacherId)}`, {
+    const academicLevelsRes = await fetch(`${apiBaseUrl}/teacher/academic-levels?teacherId=${encodeURIComponent(teacherId)}`, {
       next: { revalidate: 60 },
     });
     
@@ -264,7 +264,7 @@ export default async function EventsManagerPage({ params }: PageProps) {
     }
 
     // Fetch all courses/subjects for the specified academic level (classId)
-    const coursesRes = await fetch(`${apiBaserUrl}/teacher/class-subjects?academicLevelId=${encodeURIComponent(academicLevelId)}&teacherId=${encodeURIComponent(teacherId)}`, {
+    const coursesRes = await fetch(`${apiBaseUrl}/teacher/class-subjects?academicLevelId=${encodeURIComponent(academicLevelId)}&teacherId=${encodeURIComponent(teacherId)}`, {
       next: { revalidate: 60 },
     });
     if (coursesRes.ok) {
@@ -275,7 +275,7 @@ export default async function EventsManagerPage({ params }: PageProps) {
     }
 
     // Fetch all educators associated with the specific academic level
-    const educatorsRes = await fetch(`${apiBaserUrl}/teacher/class-educators?academicLevelId=${encodeURIComponent(academicLevelId)}&teacherId=${encodeURIComponent(teacherId)}`, {
+    const educatorsRes = await fetch(`${apiBaseUrl}/teacher/class-educators?academicLevelId=${encodeURIComponent(academicLevelId)}&teacherId=${encodeURIComponent(teacherId)}`, {
       next: { revalidate: 60 },
     });
     if (educatorsRes.ok) {
@@ -289,7 +289,7 @@ export default async function EventsManagerPage({ params }: PageProps) {
     }
 
     // Fetch all students for the specific academic level
-    const studentsRes = await fetch(`${apiBaserUrl}/teacher/academic-levels/${academicLevelId}/students?teacherId=${encodeURIComponent(teacherId)}`, {
+    const studentsRes = await fetch(`${apiBaseUrl}/teacher/academic-levels/${academicLevelId}/students?teacherId=${encodeURIComponent(teacherId)}`, {
       next: { revalidate: 60 },
     });
     if (studentsRes.ok) {
@@ -300,7 +300,7 @@ export default async function EventsManagerPage({ params }: PageProps) {
     }
 
     // Fetch all departments for the company
-    const departmentsRes = await fetch(`${apiBaserUrl}/teacher/class-departments?teacherId=${encodeURIComponent(teacherId)}`, {
+    const departmentsRes = await fetch(`${apiBaseUrl}/teacher/class-departments?teacherId=${encodeURIComponent(teacherId)}`, {
       next: { revalidate: 60 },
     });
     if (departmentsRes.ok) {
@@ -311,7 +311,7 @@ export default async function EventsManagerPage({ params }: PageProps) {
     }
 
     // Fetch all parents for the company
-    const parentsRes = await fetch(`${apiBaserUrl}/teacher/class-parents?teacherId=${encodeURIComponent(teacherId)}`, {
+    const parentsRes = await fetch(`${apiBaseUrl}/teacher/class-parents?teacherId=${encodeURIComponent(teacherId)}`, {
       next: { revalidate: 60 },
     });
     if (parentsRes.ok) {

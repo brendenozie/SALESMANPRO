@@ -30,7 +30,7 @@ export function usePaymentVerification(
         provider === "paystack"
           ? `reference=${identifier}`
           : `checkoutRequestId=${identifier}`;
-      const res = await fetch(`${apiBaserUrl}/payments/verify?provider=${provider}&${param}`);
+      const res = await fetch(`${apiBaseUrl}/payments/verify?provider=${provider}&${param}`);
       const json = await res.json();
 
       if (json.success) {

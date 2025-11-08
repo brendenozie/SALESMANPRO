@@ -11,6 +11,7 @@ import HeroSection from './components/HeroSection';
 // Loading skeleton
 const SectionSkeleton = () => <div className="h-96 w-full animate-pulse bg-gray-200 rounded-lg my-12" />;
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000/api";
 // Dynamically import below-the-fold components
 const CoreHighlightsSection = dynamic(() => import('./components/CoreHighlightsSection'), { loading: () => <SectionSkeleton />, ssr: false });
 const AboutUsSpotlight = dynamic(() => import('./components/AboutUsSpotlight'), { loading: () => <SectionSkeleton />, ssr: false });
@@ -28,10 +29,10 @@ const fetcher = (url: string) => fetch(url).then(res => res.json());
 // Updated component signature
 export default function NonProfitSite({ pageData, companyId }: { pageData: StoreForm, companyId: string }) {
   // Fetch client-side data
-  const { data: testimonialsData } = useSWR(`${apiBaserUrl}/site/testimonials?id=${companyId}`, fetcher);
-  const { data: blogsData } = useSWR(`${apiBaserUrl}/site/blogs?id=${companyId}`, fetcher);
-  const { data: faqsData } = useSWR(`${apiBaserUrl}/site/faqs?id=${companyId}`, fetcher);
-  const { data: eventsData } = useSWR(`${apiBaserUrl}/site/events?id=${companyId}`, fetcher);
+  const { data: testimonialsData } = useSWR(`${apiBaseUrl}/site/testimonials?id=${companyId}`, fetcher);
+  const { data: blogsData } = useSWR(`${apiBaseUrl}/site/blogs?id=${companyId}`, fetcher);
+  const { data: faqsData } = useSWR(`${apiBaseUrl}/site/faqs?id=${companyId}`, fetcher);
+  const { data: eventsData } = useSWR(`${apiBaseUrl}/site/events?id=${companyId}`, fetcher);
 
   return (
       <main className="min-h-screen bg-gray-100 font-sans">

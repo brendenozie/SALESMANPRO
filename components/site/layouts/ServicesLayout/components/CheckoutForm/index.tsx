@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation";
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000/api";
 interface CheckoutFormWrapperProps {
   listingId: string;
   date: string;
@@ -24,7 +25,7 @@ export default function CheckoutFormWrapper(props: CheckoutFormWrapperProps) {
 
   // 1) Create PaymentIntent + pass booking metadata
   useEffect(() => {
-    fetch(`${apiBaserUrl}/create-payment-intent", {
+    fetch(`${apiBaseUrl}/create-payment-intent`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -88,7 +89,7 @@ function _CheckoutForm({
 
     // 3) On success, create your order record
     //    (you can also do this via a Stripe webhook on payment_intent.succeeded)
-    await fetch(`${apiBaserUrl}/customer-orders", {
+    await fetch(`${apiBaseUrl}/customer-orders`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

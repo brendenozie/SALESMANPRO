@@ -11,6 +11,7 @@ import { StoreForm } from '@/types/typings';
 // Above-the-fold components - statically imported
 import HealthcareHero from './components/HeroSection';
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000/api";
 // Loading skeleton
 const SectionSkeleton = () => <div className="h-96 w-full animate-pulse bg-gray-200 rounded-lg my-12" />;
 
@@ -79,8 +80,8 @@ export default function HealthCareSite({ pageData, companyId }: { pageData: Stor
   const router = useRouter();
 
   // Fetch client-side data
-  const { data: testimonialsData } = useSWR(`${apiBaserUrl}/site/testimonials?id=${companyId}`, fetcher);
-  const { data: faqsData } = useSWR(`${apiBaserUrl}/site/faqs?id=${companyId}`, fetcher);
+  const { data: testimonialsData } = useSWR(`${apiBaseUrl}/site/testimonials?id=${companyId}`, fetcher);
+  const { data: faqsData } = useSWR(`${apiBaseUrl}/site/faqs?id=${companyId}`, fetcher);
 
   // Use pageData for all content
   const siteData = pageData || storeFormData;

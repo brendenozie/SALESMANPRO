@@ -44,6 +44,7 @@ type EcommerceSiteProps = {
 // Generic fetcher
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000/api";
 export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProps) {
   const {
     heroSlides,
@@ -59,7 +60,7 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
   } = pageData;
 
   // Fetch client-side data
-  const { data: testimonialsData } = useSWR(`${apiBaserUrl}/site/testimonials?id=${companyId}`, fetcher);
+  const { data: testimonialsData } = useSWR(`${apiBaseUrl}/site/testimonials?id=${companyId}`, fetcher);
 
   // ⚙️ Only include featured listings on SSR
   const featured = useMemo(

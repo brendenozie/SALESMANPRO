@@ -4,7 +4,7 @@ import React from "react";
 import AcademicLevelsClient, { AcademicLevelType } from "./AcademicLevelsClient";
 import { cookies } from "next/headers";
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface PageProps {
   params:Promise<{ slug: string }>
@@ -87,7 +87,7 @@ export default async function AcademicLevelsManagementPage({ params }: PageProps
   try {
     // Fetch all academic levels for this company
     const academicLevelsRes = await fetch(
-      `${apiBaserUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`,
+      `${apiBaseUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`,
       { next: { revalidate: 60 }, headers: { cookie: cookieHeaders } } // equivalent to SSR on every request
     );
     if (academicLevelsRes.ok) {
@@ -114,7 +114,7 @@ export default async function AcademicLevelsManagementPage({ params }: PageProps
     <AcademicLevelsClient
       initialAcademicLevels={initialAcademicLevels}
       companyId={companyId}
-      apiBaserUrl={apiBaserUrl}
+      apiBaseUrl={apiBaseUrl}
     />
   );
 }

@@ -2,7 +2,7 @@ import React from "react";
 import ClientLayout from "@/components/ClientLayout";
 import ProductsPageClient from "./ProductsPageClient";
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 export default async function ProductsPage() {
   let productsData = [];
@@ -11,8 +11,8 @@ export default async function ProductsPage() {
 
   try {
     const [productsResponse, categoriesResponse] = await Promise.all([
-      fetch(`${apiBaserUrl}/clients/getAllProducts`, { cache: "no-store" }),
-      fetch(`${apiBaserUrl}/admin/get-all-categories`, { cache: "no-store" }),
+      fetch(`${apiBaseUrl}/clients/getAllProducts`, { cache: "no-store" }),
+      fetch(`${apiBaseUrl}/admin/get-all-categories`, { cache: "no-store" }),
     ]);
 
     if (productsResponse.ok) {

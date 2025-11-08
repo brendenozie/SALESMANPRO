@@ -4,7 +4,7 @@ import React from "react";
 import DepartmentsPage from "./DepartmentsPage"; // Ensure this path is correct
 import { DepartmentData } from "./DepartmentsPage"; // Import the type
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface PageProps {
   params:Promise<{ slug: string }>
@@ -19,7 +19,7 @@ export default async function DepartmentsManagerPage({ params}: PageProps) {
   let departmentsData: DepartmentData[] = [];
 
   try {
-    const res = await fetch(`${apiBaserUrl}/admin/departments?companyId=${slug}`, { // Changed API endpoint
+    const res = await fetch(`${apiBaseUrl}/admin/departments?companyId=${slug}`, { // Changed API endpoint
       next: { revalidate: 60 }, // SSR on every request
     });
 

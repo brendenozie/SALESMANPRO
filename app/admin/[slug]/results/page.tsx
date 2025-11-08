@@ -8,7 +8,7 @@ import AdminResultsOverviewPage, {
   EducatorOption,
 } from "./AdminResultsOverviewPage";
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface PageProps {
   params:Promise<{ slug: string }>
@@ -89,7 +89,7 @@ export default async function AdminResultsOverviewPageWrapper({ params }: PagePr
 
   try {
     // Fetch all submissions for the company
-    const submissionsRes = await fetch(`${apiBaserUrl}/exam-submissions?companyId=${encodeURIComponent(companyId)}`, {
+    const submissionsRes = await fetch(`${apiBaseUrl}/exam-submissions?companyId=${encodeURIComponent(companyId)}`, {
       next: { revalidate: 60 },
     });
     if (submissionsRes.ok) {
@@ -100,7 +100,7 @@ export default async function AdminResultsOverviewPageWrapper({ params }: PagePr
     }
 
     // Fetch all exams (for filter dropdown)
-    const examsRes = await fetch(`${apiBaserUrl}/exams?companyId=${encodeURIComponent(companyId)}`, {
+    const examsRes = await fetch(`${apiBaseUrl}/exams?companyId=${encodeURIComponent(companyId)}`, {
       next: { revalidate: 60 },
     });
     if (examsRes.ok) {
@@ -118,7 +118,7 @@ export default async function AdminResultsOverviewPageWrapper({ params }: PagePr
     }
 
     // Fetch all students (for filter dropdown)
-    const studentsRes = await fetch(`${apiBaserUrl}/students?companyId=${encodeURIComponent(companyId)}`, { // Assuming /api/students endpoint
+    const studentsRes = await fetch(`${apiBaseUrl}/students?companyId=${encodeURIComponent(companyId)}`, { // Assuming /api/students endpoint
       next: { revalidate: 60 },
     });
     if (studentsRes.ok) {
@@ -135,7 +135,7 @@ export default async function AdminResultsOverviewPageWrapper({ params }: PagePr
     }
 
     // Fetch all courses (for filter dropdown)
-    const coursesRes = await fetch(`${apiBaserUrl}/courses?companyId=${encodeURIComponent(companyId)}`, {
+    const coursesRes = await fetch(`${apiBaseUrl}/courses?companyId=${encodeURIComponent(companyId)}`, {
       next: { revalidate: 60 },
     });
     if (coursesRes.ok) {
@@ -146,7 +146,7 @@ export default async function AdminResultsOverviewPageWrapper({ params }: PagePr
     }
 
     // Fetch all educators (for filter dropdown)
-    const educatorsRes = await fetch(`${apiBaserUrl}/educators?companyId=${encodeURIComponent(companyId)}`, {
+    const educatorsRes = await fetch(`${apiBaseUrl}/educators?companyId=${encodeURIComponent(companyId)}`, {
       next: { revalidate: 60 },
     });
     if (educatorsRes.ok) {

@@ -22,7 +22,7 @@ import {
 } from '@heroicons/react/24/outline';
 import EventFormModal from './EventFormModal';
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // --- Type Definitions (Aligned with Event API Response) ---
 export type EventData = {
@@ -139,7 +139,7 @@ export default function AddClassEventPage({
     try {
 
       // Updated API call to match the new backend endpoint
-      const res = await fetch(`${apiBaserUrl}/teacher/class-events?academicLevelId=${encodeURIComponent(classId)}&teacherId=${encodeURIComponent(teacherId)}`, {
+      const res = await fetch(`${apiBaseUrl}/teacher/class-events?academicLevelId=${encodeURIComponent(classId)}&teacherId=${encodeURIComponent(teacherId)}`, {
         next: { revalidate: 60 },
       });
 
@@ -245,7 +245,7 @@ export default function AddClassEventPage({
     setError(null);
 
     const method = eventData.id ? 'PATCH' : 'POST';
-    const url = eventData.id ? `${apiBaserUrl}/teacher/class-events/${eventData.id}` : `${apiBaserUrl}/teacher/class-events`;
+    const url = eventData.id ? `${apiBaseUrl}/teacher/class-events/${eventData.id}` : `${apiBaseUrl}/teacher/class-events`;
 
     try {
       const res = await fetch(url, {
@@ -284,7 +284,7 @@ export default function AddClassEventPage({
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaserUrl}/teacher/events/${eventId}`, {
+      const res = await fetch(`${apiBaseUrl}/teacher/events/${eventId}`, {
         method: 'DELETE',
       });
 
@@ -305,7 +305,7 @@ export default function AddClassEventPage({
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaserUrl}/teacher/events/${eventId}`, {
+      const res = await fetch(`${apiBaseUrl}/teacher/events/${eventId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ eventStatus: newStatus }),

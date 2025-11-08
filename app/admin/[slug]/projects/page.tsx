@@ -3,7 +3,7 @@ import React from "react";
 import ProjectsClient from "./ProjectsClient";
 import { cookies } from "next/headers";
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // Define the Project type based on your Prisma schema
 export type Project = {
@@ -40,7 +40,7 @@ export default async function ProjectsPage({ params }: PageProps) {
 
   try {
     // Adjust the API endpoint if your projects API supports companyId filtering
-    const res = await fetch(`${apiBaserUrl}/admin/projects?companyId=${companyId}`, { next: { revalidate: 60 }, headers: { cookie: cookieHeader } });
+    const res = await fetch(`${apiBaseUrl}/admin/projects?companyId=${companyId}`, { next: { revalidate: 60 }, headers: { cookie: cookieHeader } });
     if (res.ok) {
       let projectRes = await res.json();
       console.log("[ProjectsPage] Fetched projects successfully:", projectRes);

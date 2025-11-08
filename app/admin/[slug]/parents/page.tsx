@@ -3,7 +3,7 @@
 import React from "react";
 import ParentsClient, { ParentType } from "./ParentsClient"; // Import ParentType from client component
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface PageProps {
   params:Promise<{ slug: string }>
@@ -92,7 +92,7 @@ export default async function ParentsManagementPage({ params }: PageProps) {
   try {
     // Fetch all parents for this company
     const parentsRes = await fetch(
-      `${apiBaserUrl}/admin/parents?companyId=${encodeURIComponent(companyId)}`,
+      `${apiBaseUrl}/admin/parents?companyId=${encodeURIComponent(companyId)}`,
       { next: { revalidate: 60 } } // equivalent to SSR on every request
     );
     if (parentsRes.ok) {
@@ -119,7 +119,7 @@ export default async function ParentsManagementPage({ params }: PageProps) {
     <ParentsClient
       initialParents={initialParents}
       companyId={companyId}
-      apiBaserUrl={apiBaserUrl}
+      apiBaseUrl={apiBaseUrl}
     />
   );
 }

@@ -12,7 +12,7 @@ import {
   AcademicCapIcon, // For class count
 } from '@heroicons/react/24/outline';
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // Define the shape of department data received from API
 export type DepartmentData = {
@@ -60,7 +60,7 @@ export default function DepartmentsPage({ initialDepartments, possibleHeads, com
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaserUrl}/admin/departments?companyId=${companyId}`);
+      const res = await fetch(`${apiBaseUrl}/admin/departments?companyId=${companyId}`);
       if (res.ok) {
         const data: DepartmentData[] = await res.json();
         setDepartments(data);
@@ -152,7 +152,7 @@ export default function DepartmentsPage({ initialDepartments, possibleHeads, com
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaserUrl}/admin/departments`, {
+      const res = await fetch(`${apiBaseUrl}/admin/departments`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -179,7 +179,7 @@ export default function DepartmentsPage({ initialDepartments, possibleHeads, com
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaserUrl}/admin/departments/${updatedDeptData.id}`, {
+      const res = await fetch(`${apiBaseUrl}/admin/departments/${updatedDeptData.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -211,7 +211,7 @@ export default function DepartmentsPage({ initialDepartments, possibleHeads, com
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaserUrl}/admin/departments/${deptId}`, {
+      const res = await fetch(`${apiBaseUrl}/admin/departments/${deptId}`, {
         method: 'DELETE',
       });
 

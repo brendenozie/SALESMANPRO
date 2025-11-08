@@ -35,7 +35,7 @@ import toast from 'react-hot-toast'; // For engaging user feedback
 // Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // Define an explicit type for delivery statuses for easier management and consistency
 type DeliveryStatus = CustomerOrder['deliveryStatus'];
@@ -70,7 +70,7 @@ const DeliveryClient: React.FC<ClientProps> = ({ deliveryOrdersData: initialDeli
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaserUrl}/admin/customer-orders?companyId=${companyId}&delivery=true`, { next: { revalidate: 60 } });
+      const res = await fetch(`${apiBaseUrl}/admin/customer-orders?companyId=${companyId}&delivery=true`, { next: { revalidate: 60 } });
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.message || `Failed to fetch delivery orders: ${res.statusText}`);
@@ -170,7 +170,7 @@ const DeliveryClient: React.FC<ClientProps> = ({ deliveryOrdersData: initialDeli
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaserUrl}/admin/customer-orders/${orderId}`, {
+      const res = await fetch(`${apiBaseUrl}/admin/customer-orders/${orderId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

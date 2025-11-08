@@ -28,10 +28,10 @@ export type AcademicLevelType = {
 interface AcademicLevelsClientProps {
   initialAcademicLevels: AcademicLevelType[];
   companyId: string;
-  apiBaserUrl: string;
+  apiBaseUrl: string;
 }
 
-export default function AcademicLevelsClient({ initialAcademicLevels, companyId, apiBaserUrl }: AcademicLevelsClientProps) {
+export default function AcademicLevelsClient({ initialAcademicLevels, companyId, apiBaseUrl }: AcademicLevelsClientProps) {
   const [academicLevels, setAcademicLevels] = useState<AcademicLevelType[]>(initialAcademicLevels);
   const [searchTerm, setSearchTerm] = useState('');
   const [showFormModal, setShowFormModal] = useState(false);
@@ -50,7 +50,7 @@ export default function AcademicLevelsClient({ initialAcademicLevels, companyId,
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaserUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`);
+      const res = await fetch(`${apiBaseUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`);
       if (res.ok) {
         const data: AcademicLevelType[] = await res.json();
         setAcademicLevels(data.sort((a, b) => a.sortOrder - b.sortOrder)); // Ensure sorted by sortOrder
@@ -65,7 +65,7 @@ export default function AcademicLevelsClient({ initialAcademicLevels, companyId,
     } finally {
       setIsLoading(false);
     }
-  }, [apiBaserUrl, companyId, initialAcademicLevels]);
+  }, [apiBaseUrl, companyId, initialAcademicLevels]);
 
   useEffect(() => {
     // If initial data from server is empty, try fetching on client side
@@ -93,7 +93,7 @@ export default function AcademicLevelsClient({ initialAcademicLevels, companyId,
 
     try {
 
-      const url = academicLevelData.id ? `${apiBaserUrl}/admin/academic-levels/${academicLevelData.id}` : `${apiBaserUrl}/admin/academic-levels`;
+      const url = academicLevelData.id ? `${apiBaseUrl}/admin/academic-levels/${academicLevelData.id}` : `${apiBaseUrl}/admin/academic-levels`;
 
       const payload = {
         ...academicLevelData,
@@ -129,7 +129,7 @@ export default function AcademicLevelsClient({ initialAcademicLevels, companyId,
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaserUrl}/admin/academic-levels/${academicLevelId}`, {
+      const res = await fetch(`${apiBaseUrl}/admin/academic-levels/${academicLevelId}`, {
         method: 'DELETE',
       });
 

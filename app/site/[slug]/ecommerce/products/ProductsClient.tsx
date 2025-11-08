@@ -10,6 +10,9 @@ import NewsletterSection from '@/components/site/NewsletterSection/NewsletterSec
 import { SkeletonGrid } from '@/components/site/SkeletonGrid/SkeletonGrid';
 import ProductCard from '@/components/site/layouts/EcommerceLayout/body/components/ProductCard';
 
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000/api";
+
 // if (categoryId) whereFilter.product = { productCategoryId: categoryId };
 interface ProductsClientProps {
   companyId: string;
@@ -38,7 +41,7 @@ export default function ProductsClient({
   const fetcher = createCachedFetcher(`products-${companyId}`);
   const getKey = (pageIndex: number, previousPageData: any) => {
     if (previousPageData && previousPageData.data.length === 0) return null; // reached end
-    return `${apiBaserUrl}/site/productsByFlag?id=${companyId}&flag=all&limit=${pageSize}&page=${pageIndex + 1}&search=${search}&category=${category}&sort=${sort}`;
+    return `${apiBaseUrl}/site/productsByFlag?id=${companyId}&flag=all&limit=${pageSize}&page=${pageIndex + 1}&search=${search}&category=${category}&sort=${sort}`;
   };
 
   const {
@@ -58,7 +61,7 @@ export default function ProductsClient({
   const {
     data: categoryData,
     isLoading: isCategoriesLoading,
-  } = useSWR(`${apiBaserUrl}/site/categories?companyId=${companyId}`, fetcher, {
+  } = useSWR(`${apiBaseUrl}/site/categories?companyId=${companyId}`, fetcher, {
     fallbackData: initialData.categories,
     dedupingInterval: 60000,
   });

@@ -23,14 +23,14 @@ interface PageProps {
 }
 
 // ✅ Adjust this to your actual backend URL or use .env
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 export default async function SendMessagePage({ params }: PageProps) {
   const { slug, courseId } = await params;
 
   try {
     // Fetch course info
-    const courseRes = await fetch(`${apiBaserUrl}/teacher/courses/${courseId}`, {
+    const courseRes = await fetch(`${apiBaseUrl}/teacher/courses/${courseId}`, {
       cache: "no-store",
     });
     if (!courseRes.ok) throw new Error("Failed to fetch course info");
@@ -38,7 +38,7 @@ export default async function SendMessagePage({ params }: PageProps) {
 
     // Fetch enrolled students
     const studentsRes = await fetch(
-      `${apiBaserUrl}/teacher/courses/${courseId}/students`,
+      `${apiBaseUrl}/teacher/courses/${courseId}/students`,
       { cache: "no-store" }
     );
     if (!studentsRes.ok) throw new Error("Failed to fetch enrolled students");

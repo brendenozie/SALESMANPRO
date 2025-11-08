@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import AdminOrdersClient from "./AdminOrdersClient"; // Import the client component
 
 // Define the API URL based on the environment
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // --- Shared Data Types (Matching the Client Component) ---
 type Agent = {
@@ -47,7 +47,7 @@ export default async function AdminOrdersPage({ params }: Props) {
   try {
     // --- 2. Fetch Organizers (Agent Data) ---
     const organizersRes = await fetch(
-      `${apiBaserUrl}/admin/agents?companyId=${encodeURIComponent(companyId)}`,
+      `${apiBaseUrl}/admin/agents?companyId=${encodeURIComponent(companyId)}`,
       { 
         next: { revalidate: 60 }, 
         headers: { cookie: cookiesHeader },
@@ -64,7 +64,7 @@ export default async function AdminOrdersPage({ params }: Props) {
     // --- 3. Fetch ALL Orders (The complete, unfiltered dataset) ---
     // The client component will handle the filtering/searching.
     const ordersRes = await fetch(
-      `${apiBaserUrl}/admin/orders?companyId=${encodeURIComponent(companyId)}`,
+      `${apiBaseUrl}/admin/orders?companyId=${encodeURIComponent(companyId)}`,
       { 
         next: { revalidate: 60 }, 
         headers: { cookie: cookiesHeader },

@@ -21,7 +21,7 @@ import 'react-quill-new/dist/quill.snow.css';
 import { set } from "lodash";
 
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 const modules = {
   toolbar: [
@@ -59,7 +59,7 @@ export async function uploadFiles(
     try {
       // ✅ Step 1: Request a signed upload URL from your API
       const res = await fetch(
-        `${apiBaserUrl}/upload-url?filename=${encodeURIComponent(file.name)}&type=${type}&contentType=${encodeURIComponent(file.type)}`
+        `${apiBaseUrl}/upload-url?filename=${encodeURIComponent(file.name)}&type=${type}&contentType=${encodeURIComponent(file.type)}`
       );
 
       if (!res.ok) {
@@ -199,7 +199,7 @@ export default function AddEditBlogModal({
   //     fd.append("file", file);
   //     fd.append("type", type);
 
-  //     const res = await fetch(`${apiBaserUrl}/admin/upload`, {
+  //     const res = await fetch(`${apiBaseUrl}/admin/upload`, {
   //       method: "POST",
   //       body: fd,
   //     });
@@ -261,7 +261,7 @@ export default function AddEditBlogModal({
       author: formData.author,
     };
 
-    await fetch(`${apiBaserUrl}/admin/post-blog`, {
+    await fetch(`${apiBaseUrl}/admin/post-blog`, {
       method: formData.id ? "PUT" : "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),

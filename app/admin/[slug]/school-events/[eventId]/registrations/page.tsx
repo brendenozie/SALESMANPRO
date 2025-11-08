@@ -7,7 +7,7 @@ import EventRegistrationsPage, {
   StudentOption,
 } from "./EventRegistrationsPage";
 
-const apiBaserUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface PageProps {
   params: Promise<{
@@ -116,7 +116,7 @@ export default async function EventRegistrationsOverviewPage({ params }: PagePro
 
   try {
     // Fetch event details
-    const eventRes = await fetch(`${apiBaserUrl}/events/${eventId}`, {
+    const eventRes = await fetch(`${apiBaseUrl}/events/${eventId}`, {
       next: { revalidate: 60 },
     });
     if (eventRes.ok) {
@@ -139,7 +139,7 @@ export default async function EventRegistrationsOverviewPage({ params }: PagePro
     }
 
     // Fetch event registrations for this event
-    const registrationsRes = await fetch(`${apiBaserUrl}/event-registrations?eventId=${encodeURIComponent(eventId)}`, {
+    const registrationsRes = await fetch(`${apiBaseUrl}/event-registrations?eventId=${encodeURIComponent(eventId)}`, {
       next: { revalidate: 60 },
     });
     if (registrationsRes.ok) {
@@ -150,7 +150,7 @@ export default async function EventRegistrationsOverviewPage({ params }: PagePro
     }
 
     // Fetch all users in the company (for registration form/filtering)
-    const usersRes = await fetch(`${apiBaserUrl}/users?companyId=${encodeURIComponent(companyId)}`, { // Assuming /api/users endpoint
+    const usersRes = await fetch(`${apiBaseUrl}/users?companyId=${encodeURIComponent(companyId)}`, { // Assuming /api/users endpoint
       next: { revalidate: 60 },
     });
     if (usersRes.ok) {
@@ -161,7 +161,7 @@ export default async function EventRegistrationsOverviewPage({ params }: PagePro
     }
 
     // Fetch all students in the company (for registration form/filtering)
-    const studentsRes = await fetch(`${apiBaserUrl}/students?companyId=${encodeURIComponent(companyId)}`, { // Assuming /api/students endpoint
+    const studentsRes = await fetch(`${apiBaseUrl}/students?companyId=${encodeURIComponent(companyId)}`, { // Assuming /api/students endpoint
       next: { revalidate: 60 },
     });
     if (studentsRes.ok) {
