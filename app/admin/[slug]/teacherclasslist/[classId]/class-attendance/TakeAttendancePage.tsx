@@ -48,7 +48,7 @@ interface TakeAttendancePageProps {
   educatorId: string;
 }
 
-const API_BASE_URL = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 export default function TakeAttendancePage({ academicLevelId, educatorId }: TakeAttendancePageProps) {
   const [academicLevelData, setAcademicLevelData] = useState<TakeAttendancePageData | null>(null);

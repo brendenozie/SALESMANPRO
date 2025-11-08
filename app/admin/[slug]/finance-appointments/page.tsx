@@ -223,7 +223,7 @@ export default function AppointmentsPage() {
       const res = await fetch(
         isEditing
           ? `${apiBaseUrl}/admin/finance-appointments/${currentAppointment?.id}`
-          : `${apiBaseUrl}/admin/finance-appointments",
+          : `${apiBaseUrl}/admin/finance-appointments`,
         {
           method: isEditing ? "PUT" : "POST",
           headers: { "Content-Type": "application/json", 'Credentials': 'include' },

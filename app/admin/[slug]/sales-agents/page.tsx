@@ -611,7 +611,7 @@ export default function AgentsPage() {
   const [agentToDelete, setAgentToDelete] = useState<AgentProfile | null>(null);
 
   // In a real application, apiBaseUrl would be used to fetch and mutate data
-  const apiBaseUrl = `${apiBaseUrl}/admin/sales-agents`; // Base URL for your API routes
+  // const apiBaseUrl = `${apiBaseUrl}`; // Base URL for your API routes
 
   const fetchAgents = useCallback(async () => {
     setIsLoading(true);
@@ -619,7 +619,7 @@ export default function AgentsPage() {
     try {
       // TODO: Replace this with an actual fetch to your GET /api/admin/agents endpoint
       // Example:
-      const res = await fetch(`${apiBaseUrl}?companyId=${companyId}`, {
+      const res = await fetch(`${apiBaseUrl}/admin/sales-agents?companyId=${companyId}`, {
         credentials: 'include'
       });
       if (!res.ok) {

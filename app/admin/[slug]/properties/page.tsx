@@ -9,10 +9,6 @@ import PropertyClientPage from './PropertyClientPage';
 import { ILocation, IStoreCategory, MarketListingForm } from '@/types/typings';
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;
 
-
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
-
-
 // --- Sample Data Generation (MOCKUPS FOR FALLBACK) ---
 const generateMockProperties = (): MarketListingForm[] => [
     {

@@ -251,7 +251,8 @@ const NoDataCard: React.FC<{ message: string, cta: string, ctaHref: string }> = 
 
 type Tab = 'personal' | 'orders' | 'addresses';
 
-export default function UserProfilePage({ slug = 'thrive-academy' }: { slug?: string }) {
+export default async function UserProfilePage({ params }: any) {
+    const { slug } = await params;
     const [activeTab, setActiveTab] = useState<Tab>('personal');
 
     const renderContent = () => {

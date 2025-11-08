@@ -504,7 +504,6 @@ export default function AgentsClientPage({ adminSlug, initialAgents, isInitialLo
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
   const [agentToDelete, setAgentToDelete] = useState<AgentProfile | null>(null);
 
-  const apiBaseUrl = `${apiBaseUrl}/admin/sales-agents`; // Base URL for your API routes
 
   // --- Handlers for CRUD Operations (Require re-fetch to keep client state synced) ---
   
@@ -514,7 +513,7 @@ export default function AgentsClientPage({ adminSlug, initialAgents, isInitialLo
     setError(null);
     try {
       // NOTE: Use a *client-side* fetch for subsequent data updates after initial server load
-      const res = await fetch(`${apiBaseUrl}?companyId=${adminSlug}`,{ integrity: 'same-origin' });
+      const res = await fetch(`${apiBaseUrl}/admin/sales-agents?companyId=${adminSlug}`,{ integrity: 'same-origin' });
       if (!res.ok) {
         throw new Error(`Data fetch failed after update. (Status: ${res.status})`);
       }
