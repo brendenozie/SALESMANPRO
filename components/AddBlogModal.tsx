@@ -21,7 +21,7 @@ import 'react-quill-new/dist/quill.snow.css';
 import { set } from "lodash";
 
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 const modules = {
   toolbar: [

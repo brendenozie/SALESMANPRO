@@ -6,7 +6,7 @@ import TaskDashboard from "./TaskDashboardClient";
 export default async function TasksPage() {
   const session = await getServerSession(authOptions);
 
-  const url = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+  const url = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
   let tasksData = [];
 
   try {

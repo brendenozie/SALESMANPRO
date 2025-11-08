@@ -3,7 +3,7 @@ import React from "react";
 import AdminAppointmentsClient, { AppointmentItem, OrderItem } from "./AdminAppointementsClient"; // Updated import to include OrderItem type
 import { cookies } from "next/headers";
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // export interface OrderItem {
 //   id: string;

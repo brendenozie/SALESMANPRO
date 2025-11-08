@@ -3,7 +3,7 @@ import React from "react";
 import DonationsClient from "./DonationsClient";
 import { cookies } from "next/headers";
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 type UserOption = { id: string; name: string; email: string };
 type ProjectOption = { id: string; name: string };

@@ -26,7 +26,7 @@ const loaderProp = ({ src, width, quality }: { src: string; width?: number; qual
 
 // --- Fetch Server Data ---
 async function fetchDashboardData() {
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+  const baseUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
   try {
     const [

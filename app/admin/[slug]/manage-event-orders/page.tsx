@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import AdminOrdersClient from "./AdminOrdersClient"; // Import the client component
 
 // Define the API URL based on the environment
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // --- Shared Data Types (Matching the Client Component) ---
 type Agent = {

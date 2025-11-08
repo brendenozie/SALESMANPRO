@@ -7,7 +7,7 @@ import ProductRequestModal from "@/components/ProductRequestModal";
 import AddToProductMarketModal from "@/components/AddToProductMarketModal";
 import UserNav from "@/components/UserNav";
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 type MarketplaceProduct = {
   _id: string;

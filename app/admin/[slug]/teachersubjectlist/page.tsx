@@ -70,7 +70,7 @@ interface TeacherClassesPageData {
   teacherClasses: TeacherAssignedCourse[];
 }
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface Props {
   params:Promise<{ slug: string }>

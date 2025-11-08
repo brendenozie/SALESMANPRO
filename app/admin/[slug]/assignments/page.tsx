@@ -4,7 +4,7 @@ import React from "react";
 import AdminAssignmentsOverviewPage from "./AdminAssignmentsOverviewPage";
 import { cookies } from "next/headers";
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // Define your Category and Subcategory shapes (adjust fields if your API differs)
 export type Subcategory = {

@@ -86,7 +86,7 @@ interface PaginatedListings {
 // For a self-contained Canvas example, we'll use a placeholder URL.
 // const apiUrl = "[https://your-api-url.com/api](https://your-api-url.com/api)"; // Replace with your actual API URL
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // --- Image loader (for Next.js Image component) ---
 const loader = ({

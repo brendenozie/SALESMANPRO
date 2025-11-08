@@ -11,7 +11,7 @@ const RequestProductModal = ({
   const [quantity, setQuantity] = useState(0);
   // const [salesAgentId, setSalesAgentId] = useState("");
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+  const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
   const handleRequestProduct = async () => {
     try {

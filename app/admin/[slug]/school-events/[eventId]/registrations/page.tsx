@@ -7,7 +7,7 @@ import EventRegistrationsPage, {
   StudentOption,
 } from "./EventRegistrationsPage";
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface PageProps {
   params: Promise<{

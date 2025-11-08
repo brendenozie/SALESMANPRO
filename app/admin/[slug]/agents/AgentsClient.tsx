@@ -33,7 +33,7 @@ import Link from 'next/link';
 import Image from 'next/image'; // For optimized image handling
 import toast, { Toaster } from 'react-hot-toast'; // For notifications
 import { Agent } from './page';
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // --- Basic Modal Component (If you have your own, replace this) ---
 interface ModalProps {
@@ -603,7 +603,7 @@ export default function AgentsPage({ params }: AgentsPageProps) {
   const [agentToDelete, setAgentToDelete] = useState<any | null>(null);
 
   // In a real application, apiUrl would be used to fetch and mutate data
-  // const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+  // const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
   const fetchAgents = useCallback(async () => {
     setIsLoading(true);

@@ -21,7 +21,7 @@ import {
 } from '@heroicons/react/24/outline';
 import Link from 'next/link'; // For linking to exam questions page
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // --- Type Definitions (Aligned with Exam API Response) ---
 export type ExamData = {

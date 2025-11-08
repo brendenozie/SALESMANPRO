@@ -2,7 +2,7 @@ import React from "react";
 import ClientLayout from "@/components/ClientLayout";
 import ProductsPageClient from "./ProductsPageClient";
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 export default async function ProductsPage() {
   let productsData = [];

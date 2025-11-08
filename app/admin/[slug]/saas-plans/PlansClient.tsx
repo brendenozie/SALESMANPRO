@@ -17,7 +17,7 @@ import {
 import { format } from 'date-fns';
 import { toast, Toaster } from "react-hot-toast";
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // =================================================================================================
 // TYPE DEFINITIONS

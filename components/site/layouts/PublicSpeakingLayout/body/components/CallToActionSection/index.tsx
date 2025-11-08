@@ -6,7 +6,7 @@ import { XMarkIcon, PaperAirplaneIcon, CalendarIcon } from "@heroicons/react/24/
 // NOTE: I've removed unused imports (Image, loader, heroSlides) and the unused 'current' state/effect/logic, 
 // as this component is purely a Call-to-Action section, not the hero carousel.
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // --- Framer Motion Variants for Polish ---
 

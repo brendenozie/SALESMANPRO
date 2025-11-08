@@ -51,7 +51,7 @@ const SITE_CATEGORIES_WITH_LOCATIONS = [
   "travel & tourism",
 ];
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 export interface SelectedLocation {
   id: string;

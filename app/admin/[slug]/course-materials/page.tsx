@@ -4,7 +4,7 @@ import React from "react";
 import MaterialsGlobalClient, { CourseMaterialType, CourseOption, EducatorOption, AcademicLevelOption } from "./MaterialsGlobalClient";
 import { cookies } from "next/headers";
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface PageProps {
   params:Promise<{ slug: string }>

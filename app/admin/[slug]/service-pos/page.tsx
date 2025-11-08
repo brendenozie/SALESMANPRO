@@ -2,7 +2,7 @@
 import React from "react";
 import AdminPOSClient from "./AdminPOSClient";
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // Re-using Product and ProductCategory types from Menu module for consistency
 export type ProductCategory = {

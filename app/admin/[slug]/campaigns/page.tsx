@@ -3,7 +3,7 @@ import React from "react";
 import CampaignsClient from "./CampaignsClient";
 import { cookies } from "next/headers";
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // Define the Campaign type based on your Prisma schema
 export type Campaign = {

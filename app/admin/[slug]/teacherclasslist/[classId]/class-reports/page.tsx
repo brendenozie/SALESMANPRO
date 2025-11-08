@@ -66,7 +66,7 @@ interface PageProps {
   }>;
 }
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 export default async function ClassReportsPage({ params }: PageProps) {
 

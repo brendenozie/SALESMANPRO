@@ -4,7 +4,7 @@ import WritersClient from "./WritersClient"; // Make sure the path is correct
 
 import { cookies } from "next/headers";
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // Define nested types for User and Company as they will be included by Prisma
 export type UserForWriter = {

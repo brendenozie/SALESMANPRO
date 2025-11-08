@@ -14,7 +14,7 @@ interface Props {
 }
 
 // Define the API URL based on the environment
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 /**
  * Server Component for the Admin Check-in page.

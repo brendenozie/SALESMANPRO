@@ -3,7 +3,7 @@ import React from "react";
 import ProjectsClient from "./ProjectsClient";
 import { cookies } from "next/headers";
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // Define the Project type based on your Prisma schema
 export type Project = {

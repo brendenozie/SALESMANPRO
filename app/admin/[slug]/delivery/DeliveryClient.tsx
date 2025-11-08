@@ -35,7 +35,7 @@ import toast from 'react-hot-toast'; // For engaging user feedback
 // Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // Define an explicit type for delivery statuses for easier management and consistency
 type DeliveryStatus = CustomerOrder['deliveryStatus'];

@@ -2,7 +2,7 @@
 import React from "react";
 import ManageEventsPageClient from "./ManageEventsPageClient";
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // IMPORTANT: In a real application, the currentEducatorId would come from an authentication context (e.g., NextAuth.js session).
 // For this example, we'll use a hardcoded mock ID.

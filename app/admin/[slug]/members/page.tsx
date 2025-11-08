@@ -3,7 +3,7 @@ import React from "react";
 import MembersClient from "./MembersClient";
 import { cookies } from "next/headers";
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // Define a simplified User type for display in the members list
 export type Member = {

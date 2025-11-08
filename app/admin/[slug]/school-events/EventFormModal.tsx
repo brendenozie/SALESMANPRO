@@ -5,7 +5,7 @@ import {
   XMarkIcon, // For student/parent
 } from '@heroicons/react/24/outline';
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // --- Type Definitions (Aligned with Event API Response) ---
 export type EventData = {

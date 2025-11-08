@@ -2,7 +2,7 @@
 import React from "react";
 import StudentAssignmentsPageClient from "./StudentAssignmentsPageClient";
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // IMPORTANT: In a real application, these IDs would come from an authentication context (e.g., NextAuth.js session).
 // For this example, we'll use hardcoded mock IDs.

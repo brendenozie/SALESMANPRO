@@ -4,7 +4,7 @@ import OrdersClient from "./OrdersClient";
 import { cookies } from "next/headers";
 
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // Define types based on your Prisma schema
 export type OrderItem = {

@@ -29,7 +29,7 @@ ChartJS.register(
   ArcElement
 );
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface ClientProps {
   projectsData: Project[];

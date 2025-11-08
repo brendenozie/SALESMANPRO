@@ -48,7 +48,7 @@ const calculateProgress = (currentValue: number, goal: number) => {
 // ✅ Server Component (no "use client")
 export default async function AgentDashboardPage() {
   const session = await getServerSession(authOptions);
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+  const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
   if (!session) {
     return (

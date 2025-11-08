@@ -3,7 +3,7 @@ import PodcastsClient from "./PodcastsClient"; // Assuming PodcastsClient is in 
 import { IStoreCategory } from "@/types/typings";
 
 import { cookies } from "next/headers";
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // Define the Podcast type
 type Podcast = {

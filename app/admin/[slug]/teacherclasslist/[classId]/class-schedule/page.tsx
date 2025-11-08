@@ -3,7 +3,7 @@
 import React from "react";
 import ClassSchedulePage from "./ClassSchedulePage";
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 type Product = {
   id: string;

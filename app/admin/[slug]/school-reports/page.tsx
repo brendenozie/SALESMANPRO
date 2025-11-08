@@ -3,7 +3,7 @@ import React from "react";
 // import { Props } from "react-apexcharts";
 import AdminReportsPageClient,{ OverallStats, StudentPerformanceData, StaffReportsData, AcademicReportsData, UpcomingEventsSummaryItem }  from "./AdminReportsPageClient";
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface PageProps {
   params:Promise<{ slug: string }>

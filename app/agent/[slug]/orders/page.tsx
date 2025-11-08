@@ -43,7 +43,7 @@ const OrderSummaryPage = () => {
   >("all");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+  const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
   useEffect(() => {
     const fetchOrders = async () => {

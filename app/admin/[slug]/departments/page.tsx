@@ -4,7 +4,7 @@ import React from "react";
 import DepartmentsPage from "./DepartmentsPage"; // Ensure this path is correct
 import { DepartmentData } from "./DepartmentsPage"; // Import the type
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface PageProps {
   params:Promise<{ slug: string }>

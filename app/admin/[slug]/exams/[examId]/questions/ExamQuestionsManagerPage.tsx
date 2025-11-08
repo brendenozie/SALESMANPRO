@@ -18,7 +18,7 @@ import {
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // --- Type Definitions (Aligned with ExamQuestion API Response) ---
 export type ExamQuestionData = {

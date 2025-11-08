@@ -4,7 +4,7 @@ import FeesClient, { StudentFeeRecord } from "./FeesClient"; // Import client co
 import { Student, FeeItem } from "@/lib/data"; // Import types from lib/data.ts
 
 // Assuming your API URL is correctly set in environment variables
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiUrl = "/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 /**
  * Server Component: fetches initial data for the Student Fee Dashboard.
