@@ -102,13 +102,17 @@ const fallbackFaqs = [
   },
 ];
 
+interface FAQSectionProps {
+  faqs?: FAQ[];
+}
+
 // Main FAQ Section Component
-export default function FAQSection() {
+export default function FAQSection({ faqs : dynamicFaqs }: FAQSectionProps) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   // Destructure storeFormData from context
-  const { storeFormData } = useStoreContext() || {};
-  const { faqs: dynamicFaqs } = storeFormData || {};
+  // const { storeFormData } = useStoreContext() || {};
+  // const { faqs: dynamicFaqs } = storeFormData || {};
 
   // Determine which FAQ data to use: dynamic or fallback
   const faqsToRender = Array.isArray(dynamicFaqs) && dynamicFaqs.length > 0

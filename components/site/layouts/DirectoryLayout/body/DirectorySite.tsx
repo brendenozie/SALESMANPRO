@@ -52,21 +52,21 @@ export default function DirectorySite({ pageData, companyId }: { pageData: Store
         onSearch={handleSearch}
       />
 
-      <PromotionSection />
+      <PromotionSection promotions={pageData.promotions} />
 
-      <NewArrivalsSection />
+      <NewArrivalsSection marketplaceListings={pageData.marketplaceListings} currency={pageData.currency} />
 
-      <CategorySection />
+      <CategorySection StoreCategory={pageData.StoreCategory}/>
 
-      <NewArrivalsSection />
+      <NewArrivalsSection marketplaceListings={pageData.marketplaceListings} currency={pageData.currency} />
 
       <FeaturedListingsOverviewSection />
 
-      {testimonialsData?.data && <TestimonialsSection />}
+      {testimonialsData?.data && <TestimonialsSection testimonial={testimonialsData?.data} />}
 
       <CtaSection />
     
-      {faqsData?.data && <FAQSection />} 
+      {faqsData?.data && <FAQSection faqs={faqsData?.data} />} 
       
        {/* faqs={customFaqs} */}
     </div>

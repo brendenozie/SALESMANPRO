@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import clsx from 'clsx';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { IPromotion } from '@/types/typings';
 
 // Optimized image loader
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
@@ -51,9 +52,13 @@ const bannerCardVariants = {
   },
 };
 
-export default function PromotionSection() {
-  const { storeFormData } = useStoreContext() || {};
-  const { promotions: dynamicPromotions } = storeFormData || {};
+interface PromotionProps {
+  promotions?: IPromotion[];
+}
+
+export default function PromotionSection({ promotions: dynamicPromotions }: PromotionProps) {
+  // const { storeFormData } = useStoreContext() || {};
+  // const { promotions: dynamicPromotions } = storeFormData || {};
 
   // Determine which banners to render: dynamic or fallback
   const bannersToRender = Array.isArray(dynamicPromotions) && dynamicPromotions.length > 0

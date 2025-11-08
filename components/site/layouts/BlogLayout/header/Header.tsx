@@ -1,44 +1,74 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { useSession, signOut } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 
-// Mocking the context hook to make the component runnable.
-// In your actual application, you would use your real StoreContext.
-// const useStoreContext = () => ({
-  // storeFormData: {
-  //   slug: 'my-blog',
-  //   name: 'GLOBAL INSIGHTS',
-  //   logoUrl: 'https://placehold.co/40x40/EF4444/FFFFFF?text=GI', // Using a placeholder that matches the new theme
-  //   themeSettings: { primaryColor: '#EF4444', secondaryColor: '#EC4899' }, // Red and Pink to match the Hero
-  // },
-// });
+// Inline SVG icons (minimal footprint)
+const Bars3Icon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+    strokeWidth={1.5} stroke="currentColor" className="w-7 h-7">
+    <path strokeLinecap="round" strokeLinejoin="round"
+      d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+  </svg>
+);
 
-// A simple utility to mimic a Next.js `Image` loader and router push
-const useRouter = () => ({
-  push: (href:string) => console.log(`Navigating to ${href}`),
-});
+const XMarkIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+    strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+    <path strokeLinecap="round" strokeLinejoin="round"
+      d="M6 18L18 6M6 6l12 12" />
+  </svg>
+);
 
-const Link = ({ href, children, ...props }: React.AnchorHTMLAttributes<HTMLAnchorElement>) => <a href={href} {...props}>{children}</a>;
+const MagnifyingGlassIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+    strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+    <path strokeLinecap="round" strokeLinejoin="round"
+      d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+  </svg>
+);
 
-// A single-file version of the header component
+const UserIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+    strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+    <path strokeLinecap="round" strokeLinejoin="round"
+      d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 18.75a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.324-.775-7.499-2.25Z" />
+  </svg>
+);
+
 const Header = () => {
   const { storeFormData } = useStoreContext() || {};
+  const router = useRouter();
+
+  // --- Auth State ---
+  const { data: session, status } = useSession();
+  const user = session?.user as { role?: string; name?: string } | undefined;
+
+  // --- Store Data ---
   const { slug, name, logoUrl, themeSettings } = storeFormData || {
     slug: 'my-blog',
     name: 'GLOBAL INSIGHTS',
-    logoUrl: 'https://placehold.co/40x40/EF4444/FFFFFF?text=GI', // Using a placeholder that matches the new theme
-    themeSettings: { primaryColor: '#EF4444', secondaryColor: '#EC4899' }, // Red and Pink to match the Hero
+    logoUrl: 'https://placehold.co/40x40/EF4444/FFFFFF?text=GI',
+    themeSettings: { primaryColor: '#EF4444', secondaryColor: '#EC4899' },
   };
-  
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  const router = useRouter();
 
-  // Use theme colors with fallbacks
   const primary = themeSettings?.primaryColor || '#f97316';
   const secondary = themeSettings?.secondaryColor || '#3b82f6';
 
-  // Define navigation items
+  // --- UI State ---
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 60);
+    window.addEventListener('scroll', onScroll);
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  // --- Navigation Items ---
   const navItems = [
     { label: 'Home', href: `/${slug}` },
     { label: 'Blog', href: `/${slug}/blog` },
@@ -46,34 +76,26 @@ const Header = () => {
     { label: 'Contact', href: `/${slug}/contact` },
   ];
 
-  // Effect to handle the scroll state
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 60);
-    window.addEventListener('scroll', onScroll);
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
+  // --- Auth Logic ---
+  const handleUserAction = () => {
+    if (!user) return handleGoogleSignIn();
+    if (user.role?.toLowerCase() === 'admin') router.push('/dashboards');
+    else router.push(`/${slug}/profile`);
+  };
 
-  // Icon components (using inline SVGs to keep it in one file)
-  const Bars3Icon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-7 h-7">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-    </svg>
-  );
-  const XMarkIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-    </svg>
-  );
-  const MagnifyingGlassIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-      <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-    </svg>
-  );
-  const UserIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 18.75a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.324-.775-7.499-2.25Z" />
-    </svg>
-  );
+  const handleSignOut = () => signOut({ callbackUrl: `/${slug}` });
+
+  const handleGoogleSignIn = () => {
+    const authUrl = new URL('https://auth.salesmanpro.site/signin');
+    authUrl.searchParams.set('callbackUrl', `${window.location.origin}/${slug}`);
+    window.location.href = authUrl.toString();
+  };
+
+  const handleGoogleSignUp = () => {
+    const authUrl = new URL('https://auth.salesmanpro.site/signup');
+    authUrl.searchParams.set('callbackUrl', `${window.location.origin}/${slug}`);
+    window.location.href = authUrl.toString();
+  };
 
   return (
     <header
@@ -84,7 +106,7 @@ const Header = () => {
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-        {/* Logo */}
+        {/* ===== LOGO ===== */}
         <motion.div
           className="flex items-center space-x-3 cursor-pointer select-none"
           onClick={() => router.push(`/${slug}`)}
@@ -92,16 +114,10 @@ const Header = () => {
           whileTap={{ scale: 0.95 }}
         >
           {logoUrl ? (
-            <img
-              src={logoUrl}
-              alt={name}
-              width={40}
-              height={40}
-              className="rounded-full"
-            />
+            <img src={logoUrl} alt={name} width={40} height={40} className="rounded-full" />
           ) : (
             <span
-              className="text-2xl font-extrabold bg-clip-text text-transparent transition-all duration-500"
+              className="text-2xl font-extrabold bg-clip-text text-transparent"
               style={{
                 backgroundImage: `linear-gradient(45deg, ${primary}, ${secondary})`,
               }}
@@ -111,14 +127,13 @@ const Header = () => {
           )}
         </motion.div>
 
-        {/* Desktop Nav */}
+        {/* ===== DESKTOP NAV ===== */}
         <nav className="hidden md:flex items-center space-x-8 text-white font-medium">
           {navItems.map(({ label, href }) => (
             <motion.a
               key={label}
               href={href}
               className="relative hover:text-red-400 transition-colors duration-200"
-              initial={{ y: 0 }}
               whileHover={{ y: -2 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -134,28 +149,36 @@ const Header = () => {
           ))}
         </nav>
 
-        {/* Icons + Mobile Toggle */}
+        {/* ===== ICONS + AUTH ===== */}
         <div className="flex items-center space-x-5 text-gray-300">
+          {/* Search */}
           <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
             <MagnifyingGlassIcon />
-            {/* //className="w-6 h-6 cursor-pointer" /> */}
           </motion.div>
+
+          {/* Profile or Auth */}
           <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-            <UserIcon />
-            {/* className="w-6 h-6 cursor-pointer" /> */}
+            <button
+              onClick={handleUserAction}
+              aria-label={user ? 'Profile page' : 'Sign In or Sign Up'}
+              className="focus:outline-none"
+            >
+              <UserIcon />
+            </button>
           </motion.div>
+
+          {/* Mobile menu toggle */}
           <button
             className="md:hidden text-gray-300"
             onClick={() => setMobileMenuOpen(true)}
             aria-label="Open menu"
           >
             <Bars3Icon />
-            {/* className="w-7 h-7" /> */}
           </button>
         </div>
       </div>
 
-      {/* Mobile Menu */}
+      {/* ===== MOBILE MENU ===== */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.nav
@@ -177,19 +200,68 @@ const Header = () => {
                 </span>
                 <button onClick={() => setMobileMenuOpen(false)} aria-label="Close menu">
                   <XMarkIcon />
-                  {/* //className="w-7 h-7 text-gray-300" /> */}
                 </button>
               </div>
+
               {navItems.map(({ label, href }) => (
-                <Link
+                <a
                   key={label}
                   href={href}
                   onClick={() => setMobileMenuOpen(false)}
                   className="hover:text-red-400 transition-colors"
                 >
                   {label}
-                </Link>
+                </a>
               ))}
+
+              <div className="border-t border-gray-700 my-4" />
+
+              {/* Auth buttons */}
+              {user ? (
+                <>
+                  <button
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      handleUserAction();
+                    }}
+                    className="w-full text-center px-4 py-2 rounded-lg text-white font-medium shadow-md transition-colors hover:brightness-90"
+                    style={{ backgroundColor: primary }}
+                  >
+                    {user.role === 'admin' ? 'Admin Portal' : 'My Account'}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      handleSignOut();
+                    }}
+                    className="w-full mt-3 text-gray-300 underline hover:text-white"
+                  >
+                    Sign Out
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      handleGoogleSignIn();
+                    }}
+                    className="w-full text-center px-4 py-2 rounded-lg text-gray-300 hover:bg-gray-800 border border-gray-600 transition-colors"
+                  >
+                    Log In
+                  </button>
+                  <button
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      handleGoogleSignUp();
+                    }}
+                    className="w-full text-center px-4 py-2 rounded-lg text-white font-medium shadow-md transition-colors hover:brightness-90"
+                    style={{ backgroundColor: primary }}
+                  >
+                    Sign Up
+                  </button>
+                </>
+              )}
             </div>
           </motion.nav>
         )}

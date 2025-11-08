@@ -171,10 +171,14 @@ const settings = {
   ],
 };
 
-const TestimonialsSection = () => {
+interface TestimonialProps {
+  testimonial: Testimonial;
+}
+
+const TestimonialsSection = ({testimonial : dynamicTestimonials}: TestimonialProps) => {
   // Destructure storeFormData from context
-  const { storeFormData } = useStoreContext() || {};
-  const { testimonials: dynamicTestimonials } = storeFormData || {};
+  // const { storeFormData } = useStoreContext() || {};
+  // const { testimonials: dynamicTestimonials } = storeFormData || {};
 
   // Determine which testimonials to render: dynamic or fallback
   const testimonialsToRender: Testimonial[] = Array.isArray(dynamicTestimonials) && dynamicTestimonials.length > 0

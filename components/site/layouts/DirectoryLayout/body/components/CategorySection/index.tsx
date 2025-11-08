@@ -83,10 +83,14 @@ const fallbackCategories = [
   { name: 'Health & Wellness', Icon: HeartIcon, count: '900+ listings', slug: 'health-wellness' },
 ];
 
-export default function CategoryGridSection() {
+interface CategoryGridSectionProps {
+  StoreCategory: IStoreCategory[];
+}
+
+export default function CategoryGridSection({ StoreCategory: dynamicCategories }: CategoryGridSectionProps) {
   // Destructure storeFormData from context
-  const { storeFormData } = useStoreContext() || {};
-  const { StoreCategory: dynamicCategories } = storeFormData || {};
+  // const { storeFormData } = useStoreContext() || {};
+  // const { StoreCategory: dynamicCategories } = storeFormData || {};
 
   // Determine which categories to render: dynamic or fallback
   const categoriesToRender = Array.isArray(dynamicCategories) && dynamicCategories.length > 0

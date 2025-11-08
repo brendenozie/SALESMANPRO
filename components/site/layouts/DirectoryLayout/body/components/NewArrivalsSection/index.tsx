@@ -38,14 +38,18 @@ const RatingStars: React.FC<{ count?: number }> = ({ count = 0 }) => (
   </div>
 );
 
-export default function NewArrivalsSection() {
+interface NewArrivalsSectionProps {
+  marketplaceListings?: any[];
+  currency?: string;
+}
+
+export default function NewArrivalsSection({ marketplaceListings: dynamicListings, currency }: NewArrivalsSectionProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [showToast, setShowToast] = useState(false);
   const [selectedListing, setSelectedListing] = useState<any>(null);
 
   const { cart, addToCart, decreaseQuantity, removeFromCart } = useStateContext();
-  const { storeFormData } = useStoreContext() || {};
-  const { marketplaceListings: dynamicListings, currency = "KES" } = storeFormData || {};
+  
 
   // Map dynamic or fallback data
   const listingsToDisplay =
