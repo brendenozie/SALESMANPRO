@@ -40,7 +40,7 @@ export default function PreviewModal({
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            onClick={(e) => e.stopPropagation()} // Prevent closing modal when clicking inside
+            onClick={(e: React.MouseEvent<HTMLDivElement>) => e.stopPropagation()} // Prevent closing modal when clicking inside
             className="relative flex h-[90vh] w-full max-w-6xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl"
           >
             {/* Modal Header / Browser Bar */}
