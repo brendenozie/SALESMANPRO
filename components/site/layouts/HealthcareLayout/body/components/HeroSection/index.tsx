@@ -58,11 +58,20 @@ const itemVariants = {
   visible: { opacity: 1, y: 0 },
 };
 
-export default function HealthcareHero() {
-  const { storeFormData } = useStoreContext();
+interface HealthcareHeroProps {
+  heroSlides?: HeroSlide[];
+  slug?: string;
+  themeSettings?: {
+    primaryColor?: string;
+    secondaryColor?: string;
+  } | null;
+}
 
-  // Access the heroSlides array from the context
-  const heroSlides = storeFormData?.heroSlides;
+export default function HealthcareHero({ heroSlides, slug, themeSettings }: HealthcareHeroProps) {
+  // const { storeFormData } = useStoreContext();
+
+  // // Access the heroSlides array from the context
+  // const heroSlides = storeFormData?.heroSlides;
 
   // Use the first slide's data, or fall back to a default value with the correct keys
   const primarySlide = heroSlides?.[0] || {
@@ -70,22 +79,23 @@ export default function HealthcareHero() {
     headline: "Your Health, Our Passion",
     subline: "Providing compassionate, comprehensive care for you and your family.",
     imageUrl: "https://images.unsplash.com/photo-1576091160550-fd419dba48e0?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    productImageUrl: "https://images.unsplash.com/photo-1576091160550-fd419dba48e0?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     ctaText: "Book an Appointment",
-    ctaLink: `/${storeFormData?.slug || 'unbite-healthcare'}/book`,
+    ctaLink: `/${slug || 'unbite-healthcare'}/book`,
     badgeText: "A Step Towards Wellness",
   };
 
-  const { headline, subline, imageUrl, ctaText, ctaLink, badgeText } = primarySlide;
-  const slug = storeFormData?.slug || 'unbite-healthcare';
-  const primaryColor = storeFormData?.themeSettings?.primaryColor || "#008080";
-  const secondaryColor = storeFormData?.themeSettings?.secondaryColor || "#00b3b3";
+  const { headline, subline, imageUrl, productImageUrl, ctaText, ctaLink, badgeText } = primarySlide;
+  // const slug = slug || 'unbite-healthcare';
+  const primaryColor = themeSettings?.primaryColor || "#008080";
+  const secondaryColor = themeSettings?.secondaryColor || "#00b3b3";
   const router = useRouter();
 
   return (
     <section className="relative min-h-screen w-full flex items-center justify-center text-white overflow-hidden">
       {/* Background Image */}
       <Image
-        src={imageUrl || "https://images.unsplash.com/photo-1576091160550-fd419dba48e0?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"}
+        src={productImageUrl || imageUrl || "https://images.unsplash.com/photo-1576091160550-fd419dba48e0?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"}
         alt={headline || "Healthcare Hero Image"}
         fill
         className="object-cover object-center"
