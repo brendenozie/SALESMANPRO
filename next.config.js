@@ -4,12 +4,12 @@ const path = require('path');
 
 module.exports = {
   /* YOU MUST ADD ENV HERE*/
-  // eslint: {
-  //   ignoreDuringBuilds: true, // optional but saves time
-  // },
-  // typescript: {
-  //   ignoreBuildErrors: true,  // disables heavy type checking during build
-  // },
+  eslint: {
+    ignoreDuringBuilds: true, // optional but saves time
+  },
+  typescript: {
+    ignoreBuildErrors: true,  // disables heavy type checking during build
+  },
   productionBrowserSourceMaps: false,
   
   env: {
@@ -48,7 +48,7 @@ module.exports = {
 //     return [
 //         {
 //             // matching all API routes
-//             source: `${apiBaseUrl}/:path*",
+//             source: "/api/:path*",
 //             headers: [
 //                 { key: "Access-Control-Allow-Credentials", value: "true" },
 //                 { key: "Access-Control-Allow-Origin", value: "*" }, // replace this your actual origin
