@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { IBlog } from '@/types/typings';
 
 // A placeholder for the StoreContext hook, mirroring the provided structure
 const blogsSample= [
@@ -130,7 +131,12 @@ const fallbackNews = [
   },
 ];
 
-const LatestNewsSection = () => {
+interface LatestNewsSectionProps { 
+  blogs: IBlog[]; 
+  themeSettings: Record<string, any> | null;
+ }
+
+const LatestNewsSection = ({ blogs, themeSettings }: LatestNewsSectionProps) => {
 
   // const { storeFormData } = useStoreContext() || {};
   // const { blogs } = storeFormData || {};
@@ -150,12 +156,12 @@ const LatestNewsSection = () => {
   );
 
   // Destructure storeFormData from context, providing a fallback
-  const { storeFormData } = useStoreContext() || {};
-  const { blogs: dynamicNews, themeSettings } = storeFormData || {};
+  // const { storeFormData } = useStoreContext() || {};
+  // const  = storeFormData || {};
 
   // Map dynamic blog posts to our news item shape, or use fallback data
-  const newsItems = Array.isArray(dynamicNews) && dynamicNews.length > 0
-    ? dynamicNews.slice(0, 6).map(post => ({
+  const newsItems = Array.isArray(blogs) && blogs.length > 0
+    ? blogs.slice(0, 6).map(post => ({
         title: post.title,
         date: post.publishedAt
           ? new Date(post.publishedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })

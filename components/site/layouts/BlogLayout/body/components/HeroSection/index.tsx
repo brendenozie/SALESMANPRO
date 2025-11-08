@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { HeroSlide } from '@/types/typings';
 
 // A static fallback array for when no dynamic data is available
 const STATIC_SLIDES = [
   {
     id: 'static1',
     imageUrl: 'https://placehold.co/1200x800/F97316/FFFFFF?text=Economy+Insights',
+    productImageUrl: 'https://placehold.co/1200x800/10B981/FFFFFF?text=Artistic+Expression',
     badgeText: 'ECONOMY',
     headline: 'Exploring the Intricacies of Global Economies',
     subline: 'Dive deep into markets, money, and macroeconomic trends that shape our world.',
@@ -17,6 +19,7 @@ const STATIC_SLIDES = [
   {
     id: 'static2',
     imageUrl: 'https://placehold.co/1200x800/8B5CF6/FFFFFF?text=Fashion+Trends',
+    productImageUrl: 'https://placehold.co/1200x800/10B981/FFFFFF?text=Artistic+Expression',
     badgeText: 'STYLE',
     headline: 'A Journey Through Colors, Textures, and Trends',
     subline: 'Stay ahead of the curve with our comprehensive style guides.',
@@ -27,6 +30,7 @@ const STATIC_SLIDES = [
   {
     id: 'static3',
     imageUrl: 'https://placehold.co/1200x800/10B981/FFFFFF?text=Artistic+Expression',
+    productImageUrl: 'https://placehold.co/1200x800/10B981/FFFFFF?text=Artistic+Expression',
     badgeText: 'ART',
     headline: 'Inspiring Creativity and Fostering Artistic Expression',
     subline: 'Discover inspiring art, artist profiles, and creative processes.',
@@ -36,10 +40,12 @@ const STATIC_SLIDES = [
   },
 ];
 
-const HeroSection = () => {
+interface HeroSectionProps { 
+  heroSlides : HeroSlide[];
+}
+
+const HeroSection = ({ heroSlides }: HeroSectionProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const { storeFormData } = useStoreContext() || {};
-  const { heroSlides } = storeFormData || {};
   
   // Use dynamic data if available, otherwise use the static fallback
   const slides = (Array.isArray(heroSlides) && heroSlides.length > 0)
@@ -95,7 +101,7 @@ const HeroSection = () => {
           className="absolute inset-0"
         >
           <img
-            src={currentSlide.imageUrl || 'https://placehold.co/1200x800/1E90FF/FFFFFF?text=AI+Future' }
+            src={currentSlide.imageUrl || currentSlide.productImageUrl || 'https://placehold.co/1200x800/1E90FF/FFFFFF?text=AI+Future' }
             alt={currentSlide.headline || 'Hero Image'}
             className="w-full h-full object-cover"
             onError={handleImageError}

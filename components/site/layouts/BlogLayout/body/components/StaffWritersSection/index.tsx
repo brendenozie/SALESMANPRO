@@ -79,10 +79,13 @@ const fallbackStaffWriters = [
   { name: 'Hawkins Alex', role: 'Content Writer', img: 'https://placehold.co/200x200/10B981/FFFFFF?text=Hawkins' },
 ];
 
-const StaffWritersSection = () => {
+interface StaffWriterProps {
+  Writer: any[];
+}
+const StaffWritersSection = ({ Writer: dynamicWriters }: StaffWriterProps) => {
   // Destructure storeFormData from context, providing a fallback for when context is not available
-  const { storeFormData } = useStoreContext() || {};
-  const dynamicWriters = storeFormData?.Writer;
+  // const { storeFormData } = useStoreContext() || {};
+  // const dynamicWriters = storeFormData?.Writer;
 
   // Map dynamic writer data to our display shape, or use fallback data
   const writersToDisplay = Array.isArray(dynamicWriters) && dynamicWriters.length > 0

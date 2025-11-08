@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { IStoreCategory } from '@/types/typings';
 
 // Mock data for blog categories to make the component runnable
 const categories = [
@@ -60,14 +61,15 @@ const categories = [
   },
 ];
 
-const FeaturedCategoriesSection = () => {
+interface FeaturedCategoriesSectionProps {
+  StoreCategory: IStoreCategory[];
+}
+
+const FeaturedCategoriesSection = ({ StoreCategory }: FeaturedCategoriesSectionProps) => {
   const variants = {
     hidden: { opacity: 0, y: 50 },
     visible: { opacity: 1, y: 0 },
   };
-
-  const { storeFormData } = useStoreContext() || {};
-  const { StoreCategory } = storeFormData || {};
   
   // Use dynamic data if available, otherwise use the static fallback
   const storecategories = (Array.isArray(StoreCategory) && StoreCategory.length > 0)

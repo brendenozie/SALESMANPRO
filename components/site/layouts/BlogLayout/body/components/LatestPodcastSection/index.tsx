@@ -31,12 +31,16 @@ const fallbackPodcasts = [
   },
 ];
 
-const LatestPodcastSection = () => {
+interface LatestPodcastSectionProps { 
+  Podcast : any[] ;
+}
+
+const LatestPodcastSection = ({ Podcast : podcasts }:LatestPodcastSectionProps) => {
 
 
     // Destructure storeFormData from context, providing a fallback
-    const { storeFormData } = useStoreContext() || {};
-    const { Podcast : podcasts } = storeFormData || {};
+    // const { storeFormData } = useStoreContext() || {};
+    // const { Podcast : podcasts } = storeFormData || {};
   
     // Map dynamic blog posts to our news item shape, or use fallback data
     const podcastItems = Array.isArray(podcasts) && podcasts.length > 0

@@ -13,7 +13,7 @@ export async function GET(req: Request) {
     const blogs = await prisma.blog.findMany({
       where: { 
         companyId: id,
-        status: 'PUBLISHED'
+        // status: 'PUBLISHED'
       },
       orderBy: { createdAt: 'desc' },
     });

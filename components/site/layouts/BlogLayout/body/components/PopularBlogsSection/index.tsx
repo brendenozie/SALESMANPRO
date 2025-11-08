@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { IBlog } from '@/types/typings';
 
 // Mock data for blog posts to make the component runnable
 const relatedBlogs = [
@@ -34,11 +35,16 @@ const relatedBlogs = [
   },
 ];
 
-const PopularBlogsSection = () => {
+interface PopularBlogsSectionProps { 
+  blogs: IBlog[]; 
+  themeSettings: Record<string, any> | null;
+ }
+
+const PopularBlogsSection = ({ blogs : dynamicNews, themeSettings }: PopularBlogsSectionProps) => {
 
   // Destructure storeFormData from context, providing a fallback
-  const { storeFormData } = useStoreContext() || {};
-  const { blogs: dynamicNews, themeSettings } = storeFormData || {};
+  // const { storeFormData } = useStoreContext() || {};
+  // const { blogs: dynamicNews, themeSettings } = storeFormData || {};
 
   // Map dynamic blog posts to our news item shape, or use fallback data
   const newsItems = Array.isArray(dynamicNews) && dynamicNews.length > 0

@@ -31,33 +31,21 @@ export default function BlogSite({ pageData, companyId }: { pageData: StoreForm,
   return (
     <>
 
-      <HeroSection />
+      <HeroSection heroSlides={pageData.heroSlides} />
 
-      <FeaturedCategoriesSection />
+      <FeaturedCategoriesSection StoreCategory={pageData.StoreCategory} />
 
-      {blogsData?.data && <LatestNewsSection />}
+      {blogsData?.data && <LatestNewsSection blogs={blogsData.data} themeSettings={pageData.themeSettings} />}
 
-      <StaffWritersSection />
+      <StaffWritersSection Writer={pageData.Writer} />
 
-      {blogsData?.data && <PopularBlogsSection />}
+      {blogsData?.data && <PopularBlogsSection blogs={blogsData.data} themeSettings={pageData.themeSettings} />}
 
-      <LatestPodcastSection />
+      <LatestPodcastSection Podcast={pageData.Podcast} />
 
       <CtaSection/>
       
     </>
   );
 }
-
-interface BlogHeroProps {
-  siteName: string;
-  bannerUrl?: string;
-}
-
-
-interface BlogInsightsProps {
-  posts: Array<{ id: string; title: string; excerpt: string; image: string }>;
-  loader: (_: any) => string;
-}
-
 
