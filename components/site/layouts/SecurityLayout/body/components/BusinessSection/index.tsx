@@ -11,12 +11,12 @@ import {
   BoltIcon,
   LightBulbIcon,
   UsersIcon,
+  CubeTransparentIcon,
   SparklesIcon,
 } from '@heroicons/react/24/outline';
-import { useStoreContext } from '@/contexts/StoreContext';
-import { StoreForm, IStoreCategory, ISubcategory } from '@/types/typings';
+// Assuming useStoreContext, IStoreCategory, ISubcategory are imported correctly
 
-// Map category names to Heroicon components
+// Map category/service names to Heroicon components
 const iconMap: Record<string, React.ElementType> = {
   'Business Coaching': BriefcaseIcon,
   'Executive Coaching': AcademicCapIcon,
@@ -33,184 +33,194 @@ type Offering = {
   iconComponent: React.ElementType;
 };
 
-// Fallback data for a standalone preview
+// Fallback data (Limit to 4-6 features for this stacked style)
 const defaultCoachingSolutions: Offering[] = [
-  { title: 'Business Coaching', desc: 'Enhance your business performance with expert coaching and actionable strategies.', iconComponent: BriefcaseIcon },
-  { title: 'Executive Coaching', desc: 'Tailored sessions designed to elevate executive leadership and decision-making.', iconComponent: AcademicCapIcon },
-  { title: 'Leadership Coaching', desc: 'Boost team dynamics, communication, and overall leadership skills for success.', iconComponent: UsersIcon },
-  { title: 'Accountability Coaching', desc: 'Stay on track and achieve your goals with dedicated accountability experts.', iconComponent: BoltIcon },
-  { title: 'Strategic Planning', desc: 'Define your vision, set clear objectives, and align your team for sustainable growth.', iconComponent: ChartBarIcon },
-  { title: 'Career Coaching', desc: 'Gain clarity, overcome challenges, and take control of your professional path.', iconComponent: LightBulbIcon },
+  { title: 'Business Coaching', desc: 'Enhance your business performance with expert coaching and actionable strategies designed for rapid growth and sustainable success.', iconComponent: BriefcaseIcon },
+  { title: 'Executive Coaching', desc: 'Tailored sessions designed to elevate executive leadership, strategic foresight, and complex decision-making skills at the highest level.', iconComponent: AcademicCapIcon },
+  { title: 'Leadership Coaching', desc: 'Boost team dynamics, communication, and overall leadership skills. Develop a culture of accountability and innovation within your organization.', iconComponent: UsersIcon },
+  { title: 'Strategic Planning', desc: 'Define your vision, set clear, measurable objectives, and align your entire team for focused, sustainable long-term market growth.', iconComponent: ChartBarIcon },
 ];
 
 // Framer Motion variants
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-    },
-  },
+const headerVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
 };
 
-const itemVariants = {
-  hidden: { opacity: 0, y: 50 },
+const featureBlockVariants = {
+  hidden: { opacity: 0, y: 50, scale: 0.98 },
   visible: {
     opacity: 1,
     y: 0,
+    scale: 1,
     transition: {
       type: 'spring',
-      stiffness: 100,
-      damping: 10,
+      stiffness: 80,
+      damping: 12,
+      duration: 0.8,
     },
   },
 };
 
 interface BusinessSectionProps {
-    name: string | undefined | null;
-    slug: string | undefined | null;
-    description: string | undefined | null;
-    themeSettings: {
-      primaryColor?: string;
-      secondaryColor?: string;
-    } | undefined | null;
-    StoreCategory: IStoreCategory[];
-  }
+  name: string | undefined | null;
+  slug: string | undefined | null;
+  description: string | undefined | null;
+  themeSettings: {
+    primaryColor?: string;
+    secondaryColor?: string;
+  } | undefined | null;
+  StoreCategory: any[];
+}
 
-export default function ServicesSection({name, slug, description, themeSettings, StoreCategory}: BusinessSectionProps) {
+// Helper to get icon
+const getIcon = (title: string): React.ElementType => {
+    const Icon = iconMap[title] || iconMap[title.split(' ')[0] as keyof typeof iconMap];
+    return Icon || CubeTransparentIcon;
+};
+
+
+export default function ServicesSection({ name, slug, description, themeSettings, StoreCategory }: BusinessSectionProps) {
   
-
   const primaryColor = themeSettings?.primaryColor || '#00A880';
   const secondaryColor = themeSettings?.secondaryColor || '#10B981';
 
-  // --- Core Logic Update ---
+  // --- Data Processing Logic (Kept concise) ---
   const hasCategories = Array.isArray(StoreCategory) && StoreCategory.length > 0;
   let offeringsToShow: Offering[] = [];
 
-  if (hasCategories && StoreCategory.length < 3) {
-    // If fewer than 3 categories, flatten subcategories and take up to 6
-    const allSubcategories = StoreCategory.flatMap(cat => cat.subcategories || []);
-    const limitedSubcategories = allSubcategories.slice(0, 6);
-    offeringsToShow = limitedSubcategories.map(subcat => ({
-      title: subcat.name || 'Service',
-      desc: `Explore our specialized ${subcat.name} solutions.`,
-      id: subcat.id,
-      iconComponent: SparklesIcon, // No specific icon for subcategories, using a fallback
-    }));
-  } else if (hasCategories) {
-    // If 3 or more categories, display the categories themselves
-    offeringsToShow = (StoreCategory as IStoreCategory[]).map(cat => ({
-      title: cat.displayName || 'Service',
-      desc:`Explore our specialized ${cat.displayName} solutions.`, // cat.description || 
-      id: cat.id,
-      iconComponent:  SparklesIcon, //iconMap[cat.displayName] ||
-    }));
+  if (hasCategories) {
+      if (StoreCategory.length < 3) {
+          const allSubcategories = StoreCategory.flatMap(cat => cat.subcategories || []).slice(0, 6);
+          offeringsToShow = allSubcategories.map(subcat => ({
+              title: subcat.name || 'Service',
+              desc: subcat.description || `Explore our specialized ${subcat.name} solutions.`,
+              id: subcat.id,
+              iconComponent: getIcon(subcat.name || ''),
+          }));
+      } else {
+          offeringsToShow = (StoreCategory as any[]).slice(0, 6).map(cat => ({
+              title: cat.displayName || 'Service',
+              desc: cat.description || `Explore our specialized ${cat.displayName} solutions.`,
+              id: cat.id,
+              iconComponent: getIcon(cat.displayName || ''),
+          }));
+      }
   } else {
-    // Fallback if no categories exist
     offeringsToShow = defaultCoachingSolutions;
   }
-  // --- End of Core Logic Update ---
+  // --- End of Data Processing Logic ---
+
+  const sectionTitle = name ? `What We ${name}` : 'What We Offer';
+  const subtitle = description || 'Our proven methodology is delivered through focused, tailored services designed to achieve measurable results.';
+  
+  const cssVars = {
+    '--primary': primaryColor,
+    '--secondary': secondaryColor,
+  } as React.CSSProperties;
 
   return (
     <AnimatePresence>
-      <section id="features" className="relative py-24 md:py-32 px-6 lg:px-12 bg-white dark:bg-gray-950 overflow-hidden">
-        {/* Dynamic Background Gradients */}
-        <div
-          className="absolute inset-0 z-0 opacity-10 dark:opacity-20 pointer-events-none"
-          style={{
-            background: `radial-gradient(circle at 10% 20%, ${primaryColor}10, transparent 40%), radial-gradient(circle at 90% 80%, ${secondaryColor}10, transparent 40%)`,
-          }}
-        />
-
-        {/* Content Container */}
+      <section 
+        id="services" 
+        // LIGHT MODE: Clean white background
+        className="relative py-24 md:py-32 px-6 lg:px-12 bg-white text-gray-900 overflow-hidden" 
+        style={cssVars}
+      >
         <div className="max-w-7xl mx-auto relative z-10">
+          
+          {/* Header */}
           <motion.div
-            className="text-center mb-16"
-            variants={containerVariants}
+            className="text-center mb-16 max-w-4xl mx-auto"
+            variants={headerVariants}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, amount: 0.2 }}
           >
-            <motion.h2
-              className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 dark:text-white leading-tight mb-4 drop-shadow-sm"
-              variants={itemVariants}
+            <p 
+              className="text-lg font-semibold uppercase tracking-widest mb-3" 
+              style={{ color: primaryColor }}
             >
-              Our Specialized{' '}
-              <span style={{ color: primaryColor }}>
-                {name || 'Solutions'}
-              </span>
-            </motion.h2>
-            <motion.p
-              className="mt-4 text-gray-700 dark:text-gray-300 max-w-3xl mx-auto text-lg md:text-xl leading-relaxed"
-              variants={itemVariants}
-            >
-              {description || 'We offer a suite of tailored services designed to help you achieve your goals and unlock your full potential.'}
-            </motion.p>
+              Our Core Services
+            </p>
+            <h2 className="text-4xl md:text-5xl font-extrabold leading-tight text-gray-900">
+              {sectionTitle}
+            </h2>
+            <p className="mt-4 text-xl text-gray-600">
+              {subtitle}
+            </p>
           </motion.div>
 
-          {/* Grid of Cards, now with portfolio styling */}
-          <motion.div
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
-          >
+          {/* Feature Blocks Container */}
+          <div className="space-y-24">
             {offeringsToShow.map((offer, idx) => {
               const Icon = offer.iconComponent;
+              const isFlipped = idx % 2 !== 0; // Alternate the layout
+              
               return (
                 <motion.div
                   key={offer.id || idx}
-                  className="relative group bg-gray-100 dark:bg-gray-800 rounded-3xl overflow-hidden shadow-xl transform transition-all duration-300 ease-in-out hover:-translate-y-2 hover:shadow-2xl"
-                  variants={itemVariants}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                  className={`flex flex-col lg:flex-row items-center gap-12 ${isFlipped ? 'lg:flex-row-reverse' : ''}`}
+                  variants={featureBlockVariants}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true, amount: 0.3 }}
                 >
-                  <div className="p-6 md:p-8">
-                    {/* Tag to match portfolio style */}
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      <span
-                        className="px-3 py-1 text-sm font-medium rounded-full"
-                        style={{
-                          backgroundColor: `${primaryColor}10`,
-                          color: primaryColor,
-                        }}
-                      >
-                        Service
-                      </span>
+                  
+                  {/* Visual Element (Icon/Number/Shape) */}
+                  <div className={`w-full lg:w-1/3 relative p-8 ${isFlipped ? 'lg:p-0' : 'lg:p-0'}`}>
+                    <div 
+                      className={`relative aspect-square max-w-xs mx-auto flex items-center justify-center rounded-3xl transition-all duration-500 transform hover:scale-[1.03] shadow-2xl`}
+                      style={{ 
+                        background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`,
+                        boxShadow: `0 10px 30px -5px ${primaryColor}50`,
+                      }}
+                    >
+                        {/* Large Animated Icon */}
+                        <motion.div
+                            initial={{ scale: 0.8, rotate: -5 }}
+                            animate={{ scale: 1, rotate: 0 }}
+                            transition={{ delay: 0.5, type: 'spring', stiffness: 150 }}
+                        >
+                            <Icon className="w-24 h-24 text-white p-2" />
+                        </motion.div>
+                        
+                        {/* Subtle Index Number */}
+                        <span className="absolute top-4 right-4 text-white/50 text-7xl font-extrabold opacity-5">
+                            0{idx + 1}
+                        </span>
                     </div>
-
-                    <div className="relative z-10">
-                      <div
-                        className="w-16 h-16 rounded-full flex items-center justify-center mb-6 shadow-lg transform transition-all duration-300 ease-in-out group-hover:scale-110"
-                        style={{ 
-                          backgroundColor: primaryColor,
-                          // background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})` 
-                        }}
-                      >
-                        <Icon className="w-8 h-8 text-white" />
-                      </div>
-                      <h3 className="text-2xl font-bold mb-3 text-gray-900 dark:text-white leading-snug">
-                        {offer.title}
-                      </h3>
-                      <p className="text-base text-gray-600 dark:text-gray-300 leading-relaxed mb-6">
-                        {offer.desc}
-                      </p>
-                      <Link
-                        href={offer.id ? `/${slug}/product/${offer.id}` : `/${slug}/contact`}
-                        className="inline-flex items-center gap-2 text-base font-semibold px-6 py-3 rounded-full shadow-md transition-all duration-300 ease-in-out transform hover:scale-105"
-                        style={{ backgroundColor: primaryColor, color: '#fff' }}
-                      >
-                        {offer.id ? 'View Details' : 'Book Consultation'}
-                        <ArrowRightIcon className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                      </Link>
-                    </div>
+                  </div>
+                  
+                  {/* Text Content */}
+                  <div className="w-full lg:w-2/3 text-center lg:text-left">
+                    <span 
+                      className="text-sm font-semibold uppercase tracking-widest mb-2 inline-block"
+                      style={{ color: primaryColor }}
+                    >
+                      Step {idx + 1}
+                    </span>
+                    <h3 className="text-4xl md:text-5xl font-bold mb-4 leading-snug">
+                      {offer.title}
+                    </h3>
+                    <p className="text-xl text-gray-700 mb-8 max-w-2xl lg:max-w-full mx-auto">
+                      {offer.desc}
+                    </p>
+                    
+                    <Link
+                      href={offer.id ? `/${slug}/product/${offer.id}` : `/${slug}/contact`}
+                      className="inline-flex items-center gap-2 text-base font-semibold px-6 py-3 rounded-full transition-all duration-300 transform hover:scale-[1.05]"
+                      style={{ color: primaryColor, border: `2px solid ${primaryColor}` }}
+                    >
+                      {offer.id ? 'Discover Full Details' : 'Book a Strategy Call'}
+                      <ArrowRightIcon className="w-5 h-5" />
+                    </Link>
                   </div>
                 </motion.div>
               );
             })}
-          </motion.div>
+          </div>
+          
         </div>
       </section>
     </AnimatePresence>

@@ -4,280 +4,249 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRightIcon } from '@heroicons/react/24/outline';
+import { ArrowRightIcon, LockClosedIcon, ShieldCheckIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 import { useStoreContext } from '@/contexts/StoreContext';
-import { MarketListingForm, StoreForm } from '@/types/typings';
+import { MarketListingForm } from '@/types/typings'; // Assuming MarketListingForm is correct
 
 // Loader for Next.js Image component
 const imageLoader = ({ src, width, quality }: any) => {
+  // Use a simple placeholder if the actual URL logic fails
   return `${src}?w=${width}&q=${quality || 75}`;
 };
 
-// Fallback data for a standalone preview
+// --- SECURITY-RELATED FALLBACK DATA ---
 const defaultListings: MarketListingForm[] = [
   {
     id: '1',
-    name: 'Consulting Session',
-    description: 'A focused, one-on-one session to address your most pressing business challenges.',
-    finalPrice: 250,
-    duration: undefined,
-    productCategoryId: '',
-    subCategory: undefined,
-    tags: [],
-    option: [],
-    color: [],
-    size: [],
-    weight: [],
-    material: [],
-    quantity: 0,
-    images: [],
-    buyingPrice: 0,
-    sellingPrice: 0,
-    pricingTiers: [],
-    isAvailable: false,
-    isOnOffer: false,
-    isFlashDeal: false,
-    isNewArrival: false,
-    isDiscounted: false,
-    isFeatured: false,
-    bedrooms: [],
-    studios: [],
-    features: [],
-    bookingSlots: [],
-    requiredClientInfo: [],
-    amenities: [],
-    delivery: false,
-    paymentOption: '',
-    status: 'ACTIVE',
-    location: null
+    name: 'Threat Modeling Masterclass',
+    description: 'A comprehensive video course on proactive security design and threat identification.',
+    finalPrice: 499.00,
+    images: [{ url: 'https://images.unsplash.com/photo-1555940250-86d1b7774e1d?q=80&w=2574&auto=format&fit=crop', id: 'img1' }],
+    tags: ['Masterclass', 'Proactive'],
+    // Minimal required fields for display (omitted non-essential fields for clarity)
+    // ... all other MarketListingForm fields set to defaults or null
+    duration: undefined, productCategoryId: '', subCategory: undefined, option: [], color: [], size: [], weight: [], material: [], quantity: 0, buyingPrice: 0, sellingPrice: 0, pricingTiers: [], isAvailable: false, isOnOffer: false, isFlashDeal: false, isNewArrival: false, isDiscounted: false, isFeatured: true, bedrooms: [], studios: [], features: [], bookingSlots: [], requiredClientInfo: [], amenities: [], delivery: false, paymentOption: '', status: 'ACTIVE', location: null
   },
   {
     id: '2',
-    name: 'Webinar Series',
-    description: 'Access to a five-part series on advanced strategic planning and business growth.',
-    finalPrice: 50,
-    // priceUnit: 'USD',
-    // imageUrl: 'https://images.unsplash.com/photo-1596525997424-3453a479261a?q=80&w=2670&auto=format&fit=crop',
-    
-    duration: undefined,
-    productCategoryId: '',
-    subCategory: undefined,
-    tags: [],
-    option: [],
-    color: [],
-    size: [],
-    weight: [],
-    material: [],
-    quantity: 0,
-    images: [],
-    buyingPrice: 0,
-    sellingPrice: 0,
-    pricingTiers: [],
-    isAvailable: false,
-    isOnOffer: false,
-    isFlashDeal: false,
-    isNewArrival: false,
-    isDiscounted: false,
-    isFeatured: false,
-    bedrooms: [],
-    studios: [],
-    features: [],
-    bookingSlots: [],
-    requiredClientInfo: [],
-    amenities: [],
-    delivery: false,
-    paymentOption: '',
-    status: 'ACTIVE',
-    location: null
+    name: 'Zero Trust Implementation Guide',
+    description: 'A step-by-step PDF blueprint for migrating your network to a modern Zero Trust architecture.',
+    finalPrice: 99.00,
+    images: [{ url: 'https://images.unsplash.com/photo-1544485303-10e527d91d84?q=80&w=2671&auto=format&fit=crop', id: 'img2' }],
+    tags: ['Ebook', 'Network'],
+    // ... all other MarketListingForm fields set to defaults or null
+    duration: undefined, productCategoryId: '', subCategory: undefined, option: [], color: [], size: [], weight: [], material: [], quantity: 0, buyingPrice: 0, sellingPrice: 0, pricingTiers: [], isAvailable: false, isOnOffer: false, isFlashDeal: false, isNewArrival: false, isDiscounted: false, isFeatured: false, bedrooms: [], studios: [], features: [], bookingSlots: [], requiredClientInfo: [], amenities: [], delivery: false, paymentOption: '', status: 'ACTIVE', location: null
   },
   {
     id: '3',
-    name: 'Ebook: Growth Blueprint',
-    description: 'A comprehensive digital guide to scaling your business from the ground up.',
-    finalPrice: 25,
-    // priceUnit: 'USD',
-    // imageUrl: 'https://images.unsplash.com/photo-1517457210740-420131464303?q=80&w=2670&auto=format&fit=crop',
-    
-    duration: undefined,
-    productCategoryId: '',
-    subCategory: undefined,
-    tags: [],
-    option: [],
-    color: [],
-    size: [],
-    weight: [],
-    material: [],
-    quantity: 0,
-    images: [],
-    buyingPrice: 0,
-    sellingPrice: 0,
-    pricingTiers: [],
-    isAvailable: false,
-    isOnOffer: false,
-    isFlashDeal: false,
-    isNewArrival: false,
-    isDiscounted: false,
-    isFeatured: false,
-    bedrooms: [],
-    studios: [],
-    features: [],
-    bookingSlots: [],
-    requiredClientInfo: [],
-    amenities: [],
-    delivery: false,
-    paymentOption: '',
-    status: 'ACTIVE',
-    location: null
+    name: 'DevSecOps Pipeline Template',
+    description: 'Ready-to-use CI/CD code templates and security automation scripts for rapid deployment.',
+    finalPrice: 149.00,
+    images: [{ url: 'https://images.unsplash.com/photo-1627398242454-45a1465c2479?q=80&w=2787&auto=format&fit=crop', id: 'img3' }],
+    tags: ['Template', 'Automation'],
+    // ... all other MarketListingForm fields set to defaults or null
+    duration: undefined, productCategoryId: '', subCategory: undefined, option: [], color: [], size: [], weight: [], material: [], quantity: 0, buyingPrice: 0, sellingPrice: 0, pricingTiers: [], isAvailable: false, isOnOffer: false, isFlashDeal: false, isNewArrival: false, isDiscounted: false, isFeatured: false, bedrooms: [], studios: [], features: [], bookingSlots: [], requiredClientInfo: [], amenities: [], delivery: false, paymentOption: '', status: 'ACTIVE', location: null
   },
 ];
+// --- END FALLBACK DATA ---
 
-const containerVariants = {
+// Framer Motion variants (adjusted for better visual hierarchy)
+const headerVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
+};
+const gridVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.1,
+      staggerChildren: 0.15,
+      delayChildren: 0.3,
     },
   },
+};
+const featuredItemVariants = {
+    hidden: { opacity: 0, x: -50 },
+    visible: { opacity: 1, x: 0, transition: { type: 'spring', stiffness: 80, damping: 15 } },
+};
+const secondaryItemVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
 };
 
-const itemVariants = {
-  hidden: { opacity: 0, y: 50 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      type: 'spring',
-      stiffness: 100,
-      damping: 10,
-    },
-  },
-};
 
 interface MarketplaceListingsSectionProps {
-    name: string | undefined | null;
-    slug: string | undefined | null;
-    themeSettings: { 
-      primaryColor?: string; 
-      secondaryColor?: string; 
-    } | undefined | null;
-    marketplaceListings: MarketListingForm[] | undefined | null;
-  }
+  name: string | undefined | null;
+  slug: string | undefined | null;
+  themeSettings: { 
+    primaryColor?: string; 
+    secondaryColor?: string; 
+  } | undefined | null;
+  marketplaceListings: MarketListingForm[] | undefined | null;
+}
 
 
 export default function MarketplaceListingsSection({ name, slug, themeSettings, marketplaceListings }: MarketplaceListingsSectionProps) {
   
-
   const primaryColor = themeSettings?.primaryColor || '#00A880';
   const secondaryColor = themeSettings?.secondaryColor || '#10B981';
 
-  const dynamicListings: MarketListingForm[] = Array.isArray(marketplaceListings) && marketplaceListings.length > 0
+  // Sort listings to put a featured item first, or use a default one.
+  const allListings: MarketListingForm[] = Array.isArray(marketplaceListings) && marketplaceListings.length > 0
     ? marketplaceListings
     : defaultListings;
 
-  if (dynamicListings.length === 0) {
-    return null; // Don't render the section if there are no listings
+  if (allListings.length === 0) {
+    return null; 
   }
+
+  // Find the most featured item for the large block
+  const featuredItem = allListings.find(item => item.isFeatured) || allListings[0];
+  const secondaryListings = allListings.filter(item => item.id !== featuredItem.id).slice(0, 3); // Max 3 small cards
+
+  const formatPrice = (price: number) => {
+      // Simple formatting, assuming USD for security products
+      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(price);
+  };
+  
+  const cssVars = {
+    '--primary': primaryColor,
+    '--secondary': secondaryColor,
+  } as React.CSSProperties;
+
 
   return (
     <AnimatePresence>
-      <section id="services" className="relative py-24 md:py-32 px-6 lg:px-12 bg-white dark:bg-gray-950 overflow-hidden">
-        {/* Dynamic Background Gradients */}
-        <div
-          className="absolute inset-0 z-0 opacity-10 dark:opacity-20 pointer-events-none"
-          style={{
-            background: `radial-gradient(circle at 10% 20%, ${primaryColor}10, transparent 40%), radial-gradient(circle at 90% 80%, ${secondaryColor}10, transparent 40%)`,
-          }}
-        />
-
-        <div className="max-w-7xl mx-auto relative z-10">
-          <motion.div
-            className="text-center mb-16"
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
+      <section id="marketplace" className="relative py-24 md:py-32 px-6 lg:px-12 bg-gray-50 text-gray-900 overflow-hidden" style={cssVars}>
+        
+        {/* Header */}
+        <motion.div
+          className="text-center mb-16 max-w-4xl mx-auto"
+          variants={headerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.2 }}
+        >
+          <p 
+            className="text-lg font-semibold uppercase tracking-widest mb-3" 
+            style={{ color: primaryColor }}
           >
-            <motion.h2
-              className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 dark:text-white leading-tight mb-4 drop-shadow-sm"
-              variants={itemVariants}
-            >
-              Explore Our <span style={{ color: primaryColor }}>Marketplace</span>
-            </motion.h2>
-            <motion.p
-              className="mt-4 text-gray-700 dark:text-gray-300 max-w-3xl mx-auto text-lg md:text-xl leading-relaxed"
-              variants={itemVariants}
-            >
-              Discover individual products and digital resources designed to accelerate your growth.
-            </motion.p>
+            Digital Vault & Resources
+          </p>
+          <h2 className="text-4xl md:text-5xl font-extrabold leading-tight text-gray-900">
+            Curated <span style={{ color: primaryColor }}>Security</span> Resources
+          </h2>
+          <p className="mt-4 text-xl text-gray-600">
+            Instantly access blueprints, templates, and masterclasses crafted by our security experts.
+          </p>
+        </motion.div>
+
+        {/* --- MAGAZINE STYLE GRID --- */}
+        <motion.div
+          className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8"
+          variants={gridVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.1 }}
+        >
+          
+          {/* FEATURED ITEM (Large Card) */}
+          <motion.div 
+            className="lg:col-span-2 relative group rounded-3xl overflow-hidden shadow-2xl bg-white border border-gray-200"
+            variants={featuredItemVariants}
+          >
+            <div className="relative w-full h-80 lg:h-full">
+              <Image
+                src={featuredItem.images?.[0]?.url || 'https://images.unsplash.com/photo-1555940250-86d1b7774e1d?q=80&w=2574&auto=format&fit=crop'}
+                loader={imageLoader}
+                alt={featuredItem.name}
+                fill
+                className="object-cover object-center transition-transform duration-500 ease-in-out group-hover:scale-105"
+              />
+              {/* Image Overlay for text readability */}
+              <div className="absolute inset-0 bg-gradient-to-t from-gray-900/80 to-transparent p-8 flex flex-col justify-end">
+                <span className="text-sm font-semibold text-white/70 uppercase tracking-widest mb-2">Featured Course</span>
+                <h3 className="text-4xl font-extrabold text-white mb-3 leading-tight">
+                  {featuredItem.name}
+                </h3>
+                <p className="text-lg text-gray-300 mb-4">{featuredItem.description}</p>
+                <div className="flex items-center justify-between">
+                  <p className="text-3xl font-bold text-white">
+                    {formatPrice(featuredItem.finalPrice || 0)}
+                  </p>
+                  <Link
+                    href={`/${slug}/product/${featuredItem.id}`}
+                    className="inline-flex items-center gap-2 text-base font-bold px-8 py-3 rounded-full transition-all duration-300 transform hover:bg-white hover:text-gray-900"
+                    style={{ backgroundColor: primaryColor, color: '#fff' }}
+                  >
+                    Enroll Now
+                    <ArrowRightIcon className="w-5 h-5" />
+                  </Link>
+                </div>
+              </div>
+            </div>
           </motion.div>
 
-          {/* Grid of Product Cards, now with portfolio styling */}
-          <motion.div
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
-          >
-            {dynamicListings.map((item, idx) => (
+          {/* SECONDARY LISTINGS (Stacked Column) */}
+          <div className="lg:col-span-1 space-y-6">
+            {secondaryListings.map((item, idx) => (
               <motion.div
                 key={item.id || idx}
-                className="relative group bg-gray-100 dark:bg-gray-800 rounded-3xl overflow-hidden shadow-xl transform transition-all duration-300 ease-in-out hover:-translate-y-2 hover:shadow-2xl"
-                variants={itemVariants}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                className="relative group bg-white rounded-3xl p-6 shadow-lg transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border border-gray-200"
+                variants={secondaryItemVariants}
               >
-                <div className="relative w-full aspect-video overflow-hidden">
-                  <Image
-                    src={item.images?.[0]?.url || 'https://images.unsplash.com/photo-1542831371-29b0f74f9713?q=80&w=2670&auto=format&fit=crop'}
-                    loader={imageLoader}
-                    alt={item.name}
-                    fill
-                    className="object-cover object-center transform transition-transform duration-500 ease-in-out group-hover:scale-110"
-                  />
-                </div>
-                
-                <div className="p-6 md:p-8">
-                  {/* Tag to match portfolio style */}
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    <span
-                      className="px-3 py-1 text-sm font-medium rounded-full"
-                      style={{
-                        backgroundColor: `${primaryColor}10`,
-                        color: primaryColor,
-                      }}
-                    >
-                      Marketplace
-                    </span>
+                <div className="flex items-start gap-4">
+                  {/* Small Image/Icon for Secondary Item */}
+                  <div className="w-16 h-16 flex-shrink-0 rounded-xl overflow-hidden shadow-md">
+                      <Image
+                          src={item.images?.[0]?.url || 'https://images.unsplash.com/photo-1544485303-10e527d91d84?q=80&w=2671&auto=format&fit=crop'}
+                          loader={imageLoader}
+                          alt={item.name}
+                          width={64}
+                          height={64}
+                          className="object-cover"
+                      />
                   </div>
 
-                  <h3 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white leading-snug">
-                    {item.name}
-                  </h3>
-                  <p className="text-base text-gray-600 dark:text-gray-300 leading-relaxed mb-6">
-                    {item.description}
-                  </p>
-
-                  <div className="flex items-center justify-between mt-auto">
-                    <p className="text-2xl font-bold" style={{ color: primaryColor }}>
-                      {item.finalPrice}
-                      {/* {item.priceUnit}$/ */}
-                    </p>
-                    <Link
-                      href={`/${slug}/product/${item.id}`}
-                      className="inline-flex items-center gap-2 text-base font-semibold px-6 py-3 rounded-full shadow-md transition-all duration-300 transform hover:scale-105"
-                      style={{ backgroundColor: primaryColor, color: '#fff' }}
-                    >
-                      View Details
-                      <ArrowRightIcon className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                    </Link>
+                  <div className="flex-grow">
+                    <h4 className="text-xl font-bold mb-1 text-gray-900 leading-snug">
+                      {item.name}
+                    </h4>
+                    <p className="text-sm text-gray-500 mb-3">{item.tags[0] || 'Resource'}</p>
+                    <div className="flex items-center justify-between">
+                      <p className="text-xl font-bold" style={{ color: primaryColor }}>
+                        {formatPrice(item.finalPrice || 0)}
+                      </p>
+                      <Link
+                        href={`/${slug}/product/${item.id}`}
+                        className="text-sm font-semibold transition-colors duration-300 hover:underline"
+                        style={{ color: primaryColor }}
+                      >
+                        Get It <ArrowRightIcon className="w-4 h-4 inline-block ml-1 group-hover:translate-x-1 transition-transform" />
+                      </Link>
+                    </div>
                   </div>
                 </div>
               </motion.div>
             ))}
-          </motion.div>
-        </div>
+            
+            {/* CTA to view the entire vault */}
+            <motion.div 
+                className="pt-4 text-center"
+                variants={secondaryItemVariants}
+            >
+                <Link
+                    href={`/${slug}/marketplace`}
+                    className="inline-flex items-center gap-3 text-base font-bold px-8 py-3 rounded-full transition-all duration-300 transform hover:scale-[1.03] hover:shadow-lg"
+                    style={{ backgroundColor: secondaryColor, color: '#fff' }}
+                >
+                    <ShieldCheckIcon className="w-5 h-5" />
+                    View Entire Digital Vault
+                </Link>
+            </motion.div>
+
+          </div>
+        </motion.div>
       </section>
     </AnimatePresence>
   );

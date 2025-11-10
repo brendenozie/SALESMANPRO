@@ -27,6 +27,7 @@ export default function SecuritySite({ pageData, companyId }: { pageData: StoreF
   const {
     name,
     slug,
+    bannerUrl,
     description,
     StoreCategory,
     themeSettings = {},
@@ -56,7 +57,7 @@ export default function SecuritySite({ pageData, companyId }: { pageData: StoreF
 
       <FeaturesSection themeSettings={themeSettings} name={name} promotions={promotions} tagline={tagline}/> 
 
-      <AboutSection  name={name} slug={slug} contactEmail={contactEmail} stats={stats} themeSettings={themeSettings} description={description} tagline={tagline} heroSlides={heroSlides}/>
+      <AboutSection  name={name} slug={slug} bannerUrl={bannerUrl} contactEmail={contactEmail} stats={stats} themeSettings={themeSettings} description={description} tagline={tagline} heroSlides={heroSlides}/>
 
       <CaseStudiesSection themeSettings={themeSettings} CoreValues={CoreValues} />
 
@@ -70,7 +71,7 @@ export default function SecuritySite({ pageData, companyId }: { pageData: StoreF
 
       <FAQSection faqs={faqs} themeSettings={themeSettings}/>
 
-      <CtaSection/>
+      <CtaSection  imageUrl={bannerUrl}/>
 
       <ContactSection />
       
