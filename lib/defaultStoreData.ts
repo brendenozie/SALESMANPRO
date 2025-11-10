@@ -5,7 +5,7 @@ const in3Days = new Date(now.getTime() + 3 * 24 * 3600 * 1000);
 const in1Day  = new Date(now.getTime() +   1 * 24 * 3600 * 1000);
 
 // NOTE: Placeholder URLs are used for images as actual assets are not available here.
-const getSampleImageUrl = (category: string) => `/images/samples/${category.toLowerCase().replace(/ & /g, '').replace(/ /g, '-')}.jpg`;
+const getSampleImageUrl = (category: string) => `https://placehold.co/600x400?text=${encodeURIComponent(category)}&font=roboto`;
 
 // 1) Define your master baseData (keeping this as-is)
 const baseData: Partial<StoreForm> = {
@@ -401,6 +401,26 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
         imageUrl: getSampleImageUrl('marketplace'), headline: "List Your Items for Free!", subline: "Start selling to thousands of local buyers today.", ctaText: "Start Selling", ctaLink: "/sell",
         id: "", companyId: "", price: null, productImageUrl: null, badgeText: "Local Deals", endsAt: null, order: 0, iconKey: null, backgroundColor: null, textColor: null, videoLink: null, type: 'image'
       }],
+    }),
+
+    'Security Services': withOverrides({
+      tagline: "**Protect What Matters Most** with Expert Security Services",
+      description: "Offering comprehensive security solutions including surveillance systems, alarm installations, and 24/7 monitoring to safeguard your home and business.",
+      socialLinks: [{ channel: SocialChannel.LINKEDIN, url: "https://linkedin.com/company/securityservices" }],
+      faqs:        [{ question: "What types of security systems do you offer?", answer: "We provide CCTV, alarm systems, access control, and more tailored to your needs.", order: 1 }],
+      testimonials:[{ authorName: "David P.", quote: "Their team installed a top-notch security system for my business. Highly recommend!", rating: 5 }],
+      heroSlides:  [{
+        imageUrl: getSampleImageUrl('security-services'), 
+        headline: "Secure Your Property Today", 
+        subline: "Get a free consultation and quote for your security needs.", 
+        ctaText: "Get Quote", ctaLink: "/contact",
+        id: "", companyId: "", price: null, productImageUrl: null, badgeText: 
+        "Trusted Security", endsAt: null, order: 0, iconKey: null, backgroundColor: null, textColor: null, videoLink: null, type: 'image'
+      }],
+      pricingTiers: [
+        { name: "Basic Monitoring", price: 29, duration: "monthly", features: ["24/7 monitoring", "Mobile alerts"] },
+        { name: "Premium Package", price: 59, duration: "monthly", features: ["All Basic features", "Advanced surveillance", "Priority support"] }
+      ],
     }),
     
     // --- Remaining Stubbed Categories ---
