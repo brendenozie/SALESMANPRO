@@ -154,8 +154,8 @@ export default function MeetOurExperts({ experts }: MeetOurExpertsProps) {
               {/* Member Image */}
               <div className="w-32 h-32 mx-auto mb-6 rounded-full overflow-hidden border-4 border-blue-500/30 shadow-lg group-hover:border-blue-400/50 transition-colors duration-300">
                 <Image
-                  src={member.user.image || "https://placehold.co/128"} // Fallback to img if user.image is not available
-                  alt={member.user.name || 'Expert Image'}
+                  src={member.user?.image || "https://placehold.co/128"} // Fallback to img if user.image is not available
+                  alt={member.user?.name || 'Expert Image'}
                   width={128} // Matched w-32 (128px)
                   height={128} // Matched h-32 (128px)
                   className="object-cover w-full h-full"

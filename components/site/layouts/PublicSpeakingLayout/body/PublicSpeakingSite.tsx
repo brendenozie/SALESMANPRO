@@ -26,7 +26,6 @@ export default function PublicSpeakingSite({ pageData, companyId }: { pageData: 
   const Ebookslistings = siteData?.marketplaceListings.filter(listing => listing.type === "ebook") || [];
   const Programslisting = siteData?.marketplaceListings.filter(listing => listing.type !== "ebook") || [];
 
-  console.log("ConsultancySite - siteData:", siteData.marketplaceListings);
 
   return (
     // This outer div provides the full-width background color
