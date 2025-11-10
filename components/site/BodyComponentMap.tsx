@@ -26,6 +26,7 @@ import RestaurentSite from './layouts/RestaurantLayout/body/RestaurentSite';
 import SaaSSite from './layouts/SaaSLayout/body/SaasSite';
 import ServiceSite from './layouts/ServicesLayout/body/ServiceSite';
 import TravelSite from './layouts/TravelLayout/body/TravelSite';
+import SecuritySite from './layouts/SecurityLayout/body/SecuritySite';
 
 // A single, clean map from component name to the component itself.
 export const BodyComponentMap: Record<string, React.ComponentType<{ pageData: StoreForm; companyId: string }>> = {
@@ -52,5 +53,6 @@ export const BodyComponentMap: Record<string, React.ComponentType<{ pageData: St
   'TravelSite': TravelSite,
   'MarketPlaceSite': MarketPlaceSite,
   'RestaurentSite': RestaurentSite,
+  'SecuritySite': SecuritySite,
   'DefaultSite': DefaultSite,
 };

@@ -149,6 +149,13 @@ export const SITE_CATEGORIES: Category[] = [
         { name: "Product Marketplace", link: "https://marketplace.salesmanpro.site", description: "Create a marketplace for products.", tag: 'Standard' }
       ]
     },
+    {
+      name: "Security Services",
+      icon: "🛡️",
+      variants: [
+        { name: "Security Solutions", link: "https://security.salesmanpro.site", description: "Showcase security services and solutions.", tag: 'Standard' }
+      ]
+    },
     { name: "Other",
       icon: "🌐",
       variants: [

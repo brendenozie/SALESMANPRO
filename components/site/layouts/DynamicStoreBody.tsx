@@ -21,7 +21,7 @@ export default function DynamicStoreBody() {
   }
 
   // All subsequent logic remains the same, just use `storeFormData`
-  const key = normalizeCategory(storeFormData.category || 'other');
+  const key = normalizeCategory(storeFormData.category || storeFormData.variant || 'other');
   const folder = folderMap[key] ?? folderMap['default'];
   const siteComponentName = siteComponentNameMap[folder] ?? siteComponentNameMap['DefaultLayout'];
 

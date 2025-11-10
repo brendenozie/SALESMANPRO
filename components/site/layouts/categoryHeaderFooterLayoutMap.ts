@@ -79,8 +79,6 @@ const categoryHeaderFooterLayoutMap: Record<string, LayoutHeaderFooterComponent>
     'fitness':FitnessLayout ,
     'fitness & wellness':FitnessLayout ,
     'marketplace':MarketplaceLayout ,
-    'other':DefaultLayout ,
-    'Other':DefaultLayout ,     
     
     // variant-based (optional)
     'modern shop (v1)': EcommerceLayout,
@@ -110,6 +108,9 @@ const categoryHeaderFooterLayoutMap: Record<string, LayoutHeaderFooterComponent>
     'product marketplace': MarketplaceLayout,
     'general purpose site': DefaultLayout,
     'security services': SecurityLayout,
+    
+    'other':DefaultLayout ,
+    'Other':DefaultLayout ,     
 
     'default': DefaultLayout,
        
