@@ -34,6 +34,7 @@ const ServiceSite     = dynamic(() => import('@/components/site/layouts/Services
 const SaaSSite        = dynamic(() => import('@/components/site/layouts/SaaSLayout/body/SaasSite'),            { loading: () => <LoadingPlaceholder /> });
 const ConsultancySite = dynamic(() => import('@/components/site/layouts/ConsultancyLayout/body/ConsultancySite'), { loading: () => <LoadingPlaceholder /> });
 const PublicSpeakingSite = dynamic(() => import('@/components/site/layouts/PublicSpeakingLayout/body/PublicSpeakingSite'), { loading: () => <LoadingPlaceholder /> });
+const SecuritySite   = dynamic(() => import('@/components/site/layouts/SecurityLayout/body/SecuritySite'),   { loading: () => <LoadingPlaceholder /> });
 
 type LayoutBodyComponent = React.ComponentType<any>;
 
@@ -121,6 +122,7 @@ const categoryBodyLayoutMap: Record<string, LayoutBodyComponent>  = {
 
   // marketplace
   'marketplace':            MarketplaceSite,
+  'security services':   SecuritySite,
 
   // fallback key (optional—you could omit and let `|| DefaultSite` catch it)
   'other':                  DefaultSite,

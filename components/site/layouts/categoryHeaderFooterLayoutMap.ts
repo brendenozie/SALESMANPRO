@@ -25,6 +25,8 @@ const AutomotiveLayout = dynamic(() => import( '@/components/site/layouts/Automo
 const PublicSpeakingLayout = dynamic(() => import( '@/components/site/layouts/PublicSpeakingLayout/PublicSpeakingLayout'));
 // const SaaSLayout = dynamic(() => import( '@/components/site/layouts/SaaSLayout/SaaSLayout'));
 const ConsultancyLayout = dynamic(() => import('@/components/site/layouts/ConsultancyLayout/ConsultancyLayout'));
+const SecurityLayout = dynamic(() => import('@/components/site/layouts/SecurityLayout/SecurityLayout'));
+
 import { ReactNode } from 'react';
 import { StoreForm } from '../../../types/typings';
 
@@ -107,6 +109,7 @@ const categoryHeaderFooterLayoutMap: Record<string, LayoutHeaderFooterComponent>
     'app landing page': DefaultLayout, // or SaaSLayout
     'product marketplace': MarketplaceLayout,
     'general purpose site': DefaultLayout,
+    'security services': SecurityLayout,
 
     'default': DefaultLayout,
        
