@@ -401,19 +401,19 @@ model CoreValues {
   id          String  @id @default(auto()) @map("_id") @db.ObjectId
   company     Company @relation(fields: [companyId], references: [id])
   companyId   String  @db.ObjectId
-  title       String
-  description String?
-  icon        String?
+  title       String  @default("")
+  description String? @default("")
+  icon        String? @default("")
 
   @@index([companyId])
 }
 
 model SocialLink {
-  id        String        @id @default(auto()) @map("_id") @db.ObjectId
-  company   Company       @relation(fields: [companyId], references: [id])
-  companyId String        @db.ObjectId
-  channel   SocialChannel
-  url       String
+  id        String         @id @default(auto()) @map("_id") @db.ObjectId
+  company   Company        @relation(fields: [companyId], references: [id])
+  companyId String         @db.ObjectId
+  channel   SocialChannel? @default(TWITTER)
+  url       String         @default("")
 
   @@index([companyId])
 }
@@ -422,9 +422,9 @@ model Policy {
   id        String     @id @default(auto()) @map("_id") @db.ObjectId
   company   Company    @relation(fields: [companyId], references: [id])
   companyId String     @db.ObjectId
-  type      PolicyType
-  title     String?
-  content   String
+  type      PolicyType @default(PRIVACY)
+  title     String?    @default("")
+  content   String     @default("")
 
   @@index([companyId])
 }

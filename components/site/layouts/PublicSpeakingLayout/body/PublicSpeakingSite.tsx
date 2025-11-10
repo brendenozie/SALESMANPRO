@@ -14,8 +14,6 @@ import SocialProofSection from "./components/SocialProofSection";
 import AboutSection from "./components/AboutSection";
 import ServicesSection from "./components/ServicesSection";
 import CallToActionSection from "./components/CallToActionSection";
-import ProgramModulesSection from "./components/ProgramModulesSection";
-import SteppingOutSection from "./components/SteppingOutSection";
 
 export default function PublicSpeakingSite({ pageData, companyId }: { pageData: StoreForm, companyId: string }) {
   
@@ -34,34 +32,16 @@ export default function PublicSpeakingSite({ pageData, companyId }: { pageData: 
     // This outer div provides the full-width background color
     <div className="font-sans bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
       
-      {/* 
-        This new inner div acts as the main content container.
-        - `max-w-7xl`: Sets a maximum width (e.g., 1280px). You can adjust this (e.g., max-w-6xl).
-        - `mx-auto`: Centers the container horizontally.
-        - `px-4 sm:px-6 lg:px-8`: Adds padding on the sides for smaller screens.
-        - `space-y-24`: Adds vertical spacing between your section components.
-      */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-24 py-12">
-        {/* 
-          The gradient background is now gone from this example, 
-          as it's often better to have backgrounds inside each section 
-          if they need to be full-width (a common design pattern).
-
-          If you want the gradient on the entire page, apply it to the outermost div.
-        */}
-      
         {/* Hero */}
         <HeroSection heroSlides={siteData?.heroSlides} themeSettings={siteData?.themeSettings} />
 
         <SocialProofSection />
-        
-        {/* <SteppingOutSection storeSlug={siteData?.slug || ''} /> */}
 
-        {/* <ServicesSection />  
+        <ServicesSection />   
         
         <FeaturedListings listings={Ebookslistings} slug={siteData?.slug || ''} />
 
-        <HowItWorks /> */}
+        <HowItWorks /> 
 
         <BrowseByCategory listings={Programslisting} storeSlug={siteData?.slug || ''} /> 
         
@@ -82,7 +62,7 @@ export default function PublicSpeakingSite({ pageData, companyId }: { pageData: 
         {/* <PromotionSection/> */}
 
         {/* <AppPromoSection /> */}
-      </div>
+        
     </div>
   );
 }

@@ -2,14 +2,14 @@ import { z } from "zod";
 
 // Schemas for nested JSON fields or related models
 const socialLinkSchema = z.object({
-  channel: z.enum(["TWITTER", "FACEBOOK", "INSTAGRAM", "LINKEDIN"]),
-  url: z.string(),//.url("Invalid URL format"),
+  channel: z.enum(["TWITTER", "FACEBOOK", "INSTAGRAM", "LINKEDIN"]).default("TWITTER").nullable().optional().or(z.literal('')),
+  url: z.string().nullable().optional().or(z.literal('')),//.url("Invalid URL format"),
 });
 
 const policySchema = z.object({
-  type: z.enum(["SHIPPING", "RETURNS", "PRIVACY", "TERMS"]),
-  title: z.string().optional(),
-  content: z.string().min(1, "Policy content cannot be empty"),
+  type: z.enum(["SHIPPING", "RETURNS", "PRIVACY", "TERMS"]).default("PRIVACY").nullable().optional().or(z.literal('')),
+  title: z.string().nullable().optional().or(z.literal('')),
+  content: z.string().nullable().optional().or(z.literal('')),
 });
 
 const faqSchema = z.object({

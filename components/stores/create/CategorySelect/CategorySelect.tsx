@@ -170,6 +170,13 @@ const SITE_CATEGORIES: Category[] = [
         { name: "Product Marketplace", link: "https://marketplace.salesmanpro.site", description: "Create a marketplace for products.", tag: 'Standard' }
       ]
     },
+    {
+      name: "Security",
+      icon: "🔒",
+      variants: [
+        { name: "Security Services", link: "https://security.salesmanpro.site", description: "Protect your assets and data.", tag: 'Standard' }
+      ]
+    },
     { name: "Other",
       icon: "🌐",
       variants: [
