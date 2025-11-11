@@ -1,35 +1,22 @@
-"use client";
+'use client';
 
-import React from "react";
-import Link from "next/link";
-import { motion, AnimatePresence } from "framer-motion";
 import {
-  MagnifyingGlassIcon,
   Bars3Icon,
-  XMarkIcon,
-  UserCircleIcon,
+  InboxArrowDownIcon,
+  MagnifyingGlassCircleIcon,
+  PhoneIcon,
   TicketIcon,
-} from "@heroicons/react/24/outline";
-import { useRouter } from "next/navigation";
+  UserIcon,
+  XMarkIcon,
+} from '@heroicons/react/24/outline';
+import React, { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
+import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useSession, signIn, signOut } from 'next-auth/react';
+import { useStoreContext } from '@/contexts/StoreContext';
 
-// Since we're not in a real Next.js environment with context,
-// we'll use mock data for demonstration.
-const mockStoreFormData = {
-  name: "Eventine",
-  slug: "eventine",
-  logoUrl: "", // Let's assume no logo to show the text fallback
-  contactEmail: "hello@eventine.com",
-  contactPhone: "1-800-555-EVENT",
-  socialLinks: [
-    { channel: "twitter", url: "https://twitter.com" },
-    { channel: "instagram", url: "https://instagram.com" },
-  ],
-  themeSettings: {
-    primaryColor: "#8B5CF6", // A nice purple
-    secondaryColor: "#EC4899", // A vibrant pink
-  },
-};
-
+// --- Reusable NavLink Component ---
 const NavLink = ({
   href,
   children,
@@ -38,174 +25,347 @@ const NavLink = ({
   href: string;
   children: React.ReactNode;
   onClick?: () => void;
-}) => {
-  // In a real app, you'd use `usePathname` to determine active state
-  const isActive = false;
+}) => (
+  <Link
+    href={href}
+    onClick={onClick}
+    className="relative px-3 py-2 text-sm font-medium text-gray-300 hover:text-white transition-colors duration-200 
+               after:absolute after:bottom-0 after:left-1/2 after:-translate-x-1/2 after:w-0 after:h-0.5 after:bg-white 
+               hover:after:w-full after:transition-all after:duration-300 after:rounded-full"
+  >
+    {children}
+  </Link>
+);
 
-  return (
-    <Link
-      href={href}
-      onClick={onClick}
-      className="relative px-3 py-2 text-sm font-medium text-gray-300 transition-colors hover:text-white"
-    >
-      {children}
-      {isActive && (
-        <motion.span
-          layoutId="underline"
-          className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-purple-400 to-pink-500"
-        />
-      )}
-    </Link>
-  );
-};
-
+// --- MAIN HEADER ---
 export default function Header() {
   const router = useRouter();
-  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
-  const [isScrolled, setIsScrolled] = React.useState(false);
+  const { data: session } = useSession();
+  const user = session?.user as { name?: string; role?: string } | undefined;
+  const { storeFormData } = useStoreContext();
 
-  // This would come from your context in a real app
-  const storeFormData = mockStoreFormData;
+  // Local UI State
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
 
-  const { name, slug, logoUrl } = storeFormData;
+  // Extract store data
+  const {
+    name = 'Eventine',
+    slug = 'eventine',
+    logoUrl,
+    contactEmail = 'hello@eventine.com',
+    contactPhone = '+1-800-555-EVENT',
+    socialLinks = [],
+    themeSettings = {},
+  } = storeFormData || {};
 
-  // Effect to handle scroll-based background change
-  React.useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+  const primaryColor = themeSettings?.primaryColor || '#8B5CF6';
+  const secondaryColor = themeSettings?.secondaryColor || '#EC4899';
+
+  // --- Scroll Background Logic ---
+  useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 80);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // --- Disable Body Scroll When Mobile Menu is Open ---
+  useEffect(() => {
+    document.body.style.overflow = mobileMenuOpen ? 'hidden' : '';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileMenuOpen]);
+
+  // --- Outside click closes mobile menu ---
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        mobileMenuOpen &&
+        mobileMenuRef.current &&
+        !mobileMenuRef.current.contains(event.target as Node)
+      ) {
+        setMobileMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [mobileMenuOpen]);
+
+  // --- Auth handlers ---
+  const handleSignIn = () => {
+    const authUrl = new URL('https://auth.salesmanpro.site/signin');
+    authUrl.searchParams.set('callbackUrl', `${window.location.origin}/site/${slug}`);
+    window.location.href = authUrl.toString();
+  };
+
+  const handleSignUp = () => {
+    const authUrl = new URL('https://auth.salesmanpro.site/signup');
+    authUrl.searchParams.set('callbackUrl', `${window.location.origin}/site/${slug}`);
+    window.location.href = authUrl.toString();
+  };
+
+  const handleSignOut = () => signOut({ callbackUrl: `/site/${slug}` });
+
+  const handleProfile = () => {
+    if (!user) return handleSignIn();
+    if (user.role?.toLowerCase() === 'admin') router.push(`/dashboards`);
+    else router.push(`/site/${slug}/profile`);
+  };
+
+  // --- Nav items ---
   const navItems = [
-    { label: "Home", href: `/site/${slug}` },
-    { label: "Events", href: `/site/${slug}#events` },
-    { label: "About", href: `/site/${slug}#about` },
-    { label: "Contact", href: `/site/${slug}#contact` },
+    { label: 'Home', href: `#home`, key: 'home' },
+    { label: 'Events', href: `#events`, key: 'events' },
+    { label: 'About', href: `#about`, key: 'about' },
+    { label: 'Contact', href: `#contact`, key: 'contact' },
   ];
+
+  // --- Header visual style ---
+  const headerStyle = {
+    backgroundColor: isScrolled ? 'rgba(17, 24, 39, 0.95)' : 'rgba(17, 24, 39, 0.1)',
+    backdropFilter: isScrolled ? 'blur(12px)' : 'blur(0px)',
+    WebkitBackdropFilter: isScrolled ? 'blur(12px)' : 'blur(0px)',
+    borderBottom: isScrolled ? `1px solid ${primaryColor}44` : '1px solid transparent',
+  };
+
+  const headerClasses = `fixed top-0 left-0 right-0 z-50 transition-all duration-300 transform ${
+    isScrolled ? 'translate-y-0 shadow-xl' : 'translate-y-0'
+  }`;
 
   return (
     <>
-      <motion.header
-        className="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
-        style={{
-          backgroundColor: isScrolled
-            ? "rgba(17, 24, 39, 0.8)"
-            : "transparent",
-          backdropFilter: isScrolled ? "blur(10px)" : "none",
-          WebkitBackdropFilter: isScrolled ? "blur(10px)" : "none", // For Safari
-          boxShadow: isScrolled ? "0 4px 6px -1px rgba(0, 0, 0, 0.1)" : "none",
-        }}
-      >
+      {/* ===== HEADER ===== */}
+      <header className={headerClasses} style={headerStyle}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
-            {/* Logo */}
-            <Link href={`/site/${slug}`} className="flex-shrink-0">
+            {/* --- Logo --- */}
+            <Link
+              href={`/site/${slug}`}
+              className="flex items-center gap-2 cursor-pointer transition-transform duration-300 hover:scale-[1.02]"
+            >
               {logoUrl ? (
-                <img
+                <Image
                   src={logoUrl}
                   alt={name}
-                  className="h-10 object-contain"
+                  width={40}
+                  height={40}
+                  className="h-10 w-10 object-contain rounded-lg"
+                  loader={({ src, width, quality }) =>
+                    `${src}?w=${width}&q=${quality || 75}`
+                  }
+                  onError={(e) =>
+                    ((e.target as HTMLImageElement).src =
+                      'https://placehold.co/40x40/8B5CF6/ffffff?text=L')
+                  }
                 />
               ) : (
-                <div className="flex items-center gap-2">
-                  <TicketIcon className="h-8 w-8 text-purple-400" />
+                <>
+                  <TicketIcon className="h-8 w-8" style={{ color: primaryColor }} />
                   <span className="text-2xl font-bold text-white tracking-tighter">
                     {name}
                   </span>
-                </div>
+                </>
               )}
             </Link>
 
-            {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center space-x-2 bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 px-3 py-2 rounded-full">
+            {/* --- Desktop Nav --- */}
+            <nav className="hidden lg:flex items-center space-x-2 bg-gray-800/60 backdrop-blur-md border border-gray-700/50 p-2 rounded-full shadow-lg">
               {navItems.map((item) => (
-                <NavLink key={item.label} href={item.href}>
+                <NavLink key={item.key} href={item.href}>
                   {item.label}
                 </NavLink>
               ))}
             </nav>
 
-            {/* Icons & Actions */}
-            <div className="flex items-center space-x-4">
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-                className="p-2 rounded-full text-gray-300 hover:text-white hover:bg-gray-700/50 transition-colors"
+            {/* --- Right Actions --- */}
+            <div className="flex items-center space-x-3 sm:space-x-4">
+              {/* Search */}
+              <button
+                onClick={() => router.push(`/site/${slug}/search`)}
+                className="p-2 rounded-full text-gray-300 hover:text-white hover:bg-gray-700/50 transition duration-200 transform hover:scale-110"
                 aria-label="Search"
               >
-                <MagnifyingGlassIcon className="h-6 w-6" />
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => router.push(`site/${slug}/events/profile`)}
-                className="p-2 rounded-full text-gray-300 hover:text-white hover:bg-gray-700/50 transition-colors"
+                <MagnifyingGlassCircleIcon className="h-6 w-6" />
+              </button>
+
+              {/* Profile */}
+              <button
+                onClick={handleProfile}
+                className="p-2 rounded-full text-gray-300 hover:text-white hover:bg-gray-700/50 transition duration-200 transform hover:scale-110"
                 aria-label="Profile"
               >
-                <UserCircleIcon className="h-6 w-6" />
-              </motion.button>
+                <UserIcon className="h-6 w-6" />
+              </button>
+
+              {/* Mobile Toggle */}
               <div className="lg:hidden">
-                <motion.button
-                  onClick={() => setMobileMenuOpen(true)}
-                  className="p-2 rounded-full text-gray-300 hover:text-white hover:bg-gray-700/50 transition-colors"
-                  aria-label="Open menu"
+                <button
+                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                  className="p-2 rounded-full text-gray-300 hover:text-white hover:bg-gray-700/50 transition duration-200 transform hover:scale-110"
+                  aria-label="Toggle Menu"
                 >
-                  <Bars3Icon className="h-6 w-6" />
-                </motion.button>
+                  {mobileMenuOpen ? (
+                    <XMarkIcon className="h-6 w-6" />
+                  ) : (
+                    <Bars3Icon className="h-6 w-6" />
+                  )}
+                </button>
               </div>
             </div>
           </div>
         </div>
-      </motion.header>
+      </header>
 
-      {/* Mobile Menu */}
-      <AnimatePresence>
-        {mobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 bg-gray-900/80 backdrop-blur-sm"
+      {/* ===== MOBILE MENU ===== */}
+      {mobileMenuOpen && (
+        <>
+          {/* Overlay */}
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[55] lg:hidden transition-opacity duration-300"
             onClick={() => setMobileMenuOpen(false)}
+          />
+          {/* Drawer */}
+          <div
+            ref={mobileMenuRef}
+            className={`fixed top-[5.5rem] left-1/2 -translate-x-1/2 w-[92%] max-w-md 
+                        bg-gray-900/95 backdrop-blur-2xl border border-gray-700/30 
+                        shadow-2xl rounded-2xl z-[60] p-6 lg:hidden 
+                        transform transition-all duration-300 ease-out 
+                        ${mobileMenuOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
           >
-            <motion.div
-              initial={{ x: "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "100%" }}
-              transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              className="fixed top-0 right-0 bottom-0 w-full max-w-xs bg-gray-900/95 shadow-xl p-6 flex flex-col"
-              onClick={(e:any) => e.stopPropagation()}
-            >
-              <div className="flex items-center justify-between mb-8">
-                <span className="text-xl font-bold text-white">Menu</span>
-                <button
+            {/* Header */}
+            <div className="flex items-center justify-between mb-6 border-b border-gray-800 pb-3">
+              <span
+                className="text-xl font-extrabold tracking-wide uppercase"
+                style={{ color: primaryColor }}
+              >
+                Navigation
+              </span>
+              <button
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-1.5 rounded-full text-gray-400 hover:text-white hover:bg-gray-700 transition"
+              >
+                <XMarkIcon className="h-6 w-6" />
+              </button>
+            </div>
+
+            {/* Nav Links */}
+            <nav className="flex flex-col space-y-2 mb-6">
+              {navItems.map((item, index) => (
+                <Link
+                  key={item.label}
+                  href={item.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="p-1 text-gray-400 hover:text-white"
-                  aria-label="Close menu"
+                  className="flex items-center gap-3 text-gray-200 text-lg py-2 px-3 rounded-xl
+                             font-medium transition-all duration-200 ease-in-out
+                             hover:bg-gray-800/70 hover:translate-x-1"
+                  style={{
+                    borderLeft: `3px solid ${primaryColor}`,
+                    transitionDelay: `${index * 50}ms`,
+                  }}
                 >
-                  <XMarkIcon className="h-6 w-6" />
+                  <span
+                    className="w-1.5 h-1.5 rounded-full"
+                    style={{ backgroundColor: secondaryColor }}
+                  ></span>
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
+
+            {/* Auth Buttons */}
+            {user ? (
+              <div className="flex flex-col space-y-3 mb-6">
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    handleProfile();
+                  }}
+                  className="w-full text-center px-4 py-2 rounded-lg text-white font-medium shadow-md transition-colors hover:brightness-90"
+                  style={{ backgroundColor: primaryColor }}
+                >
+                  {user.role === 'admin' ? 'Admin Portal' : 'My Account'}
+                </button>
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    handleSignOut();
+                  }}
+                  className="w-full text-gray-400 hover:text-white underline"
+                >
+                  Sign Out
                 </button>
               </div>
-              <nav className="flex flex-col space-y-4">
-                {navItems.map((item) => (
-                  <NavLink
-                    key={item.label}
-                    href={item.href}
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    {item.label}
-                  </NavLink>
-                ))}
-              </nav>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            ) : (
+              <div className="flex flex-col space-y-3 mb-6">
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    handleSignIn();
+                  }}
+                  className="w-full text-center px-4 py-2 rounded-lg text-gray-200 font-medium border border-gray-700 hover:bg-gray-800 transition-colors"
+                >
+                  Log In
+                </button>
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    handleSignUp();
+                  }}
+                  className="w-full text-center px-4 py-2 rounded-lg text-white font-medium shadow-md transition-colors hover:brightness-90"
+                  style={{ backgroundColor: primaryColor }}
+                >
+                  Sign Up
+                </button>
+              </div>
+            )}
+
+            <div className="border-t border-gray-800 my-6" />
+
+            {/* Contact Info */}
+            <div className="space-y-4 text-sm text-gray-400">
+              <h3 className="text-sm uppercase font-semibold text-gray-500">Get in Touch</h3>
+              {contactPhone && (
+                <a
+                  href={`tel:${contactPhone}`}
+                  className="flex items-center gap-3 hover:text-white transition group"
+                >
+                  <PhoneIcon className="h-5 w-5 text-pink-400 group-hover:text-white transition-colors" />
+                  <span className="font-mono">{contactPhone}</span>
+                </a>
+              )}
+              {contactEmail && (
+                <a
+                  href={`mailto:${contactEmail}`}
+                  className="flex items-center gap-3 hover:text-white transition group"
+                >
+                  <InboxArrowDownIcon className="h-5 w-5 text-pink-400 group-hover:text-white transition-colors" />
+                  <span>{contactEmail}</span>
+                </a>
+              )}
+            </div>
+
+            <div className="border-t border-gray-800 my-6" />
+
+            {/* Social Links */}
+            <div className="flex justify-center space-x-6">
+              {socialLinks.map((s) => (
+                <a
+                  key={s.channel}
+                  href={s.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="capitalize text-gray-300 hover:text-white transition duration-200 transform hover:scale-125"
+                >
+                  {s.channel}
+                </a>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
     </>
   );
 }
