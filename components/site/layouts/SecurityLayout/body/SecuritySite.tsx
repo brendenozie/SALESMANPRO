@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import HeroSection from './components/HeroSection';
-import BusinessSection from './components/BusinessSection';
+import ServicesSection from './components/ServicesSection';
 import MarketplaceListingsSection from './components/MarketplaceListingsSection';
 import GettingStartedSection from './components/GettingStartedSection';
 import FeaturesSection from './components/FeaturesSection';
@@ -49,7 +49,7 @@ export default function SecuritySite({ pageData, companyId }: { pageData: StoreF
 
       <HeroSection name={name} themeSettings={themeSettings} tagline={tagline} heroSlides={heroSlides} testimonials={testimonials} awards={awards} />
 
-      <BusinessSection name={name} slug={slug} description={description} themeSettings={themeSettings} StoreCategory={StoreCategory} />
+      <ServicesSection name={name} slug={slug} description={description} themeSettings={themeSettings} StoreCategory={StoreCategory} />
 
       <MarketplaceListingsSection name={name} slug={slug} themeSettings={themeSettings} marketplaceListings={marketplaceListings} />
 
