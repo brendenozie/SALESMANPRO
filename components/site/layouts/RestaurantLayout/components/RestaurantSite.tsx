@@ -122,13 +122,12 @@ interface RestaurantHeroProps {
 export default function RestaurantHero({ heroSlides, themeSettings, slug }: RestaurantHeroProps) {
   // const { storeFormData } = useStoreContext();
 
-  console.log("RestaurantHero heroSlides:", heroSlides);
 
   // Determine the slider items to use, sorting by 'order' and falling back to default
-  const sortedBanners = heroSlides
-    ? [...heroSlides].sort((a, b) => (a.order || 0) - (b.order || 0))
-    : [];
-  const sliderItems = sortedBanners.length > 0 ? sortedBanners : defaultSliderItems;
+  // const sortedBanners = heroSlides
+  //   ? [...heroSlides].sort((a, b) => (a.order || 0) - (b.order || 0))
+  //   : [];
+  const sliderItems = heroSlides && heroSlides.length > 0 ? heroSlides : defaultSliderItems;
 
   const [currentIndex, setCurrentIndex] = useState(0);
 

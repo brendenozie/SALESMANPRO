@@ -65,15 +65,18 @@ export default function HeroComponent() {
 
   // Derive event data
   // const rawEvent = (store.events && store.events.length > 0 ? store.events[0] : fallbackEvent) as any & { bannerUrl?: string };
-// Safely derive event data
+  // Safely derive event data
   const hasEvents = store.events && Array.isArray(store.events) && store.events.length > 0;
-  const rawEvent = (hasEvents ? store.events[0] : fallbackEvent) as Event & { bannerUrl?: string };
+  // NOTE: Assuming Event type is available in your environment, otherwise, use 'any'
+  const rawEvent = (hasEvents ? store.events[0] : fallbackEvent) as any & { bannerUrl?: string };
 
-  const eventTitle =  "Sample Event Title"; //rawEvent.title ||
+  const eventTitle =  "Sample Event Title"; //rawEvent.title ||
   const bannerSrc = (rawEvent as any).bannerUrl || store.bannerUrl || fallbackEvent.bannerUrl;
 
   return (
-    <section className="relative w-full min-h-screen overflow-hidden bg-gray-900 text-white flex items-center justify-center p-4">
+    // FIX 1: Adjust min-height to account for the 80px (h-20) fixed header.
+    // The min-h-[calc(100vh-80px)] ensures the section doesn't scroll below the screen edge.
+    <section className="relative w-full min-h-[calc(100vh-80px)] overflow-hidden bg-gray-900 text-white flex items-center justify-center p-4">
       {/* Background Aurora Effect */}
       <div className="absolute top-0 left-0 w-full h-full opacity-30">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-600 rounded-full filter blur-3xl animate-blob"></div>
@@ -81,7 +84,8 @@ export default function HeroComponent() {
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-pink-600 rounded-full filter blur-3xl animate-blob animation-delay-4000"></div>
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+      {/* FIX 2: Add padding-top (pt-20) to push the content down below the 80px fixed header. */}
+      <div className="relative z-10 max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center pt-20">
         {/* Text Content */}
         <motion.div
           variants={containerVariants}
