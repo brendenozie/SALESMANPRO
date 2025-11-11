@@ -7,22 +7,23 @@ import { AcademicCapIcon, BanknotesIcon, HeartIcon } from '@heroicons/react/24/o
 import { useStoreContext } from '@/contexts/StoreContext';
 import clsx from 'clsx';
 import Image from 'next/image';
+import { HeroSlide } from '@/types/typings';
 
 // Define types based on your transformCompanyToStoreForm and Prisma schema
-export type HeroSlide = {
-  id: string;
-  imageUrl: string;
-  productImageUrl?: string;
-  headline: string;
-  subline: string;
-  ctaText: string;
-  ctaLink: string;
-  badgeText?: string | null;
-  price?: number | null;
-  endsAt?: string | null;
-  order: number;
-  videoLink?: string | null;
-};
+// export type HeroSlide = {
+//   id: string;
+//   imageUrl: string;
+//   productImageUrl?: string;
+//   headline: string;
+//   subline: string;
+//   ctaText: string;
+//   ctaLink: string;
+//   badgeText?: string | null;
+//   price?: number | null;
+//   endsAt?: string | null;
+//   order: number;
+//   videoLink?: string | null;
+// };
 
 export type Stat = {
   label: string;

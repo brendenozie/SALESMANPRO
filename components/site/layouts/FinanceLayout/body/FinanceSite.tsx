@@ -26,13 +26,14 @@ const ContactSection = dynamic(() => import('./components/ContactSection'), { lo
 
 // --- Global Theme Colors (for Navbar and Footer consistency) ---
 const darkBackground = "#0A192F"; // Main background for sections, navbar, footer
+const lightBackground = "#112240"; // Alternate background for contrast sections
 
 // Generic fetcher
 const fetcher = (url: string) => fetch(url).then(res => res.json());
 
 export default function FinanceSite({ pageData, companyId }: { pageData: StoreForm, companyId: string }) {
   // Using context for global theme settings only
-  const { storeFormData } = useStoreContext(); 
+  // const { storeFormData } = useStoreContext(); 
 
   // Fetch client-side data
   const { data: testimonialsData } = useSWR(`${apiBaseUrl}/site/testimonials?id=${companyId}`, fetcher);
@@ -180,25 +181,17 @@ export default function FinanceSite({ pageData, companyId }: { pageData: StoreFo
   }, [testimonialsData, faqsData]);
 
   return (
-    <div className="min-h-screen relative" style={{ backgroundColor: darkBackground }}>
-      
-      {/* Set the main background color for the entire page */}
-      <span id="top" className="absolute -top-20" /> {/* Anchor for 'Home' link */}
-
-      {/* Main Content Area - Sections with consistent spacing */}
-      <main className="pt-20"> {/* Add padding-top to account for fixed navbar */}
-        <HeroSection />
-        <div className="space-y-24 lg:space-y-36"> {/* Consistent vertical spacing between sections */}
-          <PracticeAreasSection/>
-          <WhyChooseUsSection />
-          {testimonialsData?.data && <CaseStudiesTestimonials testimonials={testimonials} />}
-          <ProcessWorkflowSection />
-          <MeetOurExperts experts={experts} />
-          <ConsultationPackagesSection packages={packages} />
-          {faqsData?.data && <FAQSection faqs={faqs} />}
-          <ContactSection />
-        </div>
-      </main>
+    <div className="min-h-screen relative">
+       {/* Add padding-top to account for fixed navbar */}
+        <HeroSection heroSlides={pageData.heroSlides} themeSettings={pageData.themeSettings} />        
+        <PracticeAreasSection marketplaceListings={pageData.marketplaceListings} themeSettings={pageData.themeSettings}/>
+        <WhyChooseUsSection />
+        {testimonialsData?.data && <CaseStudiesTestimonials testimonials={testimonials} />}
+        <ProcessWorkflowSection />
+        <MeetOurExperts experts={experts} />
+        <ConsultationPackagesSection packages={packages} />
+        {faqsData?.data && <FAQSection faqs={faqs} />}
+        <ContactSection />
     </div>
   );
 }

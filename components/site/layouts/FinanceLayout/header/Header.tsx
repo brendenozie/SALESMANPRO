@@ -1,47 +1,62 @@
-import React, { useState, useEffect } from "react";
+"use client";
+
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
+import clsx from "clsx";
+import {
+  Bars3BottomLeftIcon,
+  XMarkIcon,
+  MagnifyingGlassIcon,
+  UserIcon,
+} from "@heroicons/react/24/outline";
+import { useSession, signOut } from "next-auth/react";
+import { useStateContext } from "@/contexts/ContextProvider";
+import { useStoreContext } from "@/contexts/StoreContext";
 
-// A mock version of useStoreContext for a self-contained component
-const useStoreContext = () => {
-  const storeFormData = {
-    slug: "",
-    name: "CapitalEdge",
-    logoUrl: "https://placehold.co/140x48/000000/FFFFFF?text=Logo",
-    themeSettings: {
-      primaryColor: "#2563EB",
-      secondaryColor: "#9333EA",
-    },
+// --- Utility helpers ---
+const imageLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
+  `${src}?w=${width}&q=${quality || 75}`;
+
+function debounce<T extends (...args: any[]) => void>(func: T, delay: number) {
+  let timeout: NodeJS.Timeout;
+  return function (this: ThisParameterType<T>, ...args: Parameters<T>) {
+    const context = this;
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func.apply(context, args), delay);
   };
-  return { storeFormData };
-};
+}
 
-// Define a professional-looking SVG icon for the brand
-const BrandIcon = ({ color }: { color: string }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill="currentColor"
-    className={`h-8 w-8 transition-colors duration-300 ${color}`}
-  >
-    <path d="M11.666 4.475a.75.75 0 0 1 .668 0l7.5 4.5a.75.75 0 0 1 0 1.25l-7.5 4.5a.75.75 0 0 1-.668 0L4.166 10.25a.75.75 0 0 1 0-1.25l7.5-4.5Z" />
-    <path
-      fillRule="evenodd"
-      d="M19.166 10.75l-7.5 4.5a.75.75 0 0 1-.668 0L4.166 10.75V19.5a.75.75 0 0 0 .75.75h14.25a.75.75 0 0 0 .75-.75v-8.75Zm-5.352 1.332 3.144 1.886a.75.75 0 0 1 0 1.25l-3.144 1.886a.75.75 0 0 1-.668 0l-3.144-1.886a.75.75 0 0 1 0-1.25l3.144-1.886a.75.75 0 0 1 .668 0Z"
-      clipRule="evenodd"
-    />
-  </svg>
-);
-
-const FinanceHeader = () => {
+export default function FinanceHeader() {
+  const { cart } = useStateContext();
   const { storeFormData } = useStoreContext();
+  const router = useRouter();
+  const { data: session } = useSession();
+  const user = session?.user as { role?: string; name?: string } | undefined;
+
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [scrolled, setScrolled] = useState(false);
 
-  // Fallback colors
-  const primary = storeFormData?.themeSettings?.primaryColor || "#2563EB";
-  const secondary = storeFormData?.themeSettings?.secondaryColor || "#9333EA";
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const mobileToggleRef = useRef<HTMLButtonElement>(null);
 
-  const navItems = [
+  const {
+    slug = "",
+    name = "CapitalEdge",
+    logoUrl = "https://placehold.co/140x48/ffffff/000000?text=Logo",
+    themeSettings = {},
+    socialLinks = [],
+  } = storeFormData || {};
+
+  const primary = themeSettings?.primaryColor || "#2563EB"; // blue-600
+  const secondary = themeSettings?.secondaryColor || "#9333EA"; // purple-600
+
+  const navLinks = [
     { label: "Home", href: `#home` },
     { label: "Services", href: `#services` },
     { label: "Why Us", href: `#whyus` },
@@ -49,136 +64,280 @@ const FinanceHeader = () => {
     { label: "Contact", href: `#contact` },
   ];
 
-  // Logic to change header style on scroll
+  // Scroll shadow
   useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 50) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
-      }
-    };
+    const handleScroll = () => setScrolled(window.scrollY > 40);
     window.addEventListener("scroll", handleScroll);
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Outside click for search & menu
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (searchOpen && searchInputRef.current && !searchInputRef.current.contains(e.target as Node))
+        setSearchOpen(false);
+      if (
+        mobileOpen &&
+        mobileMenuRef.current &&
+        !mobileMenuRef.current.contains(e.target as Node) &&
+        !mobileToggleRef.current?.contains(e.target as Node)
+      )
+        setMobileOpen(false);
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [mobileOpen, searchOpen]);
+
+  // Lock body scroll on mobile open
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? "hidden" : "";
+  }, [mobileOpen]);
+
+  // Debounced search
+  const handleSearch = useCallback(
+    debounce((query: string) => {
+      if (query.length > 2) console.log("FinanceHeader search:", query);
+    }, 300),
+    []
+  );
+
+  const onSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchQuery(value);
+    handleSearch(value);
+  };
+
+  // Auth actions
+  const handleUserAction = () => {
+    if (!user) {
+      const authUrl = new URL("https://auth.salesmanpro.site/signin");
+      authUrl.searchParams.set("callbackUrl", `${window.location.origin}/site/${slug}/finance`);
+      window.location.href = authUrl.toString();
+    } else if (user.role === "admin") {
+      router.push("/dashboards");
+    } else {
+      router.push(`/site/${slug}/finance/profile`);
+    }
+  };
+
+  const handleSignOut = () => signOut({ callbackUrl: `/site/${slug}/finance` });
+
   return (
-    <header className="fixed inset-x-0 top-0 z-50 font-sans">
-      <motion.div
-        className={`absolute inset-x-0 top-0 h-20 transition-all duration-300 backdrop-blur-md rounded-b-xl
-          ${isScrolled ? "bg-white/80 shadow-lg" : "bg-transparent"}`}
+    <>
+      <style jsx global>{`
+        :root {
+          --primary-color: ${primary};
+          --secondary-color: ${secondary};
+        }
+      `}</style>
+
+      <header className="fixed inset-x-0 top-0 z-50 font-sans">
+        {/* === LIGHT GLASS HEADER === */}
+     <motion.div
+        initial={{ backgroundColor: "rgba(255,255,255,0)" }}
+        animate={{
+          backgroundColor: scrolled
+            ? "rgba(255,255,255,0.85)"
+            : "rgba(255,255,255,0)",
+          backdropFilter: scrolled ? "blur(10px)" : "blur(0px)",
+          WebkitBackdropFilter: scrolled ? "blur(10px)" : "blur(0px)",
+          mixBlendMode: scrolled ? "normal" : "difference",
+        }}
+        transition={{ duration: 0.4, ease: "easeOut" }}
+        className={clsx(
+          "absolute inset-x-0 top-0 h-20 border-b transition-all duration-300",
+          scrolled ? "border-gray-200 shadow-lg" : "border-transparent"
+        )}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-          {/* Logo / Brand */}
-          <a href="#" className="flex items-center space-x-2">
-            <BrandIcon color={isScrolled ? "text-blue-600" : "text-blue-400"} />
-            {storeFormData?.logoUrl ? (
-              <img
-                src={storeFormData.logoUrl}
-                alt={storeFormData.name}
-                className="object-contain h-12 w-36 transition-all duration-300"
-              />
-            ) : (
-              <span className={`text-2xl font-extrabold transition-colors duration-300 ${isScrolled ? "text-gray-900" : "text-white"}`}>
-                {storeFormData?.name}
-              </span>
-            )}
-          </a>
 
-          {/* Desktop Nav */}
-          <nav className="hidden lg:flex space-x-8">
-            {navItems.map((item) => (
-              <motion.div key={item.label} whileHover={{ y: -2 }}>
-                <a
-                  href={item.href}
-                  className={`font-medium transition-colors relative group
-                    ${isScrolled ? "text-gray-700 hover:text-black" : "text-white hover:text-gray-200"}`}
-                >
-                  {item.label}
-                  <span
-                    className="absolute left-0 -bottom-1 h-[2px] bg-gradient-to-r transition-all duration-300 scale-x-0 origin-left group-hover:scale-x-100"
-                    style={{
-                      backgroundImage: `linear-gradient(to right, ${primary}, ${secondary})`,
-                    }}
-                  />
-                </a>
-              </motion.div>
-            ))}
-          </nav>
-
-          {/* Actions + Mobile Button */}
-          <div className="flex items-center space-x-4">
-            {/* Search Icon */}
-            <div className="relative hidden md:block group">
-              <input
-                type="search"
-                placeholder="Search..."
-                className="pl-10 pr-4 py-2 rounded-full bg-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 w-0 group-hover:w-48 transition-all duration-300"
-              />
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-hover:text-gray-700 transition-colors">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-              </svg>
-            </div>
-
-            {/* Scroll-Down Indicator */}
-            {/* <motion.button
-              whileHover={{ scale: 1.1 }}
-              className={`hidden md:flex items-center gap-1 transition-colors duration-300
-                ${isScrolled ? "text-gray-600 hover:text-gray-900" : "text-white hover:text-gray-200"}`}
-            >
-              <ChevronDownIcon className="h-5 w-5 animate-bounce" />
-              <span className="text-sm">Scroll</span>
-            </motion.button> */}
-
-            {/* Mobile Menu Button */}
-            <button
-              className={`lg:hidden p-2 rounded-full transition-colors duration-300 ${isScrolled ? "hover:bg-gray-200" : "hover:bg-white/10"}`}
-              onClick={() => setMobileOpen(!mobileOpen)}
-              aria-label="Toggle menu"
-            >
-              {mobileOpen ? (
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={`h-6 w-6 transition-colors duration-300 ${isScrolled ? "text-gray-700" : "text-white"}`}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            {/* Brand */}
+            <Link href="#" className="flex items-center space-x-2">
+              {logoUrl ? (
+                <Image
+                  src={logoUrl}
+                  alt={name}
+                  width={140}
+                  height={48}
+                  className="object-contain h-12 w-36"
+                  loader={imageLoader}
+                />
               ) : (
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={`h-6 w-6 transition-colors duration-300 ${isScrolled ? "text-gray-700" : "text-white"}`}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-                </svg>
+                <span
+                  className={`text-2xl font-extrabold ${
+                    scrolled ? "text-gray-900" : "text-gray-800"
+                  }`}
+                >
+                  {name}
+                </span>
               )}
-            </button>
-          </div>
-        </div>
+            </Link>
 
-        {/* Mobile Menu */}
-        <AnimatePresence>
-          {mobileOpen && (
-            <motion.nav
-              className="lg:hidden bg-white shadow-lg"
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <div className="px-4 py-6 space-y-4">
-                {navItems.map((item) => (
-                  <a
-                    key={item.label}
+            {/* Desktop Nav */}
+            <nav className="hidden lg:flex space-x-8">
+              {navLinks.map((item) => (
+                <motion.div key={item.label} whileHover={{ y: -2 }}>
+                  <Link
                     href={item.href}
-                    className="block text-gray-700 font-medium py-2 hover:text-gray-900 transition-colors"
-                    onClick={() => setMobileOpen(false)} // Close menu on click
+                    className={`font-medium relative group text-gray-700 hover:text-gray-900`}
                   >
                     {item.label}
-                  </a>
-                ))}
-              </div>
-            </motion.nav>
-          )}
-        </AnimatePresence>
-      </motion.div>
-    </header>
-  );
-};
+                    <span
+                      className="absolute left-0 -bottom-1 h-[2px] scale-x-0 group-hover:scale-x-100 origin-left transition-transform"
+                      style={{
+                        backgroundImage: `linear-gradient(to right, ${primary}, ${secondary})`,
+                      }}
+                    />
+                  </Link>
+                </motion.div>
+              ))}
+            </nav>
 
-export default FinanceHeader;
+            {/* Right Actions */}
+            <div className="flex items-center space-x-4">
+              {/* Search */}
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                className="text-gray-700 hover:text-[var(--primary-color)]"
+                onClick={() => setSearchOpen((p) => !p)}
+              >
+                <MagnifyingGlassIcon className="h-6 w-6" />
+              </motion.button>
+
+              {/* Profile */}
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                className="text-gray-700 hover:text-[var(--primary-color)]"
+                onClick={handleUserAction}
+              >
+                <UserIcon className="h-6 w-6" />
+              </motion.button>
+
+              {/* Mobile Toggle */}
+              <button
+                ref={mobileToggleRef}
+                className="lg:hidden p-2 rounded-full hover:bg-gray-100"
+                onClick={() => setMobileOpen(!mobileOpen)}
+              >
+                {mobileOpen ? (
+                  <XMarkIcon className="h-6 w-6 text-gray-700" />
+                ) : (
+                  <Bars3BottomLeftIcon className="h-6 w-6 text-gray-700" />
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Search Box */}
+          <AnimatePresence>
+            {searchOpen && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                className="absolute right-4 top-20 bg-white/90 backdrop-blur-md border border-gray-200 rounded-xl shadow-lg w-64 p-2 flex items-center"
+                ref={searchInputRef}
+              >
+                <input
+                  type="search"
+                  placeholder="Search..."
+                  value={searchQuery}
+                  onChange={onSearchChange}
+                  className="flex-1 px-3 py-2 text-sm text-gray-800 focus:outline-none bg-transparent placeholder-gray-400"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className="p-1 text-gray-500 hover:text-gray-800"
+                  >
+                    <XMarkIcon className="h-4 w-4" />
+                  </button>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Mobile Menu */}
+          <AnimatePresence>
+            {mobileOpen && (
+              <motion.nav
+                ref={mobileMenuRef}
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.35 }}
+                className="lg:hidden bg-white/80 backdrop-blur-xl border-t border-gray-200 shadow-xl rounded-b-3xl mt-20 overflow-hidden"
+              >
+                <div className="px-6 py-6 space-y-4">
+                  {navLinks.map((link) => (
+                    <Link
+                      key={link.label}
+                      href={link.href}
+                      onClick={() => setMobileOpen(false)}
+                      className="block text-gray-800 font-medium py-2 hover:text-[var(--primary-color)] transition-colors"
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
+
+                  <div className="border-t border-gray-200 my-3" />
+
+                  {user ? (
+                    <>
+                      <button
+                        onClick={() => {
+                          setMobileOpen(false);
+                          handleUserAction();
+                        }}
+                        className="w-full px-4 py-2 rounded-lg text-white font-medium shadow-md"
+                        style={{ backgroundColor: primary }}
+                      >
+                        {user.role === "admin" ? "Admin Portal" : "My Account"}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setMobileOpen(false);
+                          handleSignOut();
+                        }}
+                        className="w-full mt-2 text-gray-600 underline hover:text-[var(--primary-color)]"
+                      >
+                        Sign Out
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        setMobileOpen(false);
+                        handleUserAction();
+                      }}
+                      className="w-full px-4 py-2 rounded-lg text-gray-800 hover:bg-gray-100 border font-medium"
+                    >
+                      Log In
+                    </button>
+                  )}
+
+                  <div className="border-t border-gray-200 my-3" />
+
+                  <div className="flex space-x-4">
+                    {socialLinks.map((s: any) => (
+                      <a
+                        key={s.channel}
+                        href={s.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="capitalize text-gray-700 hover:text-[var(--secondary-color)] transition-colors"
+                      >
+                        {s.channel}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              </motion.nav>
+            )}
+          </AnimatePresence>
+        </motion.div>
+      </header>
+    </>
+  );
+}
