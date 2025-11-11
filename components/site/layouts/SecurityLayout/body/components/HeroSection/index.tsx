@@ -160,12 +160,12 @@ export default function SecurityHeroSectionLight({ name, themeSettings, tagline,
               {/* **CHANGE 2: Mobile visual appeal adjustments** */}
               <div 
                 className="absolute inset-0 rounded-3xl overflow-hidden transition-all duration-500 ease-in-out hover:scale-105" // Added hover scale
-                // style={{
-                //     backgroundColor: 'white',
-                //     border: `5px solid ${secondaryColor}`,
-                //     // Enhanced Shadow for more depth on mobile/light mode
-                //     boxShadow: `0 25px 50px -12px rgba(0,0,0,0.25), 0 0 0 5px ${primaryColor}10`,
-                // }}
+                style={{
+                    backgroundColor: 'white',
+                    border: `5px solid ${secondaryColor}`,
+                    // Enhanced Shadow for more depth on mobile/light mode
+                    boxShadow: `0 25px 50px -12px rgba(0,0,0,0.25), 0 0 0 5px ${primaryColor}10`,
+                }}
               >
                 <Image
                   src={distinctVisualUrl}
