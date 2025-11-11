@@ -33,12 +33,12 @@ export default function RestaurentSite({ pageData, companyId }: { pageData: Stor
   return (
       <div className="relative bg-cream min-h-screen text-gray-900">
         {/* Patterned Frame */}
-        <div className="fixed inset-y-0 left-0 w-8 bg-teal-200 bg-[url('/images/pattern.svg')]"></div>
-        <div className="fixed inset-y-0 right-0 w-8 bg-teal-200 bg-[url('/images/pattern.svg')]"></div>
+        {/* <div className="fixed inset-y-0 left-0 w-8 bg-teal-200 bg-[url('/images/pattern.svg')]"></div>
+        <div className="fixed inset-y-0 right-0 w-8 bg-teal-200 bg-[url('/images/pattern.svg')]"></div> */}
 
         <RestaurantHero heroSlides={pageData.heroSlides} themeSettings={pageData.themeSettings} slug={pageData.slug} />
 
-        <SignatureDishes />
+        <SignatureDishes marketplaceListings={pageData.marketplaceListings} />
 
         <WhyDineWithUs />
 

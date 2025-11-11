@@ -1,156 +1,173 @@
-"use client";
-
 import React from 'react';
-import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
-import { HandRaisedIcon, UserCircleIcon, UserGroupIcon, UserIcon } from '@heroicons/react/24/outline';
-import { useStoreContext } from '@/contexts/StoreContext';
+import { BookOpenIcon, GlobeAltIcon, HandRaisedIcon, StarIcon, UsersIcon } from '@heroicons/react/24/outline';
+// Using Lucide Icons for clean, modern symbols
+// import { Users, BookOpen, HandHelping, Globe, Star } from 'lucide-react';
 
-// Placeholder for useStoreContext
-// const useStoreContext = () => ({
-//   storeFormData: {
-//     name: 'Children\'s Hope Foundation',
-//     description: 'We’ve been dedicated to improving lives through targeted support and compassionate care. Our mission is to empower communities and provide a brighter future for those most in need. Join us in our endeavor to uplift lives and create lasting change.',
-//     aboutImageUrl: 'https://images.unsplash.com/photo-1594918231010-0a3b2b5f5f0b?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-//     stats: [
-//       { id: 'stat-1', label: "Children Helped", value: "1200", order: 1, icon: <UserCircleIcon className="text-4xl text-white w-5 h-5" /> },
-//       { id: 'stat-2', label: "Schools Built", value: "15", order: 2, icon: <UserGroupIcon className="text-4xl text-white w-5 h-5" /> },
-//       { id: 'stat-3', label: "Volunteers Engaged", value: "500", order: 3, icon: <HandRaisedIcon className="text-4xl text-white w-5 h-5" /> },
-//       { id: 'stat-4', label: "Communities Served", value: "20", order: 4, icon: <UserIcon className="text-4xl text-white w-5 h-5" /> },
-//     ],
-//     themeSettings: {
-//       primaryColor: "#FF5722",
-//       secondaryColor: "#FFFFFF",
-//     },
-//   },
-// });
 
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
-  return `${src}?w=${width}&q=${quality || 75}`;
+// --- MOCK DATA & CONFIGURATION (Replaces external context/dependencies) ---
+
+const primaryColor = '#22C55E'; // Vibrant Green for growth/trust
+
+const mockData = {
+  name: 'Global Change Collective',
+  description: "Since our founding, we've been dedicated to improving lives through targeted support and compassionate care. Our mission is to empower communities and provide a brighter future for those most in need. We believe that lasting change starts with grassroots efforts, integrity, and unwavering commitment to those we serve. Join us in our endeavor to uplift lives and create a monumental, lasting impact across the globe.",
+  // Placeholder image for development environment
+  aboutImageUrl: 'https://placehold.co/800x600/10B981/ffffff?text=Our+Team+in+Action', 
+  stats: [
+    { id: 'stat-1', label: "Children Helped", value: "1200+", order: 1, Icon: UsersIcon },
+    { id: 'stat-2', label: "Schools Supported", value: "15", order: 2, Icon: BookOpenIcon },
+    { id: 'stat-3', label: "Volunteers Engaged", value: "500+", order: 3, Icon: HandRaisedIcon },
+    { id: 'stat-4', label: "Communities Served", value: "20+", order: 4, Icon: GlobeAltIcon },
+  ],
 };
 
-const mockRouterPush = (path: string) => {
+const mockRouterPush = (path:string) => {
   console.log(`Navigating to: ${path}`);
+  // In a real environment, this would be a router call
 };
 
-// Variants for staggered animation
+// --- FRAMER MOTION VARIANTS ---
+
 const containerVariants = {
   hidden: { opacity: 0 },
-  show: {
+  visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.15,
-      delayChildren: 0.3,
+      staggerChildren: 0.1, // Stagger stats
+      delayChildren: 0.4,
     },
   },
 };
 
-const itemVariants = {
-  hidden: { opacity: 0, y: 50 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.7, ease: "easeOut" } },
+const statItemVariants = {
+  hidden: { opacity: 0, y: 30, scale: 0.9 },
+  visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.5, ease: "easeOut" } },
 };
 
-export default function AboutUsSpotlight() {
-  const { storeFormData } = useStoreContext();
+// --- STAT CARD COMPONENT ---
+
+const StatCard = ({ stat, primaryColor }: { stat: any; primaryColor: string }) => {
+    const IconComponent = stat.Icon;
+    return (
+        <motion.div
+            variants={statItemVariants}
+            className="bg-white rounded-xl p-4 sm:p-6 shadow-md flex items-center space-x-4 border-l-4 transition-all duration-300 transform hover:shadow-lg hover:scale-[1.02]"
+            style={{ borderColor: primaryColor }}
+        >
+            <div className="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center text-white" style={{ backgroundColor: primaryColor }}>
+                <IconComponent className="w-5 h-5" />
+            </div>
+            <div>
+                <h3 className="text-2xl font-extrabold text-gray-900 mb-0 leading-none">
+                    {stat.value}
+                </h3>
+                <p className="text-sm text-gray-600 font-medium mt-1">
+                    {stat.label}
+                </p>
+            </div>
+        </motion.div>
+    );
+};
+
+
+// --- MAIN SECTION COMPONENT ---
+
+export default function AboutUsSpotlightSection() {
   const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.3 });
 
-  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#FF5722';
-  const aboutImage = storeFormData?.bannerUrl || "https://placehold.co/600x450/CCCCCC/333333?text=Image+Not+Found";
-  
-
-
-  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    e.currentTarget.onerror = null;
-    e.currentTarget.src = "https://placehold.co/600x450/CCCCCC/333333?text=Image+Not+Found";
-  };
+  const statsToRender = mockData.stats.sort((a, b) => a.order - b.order);
 
   return (
-    <section id="donate" className="py-20 bg-gray-50 overflow-hidden">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
+    <section id="about" className="py-20 md:py-32 bg-white font-sans overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          
+          {/* LEFT: Image Section */}
           <motion.div
-            initial={{ opacity: 0, x: -100 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
+            initial={{ opacity: 0, x: -80 }}
+            animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
-            className="relative h-96 md:h-[500px] w-full"
+            className="relative h-96 md:h-[550px] w-full"
           >
-            <Image
-              src={aboutImage}
-              alt="A child smiling and giving a thumbs up"
-              layout="fill"
-              objectFit="cover"
-              loader={loader}
-              className="rounded-3xl shadow-2xl transform hover:scale-105 transition-transform duration-500"
-              onError={handleImageError}
-            />
+            <div className="absolute inset-0 bg-gray-200 rounded-[3rem] shadow-3xl overflow-hidden">
+                <img
+                    src={mockData.aboutImageUrl}
+                    alt="A team of people working together in a community setting"
+                    className="w-full h-full object-cover transform scale-[1.03]"
+                    // Fallback using onerror
+                    onError={(e) => { e.currentTarget.src = "https://placehold.co/800x600/CCCCCC/333333?text=Image+Not+Found"; }}
+                />
+            </div>
+            {/* Decorative accent box */}
+            <div className="absolute bottom-[-1rem] right-[-1rem] w-32 h-32 rounded-3xl opacity-80 z-10 hidden md:block" style={{ backgroundColor: primaryColor }}>
+                <StarIcon className="w-10 h-10 text-white absolute bottom-4 right-4 animate-pulse"/>
+            </div>
           </motion.div>
           
+          {/* RIGHT: Text and CTA Section */}
           <motion.div
-            initial={{ opacity: 0, x: 100 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
+            initial={{ opacity: 0, x: 80 }}
+            animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
             className="flex flex-col justify-center"
           >
-            <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight mb-4">
-              <span style={{ color: primaryColor }}>{storeFormData?.name || "A Trusted Organization"}</span>
-            </h2>
-            <p className="text-lg text-gray-700 leading-relaxed mb-8">
-              {storeFormData?.description || "We’ve been dedicated to improving lives through targeted support and compassionate care. Our mission is to empower communities and provide a brighter future for those most in need. Join us in our endeavor to uplift lives and create lasting change."}
+            <p className="text-sm uppercase tracking-widest font-bold mb-2" style={{ color: primaryColor }}>
+                Who We Are
             </p>
+            <h2 className="text-4xl md:text-6xl font-extrabold text-gray-900 leading-tight mb-6">
+              Empowering Change, <span style={{ color: primaryColor }}>Building Futures</span>.
+            </h2>
+            <p className="text-xl text-gray-700 leading-relaxed mb-8">
+              {mockData.description}
+            </p>
+
             <div className="flex flex-wrap gap-4 mb-12">
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="bg-blue-600 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
+                className="inline-flex items-center font-bold py-3 px-8 rounded-full shadow-xl text-white transition-all duration-300 hover:shadow-2xl"
                 style={{ backgroundColor: primaryColor }}
                 onClick={() => mockRouterPush('/donate')}
               >
-                Make a Donation
+                Start Your Impact Today
               </motion.button>
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="border-2 border-blue-600 text-blue-600 font-bold py-3 px-8 rounded-full hover:bg-blue-600 hover:text-white transition-all duration-300"
-                style={{ borderColor: primaryColor, color: primaryColor }}
+                className="border-2 font-bold py-3 px-8 rounded-full transition-all duration-300 hover:text-white"
+                style={{ borderColor: primaryColor, color: primaryColor, '--hover-bg': primaryColor }}
+                // Custom style for cleaner hover
+                onMouseEnter={(e: React.MouseEvent<HTMLButtonElement>) => {
+                    e.currentTarget.style.backgroundColor = primaryColor;
+                    e.currentTarget.style.color = 'white';
+                }}
+                onMouseLeave={(e: React.MouseEvent<HTMLButtonElement>) => {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.color = primaryColor;
+                }}
                 onClick={() => mockRouterPush('/about')}
               >
-                Learn More
+                Our History
               </motion.button>
             </div>
           </motion.div>
         </div>
 
-        {/* <motion.div
+        {/* Stats Section (Underneath Main Content) */}
+        <motion.div
           ref={ref}
           variants={containerVariants}
           initial="hidden"
-          animate={inView ? "show" : "hidden"}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mt-16"
+          animate={inView ? "visible" : "hidden"}
+          className="grid grid-cols-2 lg:grid-cols-4 gap-6 mt-20 p-6 rounded-2xl shadow-inner bg-gray-50 border border-gray-100"
         >
-          {statsToRender.map((stat,idx:number) => (
-            <motion.div
-              key={idx}
-              variants={itemVariants}
-              className="bg-white rounded-3xl p-8 shadow-xl flex flex-col items-center text-center transition-all duration-300 transform hover:scale-105"
-            >
-              <div
-                className="w-20 h-20 rounded-full flex items-center justify-center mb-4 text-white"
-                style={{ backgroundColor: primaryColor }}
-              >
-                {stat.iconUrl || <UserCircleIcon className="text-4xl text-white" />}
-              </div>
-              <h3 className="text-4xl font-extrabold text-gray-900 mb-1">
-                {stat.value}
-              </h3>
-              <p className="text-lg text-gray-600 font-medium">
-                {stat.label}
-              </p>
-            </motion.div>
+          {statsToRender.map((stat,idx) => (
+            <StatCard key={idx} stat={stat} primaryColor={primaryColor} />
           ))}
-        </motion.div> */}
+        </motion.div>
+
       </div>
     </section>
   );

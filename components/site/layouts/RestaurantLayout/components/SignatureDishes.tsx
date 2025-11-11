@@ -41,15 +41,21 @@ const itemVariants = {
   },
 };
 
-export default function SignatureDishes() {
-  const { storeFormData } = useStoreContext();
+interface SignatureDishesProps {
+  marketplaceListings?: any[];
+  StoreCategory?: any[];
+  themeSettings?: any;
+}
+
+export default function SignatureDishes({ marketplaceListings, StoreCategory, themeSettings }: SignatureDishesProps) {
+  // const { storeFormData } = useStoreContext();/
   const { cart, addToCart, decreaseQuantity, removeFromCart } = useStateContext(); // ✅ cart actions
 
-  const allProducts = storeFormData?.marketplaceListings || [];
-  const productCategories = storeFormData?.StoreCategory || [];
-  const primaryColor = storeFormData?.themeSettings?.primaryColor || "#FF5722";
+  const allProducts = marketplaceListings || [];
+  const productCategories = StoreCategory || [];
+  const primaryColor = themeSettings?.primaryColor || "#FF5722";
   const secondaryColor =
-    storeFormData?.themeSettings?.secondaryColor || "#3F51B5";
+    themeSettings?.secondaryColor || "#3F51B5";
 
   const [activeCategory, setActiveCategory] = useState<string>("all-menu");
 

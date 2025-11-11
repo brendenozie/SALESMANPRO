@@ -1,206 +1,217 @@
-"use client";
-
 import React from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { ArrowRightIcon } from '@heroicons/react/24/outline'; // Added for consistency
-// Assuming useStoreContext is available and provides storeFormData
-import { useStoreContext } from '@/contexts/StoreContext';
+import { ArrowRightIcon, ChevronLeftIcon, ChevronRightIcon, PlusCircleIcon } from '@heroicons/react/24/outline';
 
-// Define types based on your schema.txt for MarketplaceListing and Product
-// export type Product = {
-//   id: string;
-//   name: string;
-//   description?: string;
-//   images?: string[]; // Array of image URLs
-//   // Add other relevant product fields if needed
-// };
+// --- MOCK DATA & CONFIGURATION ---
 
-// export type MarketplaceListing = {
-//   id: string;
-//   name: string;
-//   description?: string;
-//   images?: string[]; // Array of image URLs for the listing itself
-//   product?: Product; // Nested product details
-//   order: number; // For sorting
-//   // Add other relevant listing fields if needed
-// };
+const primaryColor = '#059669'; // Emerald Green for growth/relief
 
-export type ThemeSettings = {
-  primaryColor?: string;
-  secondaryColor?: string;
-};
-
-// export type StoreForm = {
-//   name?: string; // For section title
-//   slug?: string; // For constructing dynamic links
-//   marketplaceListings?: MarketplaceListing[]; // Array of marketplace listings (programs/causes)
-//   themeSettings?: ThemeSettings;
-//   // Add other relevant StoreForm fields if needed for this section
-// };
-
-// Placeholder for useStoreContext to make the component runnable independently
-// In a real application, you would uncomment the actual import.
-// const useStoreContext = () => ({
-//   storeFormData: {
-//     name: 'Children\'s Hope Foundation',
-//     slug: 'childrens-hope-foundation', // Example slug for dynamic links
-//     marketplaceListings: [
-//       {
-//         id: 'cause-1',
-//         title: 'Medical Aid for Children',
-//         description: 'Providing essential healthcare, vaccinations, and medical support to vulnerable children in remote areas.',
-//         images: ['https://images.unsplash.com/photo-1576765974026-6113b2e7c3e1?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'], // Example image
-//         order: 1,
-//       },
-//       {
-//         id: 'cause-2',
-//         title: 'Education for All',
-//         description: 'Building schools, providing learning materials, and supporting teachers to ensure every child has access to quality education.',
-//         images: ['https://images.unsplash.com/photo-1523050854805-9a84a9235777?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
-//         order: 2,
-//       },
-//       {
-//         id: 'cause-3',
-//         title: 'Clean Water Initiatives',
-//         description: 'Implementing sustainable water projects to provide clean and safe drinking water to communities in need.',
-//         images: ['https://images.unsplash.com/photo-1549429168-f9d936162391?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
-//         order: 3,
-//       },
-//       {
-//         id: 'cause-4',
-//         title: 'Emergency Food Relief',
-//         description: 'Delivering urgent food supplies and nutritional support to families affected by crises and natural disasters.',
-//         images: ['https://images.unsplash.com/photo-1518621736915-f3b160292723?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'],
-//         order: 4,
-//       },
-//     ],
-//     themeSettings: {
-//       primaryColor: "#FF5722", // Orange for primary actions
-//       secondaryColor: "#FFFFFF", // White for secondary actions/text
-//     },
-//   } as StoreForm,
-// });
-
-// Optimized image loader for Next.js Image component
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
-  return `${src}?w=${width}&q=${quality || 75}`;
-};
-
-// Static fallback data for programs/causes
-const fallbackCauses = [
+const mockListings = [
   {
-    id: 'fb-cause-1',
-    name: 'Support for Orphaned Children',
-    description: 'Providing loving homes, education, and emotional support to children who have lost their parents.',
-    images: ['https://placehold.co/600x400/FF8C00/FFFFFF?text=Orphans'],
+    id: 'cause-1',
+    name: 'Medical Aid for Children',
+    description: 'Providing essential healthcare, vaccinations, and medical support to vulnerable children in remote areas, ensuring they receive the care they need to thrive.',
+    images: ['https://placehold.co/600x400/059669/FFFFFF?text=Medical+Aid'],
     order: 1,
   },
   {
-    id: 'fb-cause-2',
-    name: 'Healthcare for Rural Communities',
-    description: 'Establishing mobile clinics and health education programs in underserved rural areas.',
-    images: ['https://placehold.co/600x400/228B22/FFFFFF?text=Rural+Health'],
+    id: 'cause-2',
+    name: 'Education for All',
+    description: 'Building schools, providing learning materials, and supporting teachers to ensure every child has access to quality education and a brighter future.',
+    images: ['https://placehold.co/600x400/3B82F6/FFFFFF?text=Education+Support'],
     order: 2,
   },
   {
-    id: 'fb-cause-3',
-    name: 'Vocational Training for Youth',
-    description: 'Equipping young adults with practical skills and vocational training for sustainable livelihoods.',
-    images: ['https://placehold.co/600x400/8A2BE2/FFFFFF?text=Vocational+Training'],
+    id: 'cause-3',
+    name: 'Clean Water Initiatives',
+    description: 'Implementing sustainable water projects to provide clean and safe drinking water to communities, drastically improving health and quality of life.',
+    images: ['https://placehold.co/600x400/0EA5E9/FFFFFF?text=Clean+Water'],
     order: 3,
+  },
+  {
+    id: 'cause-4',
+    name: 'Emergency Food Relief',
+    description: 'Delivering urgent food supplies and nutritional support to families affected by sudden crises and natural disasters, acting as a critical lifeline.',
+    images: ['https://placehold.co/600x400/EF4444/FFFFFF?text=Food+Relief'],
+    order: 4,
   },
 ];
 
-export default function ProgramsCausesSection() {
+const mockStoreFormData = {
+    name: "Children's Hope Foundation",
+    slug: 'childrens-hope-foundation',
+    projects: mockListings,
+    themeSettings: { primaryColor: primaryColor },
+};
+
+
+// Function to simulate context data retrieval
+const useStoreContext = () => ({ storeFormData: mockStoreFormData });
+
+// --- UTILITY COMPONENTS ---
+
+const ProgramCard = ({ listing, primaryColor, organizationSlug, mockRouterPush, index }: { listing: typeof mockListings[0]; primaryColor: string; organizationSlug: string; mockRouterPush: (path: string) => void; index: number }) => {
+  const imageUrl = listing.images?.[0] || `https://placehold.co/600x400/D1D5DB/4B5563?text=Program+${index + 1}`;
+  const progSlug = listing.id;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 50 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.3 }}
+      transition={{ duration: 0.6, delay: index * 0.1 }}
+      className="group flex-shrink-0 w-full sm:w-[calc(50%-1rem)] lg:w-full snap-center bg-white rounded-3xl overflow-hidden shadow-2xl transition-all duration-500 transform hover:scale-[1.02] hover:shadow-3xl cursor-pointer flex flex-col h-full"
+      onClick={() => mockRouterPush(`/${organizationSlug}/program/${progSlug}`)}
+    >
+      <div className="relative h-56 overflow-hidden">
+        <img
+          src={imageUrl}
+          alt={listing.name}
+          className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-700 ease-in-out"
+          onError={(e) => {
+            e.currentTarget.onerror = null;
+            e.currentTarget.src = "https://placehold.co/600x400/CCCCCC/333333?text=Program+Image";
+          }}
+        />
+        {/* Visual Overlay for contrast */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-100 group-hover:opacity-100 transition-opacity duration-500" />
+      </div>
+
+      <div className="p-6 md:p-8 flex-1 flex flex-col justify-between">
+        <div className="relative z-10">
+            <h3 className="text-2xl font-bold text-gray-900 mb-3 leading-snug">
+                {listing.name}
+            </h3>
+            <p className="text-gray-600 text-base leading-relaxed line-clamp-3 mb-4">
+                {listing.description}
+            </p>
+        </div>
+        <a
+            href={`/${organizationSlug}/program/${progSlug}`}
+            className="mt-4 inline-flex items-center font-bold transition-colors group-hover:translate-x-1 duration-300 text-lg"
+            style={{ color: primaryColor }}
+            onClick={(e) => { e.stopPropagation(); mockRouterPush(`/${organizationSlug}/program/${progSlug}`); }}
+        >
+            Discover Campaign
+            <ArrowRightIcon className="ml-2 w-5 h-5 transition-transform duration-300 group-hover:rotate-45" />
+        </a>
+      </div>
+    </motion.div>
+  );
+};
+
+// --- MAIN SECTION COMPONENT ---
+
+export default function App() {
   const { storeFormData } = useStoreContext();
 
-  // Dynamic colors from storeFormData
-  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#FF5722'; // Default Orange
-
-  // Determine which listings to render: dynamic or fallback
+  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#059669';
   const listingsToRender = storeFormData?.projects && Array.isArray(storeFormData?.projects) && storeFormData.projects.length > 0
-    ? storeFormData.projects//.sort((a, b) => (a.order || 0) - (b.order || 0)) // Sort by order
-    : fallbackCauses;
+    ? storeFormData.projects.sort((a, b) => (a.order || 0) - (b.order || 0))
+    : mockListings;
 
-  const organizationSlug = storeFormData?.slug || 'non-profit'; // Fallback slug for links
+  const organizationSlug = storeFormData?.slug || 'non-profit';
 
-  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    e.currentTarget.onerror = null;
-    e.currentTarget.src = "https://placehold.co/600x400/CCCCCC/333333?text=Program+Image";
-  };
-
-  // Mock router for demonstration (replace with actual useRouter in a Next.js app)
   const mockRouterPush = (path: string) => {
     console.log(`Navigating to: ${path}`);
-    // window.location.href = path; // Uncomment for actual redirection
+  };
+
+  const scrollRef = React.useRef<HTMLDivElement>(null);
+
+  const scroll = (direction: 'left' | 'right') => {
+    if (scrollRef.current) {
+      const scrollAmount = 300; // Scroll roughly one card width
+      if (direction === 'left') {
+        scrollRef.current.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+      } else {
+        scrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+      }
+    }
   };
 
   return (
-    <section id="programs" className="py-20 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-6">
-        <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-gray-900">
-          Explore Our Impact Programs
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {listingsToRender.map((listing, i) => {
-            const progName = listing.name;
-            const progDescription = listing.description ?? "";
-            const imageUrl = `https://placehold.co/600x400/D1D5DB/4B5563?text=Program+${i + 1}`; //listing.images?.[0] ??  Fallback placeholder
-            const progSlug = listing.id;
-
-            return (
-              <motion.div
-                key={listing.id}
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.3 }}
-                transition={{ duration: 0.6, delay: i * 0.15 }}
-                className="group bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-transform duration-300 cursor-pointer flex flex-col"
-                onClick={() => mockRouterPush(`/${organizationSlug}/program/${progSlug}`)}
-              >
-                <div className="relative h-56">
-                  <Image
-                    src={imageUrl}
-                    alt={progName}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-500"
-                    loader={loader}
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    onError={handleImageError}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-                </div>
-                <div className="p-6 flex-1 flex flex-col justify-between">
-                  <div>
-                    <h3 className="text-2xl font-semibold text-gray-900 mb-3">
-                      {progName}
-                    </h3>
-                    <p className="text-gray-700 text-base leading-relaxed line-clamp-3">
-                      {progDescription}
-                    </p>
-                  </div>
-                  <Link
-                    href={`/${organizationSlug}/program/${progSlug}`}
-                    className="mt-5 inline-flex items-center font-medium transition-colors"
-                    style={{ color: primaryColor, '--tw-hover-text-color': `${primaryColor}D0` } as React.CSSProperties}
-                  >
-                    Learn More <ArrowRightIcon className="ml-2 w-5 h-5" />
-                  </Link>
-                </div>
-              </motion.div>
-            );
-          })}
+    <section id="programs" className="py-20 md:py-32 bg-white font-sans overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {/* Header */}
+        <div className="flex justify-between items-end mb-12 md:mb-16">
+            <div className="max-w-xl">
+                <p className="text-sm uppercase tracking-widest font-bold mb-2" style={{ color: primaryColor }}>
+                    Our Work in Action
+                </p>
+                <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight">
+                    High-Impact Programs
+                </h2>
+            </div>
+            {/* Scroll Controls (Visible only on mobile/tablet) */}
+            <div className="hidden sm:flex lg:hidden space-x-3">
+                <button 
+                    onClick={() => scroll('left')} 
+                    className="p-3 rounded-full bg-gray-200 hover:bg-gray-300 transition duration-200 shadow-md"
+                >
+                    <ChevronLeftIcon className="w-6 h-6 text-gray-700" />
+                </button>
+                <button 
+                    onClick={() => scroll('right')} 
+                    className="p-3 rounded-full hover:shadow-lg transition duration-200 shadow-md"
+                    style={{ backgroundColor: primaryColor }}
+                >
+                    <ChevronRightIcon className="w-6 h-6 text-white" />
+                </button>
+            </div>
         </div>
-        <div className="text-center mt-12">
-          <Link
-            href={`/${organizationSlug}/programs`}
-            className="px-8 py-3 rounded-full font-semibold hover:shadow-lg transition duration-300 transform hover:scale-105"
-            style={{ backgroundColor: primaryColor, color: '#FFFFFF' }}
+
+        {/* Programs Grid / Carousel */}
+        <div 
+          ref={scrollRef}
+          className="grid grid-cols-1 sm:flex sm:flex-row lg:grid-cols-4 gap-8 overflow-x-auto sm:overflow-x-scroll lg:overflow-x-hidden pb-4 snap-x snap-mandatory scrollbar-hide"
+          style={{ 
+            // Hide scrollbar utility for the carousel effect on small screens
+            msOverflowStyle: 'none',  /* IE and Edge */
+            scrollbarWidth: 'none',  /* Firefox */
+          }}
+        >
+            {/* Custom CSS to hide scrollbar for non-Firefox browsers */}
+            <style jsx global>{`
+                .scrollbar-hide::-webkit-scrollbar {
+                    display: none;
+                }
+            `}</style>
+
+          {listingsToRender.map((listing, i) => (
+            <ProgramCard
+              key={listing.id}
+              listing={listing}
+              primaryColor={primaryColor}
+              organizationSlug={organizationSlug}
+              mockRouterPush={mockRouterPush}
+              index={i}
+            />
+          ))}
+          
+          {/* Dedicated CTA Card for visual variety */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.6, delay: listingsToRender.length * 0.1 }}
+            className="flex-shrink-0 w-full sm:w-[calc(50%-1rem)] lg:w-full snap-center bg-white rounded-3xl p-8 shadow-inner border-2 border-dashed flex flex-col items-center justify-center text-center transition-transform duration-300 hover:scale-[1.03] hover:shadow-2xl"
+            style={{ borderColor: primaryColor }}
           >
-            View All Causes
-          </Link>
+            <PlusCircleIcon className="w-12 h-12 mb-4" style={{ color: primaryColor }}/>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Can't Decide Where to Help?</h3>
+            <p className="text-gray-600 mb-6">
+                Explore our full registry of initiatives and donation options.
+            </p>
+            <a
+                href={`/${organizationSlug}/programs`}
+                className="inline-flex items-center font-bold py-3 px-6 rounded-full text-white transition duration-300 hover:scale-105"
+                style={{ backgroundColor: primaryColor }}
+                onClick={() => mockRouterPush(`/${organizationSlug}/programs`)}
+            >
+                View All Programs
+            </a>
+          </motion.div>
         </div>
       </div>
     </section>

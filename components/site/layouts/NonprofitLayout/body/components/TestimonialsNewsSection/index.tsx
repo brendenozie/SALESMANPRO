@@ -1,96 +1,144 @@
-// components/TestimonialsSection.tsx
-"use client";
-
 import React from 'react';
-import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { useInView } from 'react-intersection-observer';
-import { useStoreContext } from '@/contexts/StoreContext';
-import { ArrowRightIcon, TagIcon } from '@heroicons/react/24/solid';
+import { ArrowRightIcon, ChevronDoubleDownIcon } from '@heroicons/react/24/outline';
 
-// Placeholder for useStoreContext to demonstrate functionality
-// const useStoreContext = () => ({
-//   storeFormData: {
-//     name: 'Children\'s Hope Foundation',
-//     slug: 'childrens-hope-foundation',
-//     testimonials: [
-//       {
-//         id: 'test-1',
-//         author: 'Alex Johnson',
-//         quote: 'This organization truly changed the lives of many in my community. Their dedication is inspiring and their impact is undeniable!',
-//         avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a86e927f643?q=80&w=2670&auto=format&fit=crop',
-//         order: 1,
-//       },
-//       {
-//         id: 'test-2',
-//         author: 'Emily Carter',
-//         quote: 'The support provided by this non-profit has been invaluable to countless families in desperate need. Their programs are well-managed and transparent. Highly recommended.',
-//         avatarUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=2670&auto=format&fit=crop',
-//         order: 2,
-//       },
-//       {
-//         id: 'test-3',
-//         author: 'David Lee',
-//         quote: 'I\'ve seen firsthand the positive change they bring. Every donation makes a real difference in the lives of children. Proud to be a supporter!',
-//         avatarUrl: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=2670&auto=format&fit=crop',
-//         order: 3,
-//       },
-//       {
-//         id: 'test-4',
-//         author: 'Maria Garcia',
-//         quote: 'A beacon of hope for our community. Their work in providing essential services has been life-changing. We are forever grateful.',
-//         avatarUrl: 'https://images.unsplash.com/photo-1549216060-60b642a8b94f?q=80&w=2670&auto=format&fit=crop',
-//         order: 4,
-//       },
-//     ],
-//     themeSettings: {
-//       primaryColor: "#FF5722",
-//       secondaryColor: "#FFFFFF",
-//     },
-//   },
-// });
+// --- MOCK DATA & CONFIGURATION ---
 
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
-  return `${src}?w=${width}&q=${quality || 75}`;
+const primaryColor = '#FF5722'; // Default Orange (Warm and Energetic)
+
+// Placeholder for external context data (simulating storeFormData)
+const mockTestimonials = [
+    {
+        id: 'test-1',
+        authorName: 'Alex Johnson',
+        quote: "This organization truly changed the lives of many in my community. Their dedication is inspiring and their impact is undeniable!",
+        avatarUrl: 'https://placehold.co/60x60/FF5722/FFFFFF?text=AJ',
+        role: 'Community Volunteer',
+        order: 1,
+    },
+    {
+        id: 'test-2',
+        authorName: 'Emily Carter',
+        quote: "The support provided by this non-profit has been invaluable to countless families in desperate need. Their programs are well-managed and incredibly transparent.",
+        avatarUrl: 'https://placehold.co/60x60/34D399/FFFFFF?text=EC', // Light Green
+        role: 'Beneficiary Parent',
+        order: 2,
+    },
+    {
+        id: 'test-3',
+        authorName: 'David Lee',
+        quote: "I've seen firsthand the positive change they bring. Every donation makes a real difference in the lives of children. Proud to be a dedicated supporter!",
+        avatarUrl: 'https://placehold.co/60x60/2563EB/FFFFFF?text=DL', // Blue
+        role: 'Corporate Partner',
+        order: 3,
+    },
+    {
+        id: 'test-4',
+        authorName: 'Maria Garcia',
+        quote: "A beacon of hope for our community. Their work in providing essential services has been life-changing. We are forever grateful for their presence.",
+        avatarUrl: 'https://placehold.co/60x60/A855F7/FFFFFF?text=MG', // Purple
+        role: 'Local Leader',
+        order: 4,
+    },
+];
+
+const mockStoreFormData = {
+    slug: 'childrens-hope-foundation',
+    testimonials: mockTestimonials,
+    themeSettings: { primaryColor: primaryColor, secondaryColor: '#FFFFFF' },
 };
 
-const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-  e.currentTarget.onerror = null;
-  e.currentTarget.src = "https://placehold.co/60x60/CCCCCC/333333?text=Avatar";
-};
+// Function to simulate context data retrieval
+const useStoreContext = () => ({ storeFormData: mockStoreFormData });
+
+
+// --- FRAMER MOTION VARIANTS ---
 
 const containerVariants = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.15,
+      staggerChildren: 0.1,
     },
   },
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 50 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.7, ease: "easeOut" } },
+  hidden: { opacity: 0, y: 30, scale: 0.95 },
+  show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.6, ease: "easeOut" } },
 };
 
-export default function TestimonialsSection() {
+// --- TESTIMONIAL CARD COMPONENT ---
+
+const TestimonialCard = ({ test, primaryColor, index }: { test: typeof mockTestimonials[0]; primaryColor: string; index: number }) => {
+    // Note: Replaced Next/Image with standard <img> for single-file component compatibility
+    return (
+        <motion.div
+            variants={itemVariants}
+            className="p-8 rounded-3xl shadow-xl border-t-4 relative group transition-all duration-300 hover:shadow-2xl flex flex-col justify-between h-full"
+            style={{ 
+                borderColor: primaryColor,
+                backgroundColor: '#FFFFFF',
+            }}
+        >
+            <div className="absolute top-0 right-0 p-6 opacity-30 group-hover:opacity-50 transition-opacity duration-300" style={{ color: primaryColor }}>
+                <ChevronDoubleDownIcon className="w-12 h-12 rotate-180" />
+            </div>
+
+            {/* Quote Body */}
+            <div className="mb-8 relative z-10">
+                <p className="text-gray-800 text-xl font-medium leading-relaxed">
+                    {test.quote}
+                </p>
+            </div>
+
+            {/* Author Info */}
+            <div className="flex items-center mt-auto pt-4 border-t border-gray-100">
+                <div className="relative w-14 h-14 rounded-full overflow-hidden flex-shrink-0 mr-4 border-2" style={{ borderColor: primaryColor }}>
+                    <img
+                        src={test.avatarUrl}
+                        alt={test.authorName || 'Avatar'}
+                        className="object-cover w-full h-full"
+                        onError={(e) => {
+                            e.currentTarget.onerror = null;
+                            e.currentTarget.src = `https://placehold.co/60x60/CCCCCC/333333?text=${test.authorName?.split(' ').map(n => n[0]).join('') || 'NN'}`;
+                        }}
+                    />
+                </div>
+                <div>
+                    <h4 className="font-bold text-gray-900 text-lg">{test.authorName}</h4>
+                    <p className="text-sm font-medium" style={{ color: primaryColor }}>{test.role}</p>
+                </div>
+            </div>
+        </motion.div>
+    );
+};
+
+// --- MAIN SECTION COMPONENT ---
+
+export default function App() {
   const { storeFormData } = useStoreContext();
-  const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.2 });
+  const [ref, inView] = useInView({ triggerOnce: true, threshold: 0.1 });
 
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#FF5722';
-  const testimonialsToRender = storeFormData?.testimonials && Array.isArray(storeFormData?.testimonials) && storeFormData.testimonials.length > 0
-    ? storeFormData.testimonials.sort((a, b) => (a.order || 0) - (b.order || 0))
-    : [
-      { id: 'fb-test-1', authorName: 'Alex Johnson', quote: 'This organization truly changed the lives of many in my community. Their dedication is inspiring and their impact is undeniable!', avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a86e927f643?q=80&w=2670&auto=format&fit=crop', order: 1 },
-      { id: 'fb-test-2', authorName: 'Emily Carter', quote: 'The support provided by this non-profit has been invaluable to countless families in desperate need. Highly recommended.', avatarUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=2670&auto=format&fit=crop', order: 2 },
-      { id: 'fb-test-3', authorName: 'David Lee', quote: 'I\'ve seen firsthand the positive change they bring. Every donation makes a real difference in the lives of children. Proud to be a supporter!', avatarUrl: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=2670&auto=format&fit=crop', order: 3 },
-      { id: 'fb-test-4', authorName: 'Maria Garcia', quote: 'A beacon of hope for our community. Their work in providing essential services has been life-changing. We are forever grateful.', avatarUrl: 'https://images.unsplash.com/photo-1549216060-60b642a8b94f?q=80&w=2670&auto=format&fit=crop', order: 4 },
-    ];
+  const secondaryColor = storeFormData?.themeSettings?.secondaryColor || '#FFFFFF';
+  const organizationSlug = storeFormData?.slug || 'non-profit';
+
+  // Determine which testimonials to render (max 3 for best layout aesthetic)
+  const allTestimonials = storeFormData?.testimonials || mockTestimonials;
+  const testimonialsToRender = (allTestimonials.length >= 3 
+    ? allTestimonials.slice(0, 3) 
+    : allTestimonials)
+    .sort((a, b) => (a.order || 0) - (b.order || 0));
+
 
   return (
-    <section id="testimonials" className="py-24 bg-gray-50 overflow-hidden">
-      <div className="max-w-7xl mx-auto px-6">
+    <section id="testimonials" className="py-24 md:py-32 bg-gray-50 font-sans overflow-hidden">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {/* Header Section */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -98,81 +146,63 @@ export default function TestimonialsSection() {
           transition={{ duration: 0.8 }}
           className="text-center mb-16"
         >
-          <p className="text-sm uppercase tracking-widest font-semibold mb-2" style={{ color: primaryColor }}>
-            Hear from Our Supporters
+          <p className="text-sm uppercase tracking-widest font-bold mb-2" style={{ color: primaryColor }}>
+            Proof of Trust
           </p>
           <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight">
-            Stories of Impact
+            Voices from the Community
           </h2>
-          <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
-            These are the voices of our community members, volunteers, and beneficiaries who have experienced our mission firsthand.
+          <p className="mt-4 text-xl text-gray-600 max-w-3xl mx-auto">
+            These authentic stories from supporters, volunteers, and beneficiaries highlight the real, human impact of our mission.
           </p>
         </motion.div>
 
+        {/* Testimonials Grid */}
         <div className="relative" ref={ref}>
-          {/* Scrollable Container for Testimonials */}
           <motion.div
             variants={containerVariants}
             initial="hidden"
             animate={inView ? "show" : "hidden"}
-            className="flex space-x-8 overflow-x-scroll no-scrollbar py-8 snap-x snap-mandatory lg:snap-none lg:grid lg:grid-cols-2 xl:grid-cols-3 lg:gap-8"
+            className={`grid grid-cols-1 md:grid-cols-2 ${testimonialsToRender.length >= 3 ? 'lg:grid-cols-3' : 'lg:grid-cols-2 lg:max-w-4xl lg:mx-auto'} gap-8`}
           >
-            {testimonialsToRender.map((test) => (
-              <motion.div
+            {testimonialsToRender.map((test, index) => (
+              <TestimonialCard
                 key={test.id}
-                variants={itemVariants}
-                className="flex-shrink-0 w-[85vw] sm:w-[70vw] md:w-[45vw] lg:w-full snap-center bg-white p-8 rounded-3xl shadow-lg border border-gray-100 relative group transition-all duration-300 hover:shadow-2xl"
-              >
-                <div className="flex items-start mb-6">
-                  <div className="relative w-16 h-16 rounded-full overflow-hidden flex-shrink-0 mr-4">
-                    <Image
-                      src={test.avatarUrl || `https://placehold.co/64x64/A0A0A0/FFFFFF?text=${test.authorName?.split(' ').map(n => n[0]).join('')}`}
-                      alt={test.authorName || 'Avatar'}
-                      fill
-                      sizes="64px"
-                      className="object-cover"
-                      loader={loader}
-                      onError={handleImageError}
-                    />
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-gray-900 text-xl">{test.authorName}</h4>
-                    <p className="text-sm text-gray-500">Community Supporter</p>
-                  </div>
-                </div>
-                <div className="flex">
-                  <TagIcon className="w-8 h-8 text-gray-200 mr-2" />
-                  <blockquote className="text-gray-800 text-lg leading-relaxed italic">
-                    {test.quote}
-                  </blockquote>
-                </div>
-              </motion.div>
+                test={test}
+                primaryColor={primaryColor}
+                index={index}
+              />
             ))}
           </motion.div>
         </div>
 
-        {/* Dynamic CTA */}
-        {/* <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.4 }}
-          transition={{ duration: 0.7 }}
-          className="p-10 rounded-2xl shadow-xl flex flex-col md:flex-row items-center justify-between mt-16 text-center md:text-left"
-          style={{ background: `linear-gradient(to bottom right, ${primaryColor}, ${primaryColor}E0)`, color: storeFormData?.themeSettings?.secondaryColor || '#FFFFFF' }}
+        {/* Dynamic CTA - Prominent and action-oriented */}
+        <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.4 }}
+            transition={{ duration: 0.7, delay: 0.5 }}
+            className="p-10 rounded-3xl shadow-3xl flex flex-col md:flex-row items-center justify-between mt-20 text-center md:text-left"
+            style={{ background: primaryColor, color: secondaryColor }}
         >
-          <h3 className="text-3xl font-bold mb-6 md:mb-0 max-w-2xl leading-tight">
-            Your Donation Is A Gift To Them. Donate Today!
-          </h3>
-          <motion.a
-            href={`/${storeFormData?.slug || 'non-profit'}/donate`}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="inline-flex items-center px-8 py-3 rounded-full font-semibold shadow-lg transition duration-300"
-            style={{ backgroundColor: storeFormData?.themeSettings?.secondaryColor || '#FFFFFF', color: primaryColor }}
-          >
-            Donate Now <ArrowRightIcon className="w-5 h-5 ml-2" />
-          </motion.a>
-        </motion.div> */}
+            <ChevronDoubleDownIcon className="w-12 h-12 mb-4 md:mb-0 md:mr-6 flex-shrink-0 opacity-80" />
+            <div className="flex-1">
+                <h3 className="text-3xl font-bold mb-3 md:mb-0 leading-tight">
+                    Inspired by their journey? Join the movement today!
+                </h3>
+            </div>
+            <motion.a
+                href={`/${organizationSlug}/donate`}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="mt-6 md:mt-0 inline-flex items-center px-8 py-3 rounded-full font-semibold shadow-2xl transition duration-300 flex-shrink-0"
+                style={{ backgroundColor: secondaryColor, color: primaryColor }}
+            >
+                Donate Now
+                <ArrowRightIcon className="w-5 h-5 ml-2" />
+            </motion.a>
+        </motion.div>
+
       </div>
     </section>
   );
