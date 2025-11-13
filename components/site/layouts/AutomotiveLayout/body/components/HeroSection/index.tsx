@@ -10,11 +10,11 @@ import {
   TruckIcon,
 } from "@heroicons/react/24/outline";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/solid";
-import FloatingLabelDropdown from "../FloatingLabelDropdown"; 
-import { IStoreCategory, StoreForm } from "@/types/typings"; 
-import { TrendingLocation } from "@/components/site/layouts/TravelLayout/body/TravelSite";
+import FloatingLabelDropdown from "../FloatingLabelDropdown";
+import { IStoreCategory, StoreForm } from "@/types/typings";
+import { TrendingLocation } from "@/components/site/layouts/TravelLayout/body/TravelSite"; // Assuming this is correct
 
-// --- TYPESCRIPT IMPROVEMENT: Define types for slides and filters ---
+// --- TYPESCRIPT INTERFACES ---
 interface ISlide {
   id: string;
   imageUrl?: string;
@@ -29,23 +29,21 @@ export interface IFilters {
   vehicleType: string | null;
   minPrice: number | string;
   maxPrice: number | string;
-  isBuy: boolean; // Assuming this filter exists in the parent state
-  year: number | string | null; // Assuming year filter exists
+  isBuy: boolean;
+  year: number | string | null;
 }
 
-// ---
-
+// --- CONSTANTS & VARIANTS ---
 const customLoader = ({ src, width, quality }: any) => {
   return `${src}?w=${width}&q=${quality || 75}`;
 };
 
-// --- DATA IMPROVEMENT: Standardized keys (imageUrl, videoUrl) ---
 const heroSlidesData: ISlide[] = [
   {
     id: "slide1",
     imageUrl:
       "https://images.unsplash.com/photo-1502877338535-766e1452684a?q=80&w=2670&auto=format&fit=crop",
-    headline: "Your Dream Ride Await's",
+    headline: "Your Dream Ride Awaits",
     subline:
       "Explore the largest curated collection of new and pre-owned vehicles.",
   },
@@ -75,7 +73,7 @@ const containerVariants = {
   },
 };
 
-const textItemVariants = { // Renamed for clarity
+const textItemVariants = {
   hidden: { opacity: 0, y: 30 },
   visible: {
     opacity: 1,
@@ -84,7 +82,8 @@ const textItemVariants = { // Renamed for clarity
   },
 };
 
-// ... (Interface declarations remain the same)
+// --- COMPONENT PROPS & LOGIC ---
+
 interface HeroSectionProps {
   store?: StoreForm | null | undefined;
   trendingLocations?: TrendingLocation[];
@@ -108,15 +107,14 @@ export default function HeroSection({
 
   const [current, setCurrent] = useState<number>(0);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const [isBuy, setIsBuy] = useState(true);
 
-  // --- Ensure filters always has defaults ---
+  // --- FIX: Ensure filters always has defaults and use parent state for isBuy ---
   const safeFilters: IFilters = {
     location: filters?.location ?? null,
     vehicleType: filters?.vehicleType ?? null,
     minPrice: filters?.minPrice ?? "",
     maxPrice: filters?.maxPrice ?? "",
-    isBuy: filters?.isBuy ?? true,
+    isBuy: filters?.isBuy ?? true, // Default to true if not set
     year: filters?.year ?? null,
   };
 
@@ -149,10 +147,13 @@ export default function HeroSection({
 
   const currentSlide = heroSlides[current];
 
+  // Destructure the fixed state
+  const { isBuy } = safeFilters;
+
   return (
     <section className="relative h-screen w-full overflow-hidden bg-gray-900">
       <AnimatePresence initial={false}>
-        {/* The background media div still needs a key based on the slide for background transition */}
+        {/* Background Media */}
         <motion.div
           key={currentSlide.id}
           className="absolute inset-0"
@@ -161,7 +162,6 @@ export default function HeroSection({
           exit={{ opacity: 0 }}
           transition={{ duration: 1.5, ease: [0.4, 0, 0.2, 1] }}
         >
-          {/* ... (Image/Video rendering logic remains the same) ... */}
           {currentSlide.imageUrl || currentSlide.productImageUrl ? (
             <motion.div
               className="absolute inset-0"
@@ -183,8 +183,8 @@ export default function HeroSection({
             </motion.div>
           ) : store?.videoUrl ? (
             <video
-              key={store?.videoUrl}
-              src={store?.videoUrl}
+              key={store.videoUrl}
+              src={store.videoUrl}
               autoPlay
               muted
               loop
@@ -200,48 +200,44 @@ export default function HeroSection({
       </AnimatePresence>
 
       <div className="relative z-10 flex h-full flex-col items-center justify-center p-4 text-center">
-        {/* *** FIX: Removed key={current} from this outer motion.div ***
-             This wrapper now stays mounted, preserving the state of the form and toggle. */}
         <motion.div
-          variants={containerVariants} // Keep animation properties on the wrapper
+          variants={containerVariants}
           initial="hidden"
           animate="visible"
           className="flex flex-col items-center"
         >
-          
-          {/* --- Animated Text (Wrapped in AnimatePresence with the key) --- */}
+          {/* --- Animated Text --- */}
           <AnimatePresence mode="wait">
             <motion.div
-                key={current} // <-- Key is moved here to animate only the text block
-                initial="hidden"
-                animate="visible"
-                exit="hidden"
-                className="flex flex-col items-center"
+              key={current}
+              initial="hidden"
+              animate="visible"
+              exit="hidden"
+              className="flex flex-col items-center"
             >
-                <motion.h1
-                    variants={textItemVariants}
-                    className="text-5xl font-extrabold tracking-tight text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)] sm:text-6xl md:text-7xl"
-                >
-                    {isBuy ? currentSlide.headline : "Effortless Car Rentals"}
-                </motion.h1>
+              <motion.h1
+                variants={textItemVariants}
+                className="text-4xl font-extrabold tracking-tight text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)] sm:text-6xl md:text-7xl"
+              >
+                {isBuy ? currentSlide.headline : "Effortless Car Rentals"}
+              </motion.h1>
 
-                <motion.p
-                    variants={textItemVariants}
-                    className="mt-4 max-w-2xl text-lg text-gray-200 drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)] sm:text-xl"
-                >
-                    {currentSlide.subline}
-                </motion.p>
+              <motion.p
+                variants={textItemVariants}
+                className="mt-2 max-w-2xl text-base text-gray-200 drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)] sm:text-xl"
+              >
+                {currentSlide.subline}
+              </motion.p>
             </motion.div>
           </AnimatePresence>
 
-          {/* --- Buy/Rent Toggle (Now static relative to text animation) --- */}
+          {/* --- Buy/Rent Toggle (Now controls parent state) --- */}
           <motion.div
-            variants={textItemVariants} // Applying animation from containerVariants
+            variants={textItemVariants}
             className="relative mt-8 flex w-full max-w-xs justify-center overflow-hidden rounded-full bg-white/20 p-1"
             role="tablist"
             aria-label="Action Type"
           >
-            {/* ... (Toggle logic remains the same) ... */}
             <motion.div
               layout
               className="absolute top-1 bottom-1 w-[calc(50%-4px)] rounded-full bg-blue-500 shadow-lg"
@@ -250,7 +246,8 @@ export default function HeroSection({
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
             />
             <button
-              onClick={() => setIsBuy(true)}
+              // FIX: Update the parent filter state
+              onClick={() => updateFilters({ isBuy: true })}
               className={`relative z-10 w-1/2 py-2.5 text-sm font-bold transition-colors duration-300 ${
                 isBuy ? "text-white" : "text-gray-900"
               }`}
@@ -260,7 +257,8 @@ export default function HeroSection({
               Buy a Car
             </button>
             <button
-              onClick={() => setIsBuy(false)}
+              // FIX: Update the parent filter state
+              onClick={() => updateFilters({ isBuy: false })}
               className={`relative z-10 w-1/2 py-2.5 text-sm font-bold transition-colors duration-300 ${
                 !isBuy ? "text-white" : "text-gray-900"
               }`}
@@ -271,15 +269,19 @@ export default function HeroSection({
             </button>
           </motion.div>
 
-          {/* --- REDESIGNED INTEGRATED SEARCH PILL (Now static relative to text animation) --- */}
+          {/* --- REDESIGNED INTEGRATED SEARCH PILL (Mobile-Friendly) --- */}
           <motion.form
-            variants={textItemVariants} // Applying animation from containerVariants
+            variants={textItemVariants}
             onSubmit={onSearch}
-            className="mt-12 flex w-full max-w-6xl items-stretch rounded-full bg-white/95 p-2 shadow-3xl backdrop-blur-sm"
+            className="mt-12 w-full max-w-6xl p-2 shadow-3xl backdrop-blur-sm transition-all duration-300
+                        // Desktop/Tablet (Flex Row)
+                        md:flex md:items-stretch md:rounded-full md:bg-white/95
+                        // Mobile (Vertical Stack)
+                        sm:rounded-xl sm:bg-white/95 sm:space-y-2
+                        flex flex-col sm:flex-row md:flex-row"
           >
-            {/* ... (Filter fields and Search Button logic remains the same) ... */}
-             {/* 1. Location Dropdown */}
-            <div className="flex-1 border-r border-gray-200 pr-2">
+            {/* 1. Location Dropdown (Stays wide on mobile) */}
+            <div className="flex-1 md:border-r md:border-gray-200 md:pr-2">
               <FloatingLabelDropdown
                 id="location"
                 label="Location"
@@ -287,12 +289,12 @@ export default function HeroSection({
                 options={trendingLocations}
                 selectedValue={safeFilters.location}
                 onSelect={(value) => updateFilters({ location: value })}
-                // className="!bg-transparent" // Ensure dropdown styling blends
+                className="w-full"
               />
             </div>
 
-            {/* 2. Vehicle Type Dropdown */}
-            <div className="flex-1 border-r border-gray-200 px-3">
+            {/* 2. Vehicle Type Dropdown (Hidden on mobile, only appears on MD+) */}
+            <div className="hidden md:flex flex-1 md:border-r md:border-gray-200 md:px-3">
               <FloatingLabelDropdown
                 id="vehicleType"
                 label="Vehicle Type"
@@ -300,12 +302,12 @@ export default function HeroSection({
                 options={categories}
                 selectedValue={safeFilters.vehicleType}
                 onSelect={(value) => updateFilters({ vehicleType: value })}
-                // className="!bg-transparent" // Ensure dropdown styling blends
+                className="w-full"
               />
             </div>
 
-            {/* 3. Price Range (Inputs) */}
-            <div className="relative flex flex-1 items-center divide-x divide-gray-200 px-3">
+            {/* 3. Price Range (Hidden on mobile, only appears on MD+) */}
+            <div className="hidden md:relative md:flex flex-1 items-center divide-x divide-gray-200 md:px-3">
               <input
                 type="number"
                 placeholder="Min Price (e.g., 5000)"
@@ -321,21 +323,27 @@ export default function HeroSection({
                 onChange={(e) => updateFilters({ maxPrice: e.target.value })}
               />
             </div>
-
-            {/* 4. Search Button (Integrated) */}
+            
+            {/* 4. Search Button (Full width on mobile, rounded end on desktop) */}
             <motion.button
               type="submit"
-              className="flex h-12 w-48 flex-shrink-0 items-center justify-center gap-2 rounded-full bg-blue-600 px-4 text-sm font-bold text-white shadow-xl transition-all"
+              className="mt-2 md:mt-0 flex h-12 w-full md:w-48 flex-shrink-0 items-center justify-center gap-2 rounded-lg md:rounded-full bg-blue-600 px-4 text-sm font-bold text-white shadow-xl transition-all"
               whileHover={{ scale: 1.02, filter: "brightness(1.1)" }}
               whileTap={{ scale: 0.98 }}
             >
               <MagnifyingGlassIcon className="h-5 w-5" /> Find Car
             </motion.button>
           </motion.form>
+          
+          {/* --- Mobile: Secondary Filter Button (Call to action for hidden filters) --- */}
+          <p className="mt-4 md:hidden text-gray-200 text-sm drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+              Need more options? Use the search results filter!
+          </p>
+
         </motion.div>
       </div>
 
-      {/* ... (CAROUSEL CONTROLS remain the same) ... */}
+      {/* --- CAROUSEL CONTROLS --- */}
       <div className="absolute bottom-6 left-0 right-0 z-20 px-4">
         <div className="mx-auto flex max-w-5xl items-center gap-4">
           <button

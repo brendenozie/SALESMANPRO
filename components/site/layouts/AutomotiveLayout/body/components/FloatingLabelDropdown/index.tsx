@@ -19,9 +19,10 @@ interface FloatingLabelDropdownProps {
   options: any[] | undefined;
   selectedValue: any | null;
   onSelect: (value: any | null) => void;
+  className?: string;
 }
 
-export default function FloatingLabelDropdown({ id, label, icon, options, selectedValue, onSelect }: FloatingLabelDropdownProps) {
+export default function FloatingLabelDropdown({ id, label, icon, options, selectedValue, onSelect, className }: FloatingLabelDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -30,7 +31,7 @@ export default function FloatingLabelDropdown({ id, label, icon, options, select
   const hasValue = selectedValue !== null;
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className={`relative ${className || ""}`} ref={dropdownRef} >
       <button
         type="button"
         id={id}
