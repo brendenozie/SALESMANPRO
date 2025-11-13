@@ -789,7 +789,7 @@ export interface StoreForm {
   variant?: string | null;
   logoUrl: string | null;
   bannerUrl: string | null;
-  videoUrl: string | null;
+  videoUrl?: string | null;
   contactEmail: string;
   contactPhone: string | null;
   site: string | null;

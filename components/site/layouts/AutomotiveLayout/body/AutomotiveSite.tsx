@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import dynamic from 'next/dynamic';
 import useSWR from 'swr';
 import { useRouter } from "next/navigation";
@@ -8,7 +8,7 @@ import { useStoreContext } from "@/contexts/StoreContext";
 import { StoreForm } from "@/types/typings";
 
 // Above-the-fold components - statically imported
-import HeroSection from "./components/HeroSection";
+import HeroSection, { IFilters } from "./components/HeroSection";
 
 // Loading skeleton
 const SectionSkeleton = () => <div className="h-96 w-full animate-pulse bg-gray-200 rounded-lg my-12" />;
@@ -88,6 +88,16 @@ export default function AutomotiveSite({ pageData, companyId }: { pageData: Stor
       setTestimonials(testimonialsData.data);
     }
   }, [testimonialsData]);
+  
+  const [filters, setFilters] = useState<IFilters | undefined>(undefined);
+
+  const handleSearch = useCallback(
+    (e: React.FormEvent) => {
+      e.preventDefault();
+      console.log("Search triggered with filters:", filters);
+    },
+    [filters]
+  );
 
   return (
     <div className="space-y-24 font-sans bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
@@ -107,12 +117,9 @@ export default function AutomotiveSite({ pageData, companyId }: { pageData: Stor
             ...loc,
           }))
           : []} 
-          filters={undefined} setFilters={function (filters: any): void {
-
-          } } 
-          onSearch={function (e: React.FormEvent): void {
-            
-          } }    
+          filters={filters} 
+          setFilters={setFilters} 
+          onSearch={handleSearch}
       />
 
       <FeaturedListings listings={listings} slug=""/>
