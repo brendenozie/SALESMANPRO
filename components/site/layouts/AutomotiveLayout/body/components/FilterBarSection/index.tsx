@@ -2,22 +2,66 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDownIcon } from "@heroicons/react/20/solid";
+import { ChevronDownIcon, FunnelIcon } from "@heroicons/react/20/solid"; // Added FunnelIcon
 import clsx from "clsx";
 import { IStoreCategory } from "@/types/typings";
+import { IFilters } from "../HeroSection";
 
 interface TrendingLocation {
   name: string;
   slug?: string;
 }
 
+
+
 interface FilterBarSectionProps {
   store?: { StoreCategory?: IStoreCategory[] } | null;
   trendingLocations?: TrendingLocation[];
-  filters: any;
-  setFilters: (filters: any) => void;
+  filters: Partial<IFilters>; // Use the explicit interface
+  setFilters: (filters: Partial<IFilters>) => void;
   onSearch: (e: React.FormEvent) => void;
 }
+
+// --- Reusable Filter Input Component ---
+const FilterInput: React.FC<{
+  label: string;
+  value: string | number;
+  onChange: (value: string) => void;
+  type?: "text" | "number";
+  options?: TrendingLocation[] | IStoreCategory[];
+}> = ({ label, value, onChange, type = "text", options }) => {
+  const inputStyle =
+    "w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out";
+  const selectStyle =
+    "w-full px-4 py-2 border border-gray-300 rounded-lg text-sm bg-white appearance-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out cursor-pointer";
+
+  if (options && options.length > 0) {
+    return (
+      <div className="relative">
+        <select value={value || ""} onChange={(e) => onChange(e.target.value)} className={selectStyle}>
+          <option value="">{label}</option>
+          {options.map((item) => (
+            <option key={('id' in item ? item.id : item.slug || item.name)} value={('displayName' in item ? item.displayName || "" : "")}>
+              {'displayName' in item ? item.displayName : "item.name"}
+            </option>
+          ))}
+        </select>
+        <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+      </div>
+    );
+  }
+
+  return (
+    <input
+      type={type}
+      placeholder={label}
+      value={value || ""}
+      onChange={(e) => onChange(e.target.value)}
+      className={inputStyle}
+    />
+  );
+};
+
 
 export default function FilterBarSection({
   store,
@@ -40,10 +84,12 @@ export default function FilterBarSection({
     visible: { height: "auto", opacity: 1, transition: { duration: 0.4, ease: "easeOut" } },
   };
 
-  const inputStyle =
-    "w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out";
-  const selectStyle =
-    "w-full px-4 py-2 border border-gray-300 rounded-lg text-sm bg-white appearance-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 ease-in-out cursor-pointer";
+  const handleSetFilters = (key: keyof IFilters, value: string | boolean) => {
+    setFilters({ ...filters, [key]: value });
+  };
+  
+  // Default isBuy to true if undefined
+  const isBuy = filters.isBuy ?? true; 
 
   return (
     <motion.form
@@ -51,177 +97,169 @@ export default function FilterBarSection({
       initial="hidden"
       animate="visible"
       variants={filterBarVariants}
-      className="sticky top-0 z-40 bg-white shadow-lg px-4 py-4 md:py-3 rounded-b-2xl md:rounded-none"
+      className="sticky top-0 z-40 bg-white shadow-lg px-4 py-3 rounded-b-2xl md:rounded-none"
     >
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-        {/* Toggle Buy / Rent */}
-        <div className="flex items-center gap-2 mb-3 md:mb-0">
-          <button
-            type="button"
-            className={clsx(
-              "px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300 ease-in-out",
-              // filters.isBuy
-              //   ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-md"
-              //   : 
-                "bg-gray-100 text-gray-700 hover:bg-gray-200"
-            )}
-            onClick={() => setFilters({ ...filters, isBuy: true })}
-          >
-            Buy
-          </button>
-          <button
-            type="button"
-            className={clsx(
-              "px-5 py-2 rounded-full text-sm font-semibold transition-all duration-300 ease-in-out",
-              // !filters.isBuy
-              //   ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-md"
-              //   : 
-                "bg-gray-100 text-gray-700 hover:bg-gray-200"
-            )}
-            onClick={() => setFilters({ ...filters, isBuy: false })}
-          >
-            Rent
-          </button>
-        </div>
-
-        {/* Filters Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-3 flex-grow w-full">
-          {/* Location */}
-          <div className="relative">
-            <select
-              value={""}
-              // filters.location || 
-              onChange={(e) => setFilters({ ...filters, location: e.target.value })}
-              className={selectStyle}
+      <div className="max-w-7xl mx-auto flex flex-col gap-3">
+        
+        {/* --- ROW 1: PRIMARY FILTERS (Mobile Compact) --- */}
+        <div className="flex items-stretch justify-between gap-3">
+          
+          {/* 1. Toggle Buy / Rent */}
+          <div className="flex items-center flex-shrink-0 gap-2">
+            <button
+              type="button"
+              className={clsx(
+                "px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 ease-in-out",
+                isBuy
+                  ? "bg-blue-600 text-white shadow-md"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              )}
+              onClick={() => handleSetFilters('isBuy', true)}
             >
-              <option value="">Location</option>
-              {trendingLocations.map((loc) => (
-                <option key={loc.slug || loc.name} value={loc.name}>
-                  {loc.name}
-                </option>
-              ))}
-            </select>
-            <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+              Buy
+            </button>
+            <button
+              type="button"
+              className={clsx(
+                "px-4 py-2 rounded-full text-sm font-semibold transition-all duration-300 ease-in-out",
+                !isBuy
+                  ? "bg-blue-600 text-white shadow-md"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              )}
+              onClick={() => handleSetFilters('isBuy', false)}
+            >
+              Rent
+            </button>
           </div>
 
-          {/* Min Price */}
-          <input
-            type="number"
-            placeholder="Min Price"
-            value={""}
-            // filters.minPrice || 
-            onChange={(e) => setFilters({ ...filters, minPrice: e.target.value })}
-            className={inputStyle}
-          />
-
-          {/* Max Price */}
-          <input
-            type="number"
-            placeholder="Max Price"
-            value={""}
-            // filters.maxPrice || 
-            onChange={(e) => setFilters({ ...filters, maxPrice: e.target.value })}
-            className={inputStyle}
-          />
-
-          {/* Vehicle Type */}
-          <div className="relative">
-            <select
-              value={""}
-              // filters.vehicleType || 
-              onChange={(e) => setFilters({ ...filters, vehicleType: e.target.value })}
-              className={selectStyle}
-            >
-              <option value="">Vehicle Type</option>
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.displayName||''}>
-                  {cat.displayName}
-                </option>
-              ))}
-            </select>
-            <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+          {/* 2. Location (Primary Mobile Filter) */}
+          <div className="hidden md:block flex-1">
+             <FilterInput
+                label="Location"
+                value={filters.location || ''}
+                onChange={(v) => handleSetFilters('location', v)}
+                options={trendingLocations}
+              />
           </div>
 
-          {/* Year */}
-          <input
-            type="number"
-            placeholder="Year (e.g., 2020)"
-            value={""}
-            // filters.year || 
-            onChange={(e) => setFilters({ ...filters, year: e.target.value })}
-            className={inputStyle}
-          />
-        </div>
-
-        {/* Apply Button */}
-        <div className="flex items-center gap-3 mt-3 md:mt-0 w-full md:w-auto justify-between md:justify-start">
+          {/* 3. Mobile/Tablet Collapse Button */}
           <button
             type="button"
             onClick={() => setShowMobileFilters(!showMobileFilters)}
-            className="md:hidden flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-800 transition duration-200 ease-in-out"
+            className="flex items-center justify-center gap-1 px-4 py-2 rounded-lg text-sm font-medium text-blue-600 border border-gray-300 hover:bg-blue-50 transition duration-200 ease-in-out md:hidden flex-shrink-0"
           >
-            More Filters <ChevronDownIcon className="w-4 h-4" />
+            <FunnelIcon className="w-5 h-5" />
+            {showMobileFilters ? "Hide" : "More"} Filters
           </button>
-
+          
+          {/* 4. Apply Button (Always Visible) */}
           <button
             type="submit"
-            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg font-semibold text-sm transition duration-300 ease-in-out shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            className="hidden md:block bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg font-semibold text-sm transition duration-300 ease-in-out shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex-shrink-0"
           >
             Apply Filters
           </button>
         </div>
-      </div>
 
-      {/* Collapsible Mobile Panel */}
-      <AnimatePresence>
-        {showMobileFilters && (
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            exit="hidden"
-            variants={mobileFiltersVariants}
-            className="md:hidden mt-4 pt-4 border-t border-gray-200 space-y-3 overflow-hidden"
-          >
-            {/* Duplicate filter fields for mobile */}
-            <input
-              type="number"
-              placeholder="Min Price"
-              value={filters.minPrice || ""}
-              onChange={(e) => setFilters({ ...filters, minPrice: e.target.value })}
-              className={inputStyle}
-            />
-            <input
-              type="number"
-              placeholder="Max Price"
-              value={filters.maxPrice || ""}
-              onChange={(e) => setFilters({ ...filters, maxPrice: e.target.value })}
-              className={inputStyle}
-            />
-            <div className="relative">
-              <select
-                value={filters.vehicleType || ""}
-                onChange={(e) => setFilters({ ...filters, vehicleType: e.target.value })}
-                className={selectStyle}
-              >
-                <option value="">Vehicle Type</option>
-                {categories.map((cat) => (
-                  <option key={cat.id} value={cat.displayName||''}>
-                    {cat.displayName}
-                  </option>
-                ))}
-              </select>
-              <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+        {/* --- ROW 2: DESKTOP FULL GRID --- */}
+        {/* This row uses a compact 4-column layout for better desktop space utilization */}
+        <div className="hidden md:grid grid-cols-4 gap-3"> 
+           {/* Location is already here for desktop view */}
+            <div className="col-span-1">
+             <FilterInput
+                label="Location"
+                value={filters.location || ''}
+                onChange={(v) => handleSetFilters('location', v)}
+                options={trendingLocations}
+              />
             </div>
-            <input
-              type="number"
-              placeholder="Year"
-              value={filters.year || ""}
-              onChange={(e) => setFilters({ ...filters, year: e.target.value })}
-              className={inputStyle}
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
+          
+            <div className="col-span-1">
+              <FilterInput
+                label="Vehicle Type"
+                value={filters.vehicleType || ''}
+                onChange={(v) => handleSetFilters('vehicleType', v)}
+                options={categories}
+              />
+            </div>
+
+            <div className="col-span-1 grid grid-cols-2 gap-3">
+              <FilterInput
+                label="Min Price"
+                value={filters.minPrice || ''}
+                onChange={(v) => handleSetFilters('minPrice', v)}
+                type="number"
+              />
+              <FilterInput
+                label="Max Price"
+                value={filters.maxPrice || ''}
+                onChange={(v) => handleSetFilters('maxPrice', v)}
+                type="number"
+              />
+            </div>
+
+             <div className="col-span-1 grid grid-cols-2 gap-3">
+                 <FilterInput
+                    label="Year"
+                    value={filters.year || ''}
+                    onChange={(v) => handleSetFilters('year', v)}
+                    type="number"
+                  />
+                  {/* Empty slot or small button if needed */}
+             </div>
+        </div>
+
+        {/* --- Mobile Collapsible Panel --- */}
+        <AnimatePresence>
+          {showMobileFilters && (
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              exit="hidden"
+              variants={mobileFiltersVariants}
+              className="md:hidden pt-3 border-t border-gray-200 space-y-3 overflow-hidden"
+            >
+              {/* Note: Location is deliberately excluded as it's in the top row */}
+
+              <FilterInput
+                label="Min Price"
+                value={filters.minPrice || ''}
+                onChange={(v) => handleSetFilters('minPrice', v)}
+                type="number"
+              />
+              <FilterInput
+                label="Max Price"
+                value={filters.maxPrice || ''}
+                onChange={(v) => handleSetFilters('maxPrice', v)}
+                type="number"
+              />
+              
+              <FilterInput
+                label="Vehicle Type"
+                value={filters.vehicleType || ''}
+                onChange={(v) => handleSetFilters('vehicleType', v)}
+                options={categories}
+              />
+
+              <FilterInput
+                label="Year"
+                value={filters.year || ''}
+                onChange={(v) => handleSetFilters('year', v)}
+                type="number"
+              />
+              
+              {/* Separate Apply button for mobile panel for clear action */}
+              <button
+                  type="submit"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg font-semibold text-sm transition duration-300 ease-in-out shadow-md"
+              >
+                  Apply Filters
+              </button>
+
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
     </motion.form>
   );
 }

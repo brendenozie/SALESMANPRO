@@ -10,8 +10,9 @@ import {
   TruckIcon,
 } from "@heroicons/react/24/outline";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/solid";
-import FloatingLabelDropdown from "../FloatingLabelDropdown";
-import { IStoreCategory, StoreForm } from "@/types/typings"; // Assuming ISubcategory was only for unused state
+import FloatingLabelDropdown from "../FloatingLabelDropdown"; 
+import { IStoreCategory, StoreForm } from "@/types/typings"; 
+import { TrendingLocation } from "@/components/site/layouts/TravelLayout/body/TravelSite";
 
 // --- TYPESCRIPT IMPROVEMENT: Define types for slides and filters ---
 interface ISlide {
@@ -25,11 +26,12 @@ interface ISlide {
 
 export interface IFilters {
   location: string | null;
-  vehicleType: string | null; // Assuming vehicleType is a string ID or name
+  vehicleType: string | null;
   minPrice: number | string;
   maxPrice: number | string;
+  isBuy: boolean; // Assuming this filter exists in the parent state
+  year: number | string | null; // Assuming year filter exists
 }
-
 
 // ---
 
@@ -43,9 +45,7 @@ const heroSlidesData: ISlide[] = [
     id: "slide1",
     imageUrl:
       "https://images.unsplash.com/photo-1502877338535-766e1452684a?q=80&w=2670&auto=format&fit=crop",
-    productImageUrl:
-      "https://images.unsplash.com/photo-1502877338535-766e1452684a?q=80&w=2670&auto=format&fit=crop",
-    headline: "Your Dream Ride Awaits",
+    headline: "Your Dream Ride Await's",
     subline:
       "Explore the largest curated collection of new and pre-owned vehicles.",
   },
@@ -53,15 +53,12 @@ const heroSlidesData: ISlide[] = [
     id: "slide2",
     videoUrl:
       "https://cdn.pixabay.com/video/2024/02/26/200827-919106201_large.mp4",
-
     headline: "Luxury Meets Performance",
     subline: "Discover premium vehicles that redefine the art of driving.",
   },
   {
     id: "slide3",
     imageUrl:
-      "https://images.unsplash.com/photo-1511919884226-fd3cad34687c?q=80&w=2670&auto=format&fit=crop",
-    productImageUrl:
       "https://images.unsplash.com/photo-1511919884226-fd3cad34687c?q=80&w=2670&auto=format&fit=crop",
     headline: "Drive Into the Future",
     subline: "Choose from cutting-edge electric and hybrid cars.",
@@ -78,7 +75,7 @@ const containerVariants = {
   },
 };
 
-const itemVariants = {
+const textItemVariants = { // Renamed for clarity
   hidden: { opacity: 0, y: 30 },
   visible: {
     opacity: 1,
@@ -87,31 +84,26 @@ const itemVariants = {
   },
 };
 
-interface TrendingLocation {
-  id: string; // Assuming options have an ID for keys
-  name: string;
-}
-
+// ... (Interface declarations remain the same)
 interface HeroSectionProps {
   store?: StoreForm | null | undefined;
   trendingLocations?: TrendingLocation[];
-  filters: IFilters | undefined; // Use defined interface
-  setFilters: (filters: IFilters) => void; // Use defined interface
+  filters: IFilters | undefined;
+  setFilters: (filters: IFilters) => void;
   onSearch: (e: React.FormEvent) => void;
 }
 
 type PartialFilters = Partial<IFilters>;
 
-
 export default function HeroSection({
   store,
-  trendingLocations = [], // Default to empty array
+  trendingLocations = [],
   filters,
   setFilters,
   onSearch,
 }: HeroSectionProps) {
-  // Use store slides if available, otherwise default
-  const heroSlides = store && store?.heroSlides?.length > 0 ? store.heroSlides : heroSlidesData;
+  const heroSlides =
+    store && store?.heroSlides?.length > 0 ? store.heroSlides : heroSlidesData;
   const categories = store?.StoreCategory ?? [];
 
   const [current, setCurrent] = useState<number>(0);
@@ -124,13 +116,14 @@ export default function HeroSection({
     vehicleType: filters?.vehicleType ?? null,
     minPrice: filters?.minPrice ?? "",
     maxPrice: filters?.maxPrice ?? "",
+    isBuy: filters?.isBuy ?? true,
+    year: filters?.year ?? null,
   };
 
   const updateFilters = (updates: PartialFilters) => {
     setFilters({ ...safeFilters, ...updates });
   };
 
-  // --- REACT PRACTICE: Updated dependency to be more robust ---
   const advanceSlide = useCallback(
     (direction: "next" | "prev") => {
       if (direction === "next") {
@@ -139,7 +132,7 @@ export default function HeroSection({
         setCurrent((prev) => (prev - 1 + heroSlides.length) % heroSlides.length);
       }
     },
-    [heroSlides] // Depend on the slides array itself
+    [heroSlides]
   );
 
   useEffect(() => {
@@ -157,17 +150,18 @@ export default function HeroSection({
   const currentSlide = heroSlides[current];
 
   return (
-    <section className="relative h-screen w-full overflow-hidden bg-white">
+    <section className="relative h-screen w-full overflow-hidden bg-gray-900">
       <AnimatePresence initial={false}>
+        {/* The background media div still needs a key based on the slide for background transition */}
         <motion.div
-          key={current} // Use slide ID or index
+          key={currentSlide.id}
           className="absolute inset-0"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 1.5, ease: [0.4, 0, 0.2, 1] }}
         >
-          {/* --- DATA FIX: Render based on available URL keys --- */}
+          {/* ... (Image/Video rendering logic remains the same) ... */}
           {currentSlide.imageUrl || currentSlide.productImageUrl ? (
             <motion.div
               className="absolute inset-0"
@@ -182,15 +176,15 @@ export default function HeroSection({
                 src={currentSlide.imageUrl || currentSlide.productImageUrl || ""}
                 alt={currentSlide.headline || "Hero Slide"}
                 fill
-                priority={current === 0} // Only prioritize the first slide
+                priority={current === 0}
                 className="object-cover"
                 loader={customLoader}
               />
             </motion.div>
           ) : store?.videoUrl ? (
             <video
-              key={store.videoUrl} // Add key for video source change
-              src={store.videoUrl}
+              key={store?.videoUrl}
+              src={store?.videoUrl}
               autoPlay
               muted
               loop
@@ -198,153 +192,179 @@ export default function HeroSection({
               className="h-full w-full object-cover"
             />
           ) : (
-            // Fallback for missing media
-            <div className="absolute inset-0 bg-gray-200" />
+            <div className="absolute inset-0 bg-gray-800" />
           )}
-          {/* Inverted gradient overlay for light mode */}
-          <div className="absolute inset-0 bg-gradient-to-t from-white/50 via-white/40 to-transparent" />
+
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
         </motion.div>
       </AnimatePresence>
 
       <div className="relative z-10 flex h-full flex-col items-center justify-center p-4 text-center">
+        {/* *** FIX: Removed key={current} from this outer motion.div ***
+             This wrapper now stays mounted, preserving the state of the form and toggle. */}
         <motion.div
-          key={current} // Re-animate text on slide change
-          variants={containerVariants}
+          variants={containerVariants} // Keep animation properties on the wrapper
           initial="hidden"
           animate="visible"
           className="flex flex-col items-center"
         >
-          <motion.h1
-            variants={itemVariants}
-            className="text-5xl font-extrabold tracking-tight text-gray-900 drop-shadow-xl sm:text-6xl md:text-7xl"
-          >
-            {isBuy ? currentSlide.headline : "Effortless Car Rentals"}
-          </motion.h1>
+          
+          {/* --- Animated Text (Wrapped in AnimatePresence with the key) --- */}
+          <AnimatePresence mode="wait">
+            <motion.div
+                key={current} // <-- Key is moved here to animate only the text block
+                initial="hidden"
+                animate="visible"
+                exit="hidden"
+                className="flex flex-col items-center"
+            >
+                <motion.h1
+                    variants={textItemVariants}
+                    className="text-5xl font-extrabold tracking-tight text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)] sm:text-6xl md:text-7xl"
+                >
+                    {isBuy ? currentSlide.headline : "Effortless Car Rentals"}
+                </motion.h1>
 
-          <motion.p
-            variants={itemVariants}
-            className="mt-4 max-w-2xl text-lg text-gray-700 drop-shadow-lg sm:text-xl"
-          >
-            {currentSlide.subline}
-          </motion.p>
+                <motion.p
+                    variants={textItemVariants}
+                    className="mt-4 max-w-2xl text-lg text-gray-200 drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)] sm:text-xl"
+                >
+                    {currentSlide.subline}
+                </motion.p>
+            </motion.div>
+          </AnimatePresence>
 
+          {/* --- Buy/Rent Toggle (Now static relative to text animation) --- */}
           <motion.div
-            variants={itemVariants}
-            className="relative mt-8 flex w-full max-w-xs justify-center overflow-hidden rounded-full bg-gray-200/50 p-1"
-            role="tablist" // --- ACCESSIBILITY: Add role ---
+            variants={textItemVariants} // Applying animation from containerVariants
+            className="relative mt-8 flex w-full max-w-xs justify-center overflow-hidden rounded-full bg-white/20 p-1"
+            role="tablist"
             aria-label="Action Type"
           >
+            {/* ... (Toggle logic remains the same) ... */}
             <motion.div
               layout
-              className="absolute top-1 bottom-1 w-[calc(50%-4px)] rounded-full bg-blue-600 shadow-md"
+              className="absolute top-1 bottom-1 w-[calc(50%-4px)] rounded-full bg-blue-500 shadow-lg"
               initial={false}
               animate={{ x: isBuy ? "-50%" : "50%" }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
             />
             <button
               onClick={() => setIsBuy(true)}
-              className="relative z-10 w-1/2 py-2.5 text-sm font-semibold text-gray-900 transition-colors duration-300"
-              role="tab" // --- ACCESSIBILITY: Add role ---
-              aria-selected={isBuy} // --- ACCESSIBILITY: Add selected state ---
+              className={`relative z-10 w-1/2 py-2.5 text-sm font-bold transition-colors duration-300 ${
+                isBuy ? "text-white" : "text-gray-900"
+              }`}
+              role="tab"
+              aria-selected={isBuy}
             >
               Buy a Car
             </button>
             <button
               onClick={() => setIsBuy(false)}
-              className="relative z-10 w-1/2 py-2.5 text-sm font-semibold text-gray-900 transition-colors duration-300"
-              role="tab" // --- ACCESSIBILITY: Add role ---
-              aria-selected={!isBuy} // --- ACCESSIBILITY: Add selected state ---
+              className={`relative z-10 w-1/2 py-2.5 text-sm font-bold transition-colors duration-300 ${
+                !isBuy ? "text-white" : "text-gray-900"
+              }`}
+              role="tab"
+              aria-selected={!isBuy}
             >
               Rent a Car
             </button>
           </motion.div>
 
-          {/* --- BUG FIX: Added onSubmit handler --- */}
+          {/* --- REDESIGNED INTEGRATED SEARCH PILL (Now static relative to text animation) --- */}
           <motion.form
-            variants={itemVariants}
-            className="mt-8 grid w-full max-w-4xl grid-cols-1 gap-4 rounded-2xl border border-gray-200 bg-white/50 p-6 shadow-2xl backdrop-blur-md md:grid-cols-4"
-            onSubmit={onSearch} // This will now trigger the search
+            variants={textItemVariants} // Applying animation from containerVariants
+            onSubmit={onSearch}
+            className="mt-12 flex w-full max-w-6xl items-stretch rounded-full bg-white/95 p-2 shadow-3xl backdrop-blur-sm"
           >
-            <FloatingLabelDropdown
-              id="location"
-              label="Location"
-              icon={<MapPinIcon className="h-5 w-5" />}
-              options={trendingLocations}
-              selectedValue={safeFilters.location}
-              onSelect={(value) => updateFilters({ location: value })}
-            />
-            <FloatingLabelDropdown
-              id="vehicleType"
-              label="Vehicle Type"
-              icon={<TruckIcon className="h-5 w-5" />}
-              options={categories}
-              selectedValue={safeFilters.vehicleType}
-              onSelect={(value) => updateFilters({ vehicleType: value })}
-            />
-            <div className="relative grid grid-cols-2 gap-4 md:col-span-2">
-              
+            {/* ... (Filter fields and Search Button logic remains the same) ... */}
+             {/* 1. Location Dropdown */}
+            <div className="flex-1 border-r border-gray-200 pr-2">
+              <FloatingLabelDropdown
+                id="location"
+                label="Location"
+                icon={<MapPinIcon className="h-5 w-5" />}
+                options={trendingLocations}
+                selectedValue={safeFilters.location}
+                onSelect={(value) => updateFilters({ location: value })}
+                // className="!bg-transparent" // Ensure dropdown styling blends
+              />
+            </div>
+
+            {/* 2. Vehicle Type Dropdown */}
+            <div className="flex-1 border-r border-gray-200 px-3">
+              <FloatingLabelDropdown
+                id="vehicleType"
+                label="Vehicle Type"
+                icon={<TruckIcon className="h-5 w-5" />}
+                options={categories}
+                selectedValue={safeFilters.vehicleType}
+                onSelect={(value) => updateFilters({ vehicleType: value })}
+                // className="!bg-transparent" // Ensure dropdown styling blends
+              />
+            </div>
+
+            {/* 3. Price Range (Inputs) */}
+            <div className="relative flex flex-1 items-center divide-x divide-gray-200 px-3">
               <input
                 type="number"
-                placeholder="Min Price"
+                placeholder="Min Price (e.g., 5000)"
+                className="h-full w-1/2 border-none bg-transparent p-3 text-sm text-gray-800 placeholder-gray-500 focus:ring-0"
                 value={safeFilters.minPrice}
                 onChange={(e) => updateFilters({ minPrice: e.target.value })}
               />
-
               <input
                 type="number"
-                placeholder="Max Price"
+                placeholder="Max Price (e.g., 80000)"
+                className="h-full w-1/2 border-none bg-transparent p-3 text-sm text-gray-800 placeholder-gray-500 focus:ring-0"
                 value={safeFilters.maxPrice}
                 onChange={(e) => updateFilters({ maxPrice: e.target.value })}
               />
             </div>
 
+            {/* 4. Search Button (Integrated) */}
             <motion.button
               type="submit"
-              className="flex items-center justify-center gap-2 rounded-lg bg-blue-600 py-3 font-semibold text-white shadow-lg transition-all md:col-span-4"
+              className="flex h-12 w-48 flex-shrink-0 items-center justify-center gap-2 rounded-full bg-blue-600 px-4 text-sm font-bold text-white shadow-xl transition-all"
               whileHover={{ scale: 1.02, filter: "brightness(1.1)" }}
               whileTap={{ scale: 0.98 }}
             >
-              <MagnifyingGlassIcon className="h-5 w-5" /> Find Your Car
+              <MagnifyingGlassIcon className="h-5 w-5" /> Find Car
             </motion.button>
           </motion.form>
         </motion.div>
       </div>
 
+      {/* ... (CAROUSEL CONTROLS remain the same) ... */}
       <div className="absolute bottom-6 left-0 right-0 z-20 px-4">
         <div className="mx-auto flex max-w-5xl items-center gap-4">
           <button
             onClick={() => advanceSlide("prev")}
-            className="rounded-full bg-white/50 p-2 text-gray-800 backdrop-blur-sm transition hover:bg-white/70"
-            aria-label="Previous slide" // --- ACCESSIBILITY: Add label ---
+            className="rounded-full bg-white/30 p-2 text-white shadow-md backdrop-blur-lg transition hover:bg-white/50"
+            aria-label="Previous slide"
           >
             <ArrowLeftIcon className="h-5 w-5" />
           </button>
 
-          {/* --- ACCESSIBILITY: Converted to button tablist --- */}
           <div className="flex flex-1 gap-2" role="tablist" aria-label="Slides">
-            {heroSlides.map((_, idx) => (
+            {heroSlides.map((slide, idx) => (
               <button
-                key={idx}
-                className="h-1.5 flex-1 cursor-pointer overflow-hidden rounded-full bg-gray-300"
+                key={slide.id || idx}
+                className="h-2 flex-1 cursor-pointer overflow-hidden rounded-full bg-white/40 transition-colors hover:bg-white/70"
                 onClick={() => handleIndicatorClick(idx)}
                 role="tab"
                 aria-selected={idx === current}
                 aria-label={`Go to slide ${idx + 1}`}
               >
-                {idx === current ? (
+                {idx === current && (
                   <motion.div
-                    className="h-full bg-blue-600"
+                    className="h-full bg-blue-400"
                     initial={{ width: 0 }}
                     animate={{ width: "100%" }}
                     transition={{
                       duration: autoAdvanceDelay / 1000,
                       ease: "linear",
                     }}
-                  />
-                ) : (
-                  <div
-                    className="h-full bg-blue-600"
-                    style={{ width: idx < current ? "100%" : "0" }}
                   />
                 )}
               </button>
@@ -353,8 +373,8 @@ export default function HeroSection({
 
           <button
             onClick={() => advanceSlide("next")}
-            className="rounded-full bg-white/50 p-2 text-gray-800 backdrop-blur-sm transition hover:bg-white/70"
-            aria-label="Next slide" // --- ACCESSIBILITY: Add label ---
+            className="rounded-full bg-white/30 p-2 text-white shadow-md backdrop-blur-lg transition hover:bg-white/50"
+            aria-label="Next slide"
           >
             <ArrowRightIcon className="h-5 w-5" />
           </button>

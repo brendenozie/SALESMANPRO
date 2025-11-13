@@ -142,12 +142,9 @@ export default function AutomotiveSite({ pageData, companyId }: { pageData: Stor
             ...loc,
           }))
           : []} 
-          filters={undefined} setFilters={function (filters: any): void {
-
-          } } 
-          onSearch={function (e: React.FormEvent): void {
-            
-          } }    
+          filters={filters || {}} 
+          setFilters={setFilters}
+          onSearch={handleSearch}    
         />
 
       {/* Trending Locations Section */}
