@@ -18,7 +18,9 @@ interface FilterBarSectionProps {
   store?: { StoreCategory?: IStoreCategory[] } | null;
   trendingLocations?: TrendingLocation[];
   filters: Partial<IFilters>; // Use the explicit interface
-  setFilters: (filters: Partial<IFilters>) => void;
+  // setFilters: (filters: Partial<IFilters>) => void;
+  
+  setFilters: (filters: IFilters) => void;
   onSearch: (e: React.FormEvent) => void;
 }
 
@@ -85,7 +87,7 @@ export default function FilterBarSection({
   };
 
   const handleSetFilters = (key: keyof IFilters, value: string | boolean) => {
-    setFilters({ ...filters, [key]: value });
+    // setFilters({ ...filters, [key]: value });
   };
   
   // Default isBuy to true if undefined

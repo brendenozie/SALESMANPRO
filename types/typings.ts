@@ -361,6 +361,7 @@ export interface ISubcategory {
   name: string;
   slug: string;
   sortOrder?: number | null;
+  icon?: string | null;
   visible?: boolean;
   tempId?: string;
   _id?: any;
