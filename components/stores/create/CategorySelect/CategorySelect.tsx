@@ -63,51 +63,51 @@ const SITE_CATEGORIES: Category[] = [
   { name: "Service Provider", 
     icon: "🔧", variants: [
       { 
-        name: "Agency Portfolio", link: "https://serviceprovider.salesmanpro.site", description: "Showcase services and case studies.", tag: 'Popular' 
+        name: "Agency Portfolio", link: "https://service-provider.salesmanpro.site", description: "Showcase services and case studies.", tag: 'Popular' 
       }
     ] 
   },
   { name: "Booking & Appointments", 
     icon: "📅", 
     variants: [
-      { name: "Scheduler Hub", link: "https://bookings.salesmanpro.site", description: "Integrated calendar for easy booking.", tag: 'Standard' }
+      { name: "Scheduler Hub", link: "https://booking.salesmanpro.site", description: "Integrated calendar for easy booking.", tag: 'Standard' }
     ] 
   },
   { name: "Portfolio & Personal Branding", 
     icon: "👤", 
     variants: [
-      { name: "Creative CV", link: "https://portfolio.salesmanpro.site", description: "Minimalist design for designers/writers.", tag: 'New' }
+      { name: "Creative CV", link: "https://portfolio-personal-branding.salesmanpro.site", description: "Minimalist design for designers/writers.", tag: 'New' }
     ] 
   },
   { 
     name: "Blog & Content", 
     icon: "✍️", variants: 
-    [{ name: "Modern Magazine", link: "https://blogs.salesmanpro.site", description: "High-readability blog layout.", tag: 'Popular' }
+    [{ name: "Modern Magazine", link: "https://blog-content.salesmanpro.site", description: "High-readability blog layout.", tag: 'Popular' }
 
     ] 
   },
     { name: "Nonprofit & Community",
       icon: "🤝",
       variants: [
-        { name: "Charity Connect", link: "https://nonprofit.salesmanpro.site", description: "Donation-focused design.", tag: 'Standard' }
+        { name: "Charity Connect", link: "https://nonprofit-community.salesmanpro.site", description: "Donation-focused design.", tag: 'Standard' }
       ]
     },
     { name: "Healthcare & Clinics",
       icon: "🏥",
       variants: [
-        { name: "Clinic Pro", link: "https://healthcare.salesmanpro.site", description: "Patient-focused design.", tag: 'Standard' }
+        { name: "Clinic Pro", link: "https://healthcare-clinics.salesmanpro.site", description: "Patient-focused design.", tag: 'Standard' }
       ]
     },
     { name: "Media & Entertainment",
       icon: "🎬",
       variants: [
-        { name: "Film Studio", link: "https://media.salesmanpro.site", description: "Showcase your films and projects.", tag: 'Standard' }
+        { name: "Film Studio", link: "https://media-entertainment.salesmanpro.site", description: "Showcase your films and projects.", tag: 'Standard' }
       ]
     },
     { name: "Finance & Legal",
       icon: "💼",
       variants: [
-        { name: "Financial Advisor", link: "https://finance.salesmanpro.site", description: "Professional services for finance experts.", tag: 'Standard' }
+        { name: "Financial Advisor", link: "https://finance-legal.salesmanpro.site", description: "Professional services for finance experts.", tag: 'Standard' }
       ]
     },
     { name: "Automotive",
@@ -119,51 +119,51 @@ const SITE_CATEGORIES: Category[] = [
     { name: "Travel & Tourism",
       icon: "✈️",
       variants: [
-        { name: "Travel Agency", link: "https://travel.salesmanpro.site", description: "Promote travel packages and services.", tag: 'Standard' }
+        { name: "Travel Agency", link: "https://travel-tourism.salesmanpro.site", description: "Promote travel packages and services.", tag: 'Standard' }
       ]
     },
     { name: "Fitness & Wellness",
       icon: "🏋️‍♂️",
       variants: [
-        { name: "Gym & Fitness", link: "https://fitness.salesmanpro.site", description: "Showcase fitness programs and classes.", tag: 'Standard' }
+        { name: "Gym & Fitness", link: "https://fitness-wellness.salesmanpro.site", description: "Showcase fitness programs and classes.", tag: 'Standard' }
       ]
     },
     { name: "Directory & Listings",
       icon: "📂",
       variants: [
-        { name: "Business Directory", link: "https://directory.salesmanpro.site", description: "List businesses and services.", tag: 'Standard' }
+        { name: "Business Directory", link: "https://directory-listings.salesmanpro.site", description: "List businesses and services.", tag: 'Standard' }
       ]
     },
     { name: "Educational & Online Courses",
       icon: "📚",
       variants: [
-        { name: "Online Learning", link: "https://education.salesmanpro.site", description: "Promote online courses and resources.", tag: 'Standard' }
+        { name: "Online Learning", link: "https://educational-online-courses.salesmanpro.site", description: "Promote online courses and resources.", tag: 'Standard' }
       ]
     },
     { name: "Restaurant & Food Delivery",
       icon: "🍔",
       variants: [
-        { name: "Food Delivery", link: "https://restaurant.salesmanpro.site", description: "Showcase restaurant menus and delivery options.", tag: 'Standard' }
+        { name: "Food Delivery", link: "https://restaurant-food-delivery.salesmanpro.site", description: "Showcase restaurant menus and delivery options.", tag: 'Standard' }
       ]
     },
     { name: "Event & Ticketing",
       icon: "🎟️",
       variants: [
-        { name: "Event Booking", link: "https://event.salesmanpro.site", description: "Manage events and ticket sales.", tag: 'Standard' }
+        { name: "Event Booking", link: "https://event-ticketing.salesmanpro.site", description: "Manage events and ticket sales.", tag: 'Standard' }
       ]
     },
     { name: "Real Estate",
       icon: "🏠",
       variants: [
-        { name: "Property Listings", link: "https://realestate.salesmanpro.site", description: "Showcase real estate properties.", tag: 'Standard' }
+        { name: "Property Listings", link: "https://real-estate.salesmanpro.site", description: "Showcase real estate properties.", tag: 'Standard' }
       ]
     },
-    { name: "SaaS & Web Apps",
-      icon: "💻",
-      variants: [
-        { name: "App Landing Page", link: "https://saas.salesmanpro.site", description: "Promote your SaaS application.", tag: 'Standard' }
-      ]
-    },
+    // { name: "SaaS & Web Apps",
+    //   icon: "💻",
+    //   variants: [
+    //     { name: "App Landing Page", link: "https://saas.salesmanpro.site", description: "Promote your SaaS application.", tag: 'Standard' }
+    //   ]
+    // },
     { name: "Marketplace",
       icon: "🛍️",
       variants: [
@@ -174,15 +174,15 @@ const SITE_CATEGORIES: Category[] = [
       name: "Security",
       icon: "🔒",
       variants: [
-        { name: "Security Services", link: "https://security.salesmanpro.site", description: "Protect your assets and data.", tag: 'Standard' }
+        { name: "Security Services", link: "https://security-services.salesmanpro.site", description: "Protect your assets and data.", tag: 'Standard' }
       ]
     },
-    { name: "Other",
-      icon: "🌐",
-      variants: [
-        { name: "General Purpose Site", link: "https://other.salesmanpro.site", description: "A flexible starting point.", tag: 'Standard' }
-      ]
-    },
+    // { name: "Other",
+    //   icon: "🌐",
+    //   variants: [
+    //     { name: "General Purpose Site", link: "https://other.salesmanpro.site", description: "A flexible starting point.", tag: 'Standard' }
+    //   ]
+    // },
 ];
 
 //  "E-commerce",
