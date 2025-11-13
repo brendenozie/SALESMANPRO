@@ -36,9 +36,9 @@ export default function Header() {
   ];
 
   return (
-    <header className="fixed inset-x-0 top-0 z-50">
+    <header className="inset-x-0 top-0 z-50">
       {/* Transparent bar over banner */}
-      <div className="bg-black bg-opacity-40 backdrop-blur-sm text-white">
+      <div className="bg-black bg-opacity-100 backdrop-blur-sm text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo / Site Name */}
