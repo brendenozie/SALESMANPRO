@@ -105,22 +105,7 @@ export default function AutomotiveSubcategoriesSection({ store }: AutomotiveSubc
                   whileTap={{ scale: 0.96 }}
                 >
                   {/* Icon with glowing ring */}
-                  {/* <div
-                    className="relative flex items-center justify-center w-20 h-20 rounded-full shadow-inner mb-4
-                               backdrop-blur-md transition-all duration-300 group-hover:shadow-lg"
-                    style={{
-                      background: `linear-gradient(145deg, ${primary}22, ${secondary}33)`,
-                      boxShadow: `0 0 30px -10px ${primary}55`,
-                    }}
-                  >
-                    {hasImageIcon ? (
-                      <img src={icon} alt={subcat.name} className="w-10 h-10 object-contain" />
-                    ) : (
-                      <span className="text-4xl">{icon}</span>
-                    )}
-                  </div> */}
-
-                   {/* Floating Icon Badge */}
+                  {/* Floating Icon Badge */}
                   <motion.div
                     className="relative flex items-center justify-center w-20 h-20 rounded-full shadow-xl
                                backdrop-blur-md border border-white/30 group-hover:scale-110 transition-transform duration-300  mb-4"
