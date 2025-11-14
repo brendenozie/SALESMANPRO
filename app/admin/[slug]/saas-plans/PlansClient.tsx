@@ -16,6 +16,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { format } from 'date-fns';
 import { toast, Toaster } from "react-hot-toast";
+import { PlanItem } from "./page";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -24,19 +25,19 @@ const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api
 // This section defines the data structures used throughout the application.
 // =================================================================================================
 
-interface PlanItem {
-  id: string;
-  companyId: string;
-  name: string;
-  description: string;
-  priceMonthly: number;
-  priceAnnually: number;
-  features: string[];
-  isPopular: boolean;
-  status: "ACTIVE" | "ARCHIVED";
-  createdAt: Date;
-  updatedAt: Date;
-}
+// interface PlanItem {
+//   id: string;
+//   companyId: string;
+//   name: string;
+//   description: string;
+//   priceMonthly: number;
+//   priceAnnually: number;
+//   features: string[];
+//   isPopular: boolean;
+//   status: "ACTIVE" | "ARCHIVED";
+//   createdAt: Date;
+//   updatedAt: Date;
+// }
 
 interface SubscriptionItem {
   id: string;
@@ -131,7 +132,17 @@ const AddEditPlanModal = ({ show, onClose, onSave, plan }:any) => {
 
   const handleSubmit = (e:any) => {
     e.preventDefault();
-    const newPlanData = { name, description, priceMonthly, priceAnnually };
+    const newPlanData = {
+      name,
+      description,
+      priceMonthly,
+      priceAnnually,
+      price: priceMonthly, // optional field
+      currency: "KES",
+      features: { main: ["Feature 1", "Feature 2"] },
+      isPopular: false,
+    };
+
     onSave(newPlanData);
   };
 
@@ -323,7 +334,12 @@ export function PlansClient({
         const res = await fetch(`${apiBaseUrl}/admin/plan`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...newPlanData, companyId, features: ["Feature 1", "Feature 2"], isPopular: false }),
+          body: JSON.stringify({
+            ...newPlanData,
+            companyId,
+          }),
+
+          // body: JSON.stringify({ ...newPlanData, companyId, features: ["Feature 1", "Feature 2"], isPopular: false }),
         });
         if (!res.ok) throw new Error("Failed to create plan");
         const createdPlan = await res.json();
@@ -497,16 +513,44 @@ export function PlansClient({
                     <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-2">{plan.name}</h3>
                     <p className="text-gray-600 dark:text-gray-300 text-sm mb-4">{plan.description}</p>
                     <div className="text-3xl font-extrabold text-indigo-600 dark:text-indigo-400 mb-4">
-                      ${plan.priceMonthly} <span className="text-lg text-gray-500 dark:text-gray-400">/mo</span>
-                      {plan.priceAnnually > 0 && <span className="block text-base text-gray-500 dark:text-gray-400"> (${plan.priceAnnually / 12}/mo billed annually)</span>}
+                      KES {plan.priceMonthly ?? plan.price}<span className="text-lg text-gray-500 dark:text-gray-400">/mo</span>
+                      {plan.priceAnnually && (
+                        <span className="block text-sm text-gray-500">
+                          KES {(plan.priceAnnually / 12).toFixed(0)} /mo billed annually
+                        </span>
+                      )}
                     </div>
-                    <ul className="text-sm text-gray-700 dark:text-gray-200 space-y-2 mb-6">
+                    {/* <ul className="text-sm text-gray-700 dark:text-gray-200 space-y-2 mb-6">
                       {plan.features.map((feature, idx) => (
                         <li key={idx} className="flex items-center">
                           <CheckCircleIcon className="h-4 w-4 text-emerald-500 mr-2 flex-shrink-0" /> {feature}
                         </li>
                       ))}
+                    </ul> */}
+                    <ul className="text-sm text-gray-700 dark:text-gray-200 space-y-2 mb-6">
+                      {Array.isArray(plan.features)
+                        ? plan.features.map((f: string, i: number) => (
+                            <li key={i} className="flex items-center">
+                              <CheckCircleIcon className="h-4 w-4 text-emerald-500 mr-2" /> {f}
+                            </li>
+                          ))
+                        : Object.entries(plan.features || {}).map(([key, value], i) => (
+                            <li key={i} className="flex flex-col items-start">
+                              <span className="font-semibold text-indigo-500">{key}</span>
+
+                              {Array.isArray(value) ? (
+                                value.map((v: any, idx: number) => (
+                                  <p key={idx} className="ml-4 flex items-center">
+                                    <CheckCircleIcon className="h-4 w-4 text-emerald-500 mr-2" /> {v}
+                                  </p>
+                                ))
+                              ) : (
+                                <p className="ml-4 text-gray-300">{JSON.stringify(value)}</p>
+                              )}
+                            </li>
+                          ))}
                     </ul>
+
                     <div className="flex justify-end space-x-2 border-t border-gray-200 dark:border-gray-600 pt-4">
                       <motion.button
                         onClick={() => { setSelectedPlan(plan); setShowAddEditPlanModal(true); }}

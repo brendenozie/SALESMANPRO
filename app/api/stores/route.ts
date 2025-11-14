@@ -111,6 +111,7 @@ async function createCompany(req: Request, context: HandlerContext) {
           ? {
               create: data.promotions.map((p) => ({
                 ...p,
+                title: p.title || "Untitled Promotion", // Ensure title is always defined
                 startsAt: p.startsAt ? new Date(p.startsAt) : undefined,
                 endsAt: p.endsAt ? new Date(p.endsAt) : undefined,
               })),

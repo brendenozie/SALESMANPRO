@@ -381,12 +381,13 @@ model Company {
   shippingSettingsId String?           @unique @db.ObjectId
   ShippingSettings   ShippingSettings? @relation(fields: [shippingSettingsId], references: [id], onDelete: NoAction)
 
-  Subscription Subscription[]
-  CoreValues   CoreValues[]
-  Destination  Destination[]
-  TourPackage  TourPackage[]
+  Subscription          Subscription[]
+  CoreValues            CoreValues[]
+  Destination           Destination[]
+  TourPackage           TourPackage[]
   // @@index([slug])
-  Delivery     Delivery[]
+  Delivery              Delivery[]
+  subscriptionCompanies SubscriptionCompany[]
 
   @@index([userId])
 }
@@ -1363,11 +1364,12 @@ model User {
   VideoAlbum VideoAlbum[]
   Document   Document[]
 
-  Expert       Expert?
-  Testimonial  Testimonial[]
-  Blog         Blog[]
+  Expert                Expert?
+  Testimonial           Testimonial[]
+  Blog                  Blog[]
   // @@index([email])
-  InventoryLog InventoryLog[]
+  InventoryLog          InventoryLog[]
+  subscriptionCompanies SubscriptionCompany[]
 
   @@index([companyId])
   // @@index([settingsId])
@@ -4322,26 +4324,50 @@ enum BillingCycle {
 
 // Represents a pricing plan offered by a company.
 model Plan {
-  id        String  @id @default(auto()) @map("_id") @db.ObjectId
-  companyId String  @db.ObjectId
-  company   Company @relation(fields: [companyId], references: [id])
-
+  id            String     @id @default(auto()) @map("_id") @db.ObjectId
   name          String     @unique
-  description   String
-  priceMonthly  Float
-  priceAnnually Float
-  features      String[]
+  description   String?
+  price         Int? // e.g., 999
+  currency      String // "KES"
+  features      Json // nested object exactly like MongoDB
   isPopular     Boolean    @default(false)
+  priceMonthly  Int?
+  priceAnnually Int?
   status        PlanStatus @default(ACTIVE)
+  companyId     String     @db.ObjectId
+  company       Company    @relation(fields: [companyId], references: [id])
 
+  // Optional future use: subscription linking
   subscriptions Subscription[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt             DateTime?             @default(now())
+  updatedAt             DateTime?             @updatedAt
+  subscriptionCompanies SubscriptionCompany[]
 
-  @@index([companyId])
-  @@index([status])
+  @@index([isPopular])
 }
+
+// model Plan {
+//   id        String  @id @default(auto()) @map("_id") @db.ObjectId
+//   companyId String  @db.ObjectId
+//   company   Company @relation(fields: [companyId], references: [id])
+
+//   name          String     @unique
+//   description   String
+//   priceMonthly  Float
+//   priceAnnually Float
+//   features      String[]
+//   isPopular     Boolean    @default(false)
+//   status        PlanStatus @default(ACTIVE)
+
+//   subscriptions Subscription[]
+
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+
+//   @@index([companyId])
+//   @@index([status])
+// }
 
 // Represents a customer's subscription to a specific plan.
 model Subscription {
@@ -4356,8 +4382,8 @@ model Subscription {
   companyId String?  @db.ObjectId
   company   Company? @relation(fields: [companyId], references: [id])
 
-  planId String @db.ObjectId
-  plan   Plan   @relation(fields: [planId], references: [id])
+  planId String? @db.ObjectId
+  plan   Plan?   @relation(fields: [planId], references: [id])
 
   startDate       DateTime
   endDate         DateTime?
@@ -4374,6 +4400,35 @@ model Subscription {
   @@index([userId])
   @@index([planId])
   @@index([companyId])
+  @@index([status])
+}
+
+model SubscriptionCompany {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  companyId String  @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id])
+  userId    String  @db.ObjectId
+  user      User    @relation(fields: [userId], references: [id])
+
+  planId String? @db.ObjectId
+  plan   Plan?   @relation(fields: [planId], references: [id])
+
+  status      String // ACTIVE | INACTIVE | CANCELLED | EXPIRED | PAST_DUE
+  renewalDate DateTime?
+  startedAt   DateTime  @default(now())
+  endedAt     DateTime?
+  trialEndsAt DateTime?
+
+  paystackRef      String? // subscription code from Paystack
+  paystackCustomer String? // Paystack customer email/id
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  package   Package? @relation(fields: [packageId], references: [id])
+  packageId String?  @db.ObjectId
+
+  @@index([companyId])
+  @@index([userId])
   @@index([status])
 }
 
@@ -4466,6 +4521,7 @@ enum TransactionStatus {
   PENDING
   FAILED
   REFUNDED
+  SUCCESS
 }
 
 // NEW: A separate model for all billing transactions
@@ -4883,8 +4939,9 @@ model Package {
   companyId String?  @db.ObjectId
   company   Company? @relation(fields: [companyId], references: [id])
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+  subscriptionCompanies SubscriptionCompany[]
 
   @@index([status])
 }

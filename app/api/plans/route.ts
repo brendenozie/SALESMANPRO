@@ -1,7 +1,6 @@
 // app/api/plans/route.ts
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
-import { PlanStatus } from "@prisma/client";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
 // =================================================================================================
@@ -49,53 +48,4 @@ const getHandler = async (request: Request) => {
   );
 };
 
-/**
- * POST /api/plans
- * Create a new plan.
- */
-const postHandler = async (request: Request) => {
-  
-  const {
-    companyId,
-    name,
-    description,
-    priceMonthly,
-    priceAnnually,
-    features,
-    isPopular,
-    status,
-  } = await request.json();
-
-  if (
-    !companyId ||
-    !name ||
-    !description ||
-    priceMonthly === undefined ||
-    priceAnnually === undefined ||
-    !features
-  ) {
-    return NextResponse.json(
-      { message: "Missing required fields for plan creation." },
-      { status: 400 }
-    );
-  }
-
-  const newPlan = await prisma.plan.create({
-    data: {
-      name,
-      description,
-      priceMonthly,
-      priceAnnually,
-      features,
-      isPopular,
-      status: status as PlanStatus,
-      currency: "USD", // Provide a default or dynamic value for currency
-      company: { connect: { id: companyId } }, // Ensure company relation is properly connected
-    },
-  });
-
-  return NextResponse.json(newPlan, { status: 201 });
-};
-
 export const GET = withApiHandler(getHandler, {requireAuth: false, requireRateLimit: false });
-export const POST = withApiHandler(postHandler);

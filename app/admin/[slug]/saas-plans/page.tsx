@@ -7,19 +7,22 @@ const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api
 // TYPE DEFINITIONS
 // These types match the data returned by the API routes and are used for type safety.
 // =================================================================================================
-interface PlanItem {
+export interface PlanItem {
   id: string;
   companyId: string;
   name: string;
-  description: string;
-  priceMonthly: number;
-  priceAnnually: number;
-  features: string[];
+  description?: string | null;
+  price?: number | null;
+  priceMonthly?: number | null;
+  priceAnnually?: number | null;
+  currency: string;
+  features: any; // JSON object, not string[]
   isPopular: boolean;
   status: "ACTIVE" | "ARCHIVED";
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string; // API returns string, not Date
+  updatedAt: string;
 }
+
 
 interface SubscriptionItem {
   id: string;
@@ -72,7 +75,13 @@ export default async function DashboardPage({params }: PlansClientProps) {
       cache: 'no-store', // Always fetch fresh data
     });
     const plansData = await plansRes.json();
-    const plans: PlanItem[] = plansData.plans || [];
+    const plans: PlanItem[] = (plansData.plans || []).map((p: any) => ({
+      ...p,
+      createdAt: p.createdAt,
+      updatedAt: p.updatedAt,
+    }));
+
+    
 
     // Fetch Subscriptions from the API for the first page
     const subscriptionsRes = await fetch(
