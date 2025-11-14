@@ -24,6 +24,7 @@
     "@next/bundle-analyzer": "^13.4.12",
     "@prisma/client": "^5.22.0",
     "@stripe/stripe-js": "^1.44.1",
+    "@tanstack/react-virtual": "^3.13.12",
     "apexcharts": "^4.0.0",
     "axios": "^1.2.0",
     "bcryptjs": "^3.0.2",
@@ -77,6 +78,7 @@
     "stripe": "^11.1.0",
     "swr": "^2.3.3",
     "tailwind-scrollbar-hide": "^1.1.7",
+    "use-debounce": "^10.0.6",
     "use-places-autocomplete": "^4.0.1",
     "usehooks-ts": "2.6.0",
     "zod": "^3.25.23"

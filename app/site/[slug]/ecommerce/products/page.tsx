@@ -1,89 +1,55 @@
-// app/[slug]/products/page.tsx
-import React from 'react';
-import { notFound } from 'next/navigation';
 import prisma from '@/server/db/prismadb';
+import { loadStore } from '@/lib/loadStore';
 import ProductsClient from './ProductsClient';
 
 export const dynamic = 'force-dynamic';
 
-// import React from 'react';
-// import { notFound } from 'next/navigation';
-// import prisma from '@/server/db/prismadb';
-// import { unstable_cache } from 'next/cache';
-// import ProductsClient from './ProductsClient';
+export default async function ProductListPage({ params, searchParams }: {
+  params: { slug: string };
+  searchParams: { [key: string]: string | undefined };
+}) {
+  const { slug } = params;
+  const { raw } = await loadStore(slug);
 
-// export const dynamic = 'force-dynamic';
-// export const revalidate = 60;
+  const companyId = raw.id;
 
-// // Cached company lookup
-// const getCompanyCached = unstable_cache(
-//   async (slug: string) => {
-//     return prisma.company.findUnique({ where: { slug } });
-//   },
-//   ['company-by-slug'],
-//   { revalidate: 300 }
-// );
-
-// export default async function ProductListPage({ params }: { params: { slug: string } }) {
-//   const baseCompany = await getCompanyCached(params.slug);
-//   if (!baseCompany) notFound();
-
-//   return <ProductsClient companyId={baseCompany.id} slug={params.slug} />;
-// }
-
-
-export default async function ProductListPage({ params, searchParams }: any) {
-  const { slug } = await params;
-  const { page, search, category, sort } = await searchParams;
-
-  const baseCompany = await prisma.company.findUnique({ where: { slug } });
-  if (!baseCompany) notFound();
-
+  // get categories + initial products
   const pageSize = 12;
-  const pageNum = parseInt(page || '1', 10);
-  const where: any = { companyId: baseCompany.id };
-  if (search) where.title = { contains: search, mode: 'insensitive' };
-  if (category) where.productCategoryId = category;
+  const page = parseInt(searchParams.page || "1", 10);
 
-  let orderBy: any = { createdAt: 'desc' };
-  if (sort === 'priceAsc') orderBy = { finalPrice: 'asc' };
-  if (sort === 'priceDesc') orderBy = { finalPrice: 'desc' };
-  if (sort === 'rating') orderBy = { rating: 'desc' };
+  const [categories, initialListings, totalCount] = await Promise.all([
+    prisma.storeCategory.findMany({
+      where: { companyId },
+      orderBy: { displayName: "asc" },
+      select: { id: true, displayName: true }
+    }),
 
-  const [listings, totalCount, categories] = await Promise.all([
     prisma.marketplaceListings.findMany({
-      where,
-      skip: (pageNum - 1) * pageSize,
+      where: { companyId },
+      skip: (page - 1) * pageSize,
       take: pageSize,
-      orderBy,
+      orderBy: { createdAt: "desc" }, // default
       select: {
         id: true,
         name: true,
         finalPrice: true,
         sellingPrice: true,
-        images: true,
-      },
+        images: true
+      }
     }),
-    prisma.marketplaceListings.count({ where }),
-    prisma.storeCategory.findMany({
-      where: { companyId: baseCompany.id },
-      orderBy: { displayName: 'asc' },
-      select: { id: true, displayName: true, categoryId: true },
-    }),
+
+    prisma.marketplaceListings.count({ where: { companyId } })
   ]);
 
-  const totalPages = Math.ceil(totalCount / pageSize);
-
   return (
-    <ProductsClient
-      companyId={baseCompany.id}
-      slug={slug}
-      initialData={{
-        listings,
-        pagination: { totalCount, totalPages, page: pageNum },
-        categories,
-      }}
-      initialFilters={{ search, category, sort, page: pageNum }}
-    />
+    <main>
+      <ProductsClient
+        companyId={companyId}
+        slug={slug}
+        initialListings={initialListings}
+        categories={categories}
+        totalPages={Math.ceil(totalCount / pageSize)}
+      />
+    </main>
   );
 }

@@ -67,7 +67,7 @@ const getProductsByFlag = unstable_cache(
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
+    const id = searchParams.get('companyId');
     const flag = searchParams.get('flag') || 'isFeatured';
     const limit = parseInt(searchParams.get('limit') || '8');
     const page = parseInt(searchParams.get('page') || '1');
