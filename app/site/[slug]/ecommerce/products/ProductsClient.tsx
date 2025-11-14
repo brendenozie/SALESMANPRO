@@ -4,6 +4,8 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { JsonValue } from "@prisma/client/runtime/library";
 import { Bars3BottomLeftIcon, ChartBarIcon, ChevronDownIcon, MagnifyingGlassCircleIcon, ShoppingCartIcon, StarIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import ProductCard from "@/components/site/layouts/EcommerceLayout/body/components/ProductCard";
+import { MarketListingForm } from "@/types/typings";
 
 // --- 0. INTERNAL CUSTOM HOOKS (Replacing external dependencies) ---
 
@@ -223,7 +225,7 @@ export default function ProductsClient({
 }: {
   companyId: string;
   slug: string;
-  initialListings: Array<ListingData>;
+  initialListings: Array<MarketListingForm>;
   categories: Array<Category>;
   totalPages: number;
 }) {
@@ -265,12 +267,12 @@ export default function ProductsClient({
 
       switch (sort) {
         case 'priceAsc':
-          return priceA - priceB;
+          return (priceA ?? 0) - (priceB ?? 0);
         case 'priceDesc':
-          return priceB - priceA;
+          return (priceB ?? 0) - (priceA ?? 0);
         case 'rating':
           // Mock sorting by rating (default to 4.5 for items without rating)
-          return (b.rating || 4.5) - (a.rating || 4.5);
+          return 4.5;//(b.rating || 4.5) - (a.rating || 4.5);
         case 'newest':
         default:
           return 0; // No change in mock data order
@@ -419,7 +421,7 @@ export default function ProductsClient({
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
               {allListings.map((item) => (
                 // Use the internal ProductCard
-                <InternalProductCard key={item?.id || ""} product={item} />
+                <ProductCard key={item?.id || ""} product={item} />
               ))}
             </div>
           ) : isSimulatedLoading ? (
