@@ -104,7 +104,7 @@ export async function POST(req: Request) {
 
     switch (paymentOption) {
       case "mpesa":
-        paymentResponse = await initiateMpesaPayment(order, body.mpesaPhone);
+        paymentResponse = await initiateMpesaPayment(order, body.paymentData.mpesaPhone);
         break;
       case "paystack":
         paymentResponse = await initiatePaystackPayment(order, body.email);
