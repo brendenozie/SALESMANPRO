@@ -341,6 +341,22 @@ function PricingSection({ companyId, onSubscriptionSuccess }: { companyId: strin
     <section className="py-24 bg-gray-50 overflow-hidden">
       <div className="container mx-auto px-6 lg:px-12 text-center">
         {/* ... (Your Header and Title Motion.div) ... */}
+        <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+        >
+            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 leading-tight">
+            Pricing Plans for <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 via-pink-500 to-red-400">
+                Every Business Stage
+            </span>
+            </h2>
+            <p className="mt-6 text-lg max-w-2xl mx-auto text-gray-600">
+            Start small and grow with us. All plans include essential features to help you succeed.
+            </p>
+        </motion.div>
         
         <div className="mt-16 overflow-x-auto">
           <motion.div
@@ -354,6 +370,28 @@ function PricingSection({ companyId, onSubscriptionSuccess }: { companyId: strin
                 variants={cardVariants}
               >
                 {/* ... (Popular tag, Header, Price) ... */}
+                {plan.isPopular && (
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-orange-600 text-white text-xs font-bold px-4 py-1 rounded-full uppercase tracking-wide shadow-md transform rotate-1">
+                    Recommended
+                  </div>
+                )}
+                
+                {/* Header */}
+                <div className="text-center mb-8">
+                  <h3 className={`text-3xl font-bold ${plan.isPopular ? "text-orange-600" : "text-gray-800"}`}>
+                    {plan.name}
+                  </h3>
+                  <p className="mt-1 text-sm text-gray-500">{plan.tagline}</p>
+
+                  <div className="mt-6 text-5xl font-extrabold flex items-baseline justify-center">
+                    <span className={`${plan.isPopular ? "text-gray-900" : "text-gray-900"}`}>
+                      {getPriceDisplay(plan)}
+                    </span>
+                    <span className="text-xl font-medium ml-2 text-gray-500">
+                      / mo
+                    </span>
+                  </div>
+                </div>
                 
                 {/* --- ACTIVATED BUTTON --- */}
                 <div className="mb-8">
@@ -370,6 +408,62 @@ function PricingSection({ companyId, onSubscriptionSuccess }: { companyId: strin
                 </div>
                 
                 {/* ... (Rest of your feature list) ... */}
+                <div className="flex-grow space-y-3 text-left border-t pt-6">
+                                  <p className="text-base font-semibold text-gray-700">Core Features:</p>
+                                  <ul className="space-y-3">
+                                    {getCoreFeatures(plan).map((item, idx) => (
+                                      <li key={idx} className="flex items-start">
+                                        {React.cloneElement(CheckIcon, {
+                                          className: `flex-shrink-0 w-5 h-5 ${plan.isPopular ? "text-orange-500" : "text-green-500"}`,
+                                        })}
+                                        <span className="ml-3 text-sm text-gray-600">{item}</span>
+                                      </li>
+                                    ))}
+                                  </ul>
+                
+                                  {/* Mobile-friendly Collapsible Detail Feature List */}
+                                  <div className="mt-6 md:hidden">
+                                    <button
+                                      onClick={() => setIsFeaturesExpanded(prev => ({ ...prev, [plan.id]: !prev[plan.id] }))}
+                                      className="text-sm font-semibold text-orange-600 hover:text-orange-700 flex items-center"
+                                    >
+                                      {isFeaturesExpanded[plan.id] ? "Hide Details" : "Show All Features"}
+                                      <svg className={`ml-2 w-4 h-4 transition-transform ${isFeaturesExpanded[plan.id] ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                                    </button>
+                                  </div>
+                                  
+                                  {/* Detailed Feature List - Visible on Desktop, Collapsible on Mobile */}
+                                  <motion.div
+                                    initial={false}
+                                    animate={isFeaturesExpanded[plan.id] || window.innerWidth >= 768 ? "open" : "collapsed"} // Animate based on state or viewport width
+                                    variants={{
+                                      open: { height: "auto", opacity: 1 },
+                                      collapsed: { height: 0, opacity: 0.5 },
+                                    }}
+                                    transition={{ duration: 0.3 }}
+                                    className="overflow-hidden md:h-auto md:opacity-100" // Ensure desktop visibility
+                                  >
+                                    <div className="pt-4 space-y-4">
+                                      {Object.entries(plan.features).map(([section, items]) => (
+                                        <div key={section} className="mt-4">
+                                          <p className="font-bold capitalize text-sm mb-2 text-gray-800 border-b border-gray-100 pb-1">
+                                            {section.replace(/([A-Z])/g, " $1").trim()}
+                                          </p>
+                                          <ul className="space-y-2">
+                                            {items.map((item, idx) => (
+                                              <li key={idx} className="flex items-start">
+                                                {React.cloneElement(CheckIcon, {
+                                                  className: `flex-shrink-0 w-5 h-5 ${plan.isPopular ? "text-orange-500" : "text-green-500"}`,
+                                                })}
+                                                <span className="ml-3 text-sm text-gray-600">{item}</span>
+                                              </li>
+                                            ))}
+                                          </ul>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </motion.div>
+                                </div>
 
               </motion.div>
             ))}
@@ -613,7 +707,7 @@ export default function StoresPage() {
                                         onDelete={isActive ? () => handleDeleteClick(store) : undefined}
                                         
                                         // Pass this handler to show a "Subscribe" button if !isActive
-                                        onManageSubscription={!isActive ? () => handleManageSubscription(store.companyId) : undefined}
+                                        onManageSubscription={!isActive ? () => handleManageSubscription(store.id) : undefined}
                                     />
                                 </motion.div>
                             );
