@@ -121,9 +121,14 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       success: true,
-      order,
-      paymentResponse,
+      data: {
+        order,
+        trackingNumber,
+        paymentResponse,
+        authorizationUrl: paymentResponse?.authorization_url || null
+      }
     });
+
   } catch (err) {
     console.error("Order creation failed:", err);
     return NextResponse.json({ success: false, error: "Server Error" }, { status: 500 });
