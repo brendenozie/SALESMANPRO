@@ -382,7 +382,7 @@ function PricingSection({ companyId, email }: { companyId: string, email: string
         const amountInKobo = (Number(plan.priceMonthly ?? plan.price) || 1) * 100;
 
         const handler = window.PaystackPop.setup({
-            key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "YOUR_PAYSTACK_PUBLIC_KEY", // Replace with your actual key
+            key: process.env.PAYSTACK_PUBLIC_KEY || "YOUR_PAYSTACK_PUBLIC_KEY", // Replace with your actual key
             email: email,
             amount: amountInKobo, 
             ref: data.data.reference,
