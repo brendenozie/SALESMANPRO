@@ -374,12 +374,12 @@ function PricingSection({ companyId, email }: { companyId: string, email: string
             return;
         }
 
-        if (!plan.priceMonthly) {
+        if (!plan.priceMonthly && !plan.price) {
             showStatusMessage("Error: Plan price is not valid.");
             setLoading(false);
             return;
         }
-        const amountInKobo = plan.priceMonthly * 100;
+        const amountInKobo = (Number(plan.priceMonthly ?? plan.price) || 1) * 100;
 
         const handler = window.PaystackPop.setup({
             key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "YOUR_PAYSTACK_PUBLIC_KEY", // Replace with your actual key
