@@ -11,7 +11,7 @@ export async function POST(req: Request) {
 
   if (!company) return NextResponse.json({ error: "Company not found" }, { status: 404 });
 
-  const plan = await prisma.package.findUnique({ where: { id: planId } });
+  const plan = await prisma.plan.findUnique({ where: { id: planId } });
 
   if (!plan) return NextResponse.json({ error: "Plan not found" }, { status: 404 });
 
@@ -37,7 +37,7 @@ export async function POST(req: Request) {
     body: JSON.stringify({
       email: company.user?.email,
       amount: Number(plan.price) * 100,
-      callback_url: `${process.env.APP_URL}/payments/paystack/verify`,
+      callback_url: `${process.env.NEXT_PUBLIC_API_URL}/payments/paystack/verify-subscription`,
       metadata: {
         companyId,
         planId,

@@ -1,55 +1,89 @@
 import prisma from "@/server/db/prismadb";
 import { NextResponse } from "next/server";
 
+// This is your new GET handler for /api/payments/verify
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const reference = url.searchParams.get("reference");
 
-  const verifyRes = await fetch(
-    `https://api.paystack.co/transaction/verify/${reference}`,
-    {
-      headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}` }
-    }
-  );
-  const verifyData = await verifyRes.json();
-
-  if (verifyData.data.status !== "success") {
-    return NextResponse.redirect(`${process.env.APP_URL}/subscription/failed`);
+  // 1. Check for reference
+  if (!reference) {
+    const failureUrl = new URL(`${process.env.NEXT_PUBLIC_BASE_URL}/subscription/failed`);
+    failureUrl.searchParams.set("message", "No payment reference found.");
+    return NextResponse.redirect(failureUrl);
   }
 
-  const meta = verifyData.data.metadata;
+  try {
+    // 2. Verify transaction with Paystack
+    const verifyRes = await fetch(
+      `https://api.paystack.co/transaction/verify/${reference}`,
+      {
+        headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}` }
+      }
+    );
+    const verifyData = await verifyRes.json();
 
-  // 1. Create Subscription
-  await prisma.subscriptionCompany.create({
-    data: {
-      companyId: meta.companyId,
-      userId: verifyData.data.customer.id,
-      planId: meta.planId,
-      status: "ACTIVE",
-      paystackRef: verifyData.data.reference,
-      renewalDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    if (!verifyData.status || verifyData.data.status !== "success") {
+      const failureUrl = new URL(`${process.env.NEXT_PUBLIC_BASE_URL}/subscription/failed`);
+      failureUrl.searchParams.set("message", verifyData.message || "Payment verification failed.");
+      return NextResponse.redirect(failureUrl);
     }
-  });
 
-  // 2. Activate Company
-  await prisma.company.update({
-    where: { id: meta.companyId },
-    data: { hasWebsite: true }
-  });
+    // 3. Get metadata from successful payment
+    const meta = verifyData.data.metadata;
+    const customer = verifyData.data.customer;
 
-  // 3. Save BillingTransaction
-  await prisma.billingTransaction.create({
-    data: {
-      amount: verifyData.data.amount / 100,
-      currency: verifyData.data.currency,
-      companyId: meta.companyId,
-      userId: verifyData.data.customer.id,
-      type: "SUBSCRIPTION",
-      status: "SUCCESS",
-      paymentMethod: "PAYSTACK",
-      description: `Subscription to plan ${meta.planId}`
+    if (!meta.companyId || !meta.planId || !customer.id) {
+      const failureUrl = new URL(`${process.env.NEXT_PUBLIC_BASE_URL}/subscription/failed`);
+      failureUrl.searchParams.set("message", "Transaction metadata is incomplete. Please contact support.");
+      return NextResponse.redirect(failureUrl);
     }
-  });
 
-  return NextResponse.redirect(`${process.env.APP_URL}/dashboard?subscribed=1`);
+    // 4. Use a database transaction to ensure all updates succeed or fail together
+    await prisma.$transaction([
+      // 4a. Create the Subscription record
+      prisma.subscriptionCompany.create({
+        data: {
+          companyId: meta.companyId,
+          userId: customer.id, // Using customer ID from Paystack
+          planId: meta.planId,
+          status: "ACTIVE",
+          paystackRef: verifyData.data.reference,
+          renewalDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+        }
+      }),
+
+      // 4b. Activate the Company
+      prisma.company.update({
+        where: { id: meta.companyId },
+        data: { hasWebsite: true } // Or your equivalent "is_active" field
+      }),
+
+      // 4c. Log the Billing Transaction
+      prisma.billingTransaction.create({
+        data: {
+          amount: verifyData.data.amount / 100, // Convert from kobo/cents
+          currency: verifyData.data.currency,
+          companyId: meta.companyId,
+          userId: customer.id,
+          type: "SUBSCRIPTION",
+          status: "SUCCESS",
+          paymentMethod: "PAYSTACK",
+          description: `Subscription to plan ${meta.planId}`
+        }
+      })
+    ]);
+
+    // 5. All successful, redirect to the dashboard
+    const successUrl = new URL(`${process.env.NEXT_PUBLIC_BASE_URL}/dashboard`);
+    successUrl.searchParams.set("subscribed", "true");
+    return NextResponse.redirect(successUrl);
+
+  } catch (error) {
+    console.error("Failed to update database after payment verification:", error);
+    // Redirect on any database error
+    const failureUrl = new URL(`${process.env.NEXT_PUBLIC_BASE_URL}/subscription/failed`);
+    failureUrl.searchParams.set("message", "Failed to activate subscription. Please contact support.");
+    return NextResponse.redirect(failureUrl);
+  }
 }

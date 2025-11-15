@@ -124,10 +124,11 @@ export default function PricingSectionRedesign() {
     useEffect(() => {
     const fetchPlans = async () => {
       try {
-      
+        setLoading(true);
         const res = await fetch(`/api/plans?companyId=${process.env.NEXT_PUBLIC_DEFAULT_COMPANY_ID}`);
         const data = await res.json();
         setPlans(data.plans);
+        setLoading(false);
       } catch (err) {
         console.error("Failed to fetch plans", err);
       } finally {

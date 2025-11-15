@@ -17,6 +17,7 @@ import useSWR, { mutate } from 'swr';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
+
 const fetcher = (url: string) => fetch(url, { credentials: 'include' })
 .then(async res => 
     {
@@ -179,8 +180,8 @@ const MOCK_PLANS: Plan[] = [
   {
     id: "basic",
     name: "Ghuba Basic",
-    price: "Ksh. 999",
-    priceMonthly: 999,
+    price: "Ksh. 9999",
+    priceMonthly: 9999,
     currency: "Ksh.",
     tagline: "Just the essentials to get you selling.",
     features: {
@@ -255,6 +256,129 @@ const MOCK_PLANS: Plan[] = [
 ];
 // --- END MOCK DATA ---
 
+// const CheckIcon = (
+//   <svg
+//     className="flex-shrink-0 w-5 h-5"
+//     fill="currentColor"
+//     viewBox="0 0 20 20"
+//   >
+//     <path
+//       fillRule="evenodd"
+//       d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+//       clipRule="evenodd"
+//     />
+//   </svg>
+// );
+
+// import React, { useState, useEffect } from 'react';
+
+// // Define the necessary type structures
+// type Plan = {
+//   id: string;
+//   name: string;
+//   price: string;
+//   priceMonthly?: number;
+//   priceAnnually?: number;
+//   currency: string;
+//   tagline: string;
+//   features: { [key: string]: string[] };
+//   isPopular: boolean;
+// };
+
+// --- START MOCK DATA (Data Structure is unchanged as requested) ---
+// This is now the *initial state* and will be overwritten by the API fetch
+// const MOCK_PLANS: Plan[] = [
+//   {
+//     id: "basic",
+//     name: "Ghuba Basic",
+//     price: "Ksh. 999",
+//     priceMonthly: 999,
+//     currency: "Ksh.",
+//     tagline: "Just the essentials to get you selling.",
+//     features: {
+//       website: ["Standard Ghuba subdomain", "SSL Certificate"],
+//       inventory: ["Unlimited Products"],
+//       sales: ["Unlimited Sales Records", "20 Invoices & Receipts"],
+//       payments: ["Online Payment Gateway (KES only)"],
+//       crm: ["25 Messaging credits", "Unlimited Customer Records"],
+//       operations: ["1 Staff user", "App dashboard"],
+//       integrations: ["Facebook Pixel (ShipBubble)"],
+//       support: ["Email & In-App Support"],
+//     },
+//     isPopular: false,
+//   },
+//   {
+//     id: "starter",
+//     name: "Ghuba Starter",
+//     price: "Ksh. 2,999",
+//     priceMonthly: 2999,
+//     currency: "Ksh.",
+//     tagline: "Scale your sales with powerful tools.",
+//     features: {
+//       website: ["Custom domain", "SSL Certificate", "Custom branding"],
+//       inventory: ["Unlimited Products", "Bulk Product Edit"],
+//       sales: ["Unlimited Sales Records", "50 Invoices & Receipts", "Coupon Codes"],
+//       payments: ["Online Payment Gateway (KES + USD settlements)"],
+//       crm: ["100 Messaging credits", "Unlimited Customer Records", "5 Custom Groups"],
+//       operations: ["3 Staff users", "App + trend reports"],
+//       integrations: ["Facebook Pixel, Google Analytics, Fez Delivery"],
+//       support: ["Priority Support"],
+//     },
+//     isPopular: true,
+//   },
+//   {
+//     id: "pro",
+//     name: "Ghuba Pro",
+//     price: "Ksh. 6,999",
+//     priceMonthly: 6999,
+//     currency: "Ksh.",
+//     tagline: "Automate and optimize for maximum growth.",
+//     features: {
+//       website: ["Custom domain + favicon", "SSL Certificate", "Advanced Theme Editor"],
+//       inventory: ["Unlimited Products", "Bulk Edit", "Variations", "Low Stock Alerts"],
+//       sales: ["Unlimited Sales & Receipts", "Limit Coupons", "POS"],
+//       payments: ["Full KES & USD support"],
+//       crm: ["200 Messaging credits", "Unlimited Records", "20 Custom Groups"],
+//       operations: ["5 Staff users", "App + email insights"],
+//       integrations: ["All carriers + automation"],
+//       support: ["Account Manager"],
+//     },
+//     isPopular: false,
+//   },
+//   {
+//     id: "growth",
+//     name: "Ghuba Growth",
+//     price: "Ksh. 14,999",
+//     priceMonthly: 14999,
+//     currency: "Ksh.",
+//     tagline: "Enterprise-grade power for your business.",
+//     features: {
+//       website: ["Fully branded domain", "SSL Certificate", "Dedicated Success Team"],
+//       inventory: ["Unlimited Products", "Bulk Edit", "Variations", "MOQ"],
+//       sales: ["Unlimited Sales & Receipts", "Coupons", "POS", "Advanced Analytics"],
+//       payments: ["KES, USD & EUR support"],
+//       crm: ["1000 Messaging credits", "Unlimited Records", "100 Custom Groups"],
+//       operations: ["Unlimited Staff", "Advanced analytics", "Multi-location"],
+//       integrations: ["Free-shipping rules engine", "Custom API Access"],
+//       support: ["Dedicated helpline"],
+//     },
+//     isPopular: false,
+//   },
+// ];
+// --- END MOCK DATA ---
+
+// Mock framer-motion
+// const motion = {
+//   div: (props) => <div {...props} />,
+// };
+
+// Mock PaystackPop type on window
+declare global {
+    interface Window { 
+        PaystackPop: any; 
+    }
+}
+
 const CheckIcon = (
   <svg
     className="flex-shrink-0 w-5 h-5"
@@ -269,59 +393,114 @@ const CheckIcon = (
   </svg>
 );
 
-
-function PricingSection({companyId, onSubscriptionSuccess}: {companyId: string, onSubscriptionSuccess: () => void}) {
-  const [plans, setPlans] = useState<Plan[]>(MOCK_PLANS);
-  const [loading, setLoading] = useState(false);
+// --- MAIN PRICING SECTION COMPONENT ---
+// It now receives companyId and email, but onSubscriptionSuccess is handled internally
+function PricingSection({ companyId, email, onSubscriptionSuccess }: { companyId: string, email: string, onSubscriptionSuccess?: () => void }) {
+  const [plans, setPlans] = useState<Plan[]>([]); // Use MOCK_PLANS as initial state
+  const [loading, setLoading] = useState(false); // Used for both plan fetching and payment
   const [isFeaturesExpanded, setIsFeaturesExpanded] = useState<{ [key: string]: boolean }>({});
-  const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null);
+  const [subscriptionStatus, setSubscriptionStatus] = useState<{message: string, type: 'success' | 'error'} | null>(null);
 
-       useEffect(() => {
-      const fetchPlans = async () => {
-        try {
+  useEffect(() => {
+    const fetchPlans = async () => {
+      setLoading(true); // Start loading screen
+      try {
+        // In a real Next.js app, process.env.NEXT_PUBLIC_DEFAULT_COMPANY_ID would be available
+        const defaultCompanyId = process.env.NEXT_PUBLIC_DEFAULT_COMPANY_ID || "6825c2c7969ab9f16f620f67"; // Mocking as env vars aren't here
+        const res = await fetch(`/api/plans?companyId=${defaultCompanyId}`);
+        if (!res.ok) throw new Error("Failed to fetch plans");
         
-          const res = await fetch(`/api/plans?companyId=${process.env.NEXT_PUBLIC_DEFAULT_COMPANY_ID}`);
-          const data = await res.json();
-          setPlans(data.plans);
-        } catch (err) {
-          console.error("Failed to fetch plans", err);
-        } finally {
-          setLoading(false);
+        const data = await res.json();
+        if (data.plans && data.plans.length > 0) {
+            setPlans(data.plans);
+        } else {
+            // API returned empty, but we keep the mock plans
+            console.warn("API returned no plans, using default mock data.");
         }
-      };
-  
-      fetchPlans();
-    }, []);
-  
+      } catch (err) {
+        console.error("Failed to fetch plans, using default mock data.", err);
+        // If fetch fails, we'll just fall back to the MOCK_PLANS already in state
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPlans(); 
+  }, []);
+
+  // Clear message after a delay
+  const showStatusMessage = (message: string, type: 'success' | 'error' = 'error') => {
+      setSubscriptionStatus({ message, type });
+      setTimeout(() => setSubscriptionStatus(null), 5000);
+  };
+
   // This is the new handler for the button
   const handlePlanSelect = async (plan: Plan) => {
     console.log(`Subscribing company ${companyId} to plan ${plan.id}`);
-    
-    // --- THIS IS WHERE YOU MAKE YOUR API CALL ---
-    // try {
-    //   const res = await fetch(`${apiBaseUrl}/subscriptions`, {
-    //     method: 'POST',
-    //     headers: { 'Content-Type': 'application/json' },
-    //     body: JSON.stringify({
-    //       companyId: companyId,
-    //       planId: plan.id,
-    //       // ... any other details, like payment tokens
-    //     })
-    //   });
-    //   if (!res.ok) throw new Error('Subscription failed');
-      
-    //   // On success, call the handler to close modal & refresh data
-    //   onSubscriptionSuccess();
+    setLoading(true);
 
-    // } catch (err) {
-    //   console.error("Failed to create subscription:", err);
-    //   // TODO: Show an error message to the user
-    // }
+    try {
+        const res = await fetch("/api/payments/subscribe", {
+            method: "POST",
+            body: JSON.stringify({
+                planId: plan.id,
+                companyId: companyId,
+            }),
+        });
 
-    // For demonstration, we just call success immediately
-    onSubscriptionSuccess();
+        const data = await res.json();
+
+        if (!data?.data?.authorization_url) {
+            showStatusMessage("Error: Unable to start payment. Please try again.");
+            setLoading(false);
+            return;
+        }
+
+        // Check if PaystackPop is available
+        if (!window.PaystackPop) {
+            showStatusMessage("Error: Payment service failed to load.");
+            setLoading(false);
+            return;
+        }
+
+        // ** CRITICAL FIX: Use priceMonthly (number) not price (string) **
+        if (!plan.priceMonthly) {
+            showStatusMessage("Error: Plan price is not valid.");
+            setLoading(false);
+            return;
+        }
+        const amountInKobo = plan.priceMonthly * 100;
+
+        // Use Paystack Inline
+        const handler = window.PaystackPop.setup({
+            key: process.env.PAYSTACK_PUBLIC_KEY || "", // Replace with your actual key or env var
+            email: email,
+            amount: amountInKobo, 
+            ref: data.data.reference,
+            metadata: {
+                companyId: companyId,
+                planId: plan.id,
+            },
+            callback: function (response: any) {
+                // ** CRITICAL FIX: Removed router, use window.location.href **
+                window.location.href = `/payments/paystack/verify?reference=${response.reference}`;
+            },
+            onClose: function () {
+                // ** CRITICAL FIX: Removed alert, use status message **
+                showStatusMessage("Payment was cancelled.", "error");
+                setLoading(false);
+            },
+        });
+
+        handler.openIframe();
+
+    } catch (err) {
+        console.error("Payment initiation failed:", err);
+        showStatusMessage("A network error occurred. Please try again.", "error");
+        setLoading(false);
+    }
+    // Do not set loading false here, it's handled in onClose or callback
   };
-
 
   const getPriceDisplay = (plan: Plan) => {
     const priceValue = plan.priceMonthly ?? plan.priceAnnually;
@@ -349,7 +528,8 @@ function PricingSection({companyId, onSubscriptionSuccess}: {companyId: string, 
     show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
   };
 
-  if (loading) {
+  // This is the full-page loader
+  if (loading && plans.length === 0) {
     return (
       <section className="min-h-screen flex items-center justify-center bg-gray-50 text-center">
         <div className="animate-spin rounded-full h-12 w-12 border-4 border-t-orange-500 border-gray-200 mx-auto"></div>
@@ -361,21 +541,21 @@ function PricingSection({companyId, onSubscriptionSuccess}: {companyId: string, 
   return (
     <div className="w-full min-h-screen font-sans bg-gray-50">
       <script src="https://cdn.tailwindcss.com"></script>
+      <script src="https://js.paystack.co/v1/inline.js"></script> 
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
       <style>{`
-        /* Custom styling for the recommended card to ensure border glow */
         .popular-card-outer {
           padding: 2px;
-          border-radius: 1.75rem; /* Matches rounded-3xl */
+          border-radius: 1.75rem;
           background: linear-gradient(145deg, #FF7043 0%, #FFB74D 100%);
-          transform: scale(1.02); /* Subtle emphasis */
+          transform: scale(1.02);
           transition: transform 0.3s ease-out;
         }
         .popular-card-inner {
           background-color: white;
-          border-radius: 1.6rem; /* Slightly smaller for padding effect */
+          border-radius: 1.6rem;
           height: 100%;
-          box-shadow: 0 10px 20px rgba(255, 112, 67, 0.2); /* Deep shadow */
+          box-shadow: 0 10px 20px rgba(255, 112, 67, 0.2);
         }
         .regular-card {
             transition: all 0.3s ease-in-out;
@@ -383,19 +563,20 @@ function PricingSection({companyId, onSubscriptionSuccess}: {companyId: string, 
         }
         .regular-card:hover {
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            transform: translateY(-4px); /* Lift effect on hover */
+            transform: translateY(-4px);
         }
       `}</style>
 
       {/* Subscription Status Message Box (Replaces alert/confirm) */}
       {subscriptionStatus && (
-        <div className="fixed top-4 right-4 z-50 p-4 bg-green-600 text-white rounded-xl shadow-2xl transition-all duration-300 transform animate-pulse">
+        <div className={`fixed top-4 right-4 z-50 p-4 rounded-xl shadow-2xl transition-all duration-300 transform
+          ${subscriptionStatus.type === 'success' ? 'bg-green-600' : 'bg-red-600'} text-white`}>
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 inline mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-          {subscriptionStatus}
+          {subscriptionStatus.message}
         </div>
       )}
 
-      <section className="py-28 bg-gray-50 overflow-hidden">
+      <section className="py-24 bg-gray-50 overflow-hidden">
         <div className="container mx-auto px-4 lg:px-8 text-center">
           
           <motion.div
@@ -415,7 +596,7 @@ function PricingSection({companyId, onSubscriptionSuccess}: {companyId: string, 
             </p>
           </motion.div>
           
-          <div className="mt-16 overflow-x-auto py-6">
+          <div className="mt-16 overflow-x-auto pb-6">
             <motion.div
               className="w-max mx-auto grid grid-flow-col auto-cols-[minmax(280px,_1fr)] md:grid-flow-row md:grid-cols-2 lg:grid-cols-4 gap-6 py-4"
               initial="hidden"
@@ -429,19 +610,17 @@ function PricingSection({companyId, onSubscriptionSuccess}: {companyId: string, 
                     variants={cardVariants}
                   >
                     
-                    {/* Popular tag */}
                     {plan.isPopular && (
                       <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-pink-600 text-white text-xs font-bold px-4 py-1 rounded-full uppercase tracking-widest shadow-lg">
                         ⭐ RECOMMENDED
                       </div>
                     )}
                     
-                    {/* Header */}
                     <div className="text-center mb-8">
                       <h3 className={`text-3xl font-extrabold ${plan.isPopular ? "text-orange-600" : "text-gray-900"}`}>
                         {plan.name}
                       </h3>
-                      <p className="mt-2 text-sm text-gray-500 font-medium">{plan.tagline}</p>
+                      <p className="mt-2 text-sm text-gray-500 font-medium h-10">{plan.tagline}</p>
 
                       <div className="mt-8 text-6xl font-black flex items-baseline justify-center">
                         <span className="text-gray-900">
@@ -454,21 +633,27 @@ function PricingSection({companyId, onSubscriptionSuccess}: {companyId: string, 
                       <p className="text-sm text-gray-400 mt-1">Billed Annually. Cancel Anytime.</p>
                     </div>
                     
-                    {/* --- ACTIVATED BUTTON --- */}
                     <div className="mb-8">
                       <button
                         onClick={() => handlePlanSelect(plan)} 
-                        className={`w-full py-4 px-6 rounded-xl font-extrabold text-lg shadow-lg transform transition-transform duration-300 active:scale-[0.98]
+                        disabled={loading} // Disable button when loading
+                        className={`w-full py-4 px-6 rounded-xl font-extrabold text-lg shadow-lg transform transition-all duration-300 active:scale-[0.98] flex items-center justify-center
                           ${plan.isPopular
                             ? "bg-gradient-to-r from-orange-600 to-pink-500 text-white hover:opacity-95 shadow-orange-500/50"
                             : "bg-white text-orange-600 border-2 border-orange-600 hover:bg-orange-50"
-                          } hover:scale-[1.01]`}
+                          } hover:scale-[1.01] disabled:opacity-70 disabled:cursor-wait`}
                       >
-                        Start {plan.name}
+                        {loading ? (
+                           <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                           </svg>
+                        ) : (
+                          `Start ${plan.name}`
+                        )}
                       </button>
                     </div>
                     
-                    {/* Feature List */}
                     <div className="flex-grow space-y-3 text-left border-t border-gray-200 pt-6">
                       <p className="text-lg font-bold text-gray-800 mb-4">Core Benefits:</p>
                       <ul className="space-y-4">
@@ -482,7 +667,6 @@ function PricingSection({companyId, onSubscriptionSuccess}: {companyId: string, 
                         ))}
                       </ul>
                     
-                      {/* Mobile-friendly Collapsible Detail Feature List */}
                       <div className="mt-8">
                         <button
                           onClick={() => setIsFeaturesExpanded(prev => ({ ...prev, [plan.id]: !prev[plan.id] }))}
@@ -493,7 +677,6 @@ function PricingSection({companyId, onSubscriptionSuccess}: {companyId: string, 
                         </button>
                       </div>
                       
-                      {/* Detailed Feature List - Visible on Desktop, Collapsible on Mobile */}
                       <motion.div
                         initial={false}
                         animate={isFeaturesExpanded[plan.id] || window.innerWidth >= 768 ? "open" : "collapsed"}
@@ -535,15 +718,343 @@ function PricingSection({companyId, onSubscriptionSuccess}: {companyId: string, 
     </div>
   );
 }
+
+// --- Main App Component ---
+// This component will pass the required props to PricingSection
+// export default function App() {
+//   // Mock data that would normally come from app context or user auth
+//   const companyId = "6825c2c7969ab9f16f620f67";
+//   const userEmail = "customer@example.com";
+
+//   return (
+//     <PricingSection
+//       companyId={companyId}
+//       email={userEmail}
+//     />
+//   );
+// }
+
+// function PricingSection({companyId, email, onSubscriptionSuccess}: {companyId: string, email: string, onSubscriptionSuccess: () => void}) {
+//     const [plans, setPlans] = useState<Plan[]>([]);
+//     const [loading, setLoading] = useState(false);
+//     const [isFeaturesExpanded, setIsFeaturesExpanded] = useState<{ [key: string]: boolean }>({});
+//     const [subscriptionStatus, setSubscriptionStatus] = useState<string | null>(null);
+
+//     const router = useRouter();
+
+//     useEffect(() => {
+//         const fetchPlans = async () => {
+//         try {
+        
+//             const res = await fetch(`/api/plans?companyId=${process.env.NEXT_PUBLIC_DEFAULT_COMPANY_ID}`);
+//             const data = await res.json();
+//             setPlans(data.plans);
+//         } catch (err) {
+//             console.error("Failed to fetch plans", err);
+//         } finally {
+//             setLoading(false);
+//         }
+//         };
+
+//         fetchPlans();
+//     }, []);
+  
+ 
+
+//   // This is the new handler for the button
+//   const handlePlanSelect = async (plan: Plan) => {
+//     console.log(`Subscribing company ${companyId} to plan ${plan.id}`);
+
+//     setLoading(true);
+
+//         const res = await fetch("/api/payments/subscribe", {
+//         method: "POST",
+//         body: JSON.stringify({
+//             planId: plan.id,
+//             companyId: companyId,
+//         }),
+//         });
+
+//         const data = await res.json();
+
+//         if (!data?.data?.authorization_url) {
+//         alert("Unable to start payment");
+//         setLoading(false);
+//         return;
+//         }
+
+//     // Use Paystack Inline
+//     const handler = window.PaystackPop.setup({
+//       key: process.env.PAYSTACK_PUBLIC_KEY,
+//       email: email,
+//       amount: Number(plan.price) * 100,
+//       ref: data.data.reference,
+//       metadata: {
+//         companyId: companyId,
+//         planId: plan.id,
+//       },
+//       callback: function () {
+//         router.push(`/payments/paystack/verify?reference=${data.data.reference}`);
+//       },
+//       onClose: function () {
+//         alert("Payment cancelled.");
+//       },
+//     });
+
+//     handler.openIframe();
+//     setLoading(false);
+    
+//     // --- THIS IS WHERE YOU MAKE YOUR API CALL ---
+//     // try {
+//     //   const res = await fetch(`${apiBaseUrl}/subscriptions`, {
+//     //     method: 'POST',
+//     //     headers: { 'Content-Type': 'application/json' },
+//     //     body: JSON.stringify({
+//     //       companyId: companyId,
+//     //       planId: plan.id,
+//     //       // ... any other details, like payment tokens
+//     //     })
+//     //   });
+//     //   if (!res.ok) throw new Error('Subscription failed');
+      
+//     //   // On success, call the handler to close modal & refresh data
+//     //   onSubscriptionSuccess();
+
+//     // } catch (err) {
+//     //   console.error("Failed to create subscription:", err);
+//     //   // TODO: Show an error message to the user
+//     // }
+
+//     // For demonstration, we just call success immediately
+//     // onSubscriptionSuccess();
+
+
+//   };
+
+
+//   const getPriceDisplay = (plan: Plan) => {
+//     const priceValue = plan.priceMonthly ?? plan.priceAnnually;
+//     if (priceValue) {
+//       return `${plan.currency} ${priceValue.toLocaleString()}`;
+//     }
+//     return plan.price || `${plan.currency} N/A`;
+//   };
+
+//   const getCoreFeatures = (plan: Plan) => {
+//     const allFeatures = Object.values(plan.features).flat();
+//     return allFeatures.slice(0, 3);
+//   };
+
+//   const containerVariants = {
+//     hidden: { opacity: 0 },
+//     show: {
+//       opacity: 1,
+//       transition: { staggerChildren: 0.15 },
+//     },
+//   };
+
+//   const cardVariants = {
+//     hidden: { opacity: 0, y: 50 },
+//     show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
+//   };
+
+//   if (loading) {
+//     return (
+//       <section className="min-h-screen flex items-center justify-center bg-gray-50 text-center">
+//         <div className="animate-spin rounded-full h-12 w-12 border-4 border-t-orange-500 border-gray-200 mx-auto"></div>
+//         <p className="mt-4 text-gray-600">Loading plans...</p>
+//       </section>
+//     );
+//   }
+
+//   return (
+//     <div className="w-full min-h-screen font-sans bg-gray-50">
+//       <script src="https://cdn.tailwindcss.com"></script>
+//       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+//       <style>{`
+//         /* Custom styling for the recommended card to ensure border glow */
+//         .popular-card-outer {
+//           padding: 2px;
+//           border-radius: 1.75rem; /* Matches rounded-3xl */
+//           background: linear-gradient(145deg, #FF7043 0%, #FFB74D 100%);
+//           transform: scale(1.02); /* Subtle emphasis */
+//           transition: transform 0.3s ease-out;
+//         }
+//         .popular-card-inner {
+//           background-color: white;
+//           border-radius: 1.6rem; /* Slightly smaller for padding effect */
+//           height: 100%;
+//           box-shadow: 0 10px 20px rgba(255, 112, 67, 0.2); /* Deep shadow */
+//         }
+//         .regular-card {
+//             transition: all 0.3s ease-in-out;
+//             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
+//         }
+//         .regular-card:hover {
+//             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+//             transform: translateY(-4px); /* Lift effect on hover */
+//         }
+//       `}</style>
+
+//       {/* Subscription Status Message Box (Replaces alert/confirm) */}
+//       {subscriptionStatus && (
+//         <div className="fixed top-4 right-4 z-50 p-4 bg-green-600 text-white rounded-xl shadow-2xl transition-all duration-300 transform animate-pulse">
+//           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 inline mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+//           {subscriptionStatus}
+//         </div>
+//       )}
+
+//       <section className="py-28 bg-gray-50 overflow-hidden">
+//         <div className="container mx-auto px-4 lg:px-8 text-center">
+          
+//           <motion.div
+//             initial={{ opacity: 0, y: -20 }}
+//             whileInView={{ opacity: 1, y: 0 }}
+//             transition={{ duration: 0.6 }}
+//             viewport={{ once: true }}
+//           >
+//             <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 leading-tight">
+//               Pricing Plans for <br />
+//               <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 via-pink-500 to-red-400">
+//                 Every Business Stage
+//               </span>
+//             </h2>
+//             <p className="mt-6 text-xl max-w-3xl mx-auto text-gray-600">
+//               Start small and grow with us. All plans include essential features to help you succeed, backed by dedicated support.
+//             </p>
+//           </motion.div>
+          
+//           <div className="mt-16 overflow-x-auto py-6">
+//             <motion.div
+//               className="w-max mx-auto grid grid-flow-col auto-cols-[minmax(280px,_1fr)] md:grid-flow-row md:grid-cols-2 lg:grid-cols-4 gap-6 py-4"
+//               initial="hidden"
+//               animate="show"
+//               variants={containerVariants}
+//             >
+//               {plans.map((plan) => (
+//                 <div key={plan.id} className={plan.isPopular ? "popular-card-outer" : "p-0"}>
+//                   <motion.div
+//                     className={`relative flex flex-col w-72 md:w-auto p-8 rounded-3xl ${plan.isPopular ? "popular-card-inner" : "regular-card bg-white border border-gray-100"}`}
+//                     variants={cardVariants}
+//                   >
+                    
+//                     {/* Popular tag */}
+//                     {plan.isPopular && (
+//                       <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-pink-600 text-white text-xs font-bold px-4 py-1 rounded-full uppercase tracking-widest shadow-lg">
+//                         ⭐ RECOMMENDED
+//                       </div>
+//                     )}
+                    
+//                     {/* Header */}
+//                     <div className="text-center mb-8">
+//                       <h3 className={`text-3xl font-extrabold ${plan.isPopular ? "text-orange-600" : "text-gray-900"}`}>
+//                         {plan.name}
+//                       </h3>
+//                       <p className="mt-2 text-sm text-gray-500 font-medium">{plan.tagline}</p>
+
+//                       <div className="mt-8 text-6xl font-black flex items-baseline justify-center">
+//                         <span className="text-gray-900">
+//                           {getPriceDisplay(plan)}
+//                         </span>
+//                         <span className="text-2xl font-semibold ml-2 text-gray-500">
+//                           / mo
+//                         </span>
+//                       </div>
+//                       <p className="text-sm text-gray-400 mt-1">Billed Annually. Cancel Anytime.</p>
+//                     </div>
+                    
+//                     {/* --- ACTIVATED BUTTON --- */}
+//                     <div className="mb-8">
+//                       <button
+//                         onClick={() => handlePlanSelect(plan)} 
+//                         className={`w-full py-4 px-6 rounded-xl font-extrabold text-lg shadow-lg transform transition-transform duration-300 active:scale-[0.98]
+//                           ${plan.isPopular
+//                             ? "bg-gradient-to-r from-orange-600 to-pink-500 text-white hover:opacity-95 shadow-orange-500/50"
+//                             : "bg-white text-orange-600 border-2 border-orange-600 hover:bg-orange-50"
+//                           } hover:scale-[1.01]`}
+//                       >
+//                         Start {plan.name}
+//                       </button>
+//                     </div>
+                    
+//                     {/* Feature List */}
+//                     <div className="flex-grow space-y-3 text-left border-t border-gray-200 pt-6">
+//                       <p className="text-lg font-bold text-gray-800 mb-4">Core Benefits:</p>
+//                       <ul className="space-y-4">
+//                         {getCoreFeatures(plan).map((item, idx) => (
+//                           <li key={`core-${idx}`} className="flex items-start">
+//                             {React.cloneElement(CheckIcon, {
+//                               className: `flex-shrink-0 w-6 h-6 ${plan.isPopular ? "text-pink-500" : "text-orange-500"}`,
+//                             })}
+//                             <span className="ml-3 text-base text-gray-700 font-medium">{item}</span>
+//                           </li>
+//                         ))}
+//                       </ul>
+                    
+//                       {/* Mobile-friendly Collapsible Detail Feature List */}
+//                       <div className="mt-8">
+//                         <button
+//                           onClick={() => setIsFeaturesExpanded(prev => ({ ...prev, [plan.id]: !prev[plan.id] }))}
+//                           className="text-sm font-semibold text-orange-600 hover:text-orange-700 flex items-center md:hidden transition-colors"
+//                         >
+//                           {isFeaturesExpanded[plan.id] ? "Hide Full Feature Set" : "Show All Detailed Features"}
+//                           <svg className={`ml-2 w-4 h-4 transition-transform ${isFeaturesExpanded[plan.id] ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+//                         </button>
+//                       </div>
+                      
+//                       {/* Detailed Feature List - Visible on Desktop, Collapsible on Mobile */}
+//                       <motion.div
+//                         initial={false}
+//                         animate={isFeaturesExpanded[plan.id] || window.innerWidth >= 768 ? "open" : "collapsed"}
+//                         variants={{
+//                           open: { height: "auto", opacity: 1 },
+//                           collapsed: { height: 0, opacity: 0.5 },
+//                         }}
+//                         transition={{ duration: 0.3 }}
+//                         className="overflow-hidden md:h-auto md:opacity-100"
+//                       >
+//                         <div className="pt-4 space-y-4">
+//                           {Object.entries(plan.features).map(([section, items]) => (
+//                             <div key={section} className="mt-6">
+//                               <p className="font-extrabold capitalize text-sm mb-3 text-gray-900 border-b-2 border-orange-500/20 inline-block pb-1">
+//                                 {section.replace(/([A-Z])/g, " $1").trim()}
+//                               </p>
+//                               <ul className="space-y-3">
+//                                 {items.map((item, idx) => (
+//                                   <li key={idx} className="flex items-start">
+//                                     {React.cloneElement(CheckIcon, {
+//                                       className: `flex-shrink-0 w-5 h-5 ${plan.isPopular ? "text-pink-400" : "text-green-500"}`,
+//                                     })}
+//                                     <span className="ml-3 text-sm text-gray-600">{item}</span>
+//                                   </li>
+//                                 ))}
+//                               </ul>
+//                             </div>
+//                           ))}
+//                         </div>
+//                       </motion.div>
+//                     </div>
+//                   </motion.div>
+//                 </div>
+//               ))}
+//             </motion.div>
+//           </div>
+//         </div>
+//       </section>
+//     </div>
+//   );
+// }
+
 // ```eof
 // ------------------------------------------------------------------
 // --- 4. PRICING MODAL (Hosts the Pricing Section) ---
 // ------------------------------------------------------------------
 
-const PricingModal = ({ isOpen, onClose, companyId, onSubscriptionSuccess }: { 
+const PricingModal = ({ isOpen, onClose, companyId, email, onSubscriptionSuccess }: { 
   isOpen: boolean, 
   onClose: () => void, 
   companyId: string | null,
+  email: string,
   onSubscriptionSuccess: () => void
 }) => {
     
@@ -572,6 +1083,7 @@ const PricingModal = ({ isOpen, onClose, companyId, onSubscriptionSuccess }: {
                         <div className="overflow-y-auto h-full max-h-[calc(100vh-4rem)] rounded-2xl">
                             <PricingSection 
                               companyId={companyId} 
+                              email={email}
                               onSubscriptionSuccess={onSubscriptionSuccess}
                             />
                         </div>
@@ -799,6 +1311,7 @@ export default function StoresPage() {
                 isOpen={isPricingModalOpen}
                 onClose={() => setIsPricingModalOpen(false)}
                 companyId={selectedCompanyId}
+                email={session.user?.email || ''}
                 onSubscriptionSuccess={handleSubscriptionSuccess}
             />
         </>
