@@ -22,7 +22,7 @@ export default function FitnessHeaderLayout({ params, children }: FitnessLayoutP
       <Header  />
 
       {/* Child Content */}
-      <section className="container">{children}</section>
+      <section >{children}</section>
 
       <Footer/>
     </>

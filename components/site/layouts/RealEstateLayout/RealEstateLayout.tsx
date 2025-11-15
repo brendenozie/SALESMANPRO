@@ -23,7 +23,7 @@ export default function RealEstateHeaderLayout({ params, children }: RealEstateL
     <>
       <Header/>
       {/* Main Content Area */}
-      <section className="container">{children}</section>
+      <section >{children}</section>
 
       <Footer/>
     </>

@@ -16,7 +16,7 @@ export default function ServicesHeaderLayout({ params, children }: ServicesLayou
   return (
     <>
       <Header storeFormData={storeFormData} />
-      <section className="container">{children}</section>
+      <section >{children}</section>
       <Footer storeFormData={storeFormData} />
     </>
   );

@@ -16,7 +16,7 @@ export default function BookingsHeaderLayout({ params, children }: BookingsLayou
   return (
     <>
       <Header/>
-      <section className="container">{children}</section>
+      <section >{children}</section>
       <Footer/>
     </>
   );

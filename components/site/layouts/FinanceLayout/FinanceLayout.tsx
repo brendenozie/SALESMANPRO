@@ -19,7 +19,7 @@ export default function FinanceHeaderLayout({ params, children }: FinanceLayoutP
       <Header />
 
       {/* Child Content */}
-      <section className="container">{children}</section>
+      <section >{children}</section>
 
       <Footer/>
     </>

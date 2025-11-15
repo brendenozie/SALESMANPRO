@@ -14,7 +14,7 @@ export default function DirectoryHeaderLayout({ params, children }: DirectoryLay
   return (
     <>
       <Header/>
-        <section className="container">{children}</section>
+        <section >{children}</section>
       <Footer storeFormData={storeFormData} />
     </>
   );

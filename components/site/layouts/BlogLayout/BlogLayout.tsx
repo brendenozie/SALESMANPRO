@@ -29,7 +29,7 @@ const BlogLayout: React.FC<BlogLayoutProps> = (
   return (
     <>
       <Header/>      
-      <section className="container">{children} </section>
+      <section >{children} </section>
       <Footer />
     </>
   );

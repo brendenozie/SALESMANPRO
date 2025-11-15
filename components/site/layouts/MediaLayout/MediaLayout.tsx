@@ -22,7 +22,7 @@ export default function MediaHeaderLayout({ params, children }: MediaLayoutProps
       <Header  />
 
       {/* Content Area */}
-      <section className="container">{children}</section>
+      <section >{children}</section>
 
       <Footer />
     </>

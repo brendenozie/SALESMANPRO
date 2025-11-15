@@ -21,7 +21,7 @@ export default function EventsHeaderLayout({ params, children }: EventsLayoutPro
     <>
       <Header />
       {/* Child Content / Event Details */}
-      <section className="container">{children}</section>
+      <section >{children}</section>
       <Footer  />
     </>
   );

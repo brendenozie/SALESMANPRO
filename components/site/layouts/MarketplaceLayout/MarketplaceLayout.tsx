@@ -18,7 +18,7 @@ export default function MarketplaceHeaderLayout({ params, children }: Marketplac
       <Header />
 
       {/* Child Content (Category/Product Pages) */}
-      <section className="container">{children}</section>
+      <section >{children}</section>
 
       {/* <Footer storeFormData={storeFormData} /> */}
     </>

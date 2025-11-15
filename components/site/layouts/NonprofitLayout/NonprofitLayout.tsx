@@ -22,7 +22,7 @@ export default function NonProfitHeaderLayout({ params, children }: NonProfitLay
       <Header />
 
       {/* Child Content */}
-      <section className="container">{children}</section>
+      <section >{children}</section>
 
       <Footer/>
     </>

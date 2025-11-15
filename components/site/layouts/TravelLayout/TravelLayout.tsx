@@ -17,7 +17,7 @@ export default function TravelLayout({ params, children }: TravelLayoutProps) {
   return (
     <>
       <Header/>
-      <section className="container">{children}</section>
+      <section >{children}</section>
       <Footer/>
     </>
   );

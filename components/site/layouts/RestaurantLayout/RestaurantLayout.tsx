@@ -16,7 +16,7 @@ export default function RestaurantHeaderLayout({ params, children }: RestaurantL
     <>
       <Header/>
       {/* Main Content Area */}
-      <section className="container">{children}</section>
+      <section >{children}</section>
       <Footer/>
     </>
   );

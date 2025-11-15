@@ -26,7 +26,7 @@ export default function DefaultHeaderLayout({ params, children }: DefaultHeaderL
       {/* <Header storeFormData={storeFormData} /> */}
 
       {/* Main Content */}
-      <section className="container">{children}</section>
+      <section >{children}</section>
 
       {/* <Footer storeFormData={storeFormData} /> */}
     </>

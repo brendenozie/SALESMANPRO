@@ -15,7 +15,7 @@ export default function PortfolioHeaderLayout({ params, children }: PortfolioLay
   return (
     <>
       <Header/>
-      <section className="container">{children}</section>      
+      <section >{children}</section>      
       <Footer />
     </>
   );

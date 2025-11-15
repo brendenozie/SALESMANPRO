@@ -15,7 +15,7 @@ export default function SaaSLayout({ params, children }: SaaSLayoutProps) {
   return (
     <>
       <Header/>
-      <section className="container">{children}</section>
+      <section >{children}</section>
       <Footer/>
     </>
   );
