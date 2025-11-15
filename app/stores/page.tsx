@@ -16,7 +16,9 @@ import StoreCard from '@/components/stores/StoreCard'; // This component MUST be
 import useSWR, { mutate } from 'swr';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
-
+const paystackPublicKey = process.env.PAYSTACK_PUBLIC_KEY || 'YOUR_PAYSTACK_PUBLIC_KEY';
+const defaultCompanyId = process.env.NEXT_PUBLIC_DEFAULT_COMPANY_ID || "6825c2c7969ab9f16f620f67"; // Mocking as env vars aren't here
+        
 
 const fetcher = (url: string) => fetch(url, { credentials: 'include' })
 .then(async res => 
@@ -323,7 +325,6 @@ function PricingSection({ companyId, email }: { companyId: string, email: string
       setLoading(true); // Start loading screen
       try {
         // In a real Next.js app, process.env.NEXT_PUBLIC_DEFAULT_COMPANY_ID would be available
-        const defaultCompanyId = process.env.NEXT_PUBLIC_DEFAULT_COMPANY_ID || "6825c2c7969ab9f16f620f67"; // Mocking as env vars aren't here
         const res = await fetch(`/api/plans?companyId=${defaultCompanyId}`);
         if (!res.ok) throw new Error("Failed to fetch plans");
         
@@ -382,7 +383,7 @@ function PricingSection({ companyId, email }: { companyId: string, email: string
         const amountInKobo = (Number(plan.priceMonthly ?? plan.price) || 1) * 100;
 
         const handler = window.PaystackPop.setup({
-            key: process.env.PAYSTACK_PUBLIC_KEY || "YOUR_PAYSTACK_PUBLIC_KEY", // Replace with your actual key
+            key: paystackPublicKey || "YOUR_PAYSTACK_PUBLIC_KEY", // Replace with your actual key
             email: email,
             amount: amountInKobo, 
             ref: data.data.reference,
