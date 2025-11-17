@@ -153,7 +153,15 @@ export const SITE_CATEGORIES: Category[] = [
       name: "Security Services",
       icon: "🛡️",
       variants: [
-        { name: "Security Solutions", link: "https://security.salesmanpro.site", description: "Showcase security services and solutions.", tag: 'Standard' }
+        { name: "Security Services", link: "https://security.salesmanpro.site", description: "Showcase security services and solutions.", tag: 'Standard' },
+        { name: "Security Consulting", link: "https://securityconsulting.salesmanpro.site", description: "Promote security consulting services and expertise.", tag: 'Standard' },
+        // { name: "Cybersecurity Firm", link: "https://cybersecurity.salesmanpro.site", description: "Promote cybersecurity services and expertise.", tag: 'Standard' },
+        // { name: "Home Security", link: "https://homesecurity.salesmanpro.site", description: "Highlight home security products and services.", tag: 'Standard' },
+        // { name: "Event Security", link: "https://eventsecurity.salesmanpro.site", description: "Showcase event security services and solutions.", tag: 'Standard' },
+        // { name: "Surveillance Systems", link: "https://surveillance.salesmanpro.site", description: "Highlight surveillance products and services.", tag: 'Standard' },
+        // { name: "Access Control", link: "https://accesscontrol.salesmanpro.site", description: "Showcase access control solutions and services.", tag: 'Standard' },
+        // { name: "Security Training", link: "https://securitytraining.salesmanpro.site", description: "Promote security training programs and courses.", tag: 'Standard' },
+        // { name: "Alarm Systems", link: "https://alarmsystems.salesmanpro.site", description: "Highlight alarm system products and services.", tag: 'Standard' },
       ]
     },
     { name: "Other",
