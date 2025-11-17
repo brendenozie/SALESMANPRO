@@ -174,7 +174,8 @@ const SITE_CATEGORIES: Category[] = [
       name: "Security",
       icon: "🔒",
       variants: [
-        { name: "Security Services", link: "https://security-services.salesmanpro.site", description: "Protect your assets and data.", tag: 'Standard' }
+        { name: "Security Services", link: "https://security-services.salesmanpro.site", description: "Protect your assets and data.", tag: 'Standard' },
+        { name: "Security Consulting", link: "https://security-services-2.salesmanpro.site", description: "Security Consulting site.", tag: 'Standard'},
       ]
     },
     // { name: "Other",
