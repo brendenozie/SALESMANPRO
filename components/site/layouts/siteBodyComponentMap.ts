@@ -532,6 +532,7 @@ export const folderMap: Record<string, string> = {
   'app-landing-page': 'SaaSLayout',
   'ghuba': 'GhubaLayout',
   'security-services': 'SecurityLayout',
+  'security-consulting': 'Security2Layout',
   'default': 'DefaultLayout',
   'other': 'DefaultLayout',
   'general-purpose-site': 'DefaultLayout',
@@ -563,6 +564,7 @@ export const siteComponentNameMap: Record<string, string> = {
   'MarketplaceLayout': 'MarketPlaceSite',
   'RestaurantLayout': 'RestaurentSite',
   'SecurityLayout': 'SecuritySite',
+  'Security2Layout': 'Security2Site',
   'DefaultLayout': 'DefaultSite',
 };
 

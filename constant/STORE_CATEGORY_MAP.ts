@@ -261,6 +261,16 @@ export const STORE_CATEGORY_MAP: Record<string, string[]> = {
     "Electronics",
     "Home And Garden"
   ],
+  "Security Services": [
+    "Cybersecurity",
+    "Electronic Security Systems",
+    "Emergency Response Services",    
+    "Security Consulting",
+    "Surveillance Services",
+    "Personal Protection Services",
+    "Event Security Services",
+    "Security Training Services"
+  ],
   "Tutors": [
     "Tutors",
     "Subjects"

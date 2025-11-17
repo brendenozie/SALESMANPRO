@@ -26,6 +26,7 @@ const PublicSpeakingLayout = dynamic(() => import( '@/components/site/layouts/Pu
 // const SaaSLayout = dynamic(() => import( '@/components/site/layouts/SaaSLayout/SaaSLayout'));
 const ConsultancyLayout = dynamic(() => import('@/components/site/layouts/ConsultancyLayout/ConsultancyLayout'));
 const SecurityLayout = dynamic(() => import('@/components/site/layouts/SecurityLayout/SecurityLayout'));
+const Security2Layout = dynamic(() => import('@/components/site/layouts/Security2Layout/Security2Layout'));
 
 import { ReactNode } from 'react';
 import { StoreForm } from '../../../types/typings';
@@ -108,6 +109,8 @@ const categoryHeaderFooterLayoutMap: Record<string, LayoutHeaderFooterComponent>
     'product marketplace': MarketplaceLayout,
     'general purpose site': DefaultLayout,
     'security services': SecurityLayout,
+    'security consulting': Security2Layout,
+
     
     'other':DefaultLayout ,
     'Other':DefaultLayout ,     

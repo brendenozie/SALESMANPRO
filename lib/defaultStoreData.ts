@@ -422,6 +422,8 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
         { name: "Premium Package", price: 59, duration: "monthly", features: ["All Basic features", "Advanced surveillance", "Priority support"] }
       ],
     }),
+
+    // "Security Consulting" : withOverrides({ tagline:})
     
     // --- Remaining Stubbed Categories ---
     "Other":                            withOverrides({ tagline: "Tailored Solutions for Your Unique Idea", description: "A flexible starting point for any business or personal project not covered by other categories." }),

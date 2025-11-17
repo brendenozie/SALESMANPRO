@@ -35,7 +35,7 @@ const SaaSSite        = dynamic(() => import('@/components/site/layouts/SaaSLayo
 const ConsultancySite = dynamic(() => import('@/components/site/layouts/ConsultancyLayout/body/ConsultancySite'), { loading: () => <LoadingPlaceholder /> });
 const PublicSpeakingSite = dynamic(() => import('@/components/site/layouts/PublicSpeakingLayout/body/PublicSpeakingSite'), { loading: () => <LoadingPlaceholder /> });
 const SecuritySite   = dynamic(() => import('@/components/site/layouts/SecurityLayout/body/SecuritySite'),   { loading: () => <LoadingPlaceholder /> });
-
+const Security2Site = dynamic(() => import('@/components/site/layouts/Security2Layout/body/Security2Site'), { loading: () => <LoadingPlaceholder /> })
 type LayoutBodyComponent = React.ComponentType<any>;
 
 // (2) Create a plain object that maps every normalized key to its component.
@@ -123,6 +123,7 @@ const categoryBodyLayoutMap: Record<string, LayoutBodyComponent>  = {
   // marketplace
   'marketplace':            MarketplaceSite,
   'security services':   SecuritySite,
+  'security consulting':  Security2Site,
 
   // fallback key (optional—you could omit and let `|| DefaultSite` catch it)
   'other':                  DefaultSite,

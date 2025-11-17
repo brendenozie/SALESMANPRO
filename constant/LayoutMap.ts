@@ -21,6 +21,7 @@ import RealEstateHeaderLayout from "@/components/site/layouts/RealEstateLayout/R
 import RestaurantHeaderLayout from "@/components/site/layouts/RestaurantLayout/RestaurantLayout";
 import ServicesHeaderLayout from "@/components/site/layouts/ServicesLayout/ServicesLayout";
 import BookingsHeaderLayout from '@/components/site/layouts/BookingsLayout/BookingsLayout';
+import SecurityHeaderLayout from '@/components/site/layouts/SecurityLayout/SecurityLayout';
 
 export const layoutMap: Record<string, any> = {
   'e-commerce': EcommerceHeaderLayout,
@@ -42,5 +43,6 @@ export const layoutMap: Record<string, any> = {
   'travel': TravelHeaderLayout,
   'fitness': FitnessHeaderLayout,
   'marketplace': MarketplaceHeaderLayout,
+  'security': SecurityHeaderLayout,
   'default': DefaultHeaderLayout,
 };

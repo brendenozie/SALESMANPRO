@@ -24,6 +24,7 @@ const TravelLayout = dynamic(() => import('@/components/site/layouts/TravelLayou
 const RestaurantLayout = dynamic(() => import('@/components/site/layouts/RestaurantLayout/RestaurantLayout'));
 const AutomotiveLayout = dynamic(() => import('@/components/site/layouts/AutomotiveLayout/AutomotiveLayout'));
 const SecurityLayout = dynamic(() => import('@/components/site/layouts/SecurityLayout/SecurityLayout'));
+const Security2Layout = dynamic(() => import('@/components/site/layouts/Security2Layout/Security2Layout'));
 // const SaaSLayout = dynamic(() => import('@/components/site/layouts/SaaSLayout/SaaSLayout'));
 const ConsultancyLayout = dynamic(() => import('@/components/site/layouts/ConsultancyLayout/ConsultancyLayout'));
 const PublicSpeakingLayout = dynamic(() => import('@/components/site/layouts/PublicSpeakingLayout/PublicSpeakingLayout'));
@@ -81,6 +82,7 @@ export const categoryHeaderFooterLayoutMap: Record<string, LayoutHeaderFooterCom
   'fitness & wellness': FitnessLayout,
   'marketplace': MarketplaceLayout,
   'security services': SecurityLayout,
+  'security consulting': Security2Layout,
   'other': DefaultLayout,
   'Other': DefaultLayout,
   'default': DefaultLayout,
@@ -132,6 +134,7 @@ export const folderMap: Record<string, string> = {
   'restaurant': 'RestaurantLayout',
   'restaurant & food delivery': 'RestaurantLayout',
   'security services': 'SecurityLayout',
+  'security consulting': 'Security2Layout',
   'default': 'DefaultLayout',
   'other': 'DefaultLayout',
 };
@@ -162,5 +165,6 @@ export const siteComponentNameMap: Record<string, string> = {
   'MarketplaceLayout': 'MarketPlaceSite',
   'RestaurantLayout': 'RestaurentSite',
   'SecurityLayout': 'SecuritySite',
+  'Security2Layout': 'Security2Site',
   'DefaultLayout': 'DefaultSite',
 };
