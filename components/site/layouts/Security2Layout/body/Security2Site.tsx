@@ -50,7 +50,9 @@ export default function SecuritySite({ pageData, companyId }: { pageData: StoreF
       <HeroSection name={name} themeSettings={themeSettings} tagline={tagline} heroSlides={heroSlides} testimonials={testimonials} awards={awards} />
 
       <ServicesSection name={name} slug={slug} description={description} themeSettings={themeSettings} StoreCategory={StoreCategory} />
-
+      
+      <CaseStudiesSection themeSettings={themeSettings} CoreValues={CoreValues} />
+      
       <MarketplaceListingsSection name={name} slug={slug} themeSettings={themeSettings} marketplaceListings={marketplaceListings} />
 
       <GettingStartedSection />
@@ -58,8 +60,6 @@ export default function SecuritySite({ pageData, companyId }: { pageData: StoreF
       <FeaturesSection themeSettings={themeSettings} name={name} promotions={promotions} tagline={tagline}/> 
 
       <AboutSection  name={name} slug={slug} bannerUrl={bannerUrl} contactEmail={contactEmail} stats={stats} themeSettings={themeSettings} description={description} tagline={tagline} heroSlides={heroSlides}/>
-
-      <CaseStudiesSection themeSettings={themeSettings} CoreValues={CoreValues} />
 
       <DiscoveryCallSection/>
 
