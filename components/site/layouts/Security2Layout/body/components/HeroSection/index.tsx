@@ -197,7 +197,7 @@ export default function SecurityHeroSectionLight({ name, themeSettings, tagline,
           
           {/* LEFT: Text Content, CTAs, & Trust (order-2/order-1) */}
           <motion.div
-            className="lg:col-span-7 text-center lg:text-left order-2 lg:order-1 pt-12 lg:pt-0"
+            className="lg:col-span-7 text-center lg:text-left order-1 lg:order-1 pt-12 lg:pt-0"
             variants={containerVariants}
             initial="hidden"
             animate="visible"
@@ -297,7 +297,7 @@ export default function SecurityHeroSectionLight({ name, themeSettings, tagline,
 
           {/* RIGHT: Visual Element (Image of Security Professional) */}
           <motion.div
-            className="lg:col-span-5 flex justify-center lg:justify-end relative mt-12 lg:mt-0 order-1 lg:order-2"
+            className="lg:col-span-5 flex justify-center lg:justify-end relative mt-12 lg:mt-0 order-2 lg:order-2"
             variants={imageVariants}
             initial="hidden"
             animate="visible"

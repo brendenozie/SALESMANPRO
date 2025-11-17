@@ -53,7 +53,7 @@ const SITE_CATEGORIES: Category[] = [
   { name: "Public Speaking", 
     icon: "🎙️", 
     variants: [
-      { name: "Standard Speaker Site", link: "https://pflourishub.salesmanpro.site", description: "Bookings and media focus.", tag: 'Standard' }
+      { name: "Standard Speaker Site", link: "https://flourishhub-2.salesmanpro.site", description: "Bookings and media focus.", tag: 'Standard' }
     ] 
   },
   { name: "Shoes Store", icon: "👟", variants: [
