@@ -42,11 +42,19 @@ const popularFonts = [
 ];
 
 const themePresets = [
-  { name: 'Vibrant', primary: '#6366F1', secondary: '#F59E0B' },
-  { name: 'Energetic', primary: '#10B981', secondary: '#F97316' },
-  { name: 'Elegant', primary: '#0F172A', secondary: '#E2E8F0' },
-  { name: 'Luxury', primary: '#78350F', secondary: '#FBBF24' },
-  { name: 'Minimal', primary: '#3B82F6', secondary: '#9CA3AF' },
+  { name: 'Vibrant', primary: '#6366F1', secondary: '#F59E0B' }, // Existing
+  { name: 'Energetic', primary: '#10B981', secondary: '#F97316' }, // Existing
+  { name: 'Elegant', primary: '#0F172A', secondary: '#E2E8F0' }, // Existing
+  { name: 'Luxury', primary: '#78350F', secondary: '#FBBF24' }, // Existing
+  { name: 'Minimal', primary: '#3B82F6', secondary: '#9CA3AF' }, // Existing
+  { name: 'Bold', primary: '#EF4444', secondary: '#1E3A8A' }, // Existing
+  { name: 'Oceanic', primary: '#0891B2', secondary: '#ECFEFF' }, // Teal primary, light secondary for contrast
+  { name: 'Sunset', primary: '#E11D48', secondary: '#FCD34D' }, // Deep red/pink primary, golden yellow secondary
+  { name: 'Forest', primary: '#059669', secondary: '#D9F99D' }, // Dark green primary, bright lime/pale green secondary
+  { name: 'Retro', primary: '#9333EA', secondary: '#F472B6' }, // Deep violet primary, hot pink secondary for a vintage feel
+  { name: 'Monochromatic', primary: '#1E40AF', secondary: '#93C5FD' },
+  { name: 'High Contrast', primary: '#000000', secondary: '#FFFF00' },
+  { name: 'Midnight', primary: '#1F2937', secondary: '#D1D5DB' }
 ];
 
 export default function ThemeSettingsAccordion({

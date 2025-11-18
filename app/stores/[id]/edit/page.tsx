@@ -15,6 +15,7 @@ import {
 } from "@/types/typings";
 import { cookies } from "next/headers";
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 export const dynamic = "force-dynamic";
 
@@ -103,14 +104,14 @@ export default async function EditStorePage({
 
   // --- Fetch available categories and locations for the form selectors ---
   const categoryRes = await fetch(
-    `/api/admin/get-all-categories`,
+    `${apiBaseUrl}/admin/get-all-categories`,
     { next: { revalidate: 60 }, headers: { Cookie: cookieHeader } }
   );
   const categoryData = await categoryRes.json();
   const availableCategories: IProductCategory[] = categoryData.data?.results || [];
 
   const locationRes = await fetch(
-    `/api/admin/locations`,
+    `${apiBaseUrl}/admin/locations`,
     { next: { revalidate: 60 }, headers: { Cookie: cookieHeader } }
   );
   const locationData = await locationRes.json();
