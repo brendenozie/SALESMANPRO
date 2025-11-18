@@ -261,6 +261,8 @@ const CheckIcon = (
 function PricingSection({ companyId, email }: { companyId: string, email: string }) {
   const paystackPublicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || process.env.NEXT_PUBLIC_PAYSTACK_TEST_SECRET_KEY || "pk_test_4ec65e0fe08ffa32b2708be2adb75b865d2517ce"; // Fallback to test key
 
+  console.log("Using Paystack Public Key:", paystackPublicKey);
+  
   const [plans, setPlans] = useState<Plan[]>([]); 
   const [loading, setLoading] = useState(false); 
   const [isFeaturesExpanded, setIsFeaturesExpanded] = useState<{ [key: string]: boolean }>({});
@@ -401,7 +403,7 @@ function PricingSection({ companyId, email }: { companyId: string, email: string
 
 
         const handler = window.PaystackPop.setup({
-            key: paystackPublicKey || "YOUR_PAYSTACK_PUBLIC_KEY", // Replace with your actual key
+            key: paystackPublicKey, // Replace with your actual key
             email: email,
             amount: amountInKobo, 
             ref: data.data.reference,
