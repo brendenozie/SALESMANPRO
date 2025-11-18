@@ -19,7 +19,6 @@ import { convertKEStoUSD, getUserCountry } from '@/lib/hooks/useUserCountry';
 const paystackPublicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || 'YOUR_PAYSTACK_PUBLIC_KEY';
 const defaultCompanyId = process.env.NEXT_PUBLIC_DEFAULT_COMPANY_ID || "6825c2c7969ab9f16f620f67"; // Mocking as env vars aren't here
         
-
 const fetcher = (url: string) => fetch(url, { credentials: 'include' })
 .then(async res => 
     {
