@@ -16,22 +16,67 @@ type HandlerContext = {
 // =======================
 // GET all companies for the authenticated user
 // =======================
-async function getCompanies(req: Request, context: HandlerContext) {
-  // No need to check for the user's existence!
-  // The withApiHandler wrapper guarantees that 'context.user' is present.
-  const { user } = context;
+// async function getCompanies(req: Request, context: HandlerContext) {
+//   // No need to check for the user's existence!
+//   // The withApiHandler wrapper guarantees that 'context.user' is present.
+//   const { user } = context;
   
-  if (!user) {
-    return formatResponse(false, null, "Unauthorized", 401);
+//   if (!user) {
+//     return formatResponse(false, null, "Unauthorized", 401);
+//   }
+
+//   const companies = await prisma.company.findMany({
+//     where: { userId: user.id },
+//     orderBy: { createdAt: "asc" },
+//   });
+
+//   return formatResponse(true, companies, "Companies fetched successfully");
+// }
+
+async function getCompanies(req: Request, context: HandlerContext) {
+  try {
+    const url = new URL(req.url);
+    const { user } = context;
+
+      if (!user) {
+        return formatResponse(false, null, "Unauthorized", 401);
+      }
+
+    // Fetch all companies (stores) + active subscription status
+    const companies = await prisma.company.findMany({
+      where: { userId: user.id },
+      orderBy: { createdAt: "asc" },
+
+      include: {
+        subscriptionCompanies: {
+          where: {
+            status: "ACTIVE", // Only active subs
+          },
+          select: {
+            status: true,
+          },
+        },
+      },
+    });
+
+    // Format into the structure your frontend expects
+    const formattedStores = companies.map((c) => ({
+      id: c.id,
+      name: c.name,
+      companyId: c.id,
+
+      // If array contains at least 1 ACTIVE subscription → mark store as ACTIVE
+      subscriptionStatus:
+        c.subscriptionCompanies.length > 0 ? "ACTIVE" : "INACTIVE",
+    }));
+
+    return formatResponse(true, formattedStores, "Companies fetched successfully");
+  } catch (error) {
+    console.error("GET /api/stores error:", error);
+    return formatResponse(false, null, "Server error", 500);
   }
-
-  const companies = await prisma.company.findMany({
-    where: { userId: user.id },
-    orderBy: { createdAt: "asc" },
-  });
-
-  return formatResponse(true, companies, "Companies fetched successfully");
 }
+
 
 // =======================
 // POST a new company

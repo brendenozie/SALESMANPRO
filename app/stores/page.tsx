@@ -259,15 +259,14 @@ const CheckIcon = (
 // --- MAIN PRICING SECTION COMPONENT ---
 // It now receives companyId and email, but onSubscriptionSuccess is handled internally
 function PricingSection({ companyId, email }: { companyId: string, email: string }) {
-  const paystackPublicKey = process.env.NEXT_PUBLIC_PAYSTACK_TEST_PUBLIC_KEY || "pk_test_4ec65e0fe08ffa32b2708be2adb75b865d2517ce"; // Fallback to test key
-
-  console.log("Using Paystack Public Key:", paystackPublicKey);
+  const paystackPublicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "pk_test_4ec65e0fe08ffa32b2708be2adb75b865d2517ce"; // Fallback to test key
   
   const [plans, setPlans] = useState<Plan[]>([]); 
   const [loading, setLoading] = useState(false); 
   const [isFeaturesExpanded, setIsFeaturesExpanded] = useState<{ [key: string]: boolean }>({});
   const [subscriptionStatus, setSubscriptionStatus] = useState<{message: string, type: 'success' | 'error'} | null>(null);
   const [usdPrices, setUsdPrices] = useState<Record<string, number>>({});
+  const [billingPeriod, setBillingPeriod] = useState<"MONTHLY" | "ANNUALLY">("MONTHLY");
 
   const [userCountry, setUserCountry] = useState<string>("Kenya");
   const [isOutsideKenya, setIsOutsideKenya] = useState<boolean>(false);
@@ -304,7 +303,7 @@ function PricingSection({ companyId, email }: { companyId: string, email: string
     document.body.appendChild(script);
 
   }, []); // Empty array means this runs once on mount
-  // --- END FIX ---
+  // // --- END FIX ---
 
   useEffect(() => {
     const fetchPlans = async () => {
@@ -352,7 +351,112 @@ function PricingSection({ companyId, email }: { companyId: string, email: string
 
 
   // This is the new handler for the button
-  const handlePlanSelect = async (plan: Plan) => {
+  const handlePlanSelect = async (plan: Plan, billingPeriod: "MONTHLY" | "ANNUALLY" = "MONTHLY") => {
+  try {
+    setLoading(true);
+
+    console.log(`Starting subscription for plan ${plan.id} with ${billingPeriod} billing`);
+
+    // local billing logic
+    const monthsPaidFor = billingPeriod === "MONTHLY" ? 1 : 0;
+    const yearsPaidFor = billingPeriod === "ANNUALLY" ? 1 : 0;
+
+    const rawPrice = billingPeriod === "MONTHLY" ? ( plan.priceMonthly ?? plan.price )
+    : plan.priceAnnually ?? ((Number(plan.price) ?? 1) * 12) ;
+
+    if (!rawPrice) {
+      showStatusMessage("Invalid plan price.", "error");
+      setLoading(false);
+      return;
+    }
+
+    // Convert if user is outside Kenya
+    let chargeAmount = rawPrice;
+
+    if (isOutsideKenya) {
+      const usd = await convertKEStoUSD(Number(chargeAmount));
+      chargeAmount = Math.round(usd * 100) / 100;
+    }
+
+    const amountInKobo = Math.round(Number(chargeAmount) * 100);
+
+    // CALL YOUR NEW UPDATED BACKEND ROUTE
+    const res = await fetch("/api/payments/subscribe", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        companyId,
+        planId: plan.id,
+        currency: isOutsideKenya ? "USD" : "KES",
+        amount: amountInKobo,
+        billingPeriod,
+        monthsPaidFor,
+        yearsPaidFor
+      })
+    });
+
+    const data = await res.json();
+    console.log("Subscription init response:", data);
+
+    if (!res.ok || !data?.data?.data?.authorization_url) {
+      showStatusMessage(data.message || "Failed to start payment");
+      setLoading(false);
+      return;
+    }
+
+    // REDIRECT TO PAYSTACK (no iframe!)
+    // window.location.href = data.data.data.authorization_url;
+    if (!data?.data?.data?.authorization_url) {
+            showStatusMessage("Error: Unable to start payment. Please try again.");
+            setLoading(false);
+            return;
+        }
+
+        // console.log("Opening Paystack payment interface...", data.data.data.authorization_url);
+        // Check if PaystackPop is available (this should now work)
+        if (!window.PaystackPop) {
+            showStatusMessage("Error: Payment service failed to load.");
+            setLoading(false);
+            return;
+        }
+
+        if (!plan.priceMonthly && !plan.price) {
+            showStatusMessage("Error: Plan price is not valid.");
+            setLoading(false);
+            return;
+        }       
+
+        const handler = window.PaystackPop.setup({
+          key: paystackPublicKey,
+          email: email,
+          amount: amountInKobo,
+          ref: data.data.data.reference,
+          currency: isOutsideKenya ? "USD" : "KES",
+          metadata: {
+            companyId,
+            planId: plan.id,
+          },
+          callback: function (response: any) {
+            window.location.href = `/payments/paystack/verify?reference=${response.reference}`;
+          },
+          onClose: function () {
+            showStatusMessage("Payment was cancelled.", "error");
+            setLoading(false);
+          },
+        });
+
+        handler.openIframe();
+
+
+  } catch (err) {
+    console.error("Subscription error:", err);
+    showStatusMessage("Network error occurred.", "error");
+  } finally {
+    setLoading(false);
+  }
+};
+
+  const handlePlanSelectV1 = async (plan: Plan) => {
     console.log(`Subscribing company ${companyId} to plan ${plan.id}`);
     setLoading(true);
     
@@ -424,43 +528,6 @@ function PricingSection({ companyId, email }: { companyId: string, email: string
 
         handler.openIframe();
 
-
-        // const amountInKobo = (Number(plan.priceMonthly ?? plan.price) || 1) * 100;
-
-        // let chargeAmount = Number(plan.priceMonthly ?? plan.price) || 1; // KES
-
-        // if (isOutsideKenya) {
-        //   // Convert to USD before multiplying by 100
-        //   chargeAmount = await convertKEStoUSD(chargeAmount);
-
-        //   // Round USD to nearest cent
-        //   chargeAmount = Math.round(chargeAmount * 100) / 100;
-        // }
-
-        // const amountInKobo = Math.round(chargeAmount * 100); 
-
-
-        // const handler = window.PaystackPop.setup({
-        //     key: paystackPublicKey, // Replace with your actual key
-        //     email: email,
-        //     amount: amountInKobo, 
-        //     ref: data.data.reference,
-        //     currency: isOutsideKenya ? "USD" : "KES",
-        //     metadata: {
-        //         companyId: companyId,
-        //         planId: plan.id,
-        //     },
-        //     callback: function (response: any) {
-        //         window.location.href = `/payments/paystack/verify?reference=${response.reference}`;
-        //     },
-        //     onClose: function () {
-        //         showStatusMessage("Payment was cancelled.", "error");
-        //         setLoading(false);
-        //     },
-        // });
-
-        // handler.openIframe();
-
     } catch (err) {
         console.error("Payment initiation failed:", err);
         showStatusMessage("A network error occurred. Please try again.", "error");
@@ -472,13 +539,19 @@ function PricingSection({ companyId, email }: { companyId: string, email: string
     const detectUser = async () => {
       const country = await getUserCountry();
       setUserCountry(country);
-      // setIsOutsideKenya(country !== "Kenya" && country !== "KE");
+      setIsOutsideKenya(country !== "Kenya" && country !== "KE");
     };
     detectUser();
   }, []);
 
   const getPriceDisplay = (plan: Plan) => {
-    const rawAmount = Number(plan.priceMonthly ?? plan.priceAnnually ?? plan.price ?? 1);
+
+    const displayPrice =  billingPeriod === "MONTHLY"
+    ? ( plan.priceMonthly ?? plan.price )
+    : plan.priceAnnually ?? ((Number(plan.price) ?? 1) * 12) ;
+
+
+    const rawAmount = Number(displayPrice ?? 1);
 
     if (isOutsideKenya) {
       const usd = usdPrices[plan.id];
@@ -487,51 +560,6 @@ function PricingSection({ companyId, email }: { companyId: string, email: string
 
     return `KSh ${rawAmount.toLocaleString()}`;
   };
-
-
-  // const getPriceDisplay = (plan: Plan) => {
-
-  //   const amount = plan.priceMonthly ?? plan.priceAnnually ?? plan.price ?? 1;
-
-  //   if (isOutsideKenya) {
-  //     // Convert KES to USD (client-side)
-  //     const [usdAmount, setUsdAmount] = useState<number | null>(null);
-
-  //     useEffect(() => {
-  //       convertKEStoUSD(Number(amount)).then((usd) => setUsdAmount(usd));
-  //     }, [amount]);
-
-  //     if (usdAmount === null) return "Loading...";
-
-  //     return `$ ${usdAmount.toFixed(2)} USD`;
-  //   }
-
-  //   return `KSh ${amount.toLocaleString()}`;
-  // };
-
-
-  // const getPriceDisplay = (plan: Plan) => {
-  //   const rawPrice = plan.priceMonthly ?? plan.priceAnnually;
-
-  //   if (!rawPrice) return plan.price;
-
-  //   if (isKenya) {
-  //     return `Ksh ${rawPrice.toLocaleString()}`;
-  //   }
-
-  //   // Convert KES → USD
-  //   const usdValue = Math.round(rawPrice * KES_TO_USD);
-  //   return `$${usdValue.toLocaleString()}`;
-  // };
-
-
-  // const getPriceDisplay = (plan: Plan) => {
-  //   const priceValue = plan.priceMonthly ?? plan.priceAnnually;
-  //   if (priceValue) {
-  //     return `${plan.currency} ${priceValue.toLocaleString()}`;
-  //   }
-  //   return plan.price || `${plan.currency} N/A`;
-  // };
 
   const getCoreFeatures = (plan: Plan) => {
     const allFeatures = Object.values(plan.features).flat();
@@ -606,6 +634,36 @@ function PricingSection({ companyId, email }: { companyId: string, email: string
               Start small and grow with us. All plans include essential features to help you succeed, backed by dedicated support.
             </p>
           </motion.div>
+
+          <div className="w-full flex justify-center mb-8 select-none">
+            <div className="flex items-center bg-gray-100 dark:bg-gray-800 p-1 rounded-full shadow-sm">
+              
+              {/* Monthly */}
+              <button
+                onClick={() => setBillingPeriod("MONTHLY")}
+                className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-300
+                  ${billingPeriod === "MONTHLY"
+                    ? "bg-white dark:bg-gray-700 shadow text-black dark:text-white"
+                    : "text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white"
+                  }`}
+              >
+                Monthly
+              </button>
+
+              {/* Annually */}
+              <button
+                onClick={() => setBillingPeriod("ANNUALLY")}
+                className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-300
+                  ${billingPeriod === "ANNUALLY"
+                    ? "bg-white dark:bg-gray-700 shadow text-black dark:text-white"
+                    : "text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white"
+                  }`}
+              >
+                Annually
+              </button>
+            </div>
+          </div>
+
           
           <div className="mt-16 overflow-x-auto pb-6">
             <motion.div
@@ -638,7 +696,7 @@ function PricingSection({ companyId, email }: { companyId: string, email: string
                           {getPriceDisplay(plan)}
                         </span>
                         <span className="text-2xl font-semibold ml-2 text-gray-500">
-                          / mo
+                          / {billingPeriod === "MONTHLY" ? "mo" : "yr"}
                         </span>
                       </div>
                       <p className="text-sm text-gray-400 mt-1">Billed Annually. Cancel Anytime.</p>
@@ -646,7 +704,7 @@ function PricingSection({ companyId, email }: { companyId: string, email: string
                     
                     <div className="mb-8">
                       <button
-                        onClick={() => handlePlanSelect(plan)} 
+                        onClick={() => handlePlanSelect(plan, billingPeriod)} 
                         disabled={loading} 
                         className={`w-full py-4 px-6 rounded-xl font-extrabold text-lg shadow-lg transform transition-all duration-300 active:scale-[0.98] flex items-center justify-center
                           ${plan.isPopular

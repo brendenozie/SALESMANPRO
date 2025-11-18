@@ -175,6 +175,7 @@ async function updateCompany(req: Request, { params }: { params: { id: string } 
             deleteMany: {},
             create: promotions.map((p) => ({
               ...p,
+              title: p.title || "Untitled", // Ensure title is always a string
               perks: p.perks ? p.perks.map((perk: any) => ({ ...perk, id: perk.id || undefined })) : [],
               trustLogos: p.trustLogos ? p.trustLogos.map((logo: any) => ({ ...logo, id: logo.id || undefined })) : [],
               startsAt: p.startsAt ? new Date(p.startsAt) : undefined,

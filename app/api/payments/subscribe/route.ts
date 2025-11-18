@@ -3,7 +3,7 @@ import prisma from "@/server/db/prismadb";
 
 export async function POST(req: Request) {
   try {
-    const { companyId, planId, amount, currency } = await req.json();
+    const { companyId, planId, amount, currency, billingPeriod, monthsPaidFor, yearsPaidFor } = await req.json();
 
     const company = await prisma.company.findUnique({
       where: { id: companyId },
@@ -15,8 +15,8 @@ export async function POST(req: Request) {
     const plan = await prisma.plan.findUnique({ where: { id: planId } });
     if (!plan) return NextResponse.json({ error: "Plan not found" }, { status: 404 });
 
-    const PAYSTACK_SECRET = process.env.PAYSTACK_TEST_SECRET_KEY;
-    console.log(PAYSTACK_SECRET);
+    const PAYSTACK_SECRET = process.env.PAYSTACK_SECRET_KEY;
+    
     if (!PAYSTACK_SECRET) {
       return NextResponse.json({ error: "Missing PAYSTACK_TEST_SECRET_KEY on server" }, { status: 500 });
     }
@@ -45,7 +45,7 @@ export async function POST(req: Request) {
         email,
         amount,
         currency,
-        metadata: { companyId, planId }
+        metadata: { companyId, planId, billingPeriod, monthsPaidFor, yearsPaidFor }
       })
     });
 
@@ -85,7 +85,7 @@ export async function POST(req: Request) {
 //     }
 
 //     // MUST USE SERVER SECRET KEY
-//     const PAYSTACK_SECRET = process.env.PAYSTACK_TEST_SECRET_KEY;
+//     const PAYSTACK_SECRET = process.env.PAYSTACK_SECRET_KEY;
 
 //     if (!PAYSTACK_SECRET) {
 //       return NextResponse.json({ error: "Missing PAYSTACK_TEST_SECRET_KEY on server" }, { status: 500 });
