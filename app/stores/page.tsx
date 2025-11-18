@@ -387,41 +387,72 @@ function PricingSection({ companyId, email }: { companyId: string, email: string
             return;
         }
 
-        // const amountInKobo = (Number(plan.priceMonthly ?? plan.price) || 1) * 100;
-
-        let chargeAmount = Number(plan.priceMonthly ?? plan.price) || 1; // KES
+        let chargeAmount = Number(plan.priceMonthly ?? plan.price) || 1;
 
         if (isOutsideKenya) {
-          // Convert to USD before multiplying by 100
-          chargeAmount = await convertKEStoUSD(chargeAmount);
-
-          // Round USD to nearest cent
-          chargeAmount = Math.round(chargeAmount * 100) / 100;
+          let usd = await convertKEStoUSD(chargeAmount);
+          chargeAmount = Math.round(usd * 100) / 100;
         }
 
-        const amountInKobo = Math.round(chargeAmount * 100); 
-
+        const amountInKobo = Math.round(chargeAmount * 100);
 
         const handler = window.PaystackPop.setup({
-            key: paystackPublicKey, // Replace with your actual key
-            email: email,
-            amount: amountInKobo, 
-            ref: data.data.reference,
-            currency: isOutsideKenya ? "USD" : "KES",
-            metadata: {
-                companyId: companyId,
-                planId: plan.id,
-            },
-            callback: function (response: any) {
-                window.location.href = `/payments/paystack/verify?reference=${response.reference}`;
-            },
-            onClose: function () {
-                showStatusMessage("Payment was cancelled.", "error");
-                setLoading(false);
-            },
+          key: paystackPublicKey,
+          email: email,
+          amount: amountInKobo,
+          ref: data.data.reference,
+          currency: isOutsideKenya ? "USD" : "KES",
+          metadata: {
+            companyId,
+            planId: plan.id,
+          },
+          callback: function (response: any) {
+            window.location.href = `/payments/paystack/verify?reference=${response.reference}`;
+          },
+          onClose: function () {
+            showStatusMessage("Payment was cancelled.", "error");
+            setLoading(false);
+          },
         });
 
         handler.openIframe();
+
+
+        // const amountInKobo = (Number(plan.priceMonthly ?? plan.price) || 1) * 100;
+
+        // let chargeAmount = Number(plan.priceMonthly ?? plan.price) || 1; // KES
+
+        // if (isOutsideKenya) {
+        //   // Convert to USD before multiplying by 100
+        //   chargeAmount = await convertKEStoUSD(chargeAmount);
+
+        //   // Round USD to nearest cent
+        //   chargeAmount = Math.round(chargeAmount * 100) / 100;
+        // }
+
+        // const amountInKobo = Math.round(chargeAmount * 100); 
+
+
+        // const handler = window.PaystackPop.setup({
+        //     key: paystackPublicKey, // Replace with your actual key
+        //     email: email,
+        //     amount: amountInKobo, 
+        //     ref: data.data.reference,
+        //     currency: isOutsideKenya ? "USD" : "KES",
+        //     metadata: {
+        //         companyId: companyId,
+        //         planId: plan.id,
+        //     },
+        //     callback: function (response: any) {
+        //         window.location.href = `/payments/paystack/verify?reference=${response.reference}`;
+        //     },
+        //     onClose: function () {
+        //         showStatusMessage("Payment was cancelled.", "error");
+        //         setLoading(false);
+        //     },
+        // });
+
+        // handler.openIframe();
 
     } catch (err) {
         console.error("Payment initiation failed:", err);
