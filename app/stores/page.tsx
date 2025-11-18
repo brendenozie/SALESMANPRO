@@ -432,7 +432,7 @@ function PricingSection({ companyId, email }: { companyId: string, email: string
     const detectUser = async () => {
       const country = await getUserCountry();
       setUserCountry(country);
-      setIsOutsideKenya(country !== "Kenya" && country !== "KE");
+      setIsOutsideKenya(country !== "Kenya" || country !== "KE");
     };
     detectUser();
   }, []);

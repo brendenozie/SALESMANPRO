@@ -132,7 +132,7 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
     res.headers.set("x-requested-host", host);
     res.headers.set("x-original-path", pathname);
     res.headers.set("x-rewritten-slug", slug);
-
+    
     return res;
   }
   
