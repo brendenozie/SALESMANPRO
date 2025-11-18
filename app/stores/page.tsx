@@ -397,9 +397,7 @@ function PricingSection({ companyId, email }: { companyId: string, email: string
             showStatusMessage("Error: Plan price is not valid.");
             setLoading(false);
             return;
-        }
-
-        
+        }       
 
         const handler = window.PaystackPop.setup({
           key: paystackPublicKey,
