@@ -1,53 +1,28 @@
 // hooks/useUserCountry.ts
 'use client';
 
-import { useState, useEffect } from 'react';
-
-// export default function useUserCountry() {
-//   const [country, setCountry] = useState<string | null>(null);
-
-//   useEffect(() => {
-//     async function detectCountry() {
-//       try {
-//         const res = await fetch("https://ipapi.co/json/");
-//         const data = await res.json();
-//         setCountry(data.country_code);
-//       } catch (err) {
-//         console.error("Country detection failed", err);
-//         setCountry("KE"); // fallback to Kenya
-//       }
-//     }
-
-//     detectCountry();
-//   }, []);
-
-//   return country;
-// }
-
 const getUserCountry = async () => {
   try {
-    const res = await fetch("https://ipapi.co/json/");
+    const res = await fetch("/api/country");
     const data = await res.json();
-    return data.country_name || "Unknown";
+    return data.country || "Unknown";
   } catch (e) {
-    console.error("IP lookup failed:", e);
+    console.error("Proxy failed:", e);
     return "Unknown";
   }
 };
 
-
-
 const convertKEStoUSD = async (kesAmount: number): Promise<number> => {
   try {
-    const res = await fetch("https://open.er-api.com/v6/latest/KES");
+    const res = await fetch("/api/usd");
     const data = await res.json();
 
-    if (!data?.rates?.USD) return kesAmount; // fallback KES if API fails
+    if (!data?.usd) return kesAmount;
 
-    return kesAmount * data.rates.USD;
-  } catch (e) {
-    console.error("Conversion failed:", e);
+    return kesAmount * data.usd;
+  } catch {
     return kesAmount;
   }
 };
+
 export { convertKEStoUSD, getUserCountry };
