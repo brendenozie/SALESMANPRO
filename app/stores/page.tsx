@@ -16,7 +16,6 @@ import StoreCard from '@/components/stores/StoreCard'; // This component MUST be
 import useSWR, { mutate } from 'swr';
 import { convertKEStoUSD, getUserCountry } from '@/lib/hooks/useUserCountry';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 const paystackPublicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || 'YOUR_PAYSTACK_PUBLIC_KEY';
 const defaultCompanyId = process.env.NEXT_PUBLIC_DEFAULT_COMPANY_ID || "6825c2c7969ab9f16f620f67"; // Mocking as env vars aren't here
         
@@ -732,7 +731,7 @@ export default function StoresPage() {
         error: storesError, 
         isLoading: isStoresLoading 
     } = useSWR<Store[]>(
-        session?.user?.id ? `${apiBaseUrl}/stores?userId=${session.user.id}` : null,
+        session?.user?.id ? `/api/stores?userId=${session.user.id}` : null,
         fetcher
     );
 
@@ -770,7 +769,7 @@ export default function StoresPage() {
     const handleSubscriptionSuccess = () => {
         setIsPricingModalOpen(false);
         // Re-fetch the stores data to get the new 'ACTIVE' status
-        mutate(`${apiBaseUrl}/stores?userId=${session?.user?.id}`);
+        mutate(`/api/stores?userId=${session?.user?.id}`);
         // Optionally, show a success toast/notification
     };
 
@@ -779,8 +778,8 @@ export default function StoresPage() {
         setIsDeleteModalOpen(false);
         setIsDeleting(true); // You can use this to show a spinner on the card
         try {
-            await fetch(`${apiBaseUrl}/stores/${storeToDelete.id}`, { method: 'DELETE' });
-            mutate(`${apiBaseUrl}/stores?userId=${session?.user?.id}`);
+            await fetch(`/api/stores/${storeToDelete.id}`, { method: 'DELETE' });
+            mutate(`/api/stores?userId=${session?.user?.id}`);
         } catch (err) {
             console.error('Failed to delete store:', err);
         } finally {
