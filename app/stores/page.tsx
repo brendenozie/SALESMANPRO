@@ -358,14 +358,34 @@ function PricingSection({ companyId, email }: { companyId: string, email: string
     
 
     try {
+
+      let chargeAmount = Number(plan.priceMonthly ?? plan.price) || 1;
+
+        if (isOutsideKenya) {
+          let usd = await convertKEStoUSD(chargeAmount);
+          chargeAmount = Math.round(usd * 100) / 100;
+        }
+
+        const amountInKobo = Math.round(chargeAmount * 100);
       
+        // const res = await fetch("/api/payments/subscribe", {
+        //     method: "POST",
+        //     body: JSON.stringify({
+        //         planId: plan.id,
+        //         companyId: companyId,
+        //     }),
+        // });
+
         const res = await fetch("/api/payments/subscribe", {
-            method: "POST",
-            body: JSON.stringify({
-                planId: plan.id,
-                companyId: companyId,
-            }),
+          method: "POST",
+          body: JSON.stringify({
+            planId: plan.id,
+            companyId,
+            currency: isOutsideKenya ? "USD" : "KES",
+            amount: amountInKobo,
+          }),
         });
+
         const data = await res.json();
 
         if (!data?.data?.authorization_url) {
@@ -387,14 +407,7 @@ function PricingSection({ companyId, email }: { companyId: string, email: string
             return;
         }
 
-        let chargeAmount = Number(plan.priceMonthly ?? plan.price) || 1;
-
-        if (isOutsideKenya) {
-          let usd = await convertKEStoUSD(chargeAmount);
-          chargeAmount = Math.round(usd * 100) / 100;
-        }
-
-        const amountInKobo = Math.round(chargeAmount * 100);
+        
 
         const handler = window.PaystackPop.setup({
           key: paystackPublicKey,
