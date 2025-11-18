@@ -368,14 +368,6 @@ function PricingSection({ companyId, email }: { companyId: string, email: string
 
         const amountInKobo = Math.round(chargeAmount * 100);
       
-        // const res = await fetch("/api/payments/subscribe", {
-        //     method: "POST",
-        //     body: JSON.stringify({
-        //         planId: plan.id,
-        //         companyId: companyId,
-        //     }),
-        // });
-
         const res = await fetch("/api/payments/subscribe", {
           method: "POST",
           body: JSON.stringify({
