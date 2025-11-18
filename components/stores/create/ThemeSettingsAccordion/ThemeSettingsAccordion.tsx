@@ -25,8 +25,8 @@ export interface ThemeSettingsAccordionProps {
 }
 
 const DEFAULTS: ThemeSettings = {
-  primaryColor: '#6366F1',
-  secondaryColor: '#F59E0B',
+  primaryColor: '#F43F5E',
+  secondaryColor: '#FBBF24',
   fontFamily: 'Inter, sans-serif',
 };
 
@@ -54,7 +54,14 @@ const themePresets = [
   { name: 'Retro', primary: '#9333EA', secondary: '#F472B6' }, // Deep violet primary, hot pink secondary for a vintage feel
   { name: 'Monochromatic', primary: '#1E40AF', secondary: '#93C5FD' },
   { name: 'High Contrast', primary: '#000000', secondary: '#FFFF00' },
-  { name: 'Midnight', primary: '#1F2937', secondary: '#D1D5DB' }
+  { name: 'Midnight', primary: '#1F2937', secondary: '#D1D5DB' },
+  { name: 'Candy', primary: '#F43F5E', secondary: '#FBBF24' },
+  { name: 'Ice Cream', primary: '#60A5FA', secondary: '#FCA5A5' },
+  { name: 'Spring', primary: '#22C55E', secondary: '#A7F3D0' },
+  { name: 'Autumn', primary: '#D97706', secondary: '#FDE68A' },
+  { name: 'Galaxy', primary: '#7C3AED', secondary: '#C4B5FD' },
+  { name: 'Sunrise', primary: '#F59E0B', secondary: '#FEF3C7' },
+  { name: 'Earthy', primary: '#A16207', secondary: '#F3F4F6' },
 ];
 
 export default function ThemeSettingsAccordion({
