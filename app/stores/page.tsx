@@ -259,6 +259,8 @@ const CheckIcon = (
 // --- MAIN PRICING SECTION COMPONENT ---
 // It now receives companyId and email, but onSubscriptionSuccess is handled internally
 function PricingSection({ companyId, email }: { companyId: string, email: string }) {
+  const paystackPublicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || process.env.NEXT_PUBLIC_PAYSTACK_TEST_SECRET_KEY || "pk_test_4ec65e0fe08ffa32b2708be2adb75b865d2517ce"; // Fallback to test key
+
   const [plans, setPlans] = useState<Plan[]>([]); 
   const [loading, setLoading] = useState(false); 
   const [isFeaturesExpanded, setIsFeaturesExpanded] = useState<{ [key: string]: boolean }>({});
@@ -351,8 +353,7 @@ function PricingSection({ companyId, email }: { companyId: string, email: string
   const handlePlanSelect = async (plan: Plan) => {
     console.log(`Subscribing company ${companyId} to plan ${plan.id}`);
     setLoading(true);
-    const paystackPublicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || process.env.NEXT_PUBLIC_PAYSTACK_TEST_SECRET_KEY || "pk_test_4ec65e0fe08ffa32b2708be2adb75b865d2517ce"; // Fallback to test key
-
+    
 
     try {
       
