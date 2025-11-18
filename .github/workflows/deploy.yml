@@ -1,27 +1,43 @@
-name: Deploy to Hostinger VPS
+name: 🚀 Auto Deploy Next.js to VPS
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main # Deploy when pushing to main branch
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout Code
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup SSH
-        uses: webfactory/ssh-agent@v0.8.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
-      - name: Deploy to VPS
+      - name: Install SSH key
         run: |
-          ssh -o StrictHostKeyChecking=no root@${{ secrets.SERVER_IP }} << 'EOF'
-          cd /var/www/salesmanpro
-          git pull origin main
-          npm install
-          npm run build
-          pm2 restart nextjs-app
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+
+      - name: 🚀 Deploy to VPS
+        run: |
+          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
+
+            echo "🔐 Changing to project directory..."
+            cd /var/www/SALESMANPRO
+
+            echo "📥 Pulling latest code..."
+            git pull origin main
+
+            echo "📦 Installing dependencies..."
+            npm ci
+
+            echo "🏗️ Building Next.js app..."
+            npm run build
+
+            echo "🔁 Restarting Next.js server..."
+            pm2 restart my-app-dev || pm2 start "npm start" --name my-app-dev
+
+            echo "🎉 Deployment successful!"
           EOF

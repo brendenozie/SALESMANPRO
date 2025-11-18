@@ -14,6 +14,7 @@ import {
 } from "@heroicons/react/24/outline";
 import StoreCard from '@/components/stores/StoreCard'; // This component MUST be updated
 import useSWR, { mutate } from 'swr';
+import { convertKEStoUSD, getUserCountry } from '@/lib/hooks/useUserCountry';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 const paystackPublicKey = process.env.PAYSTACK_PUBLIC_KEY || 'YOUR_PAYSTACK_PUBLIC_KEY';
@@ -156,27 +157,6 @@ const PaginationControls = ({ page, totalPages, onPageChange } : {
 // --- 3. PRICING COMPONENT (Modified to accept props) ---
 // ------------------------------------------------------------------
 
-// import React, { useState } from 'react';
-
-// Define the necessary type structures
-// type Plan = {
-//   id: string;
-//   name: string;
-//   price: string;
-//   priceMonthly?: number;
-//   priceAnnually?: number;
-//   currency: string;
-//   tagline: string;
-//   features: { [key: string]: string[] };
-//   isPopular: boolean;
-// };
-
-// Mock the framer-motion library's components as simple divs for compilation
-// This ensures the component compiles without external imports.
-// const motion = {
-//   div: (props) => <div {...props} />,
-// };
-
 // --- START MOCK DATA (Data Structure is unchanged as requested) ---
 const MOCK_PLANS: Plan[] = [
   {
@@ -287,6 +267,10 @@ function PricingSection({ companyId, email }: { companyId: string, email: string
   const [isFeaturesExpanded, setIsFeaturesExpanded] = useState<{ [key: string]: boolean }>({});
   const [subscriptionStatus, setSubscriptionStatus] = useState<{message: string, type: 'success' | 'error'} | null>(null);
 
+  const [userCountry, setUserCountry] = useState<string>("Kenya");
+  const [isOutsideKenya, setIsOutsideKenya] = useState<boolean>(false);
+
+
   // Clear message after a delay
   const showStatusMessage = (message: string, type: 'success' | 'error' = 'error') => {
       setSubscriptionStatus({ message, type });
@@ -380,13 +364,28 @@ function PricingSection({ companyId, email }: { companyId: string, email: string
             setLoading(false);
             return;
         }
-        const amountInKobo = (Number(plan.priceMonthly ?? plan.price) || 1) * 100;
+
+        // const amountInKobo = (Number(plan.priceMonthly ?? plan.price) || 1) * 100;
+
+        let chargeAmount = Number(plan.priceMonthly ?? plan.price) || 1; // KES
+
+        if (isOutsideKenya) {
+          // Convert to USD before multiplying by 100
+          chargeAmount = await convertKEStoUSD(chargeAmount);
+
+          // Round USD to nearest cent
+          chargeAmount = Math.round(chargeAmount * 100) / 100;
+        }
+
+        const amountInKobo = Math.round(chargeAmount * 100); 
+
 
         const handler = window.PaystackPop.setup({
             key: paystackPublicKey || "YOUR_PAYSTACK_PUBLIC_KEY", // Replace with your actual key
             email: email,
             amount: amountInKobo, 
             ref: data.data.reference,
+            currency: isOutsideKenya ? "USD" : "KES",
             metadata: {
                 companyId: companyId,
                 planId: plan.id,
@@ -409,13 +408,58 @@ function PricingSection({ companyId, email }: { companyId: string, email: string
     }
   };
 
-  const getPriceDisplay = (plan: Plan) => {
-    const priceValue = plan.priceMonthly ?? plan.priceAnnually;
-    if (priceValue) {
-      return `${plan.currency} ${priceValue.toLocaleString()}`;
-    }
-    return plan.price || `${plan.currency} N/A`;
+  useEffect(() => {
+  const detectUser = async () => {
+    const country = await getUserCountry();
+    setUserCountry(country);
+    setIsOutsideKenya(country !== "Kenya");
   };
+  detectUser();
+}, []);
+
+
+  const getPriceDisplay = (plan: Plan) => {
+    const amount = plan.priceMonthly ?? plan.priceAnnually ?? 0;
+
+    if (isOutsideKenya) {
+      // Convert KES to USD (client-side)
+      const [usdAmount, setUsdAmount] = useState<number | null>(null);
+
+      useEffect(() => {
+        convertKEStoUSD(amount).then((usd) => setUsdAmount(usd));
+      }, [amount]);
+
+      if (usdAmount === null) return "Loading...";
+
+      return `$ ${usdAmount.toFixed(2)} USD`;
+    }
+
+    return `KSh ${amount.toLocaleString()}`;
+  };
+
+
+  // const getPriceDisplay = (plan: Plan) => {
+  //   const rawPrice = plan.priceMonthly ?? plan.priceAnnually;
+
+  //   if (!rawPrice) return plan.price;
+
+  //   if (isKenya) {
+  //     return `Ksh ${rawPrice.toLocaleString()}`;
+  //   }
+
+  //   // Convert KES → USD
+  //   const usdValue = Math.round(rawPrice * KES_TO_USD);
+  //   return `$${usdValue.toLocaleString()}`;
+  // };
+
+
+  // const getPriceDisplay = (plan: Plan) => {
+  //   const priceValue = plan.priceMonthly ?? plan.priceAnnually;
+  //   if (priceValue) {
+  //     return `${plan.currency} ${priceValue.toLocaleString()}`;
+  //   }
+  //   return plan.price || `${plan.currency} N/A`;
+  // };
 
   const getCoreFeatures = (plan: Plan) => {
     const allFeatures = Object.values(plan.features).flat();
