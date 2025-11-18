@@ -15,7 +15,7 @@ const Join = () => {
   };
 
   return (
-    <section className="relative px-6 sm:px-16 lg:px-24 py-24 bg-gray-50 overflow-hidden">
+    <section id="contact" className="relative px-6 sm:px-16 lg:px-24 py-24 bg-gray-50 overflow-hidden">
       {/* Radial Gradient Background */}
       <div className="absolute inset-0 z-0 flex items-center justify-center">
         <div className="w-[800px] h-[800px] bg-gradient-to-r from-purple-200 to-indigo-100 rounded-full blur-3xl opacity-50"></div>

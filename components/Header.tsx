@@ -26,9 +26,9 @@ const Header = () => {
 
   const navLinks = [
     { name: "Home", href: "/" },
-    { name: "Features", href: "/features" },
-    { name: "Pricing", href: "/pricing" },
-    { name: "Contact", href: "/contact" },
+    { name: "Features", href: "#features" },
+    { name: "Pricing", href: "#pricing" },
+    { name: "Contact", href: "#contact" },
   ];
 
   const handleGoogleSignIn = () => {
@@ -126,12 +126,12 @@ const Header = () => {
                 >
                   Log In
                 </button>
-                {/* <button
+                <button
                   onClick={handleRegister}
                   className="py-2.5 px-6 rounded-full text-base font-bold text-white bg-gradient-to-r from-pink-600 via-red-500 to-yellow-400 shadow-lg hover:scale-105 transition-all duration-300"
                 >
                   Get Started
-                </button> */}
+                </button>
               </>
             ) : (
               <Link

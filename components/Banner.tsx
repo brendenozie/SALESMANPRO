@@ -25,6 +25,12 @@ const features = [
   },
 ];
 
+const handleGoogleSignIn = () => {
+  const authUrl = new URL("https://salesmanpro.site/signin");
+  authUrl.searchParams.set("callbackUrl", window.location.origin);
+  window.location.href = authUrl.toString();
+};
+
 // --- Main Banner Component ---
 export default function Banner() {
   return (
@@ -94,6 +100,7 @@ export default function Banner() {
                 className="px-8 py-4 bg-red-600 text-white font-bold rounded-full shadow-lg shadow-red-200/80"
                 whileHover={{ scale: 1.05, boxShadow: "0px 0px 30px rgba(129, 140, 248, 0.7)" }}
                 whileTap={{ scale: 0.95 }}
+                onClick={handleGoogleSignIn}
               >
                 Create Your Store
               </motion.button>
@@ -101,6 +108,12 @@ export default function Banner() {
                 className="px-8 py-4 border border-gray-300 text-gray-800 font-bold rounded-full"
                 whileHover={{ scale: 1.05, backgroundColor: "rgba(0, 0, 0, 0.05)" }}
                 whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  const featuresSection = document.getElementById("features");
+                  if (featuresSection) {
+                    featuresSection.scrollIntoView({ behavior: "smooth" });
+                  }
+                }}
               >
                 How It Works
               </motion.button>

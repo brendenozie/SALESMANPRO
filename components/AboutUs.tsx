@@ -79,7 +79,7 @@ export default function AboutUs() {
 
   return (
     // Main section with a light background
-    <section className="relative w-full py-24 px-6 md:px-12 bg-white text-gray-800 overflow-hidden">
+    <section id={"about-us"} className="relative w-full py-24 px-6 md:px-12 bg-white text-gray-800 overflow-hidden">
       {/* Subtle background glows for visual appeal in light mode */}
       <div className="absolute top-0 left-0 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-indigo-200/30 rounded-full filter blur-3xl opacity-50" />
       <div className="absolute bottom-0 right-0 translate-x-1/2 translate-y-1/2 w-96 h-96 bg-cyan-200/30 rounded-full filter blur-3xl opacity-50" />

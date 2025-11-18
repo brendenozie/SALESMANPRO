@@ -110,6 +110,12 @@ export default function SignInClient({ providers }: { providers: Provider[] }) {
     }
   }, [providers]);
 
+   const handleRegister = () => {
+    const registerUrl = new URL("https://salesmanpro.site/signup");
+    registerUrl.searchParams.set("callbackUrl", window.location.origin);
+    window.location.href = registerUrl.toString();
+  }
+
   const loginUser = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -244,8 +250,21 @@ export default function SignInClient({ providers }: { providers: Provider[] }) {
                   Sign in with {prov.name}
                 </button>
               ))}
+
+            
           </>
         )}
+
+        {/* //signup */}
+        <div className="text-sm text-center text-gray-600 dark:text-gray-400">
+          Don't have an account?{" "}
+          <button
+            onClick={handleRegister}
+            className="font-medium text-yellow-500 hover:text-yellow-600"
+          >
+            Sign Up
+          </button>
+        </div>
       </div>
     </div>
   );

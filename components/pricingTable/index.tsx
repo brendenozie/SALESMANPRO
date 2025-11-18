@@ -179,7 +179,7 @@ export default function PricingSectionRedesign() {
   }
 
   return (
-    <section className="py-24 bg-gray-50 overflow-hidden">
+    <section id={"pricing"} className="py-24 bg-gray-50 overflow-hidden">
       <div className="container mx-auto px-6 lg:px-12 text-center">
         <Motion.div
           initial={{ opacity: 0, y: -20 }}

@@ -34,7 +34,7 @@ const Pic = () => {
 
   return (
     <section
-      id="features-carousel"
+      id="features"
       className="relative flex flex-col py-24 bg-gray-50 overflow-hidden"
     >
       {/* Decorative Background Shapes */}
