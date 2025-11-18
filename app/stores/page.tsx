@@ -264,6 +264,7 @@ function PricingSection({ companyId, email }: { companyId: string, email: string
   const [loading, setLoading] = useState(false); 
   const [isFeaturesExpanded, setIsFeaturesExpanded] = useState<{ [key: string]: boolean }>({});
   const [subscriptionStatus, setSubscriptionStatus] = useState<{message: string, type: 'success' | 'error'} | null>(null);
+  const [usdPrices, setUsdPrices] = useState<Record<string, number>>({});
 
   const [userCountry, setUserCountry] = useState<string>("Kenya");
   const [isOutsideKenya, setIsOutsideKenya] = useState<boolean>(false);
@@ -327,6 +328,25 @@ function PricingSection({ companyId, email }: { companyId: string, email: string
 
     fetchPlans(); 
   }, []);
+
+  useEffect(() => {
+    const convertPrices = async () => {
+      if (!isOutsideKenya) return;
+
+      const conversions: Record<string, number> = {};
+
+      for (const plan of plans) {
+        const rawAmount = Number(plan.priceMonthly ?? plan.priceAnnually ?? plan.price ?? 1);
+        const usd = await convertKEStoUSD(rawAmount);
+        conversions[plan.id] = Math.round(usd * 100) / 100; // round to cents
+      }
+
+      setUsdPrices(conversions);
+    };
+
+    convertPrices();
+  }, [isOutsideKenya, plans]);
+
 
   // This is the new handler for the button
   const handlePlanSelect = async (plan: Plan) => {
@@ -415,26 +435,37 @@ function PricingSection({ companyId, email }: { companyId: string, email: string
     detectUser();
   }, []);
 
-
   const getPriceDisplay = (plan: Plan) => {
-
-    const amount = plan.priceMonthly ?? plan.priceAnnually ?? plan.price ?? 1;
+    const rawAmount = Number(plan.priceMonthly ?? plan.priceAnnually ?? plan.price ?? 1);
 
     if (isOutsideKenya) {
-      // Convert KES to USD (client-side)
-      const [usdAmount, setUsdAmount] = useState<number | null>(null);
-
-      useEffect(() => {
-        convertKEStoUSD(Number(amount)).then((usd) => setUsdAmount(usd));
-      }, [amount]);
-
-      if (usdAmount === null) return "Loading...";
-
-      return `$ ${usdAmount.toFixed(2)} USD`;
+      const usd = usdPrices[plan.id];
+      return usd ? `$ ${usd.toFixed(2)} USD` : "Loading...";
     }
 
-    return `KSh ${amount.toLocaleString()}`;
+    return `KSh ${rawAmount.toLocaleString()}`;
   };
+
+
+  // const getPriceDisplay = (plan: Plan) => {
+
+  //   const amount = plan.priceMonthly ?? plan.priceAnnually ?? plan.price ?? 1;
+
+  //   if (isOutsideKenya) {
+  //     // Convert KES to USD (client-side)
+  //     const [usdAmount, setUsdAmount] = useState<number | null>(null);
+
+  //     useEffect(() => {
+  //       convertKEStoUSD(Number(amount)).then((usd) => setUsdAmount(usd));
+  //     }, [amount]);
+
+  //     if (usdAmount === null) return "Loading...";
+
+  //     return `$ ${usdAmount.toFixed(2)} USD`;
+  //   }
+
+  //   return `KSh ${amount.toLocaleString()}`;
+  // };
 
 
   // const getPriceDisplay = (plan: Plan) => {
