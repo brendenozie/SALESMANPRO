@@ -16,7 +16,6 @@ import StoreCard from '@/components/stores/StoreCard'; // This component MUST be
 import useSWR, { mutate } from 'swr';
 import { convertKEStoUSD, getUserCountry } from '@/lib/hooks/useUserCountry';
 
-const paystackPublicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || process.env.NEXT_PUBLIC_PAYSTACK_TEST_SECRET_KEY || "pk_test_4ec65e0fe08ffa32b2708be2adb75b865d2517ce"; // Fallback to test key
 const defaultCompanyId = process.env.NEXT_PUBLIC_DEFAULT_COMPANY_ID || "6825c2c7969ab9f16f620f67"; // Mocking as env vars aren't here
         
 const fetcher = (url: string) => fetch(url, { credentials: 'include' })
@@ -352,6 +351,8 @@ function PricingSection({ companyId, email }: { companyId: string, email: string
   const handlePlanSelect = async (plan: Plan) => {
     console.log(`Subscribing company ${companyId} to plan ${plan.id}`);
     setLoading(true);
+    const paystackPublicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || process.env.NEXT_PUBLIC_PAYSTACK_TEST_SECRET_KEY || "pk_test_4ec65e0fe08ffa32b2708be2adb75b865d2517ce"; // Fallback to test key
+
 
     try {
       
