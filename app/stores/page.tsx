@@ -409,24 +409,25 @@ function PricingSection({ companyId, email }: { companyId: string, email: string
   };
 
   useEffect(() => {
-  const detectUser = async () => {
-    const country = await getUserCountry();
-    setUserCountry(country);
-    setIsOutsideKenya(country !== "Kenya");
-  };
-  detectUser();
-}, []);
+    const detectUser = async () => {
+      const country = await getUserCountry();
+      setUserCountry(country);
+      setIsOutsideKenya(country !== "Kenya");
+    };
+    detectUser();
+  }, []);
 
 
   const getPriceDisplay = (plan: Plan) => {
-    const amount = plan.priceMonthly ?? plan.priceAnnually ?? 0;
+
+    const amount = plan.priceMonthly ?? plan.priceAnnually ?? plan.price ?? 1;
 
     if (isOutsideKenya) {
       // Convert KES to USD (client-side)
       const [usdAmount, setUsdAmount] = useState<number | null>(null);
 
       useEffect(() => {
-        convertKEStoUSD(amount).then((usd) => setUsdAmount(usd));
+        convertKEStoUSD(Number(amount)).then((usd) => setUsdAmount(usd));
       }, [amount]);
 
       if (usdAmount === null) return "Loading...";
@@ -866,7 +867,7 @@ export default function StoresPage() {
                         />
                     ) : (
                         paginatedStores && paginatedStores.map(store => {
-                            const isActive = true;// store.subscriptionStatus === 'ACTIVE';
+                            const isActive = store.subscriptionStatus === 'ACTIVE';
                             
                             return (
                                 <motion.div
