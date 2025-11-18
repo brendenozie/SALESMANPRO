@@ -17,7 +17,7 @@ import useSWR, { mutate } from 'swr';
 import { convertKEStoUSD, getUserCountry } from '@/lib/hooks/useUserCountry';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
-const paystackPublicKey = process.env.PAYSTACK_PUBLIC_KEY || 'YOUR_PAYSTACK_PUBLIC_KEY';
+const paystackPublicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || 'YOUR_PAYSTACK_PUBLIC_KEY';
 const defaultCompanyId = process.env.NEXT_PUBLIC_DEFAULT_COMPANY_ID || "6825c2c7969ab9f16f620f67"; // Mocking as env vars aren't here
         
 

@@ -311,8 +311,8 @@ async function updateOrder(req: Request) {
       data: { status, deliveryStatus },
     });
 
-    if (process.env.ORDER_WEBHOOK_URL) {
-      await fetch(process.env.ORDER_WEBHOOK_URL, {
+    if (process.env.NEXT_PUBLIC_ORDER_WEBHOOK_URL) {
+      await fetch(process.env.NEXT_PUBLIC_ORDER_WEBHOOK_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ orderId: id, status, deliveryStatus }),
@@ -624,7 +624,7 @@ export const DELETE = withApiHandler(deleteOrder);
 //     });
 
 //     // webhook
-//     await fetch(process.env.ORDER_WEBHOOK_URL!, {
+//     await fetch(process.env.NEXT_PUBLIC_ORDER_WEBHOOK_URL!, {
 //       method: "POST",
 //       headers: { "Content-Type": "application/json" },
 //       body: JSON.stringify({ orderId: id, status, deliveryStatus }),
@@ -836,7 +836,7 @@ export const DELETE = withApiHandler(deleteOrder);
 //     });
 
 //     // webhook
-//     await fetch(process.env.ORDER_WEBHOOK_URL!, {
+//     await fetch(process.env.NEXT_PUBLIC_ORDER_WEBHOOK_URL!, {
 //       method: "POST",
 //       headers: { "Content-Type": "application/json" },
 //       body: JSON.stringify({ orderId: id, status, deliveryStatus }),
