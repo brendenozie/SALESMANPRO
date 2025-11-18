@@ -15,7 +15,11 @@ export async function POST(req: Request) {
     const plan = await prisma.plan.findUnique({ where: { id: planId } });
     if (!plan) return NextResponse.json({ error: "Plan not found" }, { status: 404 });
 
-    const PAYSTACK_SECRET = process.env.PAYSTACK_SECRET_KEY;
+    const PAYSTACK_SECRET = process.env.PAYSTACK_TEST_SECRET_KEY;
+    console.log(PAYSTACK_SECRET);
+    if (!PAYSTACK_SECRET) {
+      return NextResponse.json({ error: "Missing PAYSTACK_TEST_SECRET_KEY on server" }, { status: 500 });
+    }
 
     const email = company.user?.email;
     if (!email) return NextResponse.json({ error: "Email missing" }, { status: 400 });
@@ -81,10 +85,10 @@ export async function POST(req: Request) {
 //     }
 
 //     // MUST USE SERVER SECRET KEY
-//     const PAYSTACK_SECRET = process.env.PAYSTACK_SECRET_KEY;
+//     const PAYSTACK_SECRET = process.env.PAYSTACK_TEST_SECRET_KEY;
 
 //     if (!PAYSTACK_SECRET) {
-//       return NextResponse.json({ error: "Missing PAYSTACK_SECRET_KEY on server" }, { status: 500 });
+//       return NextResponse.json({ error: "Missing PAYSTACK_TEST_SECRET_KEY on server" }, { status: 500 });
 //     }
 
 //     // 1. Create Paystack Customer

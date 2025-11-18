@@ -259,7 +259,7 @@ const CheckIcon = (
 // --- MAIN PRICING SECTION COMPONENT ---
 // It now receives companyId and email, but onSubscriptionSuccess is handled internally
 function PricingSection({ companyId, email }: { companyId: string, email: string }) {
-  const paystackPublicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "pk_test_4ec65e0fe08ffa32b2708be2adb75b865d2517ce"; // Fallback to test key
+  const paystackPublicKey = process.env.NEXT_PUBLIC_PAYSTACK_TEST_PUBLIC_KEY || "pk_test_4ec65e0fe08ffa32b2708be2adb75b865d2517ce"; // Fallback to test key
 
   console.log("Using Paystack Public Key:", paystackPublicKey);
   
@@ -380,12 +380,16 @@ function PricingSection({ companyId, email }: { companyId: string, email: string
 
         const data = await res.json();
 
-        if (!data?.data?.authorization_url) {
+        console.log("Payment initiation response:", data);  
+        console.log("Amount in Kobo:", data.data.data.authorization_url);
+
+        if (!data?.data?.data?.authorization_url) {
             showStatusMessage("Error: Unable to start payment. Please try again.");
             setLoading(false);
             return;
         }
 
+        console.log("Opening Paystack payment interface...", data.data.data.authorization_url);
         // Check if PaystackPop is available (this should now work)
         if (!window.PaystackPop) {
             showStatusMessage("Error: Payment service failed to load.");
@@ -403,7 +407,7 @@ function PricingSection({ companyId, email }: { companyId: string, email: string
           key: paystackPublicKey,
           email: email,
           amount: amountInKobo,
-          ref: data.data.reference,
+          ref: data.data.data.reference,
           currency: isOutsideKenya ? "USD" : "KES",
           metadata: {
             companyId,
@@ -468,7 +472,7 @@ function PricingSection({ companyId, email }: { companyId: string, email: string
     const detectUser = async () => {
       const country = await getUserCountry();
       setUserCountry(country);
-      setIsOutsideKenya(country !== "Kenya" && country !== "KE");
+      // setIsOutsideKenya(country !== "Kenya" && country !== "KE");
     };
     detectUser();
   }, []);

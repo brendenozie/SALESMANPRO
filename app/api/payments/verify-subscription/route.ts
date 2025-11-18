@@ -6,7 +6,7 @@ export async function GET(req: Request) {
   const reference = url.searchParams.get("reference");
 
   if (!reference) {
-    const failure = new URL(`${process.env.BASE_URL}/subscription/failed`);
+    const failure = new URL(`${process.env.NEXT_PUBLIC_BASE_URL}/subscription/failed`);
     failure.searchParams.set("message", "No payment reference provided.");
     return NextResponse.redirect(failure);
   }
@@ -17,7 +17,7 @@ export async function GET(req: Request) {
       `https://api.paystack.co/transaction/verify/${reference}`,
       {
         headers: {
-          Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+          Authorization: `Bearer ${process.env.PAYSTACK_TEST_SECRET_KEY}`,
         },
       }
     );
@@ -25,7 +25,7 @@ export async function GET(req: Request) {
     const verifyData = await verifyRes.json();
 
     if (!verifyData.status || verifyData.data.status !== "success") {
-      const failureUrl = new URL(`${process.env.BASE_URL}/subscription/failed`);
+      const failureUrl = new URL(`${process.env.NEXT_PUBLIC_BASE_URL}/subscription/failed`);
       failureUrl.searchParams.set(
         "message",
         verifyData.message || "Payment verification failed."
@@ -36,7 +36,7 @@ export async function GET(req: Request) {
     const meta = verifyData.data.metadata;
 
     if (!meta.companyId || !meta.planId || !meta.userId) {
-      const failureUrl = new URL(`${process.env.BASE_URL}/subscription/failed`);
+      const failureUrl = new URL(`${process.env.NEXT_PUBLIC_BASE_URL}/subscription/failed`);
       failureUrl.searchParams.set(
         "message",
         "Missing metadata. Contact support."
@@ -50,7 +50,7 @@ export async function GET(req: Request) {
     });
 
     if (!plan) {
-      const failureUrl = new URL(`${process.env.BASE_URL}/subscription/failed`);
+      const failureUrl = new URL(`${process.env.NEXT_PUBLIC_BASE_URL}/subscription/failed`);
       failureUrl.searchParams.set("message", "Plan not found.");
       return NextResponse.redirect(failureUrl);
     }
@@ -91,13 +91,13 @@ export async function GET(req: Request) {
     ]);
 
     // 3. Redirect on success
-    const successUrl = new URL(`${process.env.BASE_URL}/dashboard`);
+    const successUrl = new URL(`${process.env.NEXT_PUBLIC_BASE_URL}/dashboards`);
     successUrl.searchParams.set("subscribed", "true");
     return NextResponse.redirect(successUrl);
   } catch (err) {
     console.error("Verification error:", err);
 
-    const failureUrl = new URL(`${process.env.BASE_URL}/subscription/failed`);
+    const failureUrl = new URL(`${process.env.NEXT_PUBLIC_BASE_URL}/subscription/failed`);
     failureUrl.searchParams.set(
       "message",
       "Unexpected server error. Contact support."
@@ -126,7 +126,7 @@ export async function GET(req: Request) {
 //     const verifyRes = await fetch(
 //       `https://api.paystack.co/transaction/verify/${reference}`,
 //       {
-//         headers: { Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}` }
+//         headers: { Authorization: `Bearer ${process.env.PAYSTACK_TEST_SECRET_KEY}` }
 //       }
 //     );
 //     const verifyData = await verifyRes.json();
