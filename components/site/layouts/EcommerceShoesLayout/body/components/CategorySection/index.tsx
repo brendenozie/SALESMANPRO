@@ -29,13 +29,13 @@ const dummyPromotionData = {
     { icon: 'SparklesIcon', label: 'Uncompromising Quality' },
   ],
   trustLogos: [
-   "https://commons.wikimedia.org/wiki/File:Adidas_logo.svg",
-   "https://commons.wikimedia.org/wiki/File:Nike_logo.svg",
-   "https://commons.wikimedia.org/wiki/File:New_Balance_logo.svg",
-   "https://commons.wikimedia.org/wiki/File:Reebok_logo.svg",
-   "https://commons.wikimedia.org/wiki/File:Under_Armour_logo.svg",
-   "https://commons.wikimedia.org/wiki/File:Puma-logo-%28text%29.svg",
-   "https://commons.wikimedia.org/wiki/File:Vans-logo.svg"
+                "https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Adidas_Logo.svg/1088px-Adidas_Logo.svg.png?20240107104015",
+                  "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Logo_NIKE.svg/1200px-Logo_NIKE.svg.png",
+                  "https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Vans-logo.svg/1187px-Vans-logo.svg.png?20150315211742",
+                  "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Puma-logo-%28text%29.svg/768px-Puma-logo-%28text%29.svg.png?20230824220146",
+                  "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/New_Balance_logo.svg/450px-New_Balance_logo.svg.png?20160801155106",
+                  "https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/Reebok_wordmark_%282008%E2%80%932014%29.svg/450px-Reebok_wordmark_%282008%E2%80%932014%29.svg.png?20090503203208",
+                  
   ],
 };
 
@@ -56,9 +56,13 @@ export default function CategorySection({ promotions, themeSettings }: CategoryS
             { icon: 'SparklesIcon', label: 'LATEST' },
           ],
           trustLogos: [
-                  "https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg",
-                  "https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg",
-                  "https://upload.wikimedia.org/wikipedia/commons/5/51/Google.png",],
+                  "https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Adidas_Logo.svg/1088px-Adidas_Logo.svg.png?20240107104015",
+                  "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Logo_NIKE.svg/1200px-Logo_NIKE.svg.png",
+                  "https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Vans-logo.svg/1187px-Vans-logo.svg.png?20150315211742",
+                  "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Puma-logo-%28text%29.svg/768px-Puma-logo-%28text%29.svg.png?20230824220146",
+                  "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/New_Balance_logo.svg/450px-New_Balance_logo.svg.png?20160801155106",
+                  "https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/Reebok_wordmark_%282008%E2%80%932014%29.svg/450px-Reebok_wordmark_%282008%E2%80%932014%29.svg.png?20090503203208",
+                  ]
         }
       : dummyPromotionData;
 
@@ -137,9 +141,13 @@ export default function CategorySection({ promotions, themeSettings }: CategoryS
               <>
               {
                 [
-                  "https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg",
-                  "https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg",
-                  "https://upload.wikimedia.org/wikipedia/commons/5/51/Google.png",
+                  "https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Adidas_Logo.svg/1088px-Adidas_Logo.svg.png?20240107104015",
+                  "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Logo_NIKE.svg/1200px-Logo_NIKE.svg.png",
+                  "https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Vans-logo.svg/1187px-Vans-logo.svg.png?20150315211742",
+                  "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Puma-logo-%28text%29.svg/768px-Puma-logo-%28text%29.svg.png?20230824220146",
+                  "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/New_Balance_logo.svg/450px-New_Balance_logo.svg.png?20160801155106",
+                  "https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/Reebok_wordmark_%282008%E2%80%932014%29.svg/450px-Reebok_wordmark_%282008%E2%80%932014%29.svg.png?20090503203208",
+                  
                 ].map((logo, idx) => (
                     <Image key={idx} src={logo} alt="Brand logo" width={60} height={30} loader={loader} />
                   ))
