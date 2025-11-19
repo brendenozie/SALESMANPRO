@@ -355,8 +355,6 @@ function PricingSection({ companyId, email }: { companyId: string, email: string
   try {
     setLoading(true);
 
-    console.log(`Starting subscription for plan ${plan.id} with ${billingPeriod} billing`);
-
     // local billing logic
     const monthsPaidFor = billingPeriod === "MONTHLY" ? 1 : 0;
     const yearsPaidFor = billingPeriod === "ANNUALLY" ? 1 : 0;
@@ -535,14 +533,14 @@ function PricingSection({ companyId, email }: { companyId: string, email: string
     }
   };
 
-  useEffect(() => {
-    const detectUser = async () => {
-      const country = await getUserCountry();
-      setUserCountry(country);
-      setIsOutsideKenya(country !== "Kenya" && country !== "KE");
-    };
-    detectUser();
-  }, []);
+  // useEffect(() => {
+  //   const detectUser = async () => {
+  //     const country = await getUserCountry();
+  //     setUserCountry(country);
+  //     setIsOutsideKenya(country !== "Kenya" && country !== "KE");
+  //   };
+  //   detectUser();
+  // }, []);
 
   const getPriceDisplay = (plan: Plan) => {
 
