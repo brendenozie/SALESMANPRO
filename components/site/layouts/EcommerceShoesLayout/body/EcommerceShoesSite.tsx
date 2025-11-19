@@ -77,7 +77,7 @@ export default function EcommerceShoesSite({ pageData, companyId }: EcommerceSit
 
   return (
     <>
-      <HeroSlider heroSlides={heroSlides} themeSettings={themeSettings} />
+      <HeroSlider heroSlides={heroSlides} />
       <CategorySection promotions={promotions} themeSettings={themeSettings} />
       <PromoSection promotions={promotions} />
       <PopularProducts themeSettings={themeSettings} marketplaceListings={marketplaceListings} slug={slug} />

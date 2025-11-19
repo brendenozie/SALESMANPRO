@@ -65,21 +65,21 @@ export default function Header() {
   const handleUserAction = () => {
     if (!user) return handleGoogleSignIn(); // Fallback in case button logic is missed
     if (user.role?.toLowerCase() === 'admin') router.push('/dashboards');
-    else router.push(`/site/${slug}/ecommerce/profile`); // Navigate to profile for non-admin
+    else router.push(`/ecommerce/profile`); // Navigate to profile for non-admin
   };
 
-  const handleSignOut = () => signOut({ callbackUrl: `/site/${slug}/ecommerce` });
+  const handleSignOut = () => signOut({ callbackUrl: `/` });
 
   const handleGoogleSignIn = () => {
     // Assuming 'salesmanpro.site' is the external auth provider
     const authUrl = new URL("https://auth.salesmanpro.site/signin");
-    authUrl.searchParams.set("callbackUrl", `${window.location.origin}/site/${slug}/ecommerce`); // Adjusted callback
+    authUrl.searchParams.set("callbackUrl", `${window.location.origin}`); // Adjusted callback
     window.location.href = authUrl.toString();
   };
 
   const handleGoogleSignUp = () => {
     const authUrl = new URL("https://auth.salesmanpro.site/signup");
-    authUrl.searchParams.set("callbackUrl", `${window.location.origin}/site/${slug}/ecommerce`); // Adjusted callback
+    authUrl.searchParams.set("callbackUrl", `${window.location.origin}`); // Adjusted callback
     window.location.href = authUrl.toString();
   };
 
@@ -136,9 +136,9 @@ export default function Header() {
 
   // Define navigation links as constants
   const navLinks = [
-    { label: 'Home', href: `/site/${slug}/ecommerce` },
-    { label: 'Shop', href: `/site/${slug}/ecommerce/products` },
-    { label: 'Categories', href: `/site/${slug}/ecommerce/categories` },
+    { label: 'Home', href: `/` },
+    { label: 'Shop', href: `/ecommerce/products` },
+    { label: 'Categories', href: `/ecommerce/categories` },
   ];
 
   // Debounced search handler (simulate API call)
@@ -297,14 +297,26 @@ export default function Header() {
             </div>
 
             {/* Profile / Sign In/Up Button */}
-            <motion.button
-              whileHover={{ scale: 1.1, color: primaryColor }}
-              className="transition-colors text-gray-900"
-              onClick={handleUserAction} // Use the combined handler
-              aria-label={user ? "Profile page" : "Log In or Sign Up"}
-            >
-              <UserIcon className="h-6 w-6" />
-            </motion.button>
+            {status === 'loading' ? null : user ? ( // User is logged in
+              <motion.button
+                whileHover={{ scale: 1.1, color: primaryColor }}
+                className="transition-colors text-gray-900"
+                onClick={handleUserAction} // Use the combined handler
+                aria-label={"Profile page"}
+              >
+                <UserIcon className="h-6 w-6" />
+              </motion.button>
+            ) : ( 
+              // User is NOT logged in
+              <motion.button
+                whileHover={{ scale: 1.1, color: primaryColor }}
+                className="transition-colors text-gray-900 font-medium"
+                onClick={handleGoogleSignIn}
+                aria-label="Log In or Sign Up"
+              >
+                Login / Signup
+              </motion.button>
+            )}
 
             {/* Cart */}
             <motion.button
