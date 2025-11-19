@@ -4,6 +4,7 @@ import { Prisma } from "@prisma/client";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { VerifiedUser } from "@/lib/verifyAuth"; 
+import { sl } from "date-fns/locale";
 
 export const dynamic = "force-dynamic";
 
@@ -64,6 +65,11 @@ async function getCompanies(req: Request, context: HandlerContext) {
       id: c.id,
       name: c.name,
       companyId: c.id,
+      slug: c.slug,
+      bannerUrl: c.bannerUrl,
+      logoUrl: c.logoUrl,
+      createdAt: c.createdAt,
+      updatedAt: c.updatedAt,
 
       // If array contains at least 1 ACTIVE subscription → mark store as ACTIVE
       subscriptionStatus:
