@@ -28,9 +28,7 @@ jobs:
             cd /var/www/SALESMANPRO
 
             echo "📥 Pulling latest code..."
-            git fetch origin main
-            git reset --hard origin/main
-
+            git pull origin main
 
             echo "📦 Installing dependencies..."
             npm ci
