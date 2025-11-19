@@ -17,12 +17,12 @@ export default function SecondPromoSection({ promotions }: SecondPromoSectionPro
 
   // Grab the second promotion (index 1)
   const promotion = promotions?.[1] || {
-    title: 'Ultimate Sleep Tapes',
-    subtitle: 'Relax, Rest, Revive',
+    title: 'Promo weekend special',
+    subtitle: 'Limited Time Offer. Don\'t Miss Out!',
     description:
-      'Improve your nightly rest with Blume Sleep Tape. Experience the perfect blend of natural ingredients that promotes deep relaxation and rejuvenation.',
+      'Enjoy exclusive discounts on our top products this weekend only. available while supplies last. Hurry and grab your favorites before they\'re gone!',
     bannerUrl:
-      'https://images.unsplash.com/photo-1610276346363-761dd5bfbf3a?auto=format&fit=crop&w=800&q=80',
+      'https://dozi4r4ug9739.cloudfront.net/images/1763546711539-composition-black-friday-shopping-cart-with-copy-space.jpg',
     ctaText: 'Shop Now',
     ctaLink: '#',
   };

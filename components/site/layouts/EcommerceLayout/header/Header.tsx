@@ -247,7 +247,7 @@ export default function Header() {
           {/* ===== SEARCH + ICONS + MOBILE TOGGLE ===== */}
           <div className="flex items-center space-x-6">
             {/* Search */}
-            <div className="relative">
+            {/* <div className="relative">
               <motion.button
                 whileHover={{ scale: 1.1, color: primaryColor }}
                 className="transition-colors text-gray-900 search-toggle-button"
@@ -294,23 +294,44 @@ export default function Header() {
                   </motion.div>
                 )}
               </AnimatePresence>
-            </div>
+            </div> */}
 
             {/* Profile / Sign In/Up Button */}
-            <motion.button
-              whileHover={{ scale: 1.1, color: primaryColor }}
-              className="transition-colors text-gray-900"
-              onClick={handleUserAction} // Use the combined handler
-              aria-label={user ? "Profile page" : "Log In or Sign Up"}
-            >
-              <UserIcon className="h-6 w-6" />
-            </motion.button>
+            {status === 'loading' ? null : user ? ( // User is logged in
+              <motion.button
+                whileHover={{ scale: 1.1, color: primaryColor }}
+                className="transition-colors text-gray-900"
+                onClick={handleUserAction} // Use the combined handler
+                aria-label={"Profile page"}
+              >
+                <UserIcon className="h-6 w-6" />
+              </motion.button>
+            ) : ( 
+              // User is NOT logged in
+              <motion.button
+                whileHover={{ scale: 1.1, color: primaryColor }}
+                className="transition-colors text-gray-900 font-medium"
+                onClick={handleGoogleSignIn}
+                aria-label="Log In or Sign Up"
+              >
+                Login / Signup
+              </motion.button>
+            )}
+
 
             {/* Cart */}
+
             <motion.button
               whileHover={{ scale: 1.1, color: primaryColor }}
               className="relative transition-colors text-gray-900"
-              onClick={() => router.push(`/site/${slug}/ecommerce/checkout`)}
+              onClick={() => {
+                if(cart.length === 0) return;
+                if(user){
+                  router.push(`/site/${slug}/ecommerce/checkout`);
+                }else{
+                  handleGoogleSignIn();
+                }
+              }}
               aria-label={`Shopping cart with ${cart.length} items`}
             >
               <ShoppingBagIcon className="h-6 w-6" />

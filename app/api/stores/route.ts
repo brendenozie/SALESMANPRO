@@ -68,6 +68,7 @@ async function getCompanies(req: Request, context: HandlerContext) {
       slug: c.slug,
       bannerUrl: c.bannerUrl,
       logoUrl: c.logoUrl,
+      description: c.description,
       createdAt: c.createdAt,
       updatedAt: c.updatedAt,
 

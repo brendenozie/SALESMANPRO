@@ -50,10 +50,16 @@ export async function GET(req: Request) {
 
       const data = await response.json();
       if (!response.ok || !data.status) {
-        return NextResponse.json(
-          { success: false, message: "Failed to verify Paystack payment", data },
-          { status: 400 }
+        const failureUrl = new URL(`${process.env.NEXT_PUBLIC_BASE_URL}/subscription/failed`);
+        failureUrl.searchParams.set(
+          "message",
+          `Failed to verify Paystack payment: ${data.message || 'Unknown error'}`
         );
+        return NextResponse.redirect(failureUrl);
+        // return NextResponse.json(
+        //   { success: false, message: "Failed to verify Paystack payment", data },
+        //   { status: 400 }
+        // );
       }
 
       const paymentStatus = data.data.status;
@@ -69,10 +75,16 @@ export async function GET(req: Request) {
       });
 
       if (!order) {
-        return NextResponse.json(
-          { success: false, message: "Order not found for provided reference" },
-          { status: 404 }
+        const failureUrl = new URL(`${process.env.NEXT_PUBLIC_BASE_URL}/subscription/failed`);
+        failureUrl.searchParams.set(
+          "message",
+          "Order not found for provided Paystack reference"
         );
+        return NextResponse.redirect(failureUrl);
+        // return NextResponse.json(
+        //   { success: false, message: "Order not found for provided Paystack reference" },
+        //   { status: 404 }
+        // );
       }
 
       // If payment succeeded, update both order and payment records
@@ -125,10 +137,13 @@ export async function GET(req: Request) {
     /* -------------------------------------------------------------------------- */
     else if (provider === "mpesa") {
       if (!checkoutRequestId) {
-        return NextResponse.json(
-          { success: false, message: "Missing M-Pesa checkoutRequestId" },
-          { status: 400 }
-        );
+       const failureUrl = new URL(`${process.env.NEXT_PUBLIC_BASE_URL}/subscription/failed`);
+        failureUrl.searchParams.set("message", "Missing M-Pesa checkoutRequestId");
+        return NextResponse.redirect(failureUrl);
+          // return NextResponse.json(
+          //   { success: false, message: "Missing M-Pesa checkoutRequestId" },
+          //   { status: 400 }
+          // );
       }
 
       // Look up the order that was created during STK push
@@ -142,13 +157,16 @@ export async function GET(req: Request) {
       });
 
       if (!order) {
-        return NextResponse.json(
-          {
-            success: false,
-            message: "Order not found for provided CheckoutRequestID",
-          },
-          { status: 404 }
+        const failureUrl = new URL(`${process.env.NEXT_PUBLIC_BASE_URL}/subscription/failed`);
+        failureUrl.searchParams.set(
+          "message",
+          "Order not found for provided M-Pesa CheckoutRequestID"
         );
+        return NextResponse.redirect(failureUrl);
+        // return NextResponse.json(
+        //   { success: false, message: "Order not found for provided CheckoutRequestID" },
+        //   { status: 404 }
+        // );
       }
 
       if (order.paymentStatus === "COMPLETED") {
@@ -171,19 +189,24 @@ export async function GET(req: Request) {
     /*                                UNKNOWN PROVIDER                            */
     /* -------------------------------------------------------------------------- */
     else {
-      return NextResponse.json(
-        { success: false, message: "Unsupported provider (use paystack or mpesa)" },
-        { status: 400 }
-      );
+      const failureUrl = new URL(`${process.env.NEXT_PUBLIC_BASE_URL}/subscription/failed`);
+      failureUrl.searchParams.set("message", "Unsupported provider (use paystack or mpesa)");
+      return NextResponse.redirect(failureUrl);
+      // return NextResponse.json(
+      //   { success: false, message: "Unsupported provider (use paystack or mpesa)" },
+      //   { status: 400 }
+      // );
     }
 
-    return NextResponse.json({ success: true, data: result });
+    const successUrl = new URL(`${process.env.NEXT_PUBLIC_BASE_URL}/subscription/success`);
+    successUrl.searchParams.set("trackingNumber", result.orderTracking);
+    return NextResponse.redirect(successUrl);
+    // return NextResponse.json({ success: true, data: result });
   } catch (error: any) {
     console.error("Payment verification error:", error);
-    return NextResponse.json(
-      { success: false, message: error.message || "Internal Server Error" },
-      { status: 500 }
-    );
+    const failureUrl = new URL(`${process.env.NEXT_PUBLIC_BASE_URL}/subscription/failed`);
+    failureUrl.searchParams.set("message", error.message || "Internal server error");
+    return NextResponse.redirect(failureUrl);
   }
 }
 

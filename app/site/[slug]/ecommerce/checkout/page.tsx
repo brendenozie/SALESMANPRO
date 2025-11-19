@@ -89,7 +89,7 @@ export default function CheckoutPage() {
       lng: 0.0,
     },
     promoCode: '',
-    paymentMethod: 'card', // Default to 'card'
+    paymentMethod: 'paystack', // Default to 'paystack'
     shippingMethod: 'Standard',
   });
 
@@ -116,7 +116,7 @@ export default function CheckoutPage() {
     () => cart.reduce((sum: number, item: any) => sum + (item.finalPrice || 0) * (item.quantity || 0), 0),
     [cart]
   );
-  const shippingCost = useMemo(() => formData.shippingMethod === 'Express' ? 15 : 5, [formData.shippingMethod]);
+  const shippingCost = useMemo(() => formData.shippingMethod === 'Express' ? 1000 : formData.shippingMethod === 'Standard' ? 500 : 0, [formData.shippingMethod]);
   const discountAmount = useMemo(() => subtotal * discount, [subtotal, discount]);
   const total = useMemo(() => (subtotal + shippingCost - discountAmount), [subtotal, shippingCost, discountAmount]);
 
@@ -560,12 +560,12 @@ function OrderSummary({ cart, estimatedDelivery, subtotal, shippingCost, discoun
             >
               <div className="flex justify-between items-start mb-2">
                 <p className="font-semibold text-gray-700 leading-snug pr-4">{item.title || item.name}</p>
-                <p className="font-extrabold text-lg text-gray-900">${((item.finalPrice || 0) * item.quantity).toFixed(2)}</p>
+                <p className="font-extrabold text-lg text-gray-900">{((item.finalPrice || 0) * item.quantity).toFixed(2)}</p>
               </div>
 
               <div className="flex justify-between items-center">
                 <div className="flex items-center space-x-2 text-sm text-gray-500">
-                  <span className="text-sm font-medium">@ ${((item.finalPrice || 0)).toFixed(2)}</span>
+                  <span className="text-sm font-medium">@ {((item.finalPrice || 0)).toFixed(2)}</span>
                 </div>
 
                 <div className="flex items-center space-x-2">
@@ -616,15 +616,15 @@ function OrderSummary({ cart, estimatedDelivery, subtotal, shippingCost, discoun
       <div className="space-y-2 pt-4 border-t mt-4">
         <div className="flex justify-between text-gray-600">
           <span>Subtotal</span>
-          <span>${subtotal.toFixed(2)}</span>
+          <span>{subtotal.toFixed(2)}</span>
         </div>
         <div className="flex justify-between text-gray-600">
           <span>Shipping ({shippingCost > 0 ? 'Cost' : 'Free'})</span>
-          <span>{shippingCost > 0 ? `$${shippingCost.toFixed(2)}` : 'FREE'}</span>
+          <span>{shippingCost > 0 ? `${shippingCost.toFixed(2)}` : 'FREE'}</span>
         </div>
         <div className="flex justify-between text-green-600 font-semibold border-b pb-3">
           <span>Discount</span>
-          <span>- ${discountAmount.toFixed(2)}</span>
+          <span>- {discountAmount.toFixed(2)}</span>
         </div>
       </div>
 
@@ -636,7 +636,7 @@ function OrderSummary({ cart, estimatedDelivery, subtotal, shippingCost, discoun
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: "spring", stiffness: 300, damping: 20 }}
         >
-          ${total.toFixed(2)}
+          {total.toFixed(2)}
         </motion.span>
       </div>
 
@@ -818,7 +818,7 @@ function StepContent({ currentStep, formData, handleChange, error, handleAddress
 
           <h3 className="text-xl font-semibold text-gray-700 pt-4">Shipping Method 🚚</h3>
           <div className="grid grid-cols-2 gap-4">
-            {['Standard', 'Express'].map((method: string) => (
+            {['AT SHOP','Standard', 'Express'].map((method: string) => (
               <label key={method} className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${formData.shippingMethod === method ? 'border-indigo-600 bg-indigo-50 shadow-md' : 'border-gray-200 hover:border-indigo-300'}`}>
                 <input
                   type="radio" name="shippingMethod"
@@ -827,7 +827,7 @@ function StepContent({ currentStep, formData, handleChange, error, handleAddress
                 />
                 <div className="flex flex-col">
                   <span className="font-bold text-gray-800">{method}</span>
-                  <span className="text-sm text-gray-500">{method === 'Express' ? '$15.00 (2 Days)' : '$5.00 (5 Days)'}</span>
+                  <span className="text-sm text-gray-500">{method === 'Express' ? 'kes1000.00 (2 Days)' : method === 'Standard' ? 'kes500.00 (5 Days)' : 'FREE'}</span>
                 </div>
               </label>
             ))}
@@ -841,8 +841,8 @@ function StepContent({ currentStep, formData, handleChange, error, handleAddress
           <h3 className="text-xl font-semibold text-gray-700">Choose Payment Method 💳</h3>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {[
-              { value: 'card', label: 'Credit Card', Icon: CreditCardIcon },
-              { value: 'mpesa', label: 'Mpesa', Icon: TagIcon },
+              // { value: 'card', label: 'Credit Card', Icon: CreditCardIcon },
+              // { value: 'mpesa', label: 'Mpesa', Icon: TagIcon },
               { value: 'paystack', label: 'Paystack', Icon: BanknotesIcon },
               { value: 'cod', label: 'Cash on Delivery', Icon: TruckIcon },
               { value: 'pickupatshop', label: 'Pickup', Icon: BuildingLibraryIcon },
@@ -924,7 +924,7 @@ function StepContent({ currentStep, formData, handleChange, error, handleAddress
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
               >
-                ${total.toFixed(2)}
+                {total.toFixed(2)}
               </motion.span>
             </div>
             <p className="text-sm text-indigo-700 mt-2 font-medium">By clicking 'Place Order', you agree to our terms and conditions.</p>
