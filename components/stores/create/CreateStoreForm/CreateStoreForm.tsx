@@ -418,9 +418,17 @@ export default function CreateStoreForm({
   );
 
   // Track one File per promotion. Initialize from existing promotions length
-  const [promotionSlideFiles, setPromotionSlideFiles] = useState<
-    (File | null)[]
-  >(() => form.promotions.map(() => null));
+  type PromotionFiles = {
+  bannerUrl?: File;
+  featureImage1?: File;
+  featureImage2?: File;
+  featureImage3?: File;
+};
+
+const [promotionSlideFiles, setPromotionSlideFiles] = useState<PromotionFiles[]>(
+  () => form.promotions.map(() => ({}))
+);
+
 
   // When initialData changes (edit mode), clear out these File states
   useEffect(() => {
@@ -429,7 +437,7 @@ export default function CreateStoreForm({
     setBannerFile(null);
     setVideoFile(null);
     setHeroSlideFiles(initialData.heroSlides?.map(() => null) || []);
-    setPromotionSlideFiles(initialData.promotions?.map(() => null) || []);
+    setPromotionSlideFiles(initialData.promotions?.map(() => ({})) || [] );
   }, [initialData]);
 
   // Whenever form.heroSlides grows/shrinks, sync heroSlideFiles length
@@ -732,16 +740,18 @@ const onUpdatePromotion = <K extends keyof IPromotion>(
 const onPromotionImageUpload = (
   index: number,
   file: File,
-  field: keyof IPromotion = "bannerUrl"
+  field: keyof IPromotion
 ) => {
-  // keep track of raw files if needed
+  // resize local array to match promotions length
   setPromotionSlideFiles((prev) => {
     const copy = [...prev];
-    copy[index] = file;
+    copy[index] = {
+      ...(copy[index] || {}),
+      [field]: file,      
+    };
     return copy;
   });
 
-  // create preview
   const previewURL = URL.createObjectURL(file);
 
   setForm((prev) => {
@@ -750,6 +760,28 @@ const onPromotionImageUpload = (
     return { ...prev, promotions: promos };
   });
 };
+
+// const onPromotionImageUpload = (
+//   index: number,
+//   file: File,
+//   field: keyof IPromotion = "bannerUrl"
+// ) => {
+//   // keep track of raw files if needed
+//   setPromotionSlideFiles((prev) => {
+//     const copy = [...prev];
+//     copy[index] = file;
+//     return copy;
+//   });
+
+//   // create preview
+//   const previewURL = URL.createObjectURL(file);
+
+//   setForm((prev) => {
+//     const promos = [...prev.promotions];
+//     promos[index] = { ...promos[index], [field]: previewURL };
+//     return { ...prev, promotions: promos };
+//   });
+// };
 
 // Add a new perk to a specific promotion
 
@@ -1422,27 +1454,54 @@ const handleSubmit = async (e: FormEvent) => {
   });
 
   // --- Promotion Slides ---
-  promotionSlideFiles.forEach((file, idx) => {
-    if (file) {
-      uploadPromises.push(
-        (async () => {
-          const [{ url }] = await uploadFile([file], "image");
-          if (!payload.promotions) payload.promotions = [];
+  promotionSlideFiles.forEach((promoFiles: PromotionFiles, idx) => {
+    if (!promoFiles) return;
 
-          const existing = payload.promotions[idx] || {};
-          payload.promotions[idx] = { ...existing, bannerUrl: url };
+    for (const field of ["bannerUrl","featureImage1","featureImage2","featureImage3"]) {
+      const file = promoFiles[field as keyof PromotionFiles];
+      if (file) {
+        uploadPromises.push(
+          (async () => {
+            const [{ url }] = await uploadFile([file], "image");
 
-          setForm((prev) => {
-            const promos = [...prev.promotions];
-            promos[idx] = { ...promos[idx], bannerUrl: url };
-            return { ...prev, promotions: promos };
-          });
+            if (!payload.promotions) payload.promotions = [];
+            const existing = payload.promotions[idx] || {};
+            payload.promotions[idx] = { ...existing, [field]: url };
 
-          console.log(`✅ Promotion slide ${idx + 1} uploaded:`, url);
-        })()
-      );
+            setForm((prev) => {
+              const promos = [...prev.promotions];
+              promos[idx] = { ...promos[idx], [field]: url };
+              return { ...prev, promotions: promos };
+            });
+
+            console.log(`✅ Promotion ${idx} field "${field}" uploaded:`, url);
+          })()
+        );
+      }
     }
   });
+
+  // promotionSlideFiles.forEach((file, idx) => {
+  //   if (file) {
+  //     uploadPromises.push(
+  //       (async () => {
+  //         const [{ url }] = await uploadFile([file], "image");
+  //         if (!payload.promotions) payload.promotions = [];
+
+  //         const existing = payload.promotions[idx] || {};
+  //         payload.promotions[idx] = { ...existing, bannerUrl: url };
+
+  //         setForm((prev) => {
+  //           const promos = [...prev.promotions];
+  //           promos[idx] = { ...promos[idx], bannerUrl: url };
+  //           return { ...prev, promotions: promos };
+  //         });
+
+  //         console.log(`✅ Promotion slide ${idx + 1} uploaded:`, url);
+  //       })()
+  //     );
+  //   }
+  // });
 
   try {
     // Wait for uploads to complete

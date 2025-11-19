@@ -23,11 +23,10 @@ export default function Footer() {
 
   // Map common social channels to icons (placeholder icons here)
   const iconMapper: Record<string, React.ReactNode> = {
-    facebook: <FaceFrownIcon className="w-5 h-5" />,
-    twitter: <FaceFrownIcon className="w-5 h-5" />,
-    instagram: <FaceFrownIcon className="w-5 h-5" />,
-    linkedin: <FaceFrownIcon className="w-5 h-5" />,
-    youtube: <FaceFrownIcon className="w-5 h-5" />,
+    facebook: <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M22 12c0-5.522-4.477-10-10-10S2 6.478 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54v-2.89h2.54V9.845c0-2.507 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562v1.875h2.773l-.443 2.89h-2.33v6.987C18.343 21.128 22 16.991 22 12z"/></svg>,
+    instagram: <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M7.75 2h8.5A5.75 5.75 0 0122 7.75v8.5A5.75 5.75 0 0116.25 22h-8.5A5.75 5.75 0 012 16.25v-8.5A5.75 5.75 0 017.75 2zm0 1.5A4.25 4.25 0 003.5 7.75v8.5A4.25 4.25 0 007.75 20.5h8.5a4.25 4.25 0 004.25-4.25v-8.5A4.25 4.25 0 0016.25 3.5h-8.5zM12 7a5 5 0 110 10 5 5 0 010-10zm0 1.5a3.5 3.5 0 100 7 3.5 3.5 0 000-7zm4.75-.88a1.12 1.12 0 11-2.24 0 1.12 1.12 0 012.24 0z"/></svg>,
+    twitter: <svg className='w-5 h-5' fill='currentColor' viewBox="0 0 24 24"><path d="M23.954 4.569c-.885.389-1.83.654-2.825.775 1.014-.611 1.794-1.574 2.163-2.723-.951.555-2.005.959-3.127 1.184-.897-.959-2.178-1.559-3.594-1.559-2.717 0-4.92 2.203-4.92 4.917 0 .39.045.765.127 1.124C7.691 8.094 4.066 6.13 1.64 3.161c-.427.722-.666 1.561-.666 2.475 0 1.71.87 3.213 2.188 4.096-.807-.026-1.566-.248-2.228-.616v.061c0 2.385 1.693 4.374 3.946 4.827-.413.111-.849.171-1.296.171-.314 0-.615-.03-.916-.086.631 1.953 2.445 3.377 4.604 3.417-1.68 1.319-3.809 2.105-6.102 2.105-.39 0-.779-.023-1.17-.067C2.179 19.29 4.768 20 7.548 20c9.142 0 14.307-7.721 13.995-14.646a9.936 9.936 0 002.411-2.659z"/></svg>,
+    linkedin: <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.761 0 5-2.239 5-5v-14c0-2.761-2.239-5-5-5zm-11.75 20h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.784-1.75-1.75s.784-1.75 1.75-1.75 1.75.784 1.75 1.75-.784 1.75-1.75 1.75zm13.25 12.268h-3v-5.604c0-1.337-.026-3.059-1.865-3.059-1.865 0-2.151 1.459-2.151 2.967v5.696h-3v-11h2.881v1.507h.041c.401-.761 1.381-1.562 2.841-1.562 3.039 0 3.602 2.001 3.602 4.601v6.454z"/></svg>,
   };
 
   return (
@@ -87,7 +86,7 @@ export default function Footer() {
           <ul className="space-y-3 text-sm">
             <li>
               <Link
-                href={`/site/${slug}/ecommerce/about`}
+                href={`/ecommerce/about`}
                 className="hover:text-white transition-colors"
               >
                 About
@@ -95,7 +94,7 @@ export default function Footer() {
             </li>
             <li>
               <Link
-                href={`/site/${slug}/ecommerce/contact`}
+                href={`/ecommerce/contact`}
                 className="hover:text-white transition-colors"
               >
                 Contact
@@ -103,7 +102,7 @@ export default function Footer() {
             </li>
             <li>
               <Link
-                href={`/site/${slug}/ecommerce/privacy`}
+                href={`/ecommerce/privacy`}
                 className="hover:text-white transition-colors"
               >
                 Privacy Policy
@@ -111,7 +110,7 @@ export default function Footer() {
             </li>
             <li>
               <Link
-                href={`/site/${slug}/ecommerce/terms`}
+                href={`/ecommerce/terms`}
                 className="hover:text-white transition-colors"
               >
                 Terms of Service
@@ -135,7 +134,7 @@ export default function Footer() {
           <ul className="space-y-3 text-sm">
             <li>
               <Link
-                href={`/site/${slug}/ecommerce/help`}
+                href={`/ecommerce/help`}
                 className="hover:text-white transition-colors"
               >
                 Help Center
@@ -143,7 +142,7 @@ export default function Footer() {
             </li>
             <li>
               <Link
-                href={`/site/${slug}/ecommerce/returns`}
+                href={`/ecommerce/returns`}
                 className="hover:text-white transition-colors"
               >
                 Returns
@@ -151,7 +150,7 @@ export default function Footer() {
             </li>
             <li>
               <Link
-                href={`/site/${slug}/ecommerce/shipping`}
+                href={`/ecommerce/shipping`}
                 className="hover:text-white transition-colors"
               >
                 Shipping
@@ -159,7 +158,7 @@ export default function Footer() {
             </li>
             <li>
               <Link
-                href={`/site/${slug}/ecommerce/track`}
+                href={`/ecommerce/track`}
                 className="hover:text-white transition-colors"
               >
                 Track Order
@@ -182,13 +181,13 @@ export default function Footer() {
           </h3>
           <div className="flex space-x-4">
             {socialLinks.map((s, idx) => {
-              const channel = s.channel;//.toLowerCase();
+              const channel = String(s.channel).toLowerCase();
               const icon = iconMapper[channel] || <FaceFrownIcon className="w-5 h-5" />;
               return (
                 <motion.a
                   key={idx}
                   whileHover={{ scale: 1.1 }}
-                  href={s.url}
+                  href={`${s.url}`}
                   target="_blank"
                   rel="noreferrer"
                   className="
@@ -218,19 +217,19 @@ export default function Footer() {
           </p>
           <div className="mt-4 md:mt-0 flex space-x-6">
             <Link
-              href={`/site/${slug}/ecommerce/sitemap.xml`}
+              href={`/ecommerce/sitemap.xml`}
               className="text-sm hover:text-white transition-colors"
             >
               Sitemap
             </Link>
             <Link
-              href={`/site/${slug}/ecommerce/faq`}
+              href={`/ecommerce/faq`}
               className="text-sm hover:text-white transition-colors"
             >
               FAQ
             </Link>
             <Link
-              href={`/site/${slug}/ecommerce/support`}
+              href={`/ecommerce/support`}
               className="text-sm hover:text-white transition-colors"
             >
               Support

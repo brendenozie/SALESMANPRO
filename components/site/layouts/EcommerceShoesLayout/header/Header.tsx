@@ -65,7 +65,7 @@ export default function Header() {
   const handleUserAction = () => {
     if (!user) return handleGoogleSignIn(); // Fallback in case button logic is missed
     if (user.role?.toLowerCase() === 'admin') router.push('/dashboards');
-    else router.push(`/ecommerce/profile`); // Navigate to profile for non-admin
+    else router.push(`/ecommerceshoes/profile`); // Navigate to profile for non-admin
   };
 
   const handleSignOut = () => signOut({ callbackUrl: `/` });
@@ -137,8 +137,8 @@ export default function Header() {
   // Define navigation links as constants
   const navLinks = [
     { label: 'Home', href: `/` },
-    { label: 'Shop', href: `/ecommerce/products` },
-    { label: 'Categories', href: `/ecommerce/categories` },
+    { label: 'Shop', href: `/ecommerceshoes/products` },
+    { label: 'Categories', href: `/ecommerceshoes/categories` },
   ];
 
   // Debounced search handler (simulate API call)
@@ -198,7 +198,7 @@ export default function Header() {
           {/* ===== LOGO + NAV ===== */}
           <div className="flex items-center space-x-8">
             {/* Logo */}
-            <Link href={`/site/${slug}`} className="flex items-center" aria-label={`${name} home`}>
+            <Link href={`/`} className="flex items-center" aria-label={`${name} home`}>
               <motion.div
                 whileHover={{ scale: 1.05 }}
                 transition={{ type: 'spring', stiffness: 300 }}
@@ -322,7 +322,14 @@ export default function Header() {
             <motion.button
               whileHover={{ scale: 1.1, color: primaryColor }}
               className="relative transition-colors text-gray-900"
-              onClick={() => router.push(`/site/${slug}/ecommerce/checkout`)}
+              onClick={() => {  
+                if (cart.length === 0) return;
+                if (!user) {
+                  handleGoogleSignIn();
+                  return;
+                }
+                router.push(`/ecommerceshoes/checkout`);
+              }}
               aria-label={`Shopping cart with ${cart.length} items`}
             >
               <ShoppingBagIcon className="h-6 w-6" />

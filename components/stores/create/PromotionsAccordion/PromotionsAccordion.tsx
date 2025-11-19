@@ -88,7 +88,7 @@ interface PromotionsAccordionProps {
   ) => void;
   onAddPromotion: () => void;
   onRemovePromotion: (index: number) => void;
-  onImageUpload: (index: number, file: File, field?: keyof IPromotion) => void;
+  onImageUpload: (index: number, file: File, field: keyof IPromotion) => void;
   onAddPerk: (promoIndex: number) => void;
   onUpdatePerk: (promoIndex: number, perkIndex: number, field: 'id' | 'icon' | 'label', value: string) => void;
   onRemovePerk: (promoIndex: number, perkIndex: number) => void;

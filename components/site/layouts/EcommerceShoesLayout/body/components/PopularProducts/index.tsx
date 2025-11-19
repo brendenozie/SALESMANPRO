@@ -279,7 +279,7 @@ const ProductGridItem = ({ product, isFeatured = false, primary, secondary, slug
       variants={productVariants}
     >
       {/* Product Image */}
-      <Link href={`/site/${slug}/ecommerce/products/${product.id}`} className="relative block w-full" style={{ height: isFeatured ? '500px' : '300px' }}>
+      <Link href={`/ecommerceshoes/products/${product.id}`} className="relative block w-full" style={{ height: isFeatured ? '500px' : '300px' }}>
         {product.images && product.images.length > 0 && (
           <Image
             src={imageSrc}
@@ -318,11 +318,11 @@ const ProductGridItem = ({ product, isFeatured = false, primary, secondary, slug
         {/* Price */}
         <div className="mt-2 flex items-baseline gap-2">
           <span className="text-3xl font-extrabold" style={{ color: primary }}>
-            ${(product.finalPrice ?? 0).toFixed(2)}
+            {(product.finalPrice ?? 0).toFixed(2)}
           </span>
           {product.sellingPrice && product.finalPrice && product.sellingPrice > product.finalPrice && (
             <span className="text-base line-through text-gray-500">
-              ${product.sellingPrice.toFixed(2)}
+              {product.sellingPrice.toFixed(2)}
             </span>
           )}
         </div>

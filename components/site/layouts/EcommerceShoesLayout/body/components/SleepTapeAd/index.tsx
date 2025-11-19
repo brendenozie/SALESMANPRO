@@ -6,21 +6,21 @@ import { TruckIcon, ShieldCheckIcon, PhoneIcon } from '@heroicons/react/24/outli
 
 // Dummy data for when no promotions are available
 const dummyPromotionData = {
-  title: 'Unlock Your Deepest Sleep',
-  subtitle: 'The Science of Silent Breathing', // Added a strong subtitle
+  title: 'Best Wear Shoes for Better Tracking ',
+  subtitle: 'The Ultimate Comfort and Style', // Added a strong subtitle
   description:
-    'Naturally improve your breathing and transform your sleep quality tonight. Experience stillness, reduce snoring, and wake up genuinely refreshed. It’s simple, comfortable, and effective.',
-  bannerUrl: 'https://images.unsplash.com/photo-1542315668-3be3a7d2e626?auto=format&fit=crop&w=800&q=80', // A calming, bedroom-focused image
-  ctaText: 'Start 30-Day Trial',
-  ctaLink: '/shop/sleep-tape',
+    'It’s simple, comfortable, and effective. Experience the best tracking and training anywhere. Our shoes are designed to provide unparalleled comfort and support, ensuring you stay on your feet all day long. Whether you’re hitting the trails or navigating the urban jungle, our footwear combines cutting-edge technology with stylish design to keep you moving forward with confidence.',
+  bannerUrl: 'https://images.unsplash.com/photo-1542315668-3be3a7d2e626?auto=format&fit=crop&w=800&q=80', // A calming, training-focused image
+  ctaText: 'Get Yours Now',
+  ctaLink: '#',
   themePrimary: '#C9D4FF', // Soft Sky Blue (Light)
   themeSecondary: '#3B82F6', // Vibrant Blue (Accent)
   featureImage1: 'https://images.unsplash.com/photo-1541893041908-1643c7b889a9?auto=format&fit=crop&w=400&q=80', // Image of a person sleeping peacefully
   featureImage2: 'https://images.unsplash.com/photo-1579621970588-a35d0e7ab93b?auto=format&fit=crop&w=400&q=80', // Close-up of comfortable fabric/texture
   perks: [
-    { icon: TruckIcon, text: 'Free Shipping Over $50' },
+    { icon: TruckIcon, text: 'Free Shipping Over 50' },
     { icon: ShieldCheckIcon, text: '30-Day Money-Back Guarantee' },
-    { icon: PhoneIcon, text: 'Dedicated Sleep Support' },
+    { icon: PhoneIcon, text: 'Dedicated Support' },
   ],
   trustLogos: [],
 };

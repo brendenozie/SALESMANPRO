@@ -979,7 +979,7 @@ export interface Handlers {
     ) => void;
   onAddPromotion: () => void;
   onRemovePromotion: (index: number) => void;
-  onPromotionImageUpload: (index: number, file: File) => void;
+  onPromotionImageUpload: (index: number, file: File, field: keyof IPromotion) => void;
 
   onAddPerk: (promoIndex: number) => void;
   onUpdatePerk: (promoIndex: number, perkIndex: number, field: keyof { id:string; icon: string; label: string }, value: string) => void;

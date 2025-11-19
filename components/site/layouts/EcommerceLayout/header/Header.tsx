@@ -327,7 +327,7 @@ export default function Header() {
               onClick={() => {
                 if(cart.length === 0) return;
                 if(user){
-                  router.push(`/site/${slug}/ecommerce/checkout`);
+                  router.push(`/ecommerce/checkout`);
                 }else{
                   handleGoogleSignIn();
                 }

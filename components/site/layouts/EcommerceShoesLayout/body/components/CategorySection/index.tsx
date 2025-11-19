@@ -28,9 +28,15 @@ const dummyPromotionData = {
     { icon: 'SparklesIcon', label: 'Fast Shipping' },
     { icon: 'SparklesIcon', label: 'Uncompromising Quality' },
   ],
-  trustLogos: [ 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80', 
-     'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80'],
+  trustLogos: [
+   "https://commons.wikimedia.org/wiki/File:Adidas_logo.svg",
+   "https://commons.wikimedia.org/wiki/File:Nike_logo.svg",
+   "https://commons.wikimedia.org/wiki/File:New_Balance_logo.svg",
+   "https://commons.wikimedia.org/wiki/File:Reebok_logo.svg",
+   "https://commons.wikimedia.org/wiki/File:Under_Armour_logo.svg",
+   "https://commons.wikimedia.org/wiki/File:Puma-logo-%28text%29.svg",
+   "https://commons.wikimedia.org/wiki/File:Vans-logo.svg"
+  ],
 };
 
 export default function CategorySection({ promotions, themeSettings }: CategorySectionProps) {
@@ -49,7 +55,10 @@ export default function CategorySection({ promotions, themeSettings }: CategoryS
             { icon: 'SparklesIcon', label: 'POPULAR' },
             { icon: 'SparklesIcon', label: 'LATEST' },
           ],
-          trustLogos: ['/logos/nike.svg', '/logos/adidas.svg', '/logos/puma.svg'],
+          trustLogos: [
+                  "https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg",
+                  "https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg",
+                  "https://upload.wikimedia.org/wikipedia/commons/5/51/Google.png",],
         }
       : dummyPromotionData;
 
@@ -122,9 +131,22 @@ export default function CategorySection({ promotions, themeSettings }: CategoryS
 
           {/* Trust logos */}
           <div className="flex items-center gap-6 mt-4">
-            {categoryData.trustLogos.map((logo, idx) => (
+            { categoryData.trustLogos.length > 0 ? categoryData.trustLogos.map((logo, idx) => (
               <Image key={idx} src={logo} alt="Brand logo" width={60} height={30} loader={loader} />
-            ))}
+            )) : ( 
+              <>
+              {
+                [
+                  "https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg",
+                  "https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg",
+                  "https://upload.wikimedia.org/wikipedia/commons/5/51/Google.png",
+                ].map((logo, idx) => (
+                    <Image key={idx} src={logo} alt="Brand logo" width={60} height={30} loader={loader} />
+                  ))
+              }
+              </>
+            )}
+
           </div>
         </div>
       </div>

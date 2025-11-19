@@ -69,7 +69,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
       {/* Product Image */}
       <Link
-        href={`/site/${slug}/ecommerce/products/${product.id}`}
+        href={`/ecommerceshoes/products/${product.id}`}
         className="block relative h-64 w-full overflow-hidden"
       >
         <Image
@@ -107,11 +107,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             className="text-3xl font-extrabold"
             style={{ color: primary }}
           >
-            ${(finalPrice ?? 0).toFixed(2)}
+            {(finalPrice ?? 0).toFixed(2)}
           </span>
           {sellingPrice && finalPrice && sellingPrice > finalPrice && (
             <span className="text-base line-through text-gray-500">
-              ${sellingPrice.toFixed(2)}
+              {sellingPrice.toFixed(2)}
             </span>
           )}
         </div>
