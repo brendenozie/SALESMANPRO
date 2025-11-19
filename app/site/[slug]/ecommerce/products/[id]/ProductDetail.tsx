@@ -301,12 +301,12 @@ export function ProductDetail({
 
             <div className="flex items-end gap-4">
               <div className="text-4xl font-extrabold" style={{ color: primary }}>
-                ${product.finalPrice?.toFixed(2) ?? '0.00'}
+                {product.finalPrice?.toFixed(2) ?? '0.00'}
               </div>
 
               {typeof product.sellingPrice === 'number' && product.sellingPrice > (product.finalPrice || 0) && (
                 <div className="flex items-center gap-2">
-                  <div className="text-lg line-through text-gray-500 dark:text-gray-400">${product.sellingPrice.toFixed(2)}</div>
+                  <div className="text-lg line-through text-gray-500 dark:text-gray-400">{product.sellingPrice.toFixed(2)}</div>
                   <div className="px-3 py-1 bg-red-500 text-white rounded-full text-sm font-semibold">-{Math.round(((product.sellingPrice - (product.finalPrice || 0)) / product.sellingPrice) * 100)}%</div>
                 </div>
               )}
