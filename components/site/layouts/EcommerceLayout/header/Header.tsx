@@ -65,21 +65,21 @@ export default function Header() {
   const handleUserAction = () => {
     if (!user) return handleGoogleSignIn(); // Fallback in case button logic is missed
     if (user.role?.toLowerCase() === 'admin') router.push('/dashboards');
-    else router.push(`/site/${slug}/ecommerce/profile`); // Navigate to profile for non-admin
+    else router.push(`/ecommerce/profile`); // Navigate to profile for non-admin
   };
 
-  const handleSignOut = () => signOut({ callbackUrl: `/site/${slug}/ecommerce` });
+  const handleSignOut = () => signOut({ callbackUrl: `/` });
 
   const handleGoogleSignIn = () => {
     // Assuming 'salesmanpro.site' is the external auth provider
     const authUrl = new URL("https://auth.salesmanpro.site/signin");
-    authUrl.searchParams.set("callbackUrl", `${window.location.origin}/site/${slug}/ecommerce`); // Adjusted callback
+    authUrl.searchParams.set("callbackUrl", `${window.location.origin}`); // Adjusted callback
     window.location.href = authUrl.toString();
   };
 
   const handleGoogleSignUp = () => {
     const authUrl = new URL("https://auth.salesmanpro.site/signup");
-    authUrl.searchParams.set("callbackUrl", `${window.location.origin}/site/${slug}/ecommerce`); // Adjusted callback
+    authUrl.searchParams.set("callbackUrl", `${window.location.origin}`); // Adjusted callback
     window.location.href = authUrl.toString();
   };
 
@@ -136,9 +136,9 @@ export default function Header() {
 
   // Define navigation links as constants
   const navLinks = [
-    { label: 'Home', href: `/site/${slug}/ecommerce` },
-    { label: 'Shop', href: `/site/${slug}/ecommerce/products` },
-    { label: 'Categories', href: `/site/${slug}/ecommerce/categories` },
+    { label: 'Home', href: `/` },
+    { label: 'Shop', href: `/ecommerce/products` },
+    { label: 'Categories', href: `/ecommerce/categories` },
   ];
 
   // Debounced search handler (simulate API call)
@@ -198,7 +198,7 @@ export default function Header() {
           {/* ===== LOGO + NAV ===== */}
           <div className="flex items-center space-x-8">
             {/* Logo */}
-            <Link href={`/site/${slug}`} className="flex items-center" aria-label={`${name} home`}>
+            <Link href={`/`} className="flex items-center" aria-label={`${name} home`}>
               <motion.div
                 whileHover={{ scale: 1.05 }}
                 transition={{ type: 'spring', stiffness: 300 }}
