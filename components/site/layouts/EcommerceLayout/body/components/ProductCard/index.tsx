@@ -106,11 +106,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             className="text-2xl font-extrabold"
             style={{ color: primary }}
           >
-            ${(finalPrice ?? 0).toFixed(2)}
+            {(finalPrice ?? 0).toFixed(2)}
           </span>
           {sellingPrice && finalPrice && sellingPrice > finalPrice && (
             <span className="text-base line-through text-gray-400">
-              ${sellingPrice.toFixed(2)}
+              {sellingPrice.toFixed(2)}
             </span>
           )}
         </div>
@@ -155,7 +155,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             onClick={() => addToCart(product)}
             className="mt-auto w-full py-3 rounded-lg text-white font-semibold text-base shadow-lg transition-all duration-300 hover:shadow-xl"
             style={{
-              background: `linear-gradient(135deg, ${primary}, ${secondary})`,
+              // background: `linear-gradient(135deg, ${primary}, ${secondary})`,
+              backgroundColor: primary,
             }}
           >
             Add to Cart
