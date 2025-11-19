@@ -93,8 +93,3 @@ export default function SubscriptionSuccessPage() {
     </div>
   );
 }
-
-export const metadata = {
-  title: "Subscription Successful – Ghuba",
-  description: "Your subscription has been activated.",
-};

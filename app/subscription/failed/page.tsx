@@ -79,8 +79,3 @@ export default function SubscriptionFailedPage() {
     </div>
   );
 }
-
-export const metadata = {
-  title: "Subscription Failed – Ghuba",
-  description: "Your subscription payment could not be completed.",
-};
