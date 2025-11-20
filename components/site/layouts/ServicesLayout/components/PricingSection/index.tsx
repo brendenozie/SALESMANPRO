@@ -193,7 +193,7 @@ export default function PricingSection( { pricingTiers, themeSettings }: Pricing
               </p>
               <p className="text-5xl font-extrabold mb-1">
                 <span className={plan.isFeatured ? 'text-white' : 'text-gray-900 dark:text-gray-100'}>
-                  ${plan.price.toFixed(0)}
+                  {plan.price.toFixed(0)}
                 </span>
                 <span className={`text-lg font-medium ${plan.isFeatured ? 'text-white/70' : 'text-gray-500 dark:text-gray-400'}`}>
                   {' '} / {plan.frequency || 'service'}

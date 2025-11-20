@@ -118,7 +118,7 @@ export default function GetStartedSection() {
 
             <motion.div variants={itemVariants}>
               <Link
-                href={`/${slug}/contact`}
+                href={`#booking`}
                 passHref
               >
                 <motion.button

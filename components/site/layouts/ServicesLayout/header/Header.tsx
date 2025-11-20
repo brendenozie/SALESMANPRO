@@ -1,485 +1,441 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useScroll, useMotionValueEvent } from 'framer-motion';
 import {
   Bars3Icon,
   XMarkIcon,
   MagnifyingGlassIcon,
   ShoppingCartIcon,
-  UserIcon, // Used for unauthenticated state
-  ArrowRightOnRectangleIcon, // Used for Logout
-  UserCircleIcon, // Used for Profile/Account
+  ArrowRightOnRectangleIcon,
+  UserCircleIcon,
+  ChevronDownIcon,
 } from '@heroicons/react/24/outline';
 import { useRouter, usePathname } from 'next/navigation';
-// --- AUTH IMPORTS (Assumed from Sample Use Case) ---
-import { useSession, signIn, signOut } from 'next-auth/react';
-// ----------------------------------------------------
-import { useStateContext } from '@/contexts/ContextProvider'; // Assuming this provides cart and other global states
+import { useSession, signOut } from 'next-auth/react';
+import { useStateContext } from '@/contexts/ContextProvider';
+import { clsx } from 'clsx';
+
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?src=${src}&w=${width}&q=${quality || 75}`;
 
-interface HeaderProps {
-  storeFormData: any;
-}
-
-// Custom hook to handle click outside
+// --- HOOKS ---
 const useClickOutside = (ref: React.RefObject<HTMLElement>, handler: () => void) => {
   useEffect(() => {
     const listener = (event: MouseEvent) => {
-      if (!ref.current || ref.current.contains(event.target as Node)) {
-        return;
-      }
+      if (!ref.current || ref.current.contains(event.target as Node)) return;
       handler();
     };
     document.addEventListener('mousedown', listener);
-    return () => {
-      document.removeEventListener('mousedown', listener);
-    };
+    return () => document.removeEventListener('mousedown', listener);
   }, [ref, handler]);
 };
 
-// --- AUTH POPOVER COMPONENT (Desktop) ---
-interface AuthPopoverProps {
-    user: any;
-    slug: string;
-    primaryColor: string;
-    handleSignOut: () => void;
-    closePopover: () => void;
-}
+// --- COMPONENTS ---
 
-const AuthPopover: React.FC<AuthPopoverProps> = ({ user, slug, primaryColor, handleSignOut, closePopover }) => {
-    const popoverRef = React.useRef<HTMLDivElement>(null);
-    useClickOutside(popoverRef, closePopover);
-    
-    // Determine the profile link based on user role
-    const profileLink = user.role?.toLowerCase() === 'admin' 
-        ? `/dashboards` 
-        : `/${slug}/profile`; 
-
-    const popoverVariants = {
-        hidden: { opacity: 0, scale: 0.9, y: -10 },
-        visible: { opacity: 1, scale: 1, y: 0, transition: { duration: 0.2, ease: 'easeOut' } },
-        exit: { opacity: 0, scale: 0.9, y: -10, transition: { duration: 0.15 } },
-    };
-
-    return (
+// 1. Nav Link with Sliding Background Effect
+const NavItem = ({ href, label, isActive, primaryColor }: { href: string; label: string; isActive: boolean; primaryColor: string }) => {
+  return (
+    <Link href={href} className="relative px-4 py-2 rounded-full text-sm font-medium transition-colors z-10 group">
+      {isActive && (
         <motion.div
-            ref={popoverRef}
-            initial="hidden"
-            animate="visible"
-            exit="exit"
-            variants={popoverVariants}
-            className="absolute right-0 top-full mt-3 w-48 rounded-xl shadow-2xl bg-white dark:bg-gray-800 ring-1 ring-gray-200 dark:ring-gray-700 overflow-hidden z-50"
-        >
-            <div className="p-4 border-b border-gray-100 dark:border-gray-700">
-                <p className="text-sm font-bold text-gray-900 dark:text-gray-100 truncate">{user.name || 'User Profile'}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">{user.role || 'Customer'}</p>
-            </div>
-            
-            <Link href={profileLink} onClick={closePopover} passHref>
-                <motion.div 
-                    className="flex items-center space-x-2 p-3 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors"
-                    whileHover={{ x: 5 }}
-                >
-                    <UserCircleIcon className="w-5 h-5" style={{ color: primaryColor }} />
-                    <span className='font-medium'>{user.role === 'admin' ? 'Dashboard' : 'My Account'}</span>
-                </motion.div>
-            </Link>
-
-            <motion.button
-                onClick={() => { closePopover(); handleSignOut(); }}
-                className="flex items-center space-x-2 p-3 w-full text-left text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                whileHover={{ x: 5 }}
-            >
-                <ArrowRightOnRectangleIcon className="w-5 h-5" />
-                <span className='font-medium'>Sign Out</span>
-            </motion.button>
-        </motion.div>
-    );
+          layoutId="activeNavPill"
+          className="absolute inset-0 rounded-full opacity-10 dark:opacity-20"
+          style={{ backgroundColor: primaryColor }}
+          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+        />
+      )}
+      <span className={clsx(
+        "relative z-10 transition-colors duration-200",
+        isActive ? "font-semibold" : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+      )}
+      style={{ color: isActive ? primaryColor : undefined }}
+      >
+        {label}
+      </span>
+    </Link>
+  );
 };
-// ----------------------------------------------------
 
+// 2. Auth Popover
+const UserMenu = ({ user, slug, primaryColor, handleSignOut, close }: any) => {
+  const menuRef = useRef<HTMLDivElement>(null);
+  useClickOutside(menuRef, close);
 
-const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
-  // --- AUTH HOOKS ---
-  const { data: session, status } = useSession();
+  const profileLink = user.role?.toLowerCase() === 'admin' ? `/dashboards` : `/service-provider/profile`;
+
+  return (
+    <motion.div
+      ref={menuRef}
+      initial={{ opacity: 0, y: 10, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+      transition={{ duration: 0.2 }}
+      className="absolute right-0 top-full mt-4 w-64 rounded-2xl bg-white dark:bg-gray-900 shadow-xl border border-gray-100 dark:border-gray-800 overflow-hidden z-50"
+    >
+      <div className="p-5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50">
+        <p className="text-sm font-bold text-gray-900 dark:text-white truncate">{user.name || 'User Profile'}</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400 capitalize mt-0.5">{user.role || 'Customer'}</p>
+      </div>
+
+      <div className="p-2">
+        <Link href={profileLink} onClick={close} className="flex items-center space-x-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors group">
+          <div className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 group-hover:bg-white dark:group-hover:bg-gray-600 transition-colors">
+             <UserCircleIcon className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+          </div>
+          <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{user.role === 'admin' ? 'Dashboard' : 'My Account'}</span>
+        </Link>
+
+        <button
+          onClick={() => { close(); handleSignOut(); }}
+          className="flex w-full items-center space-x-3 p-3 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors group text-red-600"
+        >
+           <div className="p-2 rounded-lg bg-red-50 dark:bg-red-900/20 group-hover:bg-red-100 dark:group-hover:bg-red-900/30 transition-colors">
+             <ArrowRightOnRectangleIcon className="w-5 h-5" />
+           </div>
+          <span className="text-sm font-medium">Sign Out</span>
+        </button>
+      </div>
+    </motion.div>
+  );
+};
+
+// --- MAIN COMPONENT ---
+const Header = ({ storeFormData }: { storeFormData: any }) => {
+  const { data: session } = useSession();
   const user = session?.user;
-  // ------------------
-
   const { cartItems } = useStateContext();
   const router = useRouter();
   const pathname = usePathname();
 
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [isPopoverOpen, setIsPopoverOpen] = useState(false); // New state for popover
-
-  // Fallback colors from storeFormData or default Tailwind colors
-  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#0d9488'; // teal-600
-  const secondaryColor = storeFormData?.themeSettings?.secondaryColor || '#f97316'; // orange-500
-
-  // Define dynamic CSS variables for easier use in Tailwind JIT (Optimized for simplicity)
-  const customStyles = {
-    '--primary': primaryColor,
-    '--secondary': secondaryColor,
-  } as React.CSSProperties;
-
-  // --- AUTH HANDLERS ---
-  const handleSignOut = () => signOut({ callbackUrl: `/${storeFormData.slug}` }); // Redirect to home on sign out
-
-  const handleSignIn = () => {
-    // Assuming 'salesmanpro.site' is the external auth provider
-    const authUrl = new URL("https://auth.salesmanpro.site/signin"); 
-    authUrl.searchParams.set("callbackUrl", `${window.location.origin}/${storeFormData.slug}`);
-    window.location.href = authUrl.toString();
-  };
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   
-  const handleSignUp = () => {
-    const authUrl = new URL("https://auth.salesmanpro.site/signup");
-    authUrl.searchParams.set("callbackUrl", `${window.location.origin}/${storeFormData.slug}`);
-    window.location.href = authUrl.toString();
-  };
-  // ----------------------
+  // Scroll Logic for "Floating" effect
+  const { scrollY } = useScroll();
+  const [isScrolled, setIsScrolled] = useState(false);
+  
+  useMotionValueEvent(scrollY, "change", (latest) => {
+    setIsScrolled(latest > 50);
+  });
 
+  // Colors & Styles
+  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#0d9488';
+  const secondaryColor = storeFormData?.themeSettings?.secondaryColor || '#f97316';
 
-  const sections = [
-    { id: 'hero', label: 'Home', href: `/${storeFormData?.slug}` },
-    { id: 'services', label: 'Services', href: `#services` },
-    { id: 'packages', label: 'Packages', href: `#packages` },
-    { id: 'contact', label: 'Contact', href: `/${storeFormData?.slug}/contact` }, 
-  ];
-
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 80);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
+  // Reset states on route change
   useEffect(() => {
     setMobileOpen(false);
-    setIsPopoverOpen(false); // Close popover on route change
+    setIsPopoverOpen(false);
+    setIsSearchOpen(false);
   }, [pathname]);
 
+  const handleSignOut = () => signOut({ callbackUrl: `/` });
+  const handleSignIn = () => {
+    const authUrl = new URL("https://auth.salesmanpro.site/signin");
+    authUrl.searchParams.set("callbackUrl", `${window.location.origin}`);
+    window.location.href = authUrl.toString();
+  };
+  const handleSignUp = () => {
+     const authUrl = new URL("https://auth.salesmanpro.site/signup");
+     authUrl.searchParams.set("callbackUrl", `${window.location.origin}`);
+     window.location.href = authUrl.toString();
+  };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchTerm.trim()) {
-      router.push(`/${storeFormData.slug}/search?query=${encodeURIComponent(searchTerm.trim())}`);
+      router.push(`/service-provider/products?query=${encodeURIComponent(searchTerm.trim())}`);
       setIsSearchOpen(false);
       setSearchTerm('');
     }
   };
 
+  const sections = [
+    { id: 'hero', label: 'Home', href: `/${storeFormData?.slug}` },
+    { id: 'services', label: 'Services', href: `#services` },
+    { id: 'packages', label: 'Packages', href: `#packages` },
+    { id: 'contact', label: 'Contact', href: `#booking` },
+  ];
+
   const isHomePath = pathname === `/${storeFormData?.slug}` || pathname === '/';
 
-  if (!storeFormData) {
-    return (
-      <header className="fixed w-full z-50 top-0 left-0 bg-gray-900/80 backdrop-blur-md h-20 flex items-center justify-center">
-        <p className="text-white text-lg animate-pulse">Loading header...</p>
-      </header>
-    );
-  }
+  if (!storeFormData) return null; // Or a skeleton loader
 
   return (
-    <header className="fixed w-full z-50 top-0 left-0 border-b border-transparent" style={customStyles}>
-      <motion.nav
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ type: 'spring', stiffness: 120, damping: 20 }}
-        className={`transition-all duration-300 h-20 flex items-center border-b
-          ${scrolled
-            ? 'bg-white/85 dark:bg-gray-900/85 backdrop-blur-lg shadow-xl border-gray-200/50 dark:border-gray-800/50'
-            : 'bg-transparent border-transparent'
-          }
-        `}
+    <>
+      <motion.header
+        className={clsx(
+          "fixed left-0 right-0 z-50 transition-all duration-500 ease-in-out flex justify-center",
+          isScrolled ? "top-4" : "top-0"
+        )}
       >
-        <div className="container mx-auto px-6 flex items-center justify-between h-full">
-          {/* Logo */}
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
-            <Link href={`/${storeFormData.slug}`} className="flex items-center space-x-2 relative z-20">
+        <motion.nav
+          initial={{ y: -100, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          className={clsx(
+            "flex items-center justify-between transition-all duration-500",
+            // Scrolled State: Floating Pill
+            isScrolled 
+              ? "w-[95%] md:w-[90%] lg:w-[85%] h-16 rounded-full shadow-xl bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl border border-white/20 dark:border-gray-700 px-6"
+              : "w-full h-20 bg-transparent px-6 md:px-10 border-b border-transparent"
+          )}
+        >
+          {/* --- LEFT: LOGO --- */}
+          <div className="flex-shrink-0">
+            <Link href={`/`} className="flex items-center gap-2">
               {storeFormData.logoUrl ? (
                 <Image
                   src={storeFormData.logoUrl}
                   loader={loader}
                   alt={storeFormData.name}
-                  width={160}
-                  height={60}
-                  className="object-contain transition-all duration-300 h-10 w-auto"
+                  width={140}
+                  height={50}
+                  className="h-8 w-auto object-contain"
                 />
               ) : (
-                <span className={`text-3xl font-extrabold transition-colors duration-300 ${scrolled ? 'text-gray-900 dark:text-white' : 'text-white'}`}>
+                <span className={clsx(
+                  "text-2xl font-extrabold tracking-tight",
+                  isScrolled ? "text-gray-900 dark:text-white" : "text-white"
+                )}>
                   {storeFormData.name}
                 </span>
               )}
             </Link>
-          </motion.div>
-
-          {/* Desktop Nav */}
-          <div className="hidden lg:flex items-center space-x-8 relative z-10">
-            {sections.map(({ id, label, href }) => (
-              <Link
-                key={id}
-                href={href}
-                className={`
-                  relative py-2 text-sm font-medium transition-all duration-300
-                  ${scrolled ? 'text-gray-700 dark:text-gray-300' : 'text-white/90'}
-                  hover:text-[var(--primary)]
-                  ${(isHomePath && id === 'hero') || pathname === href
-                    ? 'font-bold text-[var(--primary)]'
-                    : ''
-                  }
-                `}
-                style={{ transition: 'color 0.2s ease' }}
-              >
-                {label}
-                {/* Active link underline indicator */}
-                {((isHomePath && id === 'hero') || pathname === href) && (
-                  <motion.span
-                    layoutId="underline"
-                    className="absolute left-0 -bottom-1 h-[3px] w-full rounded-full"
-                    style={{ backgroundColor: secondaryColor }}
-                  />
-                )}
-              </Link>
-            ))}
-
-            {/* --- Desktop Action Icons & Auth --- */}
-            <div className="flex items-center space-x-4 ml-6">
-                
-                {/* Search Icon */}
-                <motion.button
-                  onClick={() => setIsSearchOpen(!isSearchOpen)}
-                  className={`relative p-2 rounded-full transition-all duration-300 ${scrolled ? 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' : 'text-white/90 hover:bg-white/10'}`}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  aria-label="Toggle Search"
-                >
-                  <MagnifyingGlassIcon className={`w-6 h-6`} />
-                </motion.button>
-                
-                {/* Cart/Booking Icon */}
-                <Link href={`/${storeFormData.slug}/booking`} className="relative">
-                    <motion.button
-                        className={`relative p-2 rounded-full transition-all duration-300 ${scrolled ? 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' : 'text-white/90 hover:bg-white/10'}`}
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        aria-label="View Cart or Booking"
-                    >
-                        <ShoppingCartIcon className="w-6 h-6" />
-                        {cartItems?.length > 0 && ( // Assuming cartItems is an array with a length property
-                            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center font-bold">
-                                {cartItems.length}
-                            </span>
-                        )}
-                    </motion.button>
-                </Link>
-                
-                {/* User/Auth Dropdown */}
-                <div className="relative">
-                    <motion.button
-                        onClick={() => user ? setIsPopoverOpen(p => !p) : handleSignIn()}
-                        className={`p-2 rounded-full transition-all duration-300 ring-2 ring-transparent
-                           ${scrolled ? 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700' : 'text-white/90 hover:bg-white/10'}
-                           ${user ? 'ring-[var(--secondary)]' : ''}
-                        `}
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        aria-label={user ? "Open user menu" : "Sign In"}
-                    >
-                        {user && user.image ? (
-                            <Image 
-                                src={user.image} 
-                                alt={user.name || 'User'} 
-                                width={24} 
-                                height={24} 
-                                className="w-6 h-6 rounded-full object-cover" 
-                            />
-                        ) : (
-                            <UserIcon className="w-6 h-6" />
-                        )}
-                    </motion.button>
-
-                    <AnimatePresence>
-                        {user && isPopoverOpen && (
-                            <AuthPopover 
-                                user={user} 
-                                slug={storeFormData.slug} 
-                                primaryColor={primaryColor}
-                                handleSignOut={handleSignOut} 
-                                closePopover={() => setIsPopoverOpen(false)}
-                            />
-                        )}
-                    </AnimatePresence>
-                </div>
-            </div>
-            {/* -------------------------------------- */}
-
           </div>
 
-          {/* Hamburger Menu (Mobile) */}
-          <div className="lg:hidden relative z-20 flex items-center space-x-4">
-            {/* Mobile Cart Icon for Visibility */}
-            <Link href={`/${storeFormData.slug}/booking`} className="relative">
-              <button
-                  className={`p-2 rounded-full transition-all duration-300 ${scrolled ? 'text-gray-700 dark:text-gray-300' : 'text-white/90'}`}
-                  aria-label="View Cart or Booking"
-              >
-                  <ShoppingCartIcon className="w-6 h-6" />
-                  {cartItems?.length > 0 && ( 
-                      <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center font-bold">
-                          {cartItems.length}
+          {/* --- CENTER: NAVIGATION (Desktop) --- */}
+          <div className="hidden lg:flex items-center gap-1">
+            <div className={clsx(
+              "flex items-center gap-1 px-2 py-1.5 rounded-full transition-colors",
+              isScrolled ? "bg-gray-100/50 dark:bg-gray-800/50" : "bg-black/20 backdrop-blur-sm"
+            )}>
+              {sections.map((section) => {
+                 const isActive = (isHomePath && section.id === 'hero') || pathname === section.href;
+                 // Override styling for Transparent Header mode
+                 const labelClass = isActive ? "font-semibold" : (isScrolled ? "text-gray-600" : "text-white/90 hover:text-white");
+                 
+                 return (
+                    <Link 
+                      key={section.id} 
+                      href={section.href}
+                      className="relative px-5 py-2 rounded-full text-sm font-medium transition-all z-10"
+                    >
+                      {isActive && (
+                        <motion.div
+                          layoutId="desktopNavPill"
+                          className="absolute inset-0 rounded-full bg-white dark:bg-gray-700 shadow-sm"
+                          transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
+                        />
+                      )}
+                      <span className={clsx("relative z-10 transition-colors", isActive ? (isScrolled ? "text-[var(--primary)]" : "text-gray-900") : labelClass)}
+                            style={isActive && isScrolled ? { color: primaryColor } : {}}
+                      >
+                        {section.label}
                       </span>
-                  )}
+                    </Link>
+                 );
+              })}
+            </div>
+          </div>
+
+          {/* --- RIGHT: ACTIONS --- */}
+          <div className="flex items-center gap-3">
+            
+            {/* Search (Expanding) */}
+            <div className={clsx("relative flex items-center transition-all", isSearchOpen ? "w-64" : "w-auto")}>
+               <AnimatePresence>
+                 {isSearchOpen && (
+                   <motion.form
+                     initial={{ width: 0, opacity: 0 }}
+                     animate={{ width: '100%', opacity: 1 }}
+                     exit={{ width: 0, opacity: 0 }}
+                     onSubmit={handleSearchSubmit}
+                     className="absolute right-0 top-1/2 -translate-y-1/2 w-full"
+                   >
+                     <input
+                       autoFocus
+                       type="text"
+                       placeholder="Search..."
+                       value={searchTerm}
+                       onChange={(e) => setSearchTerm(e.target.value)}
+                       className="w-full h-10 pl-4 pr-10 rounded-full bg-gray-100 dark:bg-gray-800 border-none text-sm focus:ring-2 focus:ring-[var(--primary)] text-gray-800 dark:text-white"
+                       style={{ '--primary': primaryColor } as React.CSSProperties}
+                       onBlur={() => !searchTerm && setIsSearchOpen(false)}
+                     />
+                   </motion.form>
+                 )}
+               </AnimatePresence>
+               
+               <button 
+                 onClick={() => setIsSearchOpen(!isSearchOpen)}
+                 className={clsx(
+                   "p-2.5 rounded-full transition-colors z-10", 
+                   isScrolled ? "hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200" : "hover:bg-white/20 text-white"
+                 )}
+               >
+                  <MagnifyingGlassIcon className="w-5 h-5" />
+               </button>
+            </div>
+
+            {/* Cart */}
+            <Link href="/service-provider/checkout">
+              <button className={clsx(
+                 "relative p-2.5 rounded-full transition-colors hidden sm:block",
+                 isScrolled ? "hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-200" : "hover:bg-white/20 text-white"
+              )}>
+                <ShoppingCartIcon className="w-5 h-5" />
+                {cartItems?.length > 0 && (
+                  <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white ring-2 ring-white dark:ring-gray-900">
+                    {cartItems.length}
+                  </span>
+                )}
               </button>
             </Link>
 
+            {/* Desktop Profile / Login */}
+            <div className="relative hidden lg:block">
+              {user ? (
+                <button 
+                  onClick={() => setIsPopoverOpen(!isPopoverOpen)}
+                  className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-full border border-transparent hover:border-gray-200 dark:hover:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
+                >
+                  {user.image ? (
+                    <Image src={user.image} alt="Profile" width={32} height={32} className="rounded-full" />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center text-gray-600">
+                       <span className="text-xs font-bold">{user.name?.charAt(0) || 'U'}</span>
+                    </div>
+                  )}
+                  <ChevronDownIcon className={clsx("w-3 h-3 transition-transform text-gray-500", isPopoverOpen && "rotate-180")} />
+                </button>
+              ) : (
+                <button 
+                  onClick={handleSignIn}
+                  className="px-5 py-2 rounded-full text-sm font-semibold text-white shadow-lg shadow-primary/30 transition-transform hover:scale-105 active:scale-95"
+                  style={{ backgroundColor: primaryColor }}
+                >
+                  Sign In
+                </button>
+              )}
+              <AnimatePresence>
+                {isPopoverOpen && user && (
+                  <UserMenu 
+                    user={user} 
+                    slug={storeFormData.slug} 
+                    primaryColor={primaryColor} 
+                    handleSignOut={handleSignOut} 
+                    close={() => setIsPopoverOpen(false)} 
+                  />
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Mobile Toggle */}
             <button
-              onClick={() => setMobileOpen((prev) => !prev)}
-              className={`p-2 rounded-full transition-all duration-300
-                ${scrolled ? 'bg-gray-100 dark:bg-gray-700' : 'bg-white/20'}
-              `}
-              style={{ color: scrolled ? primaryColor : 'white' }}
-              aria-label={mobileOpen ? "Close menu" : "Open menu"}
+              onClick={() => setMobileOpen(!mobileOpen)}
+              className={clsx(
+                "lg:hidden p-2 rounded-full transition-colors",
+                isScrolled ? "text-gray-900 dark:text-white hover:bg-gray-100" : "text-white hover:bg-white/20"
+              )}
             >
-              {mobileOpen ? <XMarkIcon className="w-7 h-7" /> : <Bars3Icon className="w-7 h-7" />}
+              {mobileOpen ? <XMarkIcon className="w-6 h-6" /> : <Bars3Icon className="w-6 h-6" />}
             </button>
           </div>
-        </div>
+        </motion.nav>
+      </motion.header>
 
-        {/* Mobile Nav Overlay */}
-        <AnimatePresence>
-          {mobileOpen && (
-            <motion.div
-              initial={{ opacity: 0, y: -50 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -50 }}
-              transition={{ duration: 0.3, ease: 'easeOut' }}
-              className="lg:hidden fixed inset-0 top-20 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl z-40 flex flex-col items-center justify-start py-10"
-            >
-              <nav className="flex flex-col items-center space-y-6 w-full px-6">
-                {/* Mobile Search Input */}
-                <form onSubmit={handleSearchSubmit} className="relative w-full max-w-sm mb-4">
-                  <input
-                    type="search"
-                    placeholder="Search..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-12 pr-4 py-3 w-full rounded-full bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                  />
-                  <MagnifyingGlassIcon className="w-6 h-6 absolute left-4 top-3 text-gray-500 dark:text-gray-400" />
-                </form>
-                
-                {sections.map(({ id, label, href }, index) => (
+      {/* --- MOBILE MENU OVERLAY --- */}
+      <AnimatePresence>
+        {mobileOpen && (
+          <motion.div
+            initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
+            animate={{ opacity: 1, backdropFilter: "blur(12px)" }}
+            exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
+            className="fixed inset-0 z-40 bg-white/90 dark:bg-gray-900/95 lg:hidden pt-28 px-6 pb-10 flex flex-col overflow-y-auto"
+          >
+            <div className="flex flex-col space-y-6">
+              {/* Mobile Search */}
+              <form onSubmit={handleSearchSubmit} className="relative w-full">
+                <input
+                  type="search"
+                  placeholder="Search products..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full py-3 pl-12 pr-4 rounded-2xl bg-gray-100 dark:bg-gray-800 text-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                  style={{ '--primary': primaryColor } as React.CSSProperties}
+                />
+                <MagnifyingGlassIcon className="absolute left-4 top-3.5 w-6 h-6 text-gray-400" />
+              </form>
+
+              {/* Mobile Links */}
+              <div className="flex flex-col space-y-2">
+                {sections.map((section, idx) => (
                   <motion.div
-                    key={id}
-                    initial={{ x: -50, opacity: 0 }}
+                    key={section.id}
+                    initial={{ x: -20, opacity: 0 }}
                     animate={{ x: 0, opacity: 1 }}
-                    transition={{ duration: 0.3, delay: index * 0.05 }}
-                    className="w-full text-center"
+                    transition={{ delay: idx * 0.05 }}
                   >
                     <Link
-                      href={href}
-                      className="text-2xl font-semibold block py-2 transition-colors duration-300 hover:text-[var(--secondary)]"
+                      href={section.href}
                       onClick={() => setMobileOpen(false)}
-                      style={{ color: primaryColor }}
+                      className="block text-3xl font-bold py-3 border-b border-gray-100 dark:border-gray-800 hover:pl-2 transition-all"
+                      style={{ color: pathname === section.href ? primaryColor : 'inherit' }}
                     >
-                      {label}
+                      {section.label}
                     </Link>
                   </motion.div>
                 ))}
-                
-                <div className="border-t border-gray-200 w-full max-w-sm mt-8 pt-8" />
-                
-                {/* --- Mobile Auth Buttons (Engaging) --- */}
-                {user ? (
-                    <motion.div 
-                        className="flex flex-col space-y-4 w-full max-w-sm"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: sections.length * 0.05 + 0.2 }}
-                    >
-                        <Link href={user.role?.toLowerCase() === 'admin' ? `/dashboards` : `/${storeFormData.slug}/profile`}>
-                            <button
-                                className="w-full text-center px-4 py-3 rounded-full text-white font-bold shadow-md transition-all duration-300"
-                                style={{ backgroundColor: primaryColor }}
-                                onClick={() => setMobileOpen(false)}
-                            >
-                                <UserCircleIcon className="w-5 h-5 inline mr-2" />
-                                My Account
-                            </button>
-                        </Link>
-                        <button
-                            onClick={() => { setMobileOpen(false); handleSignOut(); }}
-                            className="w-full text-center px-4 py-3 rounded-full text-gray-700 dark:text-gray-300 font-bold border border-gray-300 dark:border-gray-700 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
-                        >
-                            Sign Out
-                        </button>
-                    </motion.div>
-                ) : (
-                    <motion.div 
-                        className="flex flex-col space-y-4 w-full max-w-sm"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: sections.length * 0.05 + 0.2 }}
-                    >
-                        <button
-                            onClick={() => { setMobileOpen(false); handleSignIn(); }}
-                            className="w-full text-center px-4 py-3 rounded-full text-white font-bold shadow-md transition-all duration-300"
-                            style={{ backgroundColor: primaryColor }}
-                        >
-                            Log In
-                        </button>
-                        <button
-                            onClick={() => { setMobileOpen(false); handleSignUp(); }}
-                            className="w-full text-center px-4 py-3 rounded-full text-gray-700 dark:text-gray-300 font-bold border border-gray-300 dark:border-gray-700 transition-colors hover:bg-gray-100 dark:hover:bg-gray-800"
-                        >
-                            Sign Up
-                        </button>
-                    </motion.div>
-                )}
-                {/* ------------------------------------------ */}
-              </nav>
-            </motion.div>
-          )}
-        </AnimatePresence>
-        
-        {/* Search Input Popover (Desktop) */}
-        <AnimatePresence>
-            {isSearchOpen && (
-                <motion.form
-                    onSubmit={handleSearchSubmit}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 20 }}
-                    transition={{ duration: 0.2 }}
-                    className="absolute right-28 top-3 hidden lg:block"
-                >
-                    <div className="relative">
-                        <input
-                            type="search"
-                            placeholder="Search..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className={`pl-10 pr-4 py-2 rounded-full w-64
-                                ${scrolled ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 border border-gray-200 dark:border-gray-600' : 'bg-white/20 text-white placeholder-white/80 border border-white/10'}
-                                focus:outline-none focus:ring-2 focus:ring-[var(--primary)] transition-all duration-300
-                            `}
-                            autoFocus
-                        />
-                        <MagnifyingGlassIcon className={`w-5 h-5 absolute left-3 top-2.5 ${scrolled ? 'text-gray-500 dark:text-gray-400' : 'text-white/80'}`} />
-                    </div>
-                </motion.form>
-            )}
-        </AnimatePresence>
+              </div>
 
-      </motion.nav>
-    </header>
+              {/* Mobile Auth */}
+              <div className="mt-auto pt-8">
+                {user ? (
+                  <div className="space-y-3">
+                    <Link 
+                      href={user.role?.toLowerCase() === 'admin' ? `/dashboards` : `/service-provider/profile`}
+                      onClick={() => setMobileOpen(false)}
+                      className="flex items-center justify-center space-x-2 w-full py-4 rounded-2xl bg-gray-100 dark:bg-gray-800 font-bold text-lg"
+                    >
+                      <UserCircleIcon className="w-6 h-6" />
+                      <span>My Account</span>
+                    </Link>
+                    <button
+                      onClick={() => { handleSignOut(); setMobileOpen(false); }}
+                      className="w-full py-4 rounded-2xl border-2 border-red-100 text-red-500 font-bold text-lg"
+                    >
+                      Sign Out
+                    </button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-4">
+                    <button
+                      onClick={() => { handleSignIn(); setMobileOpen(false); }}
+                      className="py-4 rounded-2xl font-bold text-lg text-white shadow-lg"
+                      style={{ backgroundColor: primaryColor }}
+                    >
+                      Log In
+                    </button>
+                    <button
+                      onClick={() => { handleSignUp(); setMobileOpen(false); }}
+                      className="py-4 rounded-2xl font-bold text-lg bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white"
+                    >
+                      Sign Up
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 };
 

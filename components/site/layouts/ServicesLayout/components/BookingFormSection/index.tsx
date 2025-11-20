@@ -148,7 +148,7 @@ export default function BookingFormSection() {
         viewport={{ once: true, amount: 0.3 }}
       >
         <motion.h2 className="text-4xl sm:text-5xl lg:text-5xl font-extrabold mb-4 text-gray-900 dark:text-gray-100" variants={inputVariants}>
-          Book Your <span className="bg-clip-text text-transparent" style={{ backgroundImage: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})` }}>Cleaning</span> Service
+          Book Your <span className="bg-clip-text " style={{ backgroundColor: `${primaryColor})` }}>Service</span> 
         </motion.h2>
         <motion.p className="text-lg text-gray-600 dark:text-gray-400 mb-12 max-w-xl mx-auto" variants={inputVariants}>
           Tell us about your cleaning needs, and we'll get back to you with a personalized quote and schedule.

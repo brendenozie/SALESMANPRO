@@ -33,7 +33,7 @@ export default function BookingFormModal({ service }: BookingFormProps) {
     });
 
     // Navigate to your checkout page
-    router.push(`/site/service-provider/service-provider/checkout?${params.toString()}`);
+    router.push(`/service-provider/checkout?${params.toString()}`);
   };
 
   return (

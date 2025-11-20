@@ -8,6 +8,7 @@ import {
   Bars3Icon,
   XMarkIcon,
   UserIcon,
+  ArrowRightIcon
 } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
 import { useSession, signIn, signOut } from 'next-auth/react';
@@ -19,26 +20,36 @@ const loader = ({ src, width, quality }: any) =>
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [hoveredNav, setHoveredNav] = useState<string | null>(null);
   const router = useRouter();
 
   const { storeFormData } = useStoreContext();
   const { data: session } = useSession();
-  const user = session?.user as { role?: string; name?: string } | undefined;
+  const user = session?.user as { role?: string; name?: string; image?: string } | undefined;
 
   const { slug, name, logoUrl, themeSettings = {} } = storeFormData || {};
   const primaryColor = themeSettings?.primaryColor || '#00A880';
 
+  // Convert hex to RGB for rgba glass effects
+  const hexToRgb = (hex: string) => {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? 
+      `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` 
+      : '0, 168, 128';
+  };
+
+  const primaryRgb = hexToRgb(primaryColor);
+
   const navItems = [
     { id: 'services', label: 'Services' },
     { id: 'benefits', label: 'Why Us' },
-    { id: 'testimonials', label: 'Testimonials' },
+    { id: 'testimonials', label: 'Stories' },
     { id: 'faq', label: 'FAQs' },
     { id: 'contact', label: 'Contact' },
   ];
 
-  // Scroll shadow toggle
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 50);
+    const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -47,222 +58,237 @@ export default function Header() {
   const handleUserAction = () => {
     if (!user) return handleGoogleSignIn();
     if (user.role?.toLowerCase() === 'admin') router.push('/dashboards');
-    else router.push(`/site/${slug}/profile`);
+    else router.push(`/bookings/profile`);
   };
 
   const handleGoogleSignIn = () => {
     const authUrl = new URL('https://auth.salesmanpro.site/signin');
-    authUrl.searchParams.set('callbackUrl', `${window.location.origin}/site/${slug}`);
+    authUrl.searchParams.set('callbackUrl', `${window.location.origin}`);
     window.location.href = authUrl.toString();
   };
 
   const handleGoogleSignUp = () => {
     const authUrl = new URL('https://auth.salesmanpro.site/signup');
-    authUrl.searchParams.set('callbackUrl', `${window.location.origin}/site/${slug}`);
+    authUrl.searchParams.set('callbackUrl', `${window.location.origin}`);
     window.location.href = authUrl.toString();
   };
 
-  const handleSignOut = () => signOut({ callbackUrl: `/site/${slug}` });
+  const handleSignOut = () => signOut({ callbackUrl: `` });
+
+  // Animation Variants
+  const menuVariants = {
+    closed: { opacity: 0, x: "100%" },
+    open: { opacity: 1, x: 0, transition: { type: "spring", stiffness: 300, damping: 30 } }
+  };
+
+  const listVariants = {
+    closed: { opacity: 0, y: 20 },
+    open: (i: number) => ({ 
+      opacity: 1, 
+      y: 0, 
+      transition: { delay: i * 0.1, type: "spring" } 
+    })
+  };
 
   return (
     <>
-      {/* HEADER */}
-      <header
-        className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 py-4 ${
+      <motion.header
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ease-in-out ${
           scrolled
-            ? 'bg-white/90 shadow-lg ring-1 ring-gray-200 backdrop-blur-md'
-            : 'bg-transparent'
+            ? 'py-3 bg-white/80 backdrop-blur-xl shadow-[0_4px_30px_rgba(0,0,0,0.03)] border-b border-gray-100'
+            : 'py-6 bg-transparent'
         }`}
       >
-        <div className="container mx-auto px-6 py-2 flex items-center justify-between">
-          {/* Logo */}
-          <Link href="#hero" className="flex items-center gap-3 group">
-            {logoUrl && (
-              <Image
-                src={logoUrl}
-                alt={`${name || 'Brand'} Logo`}
-                width={48}
-                height={48}
-                className="rounded-full object-cover border-2 border-emerald-300 shadow-sm transition-all group-hover:scale-105"
-                loader={loader}
+        <div className="container mx-auto px-6 flex items-center justify-between">
+          
+          {/* Logo Section */}
+          <Link href="#hero" className="flex items-center gap-3 group z-50 relative">
+            <div className="relative">
+              <div 
+                className="absolute inset-0 rounded-full blur-md opacity-0 group-hover:opacity-40 transition-opacity duration-500"
+                style={{ backgroundColor: primaryColor }}
               />
-            )}
-            <span className="text-2xl font-bold tracking-tight text-gray-900 group-hover:text-emerald-600 transition-colors duration-300">
-              {name || 'Your Brand'}
+              {logoUrl && (
+                <Image
+                  src={logoUrl}
+                  alt={`${name} Logo`}
+                  width={44}
+                  height={44}
+                  loader={loader}
+                  className="relative rounded-full object-cover ring-2 ring-white shadow-sm"
+                />
+              )}
+            </div>
+            <span className={`text-xl font-bold tracking-tight transition-colors duration-300 ${scrolled ? 'text-gray-900' : 'text-gray-900'}`}>
+              {name || 'Booking Site'}
             </span>
           </Link>
 
-          {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-7">
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center bg-white/50 backdrop-blur-sm px-2 py-1.5 rounded-full border border-gray-100 shadow-sm">
             {navItems.map((item) => (
               <a
                 key={item.id}
                 href={`#${item.id}`}
-                className="text-gray-700 hover:text-gray-900 font-medium transition-colors relative group"
+                onMouseEnter={() => setHoveredNav(item.id)}
+                onMouseLeave={() => setHoveredNav(null)}
+                className="relative px-5 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors rounded-full"
               >
-                {item.label}
-                <span
-                  style={{ backgroundColor: primaryColor }}
-                  className="absolute bottom-0 left-0 w-0 h-0.5 rounded-full transition-all duration-300 group-hover:w-full"
-                />
+                <span className="relative z-10">{item.label}</span>
+                {hoveredNav === item.id && (
+                  <motion.div
+                    layoutId="nav-pill"
+                    className="absolute inset-0 rounded-full bg-gray-100"
+                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                  />
+                )}
               </a>
             ))}
+          </nav>
 
-            {/* Profile Icon */}
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              className="text-gray-800 hover:text-emerald-600 transition-colors"
+          {/* Desktop Actions */}
+          <div className="hidden md:flex items-center gap-4">
+            {/* User/Profile Button */}
+            <button
               onClick={handleUserAction}
-              aria-label={user ? 'Profile page' : 'Log In or Sign Up'}
+              className="flex items-center gap-2 px-3 py-2 rounded-full hover:bg-gray-100 transition-all duration-200 group"
             >
-              <UserIcon className="h-6 w-6" />
-            </motion.button>
+              <div className="p-1.5 bg-gray-50 rounded-full border border-gray-200 group-hover:border-gray-300 transition-colors">
+                <UserIcon className="h-5 w-5 text-gray-600" />
+              </div>
+              {user && (
+                <span className="text-sm font-medium text-gray-700 max-w-[100px] truncate">
+                  {user.name?.split(' ')[0]}
+                </span>
+              )}
+            </button>
 
-            {/* CTA */}
+            {/* Primary CTA */}
             <motion.a
               href="#booking"
-              whileHover={{
-                scale: 1.05,
-                boxShadow: `0 0 18px ${primaryColor}66`,
-              }}
-              transition={{ type: 'spring', stiffness: 250 }}
-              className="ml-6 px-6 py-2.5 rounded-full font-semibold text-white text-md shadow-lg"
+              whileHover={{ scale: 1.02, y: -1 }}
+              whileTap={{ scale: 0.98 }}
+              className="flex items-center gap-2 px-6 py-2.5 rounded-full font-semibold text-white text-sm shadow-lg overflow-hidden relative group"
               style={{
-                background: `linear-gradient(90deg, ${primaryColor}, #10B981)`,
+                background: `linear-gradient(135deg, ${primaryColor}, rgba(${primaryRgb}, 0.8))`,
+                boxShadow: `0 8px 20px -6px rgba(${primaryRgb}, 0.4)`
               }}
             >
-              Book Now
+              <span className="relative z-10">Book Now</span>
+              <ArrowRightIcon className="w-4 h-4 relative z-10 group-hover:translate-x-1 transition-transform" />
+              <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
             </motion.a>
-          </nav>
+          </div>
 
           {/* Mobile Toggle */}
           <button
-            className="md:hidden text-gray-800 hover:text-gray-900"
             onClick={() => setIsOpen(true)}
-            aria-label="Open menu"
+            className="md:hidden p-2 rounded-full hover:bg-gray-100 text-gray-800 transition-colors"
           >
-            <Bars3Icon className="h-8 w-8" />
+            <Bars3Icon className="h-7 w-7" />
           </button>
         </div>
-      </header>
+      </motion.header>
 
-      {/* MOBILE MENU */}
+      {/* MOBILE MENU OVERLAY */}
       <AnimatePresence>
         {isOpen && (
-          <motion.aside
-            initial={{ x: '100%' }}
-            animate={{ x: 0 }}
-            exit={{ x: '100%' }}
-            transition={{ type: 'tween', duration: 0.4, ease: 'easeOut' }}
-            className="fixed inset-y-0 right-0 z-[100] w-3/4 max-w-sm bg-white/95 backdrop-blur-xl p-8 flex flex-col shadow-2xl border-l border-gray-100"
-          >
-            <div className="flex justify-between items-center mb-10">
-              <Link href="#hero" className="flex items-center space-x-3">
-                {logoUrl && (
-                  <Image
-                    src={logoUrl}
-                    alt={`${name || 'Brand'} Logo`}
-                    width={40}
-                    height={40}
-                    className="rounded-full object-cover border-2 border-emerald-300"
-                    loader={loader}
-                  />
-                )}
-                <span className="text-xl font-bold text-gray-900">
-                  {name || 'Your Brand'}
-                </span>
-              </Link>
-              <button
-                onClick={() => setIsOpen(false)}
-                aria-label="Close menu"
-                className="text-gray-600 hover:text-gray-800"
-              >
-                <XMarkIcon className="h-7 w-7" />
-              </button>
-            </div>
-
-            <nav className="flex flex-col space-y-7">
-              {navItems.map((item) => (
-                <a
-                  key={item.id}
-                  href={`#${item.id}`}
-                  onClick={() => setIsOpen(false)}
-                  className="text-gray-800 text-lg font-semibold hover:text-emerald-600 transition-colors"
-                >
-                  {item.label}
-                </a>
-              ))}
-            </nav>
-
-            {/* Auth Buttons */}
-            <div className="mt-10 border-t border-gray-200 pt-8">
-              {user ? (
-                <>
-                  <button
-                    onClick={() => {
-                      setIsOpen(false);
-                      handleUserAction();
-                    }}
-                    className="w-full text-center px-4 py-3 rounded-lg text-white font-semibold shadow-md"
-                    style={{
-                      backgroundColor: primaryColor,
-                    }}
-                  >
-                    {user.role === 'admin' ? 'Admin Portal' : 'My Account'}
-                  </button>
-                  <button
-                    onClick={() => {
-                      setIsOpen(false);
-                      handleSignOut();
-                    }}
-                    className="w-full mt-3 text-gray-600 underline hover:text-emerald-600 text-base"
-                  >
-                    Sign Out
-                  </button>
-                </>
-              ) : (
-                <>
-                  <button
-                    onClick={() => {
-                      setIsOpen(false);
-                      handleGoogleSignIn();
-                    }}
-                    className="w-full text-center px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 font-medium border border-gray-200"
-                  >
-                    Log In
-                  </button>
-                  <button
-                    onClick={() => {
-                      setIsOpen(false);
-                      handleGoogleSignUp();
-                    }}
-                    className="w-full mt-3 text-center px-4 py-3 rounded-lg text-white font-semibold shadow-md"
-                    style={{
-                      backgroundColor: primaryColor,
-                    }}
-                  >
-                    Sign Up
-                  </button>
-                </>
-              )}
-            </div>
-
-            <motion.a
-              href="#booking"
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               onClick={() => setIsOpen(false)}
-              className="mt-auto text-center py-4 rounded-full font-bold text-white text-lg shadow-xl"
-              style={{
-                background: `linear-gradient(90deg, ${primaryColor}, #10B981)`,
-              }}
-              whileHover={{
-                scale: 1.05,
-                boxShadow: `0 0 20px ${primaryColor}66`,
-              }}
-              transition={{ type: 'spring', stiffness: 250 }}
+              className="fixed inset-0 z-[90] bg-gray-900/20 backdrop-blur-sm md:hidden"
+            />
+
+            {/* Slide-over Panel */}
+            <motion.aside
+              variants={menuVariants}
+              initial="closed"
+              animate="open"
+              exit="closed"
+              className="fixed inset-y-0 right-0 z-[100] w-full sm:w-[380px] bg-white shadow-2xl flex flex-col"
             >
-              Book Your Session
-            </motion.a>
-          </motion.aside>
+              <div className="flex items-center justify-between p-6 border-b border-gray-100">
+                <span className="text-lg font-bold text-gray-900">{name}</span>
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="p-2 rounded-full bg-gray-50 hover:bg-gray-100 text-gray-500 hover:text-gray-900 transition-colors"
+                >
+                  <XMarkIcon className="h-6 w-6" />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto py-8 px-6">
+                <nav className="flex flex-col space-y-2">
+                  {navItems.map((item, i) => (
+                    <motion.a
+                      custom={i}
+                      variants={listVariants}
+                      key={item.id}
+                      href={`#${item.id}`}
+                      onClick={() => setIsOpen(false)}
+                      className="flex items-center justify-between p-4 rounded-2xl text-xl font-semibold text-gray-800 hover:bg-gray-50 transition-all group"
+                    >
+                      {item.label}
+                      <ArrowRightIcon className="w-5 h-5 text-gray-300 group-hover:text-gray-900 -translate-x-2 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all" />
+                    </motion.a>
+                  ))}
+                </nav>
+              </div>
+
+              {/* Mobile Footer */}
+              <div className="p-6 border-t border-gray-100 bg-gray-50/50">
+                {!user ? (
+                  <div className="grid grid-cols-2 gap-4">
+                    <button
+                      onClick={() => { setIsOpen(false); handleGoogleSignIn(); }}
+                      className="w-full py-3.5 rounded-xl text-gray-700 font-semibold bg-white border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors"
+                    >
+                      Log In
+                    </button>
+                    <button
+                      onClick={() => { setIsOpen(false); handleGoogleSignUp(); }}
+                      className="w-full py-3.5 rounded-xl text-white font-semibold shadow-md"
+                      style={{ backgroundColor: primaryColor }}
+                    >
+                      Sign Up
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3 p-4 bg-white rounded-xl border border-gray-100 shadow-sm">
+                      <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600">
+                        <UserIcon className="w-6 h-6" />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-900">{user.name || 'User'}</p>
+                        <p className="text-xs text-gray-500 capitalize">{user.role || 'Member'}</p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <button
+                        onClick={() => { setIsOpen(false); handleUserAction(); }}
+                        className="py-3 rounded-xl bg-white border border-gray-200 text-gray-700 font-medium hover:bg-gray-50"
+                      >
+                        My Account
+                      </button>
+                      <button
+                        onClick={() => { setIsOpen(false); handleSignOut(); }}
+                        className="py-3 rounded-xl bg-red-50 text-red-600 font-medium hover:bg-red-100"
+                      >
+                        Sign Out
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </motion.aside>
+          </>
         )}
       </AnimatePresence>
     </>

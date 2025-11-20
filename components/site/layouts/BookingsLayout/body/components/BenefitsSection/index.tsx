@@ -3,15 +3,14 @@
 import React, { useRef } from 'react';
 import Image from 'next/image';
 import { motion, useInView } from 'framer-motion';
-import { useStoreContext } from '@/contexts/StoreContext';
 import {
     CheckCircleIcon,
     ShieldCheckIcon,
     SparklesIcon,
     ClockIcon,
     StarIcon,
-    HandThumbUpIcon, // Used for 'Quality'
-    TagIcon, // Used for 'Pricing'
+    HandThumbUpIcon,
+    TagIcon,
 } from '@heroicons/react/24/solid';
 
 // Utility function for Next.js Image loader
@@ -27,15 +26,15 @@ const defaultBenefits = [
     {
         title: 'Unmatched Quality',
         description: 'Our certified professionals are dedicated to delivering excellence every time.',
-        Icon: HandThumbUpIcon, // Changed to HandThumbUpIcon
+        Icon: HandThumbUpIcon, 
     },
     {
         title: 'Transparent Pricing',
         description: 'No hidden fees, no surprises. What you see is exactly what you pay.',
-        Icon: TagIcon, // Changed to TagIcon
+        Icon: TagIcon, 
     },
     {
-        title: '24/7 Flexibility', // Refined title
+        title: '24/7 Flexibility',
         description: 'We offer flexible scheduling to fit your busy life, anytime, anywhere.',
         Icon: ClockIcon,
     },
@@ -53,33 +52,31 @@ interface AboutAndBenefitsSectionProps {
     promotions?: any[]; // Define a proper type if available
 }
 
+// Sample data for robust testing/display
+const sampleData = {
+    name: 'SwiftServe',
+    description: 'At SwiftServe, we’re committed to connecting you with top-tier professionals for all your needs. From home services to personal care, our platform guarantees a seamless and satisfying experience from start to finish. We handle the complexity so you can enjoy the results.',
+    bannerUrl: 'https://images.unsplash.com/photo-1542626991-cbc9322c34d4?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    themeSettings: {
+        primaryColor: '#059669', // Emerald 600
+        secondaryColor: '#FBBF24', // Amber 400
+    },
+    promotions: [],
+};
+
+
 export default function AboutAndBenefitsSection({name, description, bannerUrl, themeSettings, promotions}: AboutAndBenefitsSectionProps) {
-    // const { storeFormData } = useStoreContext();
-
-    // Sample data (Using our established Emerald/Amber colors)
-    const sampleData = {
-        name: 'SwiftServe',
-        description: 'At SwiftServe, we’re committed to connecting you with top-tier professionals for all your needs. From home services to personal care, our platform guarantees a seamless and satisfying experience from start to finish. We handle the complexity so you can enjoy the results.',
-        bannerUrl: 'https://images.unsplash.com/photo-1542626991-cbc9322c34d4?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-        themeSettings: {
-            primaryColor: '#059669', // Emerald 600
-            secondaryColor: '#FBBF24', // Amber 400
-        },
-        promotions: [],
-    };
-
-    // const  = storeFormData || sampleData;
-
-    const primaryColor = themeSettings?.primaryColor || '#059669';
-    const secondaryColor = themeSettings?.secondaryColor || '#FBBF24';
+    
+    const primaryColor = themeSettings?.primaryColor || sampleData.themeSettings.primaryColor;
+    const secondaryColor = themeSettings?.secondaryColor || sampleData.themeSettings.secondaryColor;
 
     // Logic to determine benefits
     const brandBenefits = promotions?.[0]?.perks?.length > 0
         ? promotions?.[0].perks.map((perk: any) => ({
-            title: perk.label,
-            description: perk.description || '',
-            Icon: StarIcon, // Generic icon for dynamic perks
-        }))
+              title: perk.label,
+              description: perk.description || '',
+              Icon: StarIcon,
+          }))
         : defaultBenefits;
 
     // Animation variants for staggered effects
@@ -88,7 +85,7 @@ export default function AboutAndBenefitsSection({name, description, bannerUrl, t
         show: {
             opacity: 1,
             transition: {
-                staggerChildren: 0.1, // Faster stagger for snappier feel
+                staggerChildren: 0.1, 
             },
         },
     };
@@ -99,19 +96,21 @@ export default function AboutAndBenefitsSection({name, description, bannerUrl, t
     };
 
     const sectionRef = useRef(null);
-    const isInView = useInView(sectionRef, { once: true, amount: 0.3 });
+    const isInView = useInView(sectionRef, { once: true, amount: 0.25 });
 
     return (
         <section className="relative bg-white py-24 lg:py-36 text-gray-900 overflow-hidden" ref={sectionRef}>
             
-            {/* 🎨 Background Grids & Blobs (Increased Opacity/Refined Look) */}
+            {/* 🎨 Background Grids & Blobs (Subtle Atmosphere) */}
             <div className="absolute inset-0 z-0 opacity-10 blur-3xl">
+                {/* Primary Blob */}
                 <motion.div
                     className="absolute rounded-full -top-40 -left-40 w-96 h-96"
                     style={{ backgroundColor: primaryColor }}
                     animate={{ x: [0, 50, 0], y: [0, -30, 0], scale: [1, 1.05, 1] }}
                     transition={{ duration: 25, repeat: Infinity, ease: "linear", repeatType: "mirror" }}
                 />
+                {/* Secondary Blob */}
                 <motion.div
                     className="absolute rounded-full -bottom-40 -right-40 w-[500px] h-[500px]"
                     style={{ backgroundColor: secondaryColor }}
@@ -120,40 +119,39 @@ export default function AboutAndBenefitsSection({name, description, bannerUrl, t
                 />
             </div>
 
-            {/* Subtle Texture Grid for depth */}
-            <div className="absolute inset-0 z-0 opacity-[0.03] pointer-events-none">
-                <div className="h-full w-full bg-repeat bg-[size:40px_40px] [background-image:radial-gradient(circle_at_center,_#9ca3af_2px,_transparent_0)]"></div>
+            {/* Subtle Grid Texture for Glassmorphism Context */}
+            <div className="absolute inset-0 z-0 opacity-[0.05] pointer-events-none">
+                <div className="h-full w-full bg-repeat bg-[size:40px_40px] [background-image:radial-gradient(circle_at_center,_#9ca3af_1px,_transparent_0)]"></div>
             </div>
 
             <div className="relative z-10 max-w-7xl mx-auto px-6 lg:px-12">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
                     
-                    {/* 🖼️ Left Column: Image with 3D Pop and Shadow */}
+                    {/* 🖼️ Left Column: Image with 3D Pop and Accent */}
                     <motion.div
                         className="relative w-full aspect-[4/3] lg:aspect-[3/4] rounded-3xl overflow-hidden shadow-2xl ring-8 ring-white/60 transition-all duration-500 group border border-gray-100"
                         initial={{ opacity: 0, scale: 0.9, rotate: -3 }}
                         animate={isInView ? { opacity: 1, scale: 1, rotate: 0 } : {}}
-                        transition={{ duration: 0.9, ease: [0.17, 0.67, 0.83, 0.67] }} // Custom spring-like easing
+                        transition={{ duration: 0.9, ease: [0.17, 0.67, 0.83, 0.67] }} 
                     >
                         <Image
-                            src={bannerUrl || 'https://images.unsplash.com/photo-1542626991-cbc9322c34d4?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'}
+                            src={bannerUrl || sampleData.bannerUrl}
                             loader={loader}
                             alt="A happy customer enjoying a service"
                             fill
                             className="object-cover transition-transform duration-500 group-hover:scale-105"
                             sizes="(max-width: 1024px) 100vw, 50vw"
                         />
-                        {/* Corner Accent Box */}
-                        <div className="absolute bottom-0 right-0 w-28 h-28 p-4 flex items-center justify-center text-white font-bold text-sm uppercase tracking-widest rounded-tl-3xl shadow-lg" 
-                             style={{ backgroundColor: secondaryColor }}>
-                            {/* Decorative element, e.g., Sparkles icon here */}
-                            <SparklesIcon className="w-10 h-10 text-white animate-pulse-slow" />
+                        {/* Corner Accent Box: Used secondary color for contrast */}
+                        <div className="absolute bottom-0 right-0 w-32 h-32 p-4 flex items-center justify-center text-white font-bold text-sm uppercase tracking-widest rounded-tl-3xl shadow-xl" 
+                            style={{ backgroundColor: secondaryColor }}>
+                            <SparklesIcon className="w-12 h-12 text-white animate-pulse-slow" />
                         </div>
                     </motion.div>
 
                     {/* 📝 Right Column: Text Content and Benefits Grid */}
                     <motion.div
-                        className="space-y-8"
+                        className="space-y-10"
                         initial="hidden"
                         animate={isInView ? "show" : "hidden"}
                         variants={containerVariants}
@@ -164,7 +162,7 @@ export default function AboutAndBenefitsSection({name, description, bannerUrl, t
                             style={{ backgroundColor: primaryColor, color: 'white' }}
                             variants={itemVariants}
                         >
-                            Our Commitment to You
+                            Commitment to Excellence
                         </motion.span>
                         
                         {/* Main Heading */}
@@ -172,38 +170,37 @@ export default function AboutAndBenefitsSection({name, description, bannerUrl, t
                             className="text-4xl sm:text-6xl font-extrabold leading-tight text-gray-900"
                             variants={itemVariants}
                         >
-                            Experience the <span style={{ color: primaryColor }}>Difference</span>: Seamless Service, Unmatched Quality.
+                            Experience the <span style={{ color: primaryColor }}>{name || 'SwiftServe'}</span> Difference: Seamless Service, Unmatched Quality.
                         </motion.h2>
                         
-                        {/* Description */}
+                        {/* Description with Primary Color Accent Line */}
                         <motion.p
-                            className="text-xl text-gray-600 max-w-xl leading-relaxed border-l-4 pl-4"
+                            className="text-xl text-gray-600 max-w-xl leading-relaxed border-l-4 pl-6"
                             style={{ borderColor: primaryColor }}
                             variants={itemVariants}
                         >
-                            {description || 'We are dedicated to providing an unparalleled service experience, focusing on your comfort, convenience, and complete satisfaction.'}
+                            {description || sampleData.description}
                         </motion.p>
 
-                        {/* Benefits Grid (Visually Enhanced Cards) */}
+                        {/* Benefits Grid - Clean, Iconic Presentation */}
                         <motion.div
-                            className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-10 pt-8"
+                            className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-10 pt-4"
                             variants={containerVariants}
                         >
                             {brandBenefits.map(({ title, description, Icon }:{ title: string; description: string; Icon: React.ElementType }, i : number) => (
                                 <motion.div
                                     key={title}
-                                    // Removed border/shadow from card body to emphasize the icon block
                                     className="flex items-start space-x-5 transition-all duration-200 group"
                                     variants={itemVariants}
                                 >
                                     {/* Icon with Strong Gradient and Animated Hover */}
-                                    <div className="flex-shrink-0 w-14 h-14 rounded-full flex items-center justify-center shadow-xl transition-all duration-300 transform group-hover:scale-110 group-hover:rotate-6"
+                                    <div className="flex-shrink-0 w-16 h-16 rounded-full flex items-center justify-center shadow-xl transition-all duration-300 transform group-hover:scale-105 group-hover:rotate-3"
                                         style={{
                                             backgroundImage: `linear-gradient(to bottom right, ${primaryColor}, #10B981)`,
                                             boxShadow: `0 8px 25px ${primaryColor}66`,
                                         }}
                                     >
-                                        <Icon className="w-7 h-7 text-white" />
+                                        <Icon className="w-8 h-8 text-white" />
                                     </div>
                                     
                                     {/* Text Content */}
