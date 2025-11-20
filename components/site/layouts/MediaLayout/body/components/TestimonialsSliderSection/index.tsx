@@ -1,194 +1,166 @@
-"use client";
+'use client';
 
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion'; // Ensure AnimatePresence is imported
-import { ArrowRightIcon, ChevronLeftIcon, ChevronRightIcon, StarIcon } from '@heroicons/react/24/solid'; // Updated icons for slider controls and rating
+import { motion } from 'framer-motion';
+import { SparklesIcon, ArrowUpRightIcon, StarIcon } from '@heroicons/react/24/solid';
 import Image from 'next/image';
 
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
-  `${src}?w=${width}&q=${quality || 75}`;
-
+// --- Types ---
 interface Testimonial {
   id: string;
   quote: string;
-  author: string;
-  source?: string; // e.g., "Rotten Tomatoes", "The New York Times"
-  avatarUrl?: string; // Optional URL for author's avatar/image
-  rating?: number; // Optional star rating (e.g., 1-5)
-  // If the testimonial is about a specific piece of media
-  mediaTitle?: string;
-  mediaSlug?: string;
+  name: string;
+  title: string; // Job Title or Company
+  avatarUrl: string;
+  rating: number; // 1-5
 }
 
-interface TestimonialsSliderProps {
-  testimonials: Testimonial[];
-  // loader is removed as Next.js Image handles it
+interface TestimonialsSectionProps {
+  title?: string;
+  subtitle?: string;
+  testimonials?: Testimonial[];
 }
 
-/**
- * Innovative & Engaging Testimonials Slider
- * Showcases critics' reviews and audience feedback with a visually appealing carousel.
- */
-export default function TestimonialsSlider({ testimonials }: TestimonialsSliderProps) {
-  const [idx, setIdx] = React.useState(0);
-  const len = testimonials.length;
+// --- Mock Data (Fallbacks) ---
+const fallbackTestimonials: Testimonial[] = [
+  {
+    id: 't1',
+    quote: "The media section component is a masterpiece of modern web design, perfectly blending utility with stunning visual appeal. A huge leap forward for our newsroom presentation.",
+    name: 'Sarah Chen',
+    title: 'Lead UI/UX Designer, InnovateCorp',
+    avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=2576&auto=format&fit=crop',
+    rating: 5,
+  },
+  {
+    id: 't2',
+    quote: "Implementation was seamless, and the Framer Motion effects gave our site the polish it desperately needed. The filter functionality is exactly what our users asked for.",
+    name: 'Michael Davis',
+    title: 'CTO, Global Tech Solutions',
+    avatarUrl: 'https://images.unsplash.com/photo-1544723795-3fb646cb0d75?q=80&w=2694&auto=format&fit=crop',
+    rating: 5,
+  },
+  {
+    id: 't3',
+    quote: "We've seen a 40% increase in engagement with our news content since launching this design. The clear hierarchy and dark mode support are critical wins.",
+    name: 'Jessica Lee',
+    title: 'Marketing Director, Ascent Media',
+    avatarUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29329?q=80&w=2574&auto=format&fit=crop',
+    rating: 4,
+  },
+];
 
-  // Auto-play feature (optional, but adds dynamism)
-  React.useEffect(() => {
-    const interval = setInterval(() => {
-      setIdx((prevIdx) => (prevIdx + 1) % len);
-    }, 8000); // Change slide every 8 seconds
+// --- Helper: Image Loader (Consistent with MediaSection) ---
+const loader = ({ src, width }: { src: string; width: number }) => `${src}?w=${width}`;
 
-    return () => clearInterval(interval); // Clean up on unmount
-  }, [len]);
-
-  const prev = () => setIdx((idx - 1 + len) % len);
-  const next = () => setIdx((idx + 1) % len);
-
-  // Variants for the testimonial card animation
-  const slideVariants = {
-    enter: (direction: number) => ({
-      x: direction > 0 ? 100 : -100,
-      opacity: 0,
-      scale: 0.8, // Start slightly smaller
-    }),
-    center: {
-      zIndex: 1,
-      x: 0,
-      opacity: 1,
-      scale: 1,
-      transition: {
-        duration: 0.8,
-        ease: [0.6, 0.05, -0.01, 0.9], // Custom cubic-bezier for a springy feel
-      },
-    },
-    exit: (direction: number) => ({
-      zIndex: 0,
-      x: direction < 0 ? 100 : -100,
-      opacity: 0,
-      scale: 0.8, // Exit slightly smaller
-      transition: {
-        duration: 0.6,
-        ease: "easeInOut",
-      },
-    }),
-  };
+export default function TestimonialsSection({ title, subtitle, testimonials }: TestimonialsSectionProps) {
+  const displayTestimonials = testimonials || fallbackTestimonials;
+  
+  const StarRating = ({ count }: { count: number }) => (
+    <div className="flex items-center">
+      {[...Array(5)].map((_, i) => (
+        <StarIcon 
+          key={i} 
+          className={`w-5 h-5 ${
+            i < count ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'
+          }`} 
+        />
+      ))}
+    </div>
+  );
 
   return (
-    <section className="py-20 bg-gradient-to-br from-black to-gray-950 text-white overflow-hidden">
-      <div className="container mx-auto px-6 lg:px-12">
-        {/* Section Title */}
-        <motion.h2
-          className="text-4xl md:text-5xl font-extrabold text-center mb-16 relative z-10 tracking-tight"
-          initial={{ opacity: 0, y: -30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-        >
-          What Our Audience Says 💖
-          <span className="block w-28 h-1 bg-red-600 mx-auto mt-4 rounded-full"></span>
-        </motion.h2>
+    <section className="relative py-24 bg-white dark:bg-gray-950 overflow-hidden">
+      
+      {/* Subtle Grid Background */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none"></div>
 
-        {/* Testimonial Slider Container */}
-        <div className="relative max-w-4xl mx-auto flex items-center justify-center min-h-[300px] md:min-h-[350px]"> {/* Increased min-height */}
-          {/* Previous Button */}
-          <motion.button
-            onClick={prev}
-            className="absolute left-0 z-20 p-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full shadow-lg text-white transition-colors duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-red-400 opacity-80 hover:opacity-100"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            aria-label="Previous review"
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
+        
+        {/* --- Header --- */}
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest mb-2"
           >
-            <ChevronLeftIcon className="h-7 w-7" />
-          </motion.button>
-
-          {/* Testimonial Card */}
-          <AnimatePresence initial={false} mode="wait" custom={idx}> {/* 'mode="wait"' ensures old slide exits before new one enters */}
-            {testimonials.length > 0 && (
-              <motion.div
-                key={testimonials[idx].id} // Use unique ID for key
-                custom={1} // Custom prop for 'enter' variant (direction)
-                variants={slideVariants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                className="absolute w-full p-8 md:p-12 bg-gray-800 rounded-3xl shadow-2xl border border-gray-700 text-center flex flex-col items-center justify-center transform-gpu" // Added border, more shadow
-              >
-                {testimonials[idx].avatarUrl && (
-                  <div className="mx-auto w-24 h-24 rounded-full overflow-hidden mb-6 ring-4 ring-red-600 ring-offset-2 ring-offset-gray-800"> {/* Larger avatar, red ring */}
-                    <Image
-                      src={testimonials[idx].avatarUrl || "https://placehold.co/128x128/000000/FFFFFF?text=Avatar"}
-                      alt={testimonials[idx].author}
-                      loader={loader}
-                      width={96}
-                      height={96}
-                      className="object-cover w-full h-full"
-                    />
-                  </div>
-                )}
-                {testimonials[idx].rating !== undefined && (
-                  <div className="flex justify-center items-center mb-4 text-yellow-400">
-                    {[...Array(5)].map((_, i) => (
-                      <StarIcon
-                        key={i}
-                        className={`h-6 w-6 text-gray-600 `}
-                        // className={`h-6 w-6 ${i < testimonials[idx].rating ? 'text-yellow-400' : 'text-gray-600'}`}
-                      />
-                    ))}
-                  </div>
-                )}
-                <p className="italic text-lg md:text-xl text-gray-200 mb-6 leading-relaxed max-w-2xl">
-                  “{testimonials[idx].quote}”
-                </p>
-                <span className="font-bold text-red-400 block text-lg mb-2">
-                  — {testimonials[idx].author}
-                </span>
-                {testimonials[idx].source && (
-                  <span className="text-sm text-gray-400 block">
-                    {testimonials[idx].source}
-                  </span>
-                )}
-                {testimonials[idx].mediaTitle && testimonials[idx].mediaSlug && (
-                  <motion.a
-                    href={`/media/${testimonials[idx].mediaSlug}`}
-                    className="mt-4 inline-flex items-center text-red-500 hover:text-red-400 font-semibold transition-colors duration-300"
-                    whileHover={{ x: 5 }}
-                    aria-label={`View ${testimonials[idx].mediaTitle}`}
-                  >
-                    About: {testimonials[idx].mediaTitle}
-                    <ArrowRightIcon className="h-4 w-4 ml-2" />
-                  </motion.a>
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Next Button */}
-          <motion.button
-            onClick={next}
-            className="absolute right-0 z-20 p-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full shadow-lg text-white transition-colors duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-red-400 opacity-80 hover:opacity-100"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            aria-label="Next review"
+            Social Proof
+          </motion.p>
+          <motion.h2 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+            className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white tracking-tight"
           >
-            <ChevronRightIcon className="h-7 w-7" />
-          </motion.button>
+            {title || "Trusted by Industry Leaders"}
+          </motion.h2>
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+            className="mt-4 text-lg text-gray-600 dark:text-gray-400"
+          >
+            {subtitle || "Hear directly from the people who use our platform every day."}
+          </motion.p>
         </div>
 
-        {/* Pagination Dots */}
-        <div className="flex justify-center mt-12 gap-3">
-          {testimonials.map((_, i) => (
-            <motion.button
-              key={i}
-              className={`block w-3 h-3 rounded-full transition-colors duration-300 ${
-                i === idx ? 'bg-red-600 scale-125' : 'bg-gray-600 hover:bg-gray-500'
-              }`}
-              onClick={() => setIdx(i)}
-              whileHover={{ scale: 1.25 }}
-              whileTap={{ scale: 0.9 }}
-              aria-label={`Go to review ${i + 1}`}
-            />
+        {/* --- Testimonials Grid --- */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {displayTestimonials.map((testimonial, index) => (
+            <motion.div
+              key={testimonial.id}
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+              className="flex flex-col p-8 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300"
+            >
+              <StarRating count={testimonial.rating} />
+              
+              <blockquote className="mt-4 flex-grow">
+                <p className="text-xl font-medium text-gray-900 dark:text-white leading-relaxed">
+                  "{testimonial.quote}"
+                </p>
+              </blockquote>
+              
+              <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800 flex items-center">
+                <div className="relative w-12 h-12 flex-shrink-0">
+                  <Image
+                    loader={loader}
+                    src={testimonial.avatarUrl}
+                    alt={testimonial.name}
+                    fill
+                    className="object-cover rounded-full"
+                  />
+                </div>
+                <div className="ml-4">
+                  <p className="text-base font-semibold text-gray-900 dark:text-white">
+                    {testimonial.name}
+                  </p>
+                  <p className="text-sm text-indigo-600 dark:text-indigo-400">
+                    {testimonial.title}
+                  </p>
+                </div>
+              </div>
+            </motion.div>
           ))}
+        </div>
+        
+        {/* --- Optional CTA --- */}
+        <div className="mt-16 text-center">
+            <motion.a 
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.4 }}
+                href="#" 
+                className="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-full text-indigo-600 dark:text-white bg-indigo-50 dark:bg-gray-800 hover:bg-indigo-100 dark:hover:bg-gray-700 transition-all duration-300 shadow-md"
+            >
+                Read All 500+ Reviews
+                <ArrowUpRightIcon className="w-5 h-5 ml-2" />
+            </motion.a>
         </div>
       </div>
     </section>

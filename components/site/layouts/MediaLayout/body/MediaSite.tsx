@@ -151,10 +151,10 @@ export default function MediaSite({ pageData, companyId }: { pageData: StoreForm
   }
 
   return (
-    <div className="space-y-24 bg-black font-sans text-white relative"> {/* Increased space-y, set global background */}
+    <div className="font-sans relative"> {/* Increased space-y, set global background */}
       {/* Hero Section */}
       <MediaHeroSection
-        store={displayData}
+        slideData={displayData.heroSlides}
         onPlay={(slide: any) =>
           router.push(`/${displayData.slug}/video/${slide.slug}`)
         }
