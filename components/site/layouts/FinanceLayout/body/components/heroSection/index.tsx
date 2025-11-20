@@ -111,7 +111,7 @@ const HeroSection = ({ heroSlides, themeSettings }: HeroSectionProps) => {
         />
       </div>
 
-      <div className="absolute inset-0 z-1 bg-gradient-to-r from-white/95 via-white/80 to-transparent md:to-60%"/>
+      <div className="absolute inset-0 z-1 bg-gradient-to-r from-white/70 via-white/30 to-transparent md:to-60%"/>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 items-center gap-12 lg:gap-20">
