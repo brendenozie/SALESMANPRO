@@ -1,301 +1,246 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { useStoreContext } from '@/contexts/StoreContext';
-import { IBlog } from '@/types/typings';
+"use client";
 
-// A placeholder for the StoreContext hook, mirroring the provided structure
-const blogsSample= [
-      {
-        id: 'blog1',
-        title: 'Global leaders unite to address climate crisis at COP26',
-        publishedAt: '2023-04-21T10:00:00Z',
-        coverImage: 'https://placehold.co/600x400/22C55E/FFFFFF?text=Climate+Crisis',
-        slug: 'climate-crisis-cop26',
-        content: 'Long content for blog 1...',
-        categories: ['Politics', 'Environment'],
-        tags: ['COP26', 'Climate'],
-        author: { name: 'Alice Smith', profileImage: 'https://placehold.co/50x50/FFD700/000000?text=AS' },
-        status: 'Published',
-      },
-      {
-        id: 'blog2',
-        title: 'Cybersecurity experts warn of increased threats in digital age',
-        publishedAt: '2023-04-20T11:30:00Z',
-        coverImage: 'https://placehold.co/600x400/0EA5E9/FFFFFF?text=Cybersecurity+Threats',
-        slug: 'cybersecurity-threats',
-        content: 'Long content for blog 2...',
-        categories: ['Technology', 'Security'],
-        tags: ['Cybersecurity', 'Digital'],
-        author: { name: 'Bob Johnson', profileImage: 'https://placehold.co/50x50/ADD8E6/000000?text=BJ' },
-        status: 'Published',
-      },
-      {
-        id: 'blog3',
-        title: 'Athlete achieves historic win at world championships breaking records',
-        publishedAt: '2023-04-19T09:00:00Z',
-        coverImage: 'https://placehold.co/600x400/EC4899/FFFFFF?text=Historic+Win',
-        slug: 'historic-win-athlete',
-        content: 'Long content for blog 3...',
-        categories: ['Sports'],
-        tags: ['Athletics', 'Championships'],
-        author: { name: 'Charlie Brown', profileImage: 'https://placehold.co/50x50/90EE90/000000?text=CB' },
-        status: 'Published',
-      },
-      {
-        id: 'blog4',
-        title: 'Chemical currents: Breaking news in chemistry and materials science',
-        publishedAt: '2023-04-18T14:00:00Z',
-        coverImage: 'https://placehold.co/600x400/F97316/FFFFFF?text=Chemistry+News',
-        slug: 'chemistry-materials-science',
-        content: 'Long content for blog 4...',
-        categories: ['Science'],
-        tags: ['Chemistry', 'Materials'],
-        author: { name: 'Diana Prince', profileImage: 'https://placehold.co/50x50/FFB6C1/000000?text=DP' },
-        status: 'Published',
-      },
-      {
-        id: 'blog5',
-        title: 'New breakthroughs in space exploration excite scientists',
-        publishedAt: '2023-04-17T16:00:00Z',
-        coverImage: 'https://placehold.co/600x400/8B5CF6/FFFFFF?text=Space+Exploration',
-        slug: 'space-exploration-breakthroughs',
-        content: 'Long content for blog 5...',
-        categories: ['Science', 'Space'],
-        tags: ['Astronomy', 'Exploration'],
-        author: { name: 'Eve Adams', profileImage: 'https://placehold.co/50x50/DDA0DD/000000?text=EA' },
-        status: 'Published',
-      },
-      {
-        id: 'blog6',
-        title: 'The rise of sustainable fashion: Trends and future outlook',
-        publishedAt: '2023-04-16T10:00:00Z',
-        coverImage: 'https://placehold.co/600x400/10B981/FFFFFF?text=Sustainable+Fashion',
-        slug: 'sustainable-fashion-trends',
-        content: 'Long content for blog 6...',
-        categories: ['Fashion', 'Environment'],
-        tags: ['Sustainability', 'Trends'],
-        author: { name: 'Frank Green', profileImage: 'https://placehold.co/50x50/B0E0E6/000000?text=FG' },
-        status: 'Published',
-      },
-    ];
+import React from "react";
+import { motion } from "framer-motion";
+import { IBlog } from "@/types/typings";
 
-// Static fallback data, used if dynamic data from useStoreContext is not available
-const fallbackNews = [
-  { 
-    title: 'Global leaders unite to address climate crisis at COP26', 
-    date: 'April 21, 2023', 
-    img: 'https://placehold.co/600x400/22C55E/FFFFFF?text=Climate+Crisis', 
-    link: '#',
-    authorName: 'Guest Author',
-    authorImage: null,
+// ---------------------------------------------------------
+// MOCK / FALLBACK DATA
+// ---------------------------------------------------------
+const fallbackNews : any[] = [
+  {
+    id: "f1",
+    title: "Global leaders unite to address climate crisis at COP26",
+    publishedAt: "2023-04-21T10:00:00Z",
+    coverImage: "https://placehold.co/600x400/22C55E/FFFFFF?text=Climate+Crisis",
+    slug: "climate-crisis-cop26",
+    categories: ["Environment"],
+    author: { name: "Guest Author", profileImage: null },
   },
-  { 
-    title: 'Cybersecurity experts warn of increased threats', 
-    date: 'April 20, 2023', 
-    img: 'https://placehold.co/600x400/0EA5E9/FFFFFF?text=Cybersecurity+Threats', 
-    link: '#',
-    authorName: 'Guest Author',
-    authorImage: null,
+  {
+    id: "f2",
+    title: "Cybersecurity experts warn of increased threats in digital age",
+    publishedAt: "2023-04-20T11:30:00Z",
+    coverImage: "https://placehold.co/600x400/0EA5E9/FFFFFF?text=Cybersecurity",
+    slug: "cybersecurity-threats",
+    categories: ["Technology"],
+    author: { name: "Guest Author", profileImage: null },
   },
-  { 
-    title: 'Athlete achieves historic win at world championships', 
-    date: 'April 19, 2023', 
-    img: 'https://placehold.co/600x400/EC4899/FFFFFF?text=Historic+Win', 
-    link: '#',
-    authorName: 'Guest Author',
-    authorImage: null,
-  },
-  { 
-    title: 'Chemical currents breaking news in chemistry and materials science', 
-    date: 'April 18, 2023', 
-    img: 'https://placehold.co/600x400/F97316/FFFFFF?text=Chemistry+News', 
-    link: '#',
-    authorName: 'Guest Author',
-    authorImage: null,
-  },
-  { 
-    title: 'New breakthroughs in space exploration excite scientists', 
-    date: 'April 17, 2023', 
-    img: 'https://placehold.co/600x400/8B5CF6/FFFFFF?text=Space+Exploration', 
-    link: '#',
-    authorName: 'Guest Author',
-    authorImage: null,
-  },
-  { 
-    title: 'The rise of sustainable fashion: Trends and future outlook', 
-    date: 'April 16, 2023', 
-    img: 'https://placehold.co/600x400/10B981/FFFFFF?text=Sustainable+Fashion', 
-    link: '#',
-    authorName: 'Guest Author',
-    authorImage: null,
+  {
+    id: "f3",
+    title: "Athlete achieves historic win at world championships",
+    publishedAt: "2023-04-19T09:00:00Z",
+    coverImage: "https://placehold.co/600x400/EC4899/FFFFFF?text=Historic+Win",
+    slug: "historic-win",
+    categories: ["Sports"],
+    author: { name: "Guest Author", profileImage: null },
   },
 ];
 
-interface LatestNewsSectionProps { 
-  blogs: IBlog[]; 
+interface LatestNewsSectionProps {
+  blogs: IBlog[];
   themeSettings: Record<string, any> | null;
- }
+}
 
 const LatestNewsSection = ({ blogs, themeSettings }: LatestNewsSectionProps) => {
-
-  // const { storeFormData } = useStoreContext() || {};
-  // const { blogs } = storeFormData || {};
-
-  // SVG for a calendar icon
-  const CalendarIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4 mr-2">
-      <path fillRule="evenodd" d="M6.75 2.25A.75.75 0 0 1 7.5 3v1.5H16.5V3A.75.75 0 0 1 18 3v1.5h.75a3 3 0 0 1 3 3v11.25a3 3 0 0 1-3 3H5.25a3 3 0 0 1-3-3V7.5a3 3 0 0 1 3-3H6.75V3A.75.75 0 0 1 7.5 3zM16.5 6V4.5H7.5V6h9z" clipRule="evenodd" />
-    </svg>
-  );
-
-  // SVG for a user icon
-  const UserCircleIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6 mr-2">
-      <path fillRule="evenodd" d="M18.685 19.03A9.75 9.75 0 0 1 12 21.75c-2.676 0-5.324-.775-7.499-2.25A15.75 15.75 0 0 1 12 2.25a15.75 15.75 0 0 1 7.499 16.78zM12 11.25a3.75 3.75 0 1 0 0-7.5 3.75 3.75 0 0 0 0 7.5z" clipRule="evenodd" />
-    </svg>
-  );
-
-  // Destructure storeFormData from context, providing a fallback
-  // const { storeFormData } = useStoreContext() || {};
-  // const  = storeFormData || {};
-
-  // Map dynamic blog posts to our news item shape, or use fallback data
-  const newsItems = Array.isArray(blogs) && blogs.length > 0
-    ? blogs.slice(0, 6).map(post => ({
-        title: post.title,
-        date: post.publishedAt
-          ? new Date(post.publishedAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
-          : 'Unknown date',
-        img: post.coverImage || 'https://placehold.co/600x400/CCCCCC/333333?text=No+Image',
-        link: post.slug ? `/blogs/${post.slug}` : '#',
-        authorName: post.authorName|| 'Guest Author',
-        authorImage: post.coverImage || null,
-      }))
-    : fallbackNews;
-
-  // Function to handle image loading errors
-  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    e.currentTarget.onerror = null;
-    e.currentTarget.src = 'https://placehold.co/600x400/CCCCCC/333333?text=Image+Not+Found';
+  
+  // 1. THEME EXTRACTION
+  // Safely extract primary color or default to a cool Indigo
+  const primaryColor = themeSettings?.primaryColor || "#6366f1";
+  
+  // Helper to convert hex to rgba for backgrounds
+  const getAccentedBackground = (opacity = 0.1) => {
+    // Simple logic to approximate rgba from hex would go here
+    // For now, we rely on inline styles or CSS variables if available
+    return primaryColor; 
   };
 
-  // Variants for staggered entry animations
+  // 2. DATA PROCESSING
+  const newsItems = Array.isArray(blogs) && blogs.length > 0 ? blogs.slice(0, 3) : fallbackNews;
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return {
+      day: date.getDate(),
+      month: date.toLocaleDateString("en-US", { month: "short" }),
+      year: date.getFullYear(),
+    };
+  };
+
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    e.currentTarget.onerror = null;
+    e.currentTarget.src = "https://placehold.co/600x400/1e293b/cbd5e1?text=News";
+  };
+
+  // 3. ANIMATION VARIANTS
   const containerVariants = {
     hidden: { opacity: 0 },
     show: {
       opacity: 1,
-      transition: {
-        staggerChildren: 0.2,
-      },
+      transition: { staggerChildren: 0.2 },
     },
   };
 
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    show: { y: 0, opacity: 1, transition: { duration: 0.6, ease: "easeOut" } },
+  const cardVariants = {
+    hidden: { opacity: 0, y: 30 },
+    show: { 
+      opacity: 1, 
+      y: 0,
+      transition: { type: "spring", stiffness: 50, damping: 15 } 
+    },
   };
 
   return (
-    <section className="bg-slate-950 text-white py-16 font-sans">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="relative py-24 bg-slate-950 font-sans overflow-hidden">
+      {/* Ambient Background Elements */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-indigo-900/20 rounded-[100%] blur-[120px] opacity-40" />
+        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-10 mix-blend-overlay"></div>
+      </div>
+
+      <div className="container relative mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {/* SECTION HEADER */}
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-        >
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-center mb-4 text-transparent bg-clip-text bg-gradient-to-r from-teal-300 via-sky-400 to-indigo-500">
-            Latest News & Articles
-          </h2>
-          <p className="text-lg sm:text-xl text-center text-slate-400 max-w-2xl mx-auto mb-12">
-            Stay up-to-date with our most recent posts and featured content.
-          </p>
-        </motion.div>
-
-        <motion.div
-          className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3"
-          variants={containerVariants}
-          initial="hidden"
-          animate="show"
-        >
-          {newsItems.map((item, idx) => (
-            <motion.article
-              key={idx}
-              className="bg-slate-800 rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer group"
-              variants={itemVariants}
-            >
-              <a href={item.link} className="block">
-                <div className="w-full h-48 overflow-hidden">
-                  <img
-                    src={item.img}
-                    alt={item.title}
-                    width={600}
-                    height={320}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    onError={handleImageError}
-                  />
-                </div>
-                
-                <div className="p-5 flex flex-col justify-between h-auto">
-                  <h3 className="font-bold text-xl mb-3 leading-snug text-white">
-                    {item.title}
-                  </h3>
-
-                  <div className="flex items-center text-slate-400 text-sm mb-4">
-                    <CalendarIcon />
-                    <span className="mr-4">{item.date}</span>
-                    <span className="flex items-center">
-                      <img
-                        src={item.authorImage || 'https://placehold.co/24x24/CCCCCC/333333?text=A'}
-                        alt={item.authorName || 'Author'}
-                        className="rounded-full w-6 h-6 object-cover mr-2"
-                        onError={handleImageError}
-                      />
-                      <span>{item.authorName}</span>
-                    </span>
-                  </div>
-
-                  <span
-                    className="inline-flex items-center mt-auto px-5 py-2 rounded-full font-semibold text-sm transition-all duration-300 transform hover:scale-105"
-                    style={{
-                      backgroundColor: `rgba(${parseInt(themeSettings?.primaryColor.slice(1, 3), 16)}, ${parseInt(themeSettings?.primaryColor.slice(3, 5), 16)}, ${parseInt(themeSettings?.primaryColor.slice(5, 7), 16)}, 0.1)`,
-                      color: themeSettings?.primaryColor,
-                      borderColor: themeSettings?.primaryColor,
-                      borderWidth: '1px'
-                    }}
-                  >
-                    Read more
-                    <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
-                    </svg>
-                  </span>
-                </div>
-              </a>
-            </motion.article>
-          ))}
-        </motion.div>
-
-        <motion.div
-          className="text-center mt-12"
+          className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6"
           initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: newsItems.length * 0.1 + 0.2 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
         >
+          <div className="max-w-2xl">
+            <h2 className="text-4xl sm:text-5xl font-bold text-white tracking-tight mb-4">
+              Latest <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-cyan-400">Insights</span>
+            </h2>
+            <p className="text-slate-400 text-lg">
+              Stay informed with the newest trends, breaking news, and in-depth editorials from our team.
+            </p>
+          </div>
+
+          {/* Desktop View All Button */}
           <a
             href="/blogs"
-            className="inline-block px-8 py-4 rounded-full font-bold text-lg shadow-md transition-all duration-300
-                       bg-white text-gray-800 hover:bg-gray-100 hover:shadow-lg transform hover:scale-105"
-            style={{
-              borderColor: themeSettings?.primaryColor,
-              borderWidth: '2px',
-              color: themeSettings?.primaryColor,
-            }}
+            className="hidden md:inline-flex items-center gap-2 text-sm font-bold text-slate-300 hover:text-white transition-colors uppercase tracking-widest group"
+          >
+            View Archives
+            <span 
+              className="block w-8 h-[1px] bg-slate-600 group-hover:w-12 group-hover:bg-white transition-all duration-300"
+            />
+          </a>
+        </motion.div>
+
+        {/* BLOG GRID */}
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, margin: "-50px" }}
+        >
+          {newsItems.map((item, idx) => {
+            const dateObj = formatDate(item.createdAt || item.publishedAt || new Date().toISOString());
+            
+            return (
+              <motion.article
+                key={idx}
+                variants={cardVariants}
+                className="group relative flex flex-col h-full"
+              >
+                <a href={item.slug ? `/blogs/${item.slug}` : "#"} className="block h-full">
+                  
+                  {/* Card Container */}
+                  <div className="relative h-full bg-slate-900/40 border border-slate-800/60 rounded-3xl overflow-hidden backdrop-blur-sm transition-all duration-500 hover:border-slate-700 hover:shadow-2xl hover:shadow-indigo-500/10 hover:-translate-y-2">
+                    
+                    {/* Image Wrapper */}
+                    <div className="relative h-64 overflow-hidden">
+                      <div className="absolute inset-0 bg-slate-900/20 z-10 group-hover:bg-transparent transition-colors duration-500" />
+                      <img
+                        src={item.coverImage || "https://placehold.co/600x400"}
+                        alt={item.title}
+                        className="w-full h-full object-cover transform transition-transform duration-700 group-hover:scale-110"
+                        onError={handleImageError}
+                      />
+
+                      {/* Floating Date Badge */}
+                      <div className="absolute top-4 left-4 z-20 flex flex-col items-center justify-center w-14 h-14 bg-slate-950/60 backdrop-blur-md border border-white/10 rounded-xl text-center shadow-lg">
+                        <span className="text-xs font-bold text-slate-400 uppercase">{dateObj.month}</span>
+                        <span className="text-xl font-extrabold text-white leading-none">{dateObj.day}</span>
+                      </div>
+
+                      {/* Category Badge (Bottom Left of Image) */}
+                      {item.categories && item.categories.length > 0 && (
+                         <div className="absolute bottom-4 left-4 z-20">
+                           <span 
+                             className="px-3 py-1 text-xs font-bold text-white uppercase tracking-wider rounded-full backdrop-blur-md bg-white/20 border border-white/20 shadow-sm"
+                             style={{ textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}
+                           >
+                             {item.categories[0]}
+                           </span>
+                         </div>
+                      )}
+                    </div>
+
+                    {/* Content Body */}
+                    <div className="p-6 flex flex-col flex-grow">
+                      
+                      {/* Title */}
+                      <h3 className="text-xl font-bold text-slate-100 mb-3 line-clamp-2 group-hover:text-indigo-400 transition-colors duration-300">
+                        {item.title}
+                      </h3>
+
+                      {/* Author & Read Time (Spacer) */}
+                      <div className="flex items-center gap-3 mt-auto pt-4 border-t border-slate-800/50">
+                         <div className="flex items-center gap-2">
+                           <img 
+                             src={item.author?.profileImage || `https://ui-avatars.com/api/?name=${item.author?.name || 'User'}&background=random`}
+                             alt="Author"
+                             className="w-6 h-6 rounded-full ring-2 ring-slate-800"
+                             onError={handleImageError}
+                           />
+                           <span className="text-sm text-slate-400 font-medium truncate max-w-[100px]">
+                             {item.author?.name || "Editor"}
+                           </span>
+                         </div>
+
+                         {/* Read More Link */}
+                         <div className="ml-auto flex items-center gap-1 text-sm font-semibold text-slate-300 group-hover:text-white transition-colors">
+                           Read
+                           <svg 
+                             className="w-4 h-4 transform transition-transform duration-300 group-hover:translate-x-1" 
+                             fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                             style={{ color: primaryColor }}
+                           >
+                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                           </svg>
+                         </div>
+                      </div>
+                    </div>
+                    
+                    {/* Hover Bottom Highlight Line */}
+                    <div 
+                      className="absolute bottom-0 left-0 h-1 bg-indigo-500 w-0 group-hover:w-full transition-all duration-500 ease-out"
+                      style={{ backgroundColor: primaryColor }}
+                    />
+                  </div>
+                </a>
+              </motion.article>
+            );
+          })}
+        </motion.div>
+
+        {/* Mobile View All Button */}
+        <div className="mt-12 text-center md:hidden">
+           <a
+            href="/blogs"
+            className="inline-block px-8 py-3 rounded-full font-bold text-sm bg-slate-800 text-white border border-slate-700 shadow-lg hover:bg-slate-700 transition-all"
           >
             View All Articles
           </a>
-        </motion.div>
+        </div>
+
       </div>
     </section>
   );
-}
+};
 
 export default LatestNewsSection;

@@ -206,156 +206,169 @@ const itemVariants = {
   },
 };
 
-// Info Cards Section Component (from previous response)
-const accentColor = 'rgb(59, 130, 246)'; // Default Tailwind blue-500
-const infoCardsData = [
-  {
-    title: 'Dynamic Image Card',
-    description: 'This card features a high-quality image with a subtle overlay, demonstrating the new visual enhancements.',
-    image: 'https://images.unsplash.com/photo-1542840428-c11956555198?q=80&w=2670&auto=format&fit=crop',
-    link: '#image-card',
-  },
-  {
-    title: 'Icon-Based Card',
-    description: 'A clean card with a custom, gradient icon background. Perfect for services or features.',
-    iconComponent: AcademicCapIcon,
-    link: '#icon-card',
-  },
-  {
-    title: 'Another Example',
-    description: 'Our cards are versatile and can be used for a wide range of content, from features to blog posts.',
-    image: 'https://images.unsplash.com/photo-1620247414927-4a11f2a335f6?q=80&w=2670&auto=format&fit=crop',
-    link: '#another-card',
-  },
-];
+// **********************************************
+// NOTE: This assumes the required imports are present,
+// e.g., 'motion' from 'framer-motion', 'clsx', 'Image' from 'next/image',
+// and the Heroicons: ArrowRightIcon, AcademicCapIcon, BanknotesIcon, HeartIcon.
+// This also assumes you have `customLoader` and `handleImageError` functions defined.
+// **********************************************
 
-const cardContainerVariants = {
-  hidden: { opacity: 0, y: 50 },
+// Accent Color (kept for consistency)
+const accentColor = 'rgb(59, 130, 246)'; // Tailwind blue-500
+
+// --- Card Variants for Individual Items (Slightly adjusted for scroll context) ---
+const scrollItemVariants = {
+  hidden: { opacity: 0, x: 100, scale: 0.95 },
   visible: {
     opacity: 1,
-    y: 0,
-    transition: {
-      staggerChildren: 0.1,
-      when: 'beforeChildren',
-    },
-  },
-};
-
-const cardItemVariants = {
-  hidden: { opacity: 0, y: 50, scale: 0.95 },
-  visible: {
-    opacity: 1,
-    y: 0,
+    x: 0,
     scale: 1,
     transition: {
       type: 'spring',
       stiffness: 100,
-      damping: 10,
+      damping: 15,
+      mass: 0.5,
     },
   },
 };
 
-// New, reusable InfoCard component
-const InfoCard = ({ card }:any) => {
-  const isIconCard = card.iconComponent;
+// NOTE: Assuming customLoader, handleImageError, scrollItemVariants, 
+// and dynamic colors (primaryColor, accentColor) are available in the scope.
+// Using default placeholders for accentColor in this isolated example.
 
+// Placeholder colors for demonstration (replace with actual dynamic colors from scope)
+const PRIMARY_COLOR_DEMO = '#06B6D4'; // Cyan
+const ACCENT_COLOR_DEMO = '#FBBF24'; // Amber
+
+// --- Reusable InfoCard Component (Transformed) ---
+const InfoCard = ({ card }: any) => {
+  const isIconCard = card.iconComponent;
+  
+  // Assume dynamic colors are available here:
+  // const primaryColor = ...; 
+  // const accentColor = ...;
+  const primaryColor = PRIMARY_COLOR_DEMO; 
+  const accentColor = ACCENT_COLOR_DEMO;
+
+  // Custom border style for the gradient effect
+  const gradientBorderStyles: React.CSSProperties = {
+    position: 'relative',
+    overflow: 'hidden',
+    border: '1px solid transparent',
+    background: `linear-gradient(white, white) padding-box, 
+                 linear-gradient(to right, ${primaryColor}, ${accentColor}) border-box`,
+  };
+  
+  // Custom styles for the icon card background/icon color
+  const iconCardIconStyle: React.CSSProperties = { color: primaryColor };
+  const iconCardBgStyle: React.CSSProperties = { backgroundColor: `${primaryColor}1A` }; // Primary color with 10% opacity
+  
   return (
     <motion.div
       className={clsx(
-        `relative bg-white shadow-xl rounded-2xl overflow-hidden cursor-pointer
-         hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-3
-         group before:absolute before:inset-0 before:rounded-2xl before:border-2 before:border-transparent before:transition-all before:duration-300`,
-        'hover:before:border-blue-500 hover:before:shadow-[0_0_20px_0_rgba(59,130,246,0.5)]'
+        `flex-shrink-0 w-80 md:w-96 snap-center my-2 
+         bg-white dark:bg-gray-800 rounded-2xl shadow-lg 
+         transition-all duration-300 group focus-within:ring-4 focus-within:ring-offset-2`,
+        'hover:shadow-2xl' // Stronger base hover shadow
       )}
-      variants={cardItemVariants}
-      whileHover={{ scale: 1.02 }}
+      style={{ 
+        ...gradientBorderStyles, // Apply the gradient border style
+        boxShadow: `0 10px 20px rgba(0,0,0,0.05)`,
+        '--tw-ring-color': `${primaryColor} !important` 
+      } as React.CSSProperties}
+      variants={scrollItemVariants}
+      whileHover={{ y: -8, boxShadow: `0 15px 30px ${primaryColor}40` }} // Stronger lift and color shadow
     >
       {isIconCard ? (
-        <div className="relative w-full h-56 flex items-center justify-center p-6 bg-gradient-to-br from-blue-50 to-purple-50">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full opacity-30 bg-white blur-3xl z-0"></div>
-          <card.iconComponent
-            className="w-24 h-24 relative z-10 text-white"
-          />
+        // {/* --- ICON CARD DESIGN --- */}
+        <div className="flex flex-col h-full p-8">
+          <div 
+            className="flex items-center justify-center w-16 h-16 rounded-xl mb-4 transition-all duration-300"
+            style={iconCardBgStyle}
+          >
+            <card.iconComponent className="w-8 h-8" style={iconCardIconStyle} />
+          </div>
+          <h3 className="text-2xl font-extrabold mb-3 text-gray-900 dark:text-white transition-colors duration-300">
+            {card.title}
+          </h3>
+          <p className="text-gray-600 dark:text-gray-400 flex-grow text-base mb-4">{card.description}</p>
+          <a
+            href={card.link || '#'}
+            className={`inline-flex items-center font-bold transition-colors duration-300 group-hover:underline`}
+            style={{ color: accentColor }}
+          >
+            Explore Now
+            <ArrowRightIcon className="ml-2 w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+          </a>
         </div>
       ) : (
-        <div className="relative w-full h-56">
-          <Image
-            src={card.image}
-            alt={card.title}
-            fill
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            className="object-cover object-center transition-transform duration-300 group-hover:scale-105"
-            loader={customLoader}
-            onError={handleImageError}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+        // {/* --- IMAGE CARD DESIGN --- */}
+        <div className="relative flex flex-col h-full">
+          <div className="relative w-full h-48 sm:h-56 overflow-hidden">
+            <Image
+              src={card.image}
+              alt={card.title}
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              className="object-cover object-center transition-transform duration-500 group-hover:scale-105"
+              loader={customLoader}
+              onError={handleImageError}
+            />
+            {/* Gradient overlay for visual pop and title contrast */}
+            <div className="absolute inset-0 bg-gradient-to-t from-gray-900/70 to-transparent"></div>
+            <h3 className="absolute bottom-4 left-6 text-xl md:text-2xl font-extrabold text-white z-10">
+              {card.title}
+            </h3>
+          </div>
+          <div className="p-6 flex flex-col flex-grow">
+            <p className="text-gray-600 dark:text-gray-400 flex-grow text-sm mb-4">{card.description}</p>
+            <a
+              href={card.link || '#'}
+              className={`inline-flex items-center font-bold transition-colors duration-300 mt-auto group-hover:underline`}
+              style={{ color: accentColor }}
+            >
+              View Details
+              <ArrowRightIcon className="ml-2 w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+            </a>
+          </div>
         </div>
       )}
-      <div className="p-8 text-left">
-        <motion.h3
-          className="text-xl md:text-2xl font-semibold mb-2 text-gray-900 transition-colors duration-300 group-hover:text-blue-600"
-          whileHover={{ scale: 1.02 }}
-        >
-          {card.title}
-        </motion.h3>
-        <p className="text-gray-600 mb-4 text-sm">{card.description}</p>
-        <a
-          href={card.link || '#'}
-          className={`inline-flex items-center font-medium transition-colors duration-300 group`}
-          style={{ color: accentColor }}
-          onClick={(e) => { e.preventDefault(); console.log(`Explore ${card.title} clicked!`); }}
-        >
-          Explore More
-          <ArrowRightIcon className="ml-2 w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
-        </a>
-      </div>
     </motion.div>
   );
 };
 
-function InfoCardsSection() {
-  const { storeFormData } = useStoreContext();
-  const dynamicInfoCardsData = storeFormData?.stats && storeFormData.stats.length > 0 ?
-    storeFormData.stats.map(stat => ({
-      title: stat.label || 'Insight',
-      description: stat.value ? `${stat.value}` : 'No description provided.',
-      image: stat.iconUrl || 'https://placehold.co/400x250/CCCCCC/000000?text=Statistic',
-      iconComponent: null, // Dynamic icons from URL, so no Heroicon component directly
-      link: '#'
-    })) : [
-      {
-        title: 'Scholarship Facility',
-        description: 'Unlock your potential with various scholarship opportunities designed to support your educational journey.',
-        image: 'https://placehold.co/400x250/FFD700/6A0DAD?text=Scholarship',
-        iconComponent: BanknotesIcon,
-        link: '#scholarships'
-      },
-      {
-        title: 'Academics Excellence',
-        description: 'Experience a rigorous and engaging curriculum delivered by top educators to foster intellectual growth.',
-        image: 'https://placehold.co/400x250/007BFF/FFFFFF?text=Academics',
-        iconComponent: AcademicCapIcon,
-        link: '#academics'
-      },
-      {
-        title: 'Vibrant Community',
-        description: 'Participate in a dynamic student community with diverse clubs, events, and extracurricular activities.',
-        image: 'https://placehold.co/400x250/28A745/FFFFFF?text=School+Life',
-        iconComponent: HeartIcon,
-        link: '#community'
-      },
+// --- Main Section Component (Horizontal Scroll Gallery) ---
+// (No structural changes to InfoCardsSection needed, only CSS is inherited)
+function InfoCardsSection({ storeFormData }: any) { 
+    
+    const fallbackInfoCardsData = [
+        { title: 'Global Education Programs', description: 'Explore our wide array of international study programs.', image: 'https://images.unsplash.com/photo-1541339907198-e087566d3f00?q=80&w=2670&auto=format&fit=crop', iconComponent: null, link: '#global-programs' },
+        { title: 'Innovative Research Hubs', description: 'Engage with cutting-edge research projects across disciplines.', image: null, iconComponent: AcademicCapIcon, link: '#research' },
+        { title: 'Student Wellness Services', description: 'Comprehensive support for mental health and well-being.', image: 'https://images.unsplash.com/photo-1534017366050-6a0b16f31623?q=80&w=2670&auto=format&fit=crop', iconComponent: null, link: '#wellness' },
     ];
+    const dynamicInfoCardsData = storeFormData?.stats && storeFormData.stats.length > 0 ?
+        storeFormData.stats.map((stat: any, index: number) => ({
+            title: stat.label || `Dynamic Insight ${index + 1}`,
+            description: stat.value ? `Value: ${stat.value}` : 'No description provided.',
+            image: stat.iconUrl || null,
+            iconComponent: index % 2 === 0 ? BanknotesIcon : AcademicCapIcon,
+            link: '#'
+        }))
+        : fallbackInfoCardsData;
 
   return (
     <motion.section
       className="relative z-20 -mt-24 px-4 sm:px-6 lg:px-8"
       initial="hidden"
       whileInView="visible"
-      viewport={{ once: true, amount: 0.2 }}
-      variants={cardContainerVariants}
+      viewport={{ once: true, amount: 0.1 }}
     >
-      <div className="max-w-7xl mx-auto grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {dynamicInfoCardsData.map((card, i) => (
+      <div
+        className="flex overflow-x-auto snap-x snap-mandatory py-8 gap-6
+                   scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100
+                   -mx-4 sm:mx-0 px-4 sm:px-0"
+      >
+        {dynamicInfoCardsData.map((card: any, i: number) => (
           <InfoCard key={i} card={card} />
         ))}
       </div>
@@ -460,7 +473,7 @@ export default function HeroSection() {
       </div>
 
       {/* Info Cards Section */}
-      <InfoCardsSection />
+      <InfoCardsSection storeFormData={storeFormData} />
 
       {/* Tailwind CSS keyframe animation for the blob effect */}
       <style jsx>{`
@@ -491,3 +504,262 @@ export default function HeroSection() {
     </div>
   );
 }
+
+
+//new more appealing design 
+// "use client";
+
+// import React from 'react';
+// import { motion } from 'framer-motion';
+// import { PlayCircleIcon, ArrowRightIcon } from '@heroicons/react/24/solid';
+// import { AcademicCapIcon, BanknotesIcon, HeartIcon } from '@heroicons/react/24/outline';
+// import { useStoreContext } from '@/contexts/StoreContext';
+// import clsx from 'clsx';
+// import Image from 'next/image';
+// import { HeroSlide, Stat } from '@/types/typings'; // Assuming types are imported
+
+// // Reusable loader and error handler (kept from original)
+// const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
+//   return `${src}?w=${width}&q=${quality || 75}`;
+// };
+
+// const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+//   e.currentTarget.onerror = null;
+//   e.currentTarget.src = "https://placehold.co/400x250/CCCCCC/000000?text=Image+Error";
+// };
+
+// // Animation variants (re-defined for a staggered, left-aligned entrance)
+// const heroVariants = {
+//   hidden: { opacity: 0 },
+//   visible: {
+//     opacity: 1,
+//     transition: {
+//       when: "beforeChildren",
+//       staggerChildren: 0.15,
+//     },
+//   },
+// };
+
+// const itemVariants = {
+//   hidden: { opacity: 0, x: -30 },
+//   visible: {
+//     opacity: 1,
+//     x: 0,
+//     transition: {
+//       type: "spring",
+//       stiffness: 80,
+//       damping: 10,
+//     },
+//   },
+// };
+
+// const statVariants = {
+//   hidden: { opacity: 0, y: 20 },
+//   visible: {
+//     opacity: 1,
+//     y: 0,
+//     transition: {
+//       type: "spring",
+//       stiffness: 100,
+//       damping: 15,
+//       delay: 0.8, // Stats appear after main content
+//     },
+//   },
+// };
+
+
+// // --- Reusable InfoCard Component (Kept for InfoCardsSection) ---
+// // (InfoCard and InfoCardsSection code are omitted here for brevity, 
+// // assuming they remain the same as the previous step and are included 
+// // in the full application code.)
+// // ... InfoCard and InfoCardsSection definitions ...
+
+// // Placeholder for InfoCardsSection component to keep the import structure intact
+// function InfoCardsSection() {
+//     return null; 
+// }
+
+
+// // --- Main Hero Section Component (The New Design) ---
+// export default function HeroSection() {
+//   const { storeFormData } = useStoreContext();
+
+//   const activeHeroSlide = storeFormData?.heroSlides?.[0];
+//   const statsData: Stat[] = storeFormData?.stats || [];
+
+//   const defaultHeadline = "Your Journey to Knowledge Begins Here";
+//   const defaultSubline = "Explore a world of learning opportunities and unlock your full potential with our diverse courses and expert instructors.";
+//   const defaultCtaText = "Discover Courses";
+//   const defaultCtaLink = "#courses";
+//   const defaultVideoLink = "https://www.youtube.com/watch?v=dQw4w9WgXcQ";
+//   const defaultBannerUrl = "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=2070&auto=format&fit=crop";
+//   const defaultProductUrl = "https://images.unsplash.com/photo-1542435503-9d10e527f551?q=80&w=2787&auto=format&fit=crop"; // New default product image
+//   const defaultTagline = "Empowering Minds, Shaping Futures";
+
+//   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#fd2121';
+//   const accentColor = storeFormData?.themeSettings?.secondaryColor || '#FFC107'; // Ensure accent is distinct from primary
+
+//   // Determine the image for the visual showcase
+//   const visualImageUrl = activeHeroSlide?.productImageUrl || defaultProductUrl;
+//   const backgroundImageUrl = activeHeroSlide?.imageUrl || defaultBannerUrl;
+
+
+//   return (
+//     <div className="font-sans">
+//       <motion.section
+//         className="relative bg-gray-900 min-h-[90vh] flex items-center overflow-hidden"
+//         initial="hidden"
+//         animate="visible"
+//         variants={heroVariants}
+//       >
+//         {/* Layer 1: Massive Background Image for Depth */}
+//         <div className="absolute inset-0 opacity-20 filter saturate-150 transition duration-500">
+//             <Image
+//                 src={backgroundImageUrl}
+//                 alt="Background learning scene"
+//                 fill
+//                 className="object-cover object-center"
+//                 loader={customLoader}
+//                 sizes="100vw"
+//                 priority
+//             />
+//         </div>
+        
+//         {/* Layer 2: Gradient Overlay and Geometric Shape */}
+//         <div className="absolute inset-0 bg-gradient-to-r from-gray-900 via-gray-900/80 to-transparent">
+//             {/* Dynamic Geometric Shape (Wedge on the right for visual break) */}
+//             <div 
+//                 className="absolute inset-y-0 right-0 w-full lg:w-3/5"
+//                 style={{ 
+//                     clipPath: 'polygon(30% 0%, 100% 0%, 100% 100%, 0% 100%)', 
+//                     backgroundColor: primaryColor,
+//                     opacity: 0.15
+//                 }}
+//             />
+//         </div>
+
+//         {/* Layer 3: Main Content Grid */}
+//         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full py-20 lg:py-0">
+//           <div className="flex flex-col lg:flex-row items-center justify-between gap-12">
+            
+//             {/* Left Column: Text & CTA (60%) */}
+//             <div className="w-full lg:w-7/12 text-center lg:text-left">
+//               <motion.p
+//                 className="text-lg md:text-xl mb-3 uppercase tracking-widest font-semibold drop-shadow-sm"
+//                 style={{ color: accentColor }}
+//                 variants={itemVariants}
+//               >
+//                 {storeFormData?.tagline || defaultTagline}
+//               </motion.p>
+
+//               <motion.h1
+//                 className="text-5xl sm:text-7xl lg:text-8xl font-black mb-6 leading-tight drop-shadow-lg text-white"
+//                 variants={itemVariants}
+//               >
+//                 {/* Visual Highlight on the first part of the headline */}
+//                 <span className="relative">
+//                     {activeHeroSlide?.headline?.split(' ')[0] || "Unlock"}
+//                     <span 
+//                         className="absolute bottom-0 left-0 w-full h-1 bg-white opacity-40 rounded-full"
+//                         style={{ backgroundColor: primaryColor }}
+//                     />
+//                 </span>{' '}
+//                 {activeHeroSlide?.headline?.split(' ').slice(1).join(' ') || "Your Potential"}
+//               </motion.h1>
+
+//               <motion.p
+//                 className="text-xl md:text-2xl mb-10 max-w-2xl lg:max-w-none leading-relaxed drop-shadow-sm text-gray-300"
+//                 variants={itemVariants}
+//               >
+//                 {activeHeroSlide?.subline || defaultSubline}
+//               </motion.p>
+
+//               {/* CTA Buttons */}
+//               <motion.div
+//                 className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-12"
+//                 variants={itemVariants}
+//               >
+//                 <motion.a
+//                   href={activeHeroSlide?.ctaLink || defaultCtaLink}
+//                   whileHover={{ scale: 1.05, boxShadow: `0 0 30px ${primaryColor}70` }}
+//                   whileTap={{ scale: 0.95 }}
+//                   className="inline-flex items-center text-white min-w-[200px] text-center justify-center px-10 py-4 rounded-full text-lg font-bold shadow-xl transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-opacity-75"
+//                   style={{
+//                     background: primaryColor,
+//                     '--tw-ring-color': `${primaryColor} !important`
+//                   } as React.CSSProperties}
+//                 >
+//                   {activeHeroSlide?.ctaText || defaultCtaText}
+//                   <ArrowRightIcon className="ml-2 w-5 h-5" />
+//                 </motion.a>
+
+//                 {activeHeroSlide?.videoLink && (
+//                   <motion.a
+//                     href={activeHeroSlide?.videoLink || defaultVideoLink}
+//                     target="_blank"
+//                     rel="noopener noreferrer"
+//                     whileHover={{ scale: 1.05, backgroundColor: accentColor }}
+//                     whileTap={{ scale: 0.95 }}
+//                     className="inline-flex items-center text-gray-900 min-w-[200px] bg-white hover:bg-white/90 text-center justify-center px-10 py-4 rounded-full text-lg font-bold shadow-xl transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-opacity-75"
+//                     style={{
+//                         '--tw-ring-color': `${accentColor} !important`
+//                       } as React.CSSProperties}
+//                   >
+//                     <PlayCircleIcon className="h-6 w-6 mr-2" style={{ color: primaryColor }} /> Watch Video
+//                   </motion.a>
+//                 )}
+//               </motion.div>
+              
+//               {/* Integrated Stats / Social Proof */}
+//               {statsData.length > 0 && (
+//                   <motion.div 
+//                       className="flex justify-center lg:justify-start gap-8 flex-wrap border-t border-gray-700 pt-6"
+//                       variants={statVariants}
+//                   >
+//                       {statsData.slice(0, 3).map((stat, index) => (
+//                           <motion.div key={index} className="text-left" variants={statVariants}>
+//                               <p className="text-3xl font-extrabold text-white" style={{ color: accentColor }}>
+//                                   {stat.value}
+//                               </p>
+//                               <p className="text-sm uppercase tracking-wider text-gray-400 mt-1">
+//                                   {stat.label}
+//                               </p>
+//                           </motion.div>
+//                       ))}
+//                   </motion.div>
+//               )}
+//             </div>
+
+//             {/* Right Column: Visual Showcase (40%) */}
+//             <div className="w-full lg:w-5/12 relative min-h-[350px] lg:min-h-[500px]">
+//                 {/* Floating Product Image with Perspective */}
+//                 <motion.div
+//                     className="absolute inset-0 flex items-center justify-center lg:justify-end"
+//                     initial={{ opacity: 0, scale: 0.8, rotateY: -15 }}
+//                     animate={{ opacity: 1, scale: 1, rotateY: 0 }}
+//                     transition={{ duration: 1, delay: 0.3, type: "spring", stiffness: 50 }}
+//                 >
+//                     <div className="relative w-[85%] h-full rounded-3xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+//                         <Image
+//                             src={visualImageUrl}
+//                             alt="Product preview"
+//                             fill
+//                             className="object-cover object-center"
+//                             loader={customLoader}
+//                             sizes="(max-width: 1024px) 85vw, 40vw"
+//                             priority
+//                         />
+//                          {/* Subtle product overlay */}
+//                         <div className="absolute inset-0 bg-gradient-to-t from-gray-900/10 to-transparent"></div>
+//                     </div>
+//                 </motion.div>
+//             </div>
+//           </div>
+//         </div>
+//       </motion.section>
+
+//       {/* Info Cards Section (remains below with overlap) */}
+//       <InfoCardsSection />
+//     </div>
+//   );
+// }

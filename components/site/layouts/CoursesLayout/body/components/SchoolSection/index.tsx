@@ -1,207 +1,219 @@
+// **********************************************
+// NOTE: This assumes the required imports are present:
+// React, CheckCircleIcon, ArrowRightIcon, AcademicCapIcon, UserGroupIcon, LightBulbIcon (from @heroicons/react/24/outline)
+// motion (from framer-motion), Image (from next/image), clsx, useStoreContext
+// **********************************************
 import React from 'react';
-import { CheckCircleIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
+import { CheckCircleIcon, ArrowRightIcon, AcademicCapIcon, UserGroupIcon, LightBulbIcon, ChevronDoubleRightIcon } from '@heroicons/react/24/outline';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import { useStoreContext } from '@/contexts/StoreContext';
 import clsx from 'clsx';
+// import { useStoreContext } from '@/contexts/StoreContext'; // Keep this for context
 
-// Define types based on your transformCompanyToStoreForm and Prisma schema
-export type ThemeSettings = {
-  primaryColor?: string;
-  secondaryColor?: string;
-};
+// Placeholder for context/loader/handler functions if needed for runnable code
+const useStoreContext = () => ({
+  storeFormData: {
+    id: '683581bba1bdf6ca3624b530',
+    name: 'Academic Excellence Hub',
+    description: 'Empower your academic journey with innovative tools and personalized learning paths. Our platform helps you master complex subjects, ace exams, and unlock your full potential with ease and efficiency.',
+    bannerUrl: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2670&auto=format&fit=crop',
+    CoreValues: [
+      { title: 'Tailored learning experiences.', icon: 'AcademicCapIcon' },
+      { title: 'Intuitive and engaging content.', icon: 'LightBulbIcon' },
+      { title: 'Expert personalized guidance.', icon: 'UserGroupIcon' },
+      { title: 'Real-time performance analytics.', icon: 'CheckCircleIcon' },
+    ],
+    ctaText: 'Enroll Now',
+    ctaLink: '/enroll',
+    themeSettings: { primaryColor: '#06B6D4', secondaryColor: '#FBBF24' }, // Tailwind Cyan & Amber
+  } as any,
+});
 
-// Placeholder for useStoreContext to make the component runnable independently
-// You would use the real import in your actual app
-// const useStoreContext = () => ({
-//   storeFormData: {
-//     id: '683581bba1bdf6ca3624b530',
-//     name: 'Academic Excellence Hub',
-//     description: 'Empower your academic journey with innovative tools and personalized learning paths. Our platform helps you master complex subjects, ace exams, and unlock your full potential with ease and efficiency.',
-//     bannerUrl: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-//     CoreValues: [
-//       { title: 'Achieve your academic goals with tailored learning experiences.', icon: 'CheckCircleIcon' },
-//       { title: 'Gain profound understanding with intuitive and engaging content.', icon: 'CheckCircleIcon' },
-//       { title: 'Connect with expert tutors for personalized guidance and support.', icon: 'CheckCircleIcon' },
-//       { title: 'Simplify complex topics with easy-to-understand explanations.', icon: 'CheckCircleIcon' },
-//       { title: 'Real-time progress tracking and performance analytics.', icon: 'CheckCircleIcon' },
-//     ],
-//     ctaText: 'Enroll Now',
-//     ctaLink: '/enroll',
-//     themeSettings: { primaryColor: '#4CAF50', secondaryColor: '#FFC107' },
-//   } as StoreForm,
-// });
-
-// Optimized image loader for Next.js Image component
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
-  return `${src}?w=${width}&q=${quality || 75}`;
+    return `${src}?w=${width}&q=${quality || 75}`;
+};
+const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    e.currentTarget.onerror = null;
+    e.currentTarget.src = "https://placehold.co/600x400/CCCCCC/333333?text=Image+Error";
+};
+// --- Utility function to map string icon names to components ---
+const IconMap = {
+    CheckCircleIcon,
+    AcademicCapIcon,
+    UserGroupIcon,
+    LightBulbIcon,
+    // Add other necessary icons here
 };
 
+
+// --- Main Section Component (Diagonal Focus) ---
 const SchoolSection = () => {
   const { storeFormData } = useStoreContext();
 
-  const headline = storeFormData?.name || "Smarter Way to go Through Your School";
+  const headline = storeFormData?.name || "Unlock Your Academic Excellence";
   const mainDescription = storeFormData?.description || "Empower your academic journey with innovative tools and personalized learning paths. Our platform helps you master complex subjects, ace exams, and unlock your full potential with ease and efficiency.";
 
-  const CoreValues = [
-    { id: '1', title: 'Achieve your academic goals with tailored learning experiences.', icon: 'ShieldCheckIcon' },
-    { id: '2', title: 'Gain profound understanding with intuitive and engaging content.', icon: 'PhoneIcon' },
-    { id: '3', title: 'Connect with expert tutors for personalized guidance and support.', icon: 'TruckIcon' },
-    { id: '4', title: 'Simplify complex topics with easy-to-understand explanations.', icon: 'TruckIcon' },
+  const CoreValuesFallback = [
+    { id: '1', title: 'Tailored learning experiences.', icon: 'AcademicCapIcon' },
+    { id: '2', title: 'Intuitive and engaging content.', icon: 'LightBulbIcon' },
+    { id: '3', 'title': 'Expert personalized guidance.', icon: 'UserGroupIcon' },
+    { id: '4', 'title': 'Real-time performance analytics.', icon: 'CheckCircleIcon' },
   ];
 
-  const coreValues = storeFormData?.CoreValues?.length ? storeFormData.CoreValues : CoreValues;
+  // Map values to a maximum of 4 features
+  const coreValues = (storeFormData?.CoreValues?.length ? storeFormData.CoreValues : CoreValuesFallback).slice(0, 4);
   const imageUrl = storeFormData?.bannerUrl || "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2670&auto=format&fit=crop";
-  const ctaText = "Learn More"; // storeFormData?.ctaText || 
-  const ctaLink =  "#"; // storeFormData?.ctaLink ||
+  const ctaText = storeFormData?.ctaText || "Start Learning Today"; 
+  const ctaLink = storeFormData?.ctaLink || "#";
 
-  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#4CAF50';
-  const accentColor = storeFormData?.themeSettings?.secondaryColor || '#FFC107';
+  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#06B6D4'; // Default Cyan
+  const accentColor = storeFormData?.themeSettings?.secondaryColor || '#FBBF24'; // Default Amber
+  
+  // Testimonial/Quote Block Content
+  const quote = "This platform transformed my study habits and boosted my grades by over 20%. Highly recommended for focused learning!";
+  const quoteAuthor = "Sarah J., Top Student";
 
-  // Animation variants for staggered appearance
+  // Animation variants
   const containerVariants = {
-    hidden: { opacity: 0, y: 50 },
+    hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      y: 0,
       transition: {
-        type: "spring",
-        stiffness: 70,
-        damping: 10,
         when: "beforeChildren",
-        staggerChildren: 0.15
+        staggerChildren: 0.1,
       },
     },
   };
 
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
+  const textItemVariants = {
+    hidden: { opacity: 0, y: 30 },
     visible: {
       opacity: 1,
       y: 0,
-      transition: {
-        type: "spring",
-        stiffness: 100,
-        damping: 15
-      },
+      transition: { type: "spring", stiffness: 100, damping: 15 },
     },
   };
 
-  const checkItemVariants = {
-    hidden: { opacity: 0, x: -20 },
+  const featureIconVariants = {
+    hidden: { opacity: 0, scale: 0.7, rotate: 10 },
     visible: {
       opacity: 1,
-      x: 0,
-      transition: {
-        type: "spring",
-        stiffness: 100,
-        damping: 15
-      },
+      scale: 1,
+      rotate: 0,
+      transition: { type: "spring", stiffness: 150, damping: 10 },
     },
-  };
-
-  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    e.currentTarget.onerror = null;
-    e.currentTarget.src = "https://placehold.co/600x400/CCCCCC/333333?text=Image+Error";
   };
 
   return (
     <motion.section
-      className="relative py-20 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white overflow-hidden"
+      className="relative py-24 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-900 overflow-hidden"
       initial="hidden"
       whileInView="visible"
-      viewport={{ once: true, amount: 0.3 }}
+      viewport={{ once: true, amount: 0.1 }}
       variants={containerVariants}
     >
-      {/* Dynamic, more abstract SVG background */}
-      <div className="absolute inset-0 z-0 opacity-20">
-        <svg className="w-full h-full" viewBox="0 0 1440 800" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M0 0C240 100 480 300 720 300C960 300 1200 100 1440 0V800H0V0Z" fill={`url(#paint-gradient-top)`} />
-          <path d="M0 800C240 700 480 500 720 500C960 500 1200 700 1440 800V0H0V800Z" fill={`url(#paint-gradient-bottom)`} />
-          <defs>
-            <linearGradient id="paint-gradient-top" x1="0" y1="0" x2="1440" y2="0" gradientUnits="userSpaceOnUse">
-              <stop stopColor={primaryColor} stopOpacity="0.15" />
-              <stop offset="1" stopColor={accentColor} stopOpacity="0.15" />
-            </linearGradient>
-            <linearGradient id="paint-gradient-bottom" x1="0" y1="800" x2="1440" y2="800" gradientUnits="userSpaceOnUse">
-              <stop stopColor={primaryColor} stopOpacity="0.15" />
-              <stop offset="1" stopColor={accentColor} stopOpacity="0.15" />
-            </linearGradient>
-          </defs>
-        </svg>
-      </div>
-
-      <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-16 relative z-10">
-        {/* Left Image Section */}
-        <motion.div
-          className="flex-shrink-0 w-full lg:w-5/12 perspective-1000 group"
-          variants={itemVariants}
+      <div className="max-w-7xl mx-auto relative z-10">
+        
+        {/* Outer Container (The Card-in-Card Base) */}
+        <div 
+            className="relative bg-white dark:bg-gray-800 rounded-3xl shadow-2xl overflow-hidden p-6 lg:p-0"
+            style={{ boxShadow: `0 25px 50px -12px ${primaryColor}40` }} // Custom shadow with primary color
         >
-          <motion.div
-            className="w-full h-auto relative rounded-3xl overflow-hidden shadow-2xl"
-            style={{ paddingBottom: '66.66%' }}
-            whileHover={{ scale: 1.05, rotateX: 5, rotateY: 5, boxShadow: "0px 10px 30px rgba(0,0,0,0.2)" }}
-            transition={{ type: "spring", stiffness: 200, damping: 20 }}
-          >
-            <Image
-              src={imageUrl}
-              alt="Student learning smarter way"
-              fill
-              className="object-cover object-center transition-all duration-500"
-              loader={loader}
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              onError={handleImageError}
-            />
-          </motion.div>
-        </motion.div>
+            <div className="flex flex-col lg:flex-row relative">
+                
+                {/* Diagonal Separator (Visual Trick) */}
+                <div 
+                    className="absolute inset-y-0 right-0 hidden lg:block w-full h-full"
+                    style={{ 
+                        clipPath: 'polygon(70% 0, 100% 0, 100% 100%, 30% 100%)', 
+                        backgroundColor: primaryColor,
+                        opacity: 0.05
+                    }}
+                />
 
-        {/* Right Content Section */}
-        <div className="w-full lg:w-7/12 text-center lg:text-left">
-          <motion.h2
-            className="text-4xl sm:text-5xl lg:text-5xl font-extrabold mb-6 leading-tight tracking-tight"
-            variants={itemVariants}
-          >
-            {headline}
-          </motion.h2>
+                {/* Left Content Area (The floating card) */}
+                <div className="w-full lg:w-3/5 p-4 sm:p-10 lg:p-16 relative z-10">
+                    <motion.h2
+                      className="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-4 leading-tight tracking-tight text-gray-900 dark:text-white"
+                      variants={textItemVariants}
+                    >
+                      {/* Highlight key part of the headline using primary color */}
+                      <span style={{ color: primaryColor }}>{headline.split(' ').slice(0, 2).join(' ')}</span>{' '}
+                      {headline.split(' ').slice(2).join(' ')}
+                    </motion.h2>
 
-          <motion.p
-            className="mb-6 leading-relaxed text-lg text-gray-700 dark:text-gray-300"
-            variants={itemVariants}
-          >
-            {mainDescription}
-          </motion.p>
+                    <motion.p
+                      className="mb-8 leading-relaxed text-lg text-gray-700 dark:text-gray-300"
+                      variants={textItemVariants}
+                    >
+                      {mainDescription}
+                    </motion.p>
+                    
+                    {/* Embedded Quote Block */}
+                    <motion.blockquote 
+                        className="p-6 mb-10 border-l-4 rounded-r-lg italic bg-gray-50 dark:bg-gray-700/50"
+                        style={{ borderColor: accentColor }}
+                        variants={textItemVariants}
+                    >
+                        <p className="text-gray-800 dark:text-gray-200">"{quote}"</p>
+                        <footer className="mt-2 text-sm font-semibold" style={{ color: accentColor }}>— {quoteAuthor}</footer>
+                    </motion.blockquote>
 
-          {/* Bullet Points */}
-          <motion.ul className="space-y-4 mb-8">
-            {(coreValues && coreValues.length > 0 ? coreValues : CoreValues).map((item, index) => (
-              <motion.li
-                key={index}
-                className="flex items-start gap-4 font-medium text-gray-800 dark:text-gray-200"
-                variants={checkItemVariants}
-                whileHover={{ scale: 1.02 }}
-                transition={{ type: "spring", stiffness: 300 }}
-              >
-                <CheckCircleIcon className="flex-shrink-0 mt-1 w-6 h-6" style={{ color: primaryColor }} />
-                <span>{item.title}</span>
-              </motion.li>
-            ))}
-          </motion.ul>
+                    {/* CTA Button */}
+                    <motion.a
+                      href={ctaLink}
+                      className="inline-flex items-center text-white font-bold py-4 px-10 rounded-full shadow-lg transition-all duration-300 transform group focus:outline-none focus:ring-4 focus:ring-opacity-75"
+                      style={{
+                        backgroundColor: primaryColor,
+                        '--tw-ring-color': `${primaryColor} !important` as any,
+                      }}
+                      whileHover={{ scale: 1.05, boxShadow: `0 10px 20px ${primaryColor}40` }}
+                      whileTap={{ scale: 0.95 }}
+                      variants={textItemVariants}
+                    >
+                      {ctaText}
+                      <ArrowRightIcon className="ml-2 w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
+                    </motion.a>
+                </div>
 
-          {/* Call to Action Button */}
-          <motion.button
-            className="inline-flex items-center text-white font-bold py-4 px-10 rounded-full shadow-lg transition-all duration-300 transform group focus:outline-none focus:ring-4 focus:ring-opacity-75"
-            style={{
-              backgroundColor: primaryColor,
-              '--tw-ring-color': `${primaryColor} !important` as any,
-            }}
-            whileHover={{ scale: 1.05, boxShadow: `0 10px 20px ${primaryColor}40` }}
-            whileTap={{ scale: 0.95 }}
-            variants={itemVariants}
-            onClick={() => window.location.href = ctaLink}
-          >
-            {ctaText}
-            <ArrowRightIcon className="ml-2 w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
-          </motion.button>
+                {/* Right Image Area (The Layered Background) */}
+                <div className="w-full lg:w-2/5 relative min-h-[300px] lg:min-h-0">
+                    <Image
+                        src={imageUrl}
+                        alt="Academic success background"
+                        fill
+                        className="object-cover object-center lg:rounded-r-3xl"
+                        loader={loader}
+                        sizes="(max-width: 1024px) 100vw, 40vw"
+                        onError={handleImageError}
+                    />
+                    
+                    {/* Image Overlay for Contrast/Depth */}
+                    <div className="absolute inset-0 bg-black/30 lg:bg-black/40"></div>
+                    
+                    {/* Floating Feature Icons (Overlaying the image) */}
+                    <motion.div 
+                        className="absolute inset-0 flex flex-wrap content-center justify-center p-8 gap-4 lg:gap-6"
+                        variants={containerVariants} // Use container to stagger the children
+                    >
+                        {coreValues.map((item: any, index: number) => {
+                            const IconComponent = IconMap[item.icon as keyof typeof IconMap] || CheckCircleIcon;
+                            return (
+                                <motion.div
+                                    key={index}
+                                    className="flex flex-col items-center justify-center w-28 h-28 p-3 rounded-xl shadow-lg bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm cursor-help"
+                                    variants={featureIconVariants}
+                                    whileHover={{ scale: 1.1, rotate: -5 }}
+                                >
+                                    <IconComponent className="w-8 h-8 mb-2" style={{ color: primaryColor }} />
+                                    <span className="text-xs font-semibold text-center text-gray-800 dark:text-gray-200 leading-tight">{item.title}</span>
+                                </motion.div>
+                            );
+                        })}
+                    </motion.div>
+                </div>
+
+            </div>
         </div>
       </div>
     </motion.section>

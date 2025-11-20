@@ -3,86 +3,30 @@
 import React from 'react';
 import Slider from 'react-slick';
 import { motion } from 'framer-motion';
-import Image from 'next/image'; // Import Image for optimized avatars
+import Image from 'next/image';
 import { StarIcon as StarOutline } from '@heroicons/react/24/outline';
 import { StarIcon as StarSolid } from '@heroicons/react/24/solid';
-import { useStoreContext } from '@/contexts/StoreContext';
-
-// Import slick carousel styles (ensure these are installed or linked in your project)
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
+import { ChatBubbleBottomCenterTextIcon } from '@heroicons/react/24/solid';
 import { Testimonial } from '@/types/typings';
 
-// Define types based on your transformCompanyToStoreForm
-// export type Testimonial = {
-//   id: string;
-//   author: string; // Corresponds to author name
-//   quote: string; // Corresponds to the testimonial text
-//   rating?: number; // 1-5 stars
-//   avatarUrl?: string; // URL for the author's image
-//   order: number; // For sorting
-//   // The 'title' field (e.g., 'Satisfied Client', 'Registered Therapist')
-//   // is not explicitly in your schema's Testimonial model.
-//   // We will derive it or use a generic fallback.
-// };
+// Import slick carousel styles
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 
-export type StoreForm = {
-  testimonials?: Testimonial[];
-  // Add other relevant StoreForm fields if needed
-};
+// ---------------------------------------------------------
+// UTILS & MOCK DATA
+// ---------------------------------------------------------
 
-// Placeholder for useStoreContext to make the component runnable independently
-// In a real application, you would uncomment the actual import.
-// const useStoreContext = () => ({
-//   storeFormData: {
-//     testimonials: [
-//       {
-//         id: 'test-1',
-//         author: 'Sarah L.',
-//         quote: 'Ducun Vijed made finding and booking a massage therapist incredibly easy. The interface is intuitive, and I always find someone perfect for my needs. Truly a game-changer!',
-//         rating: 5,
-//         avatarUrl: 'https://placehold.co/200x200/F59E0B/FFFFFF?text=Sarah', // Example placeholder
-//         order: 1,
-//       },
-//       {
-//         id: 'test-2',
-//         author: 'Dr. Alex M.',
-//         quote: 'As a therapist, Ducun Vijed has expanded my client base significantly. The platform is professional, secure, and handles all the scheduling seamlessly. Highly recommended!',
-//         rating: 5,
-//         avatarUrl: 'https://placehold.co/200x200/EF4444/FFFFFF?text=Alex',
-//         order: 2,
-//       },
-//       {
-//         id: 'test-3',
-//         author: 'Jessica P.',
-//         quote: 'I love the variety of therapists available and the detailed profiles. It helps me choose with confidence. The booking process is super smooth, and support is fantastic!',
-//         rating: 4,
-//         avatarUrl: 'https://placehold.co/200x200/0EA5E9/FFFFFF?text=Jessica',
-//         order: 3,
-//       },
-//       {
-//         id: 'test-4',
-//         author: 'Mark T.',
-//         quote: 'Finding quality local services used to be a headache. Ducun Vijed simplifies everything, from discovery to booking. My experience has been consistently excellent!',
-//         rating: 5,
-//         avatarUrl: 'https://placehold.co/200x200/10B981/FFFFFF?text=Mark',
-//         order: 4,
-//       },
-//     ],
-//   } as StoreForm,
-// });
+const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => 
+  `${src}?w=${width}&q=${quality || 75}`;
 
-// Optimized image loader
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
-
-// Helper to render stars (reused from previous sections)
 const renderStars = (count: number | undefined) => {
   if (count === undefined) return null;
   return (
-    <div className="flex items-center space-x-0.5">
+    <div className="flex items-center gap-0.5">
       {Array.from({ length: 5 }).map((_, i) =>
         i < count ? (
-          <StarSolid key={i} className="h-4 w-4 text-yellow-500" />
+          <StarSolid key={i} className="h-4 w-4 text-amber-400" />
         ) : (
           <StarOutline key={i} className="h-4 w-4 text-gray-300" />
         )
@@ -91,239 +35,263 @@ const renderStars = (count: number | undefined) => {
   );
 };
 
-// Static fallback data (matches the structure we'll use for rendering)
-// interface RenderableTestimonial {
-//   id: string;
-//   name: string;
-//   text: string;
-//   rating: number;
-//   image: string;
-//   title: string; // This field is derived or hardcoded for fallback
-// }
-
-const fallbackTestimonials: Testimonial[] = [
+const fallbackTestimonials: any[] = [
   {
     id: 'fallback-1',
-    authorName: 'Sarah L.',
-    quote: 'Ducun Vijed made finding and booking a massage therapist incredibly easy. The interface is intuitive, and I always find someone perfect for my needs. Truly a game-changer!',
+    authorName: 'Sarah Jenkins',
+    quote: 'The interface is intuitive, and I always find someone perfect for my needs. Truly a game-changer for my weekend routine!',
     rating: 5,
     avatarUrl: 'https://placehold.co/200x200/F59E0B/FFFFFF?text=Sarah',
-    authorTitle: 'Satisfied Client',
+    authorTitle: 'Design Professional',
   },
   {
     id: 'fallback-2',
-    authorName: 'Dr. Alex M.',
-    quote: 'As a therapist, Ducun Vijed has expanded my client base significantly. The platform is professional, secure, and handles all the scheduling seamlessly. Highly recommended!',
+    authorName: 'Dr. Alex Morras',
+    quote: 'As a therapist, this platform has expanded my client base significantly. It handles all the scheduling seamlessly.',
     rating: 5,
     avatarUrl: 'https://placehold.co/200x200/EF4444/FFFFFF?text=Alex',
-    authorTitle: 'Registered Therapist',
+    authorTitle: 'Clinical Therapist',
   },
   {
     id: 'fallback-3',
-    authorName: 'Jessica P.',
-    quote: 'I love the variety of therapists available and the detailed profiles. It helps me choose with confidence. The booking process is super smooth, and support is fantastic!',
+    authorName: 'Jessica Pearson',
+    quote: 'I love the detailed profiles. It helps me choose with confidence. The booking process is super smooth, and support is fantastic!',
     rating: 4,
-    avatarUrl: 'https://placehold.co/200x200/0EA5E9/FFFFFF?text=Jessica',
-    authorTitle: 'Regular User',
+    avatarUrl: 'https://placehold.co/200x200/0EA5E9/FFFFFF?text=Jess',
+    authorTitle: 'Frequent User',
   },
   {
     id: 'fallback-4',
-    authorName: 'Mark T.',
-    quote: 'Finding quality local services used to be a headache. Ducun Vijed simplifies everything, from discovery to booking. My experience has been consistently excellent!',
+    authorName: 'Mark Thompson',
+    quote: 'Finding quality local services used to be a headache. This simplifies everything, from discovery to booking.',
     rating: 5,
     avatarUrl: 'https://placehold.co/200x200/10B981/FFFFFF?text=Mark',
-    authorTitle: 'Community Member',
+    authorTitle: 'Small Business Owner',
   },
 ];
 
-// Carousel settings for react-slick
+// Carousel settings
 const settings = {
   dots: true,
   infinite: true,
-  speed: 800, // Slightly faster transition
+  speed: 600,
   slidesToShow: 1,
   slidesToScroll: 1,
   arrows: false,
   autoplay: true,
-  autoplaySpeed: 6000, // A bit longer autoplay speed
-  adaptiveHeight: true,
-  pauseOnHover: true, // Pause autoplay on hover
+  autoplaySpeed: 5000,
+  pauseOnHover: true,
   appendDots: (dots: any) => (
-    <div style={{ padding: '20px' }}>
-      <ul className="flex justify-center mt-4 space-x-2">{dots}</ul>
+    <div style={{ bottom: "-40px" }}>
+      <ul className="flex justify-center gap-2">{dots}</ul>
     </div>
   ),
-  customPaging: (i: number) => (
-    <div className="w-3 h-3 rounded-full bg-gray-300 hover:bg-blue-400 transition-colors cursor-pointer" />
+  customPaging: () => (
+    <div className="w-2 h-2 rounded-full bg-gray-300 hover:bg-indigo-500 transition-colors" />
   ),
-  responsive: [
-    {
-      breakpoint: 768, // md breakpoint
-      settings: {
-        slidesToShow: 1,
-        dots: true,
-      },
-    },
-    {
-      breakpoint: 1024, // lg breakpoint - switch to grid
-      settings: 'unslick' as const, // Destroys slick on larger screens for grid layout
-    },
-  ],
 };
 
 interface TestimonialProps {
-  testimonial: Testimonial;
+  testimonial: Testimonial[];
 }
 
-const TestimonialsSection = ({testimonial : dynamicTestimonials}: TestimonialProps) => {
-  // Destructure storeFormData from context
-  // const { storeFormData } = useStoreContext() || {};
-  // const { testimonials: dynamicTestimonials } = storeFormData || {};
-
-  // Determine which testimonials to render: dynamic or fallback
-  const testimonialsToRender: Testimonial[] = Array.isArray(dynamicTestimonials) && dynamicTestimonials.length > 0
+const TestimonialsSection = ({ testimonial: dynamicTestimonials }: TestimonialProps) => {
+  
+  // 1. Data Prep
+  const testimonialsToRender = Array.isArray(dynamicTestimonials) && dynamicTestimonials.length > 0
     ? dynamicTestimonials
-        .sort((a, b) => (a.order || 0) - (b.order || 0)) // Sort by order if available
+        .sort((a, b) => (a.order || 0) - (b.order || 0))
         .map(t => ({
           id: t.id,
           authorName: t.authorName,
           quote: t.quote,
-          rating: t.rating || 5, // Default to 5 if rating is not provided
-          avatarUrl: t.avatarUrl || 'https://placehold.co/200x200/CCCCCC/333333?text=User', // Fallback image
-          title: t.authorName?.includes('Dr.') ? 'Registered Therapist' : 'Satisfied Client', // Derive title based on name or a generic
+          rating: t.rating || 5,
+          avatarUrl: t.avatarUrl || 'https://placehold.co/200x200/CCCCCC/333333?text=User',
+          authorTitle: t.authorName?.includes('Dr.') ? 'Specialist' : 'Community Member',
         }))
-    : fallbackTestimonials; // Use static fallback testimonials
+    : fallbackTestimonials;
 
-  const sectionVariants = {
-    hidden: { opacity: 0, y: 50 },
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    e.currentTarget.onerror = null;
+    e.currentTarget.src = 'https://placehold.co/200x200/cbd5e1/64748b?text=User';
+  };
+
+  // 2. Animation Variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.8,
-        ease: 'easeOut',
-        when: "beforeChildren",
-        staggerChildren: 0.1,
-      },
+      transition: { staggerChildren: 0.2 },
     },
   };
 
-  const itemVariants = {
-    hidden: { y: 30, opacity: 0 },
-    visible: { y: 0, opacity: 1, transition: { duration: 0.5 } },
-  };
-
-  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    e.currentTarget.onerror = null; // Prevents infinite loop if placeholder also fails
-    e.currentTarget.src = 'https://placehold.co/200x200/CCCCCC/333333?text=User'; // Generic placeholder
+  const cardVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { type: "spring", stiffness: 60, damping: 15 }
+    },
   };
 
   return (
-    <motion.section
-      className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800 py-20 px-4 sm:px-6 lg:px-8" // Modern gradient background
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, amount: 0.2 }}
-      variants={sectionVariants}
-    >
-      <div className="max-w-7xl mx-auto text-center">
-        {/* Subtitle Badge */}
-        <motion.span
-          className="inline-block bg-teal-100 dark:bg-teal-900/50 text-teal-700 dark:text-teal-300 text-sm font-semibold px-4 py-1.5 rounded-full mb-4 shadow-sm" // More vibrant badge
-          variants={itemVariants}
-        >
-          What Our Community Says
-        </motion.span>
+    <section className="relative py-24 bg-slate-50 dark:bg-gray-950 font-sans overflow-hidden">
+      
+      {/* Abstract Background Decor */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none opacity-40">
+        <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-200/50 rounded-full blur-3xl mix-blend-multiply dark:mix-blend-overlay" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-200/50 rounded-full blur-3xl mix-blend-multiply dark:mix-blend-overlay" />
+      </div>
 
-        {/* Headline */}
-        <motion.h2
-          className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white leading-tight mb-4" // Larger, bolder headline
-          variants={itemVariants}
-        >
-          Hear From Our <span className="text-blue-600 dark:text-blue-400">Happy Clients</span> and Service Providers
-        </motion.h2>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        
+        {/* Header */}
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="flex items-center justify-center gap-2 mb-4">
+                <ChatBubbleBottomCenterTextIcon className="w-6 h-6 text-indigo-500" />
+                <span className="text-sm font-bold tracking-widest text-indigo-600 dark:text-indigo-400 uppercase">
+                    Testimonials
+                </span>
+            </div>
+            
+            <h2 className="text-4xl sm:text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-6">
+              Loved by <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-violet-600">thousands</span>
+            </h2>
+            
+            <p className="text-lg text-slate-600 dark:text-slate-300 leading-relaxed">
+              Don't just take our word for it. Read honest feedback from real users who have transformed their daily routines with us.
+            </p>
 
-        {/* Description */}
-        <motion.p
-          className="text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto mb-12" // Larger, more prominent description
-          variants={itemVariants}
-        >
-          Discover how Ducun Vijed is transforming the way people find and book services, and how providers connect with their ideal clients.
-        </motion.p>
+            {/* This diagram explains the concept of the Net Promoter Score (NPS), 
+               which is a common metric derived from customer ratings (like the 1-5 stars below)
+               to gauge customer loyalty.
+            */}
+            <div className="mt-8 flex justify-center opacity-0 h-0 w-0 overflow-hidden">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/8/88/Net_Promoter_Score_Diagram.svg" alt="Net Promoter Score Diagram" className="h-48 w-auto" />
+              {/*
+                [Image of Net Promoter Score diagram]
+              */}
 
-        {/* Testimonials Carousel (Mobile) */}
-        <div className="block lg:hidden">
+            </div>
+
+          </motion.div>
+        </div>
+
+        {/* Mobile Carousel (Visible < 1024px) */}
+        <div className="lg:hidden mb-12">
           <Slider {...settings}>
             {testimonialsToRender.map((t) => (
-              <div key={t.id} className="px-2"> {/* Added padding for carousel items */}
-                <motion.div
-                  className="relative bg-white dark:bg-gray-800 p-8 shadow-xl rounded-3xl border border-gray-100 dark:border-gray-700 mx-auto" // Elevated card styling
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true, amount: 0.5 }}
-                  transition={{ duration: 0.6 }}
-                >
-                  <p className="text-lg font-medium text-gray-800 dark:text-white mb-6 leading-relaxed h-7 overflow-hidden">
-                    “{t.quote}”
-                  </p>
-                  <div className="flex items-center gap-4 mt-6"> {/* Increased gap */}
+              <div key={t.id} className="px-2 pb-10">
+                <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-lg border border-slate-100 dark:border-gray-700 h-full flex flex-col relative">
+                  {/* Giant Quote Mark */}
+                  <span className="absolute top-6 right-8 text-8xl font-serif text-slate-100 dark:text-gray-700 select-none opacity-50">
+                    &rdquo;
+                  </span>
+                  
+                  <div className="mb-4">{renderStars(t.rating)}</div>
+                  
+                  <blockquote className="text-lg font-medium text-slate-700 dark:text-slate-200 mb-6 relative z-10 flex-grow">
+                    "{t.quote.substring(0, 200)}{t.quote.length > 200 ? '...' : '' }"
+                  </blockquote>
+                  
+                  <div className="flex items-center gap-4 mt-auto pt-6 border-t border-slate-100 dark:border-gray-700">
                     <Image
-                      src={t.avatarUrl || 'https://placehold.co/200x200/CCCCCC/333333?text=User'} // Fallback image
-                      alt={t.authorName || 'authorName'}
-                      width={48} // Larger avatar
-                      height={48}
+                      src={t.avatarUrl}
+                      alt={t.authorName}
+                      width={50}
+                      height={50}
                       loader={loader}
-                      className="rounded-full object-cover ring-2 ring-blue-500 ring-offset-2 ring-offset-white dark:ring-offset-gray-800" // Ring accent
-                      onError={handleImageError} // Image error fallback
+                      onError={handleImageError}
+                      className="rounded-full object-cover ring-4 ring-slate-50 dark:ring-gray-800"
                     />
-                    <div className="text-left">
-                      <p className="text-md font-semibold text-gray-900 dark:text-white h-7 overflow-hidden">{t.quote}</p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">{t.authorTitle}</p>
-                      {renderStars(t.rating || 4)}
+                    <div>
+                      <div className="font-bold text-slate-900 dark:text-white">{t.authorName}</div>
+                      <div className="text-xs font-semibold text-indigo-500 uppercase tracking-wide">{t.authorTitle}</div>
                     </div>
                   </div>
-                </motion.div>
+                </div>
               </div>
             ))}
           </Slider>
         </div>
 
-        {/* Testimonials Grid (Desktop) */}
-        <div className="hidden lg:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mt-12 justify-items-center">
-          {testimonialsToRender.map((t, index) => (
-            <motion.div
-              key={t.id} // Use unique ID from data
-              className="relative bg-white dark:bg-gray-800 p-8 shadow-xl rounded-3xl border border-gray-100 dark:border-gray-700 max-w-sm w-full" // Consistent card styling
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.3 }}
-              transition={{ delay: index * 0.15, duration: 0.6, ease: 'easeOut' }}
-              whileHover={{ y: -8, boxShadow: '0 15px 30px rgba(0,0,0,0.1)' }}
-            >
-              <p className="text-lg font-medium text-gray-800 dark:text-white mb-6 leading-relaxed h-7 overflow-hidden">
-                “{t.quote}”
-              </p>
-              <div className="flex items-center gap-4 mt-6">
-                <Image
-                  src={t.avatarUrl || 'https://placehold.co/200x200/CCCCCC/333333?text=User'}
-                  alt={t.authorName || ''}
-                  width={48}
-                  height={48}
-                  loader={loader}
-                  className="rounded-full object-cover ring-2 ring-blue-500 ring-offset-2 ring-offset-white dark:ring-offset-gray-800"
-                  onError={handleImageError}
-                />
-                <div className="text-left">
-                  <p className="text-md font-semibold text-gray-900 dark:text-white  h-7 overflow-hidden">{t.quote}</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{t.authorTitle}</p>
-                  {renderStars(t.rating || 4)}
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
+        {/* Desktop Grid (Visible >= 1024px) */}
+        <motion.div 
+          className="hidden lg:grid grid-cols-3 gap-8 items-start"
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-50px" }}
+        >
+            {/* We map 3 columns manually or using masonry logic if needed. 
+               For simplicity in this snippet, we assume a balanced grid or use flex-col within cols.
+               Here, simply mapping them into a responsive grid.
+            */}
+            {testimonialsToRender.map((t, idx) => (
+               <motion.div 
+                 key={t.id}
+                 variants={cardVariants}
+                 className="group relative bg-white dark:bg-gray-800 rounded-[2rem] p-8 shadow-xl shadow-indigo-900/5 border border-slate-100 dark:border-gray-700 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-indigo-900/10"
+               >
+                  {/* Decorative Gradient Border on Hover */}
+                  <div className="absolute inset-0 rounded-[2rem] border-2 border-transparent group-hover:border-indigo-50 transition-colors duration-300 pointer-events-none" />
+
+                  {/* Giant Quote Mark */}
+                  <span className="absolute top-4 right-8 text-9xl font-serif text-slate-50 dark:text-gray-700/50 leading-none select-none group-hover:text-indigo-50 dark:group-hover:text-indigo-900/20 transition-colors duration-300">
+                    &rdquo;
+                  </span>
+
+                  {/* Rating */}
+                  <div className="relative z-10 mb-6">
+                     {renderStars(t.rating)}
+                  </div>
+
+                  {/* Quote */}
+                  <blockquote className="relative z-10 text-lg text-slate-700 dark:text-slate-300 leading-relaxed mb-8 font-medium">
+                    "{t.quote.substring(0, 200)}{t.quote.length > 200 ? '...' : '' }"
+                  </blockquote>
+
+                  {/* Author Meta */}
+                  <div className="relative z-10 flex items-center gap-4">
+                    <div className="relative">
+                       <Image
+                        src={t.avatarUrl}
+                        alt={t.authorName}
+                        width={56}
+                        height={56}
+                        loader={loader}
+                        onError={handleImageError}
+                        className="rounded-full object-cover border-2 border-white dark:border-gray-700 shadow-md group-hover:scale-110 transition-transform duration-300"
+                      />
+                      {/* Verified Badge */}
+                      <div className="absolute -bottom-1 -right-1 bg-green-500 text-white rounded-full p-1 border-2 border-white dark:border-gray-800">
+                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <h4 className="font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 transition-colors">
+                        {t.authorName}
+                      </h4>
+                      <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                        {t.authorTitle}
+                      </p>
+                    </div>
+                  </div>
+               </motion.div>
+            ))}
+        </motion.div>
+
       </div>
-    </motion.section>
+    </section>
   );
 };
 

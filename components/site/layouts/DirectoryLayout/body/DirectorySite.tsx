@@ -45,7 +45,7 @@ export default function DirectorySite({ pageData, companyId }: { pageData: Store
   };
 
   return (
-    <div className="font-sans space-y-24">
+    <div className="font-sans">
       <HeroSection
         searchTerm={searchTerm}
         setSearchTerm={setSearchTerm}

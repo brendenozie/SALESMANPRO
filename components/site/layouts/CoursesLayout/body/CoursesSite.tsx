@@ -34,7 +34,7 @@ export default function CoursesSite({ pageData, companyId }: { pageData: StoreFo
   const { data: faqsData } = useSWR(`${apiBaseUrl}/site/faqs?id=${companyId}`, fetcher);
   
   return (
-    <div className="space-y-32 font-sans">
+    <div className="font-sans">
       {/* Hero */}
       <HeroSection />
 

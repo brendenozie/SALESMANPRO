@@ -3,61 +3,12 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { EnvelopeIcon, SparklesIcon, ArrowRightIcon } from '@heroicons/react/24/solid';
-import Image from 'next/image'; // Import Image for optimized images
-// Assuming useStoreContext is available and provides storeFormData
+import Image from 'next/image';
 import { useStoreContext } from '@/contexts/StoreContext';
+import clsx from 'clsx'; // Utility for conditional class names
 
-// Define types based on your transformCompanyToStoreForm and Prisma schema
-export type ThemeSettings = {
-  primaryColor?: string;
-  secondaryColor?: string;
-};
-
-// export type StoreForm = {
-//   name?: string; // Can be used for CTA title
-//   tagline?: string; // Can be used for CTA subtitle
-//   description?: string; // Can be used for CTA subtitle
-//   bannerUrl?: string; // Can be used for CTA image
-//   ctaSection?: { // New field for specific CTA section content
-//     title?: string;
-//     subtitle?: string;
-//     buttonLabel?: string;
-//     buttonHref?: string;
-//     imageUrl?: string;
-//     subscribeText?: string; // Text for the subscribe section
-//     subscribePlaceholder?: string; // Placeholder for email input
-//     subscribeButtonLabel?: string; // Label for subscribe button
-//   };
-//   themeSettings?: ThemeSettings;
-//   contactEmail?: string; // For subscribe section placeholder
-//   // Add other relevant StoreForm fields if needed
-// };
-
-// Placeholder for useStoreContext to make the component runnable independently
-// In a real application, you would uncomment the actual import.
-// const useStoreContext = () => ({
-//   storeFormData: {
-//     themeSettings: {
-//       primaryColor: "#fd2121", // Red from your sample
-//       secondaryColor: "#FFC107", // Amber/Yellow for accent
-//     },
-//     name: "EduLearn Academy",
-//     tagline: "Your Future, Our Expertise",
-//     description: "Join our vibrant community and unlock endless possibilities for growth and discovery. Your future starts here with our cutting-edge courses and expert instructors.",
-//     bannerUrl: "https://images.unsplash.com/photo-1546410531-bb45ce9b6867?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // Example image for CTA
-//     contactEmail: "info@edulearn.com",
-//     ctaSection: {
-//       title: "Ignite Your Learning Journey Today",
-//       subtitle: "Unlock endless possibilities for growth and discovery. Your future starts here with our cutting-edge courses and expert instructors.",
-//       buttonLabel: "Explore All Courses",
-//       buttonHref: "/courses",
-//       imageUrl: "https://images.unsplash.com/photo-1546410531-bb45ce9b6867?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", // Specific image for CTA section
-//       subscribeText: "Stay informed with our newest courses, events, and exclusive offers.",
-//       subscribePlaceholder: "your.email@example.com",
-//       subscribeButtonLabel: "Subscribe Now",
-//     },
-//   } as StoreForm,
-// });
+// --- Type definitions (kept for context) ---
+// ... (omitted for brevity)
 
 // Optimized image loader
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
@@ -73,43 +24,37 @@ export default function CtaSection() {
 
   // Dynamic content from storeFormData with fallbacks
   const ctaTitle = storeFormData?.name || "Ignite Your Learning Journey Today";
-  const ctaSubtitle = storeFormData?.description || "Join our vibrant community and unlock endless possibilities for growth and discovery. Your future starts here!";
-  const ctaButtonLabel = "Explore Courses"; //storeFormData?.ctaSection?.buttonLabel || 
-  const ctaButtonHref = "/courses"; //storeFormData?.ctaSection?.buttonHref || 
-  const ctaImageUrl = storeFormData?.bannerUrl || "https://placehold.co/1200x800/D1D5DB/4B5563?text=Engage+Your+Mind";
+  const ctaSubtitle = storeFormData?.description || "Unlock endless possibilities for growth and discovery with our cutting-edge courses and expert instructors.";
+  const ctaButtonLabel = "Explore Courses";
+  const ctaButtonHref = "/courses";
+  const ctaImageUrl = storeFormData?.bannerUrl || "https://images.unsplash.com/photo-1546410531-bb45ce9b6867?q=80&w=2670&auto=format&fit=crop"; 
   const subscribeText =  "Stay informed with our newest courses, events, and exclusive offers.";
-  const subscribePlaceholder = storeFormData?.contactEmail || "Enter your email...";
-  const subscribeButtonLabel =  "Subscribe Now"; //storeFormData?.ctaSection?.subscribeButtonLabel ||
+  const subscribePlaceholder = storeFormData?.contactEmail || "your.email@example.com";
+  const subscribeButtonLabel =  "Subscribe Now";
 
   // Mock navigation for demonstration
   const mockNavigation = (path: string) => {
     console.log(`Navigating to: ${path}`);
-    // In a real Next.js app, this would be router.push(path);
-    // window.location.href = path; // Uncomment if you want actual page redirection in browser
   };
 
   // Animation variants for the container
   const containerVariants = {
-    hidden: { opacity: 0, y: 50 },
+    hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      y: 0,
       transition: {
-        type: "spring",
-        stiffness: 60,
-        damping: 8,
         when: "beforeChildren",
-        staggerChildren: 0.2,
+        staggerChildren: 0.1,
       },
     },
   };
 
   // Animation variants for individual elements
   const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0, x: -30 },
     visible: {
       opacity: 1,
-      y: 0,
+      x: 0,
       transition: {
         type: "spring",
         stiffness: 80,
@@ -125,122 +70,136 @@ export default function CtaSection() {
 
   return (
     <motion.section
-      className="relative z-10 py-16 sm:py-24 px-4 sm:px-6 lg:px-8 overflow-hidden bg-white"
+      className="relative z-10 py-16 sm:py-24 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-900"
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, amount: 0.3 }}
       variants={containerVariants}
     >
-      <div className="max-w-6xl mx-auto bg-white text-gray-900
-                      rounded-3xl shadow-xl overflow-hidden flex flex-col lg:flex-row items-stretch border border-gray-100">
-
-        {/* Left Section - Image */}
-        <motion.div
-          className="relative w-full lg:w-1/2 h-80 lg:h-auto flex-shrink-0"
-          variants={itemVariants}
-        >
-          <Image
-            src={ctaImageUrl}
-            alt="Learning engagement"
-            fill
-            className="object-cover object-center transform scale-100 group-hover:scale-105 transition-transform duration-500"
-            loader={loader}
-            sizes="(max-width: 1024px) 100vw, 50vw"
-            onError={handleImageError}
-          />
-          {/* Subtle gradient overlay on image */}
-          <div className="absolute inset-0 bg-gradient-to-t from-gray-900/10 to-transparent"></div>
-        </motion.div>
-
-        {/* Right Section - Content (CTA & Subscribe) */}
-        <div className="w-full lg:w-1/2 p-8 sm:p-12 flex flex-col justify-center text-center lg:text-left">
-          <motion.h2
-            className="text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-4 leading-tight text-gray-900 drop-shadow-sm"
-            variants={itemVariants}
-          >
-            {ctaTitle.split(' ').map((word, index) => (
-              <span key={index}>
-                {word === "Ignite" || word === "Learning" ? (
-                  <span style={{ color: primaryColor }}>{word} </span>
-                ) : (
-                  `${word} `
-                )}
-              </span>
-            ))}
-          </motion.h2>
-
-          <motion.p
-            className="text-lg sm:text-xl text-gray-700 mb-8 max-w-xl mx-auto lg:mx-0 leading-relaxed"
-            variants={itemVariants}
-          >
-            {ctaSubtitle}
-          </motion.p>
-
-          {/* Main CTA Button */}
-          <motion.button
-            whileHover={{ scale: 1.05, boxShadow: `0 10px 20px ${primaryColor}40` }}
-            whileTap={{ scale: 0.95 }}
-            className={`inline-flex items-center justify-center text-white
-                        px-10 py-4 rounded-md text-lg font-bold shadow-xl transition-all duration-300 mb-10
-                        focus:outline-none focus:ring-4 focus:ring-opacity-75 self-center lg:self-start`}
-            style={{
-              background: `${primaryColor}`
-              // `linear-gradient(to right, ${primaryColor}, ${accentColor})`,
-              // '--tw-ring-color': `${accentColor} !important` as any
+      <div className="max-w-7xl mx-auto rounded-[2.5rem] shadow-2xl overflow-hidden relative">
+        
+        {/* --- Background: Diagonal Split --- */}
+        <div 
+            className="absolute inset-0 z-0 hidden lg:block"
+            style={{ 
+                // Uses a diagonal clip-path to split the container visually
+                clipPath: 'polygon(0 0, 60% 0, 40% 100%, 0% 100%)',
+                backgroundColor: primaryColor,
             }}
-            variants={itemVariants}
-            onClick={() => mockNavigation(ctaButtonHref)}
-          >
-            {ctaButtonLabel}
-            <ArrowRightIcon className="ml-3 w-5 h-5" />
-          </motion.button>
+        />
 
-          {/* Separator */}
-          <motion.div
-            className="relative w-full h-px bg-gray-300 my-8"
-            variants={itemVariants}
-          >
-            <span className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white px-3 text-sm text-gray-500 uppercase tracking-wider font-semibold">
-              or
-            </span>
-          </motion.div>
+        {/* Fallback color for the right side / mobile */}
+        <div className="absolute inset-0 z-0 bg-white dark:bg-gray-800 lg:hidden" />
+        <div 
+            className="absolute inset-0 z-0 hidden lg:block"
+            style={{ 
+                clipPath: 'polygon(60% 0, 100% 0, 100% 100%, 40% 100%)',
+                backgroundColor: 'white', // Right side base color
+            }}
+        />
 
-          {/* Subscribe Section */}
+        {/* --- Content Grid: 2/3rds Image/Color, 1/3rd Content --- */}
+        <div className="relative z-10 grid lg:grid-cols-12">
+
+          {/* 1. Left Section - Image & Branding (Col Span 7) */}
           <motion.div
-            className="w-full flex flex-col items-center lg:items-start"
+            className="relative col-span-12 lg:col-span-7 h-96 lg:min-h-[550px] flex items-center justify-center p-10"
             variants={itemVariants}
           >
-            <h3 className="text-xl font-bold mb-4 flex items-center gap-2 text-gray-900">
-              <SparklesIcon className={`w-6 h-6`} style={{ color: primaryColor }} /> Get Our Latest Updates
-            </h3>
-            <p className="text-gray-700 mb-6 text-base max-w-md mx-auto lg:mx-0">
-              {subscribeText}
-            </p>
-            <div className="flex flex-col sm:flex-row w-full max-w-md gap-3 sm:gap-0">
-              <input
-                type="email"
-                placeholder={subscribePlaceholder}
-                className={`w-full p-4 rounded-md sm:rounded-r-none sm:rounded-l-md
-                            text-gray-900 bg-gray-100 border border-gray-300 focus:outline-none focus:ring-2
-                            focus:ring-opacity-75 transition-all shadow-sm placeholder-gray-500`}
-                // style={{ '--tw-ring-color': `${accentColor} !important` as any }}
+            {/* Background Image Layer */}
+            <div className="absolute inset-0 z-0">
+              <Image
+                src={ctaImageUrl}
+                alt="Learning engagement"
+                fill
+                className="object-cover object-center"
+                loader={loader}
+                sizes="(max-width: 1024px) 100vw, 60vw"
+                onError={handleImageError}
               />
-              <motion.button
-                whileHover={{ scale: 1.05, boxShadow: `0 5px 15px ${primaryColor}40` }}
-                whileTap={{ scale: 0.95 }}
-                className={`flex-shrink-0 px-8 py-4 text-white font-bold rounded-md sm:rounded-l-none sm:rounded-r-md
-                            hover:bg-opacity-90 transition-all duration-300 shadow-md
-                            focus:outline-none focus:ring-4 focus:ring-opacity-75`}
-                style={{
-                  backgroundColor: primaryColor,
-                  '--tw-ring-color': `${primaryColor} !important` as any
-                }}
-                onClick={() => console.log('Subscribe Now clicked!')}
-              >
-                <EnvelopeIcon className="w-5 h-5 mr-2" /> {subscribeButtonLabel}
-              </motion.button>
+              {/* Strong Gradient Overlay */}
+              <div className="absolute inset-0 bg-gray-900/80 group-hover:bg-gray-900/70 transition-colors duration-500"></div>
             </div>
+
+            {/* Centerpiece Text/Logo */}
+            <motion.div 
+                className="relative text-center p-6 border-4 border-white/50 rounded-xl"
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate="visible"
+                variants={{ visible: { opacity: 1, scale: 1, transition: { delay: 0.4, type: 'spring', stiffness: 100 }}}}
+            >
+              <h3 className="text-4xl font-extrabold text-white">{storeFormData?.name || "EduLearn Academy"}</h3>
+              <p className="text-xl text-gray-300 mt-2 font-medium">{storeFormData?.tagline || "Your Future, Our Expertise"}</p>
+            </motion.div>
           </motion.div>
+
+          {/* 2. Right Section - Content (CTA & Subscribe) (Col Span 5) */}
+          <div className="col-span-12 lg:col-span-5 p-8 sm:p-12 flex flex-col justify-center text-center lg:text-left bg-white dark:bg-gray-800">
+            <motion.h2
+              className="text-3xl sm:text-4xl font-extrabold mb-4 leading-tight text-gray-900 dark:text-white"
+              variants={itemVariants}
+            >
+              Ready to <span style={{ color: primaryColor }}>{' Join'}</span>
+            </motion.h2>
+
+            <motion.p
+              className="text-lg text-gray-700 dark:text-gray-300 mb-8 max-w-xl mx-auto lg:mx-0 leading-relaxed"
+              variants={itemVariants}
+            >
+              {ctaSubtitle}
+            </motion.p>
+
+            {/* Main CTA Button (Highly Emphasized) */}
+            <motion.button
+              whileHover={{ scale: 1.05, boxShadow: `0 15px 30px ${primaryColor}60` }}
+              whileTap={{ scale: 0.95 }}
+              className={clsx(`inline-flex items-center justify-center text-white w-full sm:w-auto
+                            px-12 py-4 rounded-full text-xl font-extrabold shadow-2xl transition-all duration-300 mb-12
+                            focus:outline-none focus:ring-4 focus:ring-opacity-75`)}
+              style={{
+                background: primaryColor,
+              }}
+              variants={itemVariants}
+              onClick={() => mockNavigation(ctaButtonHref)}
+            >
+              {ctaButtonLabel}
+              <ArrowRightIcon className="ml-3 w-6 h-6" />
+            </motion.button>
+
+
+            {/* Subscribe Section (Secondary CTA) */}
+            <motion.div
+              className="w-full flex flex-col items-center lg:items-start pt-8 border-t border-gray-200 dark:border-gray-700"
+              variants={itemVariants}
+            >
+              <h3 className="text-xl font-bold mb-4 flex items-center gap-2 text-gray-900 dark:text-white">
+                <SparklesIcon className={`w-6 h-6`} style={{ color: accentColor }} /> Get Our Exclusive Updates
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-6 text-base max-w-md mx-auto lg:mx-0">
+                {subscribeText}
+              </p>
+              <div className="flex w-full max-w-md gap-0 shadow-lg rounded-xl overflow-hidden border border-gray-300 dark:border-gray-700">
+                <input
+                  type="email"
+                  placeholder={subscribePlaceholder}
+                  className={`w-full p-4 text-gray-900 dark:text-white bg-white dark:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-opacity-75`}
+                  style={{ ['--tw-ring-color' as any]: accentColor } as React.CSSProperties}
+                />
+                <motion.button
+                  whileHover={{ scale: 1.05, backgroundColor: primaryColor }}
+                  whileTap={{ scale: 0.95 }}
+                  className={`flex-shrink-0 px-6 py-4 text-white font-bold text-sm sm:text-base
+                            transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-opacity-75`}
+                  style={{ backgroundColor: accentColor, // Use accent color for secondary button
+                           color: '#333', // Dark text on accent color
+                           ['--tw-ring-color' as any]: accentColor } as React.CSSProperties}
+                  onClick={() => console.log('Subscribe Now clicked!')}
+                >
+                  <EnvelopeIcon className="w-5 h-5" />
+                </motion.button>
+              </div>
+            </motion.div>
+          </div>
         </div>
       </div>
     </motion.section>
