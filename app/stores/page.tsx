@@ -994,7 +994,7 @@ export default function StoresPage() {
                         />
                     ) : (
                         paginatedStores && paginatedStores.map(store => {
-                            const isActive = store.subscriptionStatus === 'ACTIVE';
+                            const isActive = true;//store.subscriptionStatus === 'ACTIVE';
                             
                             return (
                                 <motion.div

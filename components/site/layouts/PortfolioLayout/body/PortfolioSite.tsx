@@ -31,6 +31,7 @@ export default function PortfolioSite({ pageData, companyId }: { pageData: Store
     name,
     slug,
     description,
+    bannerUrl,
     StoreCategory,
     themeSettings = {},
     heroSlides = [],
@@ -59,7 +60,7 @@ export default function PortfolioSite({ pageData, companyId }: { pageData: Store
 
       <FeaturesSection themeSettings={themeSettings} name={name} promotions={promotions} tagline={tagline}/> 
 
-      <AboutSection  name={name} slug={slug} contactEmail={contactEmail} stats={stats} themeSettings={themeSettings} description={description} tagline={tagline} heroSlides={heroSlides}/>
+      <AboutSection  name={name} slug={slug} bannerUrl={bannerUrl} contactEmail={contactEmail} stats={stats} themeSettings={themeSettings} description={description} tagline={tagline} heroSlides={heroSlides}/>
 
       <CaseStudiesSection themeSettings={themeSettings} CoreValues={CoreValues} />
 

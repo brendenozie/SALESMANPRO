@@ -73,17 +73,14 @@ export default function ContactSection() {
   const whatsappHref = sanitizedPhone ? `https://wa.me/${sanitizedPhone}` : '';
 
   // Map embed URL: using a more robust and correct Google Maps embed structure
-  let mapSrc = '';
+  let mapSrc = ""
   if (geoLocation && typeof geoLocation.lat === 'number' && typeof geoLocation.lng === 'number') {
-    // Example: https://www.google.com/maps/embed/v1/place?key=YOUR_API_KEY&q=Space+Needle,Seattle+WA
-    // Note: You might need a Google Maps API Key for production use.
-    mapSrc = `https://www.google.com/maps/embed/v1/place?q=${geoLocation.lat},${geoLocation.lng}&key=YOUR_Maps_API_KEY`; // Placeholder for API Key
+    mapSrc = "https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d15955.123456789012!2d" + geoLocation.lng + "!3d" + geoLocation.lat + "!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2z" + geoLocation.lat + "N" + geoLocation.lng + "E!5e0!3m2!1sen!2ske!4v1700000000000!5m2!1sen!2ske"; 
   } else if (address) {
     const encodedAddress = encodeURIComponent(address);
-    mapSrc = `https://www.google.com/maps/embed/v1/place?q=${encodedAddress}&key=YOUR_Maps_API_KEY`; // Placeholder for API Key
+    mapSrc = `https://www.google.com/maps/embed?q=${encodedAddress}&output=embed`;
   } else {
-    // Default to Nairobi CBD, Kenya if no address or geo-location provided
-    mapSrc = `https://www.google.com/maps/embed/v1/place?q=Nairobi+CBD,+Kenya&key=YOUR_Maps_API_KEY`; // Placeholder for API Key
+    mapSrc = "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3988.8164801198533!2d36.817223!3d-1.286389!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x182f1172d84d49a7%3A0xf7cf1f25b2447990!2sNairobi%2C%20Kenya!5e0!3m2!1sen!2ske!4v1700000000000!5m2!1sen!2ske";
   }
 
   // Framer Motion variants

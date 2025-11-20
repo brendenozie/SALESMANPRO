@@ -192,25 +192,37 @@ export default function MarketplaceListingsSection({ name, slug, themeSettings, 
 
         <div className="max-w-7xl mx-auto relative z-10">
           <motion.div
-            className="text-center mb-16"
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
-          >
-            <motion.h2
-              className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 dark:text-white leading-tight mb-4 drop-shadow-sm"
-              variants={itemVariants}
-            >
-              Explore Our <span style={{ color: primaryColor }}>Marketplace</span>
-            </motion.h2>
-            <motion.p
-              className="mt-4 text-gray-700 dark:text-gray-300 max-w-3xl mx-auto text-lg md:text-xl leading-relaxed"
-              variants={itemVariants}
-            >
-              Discover individual products and digital resources designed to accelerate your growth.
-            </motion.p>
-          </motion.div>
+                        className="text-center mb-16"
+                        variants={containerVariants}
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: true, amount: 0.2 }}
+                    >
+                        {/* Tagline */}
+                        <motion.p
+                            className="text-lg font-bold uppercase tracking-widest mb-3"
+                            style={{ color: primaryColor }}
+                            variants={itemVariants}
+                        >
+                            Digital Resources & Expertise
+                        </motion.p>
+                        
+                        {/* Main Headline */}
+                        <motion.h2
+                            className="text-5xl md:text-6xl lg:text-7xl font-extrabold text-gray-900 leading-tight mb-4 drop-shadow-sm"
+                            variants={itemVariants}
+                        >
+                            Explore Our <span style={{ color: primaryColor }}>{name || 'Marketplace'}</span>
+                        </motion.h2>
+                        
+                        {/* Sub-description */}
+                        <motion.p
+                            className="mt-6 text-gray-600 max-w-4xl mx-auto text-xl md:text-2xl leading-relaxed"
+                            variants={itemVariants}
+                        >
+                            Discover individual products, courses, and tailored services designed to provide immediate, actionable value.
+                        </motion.p>
+                    </motion.div>
 
           {/* Grid of Product Cards, now with portfolio styling */}
           <motion.div
@@ -270,7 +282,6 @@ export default function MarketplaceListingsSection({ name, slug, themeSettings, 
                       style={{ backgroundColor: primaryColor, color: '#fff' }}
                     >
                       View Details
-                      <ArrowRightIcon className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                     </Link>
                   </div>
                 </div>
