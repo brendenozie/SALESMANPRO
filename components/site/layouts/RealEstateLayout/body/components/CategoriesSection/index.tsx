@@ -1,295 +1,370 @@
 "use client";
 
-import React from "react";
-import { motion } from "framer-motion";
+import React, { useMemo, useState } from "react";
+import { motion, Variants } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { IStoreCategory, ISubcategory, StoreForm } from "@/types/typings";
+import {
+  ArrowDownCircleIcon,
+  BuildingLibraryIcon,
+  HomeIcon,
+  LightBulbIcon,
+  PhoneIcon,
+  CubeTransparentIcon,
+  ArrowRightIcon, // New icon for CTA
+} from "@heroicons/react/24/outline";
+import { BuildingOffice2Icon, MegaphoneIcon } from "@heroicons/react/24/solid"; // New icon for subcategory count
 
-// Loader for Next.js Image
+/* -------------------------------------------------------------------------- */
+/* Constants & Helpers (Re-used/Adjusted) */
+/* -------------------------------------------------------------------------- */
+const MAX_SUBCATEGORIES = 10;
+const FALLBACK_IMAGE_URL = "https://hips.hearstapps.com/hmg-prod/images/edc100123egan-002-6500742f5feb7.jpg";
 const customLoader = ({ src, width, quality }: any) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
-// Framer Motion animation variants for categories
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1, delayChildren: 0.2 },
-  },
-};
-const itemVariants = {
-  hidden: { opacity: 0, y: 40, scale: 0.9 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: { type: "spring", stiffness: 100, damping: 10 },
-  },
-};
+// --- Helper Functions (Reused/Simplified) ---
+function safeSlug(value?: string, fallback = "category") {
+  if (!value) return fallback;
+  return String(value)
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-_]/g, "");
+}
 
-// Framer Motion animation variants for subcategories
-const subcategoryContainerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.08, delayChildren: 0.2 },
-  },
-};
-const subcategoryItemVariants = {
-  hidden: { opacity: 0, y: 30, scale: 0.95 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: { type: "spring", stiffness: 100, damping: 10 },
-  },
-};
+function getCategoryImageUrl(cat: IStoreCategory, slug?: string) {
+  const c: any = cat as any;
+  if (c.imageUrl) return c.imageUrl;
+  if (c.image) return c.image;
+  const s = slug || safeSlug(c.displayName || c.categoryId || c.id);
+  // Using more robust fallback images
+  return `https://hips.hearstapps.com/hmg-prod/images/edc100123egan-002-6500742f5feb7.jpg`;
+}
 
-// Sample fallback categories for a property store
+function getSubcategoryImageUrl(sub: ISubcategory) {
+  const s: any = sub as any;
+  if (s.imageUrl) return s.imageUrl;
+  if (s.image) return s.image;
+  const subSlug = safeSlug(s.name || s.slug || s.id);
+  return `https://hips.hearstapps.com/hmg-prod/images/edc100123egan-002-6500742f5feb7.jpg`;
+}
+
+/**
+ * Minimal theme/icon resolver: Picks colors to match the primary Emerald/Amber theme.
+ */
+function resolveCategoryStyle(_name: string, index: number) {
+  const themes = [
+    { text: "text-emerald-500", glow: "from-emerald-400", ring: "ring-emerald-500", bg: "bg-emerald-500" },
+    { text: "text-amber-500", glow: "from-amber-400", ring: "ring-amber-500", bg: "bg-amber-500" },
+    { text: "text-sky-500", glow: "from-sky-400", ring: "ring-sky-500", bg: "bg-sky-500" },
+    { text: "text-rose-500", glow: "from-rose-400", ring: "ring-rose-500", bg: "bg-rose-500" },
+    { text: "text-violet-500", glow: "from-violet-400", ring: "ring-violet-500", bg: "bg-violet-500" },
+  ];
+
+  const icons = [
+    <HomeIcon className="w-7 h-7" key="home" />,
+    <BuildingOffice2Icon className="w-7 h-7" key="office" />,
+    <BuildingLibraryIcon className="w-7 h-7" key="bldg" />,
+    <LightBulbIcon className="w-7 h-7" key="idea" />,
+    <PhoneIcon className="w-7 h-7" key="phone" />,
+    <CubeTransparentIcon className="w-7 h-7" key="cube" />,
+    <MegaphoneIcon className="w-7 h-7" key="megaphone" />,
+  ];
+
+  const idx = Math.abs(index) % themes.length;
+  const icon = icons[index % icons.length] || icons[0];
+  const theme = themes[idx];
+
+  return { icon, theme };
+}
+
+// Basic fallback categories (kept simple)
 const fallbackCategories: IStoreCategory[] = [
   {
-    id: "sample-1",
-    categoryId: "property",
-    displayName: "Property",
-    icon: "🏠",
+    id: `https://fallback.com`,
+    categoryId: "misc",
+    displayName: "General Properties",
+    visible: true,
     sortOrder: 0,
-    visible: true,
-    subcategories: [
-      { id: "Ho0", name: "Houses", slug: "houses", sortOrder: 0, visible: true },
-      { id: "Ap1", name: "Apartments", slug: "apartments", sortOrder: 1, visible: true },
-      { id: "La2", name: "Land", slug: "land", sortOrder: 2, visible: true },
-      { id: "Co3", name: "Commercial", slug: "commercial", sortOrder: 3, visible: true },
-      { id: "Va4", name: "Vacation Rentals", slug: "vacation-rentals", sortOrder: 4, visible: true },
-      { id: "Du5", name: "Duplexes", slug: "duplexes", sortOrder: 5, visible: true },
-      { id: "To6", name: "Townhouses", slug: "townhouses", sortOrder: 6, visible: true },
-      { id: "Ru7", name: "Rural Properties", slug: "rural-properties", sortOrder: 7, visible: true },
-      { id: "Fa8", name: "Farms", slug: "farms", sortOrder: 8, visible: true }, // This will be excluded due to the 8-item limit
-    ],
-    allBrands: [],
-    companyId: "",
-  },
-  {
-    id: "sample-2",
-    categoryId: "vehicle",
-    displayName: "Vehicles",
-    icon: "🚗",
-    sortOrder: 1,
-    visible: true,
-    subcategories: [
-      { id: "Ca0", name: "Cars", slug: "cars", sortOrder: 0, visible: true },
-      { id: "Mo1", name: "Motorcycles", slug: "motorcycles", sortOrder: 1, visible: true },
-    ],
-    allBrands: [],
-    companyId: "",
-  },
-  {
-    id: "sample-3",
-    categoryId: "electronics",
-    displayName: "Electronics",
-    icon: "📱",
-    sortOrder: 2,
-    visible: true,
     subcategories: [],
-    allBrands: [],
-    companyId: "",
-  },
+  } as unknown as IStoreCategory,
 ];
 
-type CategoriesSectionProps = {
-  store: StoreForm | null;
+/* -------------------------------------------------------------------------- */
+/* Animation (Refined) */
+/* -------------------------------------------------------------------------- */
+
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.08, delayChildren: 0.1 }, // Slightly faster
+  },
 };
 
-export default function CategoriesSection({ store }: CategoriesSectionProps) {
-  const rawCategories = (store?.StoreCategory ?? [])
-    .slice()
+const itemVariants: Variants = {
+  hidden: { opacity: 0, y: 30, scale: 0.98 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { type: "spring", stiffness: 120, damping: 14 },
+  },
+};
+
+/* -------------------------------------------------------------------------- */
+/* Category Card V4 (High Impact Image Card) */
+/* -------------------------------------------------------------------------- */
+
+export function CategoryCardV4({
+  cat,
+  storeSlug,
+  index,
+}: {
+  cat: IStoreCategory;
+  storeSlug?: string | null;
+  index: number;
+}) {
+  const [imgError, setImgError] = useState(false);
+  const catSlug = safeSlug(cat.categoryId || cat.displayName || "category") || "category";
+  const imageUrl = imgError ? FALLBACK_IMAGE_URL : getCategoryImageUrl(cat, catSlug);
+  const { icon, theme } = resolveCategoryStyle(cat.displayName || "category", index);
+  const subcategoryCount = cat.subcategories?.filter(s => s.visible).length || 0;
+
+  return (
+    <motion.div variants={itemVariants}>
+      <Link href={`/${storeSlug}/category/${catSlug}`} aria-label={cat.displayName ?? undefined} passHref legacyBehavior>
+        <a 
+          className={`relative block rounded-2xl overflow-hidden shadow-2xl group transition-all duration-300 transform-gpu perspective-1000 
+                     bg-gray-900 ring-2 ring-gray-100 dark:ring-gray-800
+                     hover:ring-4 hover:ring-offset-2 hover:ring-offset-white dark:hover:ring-offset-gray-900 ${theme.ring}
+                     focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-offset-2 focus-visible:ring-offset-white focus-visible:${theme.ring}`}
+        >
+          {/* Card Image Area (Reduced opacity on hover for better text readability) */}
+          <div className="relative h-64 w-full">
+            <Image
+              src={imageUrl}
+              alt={cat.displayName || "Category"}
+              fill
+              sizes="(max-width: 768px) 50vw, 25vw"
+              loader={customLoader}
+              onError={() => setImgError(true)}
+              className="object-cover group-hover:scale-110 transition-all duration-700 opacity-80 group-hover:opacity-60"
+            />
+            {/* Dark Gradient Overlay for high contrast text */}
+            <div className={`absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent`} />
+          </div>
+
+          {/* Content Area (Always visible at the bottom) */}
+          <div className="absolute inset-x-0 bottom-0 p-6 pt-12 flex flex-col justify-end text-white">
+            
+            {/* Icon Badge (Top-left of the text block) */}
+            <div
+              className={`w-12 h-12 rounded-xl flex items-center justify-center mb-3 border-2 border-white/30 transition-all duration-300 group-hover:bg-white group-hover:${theme.text}`}
+            >
+              {icon}
+            </div>
+
+            {/* Name Tag */}
+            <span className="text-3xl font-extrabold drop-shadow-lg leading-tight">
+              {cat.displayName}
+            </span>
+            
+            {/* Subcategory Count & CTA */}
+            <p className="mt-2 text-sm font-medium text-gray-300 flex items-center gap-1">
+              {subcategoryCount > 0 
+                ? `${subcategoryCount} Sub-types available`
+                : 'View properties in this category'
+              }
+            </p>
+
+            {/* Hover Reveal CTA (Bottom right) */}
+            <motion.span
+              initial={{ x: 20, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              transition={{ delay: 0.1 }}
+              className={`absolute top-6 right-6 px-3 py-1 text-sm font-semibold rounded-full flex items-center gap-1
+                         bg-white ${theme.text} opacity-0 group-hover:opacity-100 transition-opacity duration-300 shadow-md`}
+            >
+              Browse <ArrowRightIcon className="w-4 h-4" />
+            </motion.span>
+          </div>
+        </a>
+      </Link>
+    </motion.div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* Subcategory Card V4 (Pill/Tag Card) */
+/* -------------------------------------------------------------------------- */
+
+export function SubcategoryCardV4({
+  sub,
+  storeSlug,
+  index,
+}: {
+  sub: ISubcategory & { index: number };
+  storeSlug?: string | null;
+  index: number;
+}) {
+  const [imgError, setImgError] = useState(false);
+  const imageUrl = imgError ? FALLBACK_IMAGE_URL : getSubcategoryImageUrl(sub);
+  const { theme } = resolveCategoryStyle(sub.name, index); // Use theme for hover accent
+
+  return (
+    <motion.div variants={itemVariants}>
+      <Link href={`/${storeSlug}/subcategory/${sub.slug}`} aria-label={sub.name} passHref legacyBehavior>
+        <a
+          className="relative block rounded-full overflow-hidden shadow-lg group cursor-pointer h-16 sm:h-20
+                     bg-white dark:bg-gray-800 transition-all duration-300 border border-gray-200 dark:border-gray-700
+                     hover:border-transparent hover:shadow-xl hover:scale-[1.03] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-offset-2 focus-visible:ring-offset-white focus-visible:ring-emerald-500"
+        >
+          {/* Background Image/Gradient */}
+          <div className="relative w-full h-full">
+            <Image
+              src={imageUrl}
+              alt={sub.name}
+              fill
+              sizes="20vw"
+              loader={customLoader}
+              onError={() => setImgError(true)}
+              className="object-cover opacity-15 group-hover:opacity-25 transition-opacity duration-500"
+            />
+          </div>
+
+          {/* Centered Text Overlay */}
+          <div className="absolute inset-0 flex items-center justify-center p-3">
+            <span className={`px-5 py-2 rounded-full font-bold text-lg transition-all duration-300 
+              text-gray-900 dark:text-white 
+              group-hover:text-white group-hover:${theme.bg} shadow-md`}>
+              {sub.name}
+            </span>
+          </div>
+        </a>
+      </Link>
+    </motion.div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/* Main Component V4 */
+/* -------------------------------------------------------------------------- */
+
+export default function CategoriesSectionV4({ store }: { store: StoreForm | null }) {
+  const storeSlug = store?.slug ?? "site";
+
+  const categoriesToShow = useMemo(() => {
+    const raw = (store?.StoreCategory ?? [])
     .filter((c) => c.visible ?? true)
     .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+    return raw.length ? raw : fallbackCategories;
+  }, [store]);
 
-  const categoriesToShow = rawCategories.length > 0 ? rawCategories : fallbackCategories;
+  const isFew = categoriesToShow.length <= 2;
 
-  const isFewParentCategories = categoriesToShow.length > 0 && categoriesToShow.length <= 2;
-
-  const subcategoriesToDisplay: ISubcategory[] = [];
-  if (isFewParentCategories) {
-    categoriesToShow.forEach((parentCat:any) => {
-      if (Array.isArray(parentCat.subcategories)) {
-        subcategoriesToDisplay.push(...parentCat.subcategories
-          .filter((sub:any) => sub.visible ?? true)
-          .sort((a:any, b:any) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+  const limitedSubcategories = useMemo(() => {
+    if (!isFew) return [];
+    let list: (ISubcategory & { index: number })[] = [];
+    categoriesToShow.forEach((pcat) => {
+      if (pcat.subcategories) {
+        list.push(
+          ...(pcat.subcategories
+            .filter((s) => s.visible ?? true)
+            .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+            .slice(0, MAX_SUBCATEGORIES / categoriesToShow.length)
+            .map((s, i) => ({ ...s, index: i })) as (ISubcategory & { index: number })[])
         );
       }
     });
-  }
+    return list.slice(0, MAX_SUBCATEGORIES); 
+  }, [categoriesToShow, isFew]);
 
-  // Limit the number of subcategories to a maximum of 8
-  const limitedSubcategories = subcategoriesToDisplay.slice(0, 10);
 
   return (
-    <section className="py-16 sm:py-20 bg-gradient-to-b from-gray-50 to-white dark:from-gray-950 dark:to-gray-900">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Heading */}
+    <section className="py-24 bg-gray-50 dark:bg-gray-900 relative overflow-hidden">
+      {/* Dynamic Header */}
+      <div className="max-w-7xl mx-auto px-6 relative z-10">
         <motion.h2
-          className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 dark:text-gray-50 text-center mb-16 relative z-10"
+          className="text-4xl lg:text-6xl font-extrabold text-center mb-4 text-gray-900 dark:text-gray-50"
           initial={{ opacity: 0, y: -30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.7, ease: "easeOut" }}
+          viewport={{ once: true }}
+          transition={{ type: "spring", stiffness: 100 }}
         >
-          {isFewParentCategories ? (
-            <>
-              Explore Properties by{" "}
-              <span className="text-emerald-600 dark:text-teal-400">Category</span>
-            </>
+          {isFew ? (
+            <>Popular Property <span className="text-amber-600 dark:text-amber-400">Sub-Types</span></>
           ) : (
-            <>
-              Explore Properties by{" "}
-              <span className="text-emerald-600 dark:text-teal-400">Type</span>
-            </>
+            <>Explore Property <span className="text-emerald-600 dark:text-emerald-400">Categories</span></>
           )}
-          <span className="block w-24 h-1 bg-amber-400 mx-auto mt-4 rounded-full" />
         </motion.h2>
 
-        {isFewParentCategories ? (
-          // Render subcategory cards
+        <p className="text-center text-lg text-gray-600 dark:text-gray-400 mb-16 max-w-2xl mx-auto">
+            {isFew 
+                ? "Dive into specific property niches like apartments, villas, and commercial spaces."
+                : "Browse our primary property classes to quickly narrow down your perfect search."
+            }
+        </p>
+
+        {/* Dynamic Card Display */}
+        {isFew ? (
           <motion.div
-            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 sm:gap-8"
-            variants={subcategoryContainerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.3 }}
-          >
-            {limitedSubcategories.length === 0 && (
-              <p className="col-span-full text-center text-gray-600 dark:text-gray-400 text-lg">
-                No subcategories available.
-              </p>
-            )}
-            {limitedSubcategories.map((subcat) => {
-              const imageUrl = `/images/subcategory-${subcat.slug}.jpg`;
-              return (
-                <Link key={subcat.id} href={`/${store?.slug}/subcategory/${subcat.slug}`} passHref>
-                  <motion.a
-                    className="block relative rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 group
-                                   focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-500 focus-visible:ring-offset-4 focus-visible:ring-offset-white dark:focus-visible:ring-offset-gray-900"
-                    variants={subcategoryItemVariants}
-                    whileHover={{ scale: 1.03, zIndex: 1 }}
-                    whileTap={{ scale: 0.98 }}
-                    aria-label={`View properties in ${subcat.name} subcategory`}
-                  >
-                    <div className="relative h-48 sm:h-56 w-full">
-                      <Image
-                        src={imageUrl}
-                        alt={`Image of a ${subcat.name} property`}
-                        layout="fill"
-                        objectFit="cover"
-                        className="transform transition-transform duration-500 group-hover:scale-110 group-hover:brightness-90"
-                        loader={customLoader}
-                      />
-                      <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors duration-300" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-100 group-hover:opacity-90 transition-opacity duration-300" />
-                    </div>
-                    <div className="absolute bottom-0 left-0 right-0 p-4 text-center">
-                      <span
-                        className="inline-block px-5 py-2 bg-emerald-600/90 dark:bg-emerald-700/90 text-white text-lg font-semibold uppercase tracking-wide rounded-full shadow-lg
-                                   group-hover:bg-amber-400 group-hover:text-gray-900 group-hover:scale-105 transition-all duration-300 transform"
-                      >
-                        {subcat.name}
-                      </span>
-                    </div>
-                  </motion.a>
-                </Link>
-              );
-            })}
-          </motion.div>
-        ) : (
-          // Render parent category cards
-          <motion.div
-            className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 sm:gap-8"
+            className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6"
             variants={containerVariants}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, amount: 0.3 }}
+            viewport={{ once: true }}
           >
-            {categoriesToShow.map((cat) => {
-              const catSlug = cat.categoryId ?? (cat.displayName ?? "").toLowerCase().replace(/\s+/g, '-');
-              const imageUrl = cat.category?.image ?? "/images/category-placeholder.jpg";
-              return (
-                <Link key={cat.id} href={`/${store?.slug}/category/${catSlug}`} passHref>
-                  <motion.a
-                    className="block relative rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 group
-                                   focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-500 focus-visible:ring-offset-4 focus-visible:ring-offset-white dark:focus-visible:ring-offset-gray-900"
-                    variants={itemVariants}
-                    whileHover={{ scale: 1.03, zIndex: 1 }}
-                    whileTap={{ scale: 0.98 }}
-                    aria-label={`View properties in ${cat.displayName} category`}
-                  >
-                    <div className="relative h-48 sm:h-56 w-full">
-                      <Image
-                        src={imageUrl}
-                        alt={`Image of a ${cat.displayName} property`}
-                        layout="fill"
-                        objectFit="cover"
-                        className="transform transition-transform duration-500 group-hover:scale-110 group-hover:brightness-90"
-                        loader={customLoader}
-                      />
-                      <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors duration-300" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-100 group-hover:opacity-90 transition-opacity duration-300" />
-                    </div>
-                    <div className="absolute bottom-0 left-0 right-0 p-4 text-center">
-                      <span
-                        className="inline-block px-5 py-2 bg-emerald-600/90 dark:bg-emerald-700/90 text-white text-lg font-semibold uppercase tracking-wide rounded-full shadow-lg
-                                   group-hover:bg-amber-400 group-hover:text-gray-900 group-hover:scale-105 transition-all duration-300 transform"
-                      >
-                        {cat.displayName}
-                        {cat.subcategories.length > 0 && (
-                          <span className="ml-2 text-xs opacity-80">({cat.subcategories.length})</span>
-                        )}
-                      </span>
-                    </div>
-                  </motion.a>
-                </Link>
-              );
-            })}
+            {limitedSubcategories.length === 0 ? (
+              <p className="col-span-full text-center text-gray-500 py-10 flex items-center justify-center gap-2">
+                <CubeTransparentIcon className="w-6 h-6"/> No subcategories found for display.
+              </p>
+            ) : (
+              limitedSubcategories.map((sub) => (
+                <SubcategoryCardV4
+                  key={sub.id}
+                  sub={sub}
+                  storeSlug={storeSlug}
+                  index={sub.index}
+                />
+              ))
+            )}
+          </motion.div>
+        ) : (
+          <motion.div
+            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8"
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+          >
+            {categoriesToShow.map((cat, idx) => (
+              <CategoryCardV4
+                key={cat.id}
+                cat={cat}
+                storeSlug={storeSlug}
+                index={idx}
+              />
+            ))}
           </motion.div>
         )}
-        <motion.div
-          className="text-center mt-20"
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ delay: 0.3, duration: 0.7 }}
-        >
-          <Link href={`/${store?.slug}/categories`} passHref>
+
+        {/* View All Button */}
+        <div className="text-center mt-20">
+          <Link href={`/${storeSlug}/categories`} passHref>
             <motion.a
-              className="inline-flex items-center justify-center px-8 py-4 border border-transparent text-base font-medium rounded-full shadow-lg
-                         text-white bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700
-                         dark:from-teal-600 dark:to-emerald-700 dark:hover:from-teal-700 dark:hover:to-emerald-800
-                         focus:outline-none focus:ring-4 focus:ring-amber-400/70 transition duration-300 ease-in-out transform hover:scale-[1.03]"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              aria-label="View all categories"
+              whileHover={{ scale: 1.05, boxShadow: "0 10px 20px rgba(16, 185, 129, 0.4)" }}
+              whileTap={{ scale: 0.98 }}
+              className="inline-flex items-center justify-center px-12 py-5 rounded-full bg-emerald-600 text-white font-extrabold text-lg uppercase tracking-wider transition-all duration-300 shadow-xl shadow-emerald-600/30
+                         hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-offset-4 focus-visible:ring-offset-gray-50 focus-visible:ring-emerald-500"
             >
               View All Categories
-              <svg
-                className="ml-2 -mr-1 w-5 h-5"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10.293 15.707a1 1 0 010-1.414L14.586 10l-4.293-4.293a1 1 0 111.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z"
-                  clipRule="evenodd"
-                />
-                <path
-                  fillRule="evenodd"
-                  d="M4.293 15.707a1 1 0 010-1.414L8.586 10 4.293 5.707a1 1 0 011.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z"
-                  clipRule="evenodd"
-                />
-              </svg>
+              <ArrowRightIcon className="w-5 h-5 ml-2" />
             </motion.a>
           </Link>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

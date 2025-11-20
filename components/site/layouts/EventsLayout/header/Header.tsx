@@ -96,22 +96,22 @@ export default function Header() {
   // --- Auth handlers ---
   const handleSignIn = () => {
     const authUrl = new URL('https://auth.salesmanpro.site/signin');
-    authUrl.searchParams.set('callbackUrl', `${window.location.origin}/site/${slug}`);
+    authUrl.searchParams.set('callbackUrl', `${window.location.origin}`);
     window.location.href = authUrl.toString();
   };
 
   const handleSignUp = () => {
     const authUrl = new URL('https://auth.salesmanpro.site/signup');
-    authUrl.searchParams.set('callbackUrl', `${window.location.origin}/site/${slug}`);
+    authUrl.searchParams.set('callbackUrl', `${window.location.origin}`);
     window.location.href = authUrl.toString();
   };
 
-  const handleSignOut = () => signOut({ callbackUrl: `/site/${slug}` });
+  const handleSignOut = () => signOut({ callbackUrl: `` });
 
   const handleProfile = () => {
     if (!user) return handleSignIn();
     if (user.role?.toLowerCase() === 'admin') router.push(`/dashboards`);
-    else router.push(`/site/${slug}/profile`);
+    else router.push(`/profile`);
   };
 
   // --- Nav items ---
@@ -142,7 +142,7 @@ export default function Header() {
           <div className="flex items-center justify-between h-20">
             {/* --- Logo --- */}
             <Link
-              href={`/site/${slug}`}
+              href={``}
               className="flex items-center gap-2 cursor-pointer transition-transform duration-300 hover:scale-[1.02]"
             >
               {logoUrl ? (
@@ -183,7 +183,7 @@ export default function Header() {
             <div className="flex items-center space-x-3 sm:space-x-4">
               {/* Search */}
               <button
-                onClick={() => router.push(`/site/${slug}/search`)}
+                onClick={() => router.push(`/search`)}
                 className="p-2 rounded-full text-gray-300 hover:text-white hover:bg-gray-700/50 transition duration-200 transform hover:scale-110"
                 aria-label="Search"
               >
@@ -191,13 +191,39 @@ export default function Header() {
               </button>
 
               {/* Profile */}
-              <button
-                onClick={handleProfile}
-                className="p-2 rounded-full text-gray-300 hover:text-white hover:bg-gray-700/50 transition duration-200 transform hover:scale-110"
-                aria-label="Profile"
-              >
-                <UserIcon className="h-6 w-6" />
-              </button>
+              {!user ? (
+                <>
+                  <button
+                    onClick={handleSignIn}
+                    className="p-2 rounded-full text-gray-300 hover:text-white hover:bg-gray-700/50 transition duration-200 transform hover:scale-110"
+                    aria-label="Sign In"
+                  >
+                    <span>Sign In</span>
+                  </button>
+                  <button
+                    onClick={handleSignUp}
+                    className="p-2 rounded-full text-gray-300 hover:text-white hover:bg-gray-700/50 transition duration-200 transform hover:scale-110"
+                    aria-label="Sign Up"
+                  >
+                    <span >Sign Up</span>
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={handleProfile}
+                  className="p-2 rounded-full text-gray-300 hover:text-white hover:bg-gray-700/50 transition duration-200 transform hover:scale-110"
+                  aria-label="Profile"
+                >
+                  <span className="sr-only">Profile</span>
+                  {user.name ? (
+                    <span className="text-sm font-medium">{user.name.charAt(0)}</span>
+                  ) : (
+                    <UserIcon className="h-6 w-6" />
+                  )}
+                </button>
+              )
+
+              }
 
               {/* Mobile Toggle */}
               <div className="lg:hidden">

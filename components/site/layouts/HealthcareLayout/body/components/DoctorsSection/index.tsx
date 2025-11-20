@@ -1,15 +1,12 @@
-// File: components/site/layouts/HealthcareLayout/components/DoctorsSection.tsx
-
-'use client';
+"use client";
 
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { UserGroupIcon, ArrowRightIcon } from '@heroicons/react/24/solid';
+import { UserGroupIcon, ArrowRightIcon, CalendarDaysIcon, StarIcon } from '@heroicons/react/24/solid';
 
-
-// Mocking the image loader - Keep if not fully in Next.js Image optimization
+// Mocking the image loader
 const customLoader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => {
   return `${src}?w=${width}&q=${quality || 75}`;
 };
@@ -19,147 +16,162 @@ interface DoctorsSectionProps {
   storeSlug: string;
 }
 
+// Animation Variants
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: "easeOut" }
+  },
+};
+
 export default function DoctorsSection({ doctors, storeSlug }: DoctorsSectionProps) {
   const router = useRouter();
 
-  // Animation variants for a staggered, captivating effect
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1, // Time between each child animation
-      },
-    },
-  };
-
-  const cardVariants = {
-    hidden: { opacity: 0, y: 50, scale: 0.95 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      scale: 1,
-      transition: {
-        type: 'spring',
-        stiffness: 100,
-        damping: 10,
-      },
-    },
-  };
-
   return (
-    <section id="doctors" className="bg-gradient-to-br from-white to-gray-50 dark:from-gray-950 dark:to-gray-900 py-20 lg:py-28 relative overflow-hidden">
-      {/* Background Shapes for Visual Texture */}
-      <div className="absolute inset-0 z-0 opacity-10">
-        <div className="absolute w-80 h-80 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl top-1/4 left-1/4 transform -translate-x-1/2 -translate-y-1/2" />
-        <div className="absolute w-96 h-96 bg-indigo-300 rounded-full mix-blend-multiply filter blur-3xl bottom-1/4 right-1/4 transform translate-x-1/2 translate-y-1/2" />
+    <section id="doctors" className="relative py-24 lg:py-32 bg-white dark:bg-gray-950 overflow-hidden">
+      
+      {/* Abstract Background blobs */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+         <div className="absolute top-1/4 left-0 w-[600px] h-[600px] bg-indigo-50 dark:bg-indigo-900/20 rounded-full blur-3xl -translate-x-1/2 opacity-60" />
+         <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-purple-50 dark:bg-purple-900/20 rounded-full blur-3xl translate-x-1/3 opacity-60" />
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 relative z-10">
-        <div className="text-center mb-16">
-          <motion.span
-            className="inline-block bg-purple-500/15 text-purple-700 dark:bg-purple-400/20 dark:text-purple-400 uppercase text-sm tracking-widest rounded-full px-4 py-2 mb-4 font-semibold shadow-sm"
-            initial={{ opacity: 0, y: -20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-          >
-            Meet Our Experts
-          </motion.span>
-          <motion.h2
-            className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 dark:text-white leading-tight drop-shadow-lg"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.2, duration: 0.6 }}
-          >
-            Our <span className="text-indigo-600 dark:text-indigo-400">Compassionate</span> Doctors
-          </motion.h2>
-          <motion.p
-            className="text-xl text-gray-700 dark:text-gray-300 mt-4 max-w-3xl mx-auto leading-relaxed"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.4, duration: 0.6 }}
-          >
-            Discover the dedicated professionals committed to your well-being.
-          </motion.p>
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
+        
+        {/* --- Header --- */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
+            <div className="max-w-2xl">
+                <motion.span
+                    initial={{ opacity: 0, x: -20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    className="inline-block py-1 px-3 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-xs font-bold tracking-widest uppercase mb-4"
+                >
+                    World-Class Care
+                </motion.span>
+                <motion.h2
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    className="text-4xl sm:text-5xl font-extrabold text-gray-900 dark:text-white leading-tight"
+                >
+                    Meet Our <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600">Specialists</span>
+                </motion.h2>
+                <motion.p
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.1 }}
+                    className="mt-4 text-lg text-gray-600 dark:text-gray-400"
+                >
+                    Highly qualified professionals dedicated to providing you with the best medical care.
+                </motion.p>
+            </div>
+
+            {/* Desktop 'View All' Button */}
+            <motion.button
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                onClick={() => router.push(`/${storeSlug}/doctors`)}
+                className="hidden md:inline-flex items-center font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 transition-colors"
+            >
+                View All Doctors
+                <ArrowRightIcon className="w-5 h-5 ml-2" />
+            </motion.button>
         </div>
 
+        {/* --- Doctors Grid --- */}
         <motion.div
-          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-8 gap-y-12"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8"
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, amount: 0.2 }}
+          viewport={{ once: true, amount: 0.1 }}
         >
-          {doctors.map((doc, idx) => (
+          {doctors.map((doc) => (
             <motion.div
               key={doc.id}
-              role="button"
-              tabIndex={0}
-              className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl p-8 text-center cursor-pointer transform transition-all duration-500 ease-in-out group hover:shadow-2xl hover:scale-105 relative overflow-hidden"
               variants={cardVariants}
+              className="group relative h-[420px] rounded-[2rem] overflow-hidden cursor-pointer shadow-md hover:shadow-2xl transition-all duration-500"
               onClick={() => router.push(`/${storeSlug}/doctor/${doc.id}`)}
-              onKeyDown={(e : any) => {
-                if (e.key === 'Enter' || e.key === ' ') router.push(`/${storeSlug}/doctor/${doc.id}`);
-              }}
-              aria-label={`View profile of Dr. ${doc.name}, ${doc.subtitle}`}
             >
-              {/* Doctor Image with glowing border effect */}
-              <div className="relative w-40 h-40 mx-auto rounded-full overflow-hidden border-4 border-indigo-500 dark:border-indigo-400 mb-6 shadow-lg group-hover:scale-110 transition-transform duration-300 transform-gpu">
-                <Image
-                  src={doc.imageUrl || "https://images.unsplash.com/photo-1576091160550-fd419dba48e0?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"}
-                  alt={`Dr. ${doc.name}`}
-                  fill
-                  className="object-cover object-center"
-                  sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-                  loader={customLoader}
-                />
-              </div>
-              
-              {/* Text Content */}
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-1 leading-tight transition-colors duration-300 group-hover:text-teal-600 dark:group-hover:text-teal-400">
-                Dr. {doc.name || doc.username}
-              </h3>
-              <p className="text-base font-medium text-blue-600 dark:text-blue-400">
-                {doc.subtitle}
-              </p>
-
-              {/* Specialization Tags */}
-              {doc.specializations && doc.specializations.length > 0 && (
-                <div className="flex flex-wrap justify-center gap-2 mt-4 text-xs">
-                  {doc.specializations.map((spec, i) => (
-                    <span key={i} className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 px-3 py-1 rounded-full text-sm font-medium">
-                      {spec}
-                    </span>
-                  ))}
+                {/* Image Layer */}
+                <div className="absolute inset-0 w-full h-full">
+                    <Image
+                        src={doc.imageUrl || "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=2070&auto=format&fit=crop"}
+                        alt={`Dr. ${doc.name}`}
+                        fill
+                        loader={customLoader}
+                        className="object-cover object-center transition-transform duration-700 ease-out group-hover:scale-110"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                    />
+                    {/* Gradient Overlay for text readability */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
                 </div>
-              )}
-              
-              {/* Hover overlay with CTA */}
-              <div className="absolute inset-0 flex items-center justify-center p-4 bg-black/50 dark:bg-black/60 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <span className="inline-flex items-center text-white font-semibold text-lg animate-pulse">
-                  View Profile
-                  <ArrowRightIcon className="w-5 h-5 ml-2" />
-                </span>
-              </div>
+
+                {/* Status Indicator (Fake 'Available' Badge) */}
+                <div className="absolute top-4 right-4 flex items-center gap-1.5 bg-white/20 backdrop-blur-md border border-white/10 px-3 py-1.5 rounded-full z-10">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                    </span>
+                    <span className="text-xs font-medium text-white">Available</span>
+                </div>
+
+                {/* Content Layer */}
+                <div className="absolute bottom-0 left-0 w-full p-6 flex flex-col justify-end h-full transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                    
+                    {/* Doctor Info */}
+                    <div className="relative z-20">
+                        <p className="text-indigo-300 font-bold text-xs uppercase tracking-wider mb-1">
+                            {doc.specializations?.[0] || "Specialist"}
+                        </p>
+                        <h3 className="text-2xl font-bold text-white mb-1">
+                            Dr. {doc.name.split(' ')[0]} 
+                            <span className="block text-lg font-medium text-gray-300">{doc.name.split(' ').slice(1).join(' ')}</span>
+                        </h3>
+                        
+                        {/* Rating (Decorative) */}
+                        <div className="flex items-center gap-1 mt-2 mb-4 opacity-80">
+                            <StarIcon className="w-4 h-4 text-yellow-400" />
+                            <span className="text-xs text-gray-300 font-medium">4.9 (120+ Reviews)</span>
+                        </div>
+
+                        {/* Hidden Action Button that slides up */}
+                        <div className="h-0 overflow-hidden group-hover:h-auto group-hover:mt-4 transition-all duration-500 opacity-0 group-hover:opacity-100">
+                            <button className="w-full py-3 bg-white text-indigo-900 font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-indigo-50 transition-colors">
+                                <CalendarDaysIcon className="w-5 h-5" />
+                                Book Appointment
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </motion.div>
           ))}
         </motion.div>
 
-        {/* Call to action for all doctors */}
-        <div className="text-center mt-20">
-          <motion.button
-            className="inline-flex items-center px-10 py-5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white text-xl font-semibold rounded-full shadow-lg transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-400"
-            whileHover={{ scale: 1.05, boxShadow: "0px 12px 30px rgba(0,0,0,0.25)" }}
-            whileTap={{ scale: 0.95 }}
+        {/* Mobile Footer CTA */}
+        <div className="mt-12 text-center md:hidden">
+          <button 
             onClick={() => router.push(`/${storeSlug}/doctors`)}
-            aria-label="View all our expert doctors"
+            className="inline-flex items-center px-8 py-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-full font-semibold shadow-lg"
           >
-            Explore All Doctors
-            <UserGroupIcon className="w-6 h-6 ml-3" />
-          </motion.button>
+            View All Doctors
+            <ArrowRightIcon className="w-5 h-5 ml-2" />
+          </button>
         </div>
       </div>
     </section>

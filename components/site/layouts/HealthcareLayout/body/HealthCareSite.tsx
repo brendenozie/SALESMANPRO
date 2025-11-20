@@ -142,7 +142,7 @@ export default function HealthCareSite({ pageData, companyId }: { pageData: Stor
     
       <HealthcareHero heroSlides={pageData.heroSlides} slug={pageData.slug} themeSettings={pageData.themeSettings}/>
 
-      <div className="space-y-24 font-sans">
+      <div className="font-sans">
         {/* About Section */}
         <AboutSection />
 

@@ -48,6 +48,7 @@ export default function Header() {
 
   const searchRef = useRef<HTMLInputElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const cartRef = useRef<HTMLDivElement>(null);
 
   const {
     name,
@@ -59,6 +60,7 @@ export default function Header() {
     themeSettings = {},
   } = storeFormData || {};
 
+  const safeSlug = slug ?? ''; // ensures no undefined slug
   const primaryColor = themeSettings?.primaryColor || '#FF5722';
   const secondaryColor = themeSettings?.secondaryColor || '#3F51B5';
 
@@ -74,20 +76,60 @@ export default function Header() {
     document.body.style.overflow = mobileMenuOpen ? 'hidden' : '';
   }, [mobileMenuOpen]);
 
-  // --- Auth Handlers ---
-  const handleUserAction = () => {
-    if (!user) return signIn();
-    if (user.role?.toLowerCase() === 'admin') router.push('/dashboards');
-    else router.push(`/site/${slug}/profile`);
+  // --- Close search on outside click ---
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (searchRef.current && !searchRef.current.parentElement?.contains(e.target as Node)) {
+        setSearchOpen(false);
+      }
+    }
+    if (searchOpen) document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [searchOpen]);
+
+  // --- Close cart on outside click ---
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (cartRef.current && !cartRef.current.contains(e.target as Node)) {
+        setCartOpen(false);
+      }
+    }
+    if (cartOpen) document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [cartOpen]);
+
+  const handleGoogleSignIn = () => {
+    const authUrl = new URL("https://auth.salesmanpro.site/signin");
+    authUrl.searchParams.set("callbackUrl", `${window.location.origin}`);
+    window.location.href = authUrl.toString();
   };
-  const handleSignOut = () => signOut({ callbackUrl: `/site/${slug}` });
+
+  const handleGoogleSignUp = () => {
+    const authUrl = new URL("https://auth.salesmanpro.site/signup");
+    authUrl.searchParams.set("callbackUrl", `${window.location.origin}`);
+    window.location.href = authUrl.toString();
+  };
+
+  const handleSignOut = () => signOut({ callbackUrl: `/` });
+
+  const handleUserAction = () => {
+    if (!user) return handleGoogleSignIn();
+
+    if (user.role?.toLowerCase() === "admin") {
+      router.push("/dashboards");
+    } else {
+      router.push(`/ecommerce/profile`);
+    }
+  };
 
   // --- Search Handling ---
   const handleSearch = useCallback(
     debounce((q: string) => {
-      if (q.length > 2) console.log('Searching for:', q);
+      if (q.length > 2) {
+        router.push(`/search?query=${encodeURIComponent(q)}`);
+      }
     }, 400),
-    []
+    [safeSlug, router]
   );
 
   const onSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -97,10 +139,10 @@ export default function Header() {
   };
 
   const navItems = [
-    { label: 'Home', href: `/site/${slug}` },
-    { label: 'Menu', href: `/site/${slug}#menu` },
-    { label: 'About', href: `/site/${slug}#about` },
-    { label: 'Contact', href: `/site/${slug}#contact` },
+    { label: 'Home', href: `/` },
+    { label: 'Menu', href: `#menu` },
+    { label: 'About', href: `#about` },
+    { label: 'Contact', href: `#contact` },
   ];
 
   return (
@@ -132,8 +174,9 @@ export default function Header() {
               </a>
             )}
           </div>
+
           <div className="flex space-x-4">
-            {socialLinks.map((s) => (
+            {Array.isArray(socialLinks) && socialLinks.map((s) => (
               <Link key={s.channel} href={s.url} target="_blank" rel="noreferrer">
                 <span className="capitalize hover:underline" style={{ color: primaryColor }}>
                   {s.channel}
@@ -147,7 +190,7 @@ export default function Header() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
-            <Link href={`/site/${slug}`} className="flex items-center space-x-3 flex-shrink-0">
+            <Link href={`/`} className="flex items-center space-x-3 flex-shrink-0">
               {logoUrl ? (
                 <Image
                   src={logoUrl}
@@ -165,14 +208,10 @@ export default function Header() {
             {/* Desktop Nav */}
             <nav className="hidden lg:flex flex-grow justify-center space-x-8 font-medium text-lg">
               {navItems.map((item) => (
-                <Link
-                  key={item.label}
-                  href={item.href}
-                  className="relative group transition-colors"
-                >
+                <Link key={item.label} href={item.href} className="relative group transition-colors">
                   {item.label}
                   <span
-                    className="absolute left-0 bottom-0 h-[2px] w-0 bg-[var(--primary-color)] transition-all group-hover:w-full"
+                    className="absolute left-0 bottom-0 h-[2px] w-0 transition-all group-hover:w-full"
                     style={{ backgroundColor: primaryColor }}
                   />
                 </Link>
@@ -181,11 +220,12 @@ export default function Header() {
 
             {/* Right Section */}
             <div className="flex items-center space-x-4">
-              {/* Search Toggle */}
+              {/* Search */}
               <motion.button whileHover={{ scale: 1.1 }} onClick={() => setSearchOpen((p) => !p)}>
                 <MagnifyingGlassCircleIcon className="h-6 w-6 text-gray-700" />
               </motion.button>
 
+              {/* Search Dropdown */}
               <AnimatePresence>
                 {searchOpen && (
                   <motion.div
@@ -197,10 +237,10 @@ export default function Header() {
                     <input
                       type="search"
                       placeholder="Search dishes..."
+                      ref={searchRef}
                       className="w-48 rounded-md py-1 px-2 text-sm focus:outline-none"
                       value={searchQuery}
                       onChange={onSearchChange}
-                      ref={searchRef}
                     />
                     {searchQuery && (
                       <button onClick={() => setSearchQuery('')}>
@@ -212,12 +252,25 @@ export default function Header() {
               </AnimatePresence>
 
               {/* User */}
-              <motion.button whileHover={{ scale: 1.1 }} onClick={handleUserAction}>
-                <UserIcon className="h-6 w-6" />
-              </motion.button>
+              {!user ? (
+                <>
+                  <motion.button whileHover={{ scale: 1.1 }} onClick={() => handleGoogleSignIn()}>
+                    Login 
+                  </motion.button>
+                  <motion.button whileHover={{ scale: 1.1 }} onClick={() => handleGoogleSignUp()}>
+                    Sign Up
+                  </motion.button>
+                </>
+              ) : (
+                <motion.button whileHover={{ scale: 1.1 }} onClick={handleUserAction}>
+                  <span className="text-sm font-medium text-gray-700">Hi, {user.name?.split(' ')[0]}</span>
+                </motion.button>
+              )}
+
+              
 
               {/* Cart */}
-              <div className="relative">
+              <div className="relative" ref={cartRef}>
                 <motion.button whileHover={{ scale: 1.1 }} onClick={() => setCartOpen(!cartOpen)}>
                   <ShoppingCartIcon className="h-6 w-6" />
                   {cart.length > 0 && (
@@ -227,7 +280,6 @@ export default function Header() {
                   )}
                 </motion.button>
 
-                {/* Cart Dropdown */}
                 <AnimatePresence>
                   {cartOpen && (
                     <motion.div
@@ -254,6 +306,7 @@ export default function Header() {
                                 )}
                                 <span className="text-sm font-medium">{item.name}</span>
                               </div>
+
                               <div className="flex items-center space-x-2">
                                 <button
                                   onClick={() => removeFromCart(item)}
@@ -271,13 +324,21 @@ export default function Header() {
                               </div>
                             </div>
                           ))}
-                          <Link
-                            href={`/site/${slug}/checkout`}
+
+                          <button
+                            onClick={()=>{
+                              if(cart.length === 0) return;
+                              if(user){
+                                router.push(`/restaurant/checkout`);
+                              }else{
+                                handleGoogleSignIn();
+                              }
+                            }}
                             className="block text-center w-full py-2 rounded-md font-semibold"
                             style={{ backgroundColor: primaryColor, color: 'white' }}
                           >
                             Go to Checkout
-                          </Link>
+                          </button>
                         </div>
                       )}
                     </motion.div>
@@ -312,8 +373,8 @@ export default function Header() {
                   key={item.label}
                   href={item.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block text-lg font-medium text-gray-900 hover:text-[var(--primary-color)]"
-                  style={{ transition: 'color 0.2s ease', color: secondaryColor }}
+                  className="block text-lg font-medium"
+                  style={{ color: secondaryColor }}
                 >
                   {item.label}
                 </Link>
@@ -339,7 +400,7 @@ export default function Header() {
                       setMobileMenuOpen(false);
                       handleSignOut();
                     }}
-                    className="w-full text-gray-600 underline hover:text-[var(--primary-color)]"
+                    className="w-full text-gray-600 underline"
                   >
                     Sign Out
                   </button>
@@ -360,7 +421,7 @@ export default function Header() {
                       setMobileMenuOpen(false);
                       signIn('google');
                     }}
-                    className="w-full py-2 rounded-lg text-white font-medium shadow-md hover:brightness-90"
+                    className="w-full py-2 rounded-lg text-white font-medium shadow-md"
                     style={{ backgroundColor: primaryColor }}
                   >
                     Sign Up
@@ -370,27 +431,27 @@ export default function Header() {
 
               <div className="border-t border-gray-200" />
 
-              {/* Social Links */}
+              {/* Social */}
               <div className="flex space-x-4">
-                {socialLinks.map((s) => (
-                  <a
-                    key={s.channel}
-                    href={s.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="capitalize text-gray-900 hover:text-[var(--primary-color)]"
-                    style={{ transition: 'color 0.2s ease' }}
-                  >
-                    {s.channel}
-                  </a>
-                ))}
+                {Array.isArray(socialLinks) &&
+                  socialLinks.map((s) => (
+                    <a
+                      key={s.channel}
+                      href={s.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="capitalize text-gray-900"
+                    >
+                      {s.channel}
+                    </a>
+                  ))}
               </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Background Overlay */}
+      {/* Overlay */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div

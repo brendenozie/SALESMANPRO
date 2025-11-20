@@ -2,61 +2,53 @@
 
 import React from 'react';
 import { motion } from 'framer-motion';
-import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { HeartIcon, ClipboardDocumentListIcon, AcademicCapIcon, BanknotesIcon, PlayCircleIcon } from '@heroicons/react/24/solid';
-import { useStoreContext } from "@/contexts/StoreContext";
 import { HeroSlide } from '@/types/typings';
 
-// Define the shape of the hero slide data, exactly matching your provided sample
-// export type HeroSlide = {
-//   id: string;
-//   headline: string;
-//   subline: string;
-//   imageUrl: string;
-//   ctaText?: string;
-//   ctaLink?: string;
-//   badgeText?: string;
-// };
-// New type definition based on the Prisma Banner model
-// export type Banner = {
-//   id: string;
-//   imageUrl: string;
-//   headline?: string | null;
-//   subline?: string | null;
-//   ctaText?: string | null;
-//   ctaLink?: string | null;
-//   videoLink?: string | null;
-//   badgeText?: string | null;
-//   price?: string | null;
-//   endsAt?: Date | null;
-//   order?: number;
-//   iconKey?: string | null;
-//   backgroundColor?: string | null;
-//   textColor?: string | null;
-// };
-
-// Next.js Image loader
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => `${src}?w=${width}&q=${quality || 75}`;
-
-// Animation variants for a staggered, clean entrance
+// --- Animation Variants ---
 const containerVariants = {
-  hidden: { opacity: 0, y: 50 },
+  hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    y: 0,
     transition: {
-      delayChildren: 0.3,
-      staggerChildren: 0.15,
+      delayChildren: 0.2,
+      staggerChildren: 0.1,
     },
   },
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0 },
+  hidden: { opacity: 0, x: -20 },
+  visible: { 
+    opacity: 1, 
+    x: 0,
+    transition: { type: "spring", stiffness: 50 } 
+  },
 };
+
+const fadeUpVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 }
+};
+
+// NEW: Ken Burns Background Animation
+const backgroundVariants = {
+    initial: { scale: 1.0 },
+    animate: { 
+        scale: 1.15,
+        transition: {
+            duration: 20, // Very slow duration
+            ease: "linear",
+            repeat: Infinity,
+            repeatType: "reverse" as const // Zooms in, then zooms out
+        }
+    }
+};
+
+// --- Loader ---
+const loader = ({ src, width, quality }: { src: string; width: number; quality?: number; }) => `${src}?w=${width}&q=${quality || 75}`;
 
 interface HealthcareHeroProps {
   heroSlides?: HeroSlide[];
@@ -68,141 +60,146 @@ interface HealthcareHeroProps {
 }
 
 export default function HealthcareHero({ heroSlides, slug, themeSettings }: HealthcareHeroProps) {
-  // const { storeFormData } = useStoreContext();
-
-  // // Access the heroSlides array from the context
-  // const heroSlides = storeFormData?.heroSlides;
-
-  // Use the first slide's data, or fall back to a default value with the correct keys
+  
   const primarySlide = heroSlides?.[0] || {
     id: "default-slide",
     headline: "Your Health, Our Passion",
-    subline: "Providing compassionate, comprehensive care for you and your family.",
-    imageUrl: "https://images.unsplash.com/photo-1576091160550-fd419dba48e0?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    productImageUrl: "https://images.unsplash.com/photo-1576091160550-fd419dba48e0?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    subline: "Providing compassionate, comprehensive care for you and your family using state-of-the-art technology.",
+    imageUrl: "https://images.unsplash.com/photo-1576091160550-fd419dba48e0?q=80&w=2070&auto=format&fit=crop",
+    productImageUrl: "https://images.unsplash.com/photo-1576091160550-fd419dba48e0?q=80&w=2070&auto=format&fit=crop",
     ctaText: "Book an Appointment",
     ctaLink: `/${slug || 'unbite-healthcare'}/book`,
-    badgeText: "A Step Towards Wellness",
+    badgeText: "New: Telehealth Available",
   };
 
   const { headline, subline, imageUrl, productImageUrl, ctaText, ctaLink, badgeText } = primarySlide;
-  // const slug = slug || 'unbite-healthcare';
-  const primaryColor = themeSettings?.primaryColor || "#008080";
-  const secondaryColor = themeSettings?.secondaryColor || "#00b3b3";
-  const router = useRouter();
-
+  const primaryColor = themeSettings?.primaryColor || "#0d9488"; 
+  
   return (
-    <section className="relative min-h-screen w-full flex items-center justify-center text-white overflow-hidden">
-      {/* Background Image */}
-      <Image
-        src={productImageUrl || imageUrl || "https://images.unsplash.com/photo-1576091160550-fd419dba48e0?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"}
-        alt={headline || "Healthcare Hero Image"}
-        fill
-        className="object-cover object-center"
-        loader={loader}
-        priority
-      />
-
-      {/* Dark Overlay and Dynamic Gradient */}
-      <div className="absolute inset-0 bg-black/60" aria-hidden="true" />
-      <motion.div
-        className="absolute inset-0 bg-gradient-to-br from-teal-700 via-blue-600 to-indigo-600 opacity-75 mix-blend-multiply"
-        initial={{ opacity: 0.8 }}
-        animate={{ opacity: 0.95 }}
-        transition={{ duration: 2, repeat: Infinity, repeatType: "reverse" }}
-      />
-
-      {/* Content Container */}
-      <motion.div
-        className="relative z-10 px-6 py-20 mt-20 text-center max-w-4xl mx-auto"
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-      >
-        {/* Badge */}
-        {badgeText && (
-          <motion.p
-            className="inline-block uppercase text-sm font-semibold tracking-widest rounded-full px-5 py-2 mb-4 drop-shadow-md"
-            style={{ backgroundColor: secondaryColor, color: "white" }}
-            variants={itemVariants}
-          >
-            {badgeText}
-          </motion.p>
-        )}
-
-        {/* Main Headline */}
-        <motion.h1
-          className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold leading-tight mb-4 drop-shadow-2xl"
-          variants={itemVariants}
+    <section className="relative h-[95vh] min-h-screen w-full overflow-hidden bg-gray-900 group">
+      
+      {/* --- BACKGROUND LAYER --- */}
+      <div className="absolute inset-0 z-0 overflow-hidden">
+        {/* Wrapped Image in motion.div for the Ken Burns Effect */}
+        <motion.div 
+            className="relative w-full h-full"
+            variants={backgroundVariants}
+            initial="initial"
+            animate="animate"
         >
-          {headline}
-        </motion.h1>
-
-        {/* Subline */}
-        <motion.p
-          className="text-lg sm:text-xl md:text-2xl text-gray-100/95 max-w-3xl mx-auto mb-10 leading-relaxed drop-shadow-lg"
-          variants={itemVariants}
-        >
-          {subline}
-        </motion.p>
-
-        {/* CTA Button */}
-        <motion.div className="flex flex-col sm:flex-row justify-center gap-6" variants={itemVariants}>
-          {ctaLink && (
-            <Link
-              href={ctaLink}
-              className="flex items-center justify-center font-bold px-8 py-4 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 hover:scale-105"
-              style={{ backgroundColor: primaryColor, color: "white" }}
-            >
-              <ClipboardDocumentListIcon className="w-6 h-6 mr-3" />
-              {ctaText || "Learn More"}
-            </Link>
-          )}
-
-          {/* Optional: Secondary CTA, using a fallback for the sake of the original design */}
-          <Link
-            href={`/${slug}/contact`}
-            className="flex items-center justify-center border-2 border-white text-white font-bold px-8 py-4 rounded-full transition-all duration-300 transform hover:-translate-y-1 hover:scale-105"
-            style={{ borderColor: primaryColor, color: primaryColor }}
-            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = primaryColor; e.currentTarget.style.color = "white"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; e.currentTarget.style.color = primaryColor; }}
-          >
-            <HeartIcon className="w-6 h-6 mr-3" />
-            Find a Doctor
-          </Link>
+            <Image
+                src={productImageUrl || imageUrl || "https://images.unsplash.com/photo-1576091160550-fd419dba48e0?q=80&w=2070&auto=format&fit=crop"}
+                alt={headline || "Healthcare Background"}
+                fill
+                className="object-cover object-center opacity-90"
+                loader={loader}
+                priority
+            />
         </motion.div>
 
-        {/* Value Proposition Icons */}
-        <div className="mt-20 flex justify-center gap-10 opacity-80">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.0 }}
-            className="flex flex-col items-center"
-          >
-            <AcademicCapIcon className="w-10 h-10 text-white mb-2" />
-            <span className="text-sm font-medium">Expert Doctors</span>
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.2 }}
-            className="flex flex-col items-center"
-          >
-            <BanknotesIcon className="w-10 h-10 text-white mb-2" />
-            <span className="text-sm font-medium">Affordable Care</span>
-          </motion.div>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.4 }}
-            className="flex flex-col items-center"
-          >
-            <PlayCircleIcon className="w-10 h-10 text-white mb-2" />
-            <span className="text-sm font-medium">Patient-Centered</span>
-          </motion.div>
-        </div>
-      </motion.div>
+        {/* Gradient Overlay: Stays static on top of the moving image */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent z-10" />
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-gray-900 to-transparent z-10" />
+      </div>
+
+      {/* --- CONTENT LAYER --- */}
+      <div className="relative z-20 h-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col justify-center">
+        
+        <motion.div 
+          className="max-w-2xl mt-24 sm:mt-32 lg:mt-40"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
+            {/* Glass Card Container */}
+            <div className="relative p-8 md:p-10 rounded-3xl overflow-hidden border border-white/10 bg-white/5 backdrop-blur-md shadow-2xl">
+                
+                {/* Decorative Glow Blob */}
+                <div 
+                    className="absolute -top-20 -left-20 w-60 h-60 rounded-full blur-3xl opacity-30 pointer-events-none"
+                    style={{ backgroundColor: primaryColor }}
+                />
+
+                {/* Badge */}
+                {badgeText && (
+                    <motion.div variants={itemVariants} className="relative mb-6">
+                    <span 
+                        className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold tracking-wider uppercase text-white shadow-lg ring-1 ring-white/20 backdrop-blur-xl"
+                        style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}
+                    >
+                        <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: primaryColor }} />
+                        {badgeText}
+                    </span>
+                    </motion.div>
+                )}
+
+                {/* Headline */}
+                <motion.h1 
+                    variants={itemVariants}
+                    className="relative text-4xl sm:text-5xl md:text-6xl font-bold text-white tracking-tight leading-tight mb-6 drop-shadow-lg"
+                >
+                    {headline}
+                </motion.h1>
+
+                {/* Subline */}
+                <motion.p 
+                    variants={itemVariants}
+                    className="relative text-lg sm:text-xl text-gray-200 mb-8 leading-relaxed font-light max-w-lg border-l-4 pl-4"
+                    style={{ borderColor: primaryColor }}
+                >
+                    {subline}
+                </motion.p>
+
+                {/* Buttons */}
+                <motion.div variants={itemVariants} className="relative flex flex-col sm:flex-row gap-4">
+                    {ctaLink && (
+                    <Link
+                        href={ctaLink}
+                        className="group flex items-center justify-center px-8 py-4 rounded-xl text-white font-semibold shadow-lg shadow-teal-900/20 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl"
+                        style={{ backgroundColor: primaryColor }}
+                    >
+                        <ClipboardDocumentListIcon className="w-5 h-5 mr-2 group-hover:rotate-12 transition-transform" />
+                        {ctaText || "Book Now"}
+                    </Link>
+                    )}
+
+                    <Link
+                        href={`/${slug}/contact`}
+                        className="group flex items-center justify-center px-8 py-4 rounded-xl bg-white/10 text-white font-semibold backdrop-blur-sm border border-white/10 transition-all duration-300 hover:bg-white/20"
+                    >
+                        <PlayCircleIcon className="w-5 h-5 mr-2 text-white/80 group-hover:text-white" />
+                        Watch Video
+                    </Link>
+                </motion.div>
+            </div>
+
+            {/* Features Grid */}
+            <motion.div 
+                variants={fadeUpVariants}
+                initial="hidden"
+                animate="visible"
+                transition={{ delay: 0.8 }}
+                className="mt-12 grid grid-cols-3 gap-4 md:gap-8 max-w-xl"
+            >
+                {[
+                    { icon: AcademicCapIcon, label: "Top Doctors" },
+                    { icon: BanknotesIcon, label: "Best Prices" },
+                    { icon: HeartIcon, label: "Patient First" }
+                ].map((item, idx) => (
+                    <div key={idx} className="flex flex-col md:flex-row items-center md:items-start gap-3 group cursor-default">
+                        <div className="p-3 rounded-lg bg-white/5 border border-white/10 group-hover:border-white/30 transition-colors">
+                            <item.icon className="w-6 h-6 text-white" />
+                        </div>
+                        <div className="text-center md:text-left">
+                            <p className="text-white font-medium text-sm md:text-base">{item.label}</p>
+                            <div className="h-0.5 w-0 group-hover:w-full bg-white/50 transition-all duration-500 mt-1 rounded-full"></div>
+                        </div>
+                    </div>
+                ))}
+            </motion.div>
+
+        </motion.div>
+      </div>
     </section>
   );
 }

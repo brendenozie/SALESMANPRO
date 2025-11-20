@@ -2,8 +2,10 @@
 
 import React, { useState } from "react";
 import { useStoreContext } from "@/contexts/StoreContext";
+import { useRouter } from "next/navigation";
+import { useSession, signOut } from "next-auth/react";
 
-// Sample data to use as a fallback if the database data is not available
+// Sample data fallback
 const sampleData = {
   name: "KindFlow",
   slug: "kindflow",
@@ -16,35 +18,59 @@ const sampleData = {
     { channel: "instagram", url: "https://instagram.com" },
   ],
   themeSettings: {
-    primaryColor: "#10B981", // green fallback
-    secondaryColor: "#047857", // darker green
+    primaryColor: "#10B981",
+    secondaryColor: "#047857",
   },
 };
 
-//----------------------------------------------
-// Header for NonProfitSite (uses sample data)
-//----------------------------------------------
 export default function Header() {
+  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-   const { storeFormData } = useStoreContext();
-  
-    const {
-      name,
-      slug,
-      logoUrl,
-      contactEmail,
-      contactPhone,
-      socialLinks,
-      themeSettings,
-    } = storeFormData || sampleData;
-    
+  const { storeFormData } = useStoreContext();
 
-  const primary = themeSettings?.primaryColor || "#10B981"; // green fallback
-  const secondary = themeSettings?.secondaryColor || "#047857"; // darker green
+  // AUTH ---
+  const { data: session } = useSession();
+  const user = session?.user as { role?: string; name?: string } | undefined;
+
+  const handleGoogleSignIn = () => {
+    const authUrl = new URL("https://auth.salesmanpro.site/signin");
+    authUrl.searchParams.set("callbackUrl", `${window.location.origin}`);
+    window.location.href = authUrl.toString();
+  };
+
+  const handleGoogleSignUp = () => {
+    const authUrl = new URL("https://auth.salesmanpro.site/signup");
+    authUrl.searchParams.set("callbackUrl", `${window.location.origin}`);
+    window.location.href = authUrl.toString();
+  };
+
+  const handleUserAction = () => {
+    if (!user) return handleGoogleSignIn();
+
+    if (user.role?.toLowerCase() === "admin") {
+      router.push("/dashboards");
+    } else {
+      router.push(`/nonprofit/profile`);
+    }
+  };
+
+  // Data fields
+  const {
+    name,
+    slug,
+    logoUrl,
+    contactEmail,
+    contactPhone,
+    socialLinks,
+    themeSettings,
+  } = storeFormData || sampleData;
+
+  const primary = themeSettings?.primaryColor || "#10B981";
+  const secondary = themeSettings?.secondaryColor || "#047857";
 
   return (
     <header className="sticky top-0 z-50 bg-white dark:bg-gray-900 shadow-sm transition-shadow">
-      {/* ── Top Info Bar (desktop) ── */}
+      {/* Top Bar */}
       <div
         className="hidden md:flex justify-between items-center px-6 py-2 text-sm font-medium"
         style={{ backgroundColor: `${primary}1A`, color: primary }}
@@ -55,24 +81,16 @@ export default function Header() {
               href={`mailto:${contactEmail}`}
               className="flex items-center space-x-1 uppercase hover:underline"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-4 w-4">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19 11.455v-.747a1.69 1.69 0 0 0-.256-.913l-4.225-7.796a1.69 1.69 0 0 0-3.078 0L5.346 9.795a1.69 1.69 0 0 0-.257.913v.747m14.288 0a1.688 1.688 0 0 1 1.69 1.69v1.86a2.69 2.69 0 0 1-2.69 2.69h-10a2.69 2.69 0 0 1-2.69-2.69v-1.86a1.69 1.69 0 0 1 1.69-1.69m14.288 0H4.712" />
-              </svg>
               <span>{contactEmail}</span>
             </a>
           )}
           {contactPhone && (
-            <a
-              href={`tel:${contactPhone}`}
-              className="flex items-center space-x-1 hover:underline"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-4 w-4">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0-.98.8-1.75 1.75-1.75h3.5a1.75 1.75 0 0 1 1.75 1.75v3.5c0 .98-.8 1.75-1.75 1.75H4a1.75 1.75 0 0 1-1.75-1.75V6.75ZM15 6.75c0-.98.8-1.75 1.75-1.75h3.5a1.75 1.75 0 0 1 1.75 1.75v3.5c0 .98-.8 1.75-1.75 1.75h-3.5a1.75 1.75 0 0 1-1.75-1.75V6.75ZM2.25 15c0-.98.8-1.75 1.75-1.75h3.5a1.75 1.75 0 0 1 1.75 1.75v3.5c0 .98-.8 1.75-1.75 1.75H4a1.75 1.75 0 0 1-1.75-1.75V15ZM15 15c0-.98.8-1.75 1.75-1.75h3.5a1.75 1.75 0 0 1 1.75 1.75v3.5c0 .98-.8 1.75-1.75 1.75h-3.5a1.75 1.75 0 0 1-1.75-1.75V15Z" />
-              </svg>
+            <a href={`tel:${contactPhone}`} className="flex items-center space-x-1 hover:underline">
               <span>{contactPhone}</span>
             </a>
           )}
         </div>
+
         <div className="flex space-x-4">
           {socialLinks?.map((s) => (
             <a
@@ -91,10 +109,10 @@ export default function Header() {
         </div>
       </div>
 
-      {/* ── Main Header ── */}
+      {/* Main Header */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
-          {/* Logo & Navigation (desktop) */}
+          {/* Logo */}
           <div className="flex items-center space-x-4">
             <a href={`/site/${slug}`} className="flex items-center space-x-2">
               {logoUrl ? (
@@ -106,74 +124,69 @@ export default function Header() {
                   className="object-contain"
                 />
               ) : (
-                <span className="text-xl font-bold text-gray-800 dark:text-white">
-                  {name}
-                </span>
+                <span className="text-xl font-bold">{name}</span>
               )}
             </a>
 
+            {/* Desktop Nav */}
             <nav className="hidden lg:flex space-x-6 font-medium text-gray-700 dark:text-gray-200">
               <a
                 href={`/site/${slug}`}
                 className="hover:underline"
-                style={{ color: "#444" }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = primary)}
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.color = "#444")
-                }
               >
                 Home
               </a>
-              <a
-                href={`/site/${slug}#programs`}
-                className="hover:underline"
-                style={{ color: "#444" }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = primary)}
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.color = "#444")
-                }
-              >
+              <a href={`/site/${slug}#programs`} className="hover:underline">
                 Programs
               </a>
-
-              <a
-                href={`/site/${slug}#donate`}
-                className="hover:underline"
-                style={{ color: "#444" }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = primary)}
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.color = "#444")
-                }
-              >
+              <a href={`/site/${slug}#donate`} className="hover:underline">
                 Donate
               </a>
-
-              <a
-                href={`/site/${slug}#contact`}
-                className="hover:underline"
-                style={{ color: "#444" }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = primary)}
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.color = "#444")
-                }
-              >
+              <a href={`/site/${slug}#contact`} className="hover:underline">
                 Contact
               </a>
             </nav>
           </div>
 
-          {/* User Icon (e.g., volunteer login) */}
+          {/* AUTH / PROFILE */}
           <div className="flex items-center space-x-4">
-            <a
-              href={`/site/${slug}/nonprofit/profile`}
-              className="text-gray-600 dark:text-gray-200"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-6 w-6">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
-              </svg>
-            </a>
+            {/* If logged in */}
+            {user ? (
+              <div className="flex items-center space-x-3">
+                <button
+                  onClick={handleUserAction}
+                  className="text-gray-700 dark:text-gray-200 font-medium"
+                >
+                  {user.name || "Profile"}
+                </button>
+                <button
+                  onClick={() => signOut({ callbackUrl: "/" })}
+                  className="text-red-600 font-semibold text-sm"
+                >
+                  Logout
+                </button>
+              </div>
+            ) : (
+              // If NOT logged in
+              <div className="flex items-center space-x-3">
+                <button
+                  onClick={handleGoogleSignIn}
+                  className="px-4 py-1 text-sm font-medium rounded-md text-white"
+                  style={{ backgroundColor: primary }}
+                >
+                  Login
+                </button>
+                <button
+                  onClick={handleGoogleSignUp}
+                  className="px-4 py-1 text-sm font-medium rounded-md border"
+                  style={{ borderColor: primary, color: primary }}
+                >
+                  Register
+                </button>
+              </div>
+            )}
 
-            {/* Mobile menu toggle */}
+            {/* Mobile Toggle */}
             <button
               className="lg:hidden text-gray-600 dark:text-gray-200"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -193,57 +206,49 @@ export default function Header() {
         </div>
       </div>
 
-      {/* ── Mobile Menu ── */}
+      {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 px-4 py-4 shadow-md">
+        <div className="lg:hidden bg-white dark:bg-gray-800 px-4 py-4 shadow-md border-t">
           <div className="space-y-3">
-            <a
-              href={`/site/${slug}`}
-              className="block hover:underline text-gray-700 dark:text-gray-200"
-              style={{ color: "#444" }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = primary)}
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.color = "#444")
-              }
-            >
-              Home
-            </a>
+            <a href={`/site/${slug}`} className="block">Home</a>
+            <a href={`/site/${slug}#programs`} className="block">Programs</a>
+            <a href={`/site/${slug}#donate`} className="block">Donate</a>
+            <a href={`/site/${slug}#contact`} className="block">Contact</a>
 
-            <a
-              href={`/site/${slug}#programs`}
-              className="block hover:underline text-gray-700 dark:text-gray-200"
-              style={{ color: "#444" }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = primary)}
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.color = "#444")
-              }
-            >
-              Programs
-            </a>
-
-            <a
-              href={`/site/${slug}#donate`}
-              className="block hover:underline text-gray-700 dark:text-gray-200"
-              style={{ color: "#444" }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = primary)}
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.color = "#444")
-              }
-            >
-              Donate
-            </a>
-
-            <a
-              href={`/site/${slug}#contact`}
-              className="block hover:underline text-gray-700 dark:text-gray-200"
-              style={{ color: "#444" }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = primary)}
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.color = "#444")
-              }
-            >
-              Contact
-            </a>
+            {/* Auth inside mobile menu */}
+            <div className="pt-2 border-t">
+              {user ? (
+                <>
+                  <button
+                    onClick={handleUserAction}
+                    className="block w-full text-left py-2"
+                  >
+                    Profile
+                  </button>
+                  <button
+                    onClick={() => signOut({ callbackUrl: "/" })}
+                    className="block w-full text-left py-2 text-red-600"
+                  >
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={handleGoogleSignIn}
+                    className="block w-full text-left py-2"
+                  >
+                    Login
+                  </button>
+                  <button
+                    onClick={handleGoogleSignUp}
+                    className="block w-full text-left py-2"
+                  >
+                    Register
+                  </button>
+                </>
+              )}
+            </div>
           </div>
         </div>
       )}
