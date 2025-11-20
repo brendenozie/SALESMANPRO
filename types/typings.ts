@@ -244,6 +244,8 @@ export interface PricingTier {
   badge?: string;
   description?: string;
   price: number;
+  monthlyPrice?: number;
+  annualPrice?: number;
   duration?: string;
   features: string[];
   isFeatured?: boolean;

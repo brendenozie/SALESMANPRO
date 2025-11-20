@@ -2,16 +2,17 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion'; // Added AnimatePresence for smooth modal exit
 import { useStoreContext } from '@/contexts/StoreContext';
 import Link from 'next/link';
-import { XMarkIcon, MagnifyingGlassIcon, ArrowRightIcon } from '@heroicons/react/24/outline'; // Added ArrowRightIcon
+import { XMarkIcon, MagnifyingGlassIcon, ArrowRightIcon, TagIcon } from '@heroicons/react/24/outline';
 import { MarketListingForm } from '@/types/typings';
 // Assuming BookingForm and MarketListingForm types/components exist
 // import BookingForm from '../../../components/BookingForm'; 
 // import { MarketListingForm } from '@/types/typings'; 
 
-// Placeholder types for external dependencies to make the component runnable
+// --- PLACEHOLDER COMPONENTS (Keep these for demonstration) ---
+// Placeholder type for external dependencies
 // type MarketListingForm = {
 //     id: string;
 //     name: string;
@@ -23,23 +24,35 @@ import { MarketListingForm } from '@/types/typings';
 
 // Placeholder for BookingForm component (assumed to be complex and imported)
 const BookingForm = ({ service, slug }: { service: MarketListingForm, slug: string }) => (
-    <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-        <p className="text-sm font-medium text-gray-700 mb-2">Booking Integration Placeholder:</p>
-        <p className="text-xs text-gray-500">Service: **{service.name}**</p>
-        <p className="text-xs text-gray-500">Price: **KES {service.finalPrice?.toFixed(2)}**</p>
+    <div className="p-5 bg-white rounded-xl border border-gray-200 shadow-md">
+        <p className="text-lg font-bold text-gray-800 mb-4">Finalize Your Service Booking</p>
+        <div className="space-y-3">
+            <input type="text" placeholder="Your Name" className="w-full p-3 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 transition" required />
+            <input type="email" placeholder="Email Address" className="w-full p-3 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 transition" required />
+            <select className="w-full p-3 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 transition">
+                <option>Select Date & Time Slot...</option>
+                <option disabled={!service.isAvailable}>Tomorrow, 10:00 AM</option>
+                <option disabled={!service.isAvailable}>Friday, 2:00 PM</option>
+            </select>
+        </div>
+        
         <button
-            className="mt-3 w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-200"
+            style={{ backgroundColor: service.isAvailable ? '#059669' : '#9ca3af' }}
+            className={`mt-6 w-full text-white px-6 py-3 rounded-xl text-lg font-semibold transition-all duration-300 shadow-lg ${service.isAvailable ? 'hover:bg-emerald-700' : 'cursor-not-allowed'}`}
             disabled={!service.isAvailable}
         >
-            {service.isAvailable ? 'Proceed to Checkout' : 'Notify Me When Available'}
+            {service.isAvailable ? `Book for KES ${service.finalPrice?.toLocaleString('en-KE', { minimumFractionDigits: 2 })}` : 'Notify Me When Available'}
         </button>
+        {!service.isAvailable && (
+             <p className="mt-2 text-sm text-center text-red-500">This service is temporarily unavailable for booking.</p>
+        )}
     </div>
 );
 
 
 const loader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality || 75}`;
 
-interface servicesSectionProps {
+interface ServicesSectionProps {
     marketplaceListings?: MarketListingForm[] | null;
     slug?: string;
     themeSettings?: {
@@ -47,10 +60,9 @@ interface servicesSectionProps {
     } | null;
 }
 
-export default function ServicesSection({marketplaceListings, slug, themeSettings}: servicesSectionProps) {
-    // const { storeFormData } = useStoreContext();
-
-    // Sample data (Refined descriptions and added a slightly different image for variety)
+export default function ServicesSection({marketplaceListings, slug, themeSettings}: ServicesSectionProps) {
+    // --- Data Initialization and State ---
+    // The component will use the provided marketplaceListings or the sampleData if none are provided.
     const sampleData = {
         marketplaceListings: [
             {
@@ -108,14 +120,14 @@ export default function ServicesSection({marketplaceListings, slug, themeSetting
         slug: 'default-service-slug'
     } as any;
 
-
+    const listings = marketplaceListings || sampleData.marketplaceListings;
     const [search, setSearch] = useState('');
     const [selected, setSelected] = useState<MarketListingForm | null>(null);
 
     const primaryColor = themeSettings?.primaryColor || '#059669';
 
-    // Filter logic has been fully implemented here
-    const filteredListings = marketplaceListings && marketplaceListings.filter((item: MarketListingForm) =>
+    // Filter logic
+    const filteredListings = listings.filter((item: MarketListingForm) =>
         item.name.toLowerCase().includes(search.toLowerCase()) ||
         item.description?.toLowerCase().includes(search.toLowerCase())
     );
@@ -140,7 +152,7 @@ export default function ServicesSection({marketplaceListings, slug, themeSetting
         <section id="services" className="relative bg-white py-24 overflow-hidden text-gray-900">
             <div className="max-w-7xl mx-auto px-6 lg:px-12">
                 
-                {/* --- HEADER, TITLE, AND SEARCH BAR --- */}
+                {/* 🎨 HEADER, TITLE, AND SEARCH BAR */}
                 <div className="text-center mb-16">
                     <motion.span
                         className="inline-block text-sm font-semibold px-4 py-1.5 rounded-full shadow-md"
@@ -174,7 +186,13 @@ export default function ServicesSection({marketplaceListings, slug, themeSetting
                     </motion.p>
                     
                     {/* Search Input with modern styling */}
-                    <div className="mt-10 max-w-lg mx-auto relative">
+                    <motion.div 
+                        className="mt-10 max-w-lg mx-auto relative"
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.5, delay: 0.2 }}
+                        viewport={{ once: true }}
+                    >
                         <MagnifyingGlassIcon className="absolute left-5 top-1/2 -translate-y-1/2 h-6 w-6 text-gray-400" />
                         <input
                             type="text"
@@ -186,19 +204,19 @@ export default function ServicesSection({marketplaceListings, slug, themeSetting
                         {search && (
                             <button
                                 onClick={() => setSearch('')}
-                                className="absolute right-5 top-1/2 -translate-y-1/2 p-1 rounded-full text-gray-500 hover:text-gray-800"
+                                className="absolute right-5 top-1/2 -translate-y-1/2 p-1 rounded-full text-gray-500 hover:text-gray-800 transition-colors"
                                 aria-label="Clear search"
                             >
                                 <XMarkIcon className="h-5 w-5" />
                             </button>
                         )}
-                    </div>
+                    </motion.div>
                 </div>
 
-                {/* --- SERVICES CARDS GRID --- */}
-                {filteredListings && filteredListings.length > 0 ? (
+                {/* 🌟 SERVICES CARDS GRID */}
+                {filteredListings.length > 0 ? (
                     <motion.div
-                        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
+                        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-8"
                         variants={containerVariants}
                         initial="hidden"
                         whileInView="show"
@@ -206,133 +224,140 @@ export default function ServicesSection({marketplaceListings, slug, themeSetting
                     >
                         {(filteredListings as MarketListingForm[]).map((item, i) => (
                             <motion.div
-                                key={item.id}
-                                className="relative rounded-2xl overflow-hidden bg-white border border-gray-200 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 flex flex-col group cursor-pointer"
-                                variants={cardVariants}
-                                onClick={() => setSelected(item)}
-                            >
-                                {/* Image Area */}
-                                <div className="relative w-full h-56 overflow-hidden">
-                                    <Image
-                                        src={item.images?.[0] || 'https://images.unsplash.com/photo-1555548680-77a28e3a2b3b?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'}
-                                        loader={loader}
-                                        alt={item.name}
-                                        fill
-                                        className="object-cover transition-transform duration-500 group-hover:scale-110"
-                                    />
-                                    {/* Price Tag */}
-                                    {item.finalPrice && (
-                                        <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm text-gray-900 text-lg font-extrabold px-4 py-2 rounded-xl shadow-lg border border-gray-100">
-                                            KES {item.finalPrice.toLocaleString('en-KE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                        </div>
-                                    )}
-                                </div>
-                                
-                                {/* Content Area */}
-                                <div className="p-6 flex flex-col flex-grow">
-                                    <h3 className="text-xl font-bold text-gray-900 mb-2 leading-tight group-hover:text-emerald-700 transition-colors">
-                                        {item.name}
-                                    </h3>
-                                    <p className="text-sm text-gray-600 flex-grow mb-4 line-clamp-3">
-                                        {item.description || 'A unique service designed to provide exceptional results and an unforgettable experience.'}
-                                    </p>
-                                    
-                                    {/* Availability Status */}
-                                    <div className="mt-auto flex items-center justify-between">
-                                        <span className={`text-sm font-semibold ${item.isAvailable ? 'text-green-600 bg-green-50 px-3 py-1 rounded-full' : 'text-red-600 bg-red-50 px-3 py-1 rounded-full'}`}>
-                                            {item.isAvailable ? 'Instant Booking' : 'Currently Booked'}
-                                        </span>
-                                        <div className="flex items-center text-emerald-600 font-semibold group-hover:translate-x-1 transition-transform">
-                                            View Details
-                                            <ArrowRightIcon className="w-4 h-4 ml-1" />
+                                    key={item.id}
+                                    className={`relative rounded-3xl overflow-hidden bg-white border ${item.isAvailable ? 'border-gray-200' : 'border-red-200 opacity-80'} shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 flex flex-col group cursor-pointer`}
+                                    variants={cardVariants}
+                                    onClick={() => setSelected(item)}
+                                >
+                                    {/* Image Area with Hover Zoom */}
+                                    <div className="relative w-full h-56 overflow-hidden">
+                                        <Image
+                                            src={item.images?.[0] || 'https://images.unsplash.com/photo-1555548680-77a28e3a2b3b?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'}
+                                            loader={loader}
+                                            alt={item.name}
+                                            fill
+                                            className="object-cover transition-transform duration-500 group-hover:scale-110"
+                                            sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 25vw"
+                                        />
+                                        {/* Availability Ribbon */}
+                                        <div className={`absolute top-0 right-0 p-2 text-xs font-bold text-white shadow-lg rounded-bl-xl ${item.isAvailable ? 'bg-emerald-600' : 'bg-red-600'}`}>
+                                            {item.isAvailable ? 'AVAILABLE' : 'BOOKED'}
                                         </div>
                                     </div>
-                                </div>
-                            </motion.div>
+                                    
+                                    {/* Content Area */}
+                                    <div className="p-6 flex flex-col flex-grow">
+                                        <h3 className="text-xl font-extrabold text-gray-900 mb-2 leading-tight">
+                                            {item.name}
+                                        </h3>
+                                        
+                                        {/* Price Section */}
+                                        <div className="flex items-center text-2xl font-extrabold mb-4" style={{ color: primaryColor }}>
+                                            <TagIcon className="w-5 h-5 mr-2 text-gray-400" />
+                                            KES {(item.finalPrice || item.sellingPrice || 0).toLocaleString('en-KE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                        </div>
+
+                                        <p className="text-sm text-gray-600 flex-grow mb-4 line-clamp-3">
+                                            {item.description || 'A unique service designed to provide exceptional results and an unforgettable experience.'}
+                                        </p>
+                                        
+                                        {/* Action Button */}
+                                        <button
+                                            className="mt-auto flex items-center justify-center p-3 rounded-xl font-bold transition-all duration-300 border-2"
+                                            style={{ 
+                                                color: primaryColor, 
+                                                borderColor: primaryColor + '50',
+                                                backgroundColor: primaryColor + '10'
+                                            }}
+                                        >
+                                            View Details & Book
+                                        </button>
+                                    </div>
+                                </motion.div>
                         ))}
                     </motion.div>
                 ) : (
                     <div className="col-span-full text-center py-20 bg-gray-50 rounded-2xl shadow-inner border border-dashed border-gray-300">
                         <p className="text-2xl font-bold text-gray-600">
-                            No services found matching "<span className="text-emerald-600">{search}</span>"
+                            No services found matching "<span style={{ color: primaryColor }}>{search}</span>"
                         </p>
                         <p className="text-lg text-gray-500 mt-2">Try a broader search term or explore our featured categories.</p>
                     </div>
                 )}
             </div>
 
-            {/* --- BOOKING MODAL (Re-styled for prominence) --- */}
-            {selected && (
-                <motion.div
-                    className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 lg:p-8"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                >
-                    {/* Backdrop */}
-                    <div
-                        className="fixed inset-0 bg-gray-900 bg-opacity-80 backdrop-blur-sm"
-                        onClick={() => setSelected(null)}
-                    />
-
-                    {/* Modal Content */}
+            {/* 🗓️ BOOKING MODAL */}
+            <AnimatePresence>
+                {selected && (
                     <motion.div
-                        className="relative bg-white rounded-3xl max-w-5xl w-full mx-auto z-50 shadow-2xl p-6 sm:p-10 transform overflow-hidden"
-                        initial={{ scale: 0.9, y: 20 }}
-                        animate={{ scale: 1, y: 0 }}
-                        exit={{ scale: 0.9, y: 20 }}
+                        className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 lg:p-8"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
                         transition={{ duration: 0.3 }}
                     >
-                        <button
-                            className="absolute top-5 right-5 text-gray-500 hover:text-gray-800 transition-colors z-50 p-2 rounded-full bg-white/50 hover:bg-white"
+                        {/* Backdrop */}
+                        <div
+                            className="fixed inset-0 bg-gray-900 bg-opacity-80 backdrop-blur-sm"
                             onClick={() => setSelected(null)}
-                            aria-label="Close"
-                        >
-                            <XMarkIcon className="w-7 h-7" />
-                        </button>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            {/* Service Details (Left Side) */}
-                            <div className="space-y-6">
-                                <div className="relative w-full h-[250px] md:h-[350px] rounded-xl overflow-hidden shadow-xl">
-                                    <Image
-                                        src={selected.images?.[0] || 'https://images.unsplash.com/photo-1555548680-77a28e3a2b3b?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'}
-                                        loader={loader}
-                                        alt={selected.name}
-                                        fill
-                                        className="object-cover"
-                                    />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-gray-900/40 via-transparent to-transparent"></div>
-                                </div>
+                        />
 
-                                <div>
-                                    <h2 className="text-4xl font-extrabold text-gray-900 leading-tight">
+                        {/* Modal Content */}
+                        <motion.div
+                            className="relative bg-white rounded-3xl max-w-5xl w-full mx-auto z-50 shadow-2xl p-6 sm:p-10 transform overflow-hidden"
+                            initial={{ scale: 0.9, y: 20 }}
+                            animate={{ scale: 1, y: 0 }}
+                            exit={{ scale: 0.9, y: 20 }}
+                            transition={{ duration: 0.3 }}
+                        >
+                            <button
+                                className="absolute top-5 right-5 text-gray-500 hover:text-gray-900 transition-colors z-50 p-2 rounded-full bg-white/70 hover:bg-white shadow-md border border-gray-100"
+                                onClick={() => setSelected(null)}
+                                aria-label="Close"
+                            >
+                                <XMarkIcon className="w-7 h-7" />
+                            </button>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                                {/* Service Details (Left Side) */}
+                                <div className="space-y-6">
+                                    <div className="relative w-full h-[250px] md:h-[300px] rounded-xl overflow-hidden shadow-xl border border-gray-200">
+                                        <Image
+                                            src={selected.images?.[0] || 'https://images.unsplash.com/photo-1555548680-77a28e3a2b3b?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'}
+                                            loader={loader}
+                                            alt={selected.name}
+                                            fill
+                                            sizes="(max-width: 768px) 100vw, 50vw"
+                                            className="object-cover"
+                                        />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-gray-900/30 via-transparent to-transparent"></div>
+                                    </div>
+
+                                    <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 leading-tight">
                                         {selected.name}
                                     </h2>
                                     <p className="mt-3 text-lg text-gray-700 leading-relaxed">{selected.description || 'No detailed description available.'}</p>
+                                    
+                                    {/* Price and Availability Bar */}
+                                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-lg shadow-inner" style={{ backgroundColor: primaryColor + '10' }}>
+                                        <p className="font-bold text-gray-800 text-xl">
+                                            Price: <span style={{ color: primaryColor }} className="text-2xl font-extrabold">KES { (selected.finalPrice || 0).toLocaleString('en-KE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }</span>
+                                        </p>
+                                        <span className={`inline-flex items-center gap-1.5 text-lg font-bold mt-2 sm:mt-0 ${selected.isAvailable ? 'text-green-700' : 'text-red-700'}`}>
+                                            {selected.isAvailable ? 'Available Now' : 'Booked Out'}
+                                        </span>
+                                    </div>
                                 </div>
-
-                                {/* Price and Availability Bar */}
-                                <div className="flex items-center justify-between p-4 bg-emerald-50 rounded-lg shadow-inner">
-                                    <p className="font-bold text-gray-800 text-xl">
-                                        Price: <span className="text-emerald-700 text-2xl font-extrabold">KES { (selected.finalPrice || 0).toLocaleString('en-KE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }</span>
-                                    </p>
-                                    <span className={`inline-flex items-center gap-1.5 text-lg font-bold ${selected.isAvailable ? 'text-green-700' : 'text-red-700'}`}>
-                                        {selected.isAvailable ? 'Available Now' : 'Booked Out'}
-                                    </span>
+                                
+                                {/* Booking Form (Right Side) */}
+                                <div className="flex flex-col space-y-6 pt-0 md:pt-4">
+                                    <BookingForm service={selected} slug={sampleData.slug || ''} />
                                 </div>
                             </div>
-                            
-                            {/* Booking Form (Right Side) */}
-                            <div className="flex flex-col space-y-6">
-                                <h3 className="text-2xl font-bold text-gray-800 pt-1">Schedule Your Appointment</h3>
-                                <BookingForm service={selected} slug={sampleData.slug || ''} />
-                            </div>
-                        </div>
+                        </motion.div>
                     </motion.div>
-                </motion.div>
-            )}
+                )}
+            </AnimatePresence>
         </section>
     );
 }

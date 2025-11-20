@@ -151,22 +151,47 @@ export default function Header() {
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-4">
             {/* User/Profile Button */}
-            <button
-              onClick={handleUserAction}
-              className="flex items-center gap-2 px-3 py-2 rounded-full hover:bg-gray-100 transition-all duration-200 group"
-            >
-              <div className="p-1.5 bg-gray-50 rounded-full border border-gray-200 group-hover:border-gray-300 transition-colors">
-                <UserIcon className="h-5 w-5 text-gray-600" />
+            {!user ? (
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={handleGoogleSignIn}
+                  className="px-4 py-2 rounded-full text-sm font-medium text-gray-700 bg-white border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors"
+                >
+                  Log In
+                </button>
+                <button
+                  onClick={handleGoogleSignUp}
+                  className="px-4 py-2 rounded-full text-sm font-medium text-white shadow-md"
+                  style={{ backgroundColor: primaryColor }}
+                >
+                  Sign Up
+                </button>
               </div>
-              {user && (
-                <span className="text-sm font-medium text-gray-700 max-w-[100px] truncate">
-                  {user.name?.split(' ')[0]}
-                </span>
-              )}
-            </button>
+            ) : (
+                <button
+                  onClick={handleUserAction}
+                  className="flex items-center gap-2 px-3 py-2 rounded-full hover:bg-gray-100 transition-all duration-200 group"
+                >
+                  {user.image ? (
+                    <img
+                      src={user.image}
+                      alt={user.name || 'User Avatar'}
+                      className="w-8 h-8 rounded-full object-cover border-2 border-white shadow-sm"
+                    />
+                  ) : (
+                    <div className="p-1.5 bg-gray-50 rounded-full border border-gray-200 group-hover:border-gray-300 transition-colors">
+                      <UserIcon className="h-5 w-5 text-gray-600" />
+                    </div>
+                  )}
+                  <span className="text-sm font-medium text-gray-700 max-w-[100px] truncate">
+                    {user.name?.split(' ')[0]}
+                  </span>
+                </button>
+              )
+            }
 
             {/* Primary CTA */}
-            <motion.a
+            {/* <motion.a
               href="#booking"
               whileHover={{ scale: 1.02, y: -1 }}
               whileTap={{ scale: 0.98 }}
@@ -179,7 +204,7 @@ export default function Header() {
               <span className="relative z-10">Book Now</span>
               <ArrowRightIcon className="w-4 h-4 relative z-10 group-hover:translate-x-1 transition-transform" />
               <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
-            </motion.a>
+            </motion.a> */}
           </div>
 
           {/* Mobile Toggle */}

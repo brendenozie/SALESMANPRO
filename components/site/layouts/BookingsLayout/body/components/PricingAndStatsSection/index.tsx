@@ -1,22 +1,20 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import Image from 'next/image';
 import { motion, useInView } from 'framer-motion';
-import { useStoreContext } from '@/contexts/StoreContext';
 import { 
     CheckIcon, 
     StarIcon, 
     UsersIcon, 
     CalendarDaysIcon, 
-    BriefcaseIcon,  
+    BriefcaseIcon,
+    CurrencyDollarIcon 
 } from '@heroicons/react/24/solid'; 
 import { ArrowLongRightIcon } from '@heroicons/react/24/outline';
 import { PricingTier, Stat } from '@/types/typings';
 
+
 // --- Helper Types & Maps ---
-
-
 const StatIconMap: { [key: string]: React.ElementType } = {
     "Bookings Completed": CalendarDaysIcon,
     "Verified Professionals": BriefcaseIcon,
@@ -25,10 +23,7 @@ const StatIconMap: { [key: string]: React.ElementType } = {
 };
 // ------------------------------------------------------------------------
 
-// Placeholder loader function (assuming Next.js Image component setup)
-const loader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality || 75}`;
-
-// CountUp component for animating stats
+// CountUp component (Unchanged for smooth animations)
 const CountUp = ({ end, duration = 2000, decimals = 0 }: { end: number; duration?: number; decimals?: number }) => {
     const [count, setCount] = useState(0);
     const ref = useRef(null);
@@ -40,7 +35,8 @@ const CountUp = ({ end, duration = 2000, decimals = 0 }: { end: number; duration
         const startTimestamp = performance.now();
         const step = (timestamp: number) => {
             const progress = Math.min(1, (timestamp - startTimestamp) / duration);
-            const currentValue = progress * end;
+            const easedProgress = 1 - Math.pow(1 - progress, 3); 
+            const currentValue = easedProgress * end;
             setCount(currentValue);
             if (progress < 1) {
                 requestAnimationFrame(step);
@@ -55,15 +51,17 @@ const CountUp = ({ end, duration = 2000, decimals = 0 }: { end: number; duration
     return <span ref={ref}>{formattedCount}</span>;
 };
 
-interface PricingAndStatsSectionProps { stats: Stat[] | null; pricingTiers: PricingTier[]; themeSettings: Record<string, any> | null; }
+interface PricingAndStatsSectionProps { 
+    stats: Stat[] | null; 
+    pricingTiers: PricingTier[]; 
+    themeSettings: Record<string, any> | null; 
+}
 
 // --- START: Main Component ---
 export default function PricingAndStatsSection({ stats, pricingTiers, themeSettings }: PricingAndStatsSectionProps) {
-    // Assuming context provides data; falling back to comprehensive sample data
-    // const { storeFormData } = useStoreContext();
-    
     const [billingCycle, setBillingCycle] = useState<'monthly' | 'annually'>('monthly');
 
+    // Sample Data
     const sampleData = {
         stats: [
             { label: "Bookings Completed", value: 150.7, icon: "CalendarDaysIcon", suffix: 'K+' }, 
@@ -72,65 +70,21 @@ export default function PricingAndStatsSection({ stats, pricingTiers, themeSetti
             { label: "Average Rating", value: 4.9, icon: "StarIcon" },
         ] as Stat[],
         pricingTiers: [
-            {
-                name: "Basic",
-                monthlyPrice: 9,
-                // annualPrice: 9 * 12 * 0.8, // 20% Discount
-                description: "Jumpstart your presence with essential booking tools.",
-                features: [
-                    "5 client bookings/month limit",
-                    "Basic availability calendar",
-                    "Email and FAQ support only",
-                    "Public profile page (standard URL)",
-                ],
-                isFeatured: false,
-            },
-            {
-                name: "Pro",
-                price: 29,
-                // annualPrice: 29 * 12 * 0.8, // 20% Discount
-                description: "Maximize growth with unlimited scheduling and advanced branding.",
-                features: [
-                    "Unlimited client bookings",
-                    "Automated SMS reminders", // Highlighted for Pro
-                    "Priority chat support (within 4 hours)",
-                    "Custom branding & logo upload",
-                    "Advanced sales analytics dashboard",
-                    "Collect secure client payments",
-                ],
-                isFeatured: true,
-            },
-            {
-                name: "Enterprise",
-                // Use a numeric monthlyPrice to match the PricingTier shape;
-                // display can still treat this as "Custom" where needed.
-                monthlyPrice: 0,
-                // annualPrice: 0, // or provide a numeric annual price if available
-                description: "Tailored infrastructure for high-volume operations and large teams.",
-                features: [
-                    "Dedicated account manager",
-                    "Full CRM integration (Salesforce/HubSpot)", // Highlighted for Enterprise
-                    "24/7 Phone and emergency support",
-                    "Custom team roles & permissions",
-                    "Private cloud hosting option",
-                    "Full API access for custom development",
-                ],
-                isFeatured: false,
-            },
+            { name: "Starter", monthlyPrice: 9, annualPrice: 86.4, description: "Jumpstart your presence with essential booking tools and basic analytics.", features: ["5 client bookings/month limit", "Basic availability calendar", "Email support", "Single user license"], isFeatured: false },
+            { name: "Growth Pro", monthlyPrice: 29, annualPrice: 278.4, description: "Maximize growth with unlimited scheduling, team features, and advanced branding.", features: ["Unlimited client bookings", "Automated SMS reminders", "Priority chat support", "Custom branding & logo upload", "Up to 5 team members"], isFeatured: true },
+            { name: "Enterprise", monthlyPrice: 0, annualPrice: 0, description: "Tailored infrastructure for high-volume operations, large teams, and custom integration.", features: ["Dedicated account manager", "Full CRM integration", "24/7 Phone and emergency support", "Custom team roles & SSO", "Unlimited users"], isFeatured: false },
         ] as PricingTier[],
-        themeSettings: {
-            primaryColor: '#059669', // Emerald 600
-        },
+        themeSettings: { primaryColor: '#059669' }, // Emerald 600
     };
 
-    const primaryColor = themeSettings?.primaryColor || '#059669';
+    const primaryColor = themeSettings?.primaryColor || '#059669'; 
 
     const sectionRef = useRef(null);
     const inView = useInView(sectionRef, { once: true, amount: 0.2 });
 
     // Animation variants
     const itemVariants = {
-        hidden: { opacity: 0, y: 50, scale: 0.95 },
+        hidden: { opacity: 0, y: 30, scale: 0.95 },
         visible: (i: number) => ({
             opacity: 1,
             y: 0,
@@ -144,51 +98,75 @@ export default function PricingAndStatsSection({ stats, pricingTiers, themeSetti
         }),
     };
     
+    // Safely normalize stats
+    const normalizedStats: Stat[] = Array.isArray(stats) && stats.length > 0 ? stats : sampleData.stats;
+
     // Split stats for distinct visual treatment
-    // Ensure stats is always a proper IStat[] array
-    // Safely normalize stats (null-proof)
-const normalizedStats: Stat[] = Array.isArray(stats)
-  ? ((stats ?? []) as Stat[])
-  : sampleData.stats;
+    const ratingStat = normalizedStats.find((s) => s.label === "Average Rating") || sampleData.stats.find((s) => s.label === "Average Rating");
+    const coreStats = normalizedStats.filter((s) => s.label !== "Average Rating");
 
-// Split stats for distinct visual treatment
-const ratingStat =
-  normalizedStats.find((s) => s.label === "Average Rating") ||
-  sampleData.stats[3];
+    // Use provided tiers or sample tiers
+    const processedTiers = pricingTiers && pricingTiers.length > 0 ? pricingTiers : sampleData.pricingTiers;
 
-const coreStats = normalizedStats.filter(
-  (s) => s.label !== "Average Rating"
-);
 
+    // Helper for Price Calculation
+    const getPriceDetails = (tier: PricingTier) => {
+        const isMonthly = billingCycle === 'monthly';
+        // Note: Using a fixed 20% discount for annual pricing for consistency in the sample logic
+        let priceValue = isMonthly ? tier.monthlyPrice : (tier.annualPrice || (tier.monthlyPrice || tier.price) * 12 * 0.8);
+        
+        if (tier.name.toLowerCase() === 'enterprise' && tier.monthlyPrice === 0) {
+            return {
+                priceDisplay: 'Custom',
+                cycleLabel: '',
+                isCustom: true,
+                annualNote: 'Contact us for tailored enterprise solutions.',
+            };
+        }
+
+        const priceDisplay = typeof priceValue === 'number' ? priceValue.toFixed(priceValue % 1 !== 0 ? 2 : 0) : 'Custom';
+        const cycleLabel = isMonthly ? '/mo' : '/yr';
+        
+        return {
+            priceDisplay,
+            cycleLabel,
+            isCustom: typeof priceValue !== 'number',
+            annualNote: isMonthly ? `Billed as KES ${((tier.monthlyPrice || tier.price) * 12 * 0.8).toFixed(0)} per year` : `Saving 20% annually`,
+        };
+    };
 
     return (
-        <section ref={sectionRef} className="bg-white">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <section ref={sectionRef} className="relative bg-gray-50 pt-20 pb-32 overflow-hidden">
+            
+            {/* 🌊 Visual Background Element (Subtle Wave Effect) */}
+            <div 
+                className="absolute top-0 w-full h-1/2 opacity-5 pointer-events-none" 
+                style={{ 
+                    backgroundImage: `radial-gradient(circle at center, ${primaryColor} 1px, transparent 1px)`,
+                    backgroundSize: '20px 20px',
+                    filter: 'blur(1px)'
+                }}
+            />
+
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 
                 {/* =========================================================
-                    1. TRUST & STATS SECTION 
+                    1. TRUST & STATS SECTION (ENHANCED VISUAL HIERARCHY)
                     =========================================================
                 */}
-                <div className="py-20 lg:py-24 text-center">
+                <div className="pt-8 pb-16 text-center">
                     <motion.h2
-                        className="text-4xl sm:text-5xl font-extrabold text-gray-900 tracking-tight"
+                        className="text-4xl sm:text-5xl font-extrabold text-gray-900 tracking-tight leading-tight"
                         initial={{ opacity: 0, y: -20 }}
                         animate={inView ? { opacity: 1, y: 0 } : {}}
                         transition={{ duration: 0.6 }}
                     >
-                        **Trusted by the Best.** Our Performance Speaks.
+                        <span style={{ color: primaryColor }}>Trusted by Thousands.</span> <span className="text-gray-500">Data-Driven Results.</span>
                     </motion.h2>
-                    <motion.p
-                        className="mt-4 text-xl text-gray-600 max-w-2xl mx-auto"
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={inView ? { opacity: 1, y: 0 } : {}}
-                        transition={{ duration: 0.6, delay: 0.2 }}
-                    >
-                        Join thousands of successful businesses leveraging our platform daily.
-                    </motion.p>
 
-                    <div className="mt-16 grid grid-cols-2 lg:grid-cols-4 gap-6">
-                        {/* Rating Stat (Emphasis on Social Proof) */}
+                    <div className="mt-16 grid grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
+                        
+                        {/* Rating Stat (Emphasis: Largest, Featured Color) */}
                         {ratingStat && (
                             <motion.div
                                 key={ratingStat.label}
@@ -196,17 +174,18 @@ const coreStats = normalizedStats.filter(
                                 variants={itemVariants}
                                 initial="hidden"
                                 animate={inView ? "visible" : "hidden"}
-                                className="md:col-span-2 lg:col-span-1 bg-yellow-50 border-4 border-yellow-400/50 rounded-xl p-8 shadow-xl flex flex-col items-center justify-center transition-all duration-300 transform hover:shadow-2xl hover:scale-[1.02]"
+                                className="md:col-span-2 lg:col-span-1 bg-white ring-4 ring-yellow-400 rounded-3xl p-8 shadow-2xl flex flex-col items-center justify-center transition-all duration-300 transform hover:scale-[1.05] relative overflow-hidden group"
                             >
-                                <StarIcon className="w-12 h-12 text-yellow-500 mb-4 animate-pulse-slow" />
-                                <h5 className="text-6xl font-extrabold text-gray-900 leading-tight">
+                                <span className="absolute inset-0 bg-yellow-50 opacity-40 z-0 rounded-3xl transition-opacity group-hover:opacity-70" />
+                                <StarIcon className="w-16 h-16 text-yellow-500 mb-4 relative z-10" />
+                                <h5 className="text-7xl font-extrabold text-gray-900 leading-tight relative z-10">
                                     <CountUp end={parseFloat(ratingStat.value as string)} duration={1500} decimals={1} />
                                 </h5>
-                                <p className="mt-2 text-xl font-bold text-gray-700">{ratingStat.label}</p>
+                                <p className="mt-3 text-lg font-bold text-gray-700 relative z-10">{ratingStat.label}</p>
                             </motion.div>
                         )}
                         
-                        {/* Core Stats (Primary Color Accent) */}
+                        {/* Core Stats (Clean, professional look) */}
                         {coreStats?.map((item, i) => {
                             const numericValue = parseFloat(item.value as string) || 0;
                             const IconComponent = StatIconMap[item.label] || UsersIcon;
@@ -218,10 +197,13 @@ const coreStats = normalizedStats.filter(
                                     variants={itemVariants}
                                     initial="hidden"
                                     animate={inView ? "visible" : "hidden"}
-                                    className="bg-white rounded-xl p-8 shadow-lg border border-gray-100 flex flex-col items-center justify-center transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl"
+                                    className="bg-white rounded-3xl p-8 shadow-lg border border-gray-100 flex flex-col items-center justify-center transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl group"
                                 >
                                     {IconComponent && (
-                                        <div className="w-14 h-14 rounded-full flex items-center justify-center mb-4 text-white" style={{ backgroundColor: primaryColor }}>
+                                        <div 
+                                            className="w-14 h-14 rounded-full flex items-center justify-center mb-4 text-white ring-4 ring-offset-4 ring-offset-white transition-all duration-300 group-hover:ring-8" 
+                                            style={{ backgroundColor: primaryColor, borderColor: primaryColor }}
+                                        >
                                             <IconComponent className="w-7 h-7" />
                                         </div>
                                     )}
@@ -236,66 +218,57 @@ const coreStats = normalizedStats.filter(
                     </div>
                 </div>
 
-                {/* --- Visual Divider --- */}
-                <hr className="my-10 border-gray-200" />
+                <hr className="my-16 border-gray-200" />
                 
                 {/* =========================================================
-                    2. PRICING SECTION
+                    2. PRICING SECTION (PREMIUM CARD DESIGN)
                     =========================================================
                 */}
-                <div className="py-20 lg:pb-32 text-center bg-white">
+                <div className="py-8 text-center bg-gray-50">
                     <motion.h2
-                        className="text-4xl sm:text-5xl font-extrabold text-gray-900 tracking-tight"
+                        className="text-4xl sm:text-5xl font-extrabold text-gray-900 tracking-tight leading-tight"
                         initial={{ opacity: 0, y: -20 }}
                         animate={inView ? { opacity: 1, y: 0 } : {}}
                         transition={{ duration: 0.6, delay: 0.4 }}
                     >
-                        Clear Pricing, **Powerful Features**
+                        Choose Your Power-Up: <span style={{ color: primaryColor }}>Simple, Transparent Pricing</span>
                     </motion.h2>
-                    <motion.p
-                        className="mt-4 text-xl text-gray-600 max-w-2xl mx-auto"
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={inView ? { opacity: 1, y: 0 } : {}}
-                        transition={{ duration: 0.6, delay: 0.6 }}
-                    >
-                        Choose the plan that best scales with your business needs.
-                    </motion.p>
 
-                    {/* Pricing Toggle */}
-                    <div className="mt-12 flex justify-center items-center space-x-4">
+                    {/* Pricing Toggle (Sleeker design) */}
+                    <div className="mt-12 flex justify-center items-center space-x-3">
                         <span className={`text-lg font-semibold transition-colors ${billingCycle === 'monthly' ? 'text-gray-900' : 'text-gray-500'}`}>
-                            Billed Monthly
+                            Monthly
                         </span>
                         
-                        <div className="relative inline-block w-20 h-8 rounded-full cursor-pointer p-1 transition-all duration-300" 
-                             style={{ backgroundColor: billingCycle === 'annually' ? primaryColor : '#E5E7EB' /* gray-200 */ }}
-                             onClick={() => setBillingCycle(billingCycle === 'monthly' ? 'annually' : 'monthly')}
+                        <div className="relative inline-block w-16 h-8 rounded-full cursor-pointer p-1 transition-all duration-300 shadow-inner" 
+                            style={{ backgroundColor: billingCycle === 'annually' ? primaryColor : '#D1D5DB' /* gray-300 */ }}
+                            onClick={() => setBillingCycle(billingCycle === 'monthly' ? 'annually' : 'monthly')}
                         >
                             <motion.div
-                                className="absolute w-6 h-6 rounded-full bg-white shadow-md"
+                                className="absolute w-6 h-6 rounded-full bg-white shadow-lg"
                                 initial={false}
-                                animate={{ x: billingCycle === 'annually' ? '4rem' : '0rem' }}
+                                animate={{ x: billingCycle === 'annually' ? 'calc(100% + 2px)' : '0px' }}
                                 transition={{ type: "spring", stiffness: 700, damping: 50 }}
                             />
                             <span className="sr-only">Toggle billing cycle</span>
                         </div>
 
                         <span className={`text-lg font-semibold transition-colors ${billingCycle === 'annually' ? 'text-gray-900' : 'text-gray-500'}`}>
-                            Billed Annually 
-                            <span className="ml-2 px-3 py-0.5 text-sm font-bold rounded-full text-white" style={{ backgroundColor: primaryColor }}>
+                            Annually 
+                            <span className="ml-3 px-3 py-0.5 text-sm font-bold rounded-full text-white shadow-md bg-orange-500">
                                 Save 20%
                             </span>
                         </span>
                     </div>
                     {/* End Pricing Toggle */}
                     
-                    <div className="mt-16 grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
-                        {pricingTiers.map((tier, i) => {
-                            // Dynamic Price Logic
-                            const price = 1000;//billingCycle === 'monthly' ? tier.monthlyPrice : tier.annualPrice;
-                            const priceDisplay = typeof price === 'number' ? price.toFixed(price % 1 !== 0 ? 2 : 0) : price;
-                            const cycleLabel = typeof price === 'number' ? (billingCycle === 'monthly' ? '/mo' : '/yr') : '';
-                            const isCustom = typeof price !== 'number';
+                    <div className="mt-16 grid grid-cols-1 lg:grid-cols-3 gap-10 items-stretch">
+                        {processedTiers.map((tier, i) => {
+                            const details = getPriceDetails(tier);
+                            const { priceDisplay, cycleLabel, isCustom, annualNote } = details;
+                            const isFeatured = tier.isFeatured;
+                            const primaryBg = primaryColor; // e.g., #059669
+                            const featuredTextColor = isFeatured ? 'white' : primaryBg; 
 
                             return (
                                 <motion.div
@@ -305,90 +278,83 @@ const coreStats = normalizedStats.filter(
                                     initial="hidden"
                                     animate={inView ? "visible" : "hidden"}
                                     
-                                    // High Contrast Featured Card Styling
+                                    // Featured Card Styling Update: Dark background, primary color glow/ring on featured card
                                     className={`relative rounded-3xl p-8 lg:p-12 flex flex-col justify-between transition-all duration-500 transform ${
-                                        tier.isFeatured 
-                                            ? 'bg-gray-900 text-white shadow-2xl border-4 border-emerald-500/80 scale-[1.05] hover:shadow-emerald-500/50 z-20' 
+                                        isFeatured 
+                                            ? `bg-gray-900 text-white shadow-2xl shadow-green-500/30 ring-4 ring-[${primaryBg}] scale-[1.05] z-20` 
                                             : 'bg-white text-gray-900 border border-gray-200 hover:shadow-xl hover:-translate-y-2'
                                     }`}
                                 >
                                     {/* Featured Tag */}
-                                    {tier.isFeatured && (
+                                    {isFeatured && (
                                         <div className="absolute -top-4 right-1/2 translate-x-1/2">
-                                            <span className="inline-block px-6 py-1 text-sm font-bold text-gray-900 uppercase tracking-wider rounded-full shadow-lg" style={{ backgroundColor: '#A7F3D0' }}>
-                                                Best Value
+                                            <span className="inline-block px-6 py-1 text-sm font-bold text-gray-900 uppercase tracking-wider rounded-full shadow-lg bg-yellow-300">
+                                                Recommended
                                             </span>
                                         </div>
                                     )}
                                     
                                     <div className="text-center">
-                                        <h3 className={`text-3xl font-extrabold ${tier.isFeatured ? 'text-white mt-4' : 'text-gray-900'}`}>
+                                        <h3 className="text-3xl font-extrabold mt-4" style={{ color: featuredTextColor }}>
                                             {tier.name}
                                         </h3>
-                                        <p className={`mt-3 ${tier.isFeatured ? 'text-gray-300' : 'text-gray-500'}`}>{tier.description}</p>
+                                        <p className={`mt-3 ${isFeatured ? 'text-gray-300' : 'text-gray-500'}`}>{tier.description}</p>
                                         
                                         <motion.p 
-                                            key={priceDisplay + cycleLabel} // Key ensures motion re-renders on price change
+                                            key={priceDisplay + cycleLabel} 
                                             className="mt-8 text-7xl font-extrabold leading-none"
                                             initial={{ scale: 0.95 }}
                                             animate={{ scale: 1 }}
                                             transition={{ type: "tween", duration: 0.3 }}
                                         >
                                             {isCustom ? (
-                                                <span className={`text-4xl font-extrabold ${tier.isFeatured ? 'text-emerald-400' : 'text-emerald-600'}`}>{priceDisplay}</span>
+                                                <span className="text-4xl font-extrabold">{priceDisplay}</span>
                                             ) : (
                                                 <>
-                                                    <span className={`text-3xl font-normal align-top mr-1 ${tier.isFeatured ? 'text-emerald-300' : 'text-gray-500'}`}>KES</span>
-                                                    <span className={tier.isFeatured ? 'text-white' : 'text-gray-900'}>{priceDisplay}</span>
-                                                    <span className={`text-xl font-normal ml-1 ${tier.isFeatured ? 'text-gray-400' : 'text-gray-500'}`}>{cycleLabel}</span>
+                                                    <span className={`text-3xl font-normal align-top mr-1 ${isFeatured ? 'text-gray-400' : 'text-gray-500'}`}>KES</span>
+                                                    <span className={isFeatured ? 'text-white' : 'text-gray-900'}>{priceDisplay}</span>
+                                                    <span className={`text-xl font-normal ml-1 ${isFeatured ? 'text-gray-400' : 'text-gray-500'}`}>{cycleLabel}</span>
                                                 </>
                                             )}
                                         </motion.p>
                                         
                                         {/* Annual Billing Note */}
-                                        {billingCycle === 'annually' && !isCustom && (
-                                            <p className={`mt-2 text-sm italic ${tier.isFeatured ? 'text-emerald-300' : 'text-gray-500'}`}>
-                                                Billed as KES {priceDisplay} per year
+                                        {(billingCycle === 'annually' || isCustom) && (
+                                            <p className={`mt-2 text-sm italic font-medium`} style={{ color: isFeatured ? '#6EE7B7' : primaryBg }}>
+                                                {annualNote}
                                             </p>
                                         )}
                                     </div>
 
-                                    {/* Refined Feature List with visual hierarchy */}
-                                    <ul className="mt-10 space-y-4 text-left w-full border-t pt-8 border-gray-100 flex-grow">
-                                        {tier.features.map((feature, idx) => {
-                                            // Subtle styling for basic/inherited features in higher tiers
-                                            const isBasicFeature = tier.name !== 'Basic' && idx < 2; // Assuming first 2 features are inherited basic functionality
-
+                                    {/* Refined Feature List */}
+                                    <ul className="mt-10 space-y-4 text-left w-full border-t pt-8 flex-grow" style={{ borderColor: isFeatured ? '#374151' : '#F3F4F6' }}>
+                                        {tier.features.map((feature: string, idx: number) => {
                                             return (
                                                 <motion.li 
                                                     key={idx} 
-                                                    className={`flex items-start transition-colors duration-300 ${
-                                                        tier.isFeatured 
-                                                            ? (isBasicFeature ? 'text-gray-500 line-through opacity-70' : 'text-gray-300')
-                                                            : (isBasicFeature ? 'text-gray-400' : 'text-gray-700')
-                                                    }`}
+                                                    className={`flex items-start ${isFeatured ? 'text-gray-200' : 'text-gray-700'}`}
                                                     initial={{ opacity: 0, x: -10 }}
                                                     animate={inView ? { opacity: 1, x: 0 } : {}}
-                                                    transition={{ delay: 0.8 + i * 0.1, duration: 0.4 }}
+                                                    transition={{ delay: 0.8 + i * 0.1 + idx * 0.05, duration: 0.4 }}
                                                 >
-                                                    <CheckIcon className={`h-6 w-6 mr-2 flex-shrink-0 ${tier.isFeatured ? 'text-emerald-400' : 'text-emerald-500'}`} />
-                                                    <span className="text-lg font-medium">{feature}</span>
+                                                    <CheckIcon className={`h-6 w-6 mr-2 flex-shrink-0 ${isFeatured ? 'text-yellow-400' : 'text-emerald-500'}`} />
+                                                    <span className="text-base font-medium">{feature}</span>
                                                 </motion.li>
                                             );
                                         })}
                                     </ul>
 
                                     <motion.button
-                                        whileHover={{ scale: 1.03, boxShadow: '0 10px 20px rgba(5, 150, 105, 0.5)' }}
+                                        whileHover={{ scale: 1.03 }}
                                         whileTap={{ scale: 0.98 }}
-                                        className={`mt-10 w-full px-8 py-4 rounded-full font-bold text-lg flex items-center justify-center transition-all duration-300 group ${
-                                            tier.isFeatured 
-                                                ? 'bg-emerald-500 text-white shadow-lg hover:bg-emerald-600' 
-                                                : 'bg-gray-900 text-white hover:bg-gray-800'
+                                        className={`mt-10 w-full px-8 py-4 rounded-full font-bold text-lg flex items-center justify-center transition-all duration-300 group shadow-lg ${
+                                            isFeatured 
+                                                ? `bg-white text-gray-900 hover:bg-gray-100` 
+                                                : `text-white hover:opacity-90`
                                         }`}
+                                        style={{ backgroundColor: isFeatured ? 'white' : primaryBg }}
                                     >
-                                        {tier.isFeatured ? 'Start Your Free Trial' : 'Sign Up Now'}
-                                        <ArrowLongRightIcon className="w-5 h-5 ml-2 transition-transform duration-300 group-hover:translate-x-1" />
+                                        {isFeatured ? 'Book Now' : (isCustom ? 'Contact Sales' : 'Start Free Trial')}
                                     </motion.button>
                                 </motion.div>
                             );

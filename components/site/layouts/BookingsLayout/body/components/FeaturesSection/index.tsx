@@ -3,54 +3,59 @@
 import React, { useRef } from 'react';
 import Image from 'next/image';
 import {
-  CheckIcon,
-  Cog6ToothIcon,
-  LockClosedIcon,
-  AdjustmentsVerticalIcon,
-  ClockIcon,
-  UserGroupIcon,
-  SparklesIcon,
+    CheckIcon,
+    Cog6ToothIcon,
+    LockClosedIcon,
+    AdjustmentsVerticalIcon,
+    ClockIcon,
+    UserGroupIcon,
+    SparklesIcon,
+    ArrowRightIcon,
+    // Using a new outline icon for the sticky feature box to distinguish it
+    RocketLaunchIcon, 
 } from '@heroicons/react/24/outline'; 
 import { motion, useInView } from 'framer-motion';
 import { ICoreValue } from '@/types/typings';
 
-// --- ANIMATION VARIANTS ---
-// Updated for a subtle 3D 'flipping' entrance
+const loader = ({ src }: { src: string }) => {
+    return src;
+};
+
+// --- ANIMATION VARIANTS (Optimized) ---
 const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.2,
+    hidden: { opacity: 0 },
+    visible: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.1,
+            delayChildren: 0.2,
+        },
     },
-  },
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 50, rotateX: 10 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    rotateX: 0,
-    transition: {
-      type: 'spring',
-      stiffness: 100,
-      damping: 15,
-      mass: 0.8,
+    hidden: { opacity: 0, y: 30 },
+    visible: {
+        opacity: 1,
+        y: 0,
+        transition: {
+            type: 'spring',
+            stiffness: 100,
+            damping: 15,
+        },
     },
-  },
 };
 
 // Map string icon names to Heroicon components
 const IconMap: { [key: string]: React.ElementType } = {
-  CheckIcon,
-  UserGroupIcon,
-  LockClosedIcon,
-  AdjustmentsVerticalIcon,
-  ClockIcon,
-  Cog6ToothIcon,
-  SparklesIcon,
+    CheckIcon,
+    UserGroupIcon,
+    LockClosedIcon,
+    AdjustmentsVerticalIcon,
+    ClockIcon,
+    Cog6ToothIcon,
+    SparklesIcon,
+    RocketLaunchIcon,
 };
 
 interface FeaturesSectionProps {
@@ -63,170 +68,198 @@ interface FeaturesSectionProps {
 // Sample props for demonstration (if context data is missing)
 const sampleProps: FeaturesSectionProps = {
     name: 'SwiftCare',
-    description: 'Experience seamless booking and unparalleled service quality for all your needs—fast, flexible, and utterly reliable. Simplify your life with us.',
+    description: 'Experience seamless booking and unparalleled service quality for all your needs—fast, flexible, and utterly reliable. Simplify your life with us by eliminating the hassle of finding and managing services.',
     themeSettings: { primaryColor: '#059669' },
     CoreValues: [] , 
 }
 
 export default function FeaturesSection({ name, description, themeSettings, CoreValues }: FeaturesSectionProps = sampleProps) {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, amount: 0.2 });
+    const ref = useRef(null);
+    const isInView = useInView(ref, { once: true, amount: 0.2 });
 
-  const defaultFeatures: ICoreValue[] = [
-    {
-      icon: 'CheckIcon',
-      title: 'Lightning-Fast Booking',
-      description: 'Find, schedule, and confirm any service in seconds. Seamlessly integrated for modern life.',
-    },
-    {
-      icon: 'UserGroupIcon',
-      title: 'Elite Network of Pros',
-      description: `Access a curated list of highly-rated, insured, and experienced local service providers.`,
-    },
-    {
-      icon: 'LockClosedIcon',
-      title: 'Guaranteed Secure Payment',
-      description: 'Protected transactions using cards and digital wallets. Safety is built into every click.',
-    },
-    {
-      icon: 'AdjustmentsVerticalIcon',
-      title: 'Customized Solutions',
-      description: 'Easily modify and adapt packages to get a service that perfectly matches your specific requirements.',
-    },
-    {
-      icon: 'ClockIcon',
-      title: 'Live Schedule Sync',
-      description: 'View real-time availability and lock in your appointment instantly. No more phone tag or guesswork.',
-    },
-    {
-      icon: 'SparklesIcon',
-      title: 'Quality Vetting Process',
-      description: 'Every expert is rigorously vetted and background-checked, ensuring exceptional quality and trust.',
-    },
-  ];
+    const defaultFeatures: ICoreValue[] = [
+        {
+            icon: 'RocketLaunchIcon', // New featured icon
+            title: 'Lightning-Fast Booking',
+            description: 'Find, schedule, and confirm any service in seconds. Seamlessly integrated for modern life.',
+        },
+        {
+            icon: 'UserGroupIcon',
+            title: 'Elite Network of Pros',
+            description: `Access a curated list of highly-rated, insured, and experienced local service providers.`,
+        },
+        {
+            icon: 'LockClosedIcon',
+            title: 'Guaranteed Secure Payment',
+            description: 'Protected transactions using cards and digital wallets. Safety is built into every click.',
+        },
+        {
+            icon: 'AdjustmentsVerticalIcon',
+            title: 'Customized Solutions',
+            description: 'Easily modify and adapt packages to get a service that perfectly matches your specific requirements.',
+        },
+        {
+            icon: 'ClockIcon',
+            title: 'Live Schedule Sync',
+            description: 'View real-time availability and lock in your appointment instantly. No more phone tag or guesswork.',
+        },
+        {
+            icon: 'SparklesIcon',
+            title: 'Quality Vetting Process',
+            description: 'Every expert is rigorously vetted and background-checked, ensuring exceptional quality and trust.',
+        },
+    ];
 
-  const primaryColor = themeSettings?.primaryColor || '#059669';
-  const processCoreValues = CoreValues?.length ? CoreValues : defaultFeatures;
+    const primaryColor = themeSettings?.primaryColor || '#059669';
+    const processCoreValues = CoreValues?.length ? CoreValues : defaultFeatures;
+    
+    const featuredFeature = processCoreValues[0];
+    const secondaryFeatures = processCoreValues.slice(1);
 
-  // Helper for dynamic RGB shadows
-  const hexToRgb = (hex: string) => {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : '5, 150, 105';
-  };
-  const primaryRgb = hexToRgb(primaryColor);
+    // Helper for gradient background (used for text clip)
+    const primaryGradient = `linear-gradient(135deg, ${primaryColor}, #10B981)`; 
+    // Static placeholder image/illustration URL
+    const illustrationUrl = "https://images.unsplash.com/photo-1556740738-b6766444d324?q=80&w=2832&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D";
 
-  return (
-    <section id="benefits" ref={ref} className="relative bg-gray-50/50 py-24 px-6 sm:px-12 text-gray-900 overflow-hidden">
-      
-      {/* 1. ANIMATED BACKGROUND ORBS (Atmosphere) */}
-      <div className="absolute inset-0 z-0 opacity-40 mix-blend-multiply pointer-events-none">
-        {/* Orb 1 */}
-        <motion.div
-          className="absolute w-96 h-96 -top-20 -right-20 rounded-full filter blur-3xl opacity-50 animate-blob"
-          style={{ backgroundColor: primaryColor }}
-          animate={{ scale: [1, 1.2, 1], rotate: [0, 45, 0] }}
-          transition={{ duration: 25, repeat: Infinity }}
-        />
-        {/* Orb 2 */}
-        <motion.div
-          className="absolute w-80 h-80 bottom-0 left-0 rounded-full bg-teal-400 filter blur-3xl opacity-50 animate-blob animation-delay-4000"
-          animate={{ scale: [1, 0.8, 1], rotate: [0, -45, 0] }}
-          transition={{ duration: 30, repeat: Infinity, delay: 5 }}
-        />
-        {/* Subtle grid pattern for texture */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-color-gray-200)_1px,_transparent_1px)] [background-size:20px_20px] opacity-10" />
-      </div>
-      
-      {/* 2. Section Header */}
-      <div className="max-w-5xl mx-auto text-center relative z-10">
-        <motion.span
-          className="inline-block text-sm font-bold px-6 py-2 rounded-full text-white shadow-xl uppercase tracking-wider"
-          style={{ backgroundColor: primaryColor }}
-          initial={{ opacity: 0, y: -20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: -20 }}
-          transition={{ duration: 0.5, ease: 'easeOut' }}
-        >
-          Uncover the **{name || 'Platform'}** Difference
-        </motion.span>
 
-        <motion.h2
-          className="mt-6 text-4xl sm:text-6xl font-extrabold tracking-tighter text-gray-900 leading-snug"
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-          transition={{ duration: 0.6, delay: 0.1, ease: 'easeOut' }}
-        >
-          Why Our Users <span className="text-transparent bg-clip-text" style={{ backgroundImage: `linear-gradient(90deg, ${primaryColor}, #10B981)` }}>Choose Our Platform</span>
-        </motion.h2>
+    return (
+        <section id="benefits" ref={ref} className="relative bg-white py-24 px-4 sm:px-6 lg:px-8 text-gray-900 overflow-hidden">
+            
+            {/* 1. BACKGROUND ELEMENT: Subtle Color Panel */}
+            <div className="absolute inset-0 z-0 top-1/2 w-full h-1/2" style={{ backgroundColor: primaryColor + '05' }} />
+            
+            {/* 2. Main Content Wrapper: Split Layout */}
+            <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-16 relative z-10">
 
-        <motion.p
-          className="mt-4 text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed"
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
-          transition={{ duration: 0.6, delay: 0.2, ease: 'easeOut' }}
-        >
-          {description}
-        </motion.p>
-      </div>
+                {/* --- LEFT COLUMN: Header, Description, Illustration, and CTA (Sticky Marketing Focus) --- */}
+                <div className="lg:sticky lg:top-10 lg:h-[80vh] self-start lg:pr-10 flex flex-col justify-center">
+                    <motion.div
+                        initial="hidden"
+                        animate={isInView ? 'visible' : 'hidden'}
+                        variants={containerVariants}
+                    >
+                        <motion.span
+                            className="inline-block text-sm font-bold px-4 py-1.5 rounded-full text-white shadow-lg uppercase tracking-wider"
+                            style={{ backgroundColor: primaryColor }}
+                            variants={itemVariants}
+                        >
+                            Uncover the {name || 'Platform'} Difference
+                        </motion.span>
 
-      {/* 3. Feature Cards Grid */}
-      <motion.div
-        className="mt-20 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto relative z-10"
-        variants={containerVariants}
-        initial="hidden"
-        animate={isInView ? 'visible' : 'hidden'}
-      >
-        {processCoreValues.map(({ icon, title, description }, i) => {
-          const FeatureIcon = IconMap[(icon ?? 'CheckIcon') as keyof typeof IconMap] ?? CheckIcon;
-          return (
-            <motion.div
-              key={title}
-              className="bg-white/85 backdrop-blur-md rounded-3xl border border-white/50 p-8 shadow-xl transition-all duration-500 group relative overflow-hidden flex flex-col hover:shadow-2xl"
-              variants={itemVariants}
-              // Enhanced Hover Effect: Lifts, subtly rotates, and creates a primary color glow shadow
-              whileHover={{ 
-                scale: 1.03, 
-                translateY: -5, 
-                rotate: 0.5, 
-                boxShadow: `0 20px 40px -10px rgba(${primaryRgb}, 0.3), 0 5px 10px -2px rgba(0,0,0,0.05)`
-              }}
-            >
-              {/* Subtle accent line on hover */}
-              <div 
-                  className="absolute top-0 left-0 w-full h-1" 
-                  style={{ backgroundColor: primaryColor }}
-              />
+                        <motion.h2
+                            className="mt-6 text-5xl sm:text-6xl font-extrabold tracking-tighter text-gray-900 leading-tight"
+                            variants={itemVariants}
+                        >
+                            Why Our Users <span className="text-transparent bg-clip-text" style={{ backgroundImage: primaryGradient }}>Choose Us</span>
+                        </motion.h2>
 
-              <div
-                // Icon styling: Larger, gradient background, subtle shadow/glow
-                className="w-16 h-16 rounded-xl flex items-center justify-center shadow-lg mb-5 relative z-10 transition-all duration-300 ring-4 ring-white"
-                style={{
-                  backgroundImage: `linear-gradient(135deg, ${primaryColor}, #10B981)`,
-                  boxShadow: `0 5px 20px -5px rgba(${primaryRgb}, 0.6)`,
-                }}
-              >
-                {FeatureIcon && <FeatureIcon className="w-8 h-8 text-white" />}
-              </div>
-              
-              <h3 className="text-2xl font-bold text-gray-900 group-hover:text-emerald-700 transition-colors duration-200 relative z-10">
-                {title}
-              </h3>
-              <p className="text-lg text-gray-600 mt-3 relative z-10 flex-grow">{description}</p>
-            </motion.div>
-          );
-        })}
-      </motion.div>
-    </section>
-  );
+                        <motion.p
+                            className="mt-6 text-xl text-gray-700 leading-relaxed max-w-lg border-l-4 pl-4"
+                            style={{ borderColor: primaryColor + '40' }}
+                            variants={itemVariants}
+                        >
+                            {description || sampleProps.description}
+                        </motion.p>
+                        
+                        {/* Image/Illustration Anchor */}
+                        <motion.div
+                             className="relative w-full aspect-video mt-10 rounded-2xl overflow-hidden shadow-2xl transition-shadow duration-300"
+                             style={{ boxShadow: `0 10px 40px ${primaryColor}40` }}
+                             variants={itemVariants}
+                        >
+                            <Image
+                                src={illustrationUrl}
+                                alt="Conceptual illustration of service quality and efficiency"
+                                fill
+                                loader={loader}
+                                sizes="(max-width: 1024px) 100vw, 40vw"
+                                className="object-cover"
+                            />
+                            {/* Feature Badge Overlay */}
+                             <motion.div
+                                 className="absolute bottom-4 right-4 bg-white py-2 px-4 rounded-full text-sm font-semibold flex items-center shadow-lg"
+                                 initial={{ scale: 0 }}
+                                 animate={{ scale: 1 }}
+                                 transition={{ delay: 1, type: 'spring', stiffness: 200, damping: 10 }}
+                             >
+                                 <RocketLaunchIcon className="w-5 h-5 mr-1" style={{ color: primaryColor }} />
+                                 {featuredFeature.title}
+                             </motion.div>
+                        </motion.div>
+                        
+                    </motion.div>
+                </div>
+
+                {/* --- RIGHT COLUMN: Secondary Features Grid (Detail Focus) --- */}
+                <div className="pt-10 lg:pt-0">
+                    {/* Featured/Primary Benefit Card (Highly Prominent) - Placed at the top for emphasis */}
+                    {featuredFeature && (
+                        <motion.div
+                            className="mb-8 bg-white p-8 rounded-3xl border shadow-xl text-left transition-shadow duration-300 hover:shadow-2xl flex flex-col space-y-3"
+                            style={{ 
+                                border: `2px solid ${primaryColor}20`,
+                                boxShadow: `0 15px 40px ${primaryColor}15`,
+                                transform: 'scale(1.02)' // Slightly larger for emphasis
+                            }}
+                            initial={{ opacity: 0, x: 50 }}
+                            animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0 }}
+                            transition={{ duration: 0.8, delay: 0.3, ease: 'easeOut' }}
+                        >
+                            <div className="flex items-center space-x-3">
+                                {/* Icon with Primary color background */}
+                                <div className='w-10 h-10 flex items-center justify-center rounded-full text-white' style={{ backgroundColor: primaryColor }}>
+                                    <RocketLaunchIcon className="w-5 h-5 text-white" />
+                                </div>
+                                <h3 className="text-2xl font-bold text-gray-900">{featuredFeature.title}</h3>
+                            </div>
+                            <p className="mt-2 text-lg text-gray-700">{featuredFeature.description}</p>
+                            <button className="mt-4 flex items-center text-base font-semibold transition-colors w-fit" style={{ color: primaryColor }}>
+                                See Details
+                                <ArrowRightIcon className="w-5 h-5 ml-2 transition-transform group-hover:translate-x-1" />
+                            </button>
+                        </motion.div>
+                    )}
+
+                    {/* Secondary Features Grid */}
+                    <motion.div
+                        className="grid grid-cols-1 md:grid-cols-2 gap-8"
+                        variants={containerVariants}
+                        initial="hidden"
+                        animate={isInView ? 'visible' : 'hidden'}
+                    >
+                        {secondaryFeatures.map(({ icon, title, description }, i) => {
+                            const FeatureIcon = IconMap[(icon ?? 'CheckIcon') as keyof typeof IconMap] ?? CheckIcon;
+                            return (
+                                <motion.div
+                                    key={title}
+                                    custom={i}
+                                    className="bg-white rounded-2xl border border-gray-100 p-6 shadow-md transition-all duration-300 group relative flex flex-col hover:shadow-xl hover:translate-y-[-5px]"
+                                    style={{ borderBottom: `4px solid ${primaryColor}10` }}
+                                    variants={itemVariants}
+                                    whileHover={{ boxShadow: `0 15px 30px rgba(0,0,0,0.05)`, scale: 1.01 }}
+                                >
+                                    <div
+                                        className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-all duration-300"
+                                        style={{ backgroundColor: primaryColor + '10' }} // Light background for the icon
+                                    >
+                                        {/* Icon in primary color */}
+                                        {FeatureIcon && <FeatureIcon className="w-6 h-6" style={{ color: primaryColor }} />}
+                                    </div>
+                                    
+                                    <h3 className="text-xl font-bold text-gray-900 relative z-10">
+                                        {title}
+                                    </h3>
+                                    <p className="text-base text-gray-600 mt-1 relative z-10 flex-grow">{description}</p>
+                                    
+                                    {/* Small primary color hover indicator */}
+                                    <div className="absolute bottom-0 left-0 w-0 h-1 rounded-br-2xl transition-all duration-300 group-hover:w-full" style={{ backgroundColor: primaryColor }} />
+                                </motion.div>
+                            );
+                        })}
+                    </motion.div>
+                </div>
+
+            </div>
+        </section>
+    );
 }
-
-// NOTE: Ensure your CSS includes the necessary keyframes for the 'animate-blob' class 
-// if you want the background orbs to gently move:
-/*
-@keyframes blob {
-  0% { transform: translate(0px, 0px) scale(1); }
-  33% { transform: translate(30px, -50px) scale(1.1); }
-  66% { transform: translate(-20px, 20px) scale(0.9); }
-  100% { transform: translate(0px, 0px) scale(1); }
-}
-.animate-blob { animation: blob 25s infinite; }
-*/

@@ -1,14 +1,11 @@
+'use client';
+
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { StarIcon } from '@heroicons/react/24/solid';
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 
-// NOTE: External dependencies like 'react-slick', 'next/image', and custom contexts
-// are not available in this environment. We are implementing a custom slider and
-// using standard <img> tags for maximum compatibility.
-
 // Mock implementation for the custom hook and context data
-// In a real application, replace this with your actual context logic.
 const useStoreContext = () => ({
     storeFormData: {
         name: 'The Wellness Hub',
@@ -55,10 +52,24 @@ const staticTestimonials = [
 
 const TestimonialCard = ({ testimonial, primaryColor }: { testimonial: typeof staticTestimonials[0], primaryColor: string }) => (
     <div className="h-full">
-        <div className="bg-white rounded-3xl p-8 lg:p-10 shadow-2xl border border-gray-100 hover:shadow-3xl hover:shadow-emerald-200/50 transition-all duration-500 transform hover:scale-[1.02] relative overflow-hidden h-full flex flex-col justify-between group">
+        {/* Card Redesign: Stronger Shadow, Primary Color Accent */}
+        <div 
+            className="bg-white rounded-3xl p-8 lg:p-10 border border-gray-100 transition-all duration-500 transform relative overflow-hidden h-full flex flex-col justify-between group"
+            // style={{ 
+            //     boxShadow: `0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 4px ${primaryColor}1A`, // Prominent shadow with primary accent ring
+            // }}
+            // // Hover effect
+            // onMouseEnter={(e: any) => e.currentTarget.style.boxShadow = `0 30px 60px -15px rgba(0, 0, 0, 0.4), 0 0 0 4px ${primaryColor}40`}
+            // onMouseLeave={(e: any) => e.currentTarget.style.boxShadow = `0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 4px ${primaryColor}1A`}
+        >
             
             {/* Large, styled Quote Icon */}
-            <svg className="absolute top-0 right-0 w-20 h-20 text-emerald-100/50 -mt-2 -mr-2 transition-all duration-300 group-hover:text-emerald-200/80" fill="currentColor" viewBox="0 0 24 24">
+            <svg 
+                className="absolute top-4 right-4 w-12 h-12 transition-all duration-300 group-hover:scale-110" 
+                fill="currentColor" 
+                viewBox="0 0 24 24"
+                style={{ color: primaryColor + '30' }} // Light primary color for the icon
+            >
                 <path d="M9.25 6.75A.75.75 0 0110 7.5v3.5a.75.75 0 01-.75.75H6.5a.75.75 0 01-.75-.75v-3.5a.75.75 0 01.75-.75h2.75zm5.75 0a.75.75 0 01.75.75v3.5a.75.75 0 01-.75.75h-3.5a.75.75 0 01-.75-.75v-3.5a.75.75 0 01.75-.75h3.5z" />
             </svg>
 
@@ -125,9 +136,14 @@ const CustomSlider = ({ items, primaryColor }: { items: typeof staticTestimonial
     // Scroll effect to simulate sliding (smooth scrolling must be enabled via CSS)
     useEffect(() => {
         if (sliderRef.current) {
-            const cardWidth = sliderRef.current.children[0]?.clientWidth || 0;
-            // Calculate scroll position based on the current index and card width
+            // Find the width of the card element (including its padding/margin context)
+            const cardElement = sliderRef.current.querySelector('.flex-shrink-0');
+            const cardWidth = cardElement?.clientWidth || 0;
+            
+            // Adjust for gap/padding if necessary
+            // Here, we assume the scroll position is based on the index * card width
             const scrollPosition = currentIndex * cardWidth;
+            
             sliderRef.current.scrollTo({
                 left: scrollPosition,
                 behavior: 'smooth'
@@ -135,13 +151,18 @@ const CustomSlider = ({ items, primaryColor }: { items: typeof staticTestimonial
         }
     }, [currentIndex]);
     
-    // Custom Arrow Components (Theme-Aware)
+    // Custom Arrow Components (Theme-Aware, Integrated Style)
     const ArrowButton = ({ direction, onClick }: { direction: 'prev' | 'next', onClick: () => void }) => (
         <motion.div
-            className={`absolute z-20 top-1/2 -translate-y-1/2 cursor-pointer transition-all duration-300 rounded-full p-2 lg:p-3 bg-white shadow-xl hover:scale-105 hidden lg:block ${direction === 'prev' ? 'left-4 lg:-left-12' : 'right-4 lg:-right-12'}`}
+            className={`absolute z-20 top-1/2 -translate-y-1/2 cursor-pointer transition-all duration-300 rounded-full p-2 lg:p-3 bg-white shadow-lg ring-2 ring-gray-100 hover:scale-110 active:scale-95 hidden lg:block`}
             onClick={onClick}
             whileTap={{ scale: 0.95 }}
-            style={{ border: `1px solid ${primaryColor}30` }}
+            style={{ 
+                // Position arrows right next to the content area
+                [direction === 'prev' ? 'left' : 'right']: '-2rem', 
+                boxShadow: `0 10px 20px -5px rgba(0, 0, 0, 0.2), 0 0 0 2px ${primaryColor}20`,
+                borderColor: primaryColor + '40', // Light border for definition
+            }}
         >
             {direction === 'prev' ? (
                 <ChevronLeftIcon className="w-8 h-8 lg:w-10 lg:h-10 transition-colors duration-300" style={{ color: primaryColor }} />
@@ -179,12 +200,12 @@ const CustomSlider = ({ items, primaryColor }: { items: typeof staticTestimonial
             <ArrowButton direction="next" onClick={next} />
 
             {/* Dots/Pagination (Mobile & Desktop) */}
-            <div className="flex justify-center mt-10">
+            <div className="flex justify-center mt-12">
                 {items.map((_, i) => (
                     <div
                         key={i}
-                        className={`w-3 h-3 rounded-full mx-2 cursor-pointer transition-all duration-300 ${i === currentIndex ? 'scale-125' : 'scale-100'}`}
-                        style={{ backgroundColor: i === currentIndex ? primaryColor : '#d1d5db' }}
+                        className={`w-3 h-3 rounded-full mx-2 cursor-pointer transition-all duration-300 ${i === currentIndex ? 'scale-150' : 'scale-100 opacity-60'}`}
+                        style={{ backgroundColor: i === currentIndex ? primaryColor : '#9ca3af' }} // Neutral gray for inactive
                         onClick={() => setCurrentIndex(i)}
                     ></div>
                 ))}
@@ -202,35 +223,59 @@ interface TestimonialsSectionProps {
     } | null;
 }
 
-export default function TestimonialsSection({ name = 'Our Platform', testimonials = [], themeSettings }: TestimonialsSectionProps) {
-    // Mock Context Access
-    // const { storeFormData } = useStoreContext();
-    // const { name = 'Our Platform', testimonials = [], themeSettings } = storeFormData || {};
-    const items = testimonials.length ? testimonials : staticTestimonials;
+// Helper to calculate average rating (for header credibiltiy)
+const calculateAverageRating = (items: typeof staticTestimonials) => {
+    if (!items || items.length === 0) return 0;
+    const totalRating = items.reduce((sum, item) => sum + (item.rating || 0), 0);
+    return (totalRating / items.length).toFixed(1);
+};
 
-    // Use a slightly darker primary color for text/accents for better contrast
+
+export default function TestimonialsSection({ name = 'Our Platform', testimonials = [], themeSettings }: TestimonialsSectionProps) {
+    const items = testimonials.length ? testimonials : staticTestimonials;
     const primaryColor = themeSettings?.primaryColor || '#059669'; // Emerald 600
+    const averageRating = calculateAverageRating(items);
 
     return (
-        <section id="testimonials" className="relative bg-white py-24 lg:py-36 px-6 lg:px-12 text-gray-900 overflow-hidden">
+        // Use a slightly different background for contrast, like a very light off-white/gray
+        <section id="testimonials" className="relative bg-gray-50 py-24 lg:py-36 px-6 lg:px-12 text-gray-900 overflow-hidden">
             
-            {/* 🎨 Background Grids & Shapes */}
+            {/* 🎨 Background Grids & Shapes (Subtle, professional) */}
             <div className="absolute inset-0 z-0 opacity-10" style={{
                 backgroundImage: `radial-gradient(circle, ${primaryColor}20 1px, transparent 1px)`,
                 backgroundSize: '30px 30px',
             }} />
-            <div className="absolute inset-0 z-0 opacity-5 blur-3xl">
-                <div className="absolute top-0 right-0 w-64 h-64 rounded-full" style={{ backgroundColor: primaryColor }} />
-            </div>
 
             <div className="max-w-7xl mx-auto text-center relative z-10">
+                
+                {/* 1. Credibility Block (New) */}
+                <motion.div
+                    className="flex items-center justify-center space-x-4 mb-4"
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.5, delay: 0.1 }}
+                    viewport={{ once: true }}
+                >
+                    <div className="flex text-amber-500">
+                        {Array.from({ length: 5 }).map((_, idx) => (
+                            <StarIcon key={idx} className="w-8 h-8" />
+                        ))}
+                    </div>
+                    <p className="text-3xl font-extrabold text-gray-900">
+                        {averageRating}
+                    </p>
+                    <p className="text-xl font-medium text-gray-500">
+                        ({items.length} reviews)
+                    </p>
+                </motion.div>
+                
                 <motion.span
-                    className="inline-block bg-white text-emerald-700 text-sm font-bold px-5 py-2 rounded-full shadow-lg uppercase tracking-wider border-2 border-emerald-300"
+                    className="inline-block bg-white text-emerald-700 text-sm font-bold px-5 py-2 rounded-full  uppercase tracking-wider border-2"
                     initial={{ opacity: 0, y: -20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
                     viewport={{ once: true }}
-                    style={{ color: primaryColor }}
+                    style={{ color: primaryColor, borderColor: primaryColor + '60' }}
                 >
                     Client Success Stories
                 </motion.span>
@@ -246,21 +291,25 @@ export default function TestimonialsSection({ name = 'Our Platform', testimonial
                 </motion.h2>
 
                 <motion.p
-                    className="text-gray-600 max-w-3xl mx-auto mt-4 text-xl leading-relaxed"
+                    className="max-w-3xl mx-auto mt-4 text-xl leading-relaxed"
                     initial={{ opacity: 0, y: 10 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
                     viewport={{ once: true }}
                 >
-                    Discover how **{name}** is delivering exceptional experiences, confirmed by the people who matter most—our users.
+                    {/* Use a richer color for the text and add strong bolding */}
+                    <span className="text-gray-700">
+                        Stop guessing. See the real impact. Discover why 
+                        <strong style={{ color: primaryColor }} className="font-extrabold mx-1">
+                            {name || 'Our Platform'}
+                        </strong> 
+                        is consistently rated five stars, confirmed by the people who matter most—<span className="font-semibold text-gray-800">our users</span>.
+                    </span>
                 </motion.p>
             </div>
 
             {/* Main Testimonials Container using the Custom Slider */}
             <div className="mt-20 max-w-7xl mx-auto relative px-4 lg:px-16">
-                {/* NOTE: The old implementation was using <Slider /> from 'react-slick'.
-                    We now use the custom <CustomSlider /> component which contains the testimonial cards.
-                */}
                 <CustomSlider items={items} primaryColor={primaryColor} />
             </div>
         </section>
