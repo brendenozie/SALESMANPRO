@@ -4,207 +4,223 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import {
-     // New icon for download emphasis
-    CalendarDaysIcon, // For scheduling/tracking
-    VideoCameraIcon, // For live classes
-    ChartBarSquareIcon, // For progress tracking
-    SparklesIcon // For general appeal
+    CalendarDaysIcon,
+    VideoCameraIcon,
+    ChartBarSquareIcon,
+    SparklesIcon,
+    CheckCircleIcon,
+    FireIcon
 } from '@heroicons/react/24/solid';
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
     `${src}?w=${width}&q=${quality || 75}`;
 
-// Framer Motion variants
-const textVariants = {
-    hidden: { opacity: 0, x: -100 },
+// --- Animation Variants ---
+const containerVariants = {
+    hidden: { opacity: 0 },
     visible: {
         opacity: 1,
-        x: 0,
-        transition: {
-            duration: 1.0, // Slower for grander entrance
-            ease: "easeOut",
-            staggerChildren: 0.2, // Stagger children for text
-        },
-    },
+        transition: { staggerChildren: 0.15, delayChildren: 0.2 }
+    }
 };
 
-const imageVariants = {
-    hidden: { opacity: 0, x: 100, rotate: 5 }, // Slight rotation on entry
-    visible: {
-        opacity: 1,
-        x: 0,
-        rotate: 0,
-        transition: {
-            duration: 1.0, // Slower for grander entrance
-            ease: "easeOut",
-        },
-    },
-};
-
-const featureItemVariants = {
-    hidden: { opacity: 0, y: 20 },
+const itemVariants = {
+    hidden: { opacity: 0, y: 30 },
     visible: {
         opacity: 1,
         y: 0,
-        transition: {
-            duration: 0.6,
-            ease: "easeOut",
-        },
-    },
+        transition: { type: "spring", stiffness: 50, damping: 20 }
+    }
 };
 
+const floatAnimation = {
+    y: [-10, 10, -10],
+    transition: {
+        duration: 6,
+        repeat: Infinity,
+        ease: "easeInOut"
+    }
+};
+
+const floatAnimationDelayed = {
+    y: [10, -10, 10],
+    transition: {
+        duration: 7,
+        repeat: Infinity,
+        ease: "easeInOut"
+    }
+};
+
+// --- Sub-Components for cleaner code ---
+
+const FeaturePill = ({ icon: Icon, text }: { icon: any, text: string }) => (
+    <div className="flex items-center gap-3 px-5 py-3 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md shadow-xl hover:bg-white/10 transition-colors duration-300">
+        <div className="p-2 rounded-full bg-indigo-500/20">
+            <Icon className="w-5 h-5 text-indigo-400" />
+        </div>
+        <span className="text-gray-200 font-medium text-sm md:text-base">{text}</span>
+    </div>
+);
+
+const FloatingStatCard = ({ icon: Icon, label, value, color, className, delay }: any) => (
+    <motion.div
+        className={`absolute z-20 p-4 rounded-2xl bg-gray-900/80 border border-white/10 backdrop-blur-xl shadow-2xl flex items-center gap-4 min-w-[180px] ${className}`}
+        initial={{ opacity: 0, scale: 0.8 }}
+        whileInView={{ opacity: 1, scale: 1 }}
+        viewport={{ once: true }}
+        animate={delay ? floatAnimationDelayed : floatAnimation}
+    >
+        <div className={`p-3 rounded-xl ${color}`}>
+            <Icon className="w-6 h-6 text-white" />
+        </div>
+        <div>
+            <p className="text-xs text-gray-400 uppercase tracking-wider font-semibold">{label}</p>
+            <p className="text-lg font-bold text-white">{value}</p>
+        </div>
+    </motion.div>
+);
 
 // ----------------------------------------------------------------------------
-// AppPromotion: Encourages user to download the mobile app
+// Main Component
 // ----------------------------------------------------------------------------
 export default function AppPromotion() {
     return (
-        <section className="relative py-24 bg-gradient-to-br from-purple-50 to-blue-100 overflow-hidden"> {/* Dynamic gradient background */}
-            {/* Abstract Background Blobs - adds visual depth and movement */}
-            <div className="absolute -top-20 -left-20 w-80 h-80 bg-blue-200 opacity-15 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-2000" />
-            <div className="absolute -bottom-20 -right-20 w-80 h-80 bg-purple-200 opacity-15 rounded-full mix-blend-multiply filter blur-3xl animate-blob animation-delay-4000" />
+        <section className="relative py-24 lg:py-32 overflow-hidden bg-gray-950">
+            {/* Background Effects */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full z-0">
+                <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-indigo-600/20 rounded-full blur-[120px] animate-pulse" />
+                <div className="absolute bottom-[10%] right-[-5%] w-[400px] h-[400px] bg-purple-600/20 rounded-full blur-[100px]" />
+                <div className="absolute top-[20%] right-[20%] w-[300px] h-[300px] bg-cyan-500/10 rounded-full blur-[80px]" />
+                {/* Grid Pattern Overlay */}
+                <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 brightness-100 contrast-150 mix-blend-overlay"></div>
+            </div>
 
-            <div className="max-w-7xl mx-auto px-4 md:px-8 flex flex-col-reverse lg:flex-row items-center justify-between gap-16"> {/* Increased gap */}
+            <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
+                <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-24">
 
-                {/* Text Content - Left Side */}
-                <motion.div
-                    className="flex-1 text-center lg:text-left relative z-10" // Ensure text is above blobs
-                    variants={textVariants}
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true, amount: 0.3 }}
-                >
-                    <motion.h2
-                        className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-6 leading-tight"
-                        variants={featureItemVariants} // Apply child variant for stagger
-                    >
-                        Your <span className="text-primary-dark">Fitness Journey</span>, Right in Your Pocket!
-                    </motion.h2>
-                    <motion.p
-                        className="text-lg text-gray-700 mb-8 max-w-lg lg:max-w-none mx-auto"
-                        variants={featureItemVariants} // Apply child variant
-                    >
-                        Download our intuitive mobile app to seamlessly manage your workouts, join live classes, track your progress, and stay motivated—anytime, anywhere.
-                        Your personalized wellness hub awaits!
-                    </motion.p>
-
-                    {/* Key Features (Visually appealing list) */}
+                    {/* LEFT: Content */}
                     <motion.div
-                        className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10"
-                        variants={featureItemVariants} // Apply child variant
+                        className="flex-1 text-center lg:text-left"
+                        variants={containerVariants}
+                        initial="hidden"
+                        whileInView="visible"
+                        viewport={{ once: true }}
                     >
-                        <div className="flex items-center text-gray-800 text-lg">
-                            <CalendarDaysIcon className="h-6 w-6 text-primary-dark mr-3" /> Schedule & Track Workouts
-                        </div>
-                        <div className="flex items-center text-gray-800 text-lg">
-                            <VideoCameraIcon className="h-6 w-6 text-primary-dark mr-3" /> Access Live & On-Demand Classes
-                        </div>
-                        <div className="flex items-center text-gray-800 text-lg">
-                            <ChartBarSquareIcon className="h-6 w-6 text-primary-dark mr-3" /> Monitor Progress Visually
-                        </div>
-                        <div className="flex items-center text-gray-800 text-lg">
-                            <SparklesIcon className="h-6 w-6 text-primary-dark mr-3" /> Personalized Programs & More!
+                        <motion.div variants={itemVariants} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-900/30 border border-indigo-500/30 mb-8">
+                            <span className="relative flex h-3 w-3">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-3 w-3 bg-indigo-500"></span>
+                            </span>
+                            <span className="text-indigo-300 text-sm font-semibold tracking-wide uppercase">New Version 2.0 Live</span>
+                        </motion.div>
+
+                        <motion.h2 variants={itemVariants} className="text-5xl lg:text-7xl font-extrabold text-white tracking-tight leading-[1.1] mb-6">
+                            Pocket-Sized <br />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-cyan-400">
+                                Personal Trainer
+                            </span>
+                        </motion.h2>
+
+                        <motion.p variants={itemVariants} className="text-lg text-gray-400 mb-10 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
+                            Experience fitness evolved. Join live classes, track detailed biometrics, and follow AI-generated workout plans tailored specifically to your goals.
+                        </motion.p>
+
+                        {/* Feature Pills Grid */}
+                        <motion.div variants={itemVariants} className="flex flex-wrap justify-center lg:justify-start gap-4 mb-12">
+                            <FeaturePill icon={CalendarDaysIcon} text="Smart Scheduling" />
+                            <FeaturePill icon={VideoCameraIcon} text="Live 4K Classes" />
+                            <FeaturePill icon={ChartBarSquareIcon} text="Real-time Analytics" />
+                            <FeaturePill icon={SparklesIcon} text="AI Coaching" />
+                        </motion.div>
+
+                        {/* App Store Buttons */}
+                        <motion.div variants={itemVariants} className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
+                            <a href="#" className="group relative overflow-hidden rounded-xl bg-white shadow-lg transition-transform hover:-translate-y-1">
+                                <div className="absolute inset-0 bg-gray-100 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                <Image
+                                    src="/images/app-store-badge.svg"
+                                    alt="Download on App Store"
+                                    width={160}
+                                    height={48}
+                                    className="relative z-10 block h-12 w-auto"
+                                    loader={loader}
+                                />
+                            </a>
+                            <a href="#" className="group relative overflow-hidden rounded-xl bg-white shadow-lg transition-transform hover:-translate-y-1">
+                                <div className="absolute inset-0 bg-gray-100 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                <Image
+                                    src="/images/play-store-badge.svg"
+                                    alt="Get it on Google Play"
+                                    width={160}
+                                    height={48}
+                                    className="relative z-10 block h-12 w-auto"
+                                    loader={loader}
+                                />
+                            </a>
+                            
+                            {/* QR Code Hint */}
+                            <div className="hidden xl:flex items-center gap-3 pl-4 border-l border-gray-800 ml-2">
+                                <div className="w-10 h-10 bg-white rounded-md p-0.5">
+                                    {/* Placeholder for a real QR code image */}
+                                    <div className="w-full h-full bg-gray-900 flex items-center justify-center text-[6px] text-white text-center leading-tight">SCAN<br/>ME</div>
+                                </div>
+                                <span className="text-xs text-gray-500 w-20">Scan to install immediately</span>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+
+                    {/* RIGHT: Visual Mockup */}
+                    <motion.div
+                        className="flex-1 relative flex justify-center items-center"
+                        initial={{ opacity: 0, x: 50 }}
+                        whileInView={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.8, ease: "easeOut" }}
+                        viewport={{ once: true }}
+                    >
+                        {/* Glow behind phone */}
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[500px] bg-gradient-to-tr from-indigo-500 to-purple-500 rounded-full blur-[60px] opacity-40" />
+
+                        {/* Floating Element 1: Calories */}
+                        <FloatingStatCard 
+                            icon={FireIcon} 
+                            label="Active Energy" 
+                            value="840 kCal" 
+                            color="bg-orange-500" 
+                            className="top-10 -left-10 hidden md:flex" 
+                            delay={false}
+                        />
+
+                         {/* Floating Element 2: Success/Streak */}
+                         <FloatingStatCard 
+                            icon={CheckCircleIcon} 
+                            label="Weekly Streak" 
+                            value="5 Days" 
+                            color="bg-emerald-500" 
+                            className="bottom-20 -right-4 hidden md:flex" 
+                            delay={true}
+                        />
+
+                        {/* Main Phone Image */}
+                        <div className="relative z-10 w-[300px] h-[600px] drop-shadow-2xl transform rotate-[-6deg] transition-transform duration-500 hover:rotate-0">
+                            {/* Using a frame for the phone gives it more realism if the image is just a screenshot */}
+                            <div className="absolute inset-0 rounded-[3rem] border-8 border-gray-900 bg-gray-900 overflow-hidden shadow-2xl">
+                                <Image
+                                    src="/images/app-mockup-main.png"
+                                    alt="App Interface"
+                                    fill
+                                    className="object-cover"
+                                    loader={loader}
+                                    sizes="(max-width: 768px) 100vw, 400px"
+                                    priority
+                                />
+                                {/* Reflection overlay for glossy feel */}
+                                <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent pointer-events-none rounded-[2.5rem]" />
+                            </div>
                         </div>
                     </motion.div>
 
-                    {/* Download Badges */}
-                    <motion.div
-                        className="flex justify-center lg:justify-start space-x-4 mt-6"
-                        variants={featureItemVariants} // Apply child variant
-                    >
-                        <a href="#" aria-label="Download on the App Store" className="transform transition-transform duration-300 hover:scale-105 shadow-lg rounded-xl overflow-hidden">
-                            <Image
-                                src="/images/app-store-badge.svg"
-                                alt="Download on the App Store"
-                                width={160} // Slightly larger badges
-                                height={50}
-                                loader={loader}
-                            />
-                        </a>
-                        <a href="#" aria-label="Get it on Google Play" className="transform transition-transform duration-300 hover:scale-105 shadow-lg rounded-xl overflow-hidden">
-                            <Image
-                                src="/images/play-store-badge.svg"
-                                alt="Get it on Google Play"
-                                width={160}
-                                height={50}
-                                loader={loader}
-                            />
-                        </a>
-                    </motion.div>
-                </motion.div>
-
-                {/* Mockup Images - Right Side */}
-                <motion.div
-                    className="flex-1 flex justify-center lg:justify-end relative"
-                    variants={imageVariants}
-                    initial="hidden"
-                    whileInView="visible"
-                    viewport={{ once: true, amount: 0.3 }}
-                >
-                    <div className="relative w-64 h-[450px] md:w-80 md:h-[550px] transform rotate-3 hover:rotate-0 transition-transform duration-500 ease-out z-10"> {/* Larger phone, slight rotation, hover effect */}
-                        <Image
-                            src="/images/app-mockup-main.png" // Single main mockup for impact
-                            alt="Main App Mockup"
-                            fill
-                            className="object-contain drop-shadow-2xl" // Stronger shadow
-                            loader={loader}
-                            sizes="(max-width: 768px) 60vw, (max-width: 1200px) 40vw, 30vw"
-                            priority // Prioritize loading this image
-                        />
-                    </div>
-                    {/* Optional: Add a second, smaller, layered mockup if you have distinct screens */}
-                    {/* <div className="absolute w-40 h-72 md:w-52 md:h-96 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 -rotate-12 translate-x-32 -translate-y-24 hidden lg:block z-0">
-                        <Image
-                            src="/images/app-mockup-secondary.png" // Second mockup
-                            alt="Secondary App Mockup"
-                            layout="fill"
-                            objectFit="contain"
-                            className="drop-shadow-xl opacity-80"
-                            loader={loader}
-                        />
-                    </div> */}
-                </motion.div>
+                </div>
             </div>
         </section>
     );
 }
-
-// Remember to update your tailwind.config.js with these colors if you haven't already:
-/*
-module.exports = {
-  theme: {
-    extend: {
-      colors: {
-        primary: {
-          DEFAULT: '#6366F1', // A nice vibrant indigo
-          light: '#818CF8',
-          dark: '#4F46E5', // Slightly darker for accents/buttons
-          hover: '#4338CA', // Even darker for hover states
-          accent: '#A78BFA', // A brighter accent for highlights
-        },
-      },
-    },
-  },
-  plugins: [],
-}
-
-// For the background blobs (optional, but adds a lot):
-// Add this to your `tailwind.config.js` under `extend.keyframes` and `extend.animation`
-// (You might need to install `tailwindcss-animate` if you haven't, or define these manually)
-
-// In tailwind.config.js plugins array:
-// require('tailwindcss-animate'),
-
-// Keyframes:
-// blob: {
-//   '0%': { transform: 'translate(0px, 0px) scale(1)' },
-//   '33%': { transform: 'translate(30px, -50px) scale(1.1)' },
-//   '66%': { transform: 'translate(-20px, 20px) scale(0.9)' },
-//   '100%': { transform: 'translate(0px, 0px) scale(1)' },
-// },
-
-// Animation:
-// animation: {
-//   blob: 'blob 7s infinite cubic-bezier(0.6, 0.01, 0.4, 1)',
-// },
-*/

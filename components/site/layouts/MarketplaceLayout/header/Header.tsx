@@ -1,31 +1,36 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+} from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
+import { useRouter } from "next/navigation";
+import { AnimatePresence, motion } from "framer-motion";
 import {
-  MagnifyingGlassCircleIcon,
+  MagnifyingGlassIcon,
   ShoppingBagIcon,
   Bars3BottomLeftIcon,
   XMarkIcon,
-  BellIcon,
-  UserCircleIcon,
+  UserIcon,
 } from "@heroicons/react/24/outline";
+
+import { useSession, signOut } from "next-auth/react";
 import { useStateContext } from "@/contexts/ContextProvider";
-import { useRouter } from "next/navigation";
 import { useStoreContext } from "@/contexts/StoreContext";
 
-// Image loader for optimization
 const loader = ({ src, width, quality }: any) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
 export default function Header() {
-  const { storeFormData } = useStoreContext();
-  const { cart } = useStateContext();
   const router = useRouter();
+  const { cart } = useStateContext();
+  const { storeFormData } = useStoreContext();
 
-  // Store fields with safe fallbacks
+  // Extract store data
   const {
     slug,
     name,
@@ -34,20 +39,49 @@ export default function Header() {
     themeSettings = {},
   } = storeFormData || {};
 
-  const primary = themeSettings?.primaryColor || "#6366f1"; // indigo fallback
-  const secondary = themeSettings?.secondaryColor || "#ec4899"; // pink fallback
+  const primary = themeSettings?.primaryColor || "#6366f1";
+  const secondary = themeSettings?.secondaryColor || "#ec4899";
 
-  // UI state
-  const [hasScrolled, setHasScrolled] = useState(false);
+  // Auth
+  const { data: session, status } = useSession();
+  const user = session?.user as { role?: string } | undefined;
+
+  // UI states
+  const [scrolled, setScrolled] = useState(false);
   const [mobileMenu, setMobileMenu] = useState(false);
 
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const mobileMenuButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Scroll shadow
   useEffect(() => {
-    const onScroll = () => setHasScrolled(window.scrollY > 20);
+    const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Nav links (driven by store slug)
+  // Lock body when mobile menu is open
+  useEffect(() => {
+    document.body.style.overflow = mobileMenu ? "hidden" : "";
+  }, [mobileMenu]);
+
+  // Click outside mobile menu to close
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        mobileMenu &&
+        mobileMenuRef.current &&
+        !mobileMenuRef.current.contains(e.target as Node) &&
+        !mobileMenuButtonRef.current?.contains(e.target as Node)
+      ) {
+        setMobileMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [mobileMenu]);
+
+  // Nav links with slug
   const navLinks = [
     { label: "Home", href: `/site/${slug}/ecommerce` },
     { label: "Shop", href: `/site/${slug}/ecommerce/products` },
@@ -56,181 +90,249 @@ export default function Header() {
     { label: "Contact", href: `/site/${slug}/ecommerce/contact` },
   ];
 
+  // Auth handlers
+  const handleAuth = () => {
+    if (!user) {
+      window.location.href =
+        "https://auth.salesmanpro.site/signin?callbackUrl=" +
+        window.location.origin;
+      return;
+    }
+    if (user.role?.toLowerCase() === "admin") router.push("/dashboards");
+    else router.push(`/site/${slug}/ecommerce/profile`);
+  };
+
+  const handleSignup = () => {
+    window.location.href =
+      "https://auth.salesmanpro.site/signup?callbackUrl=" +
+      window.location.origin;
+  };
+
   return (
-    <header
-      className={`fixed w-full top-0 z-50 transition-shadow backdrop-blur-sm 
-        ${hasScrolled ? "shadow-xl bg-white/70 dark:bg-gray-900/70" : "bg-transparent"}
-        py-6`}
-    >
-      <div className="container mx-auto flex items-center justify-between px-6">
-        {/* Brand & Mobile Toggle */}
-        <div className="flex items-center gap-4">
-          {/* Mobile toggle */}
-          <button
-            onClick={() => setMobileMenu(true)}
-            className="lg:hidden p-2 focus:ring-2 focus:ring-offset-1 focus:ring-indigo-500"
-          >
-            <Bars3BottomLeftIcon className="h-6 w-6 text-gray-800 dark:text-gray-100" />
-          </button>
+    <>
+      {/* Dynamic theme variables */}
+      <style jsx global>{`
+        :root {
+          --primary-color: ${primary};
+          --secondary-color: ${secondary};
+        }
+      `}</style>
 
-          {/* Logo */}
-          <motion.div
-            initial={{ scale: 0.9 }}
-            animate={{ scale: 1 }}
-            whileHover={{ scale: 1.1 }}
-            className="flex items-center cursor-pointer"
-            onClick={() => router.push(`/site/${slug}`)}
-          >
-            {logoUrl ? (
-              <Image
-                src={logoUrl}
-                loader={loader}
-                width={40}
-                height={40}
-                alt={`${name} logo`}
-                className="object-contain"
-              />
-            ) : (
-              <span
-                style={{ color: primary }}
-                className="ml-2 text-2xl font-extrabold"
-              >
-                {name || "Store"}
-              </span>
-            )}
-          </motion.div>
-        </div>
+      {/* HEADER */}
+      <header
+        className={`fixed top-0 w-full z-50 transition-shadow backdrop-blur-xl px-6 py-4
+          ${scrolled ? "shadow-xl bg-white/80" : "bg-white/40"}`}
+      >
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
 
-        {/* Desktop Nav */}
-        <nav className="hidden lg:flex gap-8">
-          {navLinks.map((link, i) => (
+          {/* LEFT: Logo + Desktop Nav */}
+          <div className="flex items-center gap-8">
+
+            {/* Mobile Toggle */}
+            <button
+              ref={mobileMenuButtonRef}
+              onClick={() => setMobileMenu(true)}
+              className="md:hidden p-2"
+            >
+              <Bars3BottomLeftIcon className="h-7 w-7 text-gray-700" />
+            </button>
+
+            {/* Logo */}
             <motion.div
-              key={link.label}
               whileHover={{ scale: 1.05 }}
-              transition={{ type: "spring", stiffness: 300 }}
+              onClick={() => router.push(`/site/${slug}`)}
+              className="cursor-pointer flex items-center"
             >
-              <Link
-                href={link.href}
-                className="relative text-gray-800 dark:text-gray-100 font-medium"
-              >
-                {link.label}
-                <motion.span
-                  className="absolute bottom-0 left-0 h-0.5"
-                  style={{
-                    backgroundImage: `linear-gradient(to right, ${primary}, ${secondary})`,
-                  }}
-                  initial={{ width: 0 }}
-                  whileHover={{ width: "100%" }}
-                  transition={{ delay: i * 0.05, duration: 0.3 }}
+              {logoUrl ? (
+                <Image
+                  src={logoUrl}
+                  loader={loader}
+                  width={45}
+                  height={45}
+                  alt={`${name} logo`}
+                  className="object-contain"
                 />
-              </Link>
+              ) : (
+                <span className="text-2xl font-bold text-gray-900">
+                  {name || "Store"}
+                </span>
+              )}
             </motion.div>
-          ))}
-        </nav>
 
-        {/* Search & Icons */}
-        <div className="hidden lg:flex items-center gap-6">
-          {/* Search input */}
-          <motion.div whileFocus={{ scale: 1.02 }} className="relative">
-            <input
-              type="search"
-              placeholder="Search products..."
-              className="pl-10 pr-4 py-2 w-48 focus:w-64 transition-all duration-300 border border-gray-300 dark:border-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-1"
-            />
-            <MagnifyingGlassCircleIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-500 dark:text-gray-400" />
-          </motion.div>
+            {/* Desktop Nav */}
+            <nav className="hidden md:flex gap-10">
+              {navLinks.map((item) => (
+                <motion.div key={item.label} whileHover={{ y: -2 }}>
+                  <Link
+                    href={item.href}
+                    className="text-gray-800 relative font-medium hover:text-[var(--primary-color)]"
+                  >
+                    {item.label}
+                    <span
+                      className="absolute left-0 -bottom-1 h-0.5 w-full scale-x-0 bg-[var(--primary-color)] transition-transform duration-300 origin-left hover:scale-x-100"
+                    />
+                  </Link>
+                </motion.div>
+              ))}
+            </nav>
+          </div>
 
-          {/* Cart & Notifications */}
-          {[
-            { icon: ShoppingBagIcon, count: cart.length, action: () => router.push(`/site/${slug}/ecommerce/checkout`) },
-            { icon: BellIcon, count: 3, action: () => console.log("Open notifications") },
-          ].map((item, idx) => (
+          {/* RIGHT: Icons */}
+          <div className="flex items-center gap-6">
+
+            {/* Profile / Login */}
+            {status === "loading" ? null : user ? (
+              <motion.button onClick={handleAuth} whileHover={{ scale: 1.1 }}>
+                <UserIcon className="h-6 w-6 text-gray-900" />
+              </motion.button>
+            ) : (
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                className="font-medium text-gray-900"
+                onClick={handleAuth}
+              >
+                Login / Signup
+              </motion.button>
+            )}
+
+            {/* Cart */}
             <motion.button
-              key={idx}
-              whileHover={{ rotate: 10 }}
-              onClick={item.action}
-              className="relative p-2 rounded-full bg-gray-100 dark:bg-gray-800 focus:outline-none"
+              whileHover={{ scale: 1.1 }}
+              className="relative"
+              onClick={() => {
+                if (cart.length === 0) return;
+                if (!user) return handleAuth();
+                router.push(`/site/${slug}/ecommerce/checkout`);
+              }}
             >
-              <item.icon className="h-6 w-6 text-gray-700 dark:text-gray-200" />
-              {item.count > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full px-1">
-                  {item.count}
+              <ShoppingBagIcon className="h-6 w-6 text-gray-900" />
+              {cart.length > 0 && (
+                <span className="absolute -top-2 -right-2 text-white bg-red-600 text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                  {cart.length}
                 </span>
               )}
             </motion.button>
-          ))}
 
-          {/* Profile */}
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            onClick={() => router.push(`/site/${slug}/ecommerce/profile`)}
-            className="p-2 rounded-full bg-gray-100 dark:bg-gray-800 focus:outline-none"
-          >
-            <UserCircleIcon className="h-6 w-6 text-gray-700 dark:text-gray-200" />
-          </motion.button>
+            {/* Mobile Menu Toggle (duplicate for left alignment) */}
+            <button
+              className="hidden md:block"
+              onClick={() => setMobileMenu(true)}
+            ></button>
+          </div>
         </div>
-      </div>
+      </header>
 
-      {/* Mobile Drawer */}
+      {/* MOBILE DRAWER */}
       <AnimatePresence>
         {mobileMenu && (
-          <motion.aside
+          <motion.div
+            ref={mobileMenuRef}
             initial={{ x: "-100%" }}
             animate={{ x: 0 }}
             exit={{ x: "-100%" }}
-            transition={{ type: "tween", duration: 0.3 }}
-            className="fixed inset-y-0 left-0 w-64 bg-white dark:bg-gray-900 shadow-lg z-50 p-6 flex flex-col"
+            transition={{ duration: 0.35 }}
+            className="fixed inset-y-0 left-0 w-72 bg-white shadow-xl z-[60] p-6 flex flex-col gap-6"
           >
-            <button
-              onClick={() => setMobileMenu(false)}
-              className="self-end mb-4 p-2"
-            >
-              <XMarkIcon className="h-6 w-6 text-gray-800 dark:text-gray-100" />
+            <button onClick={() => setMobileMenu(false)} className="self-end">
+              <XMarkIcon className="h-7 w-7 text-gray-700" />
             </button>
 
-            {/* Mobile Nav */}
+            {/* Nav */}
             <nav className="flex flex-col gap-4">
-              {navLinks.map((link) => (
+              {navLinks.map((item) => (
                 <Link
-                  key={link.label}
-                  href={link.href}
+                  key={item.label}
+                  href={item.href}
                   onClick={() => setMobileMenu(false)}
-                  className="text-lg font-medium text-gray-800 dark:text-gray-100 hover:text-indigo-600 transition-colors"
+                  className="text-lg font-medium text-gray-900"
                 >
-                  {link.label}
+                  {item.label}
                 </Link>
               ))}
             </nav>
 
-            {/* Social links */}
-            {socialLinks?.length > 0 && (
-              <div className="mt-6 flex space-x-4">
-                {socialLinks.map((s: any) => (
-                  <a
-                    key={s.channel}
-                    href={s.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="capitalize text-gray-800 dark:text-gray-100 hover:text-indigo-600 transition-colors"
-                  >
-                    {s.channel}
-                  </a>
-                ))}
+            <div className="border-t" />
+
+            {/* Auth */}
+            {user ? (
+              <div className="flex flex-col gap-3">
+                <button
+                  className="w-full py-2 rounded-lg text-white"
+                  style={{ background: primary }}
+                  onClick={() => {
+                    setMobileMenu(false);
+                    handleAuth();
+                  }}
+                >
+                  {user.role === "admin" ? "Admin Portal" : "My Account"}
+                </button>
+
+                <button
+                  onClick={() => {
+                    setMobileMenu(false);
+                    signOut();
+                  }}
+                  className="text-gray-600 underline"
+                >
+                  Sign Out
+                </button>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-3">
+                <button
+                  onClick={() => {
+                    setMobileMenu(false);
+                    handleAuth();
+                  }}
+                  className="py-2 border rounded-lg"
+                >
+                  Log In
+                </button>
+
+                <button
+                  onClick={() => {
+                    setMobileMenu(false);
+                    handleSignup();
+                  }}
+                  className="py-2 rounded-lg text-white"
+                  style={{ background: primary }}
+                >
+                  Sign Up
+                </button>
               </div>
             )}
 
-            {/* Account quick link */}
-            <div className="mt-auto pt-6 border-t border-gray-200 dark:border-gray-700">
-              <Link
-                href={`/site/${slug}/ecommerce/profile`}
-                className="flex items-center gap-2 text-gray-800 dark:text-gray-100 py-2 hover:text-indigo-600 transition-colors"
-              >
-                <UserCircleIcon className="h-5 w-5" /> <span>Account</span>
-              </Link>
+            <div className="border-t" />
+
+            {/* Social Links */}
+            <div className="flex gap-4">
+              {socialLinks.map((s: any) => (
+                <a
+                  key={s.channel}
+                  href={s.url}
+                  target="_blank"
+                  className="capitalize text-gray-900"
+                >
+                  {s.channel}
+                </a>
+              ))}
             </div>
-          </motion.aside>
+          </motion.div>
         )}
       </AnimatePresence>
-    </header>
+
+      {/* BACKDROP */}
+      <AnimatePresence>
+        {mobileMenu && (
+          <motion.div
+            onClick={() => setMobileMenu(false)}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 0.35 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/40 z-50"
+          />
+        )}
+      </AnimatePresence>
+    </>
   );
 }

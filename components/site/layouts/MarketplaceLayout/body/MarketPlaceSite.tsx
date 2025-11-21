@@ -73,9 +73,9 @@ export default function MarketPlaceSite({ pageData, companyId }: { pageData: Sto
       
        <HeroBanner storeFormData={siteData} />
 
-       <CategoryCarousel storeFormData={storeFormData}  />
+       <CategoryCarousel store={siteData}  />
 
-        <StorePageSection />
+        <StorePageSection products={siteData.marketplaceListings} storeSlug={siteData.slug} />
           
         <ReviewsSection />
 
