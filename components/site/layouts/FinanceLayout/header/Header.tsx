@@ -41,7 +41,7 @@ export default function FinanceHeader() {
   // Sign-In URL
   const signInUrl = (type: "signin" | "signup") => {
     const url = new URL(`https://auth.salesmanpro.site/${type}`);
-    url.searchParams.set("callbackUrl", `${window.location.origin}/site/${slug}/finance`);
+    url.searchParams.set("callbackUrl", `${window.location.origin}/finance`);
     return url.toString();
   };
 
@@ -60,11 +60,11 @@ export default function FinanceHeader() {
       return router.push("/dashboards");
     }
 
-    return router.push(`/site/${slug}/finance/profile`);
+    return router.push(`/finance/profile`);
   };
 
   const handleLogout = () => {
-    signOut({ callbackUrl: `/site/${slug}/finance` });
+    signOut({ callbackUrl: `/finance` });
   };
 
   // UI State

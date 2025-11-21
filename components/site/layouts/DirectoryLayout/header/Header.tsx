@@ -86,8 +86,8 @@ export default function Header() {
   // --------------------------------------
   const navItems = [
     { label: 'Home', href: `/site/${slug}` },
-    { label: 'Listings', href: `/site/${slug}/directorylistings/products` },
-    { label: 'Categories', href: `/site/${slug}/directorylistings/categories` },
+    { label: 'Listings', href: `/directorylistings/products` },
+    { label: 'Categories', href: `/directorylistings/categories` },
   ];
 
 
@@ -98,7 +98,7 @@ export default function Header() {
     if (!user) return handleGoogleSignIn();
 
     if (user.role?.toLowerCase() === 'admin') router.push('/dashboards');
-    else router.push(`/site/${slug}/directorylistings/profile`);
+    else router.push(`/directorylistings/profile`);
   };
 
   const handleGoogleSignIn = () => {

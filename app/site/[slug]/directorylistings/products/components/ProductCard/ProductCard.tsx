@@ -88,7 +88,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
       {/* Product Image */}
       <Link
-        href={`/site/${slug}/directorylistings/products/${product.id}`}
+        href={`/directorylistings/products/${product.id}`}
         className="block relative h-64 w-full overflow-hidden"
       >
         <Image

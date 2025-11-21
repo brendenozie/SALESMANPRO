@@ -82,7 +82,7 @@ export default function UserDashboard() {
           <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">
             Please sign in to access your dashboard.
           </h2>
-          <Link href={`/site/${slug}/auth/signin`}>
+          <Link href={`/auth/signin`}>
             <button className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg">
               Sign In
             </button>
@@ -141,12 +141,12 @@ export default function UserDashboard() {
                 <DashboardNavLink
                   icon={UserCircleIcon}
                   label="Edit Profile"
-                  href={`/site/${slug}/account/profile`}
+                  href={`/account/profile`}
                 />
                 <DashboardNavLink
                   icon={CreditCardIcon}
                   label="Billing & Payments"
-                  href={`/site/${slug}/account/billing`}
+                  href={`/account/billing`}
                 />
               </div>
 
@@ -196,7 +196,7 @@ export default function UserDashboard() {
                     title="Your Active Programs"
                     icon={ClipboardDocumentCheckIcon}
                     linkLabel="View All"
-                    href={`/site/${slug}/my-programs`}
+                    href={`/my-programs`}
                   />
                   <div className="space-y-4">
                     {programs.length > 0 ? (
@@ -211,7 +211,7 @@ export default function UserDashboard() {
                       <NoContentCard
                         message="You are not currently enrolled in any programs."
                         cta="Explore Programs"
-                        ctaHref={`/site/${slug}/programs`}
+                        ctaHref={`/programs`}
                       />
                     )}
                   </div>
@@ -223,7 +223,7 @@ export default function UserDashboard() {
                     title="Your Ebooks & Resources"
                     icon={ArrowDownTrayIcon}
                     linkLabel="View All"
-                    href={`/site/${slug}/my-resources`}
+                    href={`/my-resources`}
                   />
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {ebooks.length > 0 ? (
@@ -234,7 +234,7 @@ export default function UserDashboard() {
                       <NoContentCard
                         message="You have not acquired any resources yet."
                         cta="Find Resources"
-                        ctaHref={`/site/${slug}/resources`}
+                        ctaHref={`/resources`}
                         className="sm:col-span-2"
                       />
                     )}
@@ -332,7 +332,7 @@ const DashboardProgramCard = ({ program, slug } : { program: any; slug: string; 
         <ClockIcon className="w-4 h-4 text-blue-500" />
         <span>{program.nextSession}</span>
       </div>
-      <Link href={`/site/${slug}/my-programs/${program.id}`} passHref>
+      <Link href={`/my-programs/${program.id}`} passHref>
         <span className="text-blue-600 hover:text-blue-700 font-semibold text-sm flex items-center gap-1 transition-colors cursor-pointer">
           Go to Program <ArrowRightOnRectangleIcon className="w-4 h-4 rotate-180" />
         </span>

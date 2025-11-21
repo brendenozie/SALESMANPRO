@@ -72,7 +72,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     >
       {/* IMAGE AREA */}
       <Link
-        href={`/site/${slug}/ecommerce/products/${id}`}
+        href={`/ecommerce/products/${id}`}
         className="relative aspect-[3/4] bg-slate-100 overflow-hidden block"
       >
         <Image

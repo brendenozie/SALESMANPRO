@@ -52,7 +52,7 @@ export default function Header() {
     if (user.role?.toLowerCase() === "admin") {
       router.push("/dashboards");
     } else {
-      router.push(`/site/${slug}/profile`);
+      router.push(`/profile`);
     }
   };
 
@@ -117,7 +117,7 @@ export default function Header() {
             <div className="hidden lg:flex items-center space-x-4">
               {/* Search */}
               <button
-                onClick={() => router.push(`/site/${slug}/search`)}
+                onClick={() => router.push(`/search`)}
                 className="p-1 rounded-full hover:bg-white/20 transition"
               >
                 <MagnifyingGlassIcon className="h-6 w-6" />
@@ -125,7 +125,7 @@ export default function Header() {
 
               {/* Chat */}
               <button
-                onClick={() => router.push(`/site/${slug}/chat`)}
+                onClick={() => router.push(`/chat`)}
                 className="p-1 rounded-full hover:bg-white/20 transition"
               >
                 <ChatBubbleLeftEllipsisIcon className="h-6 w-6" />
@@ -240,7 +240,7 @@ export default function Header() {
                 {/* Search */}
                 <button
                   onClick={() => {
-                    router.push(`/site/${slug}/search`);
+                    router.push(`/search`);
                     setMobileOpen(false);
                   }}
                   className="flex items-center space-x-2 hover:text-green-200 transition"
@@ -252,7 +252,7 @@ export default function Header() {
                 {/* Chat */}
                 <button
                   onClick={() => {
-                    router.push(`/site/${slug}/chat`);
+                    router.push(`/chat`);
                     setMobileOpen(false);
                   }}
                   className="flex items-center space-x-2 hover:text-green-200 transition"

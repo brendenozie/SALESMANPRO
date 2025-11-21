@@ -78,7 +78,7 @@ export default function AgentsSection({ agents, slug }: any) {
           viewport={{ once: true, amount: 0.2 }}
         >
           {agents.map((agent:any) => (
-            <Link key={agent.id} href={`/site/${slug}/agent/${agent.id}`} passHref>
+            <Link key={agent.id} href={`/agent/${agent.id}`} passHref>
               {/* Gradient Border Card Wrapper */}
               <motion.a
                 className="block p-0.5 rounded-3xl shadow-xl transition-all duration-500 group
@@ -199,7 +199,7 @@ export default function AgentsSection({ agents, slug }: any) {
                     onClick={(e:any) => {
                       e.preventDefault(); 
                       e.stopPropagation(); 
-                      window.location.href = `/site/${slug}/agent/${agent.id}`;
+                      window.location.href = `/agent/${agent.id}`;
                     }}
                     aria-label={`View detailed profile for ${agent.user.name}`}
                   >
@@ -221,7 +221,7 @@ export default function AgentsSection({ agents, slug }: any) {
             viewport={{ once: true, amount: 0.5 }}
             transition={{ delay: 0.3, duration: 0.7 }}
           >
-            <Link href={`/site/${slug}/agents`} passHref>
+            <Link href={`/agents`} passHref>
               <motion.a
                 className="inline-flex items-center justify-center px-10 py-4 border border-transparent text-lg font-extrabold rounded-full shadow-xl
                            text-white bg-gradient-to-br from-emerald-600 to-teal-500 hover:from-emerald-700 hover:to-teal-600

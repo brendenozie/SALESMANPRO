@@ -70,7 +70,7 @@ const VehicleCard = ({
   const location = (item as any).location || "Nairobi";
 
   return (
-    <Link href={`/site/${slug}/listing/${item.id}`} passHref legacyBehavior>
+    <Link href={`/listing/${item.id}`} passHref legacyBehavior>
       <motion.a
         whileHover={{ y: -8 }}
         transition={{ type: "spring", stiffness: 300, damping: 20 }}
@@ -251,7 +251,7 @@ export default function FeaturedListings({
 
         {/* View All Button */}
         <div className="mt-16 text-center">
-            <Link href={`/site/${slug}/listings`} passHref legacyBehavior>
+            <Link href={`/listings`} passHref legacyBehavior>
                 <a className="inline-flex items-center justify-center px-8 py-4 border border-gray-300 dark:border-gray-600 rounded-full text-base font-bold text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 hover:scale-105 hover:shadow-lg">
                     View Full Inventory
                     <ArrowRightIcon className="ml-2 w-4 h-4" />

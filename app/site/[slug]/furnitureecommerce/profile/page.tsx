@@ -284,7 +284,7 @@ export default async function UserProfilePage({ params }: any) {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6 }}
                 >
-                    <Link href={`/site/${slug}/dashboard`} passHref>
+                    <Link href={`/dashboard`} passHref>
                         <span className="text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-blue-600 flex items-center mb-6 cursor-pointer">
                             <ArrowLeftIcon className="w-4 h-4 mr-2" /> Back to Dashboard
                         </span>

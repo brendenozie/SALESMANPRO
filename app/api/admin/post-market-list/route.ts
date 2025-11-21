@@ -4,6 +4,7 @@ import prisma from "@/server/db/prismadb";
 import { verifyAuth } from "@/lib/verifyAuth";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { revalidateCompanyCache } from "@/lib/company-fetcher";
 
 // ----------------- Utils -----------------
 const parseJsonSafely = (data: any, fallback: any = null) => {
@@ -314,17 +315,20 @@ async function handlePost(req: Request) {
     year: parsedYear,
   };
 
-  let listing;
+   let listing: { company?: { slug?: string | null | undefined } | null | undefined } | null | undefined = {};
+
   await prisma.$transaction(async tx => {
     if (id) {
       const existing = await tx.marketplaceListings.findUnique({ where: { id } });
       if (existing) {
-        listing = await tx.marketplaceListings.update({ where: { id }, data });
+        listing = await tx.marketplaceListings.update({ where: { id }, data , select: { company: true } });
         return;
       }
     }
-    listing = await tx.marketplaceListings.create({ data });
+    listing = await tx.marketplaceListings.create({ data , select: { company: true } });
   });
+
+  revalidateCompanyCache(listing?.company?.slug || "");
 
   return formatResponse(true, listing, "Marketplace listing processed successfully.", id ? 200 : 201);
 }

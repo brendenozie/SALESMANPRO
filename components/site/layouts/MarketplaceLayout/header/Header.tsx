@@ -83,11 +83,11 @@ export default function Header() {
 
   // Nav links with slug
   const navLinks = [
-    { label: "Home", href: `/site/${slug}/ecommerce` },
-    { label: "Shop", href: `/site/${slug}/ecommerce/products` },
-    { label: "Categories", href: `/site/${slug}/ecommerce/categories` },
-    { label: "Deals", href: `/site/${slug}/ecommerce/deals` },
-    { label: "Contact", href: `/site/${slug}/ecommerce/contact` },
+    { label: "Home", href: `/ecommerce` },
+    { label: "Shop", href: `/ecommerce/products` },
+    { label: "Categories", href: `/ecommerce/categories` },
+    { label: "Deals", href: `/ecommerce/deals` },
+    { label: "Contact", href: `/ecommerce/contact` },
   ];
 
   // Auth handlers
@@ -99,7 +99,7 @@ export default function Header() {
       return;
     }
     if (user.role?.toLowerCase() === "admin") router.push("/dashboards");
-    else router.push(`/site/${slug}/ecommerce/profile`);
+    else router.push(`/ecommerce/profile`);
   };
 
   const handleSignup = () => {
@@ -202,7 +202,7 @@ export default function Header() {
               onClick={() => {
                 if (cart.length === 0) return;
                 if (!user) return handleAuth();
-                router.push(`/site/${slug}/ecommerce/checkout`);
+                router.push(`/ecommerce/checkout`);
               }}
             >
               <ShoppingBagIcon className="h-6 w-6 text-gray-900" />

@@ -397,7 +397,7 @@ export default function RealEstateSite({ pageData, companyId }: { pageData: Stor
   const handleSearch = () => {
     // Implement actual search logic, e.g., navigate to a search results page
     alert(`Searching in ${location || 'all locations'} between KES ${minPrice || 'any'} and KES ${maxPrice || 'any'}`);
-    router.push(`/site/${slug}/listings?location=${location}&minPrice=${minPrice}&maxPrice=${maxPrice}`);
+    router.push(`/listings?location=${location}&minPrice=${minPrice}&maxPrice=${maxPrice}`);
   };
 
   const handleNewsletter = (e: React.FormEvent) => {

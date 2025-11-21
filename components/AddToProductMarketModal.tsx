@@ -753,19 +753,10 @@ export default function ProductMarketModal({
     setLoading(true);
     try {
 
-      console.log("Starting upload process...");
-      console.log("Current images:", images);
-      console.log("Current videos:", videos);
-      console.log("Current books:", ebooks);
-
       // 1. Filter local files that need uploading
       const newImageItems = images.filter(i => i.source === "local" && i.file);
       const newVideoItems = videos.filter(v => v.source === "local" && v.file);
       const newBookItems = ebooks.filter(b => b.source === "local" && b.file);
-
-      console.log("New images to upload:", newImageItems);
-      console.log("New videos to upload:", newVideoItems);
-      console.log("New books to upload:", newBookItems);
 
       // 2. Create upload promises for new files
       const uploadImagePromises = newImageItems.map(item =>

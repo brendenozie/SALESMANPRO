@@ -45,7 +45,7 @@ export default function ProgramsBookingForm({ service, slug }: BookingFormProps)
 
     // Navigate to the checkout/enrollment finalization page
     // Using `/site/booking/checkout` (standard path) or `/site/program/enrollment`
-    router.push(`/site/${slug}/bookings/checkout?${params.toString()}`);
+    router.push(`/bookings/checkout?${params.toString()}`);
   };
 
   return (

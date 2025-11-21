@@ -62,7 +62,7 @@ const EbookCard = ({
       )}
 
       {/* Cover Image - Link to Listing Details */}
-      <Link href={`/site/${slug}/listing/${id}`} passHref className="block">
+      <Link href={`/listing/${id}`} passHref className="block">
         <div className="relative w-full aspect-[3/4] overflow-hidden">
           <Image
             src={
@@ -242,7 +242,7 @@ export default function FeaturedEbooks({
           viewport={{ once: true }}
           transition={{ duration: 0.7, delay: 0.3 }}
         >
-          {/* <Link href={`/site/${slug}/market`} passHref>
+          {/* <Link href={`/market`} passHref>
             <motion.span
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}

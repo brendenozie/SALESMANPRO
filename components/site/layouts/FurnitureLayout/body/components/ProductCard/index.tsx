@@ -53,7 +53,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     >
       {/* ----------------------- IMAGE SECTION ----------------------- */}
       <div className="relative aspect-[4/5] overflow-hidden bg-stone-100">
-        <Link href={`/site/${slug}/ecommerce/products/${product.id}`}>
+        <Link href={`/ecommerce/products/${product.id}`}>
           <Image
             src={product.images[0] || ""}
             alt={product.name}
@@ -88,7 +88,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </button>
 
           <Link
-            href={`/site/${slug}/ecommerce/products/${product.id}`}
+            href={`/ecommerce/products/${product.id}`}
             className="p-2 bg-white text-stone-800 rounded-full shadow-md hover:bg-stone-900 hover:text-white transition-colors"
           >
             <ArrowRightIcon className="w-5 h-5" />

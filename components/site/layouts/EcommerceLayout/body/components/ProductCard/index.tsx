@@ -47,7 +47,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     >
       {/* Product Image Section */}
       <Link
-        href={`/site/${slug}/ecommerce/products/${product.id}`}
+        href={`/ecommerce/products/${product.id}`}
         className="block relative h-72 w-full overflow-hidden" // Taller image section
       >
         {images && images.length > 0 && (

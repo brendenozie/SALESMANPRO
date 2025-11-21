@@ -85,7 +85,7 @@ export default function FeaturedListings({ listings, slug }: any) {
           viewport={{ once: true, amount: 0.1 }}
         >
           {listings.map((item: MarketListingForm) => (
-            <Link key={item.id} href={`/site/${slug}/property/${item.id}`} passHref legacyBehavior>
+            <Link key={item.id} href={`/property/${item.id}`} passHref legacyBehavior>
               <motion.a
                 className="group relative flex flex-col bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700
                            hover:shadow-2xl hover:border-emerald-400 transition-all duration-300 ease-in-out cursor-pointer
@@ -169,7 +169,7 @@ export default function FeaturedListings({ listings, slug }: any) {
             viewport={{ once: true, amount: 0.5 }}
             transition={{ delay: 0.3, duration: 0.7 }}
           >
-            <Link href={`/site/${slug}/listings`} passHref>
+            <Link href={`/listings`} passHref>
               <motion.a
                 className="inline-flex items-center justify-center px-8 py-4 border-2 border-amber-500 text-lg font-semibold rounded-full shadow-lg
                            text-amber-500 bg-white hover:bg-amber-50 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-amber-400 dark:border-amber-400

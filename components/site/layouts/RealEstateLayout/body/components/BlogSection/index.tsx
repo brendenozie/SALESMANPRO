@@ -74,7 +74,7 @@ export default function BlogSection({ posts, slug }: any) {
           viewport={{ once: true, amount: 0.2 }}
         >
           {posts.map((post:any) => (
-            <Link key={post.id} href={`/site/${slug}/blog/${post.slug}`} passHref>
+            <Link key={post.id} href={`/blog/${post.slug}`} passHref>
               <motion.article
                 className="block bg-white dark:bg-gray-850 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 group
                            focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-500 focus-visible:ring-offset-4 focus-visible:ring-offset-white dark:focus-visible:ring-offset-gray-900"
@@ -145,7 +145,7 @@ export default function BlogSection({ posts, slug }: any) {
                         </span>
                       </div>
                     </div>
-                    <Link href={`/site/${slug}/blog/${post.slug}`} passHref>
+                    <Link href={`/blog/${post.slug}`} passHref>
                       <motion.a
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
@@ -173,7 +173,7 @@ export default function BlogSection({ posts, slug }: any) {
             viewport={{ once: true, amount: 0.5 }}
             transition={{ delay: 0.3, duration: 0.7 }}
           >
-            <Link href={`/site/${slug}/blog`} passHref>
+            <Link href={`/blog`} passHref>
               <motion.a
                 className="inline-flex items-center justify-center px-8 py-4 border border-transparent text-base font-medium rounded-full shadow-lg
                            text-white bg-gradient-to-br from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700

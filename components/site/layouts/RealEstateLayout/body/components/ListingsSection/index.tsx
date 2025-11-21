@@ -96,7 +96,7 @@ export default function ListingsSection({ products, slug }: any) {
           viewport={{ once: true, amount: 0.1 }}
         >
           {products.map((prop: any) => (
-            <Link key={prop.id} href={`/site/${slug}/property/${prop.id}`} passHref legacyBehavior>
+            <Link key={prop.id} href={`/property/${prop.id}`} passHref legacyBehavior>
               <motion.a
                 className="group relative flex flex-col bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700
                            hover:shadow-2xl hover:border-emerald-400 transition-all duration-300 ease-in-out cursor-pointer

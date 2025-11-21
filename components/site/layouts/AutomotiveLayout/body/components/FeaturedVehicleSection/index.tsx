@@ -66,7 +66,7 @@ const VehicleCard = ({
   const location = (item as any).location || "Nairobi Showroom";
 
   return (
-    <Link href={`/site/${slug}/listing/${item.id}`} passHref legacyBehavior>
+    <Link href={`/listing/${item.id}`} passHref legacyBehavior>
       <motion.a
         whileHover={{ y: -8 }}
         transition={{ type: "spring", stiffness: 300, damping: 20 }}
@@ -211,7 +211,7 @@ export default function FeaturedVehicleSection({
              whileInView={{ opacity: 1, x: 0 }}
              viewport={{ once: true }}
           >
-             <Link href={`/site/${slug}/listings`} className="hidden md:inline-flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-indigo-600 transition-colors">
+             <Link href={`/listings`} className="hidden md:inline-flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-indigo-600 transition-colors">
                 View Full Catalog <ArrowRightIcon className="w-4 h-4" />
              </Link>
           </motion.div>
@@ -239,7 +239,7 @@ export default function FeaturedVehicleSection({
 
         {/* Mobile View All Button */}
         <div className="mt-12 text-center md:hidden">
-            <Link href={`/site/${slug}/listings`} className="inline-flex items-center justify-center w-full px-6 py-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-font-bold text-gray-900 dark:text-white shadow-sm">
+            <Link href={`/listings`} className="inline-flex items-center justify-center w-full px-6 py-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-font-bold text-gray-900 dark:text-white shadow-sm">
                View Full Catalog
             </Link>
         </div>

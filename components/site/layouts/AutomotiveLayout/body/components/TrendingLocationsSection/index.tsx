@@ -102,7 +102,7 @@ const LocationCard = ({ loc, slug }: { loc: any; slug: string }) => {
       variants={cardVariants}
       className="group relative h-[420px] w-full rounded-[2rem] overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500"
     >
-      <Link href={`/site/${slug}/location/${loc.slug || loc.id}`} className="block h-full w-full">
+      <Link href={`/location/${loc.slug || loc.id}`} className="block h-full w-full">
         
         {/* 1. Background Image Layer */}
         <div className="absolute inset-0 bg-gray-200 dark:bg-gray-800">
@@ -238,7 +238,7 @@ export default function TrendingLocations({ locations, slug }: TrendingLocations
           viewport={{ once: true }}
           transition={{ delay: 0.4 }}
         >
-          <Link href={`/site/${slug}/locations`} passHref legacyBehavior>
+          <Link href={`/locations`} passHref legacyBehavior>
             <a className="group inline-flex items-center gap-3 px-8 py-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-base font-bold rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
               View All Locations
               <ArrowRightIcon className="w-4 h-4 transition-transform group-hover:translate-x-1" />

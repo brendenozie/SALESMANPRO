@@ -34,7 +34,7 @@ export default function BookingForm({ service, slug }: BookingFormProps) {
     });
 
     // Navigate to your checkout page
-    router.push(`/site/${slug}/bookings/checkout?${params.toString()}`);
+    router.push(`/bookings/checkout?${params.toString()}`);
   };
 
   return (

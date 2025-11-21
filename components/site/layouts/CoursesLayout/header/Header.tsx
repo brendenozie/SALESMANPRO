@@ -183,7 +183,7 @@ export default function Header() {
   const handleUserAction = () => {
     if (!user) return handleGoogleSignIn();
     if (user.role?.toLowerCase() === 'admin') router.push('/dashboards');
-    else router.push(`/site/${slug}/profile`);
+    else router.push(`/profile`);
   };
 
   // ---------- Navigation helpers ----------
@@ -196,7 +196,7 @@ export default function Header() {
   };
 
   const selectCategory = (catId: string) => {
-    router.push(`/site/${slug}/category/${catId}`);
+    router.push(`/category/${catId}`);
     setCategoriesOpen(false);
     setMobileMenuOpen(false);
   };
@@ -275,13 +275,13 @@ export default function Header() {
           {/* Desktop nav */}
           <nav className="hidden lg:flex items-center gap-6" aria-label="Main navigation">
             <Link href={`/site/${slug}`} className="text-gray-700 hover:text-black font-semibold">Home</Link>
-            <Link href={`/site/${slug}/courses`} className="text-gray-700 hover:text-black font-semibold flex items-center gap-2">
+            <Link href={`/courses`} className="text-gray-700 hover:text-black font-semibold flex items-center gap-2">
               <BookOpenIcon className="w-4 h-4 text-gray-500" /> Courses
             </Link>
-            <Link href={`/site/${slug}/my-learning`} className="text-gray-700 hover:text-black font-semibold flex items-center gap-2">
+            <Link href={`/my-learning`} className="text-gray-700 hover:text-black font-semibold flex items-center gap-2">
               <UserIcon className="w-4 h-4 text-gray-500" /> My Learning
             </Link>
-            <Link href={`/site/${slug}/become-a-tutor`} className="text-gray-700 hover:text-black font-semibold">
+            <Link href={`/become-a-tutor`} className="text-gray-700 hover:text-black font-semibold">
               Become a Tutor
             </Link>
 
@@ -412,7 +412,7 @@ export default function Header() {
               </button>
 
               <button
-                onClick={() => router.push(`/site/${slug}/checkout`)}
+                onClick={() => router.push(`/checkout`)}
                 className="relative p-2 rounded-full hover:bg-gray-100"
                 aria-label="Open cart"
               >
@@ -442,7 +442,7 @@ export default function Header() {
 
               <button
                 onClick={() => {
-                  if (user) router.push(`/site/${slug}/profile`);
+                  if (user) router.push(`/profile`);
                   else handleGoogleSignIn();
                 }}
                 className="p-2 rounded-full hover:bg-gray-100"
@@ -519,9 +519,9 @@ export default function Header() {
           >
             <div className="px-4 py-4 space-y-3">
               <Link href={`/site/${slug}`} onClick={() => setMobileMenuOpen(false)} className="block text-gray-700 font-semibold">Home</Link>
-              <Link href={`/site/${slug}/courses`} onClick={() => setMobileMenuOpen(false)} className="block text-gray-700 font-semibold">Courses</Link>
-              <Link href={`/site/${slug}/my-learning`} onClick={() => setMobileMenuOpen(false)} className="block text-gray-700 font-semibold">My Learning</Link>
-              <Link href={`/site/${slug}/become-a-tutor`} onClick={() => setMobileMenuOpen(false)} className="block text-gray-700 font-semibold">Become a Tutor</Link>
+              <Link href={`/courses`} onClick={() => setMobileMenuOpen(false)} className="block text-gray-700 font-semibold">Courses</Link>
+              <Link href={`/my-learning`} onClick={() => setMobileMenuOpen(false)} className="block text-gray-700 font-semibold">My Learning</Link>
+              <Link href={`/become-a-tutor`} onClick={() => setMobileMenuOpen(false)} className="block text-gray-700 font-semibold">Become a Tutor</Link>
 
               <details className="bg-white border border-gray-100 rounded-lg p-2">
                 <summary className="cursor-pointer font-semibold text-gray-700">Categories</summary>
