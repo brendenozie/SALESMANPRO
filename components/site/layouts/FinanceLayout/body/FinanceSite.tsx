@@ -185,7 +185,7 @@ export default function FinanceSite({ pageData, companyId }: { pageData: StoreFo
        {/* Add padding-top to account for fixed navbar */}
         <HeroSection heroSlides={pageData.heroSlides} themeSettings={pageData.themeSettings} />        
         <PracticeAreasSection marketplaceListings={pageData.marketplaceListings} themeSettings={pageData.themeSettings}/>
-        <WhyChooseUsSection />
+        <WhyChooseUsSection themeSettings={pageData.themeSettings} CoreValues={pageData.CoreValues} />
         {testimonialsData?.data && <CaseStudiesTestimonials testimonials={testimonials} />}
         <ProcessWorkflowSection />
         <MeetOurExperts experts={experts} />
