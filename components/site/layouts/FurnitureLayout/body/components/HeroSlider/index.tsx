@@ -20,7 +20,8 @@ export interface HeroSliderProps {
 
 const defaultSlides: HeroSlide[] = [
   {
-    imageUrl: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80',
+    imageUrl:
+      'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80',
     subline: 'Exclusive Offer',
     headline: 'STEP INTO\nSTYLE & COMFORT',
     badgeText:
@@ -40,7 +41,8 @@ const defaultSlides: HeroSlide[] = [
     type: null,
   },
   {
-    imageUrl: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80',
+    imageUrl:
+      'https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=800&q=80',
     subline: 'New Collection',
     headline: 'ELEVATE YOUR\nLOOK TODAY',
     badgeText: 'Discover fresh drops and timeless classics. Comfort and style perfectly combined.',
@@ -61,9 +63,6 @@ const defaultSlides: HeroSlide[] = [
 ];
 
 export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProps) {
-  const defaultPrimaryColor = '#6B46C1';
-  const defaultSecondaryColor = '#D53F8C';
-
   const heroSlidesToShow: HeroSlide[] = (heroSlides && heroSlides.length > 0 ? heroSlides : defaultSlides).map(
     (slide, index) => ({
       ...slide,
@@ -79,6 +78,8 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
     })
   );
 
+  const defaultPrimaryColor = '#6B46C1';
+  const defaultSecondaryColor = '#D53F8C';
   const primary = themeSettings?.primaryColor || defaultPrimaryColor;
   const secondary = themeSettings?.secondaryColor || defaultSecondaryColor;
 
@@ -145,16 +146,36 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
   };
 
   return (
-    <section className="relative mt-20 py-16 overflow-hidden min-h-[500px]">
-      <div className="container mx-auto px-4 md:px-8 lg:px-16 relative z-10">
+    <section className="relative pt-20 h-screen min-h-[700px] bg-stone-100 overflow-hidden flex items-center">
+      {/* BACKGROUND GRID: left decorative + right image (right image updates per current slide) */}
+      <div className="absolute inset-0 grid grid-cols-2">
+        <div className="bg-stone-100 h-full w-full relative hidden md:block">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-stone-200 rounded-full blur-3xl opacity-50" />
+        </div>
+
+        <div className="relative h-full w-full">
+          <Image
+            src={heroSlidesToShow[current].imageUrl || heroSlidesToShow[current].productImageUrl || "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80"}
+            alt={heroSlidesToShow[current].headline || 'Hero Image'}
+            loader={loader}
+            fill
+            sizes="(max-width: 768px) 100vw, 50vw"
+            className="object-cover"
+            priority
+          />
+          <div className="absolute inset-0 bg-stone-900/10" />
+        </div>
+      </div>
+
+      {/* SLIDER CONTENT & ANIMATIONS */}
+      <div className="container mx-auto px-4 md:px-8 lg:px-16 relative z-10 w-full">
         <AnimatePresence initial={false} custom={direction} mode="wait">
           {heroSlidesToShow.map(
             (slide, idx) =>
               idx === current && (
                 <motion.div
                   key={idx}
-                  className="relative overflow-hidden rounded-3xl shadow-2xl group flex flex-col md:flex-row h-[500px]"
-                  style={{ willChange: 'transform, opacity' }}
+                  className="relative overflow-hidden rounded-3xl group h-[500px] md:h-[600px]"
                   custom={direction}
                   variants={slideVariants}
                   initial="enter"
@@ -164,16 +185,11 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
                   dragConstraints={{ left: 0, right: 0 }}
                   onDragEnd={handleDragEnd}
                 >
-                  {/* IMAGE PANEL */}
-                  {/* IMAGE PANEL */}
-                  <div className="relative w-full md:w-1/2 overflow-hidden will-change-transform h-full"> 
-                    {/* FIX 1: Set inner image wrapper to h-full (no fixed pixel heights for mobile) */}
-                    <div className="relative h-full w-full overflow-hidden">
+                  {/* MOBILE: image panel + bottom text overlay (keeps your current mobile layout) */}
+                  <div className="relative w-full md:hidden overflow-hidden h-full">
+                    <div className="relative h-full w-full">
                       <Image
-                        src={
-                          slide.imageUrl ||
-                          'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=1600&q=80'
-                        }
+                        src={slide.imageUrl || slide.productImageUrl || "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80"}
                         alt={slide.headline || 'Hero Image'}
                         fill
                         sizes="100vw"
@@ -183,15 +199,11 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
                       />
                     </div>
 
-                    {/* FIX 2: Mobile Gradient for Contrast (kept the to-black/70 fix) */}
-                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/70 z-10 md:hidden" />
+                    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/70 z-10" />
 
-                    {/* Mobile Text - Z-INDEX CONFIRMATION */}
-                    <div className="absolute bottom-0 left-0 right-0 p-6 z-30 text-white md:hidden"> 
+                    <div className="absolute bottom-0 left-0 right-0 p-6 z-30 text-white">
                       <h2 className="text-2xl font-bold">{slide.headline}</h2>
-                      {slide.badgeText && (
-                        <p className="text-sm mt-2 line-clamp-3">{slide.badgeText}</p>
-                      )}
+                      {slide.badgeText && <p className="text-sm mt-2 line-clamp-3">{slide.badgeText}</p>}
                       {slide.ctaLink && slide.ctaText && (
                         <Link
                           href={slide.ctaLink}
@@ -203,77 +215,65 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
                     </div>
                   </div>
 
-                  {/* TEXT PANEL (Desktop) */}
-                  <div className="hidden md:flex md:w-1/2 px-6 py-20 md:px-12 lg:px-20 flex-col justify-center relative overflow-hidden">
-                    {/* Translucent gradient overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-white/70 via-white/60 to-white/30 backdrop-blur-[2px]" />
-
-                    <div className="relative z-10 space-y-6 text-gray-900">
-                      {/* Badge */}
-                      <motion.span
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2, duration: 0.5 }}
-                        className="inline-block px-4 py-1.5 rounded-full text-sm sm:text-base font-semibold shadow-md"
-                        style={{ background: primary, color: 'white' }}
-                      >
-                        {slide.subline}
-                      </motion.span>
-
-                      {/* Headline */}
-                      <motion.h2
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.4, duration: 0.5 }}
-                        className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight drop-shadow-md"
-                      >
-                        {(slide.headline ?? '').split('\n').map((line, i, arr) => (
-                                            <React.Fragment key={i}>
-                                              {line.includes('$') ? (
-                                                <>
-                                                  {line.split('$')[0]}
-                                                  <span style={{ color: secondary }}>{line.split('$')[1]}</span>
-                                                </>
-                                              ) : (
-                                                line
-                                              )}
-                                              {i < arr.length - 1 && <br />}
-                                            </React.Fragment>
-                                          ))}      
-                      </motion.h2>
-
-                      {/* Description */}
-                      {slide.badgeText && (
-                        <motion.p
-                          initial={{ opacity: 0, y: -20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.6, duration: 0.5 }}
-                          className="text-gray-800 text-base sm:text-lg max-w-md drop-shadow-sm"
-                        >
-                          {slide.badgeText}
-                        </motion.p>
-                      )}
-
-                      {/* CTA Button */}
-                      {slide.ctaLink && slide.ctaText && (
+                  {/* DESKTOP: use the new design — left decorative (already in background), right image (background), plus centered frosted content card */}
+                  <div className="hidden md:block w-full h-full relative">
+                    {/* Centered content card overlay */}
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="max-w-7xl mx-auto px-6 w-full">
                         <motion.div
-                          initial={{ opacity: 0, y: -20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.8, duration: 0.5 }}
+                          initial={{ opacity: 0, x: -50 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.8, ease: 'easeOut' }}
+                          className="bg-white/90 backdrop-blur-sm p-8 md:p-12 max-w-xl shadow-2xl border-l-4 border-orange-600"
                         >
-                          <Link
-                            href={slide.ctaLink}
-                            className="inline-block font-semibold text-sm sm:text-base px-8 py-4 rounded-xl shadow-lg transition transform duration-300 hover:scale-105 hover:shadow-xl relative overflow-hidden"
-                            style={{ background: primary, color: 'white' }}
+                          <span
+                            className="text-orange-700 font-bold tracking-widest text-xs uppercase mb-2 block"
+                            style={{ color: primary }}
                           >
-                            {slide.ctaText}
-                            <span className="absolute inset-0 bg-white opacity-0 transition-opacity duration-300 group-hover:opacity-10" />
-                          </Link>
+                            {slide.subline}
+                          </span>
+
+                          <h1 className="text-5xl md:text-6xl font-serif font-bold text-stone-900 leading-tight mb-6">
+                            {String(slide.headline)
+                              .split('\n')
+                              .map((line, i) => (
+                                <React.Fragment key={i}>
+                                  {line.includes('$') ? (
+                                    <>
+                                      {line.split('$')[0]}
+                                      <span style={{ color: secondary }}>{line.split('$')[1]}</span>
+                                    </>
+                                  ) : (
+                                    line
+                                  )}
+                                  <br />
+                                </React.Fragment>
+                              ))}
+                          </h1>
+
+                          {slide.badgeText && (
+                            <p className="text-stone-600 text-lg mb-8 leading-relaxed">{slide.badgeText}</p>
+                          )}
+
+                          <div className="flex gap-4">
+                            {slide.ctaLink && slide.ctaText && (
+                              <Link
+                                href={slide.ctaLink}
+                                className="bg-stone-900 text-white px-8 py-4 font-medium hover:bg-orange-700 transition-colors flex items-center gap-2"
+                              >
+                                {slide.ctaText}
+                                <ArrowRightIcon className="w-4 h-4" />
+                              </Link>
+                            )}
+
+                            <button className="px-8 py-4 border border-stone-300 text-stone-800 font-medium hover:bg-stone-50 transition-colors">
+                              View Lookbook
+                            </button>
+                          </div>
                         </motion.div>
-                      )}
+                      </div>
                     </div>
                   </div>
-
                 </motion.div>
               )
           )}
@@ -303,9 +303,7 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
               key={idx}
               onClick={() => goTo(idx, idx > current ? 1 : -1)}
               className={`relative w-3.5 h-3.5 rounded-full overflow-hidden transition-all duration-300 border-2 ${
-                idx === current
-                  ? 'border-white scale-125'
-                  : 'border-gray-400 opacity-70 hover:scale-110'
+                idx === current ? 'border-white scale-125' : 'border-gray-400 opacity-70 hover:scale-110'
               }`}
             >
               {idx === current && (

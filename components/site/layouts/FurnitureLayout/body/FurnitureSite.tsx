@@ -12,6 +12,8 @@ import { StoreForm, MarketListingForm } from '@/types/typings';
 // Above-the-fold components - statically imported
 import CategorySection from './components/CategorySection';
 import { TruckIcon, SwatchIcon, StarIcon, ArrowRightIcon, CubeIcon, HeartIcon } from '@heroicons/react/24/outline';
+import USPSlider from './components/USPSlider';
+import RoomSection from './components/RoomSection';
 
 // Loading skeleton
 const SectionSkeleton = () => <div className="h-96 w-full animate-pulse bg-gray-200 rounded-lg my-12" />;
@@ -289,57 +291,11 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
   );
 
   return (
-    <div className="space-y-12">
+    <div>
       <HeroSlider heroSlides={heroSlides} themeSettings={themeSettings} />
       {/* USP Section */}
-      <section className="py-16 bg-white border-b border-stone-200">
-        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8">
-          {[
-            { icon: TruckIcon, title: "White Glove Delivery", desc: "We assemble and place your items." },
-            { icon: SwatchIcon, title: "Sustainable Materials", desc: "FSC certified wood and organic fabrics." },
-            { icon: StarIcon, title: "5-Year Warranty", desc: "Quality guaranteed on all structural frames." }
-          ].map((feature, i) => (
-            <div key={i} className="flex gap-4 items-start group">
-               <div className="p-4 bg-stone-50 rounded-full text-stone-400 group-hover:bg-orange-50 group-hover:text-orange-600 transition-colors">
-                 <feature.icon className="w-8 h-8" />
-               </div>
-               <div>
-                 <h4 className="text-lg font-bold text-stone-900 mb-2">{feature.title}</h4>
-                 <p className="text-stone-500 leading-relaxed">{feature.desc}</p>
-               </div>
-            </div>
-          ))}
-        </div>
-      </section>
-      
-      {/* Featured Categories */}
-      <section className="py-24 max-w-7xl mx-auto px-6">
-         <div className="flex justify-between items-end mb-12">
-            <h2 className="text-4xl font-serif font-bold text-stone-900">Shop by Room</h2>
-            <a href="#" className="text-stone-500 hover:text-orange-700 underline underline-offset-4">View Full Catalog</a>
-         </div>
-         
-         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              { name: 'Living Room', img: 'https://images.unsplash.com/photo-1583847669868-28203b10cd11?q=80&w=1000' },
-              { name: 'Bedroom', img: 'https://images.unsplash.com/photo-1616594039964-40891f913dd2?q=80&w=1000' },
-              { name: 'Dining', img: 'https://images.unsplash.com/photo-1617103996702-96ff29b1c467?q=80&w=1000' }
-            ].map((cat, idx) => (
-              <motion.div 
-                key={idx}
-                whileHover={{ scale: 1.02 }}
-                className="relative h-80 group overflow-hidden cursor-pointer"
-              >
-                <Image src={cat.img} alt={cat.name} fill className="object-cover" loader={loader} />
-                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors" />
-                <div className="absolute bottom-8 left-8">
-                  <h3 className="text-2xl text-white font-serif font-medium">{cat.name}</h3>
-                </div>
-              </motion.div>
-            ))}
-         </div>
-      </section>
-
+      <USPSlider  coreValues={CoreValues} themeSettings={themeSettings} />      
+      <CategorySection StoreCategory={StoreCategory} themeSettings={themeSettings} />      
       {/* Product Grid */}
       <section className="py-12 max-w-7xl mx-auto px-6 mb-20">
         <h2 className="text-3xl font-serif font-bold text-stone-900 mb-8 text-center">Weekly Highlights</h2>
@@ -349,42 +305,8 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
           ))}
         </div>
       </section>
-
-      {/* Material Focus Section */}
-      <section className="bg-stone-900 py-24 text-white">
-        <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-          <div>
-            <h2 className="text-4xl md:text-5xl font-serif mb-6">Designed for Life, <br/>Crafted to Last.</h2>
-            <p className="text-stone-400 text-lg mb-8 leading-relaxed">
-              We believe furniture should be more than just functional. It should be an extension of your personality. That's why we source only the finest oak, walnut, and sustainable textiles.
-            </p>
-            <div className="grid grid-cols-2 gap-8">
-               <div>
-                 <div className="text-3xl font-bold text-orange-500 mb-1">100%</div>
-                 <div className="text-stone-400 text-sm">Sustainable Wood</div>
-               </div>
-               <div>
-                 <div className="text-3xl font-bold text-orange-500 mb-1">25+</div>
-                 <div className="text-stone-400 text-sm">Artisan Partners</div>
-               </div>
-            </div>
-          </div>
-          <div className="relative h-[500px] w-full">
-             <div className="absolute inset-0 border border-white/20 translate-x-4 translate-y-4 z-0" />
-             <div className="relative z-10 h-full w-full overflow-hidden">
-               <Image 
-                 src="https://images.unsplash.com/photo-1598928506311-c55ded91a20c?q=80&w=1000&auto=format&fit=crop" 
-                 alt="Craftsmanship" 
-                 loader={loader}
-                 fill 
-                 className="object-cover grayscale hover:grayscale-0 transition-all duration-1000" 
-               />
-             </div>
-          </div>
-        </div>
-      </section>
-
-      <CategorySection StoreCategory={StoreCategory} themeSettings={themeSettings} />
+      {/* Featured Categories */}
+      <RoomSection  themeSettings={themeSettings} />
       <DynamicPopularProducts id={id} />
       <PromoSection promotions={promotions} />
       <DynamicTrending id={id} />

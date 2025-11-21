@@ -129,7 +129,7 @@ export default function Header() {
       `}</style>
 
       {/* ===== HEADER ===== */}
-      <nav className={`fixed w-full z-50 bg-stone-50/80 backdrop-blur-md border-b border-stone-200 transition-shadow duration-300 ${scrolled ? 'shadow-md' : ''}`}>
+      <nav className={`fixed top-0 w-full z-50 bg-stone-50/80 backdrop-blur-md border-b border-stone-200 transition-shadow duration-300 ${scrolled ? 'shadow-md' : ''}`}>
         <div className="max-w-7xl mx-auto px-6 h-20 flex justify-between items-center">
           <div className="flex items-center gap-8">
             {/* Logo */}
@@ -145,7 +145,7 @@ export default function Header() {
                 />
               ) : (
                 <h1 className="text-2xl font-serif font-bold text-stone-900 tracking-wide">
-                  HABITAT<span className="text-orange-600">.</span>
+                  { name || "HABITAT" }<span className="text-orange-600">.</span>
                 </h1>
               )}
             </Link>
