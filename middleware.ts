@@ -121,17 +121,12 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
     const slug = normalizedHost.split(".")[0]; 
 
     // Build the internal rewrite path for Next.js
-    // if (pathname === "/" || pathname === "") {
-    //   url.pathname = `/site/${slug}`;
-    // } else {
-    //   // "/publicspeaking/id" -> "/site/flourishhub/publicspeaking/id"
-    //   url.pathname = `/site/${slug}${pathname}`;
-    // }
+    
     if (pathname === "/" || pathname === "") {
-      url.pathname = `/`;
+      url.pathname = `/site/${slug}`;
     } else {
       // "/publicspeaking/id" -> "/site/flourishhub/publicspeaking/id"
-      url.pathname = `/${pathname}`;
+      url.pathname = `/site/${slug}/${pathname}`;
     }
 
     const res = NextResponse.rewrite(url);
