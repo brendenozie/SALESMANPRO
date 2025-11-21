@@ -110,11 +110,12 @@ const categoryHeaderFooterLayoutMap: Record<string, LayoutHeaderFooterComponent>
     'app landing page': DefaultLayout, // or SaaSLayout
     'product marketplace': MarketplaceLayout,
     'general purpose site': DefaultLayout,
+    
     'security services': SecurityLayout,
     'security consulting': Security2Layout,
 
-    'fashion':FashionLayout ,
-    'furniture':FurnitureLayout ,
+    'modern furniture store': FurnitureLayout,
+    'modern fashion store': FashionLayout,
     
     'other':DefaultLayout ,
     'Other':DefaultLayout ,     
