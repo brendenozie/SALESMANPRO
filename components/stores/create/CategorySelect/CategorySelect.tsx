@@ -42,6 +42,20 @@ const SITE_CATEGORIES: Category[] = [
       // { name: "Artisan Marketplace (v3)", link: "https://artisan-shop.salesmanpro.site", description: "Focuses on handcrafted and unique items.", tag: 'Standard' },
     ]
   },
+  {
+    name: "Furniture Shop",
+    icon: "🛋️",
+    variants: [
+      { name: "Modern Furniture Store", link: "https://furniture.salesmanpro.site", description: "Contemporary furniture designs.", tag: 'Standard' }
+    ]
+  },
+  {
+    name: "Fashion Shop",
+    icon: "👗",
+    variants: [
+      { name: "Modern Fashion Store", link: "https://fashion.salesmanpro.site", description: "Trendy and stylish clothing designs.", tag: 'Standard' }
+    ]
+  },
   { 
     name: "Consultant & Coach", 
     icon: "💡", 
