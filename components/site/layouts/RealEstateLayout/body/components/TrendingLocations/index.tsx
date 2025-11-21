@@ -1,191 +1,258 @@
 "use client";
 
-import React from 'react';
-import { motion } from 'framer-motion';
-import Image from 'next/image';
-import Link from 'next/link';
-import { ILocation } from '@/types/typings';
-import { MapPinIcon, FireIcon } from '@heroicons/react/24/solid'; // Using Heroicons for consistency
+import React from "react";
+import { motion, Variants } from "framer-motion";
+import Image from "next/image";
+import Link from "next/link";
+import { ILocation } from "@/types/typings";
+import {
+  MapPinIcon,
+  FireIcon,
+  ArrowRightIcon,
+  HomeModernIcon,
+  SparklesIcon,
+} from "@heroicons/react/24/solid";
 
-// Mocking the image loader for demonstration purposes
+/* -------------------------------------------------------------------------- */
+/* Constants & Helpers */
+/* -------------------------------------------------------------------------- */
+const FALLBACK_IMAGE_URL =
+  "https://images.unsplash.com/photo-1449844908441-8829872d2607?q=80&w=1000&auto=format&fit=crop";
+
 const customLoader = ({ src, width, quality }: any) => {
   return `${src}?w=${width}&q=${quality || 75}`;
 };
 
-// Animation variants for staggered reveal (Simplified for coherence)
-const containerVariants = {
+const getLocationImage = (loc: ILocation) => {
+  // Handle dynamic casting safely
+  const l: any = loc;
+  if (l.image) return l.image;
+  if (l.imageUrl) return l.imageUrl;
+  return FALLBACK_IMAGE_URL;
+};
+
+/* -------------------------------------------------------------------------- */
+/* Animations */
+/* -------------------------------------------------------------------------- */
+const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.2,
-    },
+    transition: { staggerChildren: 0.15 },
   },
 };
 
-const itemVariants = {
-  hidden: { opacity: 0, y: 50 },
+const cardVariants: Variants = {
+  hidden: { opacity: 0, y: 40 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: {
-      type: "spring",
-      stiffness: 110,
-      damping: 15,
-    },
+    transition: { type: "spring", stiffness: 90, damping: 20 },
   },
 };
 
-// Define the props interface for clarity
+/* -------------------------------------------------------------------------- */
+/* Components */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Decorative Background Pattern
+ */
+const DotPattern = () => (
+  <div className="absolute inset-0 z-0 opacity-[0.03] dark:opacity-[0.05] pointer-events-none">
+    <svg className="h-full w-full" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <pattern
+          id="dot-grid-loc"
+          width="32"
+          height="32"
+          patternUnits="userSpaceOnUse"
+        >
+          <circle cx="2" cy="2" r="1.5" fill="currentColor" />
+        </pattern>
+      </defs>
+      <rect width="100%" height="100%" fill="url(#dot-grid-loc)" />
+    </svg>
+  </div>
+);
+
+/**
+ * Location Card Component
+ * Features: Portrait aspect ratio, zoom hover, glass data capsules
+ */
+const LocationCard = ({ loc, slug }: { loc: ILocation; slug: string }) => {
+  // Mock data handling for display purposes
+  const anyLoc = loc as any;
+  const listingsCount = anyLoc.listings || Math.floor(Math.random() * 150) + 10;
+  const avgPrice =
+    anyLoc.avgPrice || Math.floor(Math.random() * 5000000) + 1000000;
+
+  return (
+    <motion.div variants={cardVariants} className="group relative h-full">
+      <Link
+        href={`/site/${slug}/location/${loc.slug}`}
+        className="block relative h-[450px] w-full overflow-hidden rounded-[2rem] shadow-xl transition-all duration-500 hover:shadow-2xl hover:-translate-y-2"
+      >
+        {/* 1. Image Layer */}
+        <div className="absolute inset-0 h-full w-full">
+          <Image
+            src={getLocationImage(loc)}
+            alt={loc.name}
+            loader={customLoader}
+            fill
+            className="object-cover transition-transform duration-1000 will-change-transform group-hover:scale-110"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+          />
+          {/* Gradient Overlay: Darker at bottom for text contrast */}
+          <div className="absolute inset-0 bg-gradient-to-t from-gray-900/90 via-gray-900/20 to-transparent opacity-80 transition-opacity group-hover:opacity-90" />
+        </div>
+
+        {/* 2. Floating Top Badges */}
+        <div className="absolute top-5 left-5 right-5 flex justify-between items-start z-10">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20 px-3 py-1.5 text-xs font-bold text-white shadow-sm">
+            <HomeModernIcon className="w-3.5 h-3.5 text-emerald-400" />
+            {listingsCount} Listings
+          </span>
+          
+          {/* "Trending" Badge - Only show for some logic (mocked here) */}
+          {listingsCount > 50 && (
+            <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-amber-500/90 text-white shadow-lg animate-pulse">
+              <FireIcon className="w-4 h-4" />
+            </span>
+          )}
+        </div>
+
+        {/* 3. Content Layer (Bottom) */}
+        <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-8 flex flex-col justify-end z-10">
+          
+          {/* Location Name & Pin */}
+          <div className="transform transition-transform duration-500 translate-y-2 group-hover:translate-y-0">
+            <h3 className="text-3xl font-extrabold text-white leading-tight drop-shadow-lg mb-1">
+              {loc.name}
+            </h3>
+            
+            {(loc.city || loc.country) && (
+              <div className="flex items-center text-gray-300 text-sm font-medium mb-4">
+                <MapPinIcon className="w-4 h-4 text-emerald-400 mr-1" />
+                {loc.city ? `${loc.city}, ` : ""}
+                {loc.country}
+              </div>
+            )}
+
+            {/* Price & CTA Row */}
+            <div className="flex items-center justify-between pt-4 border-t border-white/10">
+              <div>
+                <p className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Avg. Price</p>
+                <p className="text-lg font-bold text-white">
+                  KES {avgPrice.toLocaleString()}
+                </p>
+              </div>
+
+              <div className="h-10 w-10 rounded-full bg-white text-emerald-600 flex items-center justify-center shadow-lg transform scale-0 opacity-0 transition-all duration-300 group-hover:scale-100 group-hover:opacity-100">
+                <ArrowRightIcon className="w-5 h-5" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </Link>
+    </motion.div>
+  );
+};
+
+/* -------------------------------------------------------------------------- */
+/* Main Export */
+/* -------------------------------------------------------------------------- */
+
 interface TrendingLocationsProps {
   locations: ILocation[];
   slug: string;
 }
 
-//──────────────────────────────────────────────────────────────────────────────
-// TrendingLocations
-//──────────────────────────────────────────────────────────────────────────────
-export default function TrendingLocations({ locations, slug }: TrendingLocationsProps) {
-
+export default function TrendingLocations({
+  locations,
+  slug,
+}: TrendingLocationsProps) {
+  
+  // Handle empty state
   if (!locations || locations.length === 0) {
     return (
-      <section className="bg-gray-50 dark:bg-gray-950 py-16 sm:py-24 text-center text-gray-700 dark:text-gray-300">
-        <p className="text-xl font-medium">No trending locations available at the moment. Stay tuned!</p>
+      <section className="py-24 bg-gray-50 dark:bg-gray-950 text-center">
+         <div className="inline-block p-4 rounded-full bg-gray-100 dark:bg-gray-800 mb-4">
+            <MapPinIcon className="w-8 h-8 text-gray-400" />
+         </div>
+        <p className="text-gray-500 font-medium">Trending locations coming soon.</p>
       </section>
     );
   }
 
   return (
-    <section className="relative overflow-hidden bg-gray-50 dark:bg-gray-950 py-20 sm:py-28">
-      {/* Subtle Background Accent (Less distracting than the original blob animation) */}
-      <div className="absolute inset-x-0 top-0 h-1/3 bg-emerald-600/5 dark:bg-emerald-600/5 mix-blend-multiply" />
+    <section className="relative overflow-hidden bg-gray-50 dark:bg-gray-950 py-24 sm:py-32 text-gray-900 dark:text-gray-100">
+      <DotPattern />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        {/* Section Heading & Subtitle: Consistent H2/P structure */}
-        <motion.div
-          className="text-center mb-16"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.5 }}
-          variants={containerVariants}
-        >
+      <div className="container relative z-10 mx-auto px-6 max-w-7xl">
+        
+        {/* Header */}
+        <div className="mb-16 text-center max-w-3xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 text-xs font-bold uppercase tracking-wide mb-4"
+          >
+            <SparklesIcon className="w-4 h-4" />
+            Hotspots
+          </motion.div>
+
           <motion.h2
-            className="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-gray-50 mb-4"
-            variants={itemVariants}
+            className="text-4xl sm:text-5xl font-extrabold tracking-tight mb-6"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
           >
-            Explore Our <span className="text-amber-600 dark:text-amber-400">Top Destinations</span>
+            Trending <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500">Destinations</span>
           </motion.h2>
-          <motion.p
-            className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto"
-            variants={itemVariants}
-          >
-            Find property hotspots with high demand, great amenities, and attractive average prices.
-          </motion.p>
-          
-        </motion.div>
 
-        {/* Locations Grid: Emphasis on visual impact and clear data points */}
+          <motion.p
+            className="text-lg text-gray-600 dark:text-gray-400"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+          >
+            Discover the most sought-after neighborhoods and cities. 
+            High demand, excellent amenities, and prime investment opportunities.
+          </motion.p>
+        </div>
+
+        {/* Grid */}
         <motion.div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 auto-rows-fr"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8"
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, amount: 0.2 }}
+          viewport={{ once: true, margin: "-100px" }}
         >
-          {locations.map((loc: ILocation) => (
-            <motion.div
-              key={loc.id}
-              className="relative rounded-xl overflow-hidden shadow-xl transition-all duration-300 group cursor-pointer
-                         bg-gray-800 border-2 border-transparent hover:border-emerald-500 transform-gpu
-                         focus-within:ring-4 focus-within:ring-amber-500 focus-within:ring-offset-4 focus-within:ring-offset-gray-50 dark:focus-within:ring-offset-gray-900"
-              variants={itemVariants}
-              whileHover={{ y: -8, scale: 1.02 }} // Consistent lift effect
-              whileTap={{ scale: 0.98 }}
-            >
-              <Link href={`/site/${slug}/location/${loc.slug}`} passHref legacyBehavior>
-                <a className="block w-full h-full">
-                  {/* Image Area */}
-                  <div className="relative h-64 w-full overflow-hidden">
-                    <Image
-                      src={(loc as any).image || `https://source.unsplash.com/random/800x600/?${loc.name.split(' ')[0]},city,realestate`}
-                      alt={`Scenic view of ${loc.name}`}
-                      layout="fill"
-                      objectFit="cover"
-                      className="transform transition-transform duration-500 group-hover:scale-110 saturate-100 group-hover:saturate-110"
-                      loader={customLoader}
-                    />
-                    
-                    {/* Gradient Overlay for Text Readability */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent transition-colors duration-300" />
-                    
-                    {/* Listings Count Badge (Top-Left) */}
-                    <span className="absolute top-4 left-4 bg-teal-600 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg flex items-center">
-                      <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 6a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 9a2 2 0 012-2h12a2 2 0 012 2v5a2 2 0 01-2 2H4a2 2 0 01-2-2V9z" /></svg>
-                      <span className='font-bold'>{(loc as any).listings || Math.floor(Math.random() * 200) + 50}</span> Listings
-                    </span>
-                    
-                    {/* Trending Icon (Top-Right) */}
-                    <FireIcon className="absolute top-4 right-4 w-6 h-6 text-amber-400 drop-shadow-md animate-pulse" />
-                  </div>
-
-                  {/* Location Info Overlay (Bottom) */}
-                  <div className="absolute bottom-0 left-0 right-0 p-5 pt-10 text-white">
-                    {/* Location Name: Dominant text, consistent font weight */}
-                    <h3 className="text-3xl font-extrabold mb-1 leading-tight drop-shadow-xl">
-                      {loc.name}
-                    </h3>
-                    
-                    {/* Secondary Location Detail: Clear, uses Pin Icon */}
-                    {loc.country && (
-                      <p className="text-md font-medium text-gray-300 flex items-center mb-3 drop-shadow-lg">
-                        <MapPinIcon className="w-4 h-4 mr-1 text-emerald-400" />
-                        {loc.city && `${loc.city}, `}{loc.country}
-                      </p>
-                    )}
-
-                    {/* Price Indicator: Highlighted in Amber for consistency with listings */}
-                    <p className="text-xl font-bold text-amber-300 drop-shadow-lg">
-                      Avg. KES {(loc as any).avgPrice?.toLocaleString() || (Math.floor(Math.random() * 5000000) + 1000000).toLocaleString()}
-                    </p>
-                    
-                    {/* Subtler CTA */}
-                    <div className="mt-2">
-                        <span className='text-sm font-semibold text-emerald-300 group-hover:text-emerald-200 transition-colors'>
-                            View Properties &rarr;
-                        </span>
-                    </div>
-                  </div>
-                </a>
-              </Link>
-            </motion.div>
+          {locations.map((loc) => (
+            <LocationCard key={loc.id} loc={loc} slug={slug} />
           ))}
         </motion.div>
 
-        {/* Optional: View All Locations Button */}
-        {locations.length > 0 && (
-          <motion.div
-            className="text-center mt-20"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.5 }}
-            transition={{ delay: 0.3, duration: 0.7 }}
-          >
-            <Link href={`/site/${slug}/locations`} passHref>
-              <motion.a
-                className="inline-flex items-center justify-center px-8 py-4 border-2 border-indigo-600 text-lg font-semibold rounded-full shadow-lg
-                           text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600
-                           focus:outline-none focus:ring-4 focus:ring-amber-400/50 transition duration-300 ease-in-out transform hover:scale-[1.05]"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                aria-label="View all trending locations"
-              >
-                View All Destinations
-                <svg className="ml-2 w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" d="M10.293 15.707a1 1 0 010-1.414L14.586 10l-4.293-4.293a1 1 0 111.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z" clipRule="evenodd"></path><path fillRule="evenodd" d="M4.293 15.707a1 1 0 010-1.414L8.586 10 4.293 5.707a1 1 0 011.414-1.414l5 5a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0z" clipRule="evenodd"></path></svg>
-              </motion.a>
-            </Link>
-          </motion.div>
-        )}
+        {/* View All Button */}
+        <motion.div
+          className="mt-20 text-center"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.3 }}
+        >
+          <Link href={`/site/${slug}/locations`} passHref legacyBehavior>
+            <a className="group inline-flex items-center gap-2 px-8 py-4 rounded-full bg-white dark:bg-gray-800 text-gray-900 dark:text-white font-bold shadow-lg ring-1 ring-gray-200 dark:ring-gray-700 transition-all duration-300 hover:ring-emerald-500 hover:text-emerald-600 dark:hover:ring-emerald-400 dark:hover:text-emerald-400 hover:scale-105">
+              Explore All Locations
+              <ArrowRightIcon className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+            </a>
+          </Link>
+        </motion.div>
       </div>
     </section>
   );

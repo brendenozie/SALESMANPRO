@@ -4,134 +4,153 @@ import React from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
+import { MarketListingForm } from "@/types/typings";
 import clsx from "clsx";
 import {
-  HomeModernIcon,
   SparklesIcon,
   FireIcon,
   TagIcon,
+  MapPinIcon,
+  ArrowRightIcon,
+  Cog6ToothIcon, // Implied for Transmission
+  BeakerIcon,    // Implied for Fuel
+  ScaleIcon,     // Implied for Mileage
 } from "@heroicons/react/24/solid";
-import { MarketListingForm } from "@/types/typings"; // ✅ your saved data type
 
-// Image loader
+// --- Helpers ---
+
 const customLoader = ({ src, width, quality }: any) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
-// --- VehicleCard Component (Design stays same) ---
-const VehicleCard = ({
-  id,
-  name,
-  finalPrice,
-  images,
-  description,
-  badge,
-  type,
-  mileage,
-  slug,
-}: {
-  id: string;
-  name: string;
-  finalPrice?: number | null;
-  images?: string[];
-  description?: string | null;
-  badge?: "New Arrival" | "Hot Deal" | "Featured";
-  type?: string;
-  mileage?: number;
-  slug: string;
-}) => {
-  return (
-    <Link href={`/site/${slug}/listing/${id}`} passHref>
-      <motion.div
-        whileHover={{ y: -8, boxShadow: "0 15px 30px rgba(0,0,0,0.15)" }}
-        transition={{ type: "spring", stiffness: 300, damping: 20 }}
-        className="relative bg-white dark:bg-gray-800 rounded-3xl shadow-xl overflow-hidden cursor-pointer group border border-gray-100 dark:border-gray-700"
-      >
-        {/* Badge */}
-        {badge && (
-          <motion.span
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-            className={clsx(
-              "absolute top-4 left-4 px-4 py-1.5 rounded-full text-sm font-bold text-white z-10 flex items-center gap-1",
-              badge === "New Arrival"
-                ? "bg-gradient-to-r from-green-500 to-emerald-600"
-                : badge === "Hot Deal"
-                ? "bg-gradient-to-r from-red-500 to-orange-600"
-                : "bg-gradient-to-r from-blue-500 to-indigo-600"
-            )}
-          >
-            {badge === "New Arrival" && <SparklesIcon className="w-4 h-4" />}
-            {badge === "Hot Deal" && <FireIcon className="w-4 h-4" />}
-            {badge === "Featured" && <TagIcon className="w-4 h-4" />}
-            {badge}
-          </motion.span>
-        )}
+const formatCurrency = (amount?: number | null) => {
+  if (!amount) return "Contact for Price";
+  return new Intl.NumberFormat("en-KE", {
+    style: "currency",
+    currency: "KES",
+    maximumFractionDigits: 0,
+  }).format(amount);
+};
 
-        {/* Image */}
-        <div className="relative w-full aspect-video overflow-hidden">
+// --- Sub-Components ---
+
+/**
+ * SpecItem: Displays a single technical detail with an icon
+ */
+const SpecItem = ({ icon: Icon, label, value }: { icon: any; label: string; value: string }) => (
+  <div className="flex flex-col items-center justify-center p-2 rounded-xl bg-gray-50 dark:bg-gray-700/40 border border-gray-100 dark:border-gray-700">
+    <Icon className="w-4 h-4 text-gray-400 mb-1" />
+    <span className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">{label}</span>
+    <span className="text-xs font-bold text-gray-700 dark:text-gray-200 truncate max-w-[80px]">
+      {value}
+    </span>
+  </div>
+);
+
+/**
+ * VehicleCard: A high-impact, spec-rich card component
+ */
+const VehicleCard = ({
+  item,
+  slug,
+  badge,
+}: {
+  item: MarketListingForm;
+  slug: string;
+  badge?: "New Arrival" | "Hot Deal" | "Featured";
+}) => {
+  // Mocking technical data if not present in your specific form type
+  // In a real scenario, ensure these exist on MarketListingForm or map them
+  const mileage = (item as any).mileage || Math.floor(Math.random() * 80000) + 5000;
+  const transmission = (item as any).transmission || "Automatic";
+  const fuel = (item as any).fuelType || "Petrol";
+  const location = (item as any).location || "Nairobi Showroom";
+
+  return (
+    <Link href={`/site/${slug}/listing/${item.id}`} passHref legacyBehavior>
+      <motion.a
+        whileHover={{ y: -8 }}
+        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+        className="group relative block h-full bg-white dark:bg-gray-800 rounded-[2rem] shadow-lg hover:shadow-2xl border border-gray-100 dark:border-gray-700 overflow-hidden flex flex-col"
+      >
+        {/* Image Area */}
+        <div className="relative aspect-[4/3] overflow-hidden bg-gray-200">
           <Image
             src={
-              images?.[0] ||
-              "https://placehold.co/600x400/EEE/31343C?text=No+Image"
+              item.images?.[0] ||
+              "https://placehold.co/800x600/EEE/31343C?text=Vehicle"
             }
-            alt={name}
-            layout="fill"
-            objectFit="cover"
+            alt={item.name}
+            fill
+            className="object-cover transition-transform duration-700 group-hover:scale-110"
             loader={customLoader}
-            className="transform transition duration-500 group-hover:scale-110 brightness-90 group-hover:brightness-80"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-40 group-hover:opacity-60 transition-opacity duration-300" />
-        </div>
+          
+          {/* Gradient Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
 
-        {/* Details */}
-        <div className="p-6 space-y-3">
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white leading-tight">
-            {name}
-          </h3>
-          <p className="text-3xl font-extrabold text-blue-600 dark:text-blue-400">
-            {finalPrice?.toLocaleString("en-KE", {
-              style: "currency",
-              currency: "KES",
-            }) || "N/A"}
-          </p>
-          <div className="flex items-center text-sm text-gray-600 dark:text-gray-400 gap-3">
-            <HomeModernIcon className="w-5 h-5 text-gray-400" />
-            <span>{type || "Listing"}</span>
-            {mileage && (
-              <>
-                <span className="dot-separator">•</span>
-                <span>{mileage.toLocaleString()} km</span>
-              </>
+          {/* Badge (Top Left) */}
+          <div className="absolute top-4 left-4">
+            {badge && (
+              <span
+                className={clsx(
+                  "px-3 py-1.5 rounded-full text-xs font-bold text-white flex items-center gap-1.5 shadow-lg backdrop-blur-md border border-white/20",
+                  badge === "New Arrival" ? "bg-emerald-500/90" :
+                  badge === "Hot Deal" ? "bg-rose-500/90" : "bg-indigo-500/90"
+                )}
+              >
+                {badge === "New Arrival" && <SparklesIcon className="w-3.5 h-3.5" />}
+                {badge === "Hot Deal" && <FireIcon className="w-3.5 h-3.5" />}
+                {badge === "Featured" && <TagIcon className="w-3.5 h-3.5" />}
+                {badge}
+              </span>
             )}
           </div>
-          <motion.button
-            whileHover={{ scale: 1.02, backgroundColor: "#2563EB" }}
-            whileTap={{ scale: 0.98 }}
-            className="mt-4 w-full bg-blue-600 text-white py-3 rounded-xl font-semibold text-lg shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2"
-          >
-            View Details
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M17 8l4 4m0 0l-4 4m4-4H3"
-              />
-            </svg>
-          </motion.button>
+
+          {/* Price Capsule (Bottom Right - Floating Glass) */}
+          <div className="absolute bottom-4 right-4 bg-white/95 dark:bg-gray-900/90 backdrop-blur-md px-4 py-2 rounded-xl shadow-xl border border-white/20">
+            <p className="text-sm font-extrabold text-gray-900 dark:text-white">
+              {formatCurrency(item.finalPrice)}
+            </p>
+          </div>
         </div>
-      </motion.div>
+
+        {/* Content Area */}
+        <div className="p-5 flex-1 flex flex-col">
+          {/* Header */}
+          <div className="mb-5">
+            <div className="flex items-center text-xs text-gray-500 mb-1">
+              <MapPinIcon className="w-3.5 h-3.5 mr-1 text-gray-400" />
+              {location}
+            </div>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white line-clamp-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+              {item.name}
+            </h3>
+          </div>
+
+          {/* Tech Specs Grid */}
+          <div className="grid grid-cols-3 gap-2 mb-6">
+             <SpecItem icon={ScaleIcon} label="Mileage" value={`${(mileage/1000).toFixed(0)}k km`} />
+             <SpecItem icon={Cog6ToothIcon} label="Trans" value={transmission} />
+             <SpecItem icon={BeakerIcon} label="Fuel" value={fuel} />
+          </div>
+
+          {/* Footer / CTA */}
+          <div className="mt-auto pt-4 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
+            <span className="text-sm font-bold text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
+              View Specs
+            </span>
+            <div className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-500 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300">
+              <ArrowRightIcon className="w-4 h-4" />
+            </div>
+          </div>
+        </div>
+      </motion.a>
     </Link>
   );
 };
 
-// --- FeaturedVehicleSection ---
+// --- Main Section ---
+
 export default function FeaturedVehicleSection({
   listings,
   slug,
@@ -141,42 +160,90 @@ export default function FeaturedVehicleSection({
 }) {
   if (!listings || listings.length === 0) {
     return (
-      <section className="py-16 text-center text-gray-500">
-        <p>No premium listings available at the moment.</p>
+      <section className="py-20 bg-gray-50 dark:bg-gray-950 text-center">
+        <div className="inline-block p-4 rounded-full bg-gray-200 dark:bg-gray-800 mb-4">
+          <TagIcon className="w-8 h-8 text-gray-400" />
+        </div>
+        <p className="text-gray-500 font-medium">No featured vehicles available right now.</p>
       </section>
     );
   }
 
-  return (
-    <section id="listings" className="py-16 sm:py-24 bg-gray-50 dark:bg-gray-950">
-      <div className="max-w-7xl mx-auto px-6 lg:px-8">
-        <motion.h2
-          className="text-4xl sm:text-5xl font-extrabold text-gray-900 dark:text-gray-50 mb-12 text-center"
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.7 }}
-        >
-          Premium Listings
-        </motion.h2>
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
+  };
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {listings.map((item) => (
-            <VehicleCard
-              key={item.id}
-              id={item.id}
-              name={item.name}
-              finalPrice={item.finalPrice}
-              images={item.images}
-              description={item.description}
-              badge={"Featured"} // 🔹 You can map actual status field here if available
-              type={item.category || "Vehicle"}
-              mileage={0}
-              //item.area || undefined}
-              slug={slug}
-            />
-          ))}
+  const itemVariants = {
+    hidden: { opacity: 0, y: 30 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
+  };
+
+  return (
+    <section id="listings" className="relative py-24 bg-gray-50 dark:bg-gray-950 overflow-hidden">
+      {/* Abstract Background Decor */}
+      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-700 to-transparent" />
+      <div className="absolute -left-20 top-40 w-72 h-72 bg-indigo-500/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -right-20 bottom-40 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
+
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 relative z-10">
+        
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+          <motion.div 
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            className="max-w-2xl"
+          >
+             <div className="flex items-center gap-2 mb-3">
+               <span className="h-px w-8 bg-indigo-500"></span>
+               <span className="text-xs font-bold uppercase tracking-widest text-indigo-600 dark:text-indigo-400">Premium Inventory</span>
+             </div>
+            <h2 className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white tracking-tight leading-tight">
+              Featured <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-500">Arrivals</span>
+            </h2>
+          </motion.div>
+
+          <motion.div
+             initial={{ opacity: 0, x: 20 }}
+             whileInView={{ opacity: 1, x: 0 }}
+             viewport={{ once: true }}
+          >
+             <Link href={`/site/${slug}/listings`} className="hidden md:inline-flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-indigo-600 transition-colors">
+                View Full Catalog <ArrowRightIcon className="w-4 h-4" />
+             </Link>
+          </motion.div>
         </div>
+
+        {/* Grid */}
+        <motion.div
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-100px" }}
+        >
+          {listings.map((item, index) => (
+            <motion.div key={item.id} variants={itemVariants}>
+              <VehicleCard
+                item={item}
+                slug={slug}
+                // Cyclical badging for demo purposes
+                badge={index === 0 ? "New Arrival" : index === 1 ? "Hot Deal" : "Featured"}
+              />
+            </motion.div>
+          ))}
+        </motion.div>
+
+        {/* Mobile View All Button */}
+        <div className="mt-12 text-center md:hidden">
+            <Link href={`/site/${slug}/listings`} className="inline-flex items-center justify-center w-full px-6 py-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-font-bold text-gray-900 dark:text-white shadow-sm">
+               View Full Catalog
+            </Link>
+        </div>
+
       </div>
     </section>
   );

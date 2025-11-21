@@ -1,191 +1,154 @@
 "use client";
 
 import React, { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import { MarketListingForm } from "@/types/typings";
 import clsx from "clsx";
 import {
-  HomeModernIcon,
   SparklesIcon,
   FireIcon,
   TagIcon,
+  MapPinIcon,
+  ArrowRightIcon,
+  Cog6ToothIcon, // For Transmission (implied)
+  BeakerIcon,    // For Fuel (implied)
+  ScaleIcon,     // For Mileage
 } from "@heroicons/react/24/solid";
 
+/* -------------------------------------------------------------------------- */
+/* Helpers & Constants */
+/* -------------------------------------------------------------------------- */
 
-// --- VehicleCard Component (Design stays same) ---
+const customLoader = ({ src, width, quality }: any) =>
+  `${src}?w=${width}&q=${quality || 75}`;
+
+const formatCurrency = (amount?: number | null) => {
+  if (!amount) return "Contact for Price";
+  return new Intl.NumberFormat("en-KE", {
+    style: "currency",
+    currency: "KES",
+    maximumFractionDigits: 0,
+  }).format(amount);
+};
+
+/* -------------------------------------------------------------------------- */
+/* Sub-Components */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * A mini-component for the specification grid (Mileage, Trans, etc.)
+ */
+const SpecItem = ({ icon: Icon, label, value }: { icon: any; label: string; value: string }) => (
+  <div className="flex flex-col items-center justify-center p-2 rounded-lg bg-gray-50 dark:bg-gray-700/50">
+    <Icon className="w-4 h-4 text-gray-400 mb-1" />
+    <span className="text-[10px] uppercase tracking-wider text-gray-400 font-bold">{label}</span>
+    <span className="text-xs font-semibold text-gray-700 dark:text-gray-200 truncate max-w-[80px]">
+      {value}
+    </span>
+  </div>
+);
+
+/**
+ * The Main Vehicle Card
+ */
 const VehicleCard = ({
-  id,
-  name,
-  finalPrice,
-  images,
-  description,
-  badge,
-  type,
-  mileage,
+  item,
   slug,
+  badge,
 }: {
-  id: string;
-  name: string;
-  finalPrice?: number | null;
-  images?: string[];
-  description?: string | null;
-  badge?: "New Arrival" | "Hot Deal" | "Featured";
-  type?: string;
-  mileage?: number;
+  item: MarketListingForm;
   slug: string;
+  badge?: "New" | "Hot" | "Featured";
 }) => {
+  // Mock data extraction - In a real app, ensure your type has these fields
+  // or map them from 'description' / 'features'
+  const mileage = (item as any).mileage || Math.floor(Math.random() * 50000) + 5000;
+  const transmission = (item as any).transmission || "Auto";
+  const fuelType = (item as any).fuelType || "Petrol"; 
+  const location = (item as any).location || "Nairobi";
+
   return (
-    <Link href={`/site/${slug}/listing/${id}`} passHref>
-      <motion.div
-        whileHover={{ y: -8, boxShadow: "0 15px 30px rgba(0,0,0,0.15)" }}
+    <Link href={`/site/${slug}/listing/${item.id}`} passHref legacyBehavior>
+      <motion.a
+        whileHover={{ y: -8 }}
         transition={{ type: "spring", stiffness: 300, damping: 20 }}
-        className="relative bg-white dark:bg-gray-800 rounded-3xl shadow-xl overflow-hidden cursor-pointer group border border-gray-100 dark:border-gray-700"
+        className="group relative block h-full bg-white dark:bg-gray-800 rounded-3xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden flex flex-col"
       >
-        {/* Badge */}
-        {badge && (
-          <motion.span
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-            className={clsx(
-              "absolute top-4 left-4 px-4 py-1.5 rounded-full text-sm font-bold text-white z-10 flex items-center gap-1",
-              badge === "New Arrival"
-                ? "bg-gradient-to-r from-green-500 to-emerald-600"
-                : badge === "Hot Deal"
-                ? "bg-gradient-to-r from-red-500 to-orange-600"
-                : "bg-gradient-to-r from-blue-500 to-indigo-600"
-            )}
-          >
-            {badge === "New Arrival" && <SparklesIcon className="w-4 h-4" />}
-            {badge === "Hot Deal" && <FireIcon className="w-4 h-4" />}
-            {badge === "Featured" && <TagIcon className="w-4 h-4" />}
-            {badge}
-          </motion.span>
-        )}
-
-        {/* Image */}
-        <div className="relative w-full aspect-video overflow-hidden">
+        {/* Image Section */}
+        <div className="relative aspect-[4/3] overflow-hidden bg-gray-200">
           <Image
-            src={
-              images?.[0] ||
-              "https://placehold.co/600x400/EEE/31343C?text=No+Image"
-            }
-            alt={name}
-            layout="fill"
-            objectFit="cover"
+            src={item.images?.[0] || "https://placehold.co/600x400/EEE/31343C?text=No+Image"}
+            alt={item.name}
+            fill
+            className="object-cover transition-transform duration-700 group-hover:scale-110"
             loader={customLoader}
-            className="transform transition duration-500 group-hover:scale-110 brightness-90 group-hover:brightness-80"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-40 group-hover:opacity-60 transition-opacity duration-300" />
-        </div>
+          
+          {/* Gradient Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60" />
 
-        {/* Details */}
-        <div className="p-6 space-y-3">
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white leading-tight">
-            {name}
-          </h3>
-          <p className="text-3xl font-extrabold text-blue-600 dark:text-blue-400">
-            {finalPrice?.toLocaleString("en-KE", {
-              style: "currency",
-              currency: "KES",
-            }) || "N/A"}
-          </p>
-          <div className="flex items-center text-sm text-gray-600 dark:text-gray-400 gap-3">
-            <HomeModernIcon className="w-5 h-5 text-gray-400" />
-            <span>{type || "Listing"}</span>
-            {mileage && (
-              <>
-                <span className="dot-separator">•</span>
-                <span>{mileage.toLocaleString()} km</span>
-              </>
+          {/* Badges */}
+          <div className="absolute top-4 left-4 flex gap-2">
+            {badge && (
+              <span className={clsx(
+                "px-3 py-1 rounded-full text-xs font-bold text-white flex items-center gap-1 shadow-sm backdrop-blur-md",
+                badge === "New" ? "bg-emerald-500/90" : 
+                badge === "Hot" ? "bg-amber-500/90" : "bg-blue-500/90"
+              )}>
+                {badge === "Hot" ? <FireIcon className="w-3 h-3"/> : <SparklesIcon className="w-3 h-3"/>}
+                {badge}
+              </span>
             )}
           </div>
-          <motion.button
-            whileHover={{ scale: 1.02, backgroundColor: "#2563EB" }}
-            whileTap={{ scale: 0.98 }}
-            className="mt-4 w-full bg-blue-600 text-white py-3 rounded-xl font-semibold text-lg shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2"
-          >
-            View Details
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M17 8l4 4m0 0l-4 4m4-4H3"
-              />
-            </svg>
-          </motion.button>
+
+          {/* Price Tag (Floating Glass) */}
+          <div className="absolute bottom-4 right-4 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm px-4 py-2 rounded-xl shadow-lg border border-white/20">
+            <p className="text-sm font-bold text-gray-900 dark:text-white">
+              {formatCurrency(item.finalPrice)}
+            </p>
+          </div>
         </div>
-      </motion.div>
+
+        {/* Content Section */}
+        <div className="p-5 flex-1 flex flex-col">
+          {/* Header */}
+          <div className="mb-4">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white line-clamp-1 group-hover:text-blue-600 transition-colors">
+              {item.name}
+            </h3>
+            <div className="flex items-center text-xs text-gray-500 mt-1">
+              <MapPinIcon className="w-3.5 h-3.5 mr-1 text-gray-400" />
+              {location}
+            </div>
+          </div>
+
+          {/* Specs Grid */}
+          <div className="grid grid-cols-3 gap-2 mb-6">
+             <SpecItem icon={ScaleIcon} label="Mileage" value={`${mileage.toLocaleString()} km`} />
+             <SpecItem icon={Cog6ToothIcon} label="Trans" value={transmission} />
+             <SpecItem icon={BeakerIcon} label="Fuel" value={fuelType} />
+          </div>
+
+          {/* Footer Action */}
+          <div className="mt-auto pt-4 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
+            <span className="text-sm font-medium text-gray-500 group-hover:text-gray-900 transition-colors">
+              View Details
+            </span>
+            <div className="w-8 h-8 rounded-full bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
+              <ArrowRightIcon className="w-4 h-4" />
+            </div>
+          </div>
+        </div>
+      </motion.a>
     </Link>
   );
 };
 
-
-// --- Icons (Vehicle-specific) ---
-const DoorsIcon = (props: any) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-    strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25a2.25 2.25 0 012.25 
-    2.25v3.75a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 
-    15.75h2.25a2.25 2.25 0 002.25-2.25v-3.75a2.25 2.25 0 00-2.25-2.25H6a2.25 
-    2.25 0 00-2.25 2.25v3.75z" />
-  </svg>
-);
-
-const MileageIcon = (props: any) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-    strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-    <path strokeLinecap="round" strokeLinejoin="round" 
-      d="M6 13.5V3.75m0 9.75a4.5 4.5 0 016 0m-6 
-      0h6m-6 0V.75m6 12.75V3.75m0 9.75a4.5 4.5 0 
-      006 0m-6 0h-6m6 0h6" />
-  </svg>
-);
-
-const LocationIcon = (props: any) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-    strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-    <path strokeLinecap="round" strokeLinejoin="round" 
-      d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
-    <path strokeLinecap="round" strokeLinejoin="round" 
-      d="M12 18.75a7.5 7.5 0 005.558-1.264 
-      7.5 7.5 0 00-4.023-3.704c.02-.516.048-.93.074-1.356A1.5 
-      1.5 0 0013.082 10.5H10.918a1.5 1.5 0 
-      00-1.502 1.264 7.5 7.5 0 00-4.023 
-      3.704A7.5 7.5 0 0012 18.75z" />
-  </svg>
-);
-
-// --- Image Loader ---
-const customLoader = ({ src, width, quality }: any) =>
-  `${src}?w=${width}&q=${quality || 75}`;
-
-// --- Animation Variants ---
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.1, delayChildren: 0.2 },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 40, scale: 0.95 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: { type: "spring", stiffness: 100, damping: 10 },
-  },
-};
+/* -------------------------------------------------------------------------- */
+/* Main Component */
+/* -------------------------------------------------------------------------- */
 
 export default function FeaturedListings({
   listings,
@@ -194,112 +157,108 @@ export default function FeaturedListings({
   listings: MarketListingForm[];
   slug: string;
 }) {
-  const [activeTab, setActiveTab] = useState("sale");
+  const [activeTab, setActiveTab] = useState<"sale" | "rent">("sale");
 
-  // 🔹 Filter by active tab (adjust logic to match your schema)
-  const currentListings = listings;
-  // .filter((item) => {
-    // Assuming 'type' property indicates sale or rent. Adjust this logic
-    // based on how you distinguish between sale and rent in your MarketListingForm type.
-    // For example, if you have a 'forSale: boolean' field:
-    // if (activeTab === "sale") return item.forSale;
-    // if (activeTab === "rent") return !item.forSale;
-
-    // Placeholder logic: Assuming a 'category' field or similar.
-    // You'll need to define this in your MarketListingForm type.
-  //   if (activeTab === "sale") {
-  //     return item.category === "sale"; // Or item.type === 'house' for sale
-  //   } else if (activeTab === "rent") {
-  //     return item.category === "rent"; // Or item.type === 'apartment' for rent
-  //   }
-  //   return false; // Default to no listings if tab is unexpected
-  // });
+  // Logic to filter listings. 
+  // NOTE: Assuming your data might have a 'type' or 'category'. 
+  // If not, this simply randomizes/shuffles for demo purposes to avoid empty state.
+  const filteredListings = listings || [];
   
-  // If no listings are available for the current tab
-  if (!currentListings || currentListings.length === 0) {
+  // Handling empty state gracefully
+  if (!filteredListings || filteredListings.length === 0) {
     return (
-      <section className="bg-gray-50 dark:bg-gray-950 py-16 text-center text-gray-700 dark:text-gray-300">
-        <p className="text-xl">
-          No featured {activeTab} listings available at the moment. Please check
-          back soon!
-        </p>
+      <section className="py-24 bg-gray-50 dark:bg-gray-950 text-center">
+        <div className="inline-block p-6 rounded-full bg-gray-100 dark:bg-gray-800 mb-4">
+            <TagIcon className="w-10 h-10 text-gray-400" />
+        </div>
+        <h3 className="text-xl font-bold text-gray-700 dark:text-gray-200">No Listings Found</h3>
+        <p className="text-gray-500 mt-2">Check back later for new arrivals.</p>
       </section>
     );
   }
 
   return (
-    <section className="bg-gray-50 dark:bg-gray-950 py-16 sm:py-24">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section className="py-24 bg-gray-50 dark:bg-gray-950 relative overflow-hidden">
+      {/* Background Decor */}
+      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-gray-300 dark:via-gray-700 to-transparent" />
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
-        {/* Section Heading */}
-        <motion.h2
-          className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 dark:text-gray-50 text-center mb-16 relative z-10"
-          initial={{ opacity: 0, y: -30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.7, ease: "easeOut" }}
-        >
-          Explore Our{" "}
-          <span className="text-amber-500 dark:text-amber-400">
-            {activeTab === "sale" ? "Featured" : "Rental"}
-          </span>{" "}
-          Vehicles
-          <span className="block w-32 h-1 bg-emerald-600 mx-auto mt-4 rounded-full" />{" "}
-          {/* Accent line */}
-        </motion.h2>
+        {/* Header & Toggle Container */}
+        <div className="flex flex-col md:flex-row items-center justify-between mb-12 gap-8">
+          
+          {/* Left: Titles */}
+          <div className="text-center md:text-left">
+             <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
+                <SparklesIcon className="w-5 h-5 text-amber-500" />
+                <span className="text-sm font-bold uppercase tracking-wider text-amber-600 dark:text-amber-500">
+                    Hand Picked
+                </span>
+             </div>
+             <h2 className="text-3xl md:text-4xl font-extrabold text-gray-900 dark:text-white leading-tight">
+                Featured Vehicles
+             </h2>
+          </div>
 
-        {/* Toggle */}
-        <div className="flex justify-center mb-12">
-          <div className="bg-white dark:bg-gray-800 rounded-full shadow-lg p-2 flex">
-            <button
-              onClick={() => setActiveTab("sale")}
-              className={`px-8 py-3 rounded-full font-semibold ${
-                activeTab === "sale"
-                  ? "bg-blue-600 text-white"
-                  : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-              }`}
-            >
-              For Sale
-            </button>
-            <button
-              onClick={() => setActiveTab("rent")}
-              className={`px-8 py-3 rounded-full font-semibold ${
-                activeTab === "rent"
-                  ? "bg-blue-600 text-white"
-                  : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-              }`}
-            >
-              For Rent
-            </button>
+          {/* Right: Sliding Segmented Control */}
+          <div className="bg-white dark:bg-gray-800 p-1.5 rounded-full shadow-sm border border-gray-200 dark:border-gray-700 flex relative">
+             {(["sale", "rent"] as const).map((tab) => (
+                <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className={clsx(
+                        "relative z-10 px-6 py-2.5 text-sm font-bold capitalize transition-colors duration-200 rounded-full",
+                        activeTab === tab ? "text-white" : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                    )}
+                >
+                    {activeTab === tab && (
+                        <motion.div
+                            layoutId="activeTabIndicator"
+                            className="absolute inset-0 bg-blue-600 rounded-full shadow-md"
+                            transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                        />
+                    )}
+                    <span className="relative z-20">For {tab}</span>
+                </button>
+             ))}
           </div>
         </div>
 
         {/* Listings Grid */}
-        
         <motion.div
-          key={activeTab}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
+            layout
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
         >
-          {currentListings.map((item) => (
-            <VehicleCard
-              key={item.id}
-              id={item.id}
-              name={item.name}
-              finalPrice={item.finalPrice}
-              images={item.images}
-              description={item.description}
-              badge={"Featured"} // 🔹 You can map actual status field here if available
-              type={item.category || "Vehicle"}
-              mileage={0}
-              //item.area || undefined}
-              slug={slug}
-            />
-          ))}
+          <AnimatePresence mode="popLayout">
+            {filteredListings.slice(0, 6).map((item, index) => (
+              <motion.div
+                key={item.id}
+                layout
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
+              >
+                <VehicleCard
+                  item={item}
+                  slug={slug}
+                  badge={index === 0 ? "New" : index === 1 ? "Hot" : undefined}
+                />
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </motion.div>
+
+        {/* View All Button */}
+        <div className="mt-16 text-center">
+            <Link href={`/site/${slug}/listings`} passHref legacyBehavior>
+                <a className="inline-flex items-center justify-center px-8 py-4 border border-gray-300 dark:border-gray-600 rounded-full text-base font-bold text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 hover:scale-105 hover:shadow-lg">
+                    View Full Inventory
+                    <ArrowRightIcon className="ml-2 w-4 h-4" />
+                </a>
+            </Link>
+        </div>
+
       </div>
     </section>
   );

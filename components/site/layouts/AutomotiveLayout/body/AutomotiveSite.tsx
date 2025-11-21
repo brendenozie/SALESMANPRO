@@ -100,7 +100,7 @@ export default function AutomotiveSite({ pageData, companyId }: { pageData: Stor
   );
 
   return (
-    <div className="space-y-24 font-sans bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
+    <div className="font-sans bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
 
       {/* Hero */}
       <HeroSection
