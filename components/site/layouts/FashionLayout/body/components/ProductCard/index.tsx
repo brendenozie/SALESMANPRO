@@ -1,24 +1,50 @@
 'use client';
 
-import { MinusIcon, PlusIcon, StarIcon, TrashIcon } from '@heroicons/react/24/solid';
 import React from 'react';
-import { MarketListingForm } from '@/types/typings';
 import { motion } from 'framer-motion';
+import { MarketListingForm } from '@/types/typings';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStoreContext } from '@/contexts/StoreContext';
 import Link from 'next/link';
 import Image from 'next/image';
-import classNames from 'classnames';
+import {
+  FireIcon,
+  HeartIcon,
+  MinusIcon,
+  PlusIcon,
+  TrashIcon,
+} from '@heroicons/react/24/outline';
+import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
+
+const fadeIn = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 },
+};
+
+const loader = ({ src }: { src: string }) => src;
 
 interface ProductCardProps {
   product: MarketListingForm;
 }
 
-const loader = ({ src }: { src: string }) => {
-  return src;
-}
-
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
+
+  const {
+    id,
+    name,
+    images = [],
+    brand,
+    sellingPrice,
+    finalPrice,
+    isNewArrival,
+    isDiscounted,
+    isFlashDeal,
+    tags = [],
+  } = product;
+
+  const rating = 4.8; // static rating until API
+  const img = images?.[0] || 'https://via.placeholder.com/400';
+
   const { cart, addToCart, decreaseQuantity, removeFromCart } = useStateContext();
   const { storeFormData } = useStoreContext();
   const { slug } = storeFormData || {};
@@ -29,8 +55,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const getQuantity = (id: string) => cart.find((item : MarketListingForm) => item.id === id)?.quantity || 0;
   const quantity = getQuantity(product.id);
 
-  const { name, images, finalPrice, sellingPrice } = product;
-  const rating = 4.5; // Example static value
   const reviews = 149; // Example static value
 
   const discount =
@@ -40,82 +64,54 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="relative flex flex-col bg-white rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden group border border-gray-100"
+      variants={fadeIn}
+      initial="hidden"
+      animate="visible"
+      whileHover={{ y: -8 }}
+      className="group relative bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100"
     >
-      {/* Product Image Section */}
+      {/* IMAGE AREA */}
       <Link
-        href={`/site/${slug}/ecommerce/products/${product.id}`}
-        className="block relative h-72 w-full overflow-hidden" // Taller image section
+        href={`/site/${slug}/ecommerce/products/${id}`}
+        className="relative aspect-[3/4] bg-slate-100 overflow-hidden block"
       >
-        {images && images.length > 0 && (
-          <Image
-            src={images[0] === "" ? images[0] : `https://via.placeholder.com/300`}
-            alt={name}
-            fill
-            loader={loader}
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            className="object-cover object-center transition-transform duration-500 group-hover:scale-105" // Subtler, more elegant zoom
-            priority
-          />
-        )}
-        {/* Discount Badge */}
-        {discount !== null && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.3 }}
-            className="absolute top-4 left-4 z-10 text-white text-xs md:text-sm font-bold px-3 py-1 rounded-full shadow-lg"
-            style={{ backgroundColor: secondary }}
-          >
-            -{discount}% OFF
-          </motion.div>
-        )}
-        {/* View Details Overlay on Hover */}
-        <div className="absolute inset-0 bg-black bg-opacity-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-          <motion.span
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-white text-sm md:text-lg font-semibold px-6 py-2 rounded-full backdrop-blur-sm"
-            style={{ backgroundColor: `rgba(255,255,255,0.1)` }}
-          >
-            View Details
-          </motion.span>
-        </div>
-      </Link>
+        <Image
+          src={img}
+          alt={name}
+          fill
+          loader={loader}
+          className="object-cover transition-transform duration-700 group-hover:scale-110"
+        />
 
-      {/* Product Details and Actions */}
-      <div className="p-6 flex flex-col justify-between flex-grow">
-        {/* Product Title and Rating */}
-        <div className="flex flex-col mb-3">
-          <h4 className="text-xl font-extrabold text-gray-900 truncate" title={name}>
-            {name}
-          </h4>
-          <div className="mt-1 flex items-center gap-1 text-yellow-500 text-sm">
-            <StarIcon className="w-4 h-4" />
-            <span className="font-semibold">{rating.toFixed(1)}</span>
-            <span className="text-gray-500 ml-1 text-xs">({reviews} reviews)</span>
-          </div>
-        </div>
+        {/* BADGES */}
+        <div className="absolute top-3 left-3 flex flex-col gap-2">
+          {isNewArrival && (
+            <span className="bg-slate-900 text-white text-[10px] font-bold px-2 py-1 uppercase tracking-wider rounded">
+              New
+            </span>
+          )}
 
-        {/* Price Section */}
-        <div className="flex items-baseline gap-2 mb-4">
-          <span
-            className="text-2xl font-extrabold"
-            style={{ color: primary }}
-          >
-            {(finalPrice ?? 0).toFixed(2)}
-          </span>
-          {sellingPrice && finalPrice && sellingPrice > finalPrice && (
-            <span className="text-base line-through text-gray-400">
-              {sellingPrice.toFixed(2)}
+          {isDiscounted && discount && (
+            <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-1 uppercase tracking-wider rounded">
+              -{discount}%
+            </span>
+          )}
+
+          {isFlashDeal && (
+            <span className="bg-amber-400 text-slate-900 text-[10px] font-bold px-2 py-1 uppercase tracking-wider rounded flex items-center gap-1">
+              <FireIcon className="w-3 h-3" /> Flash
             </span>
           )}
         </div>
 
-        {/* Cart Actions */}
+        {/* WISHLIST ICON */}
+        <button className="absolute top-3 right-3 p-2 bg-white/50 hover:bg-white rounded-full transition-colors text-slate-600 hover:text-red-500">
+          <HeartIcon className="w-5 h-5" />
+        </button>
+
+        {/* QUICK ACTION */}
+        <div className="absolute bottom-4 left-0 right-0 px-4 flex justify-between translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+          {/* Cart Actions */}
         {quantity > 0 ? (
           <div className="flex items-center justify-between mt-auto">
             <div className="flex items-center space-x-2">
@@ -162,6 +158,57 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             Add to Cart
           </motion.button>
         )}
+        </div>
+      </Link>
+
+      {/* INFO AREA */}
+      <div className="p-4">
+        <div className="flex justify-between items-start mb-1">
+          <p className="text-xs text-slate-500 font-medium uppercase tracking-wide">
+            {brand ?? "No Brand"}
+          </p>
+
+          {/* Static rating until backend */}
+          <div className="flex items-center gap-1">
+            <StarIconSolid className="w-3 h-3 text-yellow-400" />
+            <span className="text-xs text-slate-600 font-semibold">
+              {rating}
+            </span>
+          </div>
+        </div>
+
+        <h3 className="text-lg font-bold text-slate-900 truncate mb-2">
+          {name}
+        </h3>
+
+        <div className="flex items-center gap-3">
+          {isDiscounted ? (
+            <>
+              <span className="text-lg font-bold text-indigo-600">
+                ${finalPrice}
+              </span>
+              <span className="text-sm text-slate-400 line-through">
+                ${sellingPrice}
+              </span>
+            </>
+          ) : (
+            <span className="text-lg font-bold text-slate-900">
+              ${sellingPrice}
+            </span>
+          )}
+        </div>
+
+        {/* TAGS */}
+        <div className="mt-3 flex flex-wrap gap-1">
+          {tags.slice(0, 2).map((tag) => (
+            <span
+              key={tag}
+              className="text-[10px] px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full"
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
       </div>
     </motion.div>
   );

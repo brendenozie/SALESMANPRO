@@ -249,17 +249,6 @@ const fadeIn = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
 };
 
-const staggerContainer = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1
-    }
-  }
-};
-
-
 const ProductCard = ({ item }: { item: MarketListingForm }) => {
   return (
     <motion.div 
@@ -363,60 +352,9 @@ const Features = () => {
 
 
   return (
-    <div className="space-y-12">
+    <div>
       <HeroSlider heroSlides={heroSlides} themeSettings={themeSettings} />
-           <Features />
-
-      {/* Trending Section */}
-      <section className="py-24 max-w-7xl mx-auto px-6">
-        <div className="flex justify-between items-end mb-12">
-          <div>
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Trending Now</h2>
-            <p className="text-slate-500 max-w-md">Explore our most popular items, curated just for you based on current seasonal trends.</p>
-          </div>
-          <a href="#" className="hidden md:flex items-center gap-2 text-indigo-600 font-semibold hover:gap-3 transition-all">
-            View All Products <ArrowRightIcon className="w-5 h-5" />
-          </a>
-        </div>
-
-        <motion.div 
-          variants={staggerContainer}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8"
-        >
-          {MOCK_PRODUCTS.map((product) => (
-            <ProductCard key={product.id} item={product} />
-          ))}
-        </motion.div>
-        
-        <div className="mt-12 text-center md:hidden">
-            <button className="px-6 py-3 border border-slate-300 rounded-full text-slate-700 font-semibold">View All</button>
-        </div>
-      </section>
-
-      {/* Banner Section */}
-      <section className="relative py-32 bg-slate-900 overflow-hidden">
-        <div className="absolute inset-0 opacity-30">
-          <Image 
-             src="https://images.unsplash.com/photo-1469334031218-e382a71b716b?q=80&w=1000&auto=format&fit=crop" 
-             alt="Banner" 
-             fill 
-             loader={loader}
-             className="object-cover"
-          />
-        </div>
-        <div className="relative z-10 max-w-7xl mx-auto px-6 text-center">
-           <span className="inline-block py-1 px-3 border border-white/30 rounded-full text-white text-sm mb-6 backdrop-blur-sm">Limited Time Offer</span>
-           <h2 className="text-4xl md:text-6xl font-bold text-white mb-6">Summer Clearance Sale</h2>
-           <p className="text-slate-300 text-lg mb-8 max-w-2xl mx-auto">Get up to 50% off on selected items. Don't miss out on the hottest styles of the season.</p>
-           <button className="bg-white text-slate-900 px-10 py-4 rounded-full font-bold hover:bg-indigo-50 transition-colors">
-             Shop the Sale
-           </button>
-        </div>
-      </section>
-
+      <Features />
       {/* Categories Grid */}
       <section className="py-24 max-w-7xl mx-auto px-6">
         <h2 className="text-3xl font-bold text-slate-900 mb-12 text-center">Shop by Category</h2>
