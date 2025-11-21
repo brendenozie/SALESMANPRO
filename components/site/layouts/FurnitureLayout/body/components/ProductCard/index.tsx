@@ -1,167 +1,178 @@
 'use client';
 
-import { MinusIcon, PlusIcon, StarIcon, TrashIcon } from '@heroicons/react/24/solid';
 import React from 'react';
-import { MarketListingForm } from '@/types/typings';
-import { motion } from 'framer-motion';
-import { useStateContext } from '@/contexts/ContextProvider';
-import { useStoreContext } from '@/contexts/StoreContext';
+import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import Image from 'next/image';
-import classNames from 'classnames';
+import { 
+  HeartIcon, 
+  ArrowRightIcon, 
+  StarIcon, 
+  MinusIcon, 
+  PlusIcon, 
+  TrashIcon 
+} from '@heroicons/react/24/solid';
+
+import { CubeIcon, SwatchIcon } from '@heroicons/react/24/outline';
+
+import { MarketListingForm } from '@/types/typings';
+import { useStateContext } from '@/contexts/ContextProvider';
+import { useStoreContext } from '@/contexts/StoreContext';
+
+const loader = ({ src }: { src: string }) => src;
 
 interface ProductCardProps {
   product: MarketListingForm;
 }
 
-const loader = ({ src }: { src: string }) => {
-  return src;
-}
-
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { cart, addToCart, decreaseQuantity, removeFromCart } = useStateContext();
   const { storeFormData } = useStoreContext();
-  const { slug } = storeFormData || {};
-  
+
   const primary = storeFormData?.themeSettings?.primaryColor || '#10B981';
   const secondary = storeFormData?.themeSettings?.secondaryColor || '#3B82F6';
+  const { slug } = storeFormData || {};
 
-  const getQuantity = (id: string) => cart.find((item : MarketListingForm) => item.id === id)?.quantity || 0;
-  const quantity = getQuantity(product.id);
-
-  const { name, images, finalPrice, sellingPrice } = product;
-  const rating = 4.5; // Example static value
-  const reviews = 149; // Example static value
+  const quantity = cart.find((item: MarketListingForm) => item.id === product.id)?.quantity || 0;
 
   const discount =
-    sellingPrice && finalPrice != null && sellingPrice > finalPrice
-      ? Math.round(((sellingPrice - finalPrice) / sellingPrice) * 100)
+    product.sellingPrice && product.finalPrice != null && product.sellingPrice > product.finalPrice
+      ? Math.round(((product.sellingPrice - product.finalPrice) / product.sellingPrice) * 100)
       : null;
+
+  const rating = 4.5;
+  const reviews = 149;
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="relative flex flex-col bg-white rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-500 overflow-hidden group border border-gray-100"
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      whileHover={{ y: -5 }}
+      className="group relative bg-white border border-stone-100 rounded-none md:rounded-sm shadow-sm hover:shadow-xl transition-all duration-500"
     >
-      {/* Product Image Section */}
-      <Link
-        href={`/site/${slug}/ecommerce/products/${product.id}`}
-        className="block relative h-72 w-full overflow-hidden" // Taller image section
-      >
-        {images && images.length > 0 && (
+      {/* ----------------------- IMAGE SECTION ----------------------- */}
+      <div className="relative aspect-[4/5] overflow-hidden bg-stone-100">
+        <Link href={`/site/${slug}/ecommerce/products/${product.id}`}>
           <Image
-            src={images[0] === "" ? images[0] : `https://via.placeholder.com/300`}
-            alt={name}
-            fill
+            src={product.images[0] || ""}
+            alt={product.name}
             loader={loader}
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            className="object-cover object-center transition-transform duration-500 group-hover:scale-105" // Subtler, more elegant zoom
-            priority
+            fill
+            className="object-cover transition-transform duration-700 group-hover:scale-105"
           />
-        )}
-        {/* Discount Badge */}
-        {discount !== null && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.3 }}
-            className="absolute top-4 left-4 z-10 text-white text-xs md:text-sm font-bold px-3 py-1 rounded-full shadow-lg"
-            style={{ backgroundColor: secondary }}
-          >
-            -{discount}% OFF
-          </motion.div>
-        )}
-        {/* View Details Overlay on Hover */}
-        <div className="absolute inset-0 bg-black bg-opacity-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-          <motion.span
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-white text-sm md:text-lg font-semibold px-6 py-2 rounded-full backdrop-blur-sm"
-            style={{ backgroundColor: `rgba(255,255,255,0.1)` }}
-          >
-            View Details
-          </motion.span>
-        </div>
-      </Link>
+        </Link>
 
-      {/* Product Details and Actions */}
-      <div className="p-6 flex flex-col justify-between flex-grow">
-        {/* Product Title and Rating */}
-        <div className="flex flex-col mb-3">
-          <h4 className="text-xl font-extrabold text-gray-900 truncate" title={name}>
-            {name}
-          </h4>
-          <div className="mt-1 flex items-center gap-1 text-yellow-500 text-sm">
-            <StarIcon className="w-4 h-4" />
-            <span className="font-semibold">{rating.toFixed(1)}</span>
-            <span className="text-gray-500 ml-1 text-xs">({reviews} reviews)</span>
-          </div>
-        </div>
+        {/* STATUS BADGES */}
+        <div className="absolute top-4 left-4 flex flex-col gap-2">
+          {product.isNewArrival && (
+            <span className="bg-stone-900 text-white text-[10px] font-bold px-3 py-1 uppercase tracking-wider">
+              New In
+            </span>
+          )}
 
-        {/* Price Section */}
-        <div className="flex items-baseline gap-2 mb-4">
-          <span
-            className="text-2xl font-extrabold"
-            style={{ color: primary }}
-          >
-            {(finalPrice ?? 0).toFixed(2)}
-          </span>
-          {sellingPrice && finalPrice && sellingPrice > finalPrice && (
-            <span className="text-base line-through text-gray-400">
-              {sellingPrice.toFixed(2)}
+          {discount !== null && (
+            <span
+              className="text-white text-[10px] font-bold px-3 py-1 uppercase tracking-wider rounded-sm"
+              style={{ backgroundColor: secondary }}
+            >
+              -{discount}% OFF
             </span>
           )}
         </div>
 
-        {/* Cart Actions */}
-        {quantity > 0 ? (
-          <div className="flex items-center justify-between mt-auto">
-            <div className="flex items-center space-x-2">
-              <motion.button
-                whileTap={{ scale: 0.9 }}
+        {/* HOVER ACTION BUTTONS */}
+        <div className="absolute right-4 top-4 flex flex-col gap-2 translate-x-12 group-hover:translate-x-0 transition-transform duration-300">
+          <button className="p-2 bg-white text-stone-800 rounded-full shadow-md hover:bg-stone-900 hover:text-white transition-colors">
+            <HeartIcon className="w-5 h-5" />
+          </button>
+
+          <Link
+            href={`/site/${slug}/ecommerce/products/${product.id}`}
+            className="p-2 bg-white text-stone-800 rounded-full shadow-md hover:bg-stone-900 hover:text-white transition-colors"
+          >
+            <ArrowRightIcon className="w-5 h-5" />
+          </Link>
+        </div>
+
+        {/* QUICK VIEW / ADD TO CART */}
+        <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 bg-gradient-to-t from-black/50 to-transparent">
+          {quantity === 0 ? (
+            <button
+              onClick={() => addToCart(product)}
+              className="w-full bg-white text-stone-900 font-medium py-3 hover:bg-stone-900 hover:text-white transition-colors"
+            >
+              Add to Cart
+            </button>
+          ) : (
+            <div className="flex items-center justify-between bg-white rounded-md p-2 shadow-md">
+              <button
                 onClick={() => decreaseQuantity(product.id)}
-                className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-all duration-200"
+                className="p-2 bg-stone-100 rounded-full hover:bg-stone-200"
               >
                 {quantity === 1 ? (
-                  <TrashIcon className="h-5 w-5 text-red-500" />
+                  <TrashIcon className="h-4 w-4 text-red-600" />
                 ) : (
-                  <MinusIcon className="h-5 w-5 text-gray-600" />
+                  <MinusIcon className="h-4 w-4 text-stone-600" />
                 )}
-              </motion.button>
-              <span className="text-lg text-gray-800 font-bold">{quantity}</span>
-              <motion.button
-                whileTap={{ scale: 0.9 }}
+              </button>
+
+              <span className="font-bold text-stone-900">{quantity}</span>
+
+              <button
                 onClick={() => addToCart(product)}
-                className="p-2 bg-gray-100 rounded-full hover:bg-gray-200 transition-all duration-200"
+                className="p-2 bg-stone-100 rounded-full hover:bg-stone-200"
               >
-                <PlusIcon className="h-5 w-5 text-gray-600" />
-              </motion.button>
+                <PlusIcon className="h-4 w-4 text-stone-600" />
+              </button>
             </div>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => removeFromCart(product.id)}
-              className="text-sm font-medium text-red-600 hover:text-red-800 transition-colors"
-            >
-              Remove
-            </motion.button>
+          )}
+        </div>
+      </div>
+
+      {/* ----------------------- DETAILS SECTION ----------------------- */}
+      <div className="p-5">
+        {/* TITLE + PRICE */}
+        <div className="flex justify-between items-start mb-2">
+          <h3 className="text-lg font-serif font-medium text-stone-900 line-clamp-1">{product.name}</h3>
+
+          <div className="flex flex-col items-end">
+            {discount !== null ? (
+              <>
+                <span className="text-sm text-stone-400 line-through">${product.sellingPrice}</span>
+                <span className="text-lg font-bold text-orange-700">${product.finalPrice}</span>
+              </>
+            ) : (
+              <span className="text-lg font-bold text-stone-900">${product.sellingPrice}</span>
+            )}
           </div>
-        ) : (
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => addToCart(product)}
-            className="mt-auto w-full py-3 rounded-lg text-white font-semibold text-base shadow-lg transition-all duration-300 hover:shadow-xl"
-            style={{
-              // background: `linear-gradient(135deg, ${primary}, ${secondary})`,
-              backgroundColor: primary,
-            }}
-          >
-            Add to Cart
-          </motion.button>
-        )}
+        </div>
+
+        {/* RATING */}
+        <div className="flex items-center gap-1 text-yellow-500 text-xs">
+          <StarIcon className="w-4 h-4" />
+          <span>{rating}</span>
+          <span className="text-stone-400 ml-1">({reviews})</span>
+        </div>
+
+        {/* FURNITURE DETAILS */}
+        <div className="flex items-center gap-4 text-xs text-stone-500 mt-3 py-3 border-t border-stone-100">
+          {product.dimensions && (
+            <div className="flex items-center gap-1">
+              <CubeIcon className="w-4 h-4" />
+              <span>{product.dimensions}</span>
+            </div>
+          )}
+          {product.material?.length > 0 && (
+            <div className="flex items-center gap-1">
+              <SwatchIcon className="w-4 h-4" />
+              <span>{product.material[0]}</span>
+            </div>
+          )}
+        </div>
+
+        {/* DESCRIPTION */}
+        <p className="text-sm text-stone-500 line-clamp-2 mt-2">{product.description}</p>
       </div>
     </motion.div>
   );

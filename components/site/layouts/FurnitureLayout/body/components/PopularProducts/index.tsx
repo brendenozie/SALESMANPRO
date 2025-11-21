@@ -7,6 +7,7 @@ import { MarketListingForm } from '@/types/typings';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { HeartIcon, ArrowRightIcon, CubeIcon, SwatchIcon } from '@heroicons/react/24/outline';
+import ProductCard from '../ProductCard';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000/api";
 
@@ -139,91 +140,6 @@ const MOCK_FURNITURE: MarketListingForm[] = [
   }
 ];
 
-const ProductCard = ({ item }: { item: MarketListingForm }) => {
-  return (
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      whileHover={{ y: -5 }}
-      className="group relative bg-white border border-stone-100 rounded-none md:rounded-sm shadow-sm hover:shadow-xl transition-all duration-500"
-    >
-      {/* Image Section */}
-      <div className="relative aspect-[4/5] overflow-hidden bg-stone-100">
-        <Image 
-          src={item.images[0] || ''} 
-          alt={item.name} 
-          loader={loader}
-          fill 
-          className="object-cover transition-transform duration-700 group-hover:scale-105" 
-        />
-        
-        {/* Status Badges */}
-        <div className="absolute top-4 left-4 flex flex-col gap-2">
-          {item.isNewArrival && (
-            <span className="bg-stone-900 text-white text-[10px] font-bold px-3 py-1 uppercase tracking-wider">New In</span>
-          )}
-          {item.isDiscounted && (
-            <span className="bg-orange-600 text-white text-[10px] font-bold px-3 py-1 uppercase tracking-wider">Sale</span>
-          )}
-        </div>
-
-        {/* Hover Actions */}
-        <div className="absolute right-4 top-4 flex flex-col gap-2 translate-x-12 group-hover:translate-x-0 transition-transform duration-300">
-          <button className="p-2 bg-white text-stone-800 rounded-full shadow-md hover:bg-stone-900 hover:text-white transition-colors">
-            <HeartIcon className="w-5 h-5" />
-          </button>
-          <button className="p-2 bg-white text-stone-800 rounded-full shadow-md hover:bg-stone-900 hover:text-white transition-colors">
-            <ArrowRightIcon className="w-5 h-5" />
-          </button>
-        </div>
-
-        {/* Quick View Button */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 bg-gradient-to-t from-black/50 to-transparent">
-           <button className="w-full bg-white text-stone-900 font-medium py-3 hover:bg-stone-900 hover:text-white transition-colors">
-             Add to Cart
-           </button>
-        </div>
-      </div>
-
-      {/* Details Section */}
-      <div className="p-5">
-        <div className="flex justify-between items-start mb-2">
-          <h3 className="text-lg font-serif font-medium text-stone-900">{item.name}</h3>
-          <div className="flex flex-col items-end">
-             {item.isDiscounted ? (
-               <>
-                 <span className="text-sm text-stone-400 line-through">${item.sellingPrice}</span>
-                 <span className="text-lg font-bold text-orange-700">${item.finalPrice}</span>
-               </>
-             ) : (
-               <span className="text-lg font-bold text-stone-900">${item.sellingPrice}</span>
-             )}
-          </div>
-        </div>
-
-        {/* Furniture Specific Details */}
-        <div className="flex items-center gap-4 text-xs text-stone-500 mt-3 py-3 border-t border-stone-100">
-           {item.dimensions && (
-             <div className="flex items-center gap-1">
-                <CubeIcon className="w-4 h-4" />
-                <span>{item.dimensions}</span>
-             </div>
-           )}
-           {item.material.length > 0 && (
-             <div className="flex items-center gap-1">
-                <SwatchIcon className="w-4 h-4" />
-                <span>{item.material[0]}</span>
-             </div>
-           )}
-        </div>
-        
-        <p className="text-sm text-stone-500 line-clamp-2 mt-2">{item.description}</p>
-      </div>
-    </motion.div>
-  );
-};
-
 
 export default function PopularProducts({ id }: { id: string }) {
   const url = `${apiBaseUrl}/site/productsByFlag?id=${id}&flag=isFeatured&limit=8`;
@@ -262,7 +178,7 @@ export default function PopularProducts({ id }: { id: string }) {
       {/* Product Grid (Updated design) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
         {(data.data.length > 0 ? data.data : MOCK_FURNITURE).map((item: any) => (
-          <ProductCard key={item.id} item={item} />
+          <ProductCard key={item.id} product={item} />
         ))}
       </div>
     </section>
