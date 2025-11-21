@@ -344,7 +344,7 @@ export default function TravelSite({ pageData, companyId }: { pageData: StoreFor
   
 
   return (
-    <div className="space-y-20 font-sans">
+    <div className="font-sans">
       {/* Hero Section  */}
       {/* <Hero storeFormData={storeFormData} /> */}
       <Hero 
@@ -377,7 +377,7 @@ export default function TravelSite({ pageData, companyId }: { pageData: StoreFor
         <TrendingLocations />
 
         {/* Meet Agents */}
-        <MeetAgents agents={storeFormData?.Expert} />
+        <MeetAgents experts={storeFormData?.Expert} />
 
         {/* Market Insights */}
         <MarketInsights

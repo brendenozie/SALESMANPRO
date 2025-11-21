@@ -1,4 +1,3 @@
-// HeroSection.tsx
 "use client";
 
 import React, {
@@ -14,23 +13,23 @@ import {
   MapPinIcon,
   CalendarDaysIcon,
   UserGroupIcon,
-  TagIcon,
   MagnifyingGlassIcon,
   ArrowRightIcon,
   ArrowLeftIcon,
-  BuildingOfficeIcon,
   XMarkIcon,
+  GlobeAmericasIcon,
+  SparklesIcon,
 } from "@heroicons/react/24/outline";
-import { IDestination, IStoreCategory, ISubcategory, StoreForm } from "@/types/typings";
+import {  HeroSlide, IStoreCategory, ISubcategory, StoreForm } from "@/types/typings";
 
-/* ----------------------------- Types & Fallbacks (keep as is) ----------------------------------- */
-interface HeroSlide {
-  type?: "image" | "video";
-  url: string;
-  headline?: string;
-  subline?: string;
-  id?: string | number;
-}
+/* ----------------------------- Types ----------------------------------- */
+// interface HeroSlide {
+//   type?: "image" | "video";
+//   url: string;
+//   headline?: string;
+//   subline?: string;
+//   id?: string | number;
+// }
 
 interface SearchFilters {
   location?: string;
@@ -41,6 +40,12 @@ interface SearchFilters {
   guests?: number;
 }
 
+interface TrendingLocation {
+  name: string;
+  slug: string;
+  image?: string; 
+}
+
 interface Props {
   storeFormData?: StoreForm | null;
   onSearch: (filters: SearchFilters) => void;
@@ -49,33 +54,23 @@ interface Props {
   trendingLocations: TrendingLocation[];
 }
 
+/* ----------------------------- Constants ----------------------------------- */
 const curatedCategoriesFallback: Partial<IStoreCategory>[] = [
   {
     id: "adventure",
     displayName: "Adventure",
-    visible: true,
     subcategories: [
-      { id: "hiking", name: "Hiking & Trekking", slug:'' },
-      { id: "rafting", name: "River Rafting", slug:'' },
+      { id: "hiking", name: "Hiking", slug: "hiking" },
+      { id: "safari", name: "Safari", slug: "safari" },
     ],
   },
   {
-    id: "family",
-    displayName: "Family",
-    visible: true,
-    subcategories: [{ id: "parks", name: "Theme Parks", slug:'' }],
-  },
-  {
-    id: "luxury",
-    displayName: "Luxury",
-    visible: true,
-    subcategories: [{ id: "resorts", name: "Luxury Resorts", slug:'' }],
-  },
-  {
-    id: "romantic",
-    displayName: "Romantic",
-    visible: true,
-    subcategories: [{ id: "honeymoon", name: "Honeymoon Packages", slug:'' }],
+    id: "relax",
+    displayName: "Relaxation",
+    subcategories: [
+      { id: "beach", name: "Beach", slug: "beach" },
+      { id: "spa", name: "Spa", slug: "spa" },
+    ],
   },
 ];
 
@@ -83,49 +78,44 @@ const defaultHeroSlides: HeroSlide[] = [
   {
     id: "1",
     type: "image",
-    url: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=2940&auto=format&fit=crop",
-    headline: "Uncover Unforgettable Journeys",
-    subline: "Explore breathtaking destinations and curated adventures.",
+    imageUrl: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=2621&auto=format&fit=crop",
+    productImageUrl: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=2670&auto=format&fit=crop",
+    headline: "Wanderlust Awaits",
+    subline: "Discover the world's most breathtaking hidden gems.",
+    companyId: "",
+    ctaText: null,
+    ctaLink: null,
+    videoLink: null,
+    badgeText: null,
+    price: null,
+    endsAt: null,
+    order: 0,
+    iconKey: null,
+    backgroundColor: null,
+    textColor: null
   },
   {
     id: "2",
     type: "image",
-    url: "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?q=80&w=2940&auto=format&fit=crop",
-    headline: "Your Next Adventure Awaits",
-    subline: "Find the perfect escape, from serene landscapes to vibrant cities.",
+    imageUrl: "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?q=80&w=2670&auto=format&fit=crop",
+    productImageUrl: "https://images.unsplash.com/photo-1500534623283-312aade485b7?q=80&w=2670&auto=format&fit=crop",
+    headline: "Escape the Ordinary",
+    subline: "Curated experiences for the modern explorer.",
+    companyId: "",
+    ctaText: null,
+    ctaLink: null,
+    videoLink: null,
+    badgeText: null,
+    price: null,
+    endsAt: null,
+    order: 0,
+    iconKey: null,
+    backgroundColor: null,
+    textColor: null
   },
 ];
 
-const autoAdvanceDelay = 6000;
-const transitionDuration = 0.9;
-
-const bgVariants = {
-  enter: (direction: number) => ({
-    opacity: 0,
-    x: direction > 0 ? 1000 : -1000,
-  }),
-  center: {
-    opacity: 1,
-    x: 0,
-    transition: { duration: transitionDuration },
-  },
-  exit: (direction: number) => ({
-    opacity: 0,
-    x: direction < 0 ? 1000 : -1000,
-    transition: { duration: transitionDuration },
-  }),
-};
-
-const dropdownVariants = {
-  hidden: { opacity: 0, y: -10, scale: 0.98 },
-  visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.2, ease: "easeOut" } },
-  exit: { opacity: 0, y: -10, scale: 0.98, transition: { duration: 0.15 } },
-};
-
-interface TrendingLocation {
-  name: string;
-  slug: string; // Added slug to handle selection
-}
+const AUTO_ADVANCE_DELAY = 8000;
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
@@ -138,22 +128,20 @@ export default function HeroSection({
   setFilters,
   trendingLocations
 }: Props) {
-  const heroSlides =
-    storeFormData?.heroSlides && storeFormData.heroSlides.length > 0
+  // Data Setup
+  const heroSlides = storeFormData?.heroSlides && storeFormData.heroSlides.length > 0
       ? storeFormData.heroSlides.map((h, idx) => ({ ...h, id: h.id ?? idx }))
       : defaultHeroSlides;
 
   const { destinations = [] } = storeFormData || {};
+  
+  // State
   const [currentSlide, setCurrentSlide] = useState<number>(0);
-  const [direction, setDirection] = useState<number>(0);
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+  const [searchInput, setSearchInput] = useState(filters.location || "");
   const slideTimerRef = useRef<number | null>(null);
 
-  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
-  const searchFormRef = useRef<HTMLFormElement>(null);
-
-  // New state for the search input in the modal, separate from the main filters state
-  const [searchInput, setSearchInput] = useState(filters.location || "");
-
+  // Logic: Categories
   const rawCategories = useMemo(() => {
     const storeCats = (storeFormData as any)?.StoreCategory;
     if (Array.isArray(storeCats) && storeCats.length > 0) {
@@ -169,367 +157,343 @@ export default function HeroSection({
     return rawCategories.find((c) => c.id === filters.category);
   }, [filters.category, rawCategories]);
 
-  // FIX: Filter based on the local searchInput state, not filters
-  const filteredLocations = useMemo(() => {
-    if (!searchInput) return trendingLocations;
-    return trendingLocations.filter((loc) =>
+  // Logic: Filter Suggestions
+  const filteredSuggestions = useMemo(() => {
+    if (!searchInput) return trendingLocations.slice(0, 5);
+    
+    const locs = trendingLocations.filter((loc) =>
       loc.name.toLowerCase().includes(searchInput.toLowerCase())
-    );
-  }, [trendingLocations, searchInput]);
+    ).map(l => ({ ...l, type: 'location' }));
 
-  // FIX: Filter based on the local searchInput state, not filters
-  const filteredDestinations = useMemo(() => {
-    if (!searchInput) return destinations;
-    return destinations.filter((dest) =>
+    const dests = destinations.filter((dest) =>
       dest.name.toLowerCase().includes(searchInput.toLowerCase())
-    );
-  }, [destinations, searchInput]);
+    ).map(d => ({ ...d, type: 'destination' }));
 
-  const handleClearFilters = () => {
-    setFilters({});
-    setSearchInput("");
-  };
+    return [...locs, ...dests].slice(0, 6);
+  }, [trendingLocations, destinations, searchInput]);
 
-  const submitSearch = (e?: React.FormEvent) => {
-    e?.preventDefault();
-    onSearch(filters);
-    setIsSearchModalOpen(false);
-  };
 
+  // Logic: Slider
   const resetSlideTimer = useCallback(() => {
-    if (slideTimerRef.current) {
-      window.clearTimeout(slideTimerRef.current);
-    }
-    if (heroSlides.length > 0) {
-      slideTimerRef.current = window.setTimeout(() => {
-        setDirection(1);
-        setCurrentSlide((s) => (s + 1) % heroSlides.length);
-      }, autoAdvanceDelay);
-    }
+    if (slideTimerRef.current) window.clearTimeout(slideTimerRef.current);
+    slideTimerRef.current = window.setTimeout(() => {
+      setCurrentSlide((s) => (s + 1) % heroSlides.length);
+    }, AUTO_ADVANCE_DELAY);
   }, [heroSlides.length]);
 
   useEffect(() => {
     resetSlideTimer();
-    return () => {
-      if (slideTimerRef.current) {
-        window.clearTimeout(slideTimerRef.current);
-      }
-    };
+    return () => { if (slideTimerRef.current) window.clearTimeout(slideTimerRef.current); };
   }, [currentSlide, resetSlideTimer]);
-  
-  // New Effect: Sync the modal input with the prop filter on open
-  useEffect(() => {
-    if (isSearchModalOpen) {
-      setSearchInput(filters.location || filters.destination || "");
+
+  const changeSlide = (direction: number) => {
+    setCurrentSlide((s) => (s + direction + heroSlides.length) % heroSlides.length);
+    resetSlideTimer();
+  };
+
+  // Handlers
+  const handleSearchTrigger = () => {
+    setIsSearchModalOpen(true);
+    setSearchInput(filters.location || filters.destination || "");
+  };
+
+  const handleSelectSuggestion = (item: any) => {
+    if(item.type === 'location') {
+       setFilters({ ...filters, location: item.slug, destination: undefined });
+    } else {
+       setFilters({ ...filters, destination: item.slug, location: undefined });
     }
-  }, [isSearchModalOpen, filters.location, filters.destination]);
-
-  const prevSlide = useCallback(() => {
-    setDirection(-1);
-    setCurrentSlide((s) => (s - 1 + heroSlides.length) % heroSlides.length);
-    resetSlideTimer();
-  }, [heroSlides.length, resetSlideTimer]);
-
-  const nextSlide = useCallback(() => {
-    setDirection(1);
-    setCurrentSlide((s) => (s + 1) % heroSlides.length);
-    resetSlideTimer();
-  }, [heroSlides.length, resetSlideTimer]);
-
-  const handleSelectCategory = (cat: IStoreCategory) => {
-    setFilters({ ...filters, category: cat.id, subcategory: undefined });
+    setSearchInput(item.name);
   };
 
-  const handleSelectSubcategory = (sub: ISubcategory) => {
-    setFilters({ ...filters, subcategory: sub.id ?? sub.slug });
-  };
-  
-  // FIX: Clear other selection, and update both filters and input
-  const handleSelectLocation = (location: TrendingLocation) => {
-    setFilters({ ...filters, location: location.slug, destination: undefined });
-    setSearchInput(location.name);
-  };
-
-  // FIX: Clear other selection, and update both filters and input
-  const handleSelectDestination = (destination: any) => {
-    setFilters({ ...filters, destination: destination.slug, location: undefined });
-    setSearchInput(destination.name);
+  const handleCategorySelect = (catId: string) => {
+    setFilters({ ...filters, category: catId === filters.category ? undefined : catId, subcategory: undefined });
   };
 
   return (
-    <section className="relative min-h-screen w-full overflow-hidden bg-gray-50 dark:bg-gray-950 flex flex-col items-center justify-center">
-      {/* Background slideshow */}
-      <AnimatePresence initial={false} custom={direction}>
-        {heroSlides.map((slide:any, i) =>
-          i === currentSlide ? (
-            <motion.div
-              key={slide.id ?? i}
-              className="absolute inset-0 z-0"
-              custom={direction}
-              variants={bgVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-            >
-              {slide.type === "video" ? (
-                <video
-                  src={slide.url}
-                  autoPlay
-                  muted
-                  loop
-                  playsInline
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <Image
-                  src={slide.url || defaultHeroSlides[0].url as string}
-                  alt={slide.headline ?? "hero background"}
-                  fill
-                  priority
-                  className="object-cover"
-                  loader={loader}
-                />
-              )}
-            </motion.div>
-          ) : null
-        )}
+    <section className="relative h-[100dvh] w-full overflow-hidden bg-gray-900">
+      
+      {/* 1. IMMERSIVE BACKGROUND SLIDER */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={currentSlide}
+          className="absolute inset-0 z-0"
+          initial={{ scale: 1.1, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 1.5, ease: "easeOut" }}
+        >
+          {heroSlides[currentSlide]?.type === "video" ? (
+             <video
+               src={storeFormData?.videoUrl || "https://www.w3schools.com/html/mov_bbb.mp4"}
+               autoPlay muted loop playsInline
+               className="h-full w-full object-cover"
+             />
+          ) : (
+            <Image
+              src={heroSlides[currentSlide].imageUrl || heroSlides[currentSlide].productImageUrl || "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=2621&auto=format&fit=crop"}
+              alt="Travel Hero"
+              fill
+              priority
+              loader={loader}
+              className="object-cover brightness-[0.65]"
+            />
+          )}
+          {/* Gradient Overlay for Text Readability */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/60" />
+        </motion.div>
       </AnimatePresence>
 
-      <div className="absolute inset-0 z-10 bg-gradient-to-b from-black/50 via-black/20 to-black/5 mix-blend-multiply" />
-      <div className="absolute inset-0 z-10 bg-black/30" />
+      {/* 2. HERO CONTENT */}
+      <div className="relative z-20 flex flex-col items-center justify-center h-full px-4 text-center">
+        
+        <motion.div
+          key={`text-${currentSlide}`}
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          className="max-w-4xl mx-auto"
+        >
+          <div className="flex items-center justify-center gap-2 mb-4">
+            <span className="h-px w-10 bg-white/60" />
+            <span className="text-white/80 uppercase tracking-[0.2em] text-xs font-bold">
+               Explore The World
+            </span>
+            <span className="h-px w-10 bg-white/60" />
+          </div>
 
-      {/* Content Container */}
-      <div className="relative z-20 max-w-[1280px] mx-auto h-full px-6 md:px-10 lg:px-16 flex items-center justify-center">
-        <div className="w-full text-center text-white">
-          <motion.h1
-            className="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight drop-shadow-lg"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            {heroSlides[currentSlide]?.headline ?? "Find Your Next Adventure"}
-          </motion.h1>
-
-          <motion.p
-            className="mt-4 max-w-2xl mx-auto text-lg sm:text-xl text-gray-100/90 drop-shadow-md"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.12, duration: 0.8 }}
-          >
-            {heroSlides[currentSlide]?.subline ??
-              "Discover curated trips, packages and destinations crafted for unforgettable experiences."}
-          </motion.p>
+          <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif text-white mb-6 drop-shadow-2xl leading-[1.1]">
+            {heroSlides[currentSlide]?.headline}
+          </h1>
           
-          <motion.button
-            onClick={() => setIsSearchModalOpen(true)}
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.18, duration: 0.5 }}
-            className="mt-10 px-8 py-4 text-lg font-semibold rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white shadow-2xl transition-transform transform hover:scale-105"
-          >
-            <MagnifyingGlassIcon className="w-6 h-6 mr-2 inline-block" />
-            Start Your Journey
-          </motion.button>
-        </div>
+          <p className="text-lg md:text-xl text-gray-200 max-w-2xl mx-auto font-light leading-relaxed mb-10">
+            {heroSlides[currentSlide]?.subline}
+          </p>
+        </motion.div>
+
+        {/* 3. THE SEARCH "TRIGGER" BAR (Simulated Input) */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.5, duration: 0.5 }}
+          onClick={handleSearchTrigger}
+          className="w-full max-w-3xl bg-white/10 backdrop-blur-xl border border-white/30 rounded-full p-2 flex items-center shadow-2xl cursor-pointer hover:bg-white/20 transition-all group"
+        >
+            <div className="flex-1 flex items-center pl-6 h-14">
+               <MagnifyingGlassIcon className="w-6 h-6 text-white/80 mr-3 group-hover:text-white transition-colors" />
+               <div className="text-left">
+                  <p className="text-white font-medium text-lg">
+                    {filters.location || filters.destination || "Where to?"}
+                  </p>
+                  <p className="text-white/60 text-xs">
+                    {(filters.date || filters.guests) ? `${filters.date || ''} • ${filters.guests || 0} Guests` : "Search destinations, hotels, adventures..."}
+                  </p>
+               </div>
+            </div>
+            <div className="bg-white text-indigo-900 h-12 w-12 rounded-full flex items-center justify-center font-bold shadow-lg">
+                <ArrowRightIcon className="w-5 h-5" />
+            </div>
+        </motion.div>
+
       </div>
 
-      {/* Search Modal */}
+      {/* 4. SLIDER CONTROLS (Bottom) */}
+      <div className="absolute bottom-8 left-0 right-0 z-20 px-8 flex items-center justify-between max-w-[1400px] mx-auto text-white">
+         {/* Progress Dots */}
+         <div className="flex gap-3">
+            {heroSlides.map((_, idx) => (
+               <button 
+                 key={idx} 
+                 onClick={() => setCurrentSlide(idx)}
+                 className="relative h-1 rounded-full bg-white/30 overflow-hidden transition-all duration-300"
+                 style={{ width: currentSlide === idx ? '3rem' : '1rem' }}
+               >
+                  {currentSlide === idx && (
+                     <motion.div 
+                       layoutId="slideProgress"
+                       className="absolute inset-0 bg-white"
+                       initial={{ width: '0%' }}
+                       animate={{ width: '100%' }}
+                       transition={{ duration: AUTO_ADVANCE_DELAY / 1000, ease: "linear" }}
+                     />
+                  )}
+               </button>
+            ))}
+         </div>
+         
+         {/* Arrows */}
+         <div className="flex gap-4">
+            <button onClick={() => changeSlide(-1)} className="p-3 rounded-full border border-white/20 hover:bg-white hover:text-black transition-all">
+                <ArrowLeftIcon className="w-5 h-5" />
+            </button>
+            <button onClick={() => changeSlide(1)} className="p-3 rounded-full border border-white/20 hover:bg-white hover:text-black transition-all">
+                <ArrowRightIcon className="w-5 h-5" />
+            </button>
+         </div>
+      </div>
+
+
+      {/* 5. IMMERSIVE SEARCH MODAL */}
       <AnimatePresence>
         {isSearchModalOpen && (
           <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-start justify-center pt-20 sm:items-center sm:pt-0 bg-black/60 backdrop-blur-md p-4"
             onClick={() => setIsSearchModalOpen(false)}
           >
             <motion.div
-              className="w-full max-w-3xl bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-8 m-4 relative"
-              initial={{ y: 50, opacity: 0, scale: 0.95 }}
-              animate={{ y: 0, opacity: 1, scale: 1 }}
-              exit={{ y: 50, opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-              onClick={(e : any) => e.stopPropagation()}
+              initial={{ scale: 0.95, y: 20, opacity: 0 }}
+              animate={{ scale: 1, y: 0, opacity: 1 }}
+              exit={{ scale: 0.95, y: 20, opacity: 0 }}
+              onClick={(e: React.MouseEvent) => e.stopPropagation()}
+              className="w-full max-w-4xl bg-white dark:bg-gray-900 rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row max-h-[90vh] md:h-[600px]"
             >
-              <button
-                onClick={() => setIsSearchModalOpen(false)}
-                className="absolute top-4 right-4 p-2 rounded-full text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition"
-                aria-label="Close search"
-              >
-                <XMarkIcon className="h-6 w-6" />
-              </button>
-
-              <form onSubmit={submitSearch} ref={searchFormRef} className="space-y-6">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-                  Where do you want to go? 🌍
-                </h2>
-                
-                {/* Location & Destination Input */}
-                <div className="relative">
-                  <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 text-gray-400" />
-                  <input
-                    type="text"
-                    aria-label="Search for locations, destinations, or trips"
-                    placeholder="Search for a city, country, or destination..."
-                    value={searchInput}
-                    onChange={(e) => setSearchInput(e.target.value)}
-                    className="w-full pl-12 pr-4 py-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 placeholder-gray-400 text-lg focus:outline-none focus:ring-2 focus:ring-indigo-300/80 transition"
-                  />
-                </div>
-                
-                {/* Location & Destination Pills */}
-                {(filteredLocations.length > 0 || filteredDestinations.length > 0) && (
-                  <div className="space-y-4">
-                    {filteredLocations.length > 0 && (
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-sm font-medium text-gray-700 dark:text-gray-200">Locations:</span>
-                        {filteredLocations.map((loc, index) => (
-                          <button
-                            key={`loc-${index}`}
-                            type="button"
-                            onClick={() => handleSelectLocation(loc)}
-                            className={`px-4 py-2 rounded-full text-sm font-medium transition ${
-                              filters.location === loc.slug
-                                ? "bg-indigo-500 text-white"
-                                : "bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-indigo-100 dark:hover:bg-indigo-800"
-                            }`}
-                          >
-                            <MapPinIcon className="h-4 w-4 inline-block mr-1" />
-                            {loc.name}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                    {filteredDestinations.length > 0 && (
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-sm font-medium text-gray-700 dark:text-gray-200">Destinations:</span>
-                        {filteredDestinations.map((dest, index) => (
-                          <button
-                            key={`dest-${index}`}
-                            type="button"
-                            onClick={() => handleSelectDestination(dest)}
-                            className={`px-4 py-2 rounded-full text-sm font-medium transition ${
-                              filters.destination === dest.slug
-                                ? "bg-indigo-500 text-white"
-                                : "bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-indigo-100 dark:hover:bg-indigo-800"
-                            }`}
-                          >
-                            <BuildingOfficeIcon className="h-4 w-4 inline-block mr-1" />
-                            {dest.name}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
-                
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-6 mb-2">
-                  What kind of journey? ✨
-                </h2>
-                
-                {/* Dates & Guests */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="relative">
-                    <CalendarDaysIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-                    <input
-                      type="date"
-                      aria-label="Date"
-                      value={filters.date || ""}
-                      onChange={(e) => setFilters({ ...filters, date: e.target.value })}
-                      className="w-full pl-11 pr-3 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-300/80 transition"
-                    />
-                  </div>
-                  <div className="relative">
-                    <UserGroupIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-                    <input
-                      type="number"
-                      aria-label="Guests"
-                      placeholder="Guests"
-                      min={1}
-                      value={filters.guests || ""}
-                      onChange={(e) => setFilters({ ...filters, guests: Math.max(1, Number(e.target.value)) })}
-                      className="w-full pl-11 pr-3 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-300/80 transition"
-                    />
-                  </div>
-                </div>
-
-                {/* Category & Subcategory Pills */}
-                <div className="flex flex-wrap items-center gap-2 pt-2">
-                  {rawCategories.map((cat) => (
-                    <button
-                      key={cat.id}
-                      type="button"
-                      onClick={() => handleSelectCategory(cat as IStoreCategory)}
-                      className={`px-4 py-2 rounded-full text-sm font-medium transition ${
-                        filters.category === cat.id
-                          ? "bg-indigo-500 text-white"
-                          : "bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-indigo-100 dark:hover:bg-indigo-800"
-                      }`}
-                    >
-                      {cat.displayName}
-                    </button>
-                  ))}
-                </div>
-                {selectedCategory && (selectedCategory.subcategories ?? []).length > 0 && (
-                  <div className="flex flex-wrap items-center gap-2 pt-2">
-                    <span className="text-sm font-medium text-gray-700 dark:text-gray-200">Subcategories:</span>
-                    {(selectedCategory.subcategories ?? []).map((sub: any) => (
-                      <button
-                        key={sub.id}
-                        type="button"
-                        onClick={() => handleSelectSubcategory(sub)}
-                        className={`px-4 py-2 rounded-full text-sm font-medium transition ${
-                          filters.subcategory === sub.id
-                            ? "bg-indigo-500 text-white"
-                            : "bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-indigo-100 dark:hover:bg-indigo-800"
-                        }`}
-                      >
-                        {sub.displayName ?? sub.name ?? sub.slug}
-                      </button>
+              
+              {/* LEFT: VISUALS & SUGGESTIONS */}
+              <div className="w-full md:w-1/3 bg-gray-50 dark:bg-gray-800 p-6 border-r border-gray-100 dark:border-gray-700 overflow-y-auto custom-scrollbar">
+                 <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500 mb-4">Popular Destinations</h3>
+                 <div className="space-y-3">
+                    {filteredSuggestions.map((item: any, idx) => (
+                       <button
+                         key={idx}
+                         onClick={() => handleSelectSuggestion(item)}
+                         className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-white dark:hover:bg-gray-700 transition-all group text-left"
+                       >
+                          <div className="w-10 h-10 rounded-lg bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-300">
+                             {item.type === 'location' ? <MapPinIcon className="w-5 h-5"/> : <GlobeAmericasIcon className="w-5 h-5"/>}
+                          </div>
+                          <div>
+                             <p className="font-semibold text-gray-900 dark:text-white text-sm">{item.name}</p>
+                             <p className="text-xs text-gray-500 capitalize">{item.type}</p>
+                          </div>
+                       </button>
                     ))}
-                  </div>
-                )}
-                
-                {/* Search & Clear Buttons */}
-                <div className="flex items-center justify-between pt-4">
-                  <button
-                    type="button"
-                    onClick={handleClearFilters}
-                    className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 font-medium text-sm transition"
-                  >
-                    Clear filters
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-6 py-3 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white font-semibold shadow-lg transition-transform transform hover:scale-105"
-                  >
-                    <MagnifyingGlassIcon className="w-5 h-5 mr-2 inline-block" />
-                    Search
-                  </button>
-                </div>
-              </form>
+                 </div>
+
+                 <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500 mt-8 mb-4">Travel Style</h3>
+                 <div className="flex flex-wrap gap-2">
+                    {rawCategories.map((cat) => (
+                       <button
+                         key={cat.id}
+                         onClick={() => handleCategorySelect(cat.id)}
+                         className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-all ${
+                            filters.category === cat.id 
+                            ? 'bg-indigo-600 text-white border-indigo-600' 
+                            : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:border-indigo-300'
+                         }`}
+                       >
+                          {cat.displayName}
+                       </button>
+                    ))}
+                 </div>
+              </div>
+
+              {/* RIGHT: FORM */}
+              <div className="w-full md:w-2/3 p-8 flex flex-col">
+                 <div className="flex justify-between items-center mb-8">
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Plan your trip</h2>
+                    <button 
+                      onClick={() => setIsSearchModalOpen(false)}
+                      className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition"
+                    >
+                       <XMarkIcon className="w-6 h-6 text-gray-500" />
+                    </button>
+                 </div>
+
+                 <form 
+                    onSubmit={(e) => { e.preventDefault(); onSearch(filters); setIsSearchModalOpen(false); }}
+                    className="space-y-6 flex-1 overflow-y-auto"
+                 >
+                    {/* Input Group */}
+                    <div className="space-y-4">
+                       <div className="relative">
+                          <label className="block text-xs font-bold uppercase text-gray-500 mb-1">Where</label>
+                          <div className="relative">
+                             <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                             <input 
+                               type="text"
+                               value={searchInput}
+                               onChange={(e) => setSearchInput(e.target.value)}
+                               placeholder="Search destinations..."
+                               className="w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+                             />
+                          </div>
+                       </div>
+
+                       <div className="grid grid-cols-2 gap-4">
+                          <div>
+                             <label className="block text-xs font-bold uppercase text-gray-500 mb-1">When</label>
+                             <div className="relative">
+                                <CalendarDaysIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                <input 
+                                  type="date"
+                                  value={filters.date || ''}
+                                  onChange={(e) => setFilters({...filters, date: e.target.value})}
+                                  className="w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-sm"
+                                />
+                             </div>
+                          </div>
+                          <div>
+                             <label className="block text-xs font-bold uppercase text-gray-500 mb-1">Who</label>
+                             <div className="relative">
+                                <UserGroupIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                <input 
+                                  type="number"
+                                  min={1}
+                                  placeholder="Guests"
+                                  value={filters.guests || ''}
+                                  onChange={(e) => setFilters({...filters, guests: Number(e.target.value)})}
+                                  className="w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-sm"
+                                />
+                             </div>
+                          </div>
+                       </div>
+                       
+                       {/* Selected Filters Display */}
+                       {(filters.category || filters.subcategory) && (
+                          <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl flex items-center gap-3">
+                             <SparklesIcon className="w-5 h-5 text-indigo-600" />
+                             <div className="text-sm">
+                                <span className="text-gray-500">Looking for: </span>
+                                <span className="font-bold text-indigo-700 dark:text-indigo-300">
+                                   {filters.subcategory || filters.category}
+                                </span>
+                             </div>
+                             <button 
+                               type="button"
+                               onClick={() => setFilters({...filters, category: undefined, subcategory: undefined})}
+                               className="ml-auto text-xs text-indigo-600 hover:underline"
+                             >
+                               Clear
+                             </button>
+                          </div>
+                       )}
+                    </div>
+
+                    <div className="pt-4 mt-auto border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                        <button
+                           type="button"
+                           onClick={() => { setFilters({}); setSearchInput(""); }}
+                           className="text-sm text-gray-500 hover:text-gray-800 dark:hover:text-gray-200"
+                        >
+                           Clear all
+                        </button>
+                        <button
+                           type="submit"
+                           className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-xl font-bold shadow-lg shadow-indigo-200 dark:shadow-none transition-all hover:scale-105 active:scale-95 flex items-center gap-2"
+                        >
+                           <MagnifyingGlassIcon className="w-5 h-5" />
+                           Search Trips
+                        </button>
+                    </div>
+                 </form>
+              </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* Slide pagination */}
-      <div className="absolute bottom-10 right-10 flex items-center gap-4 z-30">
-        <button
-          onClick={prevSlide}
-          className="bg-white/90 p-2 rounded-full shadow hover:shadow-md transition-transform transform hover:-translate-x-1"
-          aria-label="Previous slide"
-        >
-          <ArrowLeftIcon className="h-5 w-5" />
-        </button>
-        <button
-          onClick={nextSlide}
-          className="bg-white/90 p-2 rounded-full shadow hover:shadow-md transition-transform transform hover:translate-x-1"
-          aria-label="Next slide"
-        >
-          <ArrowRightIcon className="h-5 w-5" />
-        </button>
-      </div>
 
     </section>
   );

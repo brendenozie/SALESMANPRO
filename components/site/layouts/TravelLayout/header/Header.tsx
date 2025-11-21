@@ -13,54 +13,85 @@ import {
 } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
 import { useStoreContext } from "@/contexts/StoreContext";
+import { useSession, signOut } from "next-auth/react";
 
+// Fallback sample data
+const sampleData = {
+  name: "TravelCo",
+  slug: "travelco",
+  logoUrl: "https://placehold.co/120x40/000000/FFFFFF?text=Logo",
+  themeSettings: { primaryColor: "#10B981", secondaryColor: "#047857" },
+};
 
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
+const loader = ({ src, width, quality }: any) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
 export default function Header() {
   const router = useRouter();
-  const { storeFormData } = useStoreContext();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { storeFormData } = useStoreContext();
 
-  // Fallback colors if not provided
-  const primaryColor = storeFormData?.themeSettings?.primaryColor || "#ffffff";
-  const accentColor = storeFormData?.themeSettings?.secondaryColor || "#10B981";
+  // AUTH
+  const { data: session } = useSession();
+  const user = session?.user as { name?: string; role?: string } | undefined;
+
+  const handleGoogleSignIn = () => {
+    const authUrl = new URL("https://auth.salesmanpro.site/signin");
+    authUrl.searchParams.set("callbackUrl", `${window.location.origin}`);
+    window.location.href = authUrl.toString();
+  };
+
+  const handleGoogleSignUp = () => {
+    const authUrl = new URL("https://auth.salesmanpro.site/signup");
+    authUrl.searchParams.set("callbackUrl", `${window.location.origin}`);
+    window.location.href = authUrl.toString();
+  };
+
+  const handleUserAction = () => {
+    if (!user) return handleGoogleSignIn();
+    if (user.role?.toLowerCase() === "admin") {
+      router.push("/dashboards");
+    } else {
+      router.push(`/site/${slug}/profile`);
+    }
+  };
+
+  // Extract final data (fallback-safe)
+  const { name, slug, logoUrl, themeSettings } = storeFormData || sampleData;
+
+  const primary = themeSettings?.primaryColor || "#10B981";
+  const secondary = themeSettings?.secondaryColor || "#047857";
 
   const navItems = [
-    { label: "Home", href: `/${storeFormData?.slug}` },
-    { label: "Destinations", href: `/site/${storeFormData?.slug}#destinations` },
-    { label: "Tours", href: `/site/${storeFormData?.slug}#tours` },
-    { label: "About", href: `/site/${storeFormData?.slug}#about` },
-    { label: "Contact", href: `/site/${storeFormData?.slug}#contact` },
+    { label: "Home", href: `/site/${slug}` },
+    { label: "Destinations", href: `/site/${slug}#destinations` },
+    { label: "Tours", href: `/site/${slug}#tours` },
+    { label: "About", href: `/site/${slug}#about` },
+    { label: "Contact", href: `/site/${slug}#contact` },
   ];
 
   return (
     <header className="inset-x-0 top-0 z-50">
-      {/* Transparent bar over banner */}
+      {/* Main top transparent bar */}
       <div className="bg-black bg-opacity-100 backdrop-blur-sm text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            {/* Logo / Site Name */}
+            {/* Logo */}
             <div className="flex items-center">
-              {storeFormData?.logoUrl ? (
-                <Link href={`/site/${storeFormData.slug}`}>
+              <Link href={`/site/${slug}`}>
+                {logoUrl ? (
                   <Image
-                    src={storeFormData.logoUrl}
-                    alt={storeFormData.name}
+                    src={logoUrl}
+                    alt={name}
                     width={120}
                     height={40}
                     loader={loader}
                     className="object-contain cursor-pointer"
                   />
-                </Link>
-              ) : (
-                <Link href={`/site/${storeFormData?.slug}`}>
-                  <span className="text-2xl font-extrabold cursor-pointer">
-                    {storeFormData?.name}
-                  </span>
-                </Link>
-              )}
+                ) : (
+                  <span className="text-2xl font-extrabold">{name}</span>
+                )}
+              </Link>
             </div>
 
             {/* Desktop Nav */}
@@ -82,32 +113,64 @@ export default function Header() {
               ))}
             </nav>
 
-            {/* Search, Profile, Chat Icons */}
+            {/* Desktop Icons + Auth */}
             <div className="hidden lg:flex items-center space-x-4">
+              {/* Search */}
               <button
-                onClick={() => router.push(`/site/${storeFormData?.slug}/search`)}
-                aria-label="Search"
+                onClick={() => router.push(`/site/${slug}/search`)}
                 className="p-1 rounded-full hover:bg-white/20 transition"
               >
                 <MagnifyingGlassIcon className="h-6 w-6" />
               </button>
+
+              {/* Chat */}
               <button
-                onClick={() => router.push(`/site/${storeFormData?.slug}/profile`)}
-                aria-label="Profile"
-                className="p-1 rounded-full hover:bg-white/20 transition"
-              >
-                <UserCircleIcon className="h-6 w-6" />
-              </button>
-              <button
-                onClick={() => router.push(`/${storeFormData?.slug}/chat`)}
-                aria-label="Chat"
+                onClick={() => router.push(`/site/${slug}/chat`)}
                 className="p-1 rounded-full hover:bg-white/20 transition"
               >
                 <ChatBubbleLeftEllipsisIcon className="h-6 w-6" />
               </button>
+
+              {/* Logged in */}
+              {user ? (
+                <div className="flex items-center space-x-3">
+                  <button
+                    onClick={handleUserAction}
+                    className="px-3 py-1 text-sm rounded-md font-medium"
+                    style={{ backgroundColor: primary }}
+                  >
+                    {user.name || "Profile"}
+                  </button>
+
+                  <button
+                    onClick={() => signOut({ callbackUrl: "/" })}
+                    className="text-red-400 hover:text-red-300 text-sm"
+                  >
+                    Logout
+                  </button>
+                </div>
+              ) : (
+                // Not logged in
+                <div className="flex items-center space-x-3">
+                  <button
+                    onClick={handleGoogleSignIn}
+                    className="px-4 py-1 text-sm font-medium rounded-md text-white"
+                    style={{ backgroundColor: primary }}
+                  >
+                    Login
+                  </button>
+                  <button
+                    onClick={handleGoogleSignUp}
+                    className="px-4 py-1 text-sm font-medium rounded-md border"
+                    style={{ borderColor: primary, color: primary }}
+                  >
+                    Register
+                  </button>
+                </div>
+              )}
             </div>
 
-            {/* Mobile menu button */}
+            {/* Mobile Toggle */}
             <div className="flex lg:hidden">
               <button
                 onClick={() => setMobileOpen((o) => !o)}
@@ -136,18 +199,18 @@ export default function Header() {
             className="fixed inset-y-0 left-0 w-64 bg-black bg-opacity-90 backdrop-blur-md text-white shadow-lg z-50"
           >
             <div className="px-4 py-6">
+              {/* Drawer Header */}
               <div className="flex items-center justify-between mb-8">
-                {storeFormData?.logoUrl ? (
+                {logoUrl ? (
                   <Image
-                    src={storeFormData.logoUrl}
-                    alt={storeFormData.name}
+                    src={logoUrl}
+                    alt={name}
                     width={100}
                     height={32}
                     loader={loader}
-                    className="object-contain"
                   />
                 ) : (
-                  <span className="text-xl font-bold">{storeFormData?.name}</span>
+                  <span className="text-xl font-bold">{name}</span>
                 )}
                 <button
                   onClick={() => setMobileOpen(false)}
@@ -158,6 +221,7 @@ export default function Header() {
                 </button>
               </div>
 
+              {/* Nav */}
               <nav className="flex flex-col space-y-4">
                 {navItems.map((item) => (
                   <Link
@@ -171,10 +235,12 @@ export default function Header() {
                 ))}
               </nav>
 
+              {/* Auth + Icons */}
               <div className="mt-8 border-t border-white/20 pt-6 space-y-4">
+                {/* Search */}
                 <button
                   onClick={() => {
-                    router.push(`/site/${storeFormData?.slug}/search`);
+                    router.push(`/site/${slug}/search`);
                     setMobileOpen(false);
                   }}
                   className="flex items-center space-x-2 hover:text-green-200 transition"
@@ -182,19 +248,11 @@ export default function Header() {
                   <MagnifyingGlassIcon className="h-5 w-5" />
                   <span>Search</span>
                 </button>
+
+                {/* Chat */}
                 <button
                   onClick={() => {
-                    router.push(`/${storeFormData?.slug}/profile`);
-                    setMobileOpen(false);
-                  }}
-                  className="flex items-center space-x-2 hover:text-green-200 transition"
-                >
-                  <UserCircleIcon className="h-5 w-5" />
-                  <span>Profile</span>
-                </button>
-                <button
-                  onClick={() => {
-                    router.push(`/site/${storeFormData?.slug}/chat`);
+                    router.push(`/site/${slug}/chat`);
                     setMobileOpen(false);
                   }}
                   className="flex items-center space-x-2 hover:text-green-200 transition"
@@ -202,6 +260,34 @@ export default function Header() {
                   <ChatBubbleLeftEllipsisIcon className="h-5 w-5" />
                   <span>Chat</span>
                 </button>
+
+                {/* Auth */}
+                {user ? (
+                  <>
+                    <button
+                      onClick={() => {
+                        handleUserAction();
+                        setMobileOpen(false);
+                      }}
+                      className="flex items-center space-x-2 hover:text-green-200"
+                    >
+                      <UserCircleIcon className="h-5 w-5" />
+                      <span>Profile</span>
+                    </button>
+
+                    <button
+                      onClick={() => signOut({ callbackUrl: "/" })}
+                      className="text-red-400"
+                    >
+                      Logout
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button onClick={handleGoogleSignIn}>Login</button>
+                    <button onClick={handleGoogleSignUp}>Register</button>
+                  </>
+                )}
               </div>
             </div>
           </motion.div>

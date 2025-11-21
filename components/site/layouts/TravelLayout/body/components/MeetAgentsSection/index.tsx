@@ -5,14 +5,27 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import {
-  BriefcaseIcon,
-  GlobeAltIcon,
-  EnvelopeIcon,
-  ArrowRightIcon,
+  ChatBubbleLeftRightIcon,
+  TrophyIcon,
+  MapIcon,
+  ArrowLongRightIcon,
 } from "@heroicons/react/24/solid";
 import { Expert } from "@/types/typings";
 
-// --- Sample fallback data ---
+// --- Types ---
+// interface Expert {
+//   id: string;
+//   name: string;
+//   specialty: string;
+//   image: string;
+//   bio: string;
+//   experienceYears: number;
+//   tripsPlanned: number;
+//   email: string;
+//   topDestinations: string[];
+// }
+
+// --- Sample Data ---
 const sampleAgents: Expert[] = [
   {
     id: "agent1",
@@ -50,337 +63,180 @@ const sampleAgents: Expert[] = [
   },
 ];
 
-// --- Framer Motion Variants ---
-const containerVariants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { staggerChildren: 0.1, delayChildren: 0.2 },
-  },
-};
-const itemVariants = {
-  hidden: { opacity: 0, y: 40, scale: 0.95 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: { type: "spring", stiffness: 100, damping: 15 },
-  },
-};
 
-// AgentCard Component
-function AgentCard({ agent }: { agent: Expert }) {
+// --- Components ---
+
+const StatBadge = ({ icon: Icon, label, value }: any) => (
+  <div className="flex flex-col items-center justify-center p-2 bg-white/50 backdrop-blur-sm rounded-lg border border-white/20 shadow-sm flex-1">
+    <Icon className="h-4 w-4 text-indigo-600 mb-1" />
+    <span className="font-bold text-gray-900 text-sm">{value}</span>
+    <span className="text-[10px] text-gray-600 uppercase tracking-wide">{label}</span>
+  </div>
+);
+
+function ExpertCard({ expert }: { expert: any }) {
   return (
     <motion.div
-      whileHover={{ y: -10, boxShadow: "0px 20px 40px rgba(0,0,0,0.15)" }}
-      transition={{ type: "spring", stiffness: 200, damping: 20 }}
-      className="bg-white rounded-3xl overflow-hidden shadow-lg flex flex-col items-center text-center p-8 group relative"
+      className="group relative w-full h-[500px] rounded-[2rem] overflow-hidden bg-gray-100 shadow-lg cursor-pointer"
+      whileHover={{ y: -10 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
     >
-      {/* Photo */}
-      <div className="relative w-32 h-32 mb-6">
+      {/* Background Image */}
+      <div className="absolute inset-0">
         <Image
-          src={agent.photoUrl || agent.image || "/default-avatar.png"}
-          alt={agent.user.name || "agent"}
+          src={expert.image || expert.photoUrl || "https://via.placeholder.com/600x800?text=No+Image"}
+          alt={expert.user.name || "Travel Expert"}
           loader={({ src, width, quality }) =>
             `${src}?w=${width}&q=${quality || 75}`
           }
           fill
-          className="rounded-full ring-4 ring-indigo-300 ring-offset-4 ring-offset-white group-hover:ring-indigo-500 object-cover"
+          className="object-cover transition-transform duration-700 ease-out group-hover:scale-110 grayscale-[30%] group-hover:grayscale-0"
+          sizes="(max-width: 768px) 100vw, 33vw"
         />
+        {/* Gradient Overlay - Darker at bottom for text readability */}
+        <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/40 to-transparent opacity-80 transition-opacity duration-500" />
       </div>
 
-      {/* Info */}
-      <h3 className="text-xl font-bold text-gray-900 mb-1">{agent.user.name}</h3>
-      <p className="text-indigo-700 font-semibold mb-2">{agent.specialty}</p>
-
-      {agent.experienceYears && (
-        <div className="flex items-center text-gray-600 text-sm mb-2">
-          <BriefcaseIcon className="h-4 w-4 mr-1 text-gray-500" />
-          <span>{agent.experienceYears} years experience</span>
+      {/* Floating Content Card */}
+      <div className="absolute inset-0 p-6 flex flex-col justify-end">
+        
+        {/* Top Label (Always Visible) */}
+        <div className="absolute top-6 left-6">
+          <span className="px-4 py-1.5 bg-white/20 backdrop-blur-md border border-white/30 rounded-full text-xs font-bold text-white tracking-wider uppercase">
+            {expert.specialty}
+          </span>
         </div>
-      )}
-      {agent.travelsCompleted && (
-        <div className="flex items-center text-gray-600 text-sm mb-4">
-          <GlobeAltIcon className="h-4 w-4 mr-1 text-gray-500" />
-          <span>{agent.travelsCompleted}+ trips completed</span>
+
+        {/* Text Content */}
+        <div className="relative z-10 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+          <h3 className="text-3xl font-serif font-bold text-white mb-2">
+            {expert.user.name || "Travel Expert"}
+          </h3>
+
+          {/* Separator Line */}
+          <div className="w-12 h-1 bg-indigo-500 mb-4 rounded-full transition-all duration-500 group-hover:w-full" />
+
+          {/* Bio (Collapsible) */}
+          <p className="text-gray-200 text-sm line-clamp-2 mb-4 opacity-90 group-hover:opacity-100">
+            {expert.bio}
+          </p>
+
+          {/* Hidden Content (Reveals on Hover) */}
+          <div className="grid grid-rows-[0fr] group-hover:grid-rows-[1fr] transition-[grid-template-rows] duration-500 ease-in-out">
+            <div className="overflow-hidden">
+              <div className="pt-2 flex flex-col gap-4">
+                
+                {/* Stats Row */}
+                <div className="flex gap-2">
+                  <StatBadge icon={TrophyIcon} label="Years" value={`${expert.experienceYears}+`} />
+                  <StatBadge icon={MapIcon} label="Trips" value={expert.tripsPlanned || "0"} />
+                </div>
+
+                {/* Action Button */}
+                <Link href={`/experts/${expert.id}`} className="w-full">
+                  <button className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-colors shadow-lg">
+                    <ChatBubbleLeftRightIcon className="h-4 w-4" />
+                    Plan My Trip with {expert?.user?.name?.split(" ")[0] || "Expert"}
+                  </button>
+                </Link>
+
+                <div className="flex justify-between items-center text-xs text-gray-400 pt-1">
+                   <span>Top regions:</span>
+                   <span className="text-white font-medium">{expert.topDestinations?.join(" • ") || ""}</span>
+                </div>
+
+              </div>
+            </div>
+          </div>
         </div>
-      )}
-
-      {/* Bio snippet */}
-      <motion.p
-        initial={{ opacity: 0, height: 0 }}
-        whileHover={{ opacity: 1, height: "auto" }}
-        transition={{ duration: 0.3 }}
-        className="text-gray-700 text-sm italic mb-4 overflow-hidden line-clamp-3"
-      >
-        "{agent.bio}"
-      </motion.p>
-
-      {/* Contact + Profile */}
-      <div className="mt-auto w-full flex flex-col gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-        {agent.contactEmail && (
-          <Link href={`mailto:${agent.contactEmail}`} passHref>
-            <motion.a
-              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-full px-4 py-3 font-medium flex items-center justify-center gap-2 shadow-md"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <EnvelopeIcon className="h-5 w-5" /> Contact{" "}
-              {agent?.user?.name?.split(" ")[0]}
-            </motion.a>
-          </Link>
-        )}
-        <Link href={`/experts/${agent.id}`} passHref>
-          <motion.a
-            className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-full px-4 py-3 font-medium flex items-center justify-center gap-2 shadow-md"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            View Profile <ArrowRightIcon className="h-4 w-4 ml-1" />
-          </motion.a>
-        </Link>
       </div>
     </motion.div>
   );
 }
 
 // --- Main Section ---
-export default function MeetAgents({ agents }: { agents?: Expert[] }) {
-  const agentsToDisplay = agents && agents.length > 0 ? agents : sampleAgents;
+export default function MeetExperts({ experts }: { experts?: Expert[] }) {
+  const displayExperts = experts && experts.length > 0 ? experts : sampleAgents;
 
   return (
-    <section className="py-16 px-4 bg-gradient-to-br from-indigo-50 to-white overflow-hidden">
+    <section className="py-24 px-4 bg-white relative overflow-hidden">
+      {/* Decorative Background Elements */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[1000px] bg-indigo-50/50 rounded-full blur-3xl pointer-events-none -z-10" />
+
       <div className="max-w-7xl mx-auto">
-        {/* Title */}
-        <motion.h2
-          className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4 text-center"
-          initial={{ opacity: 0, y: -20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          Meet Our Dedicated Travel Experts
-        </motion.h2>
-        <motion.p
-          className="text-lg text-gray-600 mb-12 text-center max-w-3xl mx-auto"
-          initial={{ opacity: 0, y: -20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-        >
-          Our team of passionate travel advisors is here to turn your dream
-          vacation into a reality.
-        </motion.p>
+        {/* Header */}
+        <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
+          <div className="max-w-2xl">
+            <motion.span 
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              className="text-indigo-600 font-bold tracking-widest uppercase text-sm mb-2 block"
+            >
+              The Architects of Adventure
+            </motion.span>
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="text-4xl md:text-5xl font-serif font-bold text-gray-900 leading-tight"
+            >
+              Meet Our Travel Designers
+            </motion.h2>
+          </div>
+          
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+          >
+            <Link href="/experts" className="group flex items-center gap-2 text-gray-900 font-semibold hover:text-indigo-600 transition-colors">
+              View All 45+ Experts
+              <ArrowLongRightIcon className="h-5 w-5 transform group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </motion.div>
+        </div>
 
         {/* Grid */}
         <motion.div
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
-          variants={containerVariants}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
           initial="hidden"
           whileInView="visible"
+          viewport={{ once: true, margin: "-50px" }}
+          variants={{
+            hidden: { opacity: 0 },
+            visible: {
+              opacity: 1,
+              transition: { staggerChildren: 0.15 },
+            },
+          }}
         >
-          {agentsToDisplay.map((agent) => (
+          {displayExperts.map((expert) => (
             <motion.div
-              key={agent.id}
-              variants={itemVariants}
-              className="flex justify-center"
+              key={expert.id}
+              variants={{
+                hidden: { opacity: 0, y: 30 },
+                visible: { opacity: 1, y: 0, transition: { type: "spring", duration: 0.8 } },
+              }}
             >
-              <AgentCard agent={agent} />
+              <ExpertCard expert={expert} />
             </motion.div>
           ))}
         </motion.div>
+        
+        {/* Bottom Trust Banner */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="mt-20 p-8 bg-gray-50 rounded-3xl border border-gray-100 text-center"
+        >
+            <h4 className="text-lg font-bold text-gray-900 mb-2">Why book with an expert?</h4>
+            <p className="text-gray-600 max-w-2xl mx-auto">
+                Our designers travel 3 months a year to vet hotels, guides, and experiences personally. 
+                You aren't booking an algorithm; you're booking first-hand knowledge.
+            </p>
+        </motion.div>
+
       </div>
     </section>
   );
 }
-
-
-// "use client";
-
-// import React from "react";
-// import { motion } from "framer-motion";
-// import Image from "next/image";
-// import Link from "next/link";
-// import {
-//   BriefcaseIcon,
-//   GlobeAltIcon,
-//   EnvelopeIcon,
-//   ArrowRightIcon,
-// } from "@heroicons/react/24/solid";
-// import { Expert } from "@/types/typings";
-
-// // Shared interface (aligned with your Experts data)
-// // export interface Expert {
-// //   id: string | number;
-// //   name: string;
-// //   role: string; // In MeetAgents, displayed as "specialty"
-// //   image: string; // photo
-// //   bio: string; // bioSnippet
-// //   experience?: number;
-// //   travelsCompleted?: number;
-// //   email?: string;
-// //   linkedin?: string;
-// // }
-
-// // --- Sample fallback data ---
-// const sampleAgents: Expert[] = [
-//   {
-//     id: "agent1",
-//     name: "Sophia Chen",
-//     role: "Adventure Travel",
-//     experience: 8,
-//     travelsCompleted: 120,
-//     image: "https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=600&auto=format",
-//     bio: "Expert in thrilling expeditions and off-the-beaten-path destinations.",
-//     email: "sophia.c@example.com",
-//     linkedin: "https://linkedin.com/in/sophiachen",
-//   },
-//   {
-//     id: "agent2",
-//     name: "David Miller",
-//     role: "Luxury & Relaxation",
-//     experience: 12,
-//     travelsCompleted: 95,
-//     image: "https://images.unsplash.com/photo-1507003211169-0a3dd782dab4?q=80&w=600&auto=format",
-//     bio: "Crafting bespoke, high-end travel experiences for discerning clients.",
-//     email: "david.m@example.com",
-//     linkedin: "https://linkedin.com/in/davidmiller",
-//   },
-// ];
-
-// // --- Framer Motion Variants ---
-// const containerVariants = {
-//   hidden: { opacity: 0, y: 30 },
-//   visible: {
-//     opacity: 1,
-//     y: 0,
-//     transition: { staggerChildren: 0.1, delayChildren: 0.2 },
-//   },
-// };
-// const itemVariants = {
-//   hidden: { opacity: 0, y: 40, scale: 0.95 },
-//   visible: {
-//     opacity: 1,
-//     y: 0,
-//     scale: 1,
-//     transition: { type: "spring", stiffness: 100, damping: 15 },
-//   },
-// };
-
-// // AgentCard Component
-// function AgentCard({ agent }: { agent: Expert }) {
-//   return (
-//     <motion.div
-//       whileHover={{ y: -10, boxShadow: "0px 20px 40px rgba(0,0,0,0.15)" }}
-//       transition={{ type: "spring", stiffness: 200, damping: 20 }}
-//       className="bg-white rounded-3xl overflow-hidden shadow-lg flex flex-col items-center text-center p-8 group relative"
-//     >
-//       {/* Photo */}
-//       <div className="relative w-32 h-32 mb-6">
-//         <Image
-//           src={agent.image || 'https://linkedin.com/in/evelynreed'}
-//           alt={agent.name || 'agent'}
-//           loader={({ src, width, quality }) =>
-//             `${src}?w=${width}&q=${quality || 75}`
-//           }
-//           fill
-//           className="rounded-full ring-4 ring-indigo-300 ring-offset-4 ring-offset-white group-hover:ring-indigo-500 object-cover"
-//         />
-//       </div>
-
-//       {/* Info */}
-//       <h3 className="text-xl font-bold text-gray-900 mb-1">{agent.name}</h3>
-//       <p className="text-indigo-700 font-semibold mb-2">{agent.role}</p>
-
-//       {agent.experience && (
-//         <div className="flex items-center text-gray-600 text-sm mb-2">
-//           <BriefcaseIcon className="h-4 w-4 mr-1 text-gray-500" />
-//           <span>{agent.experience} years experience</span>
-//         </div>
-//       )}
-//       {agent.travelsCompleted && (
-//         <div className="flex items-center text-gray-600 text-sm mb-4">
-//           <GlobeAltIcon className="h-4 w-4 mr-1 text-gray-500" />
-//           <span>{agent.travelsCompleted}+ trips completed</span>
-//         </div>
-//       )}
-
-//       {/* Bio snippet */}
-//       <motion.p
-//         initial={{ opacity: 0, height: 0 }}
-//         whileHover={{ opacity: 1, height: "auto" }}
-//         transition={{ duration: 0.3 }}
-//         className="text-gray-700 text-sm italic mb-4 overflow-hidden line-clamp-3"
-//       >
-//         "{agent.bio}"
-//       </motion.p>
-
-//       {/* Contact + Profile */}
-//       <div className="mt-auto w-full flex flex-col gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-//         {agent.email && (
-//           <Link href={`mailto:${agent.email}`} passHref>
-//             <motion.a
-//               className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-full px-4 py-3 font-medium flex items-center justify-center gap-2 shadow-md"
-//               whileHover={{ scale: 1.02 }}
-//               whileTap={{ scale: 0.98 }}
-//             >
-//               <EnvelopeIcon className="h-5 w-5" /> Contact {agent.name.split(" ")[0]}
-//             </motion.a>
-//           </Link>
-//         )}
-//         <Link href={`/experts/${agent.id}`} passHref>
-//           <motion.a
-//             className="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-full px-4 py-3 font-medium flex items-center justify-center gap-2 shadow-md"
-//             whileHover={{ scale: 1.02 }}
-//             whileTap={{ scale: 0.98 }}
-//           >
-//             View Profile <ArrowRightIcon className="h-4 w-4 ml-1" />
-//           </motion.a>
-//         </Link>
-//       </div>
-//     </motion.div>
-//   );
-// }
-
-// // --- Main Section ---
-// export default function MeetAgents({ agents }: { agents?: Expert[] }) {
-//   const agentsToDisplay = agents && agents.length > 0 ? agents : sampleAgents;
-
-//   return (
-//     <section className="py-16 px-4 bg-gradient-to-br from-indigo-50 to-white overflow-hidden">
-//       <div className="max-w-7xl mx-auto">
-//         {/* Title */}
-//         <motion.h2
-//           className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4 text-center"
-//           initial={{ opacity: 0, y: -20 }}
-//           whileInView={{ opacity: 1, y: 0 }}
-//           transition={{ duration: 0.6 }}
-//         >
-//           Meet Our Dedicated Travel Experts
-//         </motion.h2>
-//         <motion.p
-//           className="text-lg text-gray-600 mb-12 text-center max-w-3xl mx-auto"
-//           initial={{ opacity: 0, y: -20 }}
-//           whileInView={{ opacity: 1, y: 0 }}
-//           transition={{ duration: 0.6, delay: 0.2 }}
-//         >
-//           Our team of passionate travel advisors is here to turn your dream
-//           vacation into a reality.
-//         </motion.p>
-
-//         {/* Grid */}
-//         <motion.div
-//           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
-//           variants={containerVariants}
-//           initial="hidden"
-//           whileInView="visible"
-//         >
-//           {agentsToDisplay.map((agent) => (
-//             <motion.div key={agent.id} variants={itemVariants} className="flex justify-center">
-//               <AgentCard agent={agent} />
-//             </motion.div>
-//           ))}
-//         </motion.div>
-//       </div>
-//     </section>
-//   );
-// }

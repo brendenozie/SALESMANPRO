@@ -5,15 +5,16 @@ import { AnimatePresence, motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import {
-  PlayCircleIcon,
-  GlobeAmericasIcon,
-  NewspaperIcon,
+  PlayIcon,
   XMarkIcon,
-  ArrowRightIcon,
+  ArrowUpRightIcon,
+  ChartBarIcon,
+  SparklesIcon,
+  ClockIcon,
 } from "@heroicons/react/24/solid";
 
 // --- Shared Utilities ---
-const customLoader = ({ src, width, quality }:any) =>
+const customLoader = ({ src, width, quality }: any) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
 const blurSvg = `data:image/svg+xml;base64,${btoa(`
@@ -23,275 +24,315 @@ const blurSvg = `data:image/svg+xml;base64,${btoa(`
   </svg>
 `)}`;
 
-const itemVariants = {
-  hidden: { opacity: 0, y: 40, scale: 0.95 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: { type: "spring", stiffness: 100, damping: 15 },
-  },
-};
-
-// --- Fallback Dummy Data ---
+// --- Fallback Data ---
 const fallbackTours = [
   {
     id: "vt1",
-    title: "Explore the Amazon Rainforest",
-    thumbnail:
-      "https://images.unsplash.com/photo-1546522301-447544d673f4?q=80&w=2940&auto=format&fit=crop",
+    title: "Amazon Canopy Walk",
+    thumbnail: "https://images.unsplash.com/photo-1546522301-447544d673f4?q=80&w=2940&auto=format&fit=crop",
     videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1",
-    duration: "5 min",
-    location: "Amazon, Brazil",
+    duration: "4:30",
+    location: "Brazil",
   },
   {
     id: "vt2",
-    title: "A Walk Through Ancient Rome",
-    thumbnail:
-      "https://images.unsplash.com/photo-1552832230-c0197cefa08d?q=80&w=2940&auto=format&fit=crop",
+    title: "Rome at Sunset",
+    thumbnail: "https://images.unsplash.com/photo-1552832230-c0197cefa08d?q=80&w=2940&auto=format&fit=crop",
     videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1",
-    duration: "7 min",
-    location: "Rome, Italy",
+    duration: "6:15",
+    location: "Italy",
+  },
+  {
+    id: "vt3",
+    title: "Kyoto Tea Ceremony",
+    thumbnail: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=2940&auto=format&fit=crop",
+    videoUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1",
+    duration: "5:00",
+    location: "Japan",
   },
 ];
 
 const fallbackCosts = [
-  { id: "rc1", region: "Europe", avgCost: 1800, icon: "🌍" },
-  { id: "rc2", region: "Asia", avgCost: 1500, icon: "🌏" },
+  { id: "rc1", region: "Western Europe", avgCost: 2200, level: 85 }, // Level 0-100 for bar width
+  { id: "rc2", region: "Southeast Asia", avgCost: 1100, level: 40 },
+  { id: "rc3", region: "North America", avgCost: 2800, level: 95 },
 ];
 
 const fallbackPosts = [
   {
     id: "bp1",
-    title: "10 Essential Tips for Solo Travelers",
-    date: "2024-07-10",
-    url: "/blog/solo-travel-tips",
+    title: "The Solo Traveler's Handbook",
+    category: "Guide",
+    readTime: "5 min read",
+    url: "/blog/solo-travel",
+    image: "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=200&auto=format&fit=crop"
   },
   {
     id: "bp2",
-    title: "Budgeting Your Dream European Vacation",
-    date: "2024-07-05",
-    url: "/blog/europe-budget",
+    title: "Hidden Gems in Portugal",
+    category: "Inspiration",
+    readTime: "3 min read",
+    url: "/blog/portugal",
+    image: "https://images.unsplash.com/photo-1555881400-74d7acaacd81?q=80&w=200&auto=format&fit=crop"
+  },
+  {
+    id: "bp3",
+    title: "Packing Light: A Masterclass",
+    category: "Tips",
+    readTime: "6 min read",
+    url: "/blog/packing",
+    image: "https://images.unsplash.com/photo-1553531384-cc64ac80f931?q=80&w=200&auto=format&fit=crop"
   },
 ];
 
-// --- Modal ---
-function VirtualTourModal({ videoUrl, onClose }:any) {
-  // useEffect(
-  //   () => {
-  //   document.body.style.overflow = "hidden";
-  //   return () => (document.body.style.overflow = "unset");
-  // }, []);
+// --- Sub-Components ---
 
+const Modal = ({ videoUrl, onClose }: any) => {
   useEffect(() => {
     document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = "unset";
-    };
+    return () => { document.body.style.overflow = "unset"; };
   }, []);
-
 
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 bg-black/90 backdrop-blur-xl z-[9999] flex items-center justify-center p-4"
       onClick={onClose}
     >
       <motion.div
-        initial={{ scale: 0.8, y: 50 }}
-        animate={{ scale: 1, y: 0 }}
-        exit={{ scale: 0.8, y: 50 }}
-        transition={{ type: "spring", stiffness: 200, damping: 25 }}
-        className="relative w-full max-w-4xl aspect-video bg-gray-900 rounded-2xl shadow-2xl overflow-hidden"
-        onClick={(e:any) => e.stopPropagation()}
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        className="relative w-full max-w-5xl aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl border border-white/10"
+        onClick={(e: React.MouseEvent<HTMLDivElement>) => e.stopPropagation()}
       >
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-10 text-white hover:text-gray-300 transition"
+          className="absolute top-4 right-4 z-20 p-2 bg-black/50 hover:bg-white/20 rounded-full text-white transition-colors"
         >
-          <XMarkIcon className="h-8 w-8" />
+          <XMarkIcon className="h-6 w-6" />
         </button>
         <iframe
           src={videoUrl}
-          title="Virtual Tour"
-          frameBorder="0"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
           className="w-full h-full"
+          allow="autoplay; encrypted-media"
+          allowFullScreen
         />
       </motion.div>
     </motion.div>
   );
-}
+};
 
-// --- Tour Card ---
-function VirtualTourCard({ tour, onOpen }:any) {
-  return (
-    <motion.div
-      whileHover={{ scale: 1.03, boxShadow: "0px 15px 30px rgba(0,0,0,0.2)" }}
-      transition={{ type: "spring", stiffness: 200, damping: 20 }}
-      className="relative flex-shrink-0 w-80 h-56 rounded-2xl overflow-hidden shadow-lg cursor-pointer group border border-gray-100"
-      onClick={() => onOpen(tour.videoUrl)}
-    >
-      <Image
-        src={tour.thumbnail}
-        alt={tour.title}
-        layout="fill"
-        objectFit="cover"
-        className="transform transition-transform duration-500 group-hover:scale-110"
-        loader={customLoader}
-        placeholder="blur"
-        blurDataURL={blurSvg}
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-      <div className="absolute inset-0 flex items-center justify-center z-10">
-        <PlayCircleIcon className="h-20 w-20 text-white/90 group-hover:text-white transition-colors" />
+const VideoCard = ({ tour, onOpen }: any) => (
+  <motion.div
+    whileHover={{ y: -5 }}
+    className="relative h-80 w-56 flex-shrink-0 rounded-2xl overflow-hidden cursor-pointer group shadow-md"
+    onClick={() => onOpen(tour.videoUrl)}
+  >
+    <Image
+      src={tour.thumbnail}
+      alt={tour.title}
+      fill
+      className="object-cover transition-transform duration-700 group-hover:scale-110"
+      loader={customLoader}
+    />
+    {/* Dark Gradient */}
+    <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/80" />
+    
+    {/* Play Button Overlay */}
+    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <div className="h-12 w-12 bg-white/30 backdrop-blur-md rounded-full flex items-center justify-center border border-white/50">
+            <PlayIcon className="h-6 w-6 text-white ml-1" />
+        </div>
+    </div>
+
+    {/* Content */}
+    <div className="absolute bottom-4 left-4 right-4 text-white">
+      <div className="flex items-center gap-2 mb-1">
+        <span className="px-2 py-0.5 bg-indigo-600 rounded text-[10px] font-bold uppercase tracking-wide">
+            {tour.location}
+        </span>
+        <span className="text-xs text-gray-300 font-medium flex items-center">
+            <ClockIcon className="h-3 w-3 mr-1" /> {tour.duration}
+        </span>
       </div>
-      <div className="absolute bottom-4 left-4 right-4 text-white z-20">
-        <h3 className="text-xl font-bold mb-1">{tour.title}</h3>
-        <p className="text-sm text-gray-200 flex items-center">
-          <GlobeAmericasIcon className="h-4 w-4 mr-1" /> {tour.location}
-          <span className="mx-2">•</span>
-          {tour.duration}
-        </p>
+      <h4 className="font-bold leading-tight">{tour.title}</h4>
+    </div>
+  </motion.div>
+);
+
+const CostRow = ({ item }: any) => (
+  <div className="flex items-center gap-4 py-3 border-b border-dashed border-gray-100 last:border-0">
+    <div className="flex-1">
+      <div className="flex justify-between items-end mb-1">
+        <span className="font-semibold text-gray-800 text-sm">{item.region}</span>
+        <span className="font-bold text-indigo-600 text-sm">${item.avgCost.toLocaleString()}</span>
       </div>
-    </motion.div>
-  );
-}
+      {/* Progress Bar */}
+      <div className="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden">
+        <motion.div 
+            initial={{ width: 0 }}
+            whileInView={{ width: `${item.level}%` }}
+            transition={{ duration: 1, ease: "easeOut" }}
+            className="h-full bg-gradient-to-r from-indigo-400 to-purple-500 rounded-full"
+        />
+      </div>
+    </div>
+  </div>
+);
+
+const BlogPostItem = ({ post }: any) => (
+  <Link href={post.url || '#'} className="group flex items-center gap-4 p-2 rounded-xl hover:bg-gray-50 transition-colors duration-300">
+    <div className="relative h-16 w-16 flex-shrink-0 rounded-lg overflow-hidden bg-gray-200">
+        <Image src={post.image} alt={post.title} fill className="object-cover" loader={customLoader}/>
+    </div>
+    <div className="flex-1 min-w-0">
+      <div className="flex items-center gap-2 mb-1">
+          <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider">{post.category}</span>
+          <span className="text-[10px] text-gray-400">• {post.readTime}</span>
+      </div>
+      <h4 className="text-sm font-bold text-gray-900 leading-snug truncate group-hover:text-indigo-600 transition-colors">
+        {post.title}
+      </h4>
+    </div>
+    <ArrowUpRightIcon className="h-4 w-4 text-gray-300 group-hover:text-indigo-600 transition-colors" />
+  </Link>
+);
 
 // --- Main Component ---
-export default function MarketInsights({
-  virtualTours,
-  regionCosts,
-  blogPosts,
-}:any) {
+export default function MarketInsights({ virtualTours, regionCosts, blogPosts }: any) {
   const [modalVideoUrl, setModalVideoUrl] = useState(null);
 
-  const openModal = (url:any) => setModalVideoUrl(url);
-  const closeModal = () => setModalVideoUrl(null);
-
-  const toursToShow = virtualTours && virtualTours.length > 0 ? virtualTours : fallbackTours;
-  const costsToShow = regionCosts && regionCosts.length > 0 ? regionCosts : fallbackCosts;
-  const postsToShow = blogPosts && blogPosts.length > 0 ? blogPosts : fallbackPosts;
+  const tours = virtualTours?.length ? virtualTours : fallbackTours;
+  const costs = regionCosts?.length ? regionCosts : fallbackCosts;
+  const blogs = blogPosts?.length ? blogPosts : fallbackPosts;
 
   return (
-    <section id="about" className="py-16 px-4 bg-gray-50 overflow-hidden">
-      <div className="max-w-7xl mx-auto">
-        <motion.h2
-          className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4 text-center leading-tight"
-          initial={{ opacity: 0, y: -20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-        >
-          Explore & Plan Your Journey
-        </motion.h2>
-        <motion.p
-          className="text-lg text-gray-600 mb-12 text-center max-w-3xl mx-auto"
-          initial={{ opacity: 0, y: -20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-        >
-          Dive into immersive virtual tours, get insights on travel costs, and
-          discover expert tips for your next adventure.
-        </motion.p>
+    <section className="py-24 px-4 bg-white relative overflow-hidden">
+      {/* Decor */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-50/50 rounded-full blur-[100px] pointer-events-none" />
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-10">
-          {/* Virtual Tours */}
-          <motion.div className="lg:col-span-2 bg-white rounded-3xl p-6 md:p-8 shadow-xl border border-gray-100 flex flex-col">
-            <h3 className="text-2xl font-bold text-gray-900 mb-6">
-              Virtual Tours
-            </h3>
-            <div className="flex space-x-6 overflow-x-auto pb-4 hide-scrollbar">
-              {toursToShow.map((tour:any) => (
-                <motion.div key={tour.id} variants={itemVariants}>
-                  <VirtualTourCard tour={tour} onOpen={openModal} />
-                </motion.div>
-              ))}
+      <div className="max-w-7xl mx-auto relative z-10">
+        
+        {/* Header */}
+        <div className="mb-12 md:flex md:items-end md:justify-between">
+            <div className="max-w-2xl">
+                <motion.span 
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    className="text-indigo-600 font-bold tracking-widest uppercase text-sm mb-2 flex items-center gap-2"
+                >
+                    <SparklesIcon className="h-4 w-4" />
+                    Inspiration Station
+                </motion.span>
+                <motion.h2
+                    initial={{ opacity: 0, y: 10 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
+                    className="text-4xl md:text-5xl font-serif font-bold text-gray-900 leading-tight"
+                >
+                    Curated Insights & Previews
+                </motion.h2>
             </div>
-            <div className="mt-6 text-center">
-              <Link href="/virtual-tours">
-                <motion.button className="bg-indigo-50 text-indigo-700 rounded-full px-6 py-3 font-semibold hover:bg-indigo-100 transition flex items-center justify-center mx-auto gap-2">
-                  View All Virtual Tours{" "}
-                  <ArrowRightIcon className="h-4 w-4 ml-1" />
-                </motion.button>
-              </Link>
+            <div className="hidden md:block">
+                 <p className="text-gray-500 text-sm text-right">Updated weekly with <br/>fresh data and stories.</p>
+            </div>
+        </div>
+
+        {/* Bento Grid Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 h-auto lg:h-[600px]">
+          
+          {/* Main Module: Virtual Tours (Spans 8 cols) */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="lg:col-span-8 bg-gray-900 rounded-[2.5rem] p-8 md:p-10 relative overflow-hidden flex flex-col justify-center"
+          >
+            {/* Background Texture */}
+            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10" />
+            <div className="absolute bottom-0 right-0 w-64 h-64 bg-indigo-500 blur-[80px] opacity-40 rounded-full pointer-events-none" />
+
+            <div className="relative z-10 mb-6">
+                <h3 className="text-2xl font-bold text-white mb-2 flex items-center gap-2">
+                    <PlayIcon className="h-6 w-6 text-indigo-400" />
+                    Immersive Previews
+                </h3>
+                <p className="text-gray-400 max-w-md">Experience the atmosphere before you book. Take a virtual walk through our most requested locations.</p>
+            </div>
+
+            {/* Horizontal Scroll Container */}
+            <div className="relative z-10 flex gap-4 overflow-x-auto pb-4 hide-scrollbar snap-x">
+                 {tours.map((tour: any) => (
+                     <VideoCard key={tour.id} tour={tour} onOpen={setModalVideoUrl} />
+                 ))}
+                 {/* View All Card */}
+                 <Link href="/virtual-tours" className="relative h-80 w-40 flex-shrink-0 rounded-2xl border-2 border-dashed border-gray-700 hover:border-indigo-500 flex flex-col items-center justify-center text-gray-500 hover:text-white transition-colors cursor-pointer group snap-start">
+                     <span className="text-sm font-bold uppercase tracking-wider mb-2">View All</span>
+                     <div className="h-10 w-10 rounded-full bg-gray-800 group-hover:bg-indigo-600 flex items-center justify-center transition-colors">
+                        <ArrowUpRightIcon className="h-5 w-5" />
+                     </div>
+                 </Link>
             </div>
           </motion.div>
 
-          {/* Insights */}
-          <div className="lg:col-span-1 flex flex-col gap-8 md:gap-10">
-            {/* Costs */}
-            <motion.div className="bg-white rounded-3xl p-6 md:p-8 shadow-xl border border-gray-100">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">
-                Average Travel Costs
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {costsToShow.map((rc:any) => (
-                  <motion.div
-                    key={rc.id}
-                    className="flex items-center bg-gray-50 rounded-2xl p-4 shadow-sm border border-gray-100"
-                  >
-                    <span className="text-4xl mr-4">{rc.icon}</span>
-                    <div>
-                      <h4 className="text-lg font-semibold text-gray-800">
-                        {rc.region}
-                      </h4>
-                      <p className="text-indigo-600 font-bold text-xl">
-                        ${rc.avgCost.toLocaleString()}
-                      </p>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
+          {/* Right Column (Spans 4 cols) - Split into two rows */}
+          <div className="lg:col-span-4 flex flex-col gap-6 lg:gap-8 h-full">
+            
+            {/* Top Right: Costs */}
+            <motion.div 
+                initial={{ opacity: 0, x: 20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.2 }}
+                className="flex-1 bg-white rounded-[2rem] p-6 shadow-xl shadow-indigo-100/50 border border-gray-100 flex flex-col"
+            >
+                <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                        <ChartBarIcon className="h-5 w-5 text-emerald-500" />
+                        Avg. Trip Costs
+                    </h3>
+                    <span className="text-xs font-medium text-gray-400 bg-gray-50 px-2 py-1 rounded-md">Per Person</span>
+                </div>
+                <div className="flex-1 flex flex-col justify-center">
+                    {costs.map((cost: any) => (
+                        <CostRow key={cost.id} item={cost} />
+                    ))}
+                </div>
             </motion.div>
 
-            {/* Blogs */}
-            <motion.div className="bg-white rounded-3xl p-6 md:p-8 shadow-xl border border-gray-100 flex flex-col">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">
-                Latest Travel Tips
-              </h3>
-              <ul className="space-y-4">
-                {postsToShow.map((bp:any) => (
-                  <motion.li key={bp.id} className="flex items-start">
-                    <NewspaperIcon className="h-6 w-6 text-indigo-500 mr-3 flex-shrink-0 mt-1" />
-                    <div>
-                      <Link href={bp.url || '#'}>
-                        <span className="text-lg font-semibold text-gray-800 hover:text-indigo-600 transition leading-tight">
-                          {bp.title}
-                        </span>
-                      </Link>
-                      <p className="text-gray-500 text-sm">
-                        {new Date(bp.date).toLocaleDateString("en-US", {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        })}
-                      </p>
-                    </div>
-                  </motion.li>
-                ))}
-              </ul>
-              <div className="mt-8 text-center lg:text-left">
-                <Link href="/blog">
-                  <motion.button className="bg-indigo-50 text-indigo-700 rounded-full px-6 py-3 font-semibold hover:bg-indigo-100 transition flex items-center justify-center gap-2">
-                    View All Posts <ArrowRightIcon className="h-4 w-4 ml-1" />
-                  </motion.button>
-                </Link>
-              </div>
+            {/* Bottom Right: Blogs */}
+            <motion.div 
+                initial={{ opacity: 0, x: 20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.3 }}
+                className="flex-1 bg-white rounded-[2rem] p-6 shadow-xl shadow-indigo-100/50 border border-gray-100 flex flex-col"
+            >
+                 <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-bold text-gray-900">Latest Reads</h3>
+                    <Link href="/blog" className="text-xs font-bold text-indigo-600 hover:underline">View All</Link>
+                </div>
+                <div className="flex flex-col gap-2">
+                    {blogs.map((post: any) => (
+                        <BlogPostItem key={post.id} post={post} />
+                    ))}
+                </div>
             </motion.div>
           </div>
+
         </div>
       </div>
 
       <AnimatePresence>
         {modalVideoUrl && (
-          <VirtualTourModal videoUrl={modalVideoUrl} onClose={closeModal} />
+          <Modal videoUrl={modalVideoUrl} onClose={() => setModalVideoUrl(null)} />
         )}
       </AnimatePresence>
 
-      <style jsx>{`
+      <style jsx global>{`
         .hide-scrollbar::-webkit-scrollbar {
           display: none;
         }

@@ -1,250 +1,257 @@
 "use client";
 
-import React from "react";
-import { motion } from "framer-motion";
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import {
   StarIcon,
   ClockIcon,
-  TagIcon,
+  MapPinIcon,
+  HeartIcon as HeartSolid,
 } from "@heroicons/react/24/solid";
+import { HeartIcon as HeartOutline, ArrowRightIcon } from "@heroicons/react/24/outline";
 
 // --- Utilities --- //
 const customLoader = ({ src, width, quality }: any) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
-const blurSvg = `data:image/svg+xml;base64,${btoa(`
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-    <rect width="100" height="100" fill="#e0e0e0" />
-    <circle cx="50" cy="50" r="20" fill="#bdbdbd" />
-  </svg>
-`)}`;
-
-// --- Animation Variants --- //
-const containerVariants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.2,
-    },
-  },
-};
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 40, scale: 0.95 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: { type: "spring", stiffness: 100, damping: 15 },
-  },
-};
-
-// --- Dummy Listings --- //
-const listingSamples = [
+// --- Sample Data (Robust & normalized) --- //
+const defaultListings = [
   {
     id: "1",
-    title: "Enchanting Bali Retreat",
-    description: "Discover serene temples, lush rice paddies, and vibrant culture.",
-    thumbnail:
-      "https://images.unsplash.com/photo-1536152470817-f90694154373?q=80&w=2940&auto=format&fit=crop",
-    price: 1200,
+    title: "Sanctuary in Ubud",
+    location: "Bali, Indonesia",
+    description: "Immerse yourself in the spiritual heart of Bali. Private villas surrounded by lush jungle and ancient temples.",
+    thumbnail: "https://images.unsplash.com/photo-1536152470817-f90694154373?q=80&w=2940&auto=format&fit=crop",
+    price: 1290,
     duration: "7 Days",
-    rating: 4.8,
-    activities: ["Culture", "Relaxation", "Nature"],
-    badge: "Popular",
+    rating: 4.92,
+    reviews: 128,
+    badge: "Best Seller",
+    category: "Relaxation",
   },
   {
     id: "2",
-    title: "Alaskan Wilderness Adventure",
-    description: "Experience majestic glaciers, abundant wildlife, and breathtaking landscapes.",
-    thumbnail:
-      "https://images.unsplash.com/photo-1506953823976-5271ccbfb894?q=80&w=2940&auto=format&fit=crop",
-    price: 2500,
+    title: "Glaciers of Denali",
+    location: "Alaska, USA",
+    description: "A rugged expedition through the frozen north. Helicopter tours, grizzly spotting, and luxury cabin stays.",
+    thumbnail: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=3540&auto=format&fit=crop",
+    price: 2450,
     duration: "10 Days",
-    rating: 4.9,
-    activities: ["Wildlife", "Hiking", "Cruising"],
-    badge: "New",
+    rating: 4.85,
+    reviews: 84,
+    badge: "Adventure",
+    category: "Wildlife",
   },
   {
     id: "3",
-    title: "Parisian Romantic Escape",
-    description: "Indulge in art, cuisine, and the timeless charm of the City of Lights.",
-    thumbnail:
-      "https://images.unsplash.com/photo-1502602898662-a318aa667858?q=80&w=2940&auto=format&fit=crop",
-    price: 950,
-    duration: "5 Days",
-    rating: 4.7,
-    activities: ["City Tour", "Food", "History"],
-    badge: "Hot Deal",
+    title: "Kyoto Cherry Blossom",
+    location: "Kyoto, Japan",
+    description: "Walk the philosopher's path during Sakura season. Tea ceremonies, historic shrines, and culinary mastery.",
+    thumbnail: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=3540&auto=format&fit=crop",
+    price: 1850,
+    duration: "8 Days",
+    rating: 4.95,
+    reviews: 310,
+    badge: "Trending",
+    category: "Culture",
+  },
+  {
+    id: "4",
+    title: "Amalfi Coast Drive",
+    location: "Positano, Italy",
+    description: "Experience the dolce vita. Cliffside dining, lemon groves, and a classic convertible tour of the coast.",
+    thumbnail: "https://images.unsplash.com/photo-1533414417583-f0eb64df94e9?q=80&w=3540&auto=format&fit=crop",
+    price: 2100,
+    duration: "6 Days",
+    rating: 4.88,
+    reviews: 190,
+    badge: "Luxury",
+    category: "Romance",
   },
 ];
 
-// --- Star Rating --- //
-const StarRating = ({ rating }: { rating: number }) => {
-  const fullStars = Math.floor(rating);
-  const hasHalf = rating % 1 !== 0;
-  const empty = 5 - fullStars - (hasHalf ? 1 : 0);
+// --- Utilities --- //
+const formatCurrency = (value: number) =>
+  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(value);
+
+// --- Components --- //
+
+const Badge = ({ text }: { text: string }) => {
+  let colors = "bg-gray-900 text-white";
+  if (text === "Best Seller") colors = "bg-amber-400 text-amber-950";
+  if (text === "Trending") colors = "bg-rose-500 text-white";
+  if (text === "Luxury") colors = "bg-purple-600 text-white";
+  if (text === "Adventure") colors = "bg-emerald-600 text-white";
 
   return (
-    <div className="flex items-center">
-      {[...Array(fullStars)].map((_, i) => (
-        <StarIcon key={`full-${i}`} className="h-5 w-5 text-yellow-400" />
-      ))}
-      {hasHalf && (
-        <div className="relative">
-          <StarIcon className="h-5 w-5 text-yellow-400" />
-          <div className="absolute top-0 right-0 w-1/2 overflow-hidden">
-            <StarIcon className="h-5 w-5 text-gray-300" />
-          </div>
-        </div>
-      )}
-      {[...Array(empty)].map((_, i) => (
-        <StarIcon key={`empty-${i}`} className="h-5 w-5 text-gray-300" />
-      ))}
-      <span className="ml-2 text-gray-700 font-semibold text-sm">
-        {rating.toFixed(1)}
-      </span>
-    </div>
+    <span className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-full shadow-sm ${colors}`}>
+      {text}
+    </span>
   );
 };
 
-// --- Card --- //
-function ListingCard({ listing = listingSamples }: { listing: any }) {
+function ListingCard({ listing }: { listing: typeof defaultListings[0] }) {
+  const [isLiked, setIsLiked] = useState(false);
+
   return (
     <motion.div
-      whileHover={{ y: -8, boxShadow: "0px 18px 30px rgba(0,0,0,0.18)" }}
-      transition={{ type: "spring", stiffness: 300, damping: 20 }}
-      className="bg-white rounded-3xl overflow-hidden shadow-xl border border-gray-100 transform hover:scale-[1.01] transition-transform duration-300"
+      className="group relative bg-white rounded-3xl overflow-hidden border border-gray-100 flex flex-col h-full"
+      whileHover={{ y: -8 }}
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-50px" }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
     >
-      {/* Image */}
-      <div className="relative h-56 w-full">
-        <Image
-          src={listing.thumbnail || "https://images.unsplash.com/photo-1536152470817-f90694154373?q=80&w=2940&auto=format&fit=crop"}
-          alt={listing.title}
-          fill
-          className="object-cover transform hover:scale-105 transition-transform duration-500 ease-in-out"
-          loader={customLoader}
-          placeholder="blur"
-          blurDataURL={blurSvg}
-        />
-        {listing.badge && (
-          <span
-            className={`absolute top-4 left-4 px-4 py-1.5 text-xs font-bold rounded-full uppercase tracking-wide
-              ${listing.badge === "New"
-                ? "bg-green-500 text-white"
-                : listing.badge === "Popular"
-                ? "bg-blue-500 text-white"
-                : listing.badge === "Hot Deal"
-                ? "bg-red-500 text-white animate-pulse"
-                : listing.badge === "Luxury"
-                ? "bg-yellow-500 text-gray-900"
-                : "bg-gray-700 text-white"
-              }`}
+      {/* --- Image Section --- */}
+      <div className="relative h-72 w-full overflow-hidden">
+        {/* Image with Zoom Effect */}
+        <div className="absolute inset-0 transform transition-transform duration-700 ease-out group-hover:scale-110">
+          <Image
+            src={listing.thumbnail}
+            alt={listing.title}
+            loader={customLoader}
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          />
+        </div>
+        
+        {/* Gradient Overlay for Text Contrast if needed, currently using clean style */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+        {/* Top Badges */}
+        <div className="absolute top-4 left-4 right-4 flex justify-between items-start">
+          <Badge text={listing.badge} />
+          
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              setIsLiked(!isLiked);
+            }}
+            className="p-2 rounded-full bg-white/20 backdrop-blur-md border border-white/30 hover:bg-white transition-colors duration-300 group/heart"
           >
-            {listing.badge}
-          </span>
-        )}
+            {isLiked ? (
+              <HeartSolid className="h-5 w-5 text-rose-500" />
+            ) : (
+              <HeartOutline className="h-5 w-5 text-white group-hover/heart:text-rose-500 transition-colors" />
+            )}
+          </button>
+        </div>
+
+        {/* Price Tag - Floating Glass */}
+        <div className="absolute bottom-4 right-4">
+            <div className="bg-white/90 backdrop-blur-sm px-4 py-2 rounded-2xl shadow-lg text-gray-900 font-bold text-sm">
+                {formatCurrency(listing.price)}
+                <span className="text-gray-500 font-normal text-xs ml-1">/ pp</span>
+            </div>
+        </div>
       </div>
 
-      {/* Body */}
-      <div className="p-5 flex flex-col justify-between h-[calc(100%-14rem)]">
-        <div>
-          <h3 className="text-xl font-extrabold text-gray-900 mb-2 leading-tight">
-            {listing.title || listing.name}
-          </h3>
-          <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-            {listing.description}
-          </p>
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-indigo-600 font-bold text-2xl">
-              ${listing.finalPrice.toLocaleString()}
-            </p>
-            <StarRating rating={4.9} />
-            {/* listing.rating */}
+      {/* --- Content Section --- */}
+      <div className="p-6 flex flex-col flex-grow">
+        {/* Location & Rating Row */}
+        <div className="flex justify-between items-center mb-3">
+          <div className="flex items-center text-xs font-semibold text-indigo-600 uppercase tracking-wide">
+            <MapPinIcon className="h-3 w-3 mr-1" />
+            {listing.location}
           </div>
-          <div className="flex flex-wrap text-gray-700 text-sm gap-x-4 gap-y-2 mb-4">
-            <span className="flex items-center gap-1">
-              <ClockIcon className="h-4 w-4 text-indigo-500" />
-              {listing.duration}
-            </span>
-            <span className="flex items-center gap-1">
-              <TagIcon className="h-4 w-4 text-indigo-500" />
-              {/* {listing.activities.join(", ")} */}
-              {["Wildlife", "Hiking", "Cruising"].join(", ")}
-            </span>
+          <div className="flex items-center gap-1">
+            <StarIcon className="h-4 w-4 text-amber-400" />
+            <span className="text-sm font-bold text-gray-800">{listing.rating}</span>
+            <span className="text-xs text-gray-400">({listing.reviews})</span>
           </div>
         </div>
 
-        <Link href={`/trips/${listing.id}`} passHref>
-          <motion.button
-            className="w-full bg-indigo-600 text-white py-3 rounded-full font-semibold hover:bg-indigo-700 transition duration-300 shadow-lg hover:shadow-xl flex items-center justify-center gap-2"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            View Details
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={2}
-              stroke="currentColor"
-              className="w-4 h-4"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3"
-              />
-            </svg>
-          </motion.button>
+        {/* Title */}
+        <Link href={`/trips/${listing.id}`} className="block group-hover:text-indigo-600 transition-colors duration-300">
+          <h3 className="text-2xl font-serif font-bold text-gray-900 mb-2 leading-tight">
+            {listing.title}
+          </h3>
         </Link>
+
+        {/* Description */}
+        <p className="text-gray-500 text-sm line-clamp-2 mb-6 leading-relaxed">
+          {listing.description}
+        </p>
+
+        {/* Footer (Duration & Button) */}
+        <div className="mt-auto flex items-center justify-between pt-4 border-t border-gray-100">
+          <div className="flex items-center text-gray-500 text-sm font-medium">
+            <ClockIcon className="h-4 w-4 mr-1.5 text-gray-400" />
+            {listing.duration}
+          </div>
+
+          <Link href={`/trips/${listing.id}`} passHref>
+            <span className="flex items-center text-sm font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">
+              View Trip
+              <ArrowRightIcon className="h-4 w-4 ml-1 transform group-hover:translate-x-1 transition-transform duration-300" />
+            </span>
+          </Link>
+        </div>
       </div>
     </motion.div>
   );
 }
 
-// --- Section --- //
-export default function ListingsSection( {listings, slug }: any) {
+// --- Main Section --- //
+export default function ListingsSection({ listings, title, subtitle }: any) {
+  // Use passed data or fallback to internal samples
+  const activeListings = listings && listings.length > 0 ? listings : defaultListings;
 
   return (
-    <section id="tours" className="py-16 px-4 bg-gray-50">
-      <div className="max-w-7xl mx-auto">
-        <motion.h2
-          className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4 text-center leading-tight"
-          initial={{ opacity: 0, y: -20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.6 }}
-        >
-          Our Top Travel Experiences
-        </motion.h2>
-        <motion.p
-          className="text-lg text-gray-600 mb-12 text-center max-w-3xl mx-auto"
-          initial={{ opacity: 0, y: -20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-        >
-          Discover hand-picked journeys, from thrilling adventures to serene escapes, designed for every explorer.
-        </motion.p>
-        <motion.div
-          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8"
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.2 }}
-        >
-          {listings?.map((listing : any) => (
-            <motion.div key={listing.id} variants={itemVariants}>
-              <ListingCard listing={listing} />
-            </motion.div>
+    <section className="py-20 px-4 sm:px-6 bg-gray-50 relative overflow-hidden">
+      {/* Decorative Background Elements */}
+      <div className="absolute top-0 left-0 w-full h-96 bg-gradient-to-b from-indigo-50/50 to-transparent pointer-events-none" />
+      <div className="absolute top-20 right-0 -mr-20 w-96 h-96 bg-blue-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob pointer-events-none" />
+      <div className="absolute top-40 left-0 -ml-20 w-96 h-96 bg-purple-100 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000 pointer-events-none" />
+
+      <div className="max-w-7xl mx-auto relative z-10">
+        {/* Header */}
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <motion.span 
+             initial={{ opacity: 0, y: 10 }}
+             whileInView={{ opacity: 1, y: 0 }}
+             className="text-indigo-600 font-bold tracking-wider uppercase text-sm mb-2 block"
+          >
+            Curated Experiences
+          </motion.span>
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="text-4xl md:text-5xl font-serif font-bold text-gray-900 mb-6 leading-[1.1]"
+          >
+            {title || "Find Your Next Great Adventure"}
+          </motion.h2>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="text-lg text-gray-600 leading-relaxed"
+          >
+            {subtitle || "Explore hand-picked itineraries designed to immerse you in local culture, breathtaking nature, and unforgettable moments."}
+          </motion.p>
+        </div>
+
+        {/* Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          {activeListings.map((listing: any) => (
+            <ListingCard key={listing.id} listing={listing} />
           ))}
-        </motion.div>
+        </div>
+
+        {/* Bottom Action */}
+        <div className="mt-16 text-center">
+            <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-full shadow-sm text-white bg-gray-900 hover:bg-gray-800 transition-all"
+            >
+                View All Destinations
+            </motion.button>
+        </div>
       </div>
     </section>
   );
