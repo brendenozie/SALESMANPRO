@@ -1,76 +1,161 @@
-'use client'
+"use client";
+
 import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   MagnifyingGlassIcon,
-  ShoppingBagIcon,
   Bars3BottomRightIcon,
   XMarkIcon,
   UserIcon,
 } from "@heroicons/react/24/outline";
-import { useStateContext } from "@/contexts/ContextProvider";
 import { useRouter } from "next/navigation";
+import { useSession, signOut } from "next-auth/react";
 import { StoreForm } from "@/types/typings";
 
+// Fallback sample data (same style as your other header)
+const fallbackData: StoreForm = {
+  name: "AutoHub",
+  slug: "autohub",
+  logoUrl: "https://placehold.co/120x40?text=Logo",
+  contactEmail: "sales@autohub.com",
+  contactPhone: "+1 555-987-654",
+  socialLinks: [],
+  themeSettings: {
+    primaryColor: "#2563eb",
+    secondaryColor: "#1e3a8a",
+  },
+  id: "",
+  tagline: null,
+  description: null,
+  hasWebsite: undefined,
+  companyCategoryId: null,
+  category: "",
+  bannerUrl: null,
+  site: null,
+  address: null,
+  domain: null,
+  currency: "",
+  locale: "",
+  userId: null,
+  createdAt: null,
+  updatedAt: null,
+  deletedAt: null,
+  sEOId: null,
+  CoreValues: [],
+  geoLocation: null,
+  openingHours: null,
+  pricingTiers: [],
+  awards: null,
+  metrics: null,
+  stats: null,
+  settings: null,
+  policies: [],
+  faqs: [],
+  testimonials: [],
+  promotions: [],
+  Announcement: [],
+  Collection: [],
+  pageSections: [],
+  heroSlides: [],
+  appPromos: [],
+  events: [],
+  courses: [],
+  blogs: [],
+  projects: [],
+  seo: null,
+  analyticsConfig: null,
+  paymentSettings: null,
+  shippingSettings: null,
+  StoreCategory: [],
+  CompanyLocation: [],
+  marketplaceListings: [],
+  Writer: [],
+  Expert: [],
+  salesAgents: [],
+  Educator: [],
+  Doctor: [],
+  packages: [],
+  Podcast: [],
+  services: [],
+  destinations: [],
+  tourPackages: []
+};
+
 interface HeaderProps {
-  storeFormData: StoreForm;
+  storeFormData?: StoreForm;
 }
 
+// Next.js Image loader
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
 // --- Animation Variants ---
 const menuVariants = {
-  hidden: { y: -20, opacity: 0, transition: { duration: 0.3 } },
-  visible: { y: 0, opacity: 1, transition: { type: "spring", stiffness: 100, damping: 20 } },
+  hidden: { y: -20, opacity: 0 },
+  visible: { y: 0, opacity: 1, transition: { type: "spring", stiffness: 90 } },
 };
 
 const mobileMenuVariants = {
-  open: { height: "auto", opacity: 1, transition: { duration: 0.3, ease: "easeInOut" } },
-  closed: { height: 0, opacity: 0, transition: { duration: 0.3, ease: "easeInOut" } },
+  open: { height: "auto", opacity: 1, transition: { duration: 0.25 } },
+  closed: { height: 0, opacity: 0, transition: { duration: 0.25 } },
 };
 
-const Header: React.FC<HeaderProps> = ({ storeFormData }: any) => {
-  const { cart } = useStateContext();
+const Header: React.FC<HeaderProps> = ({ storeFormData }) => {
+  const data = storeFormData || fallbackData;
+  const router = useRouter();
+
+  const { data: session } = useSession();
+  const user = session?.user as { name?: string; role?: string } | undefined;
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isSearchVisible, setIsSearchVisible] = useState(false);
-  const router = useRouter();
 
   const navItems = ["Home", "Listings", "Categories"];
 
+  // --- Authentication Logic ---
+  const handleGoogleSignIn = () => {
+    const url = new URL("https://auth.salesmanpro.site/signin");
+    url.searchParams.set("callbackUrl", `${window.location.origin}`);
+    window.location.href = url.toString();
+  };
+
+  const handleGoogleSignUp = () => {
+    const url = new URL("https://auth.salesmanpro.site/signup");
+    url.searchParams.set("callbackUrl", `${window.location.origin}`);
+    window.location.href = url.toString();
+  };
+
+  const handleProfileClick = () => {
+    if (!user) return handleGoogleSignIn();
+    router.push(`/site/${data.slug}/automotive/profile`);
+  };
+
   return (
     <header className="absolute inset-x-0 top-0 z-50">
-      {/* Light Mode Glassmorphism Effect */}
-      {/* backdrop-blur-xl */}
-      <div className=" backdrop-blur-sm bg-white/40">
-       {/* border-b border-gray-200 */}
+      <div className="backdrop-blur-md bg-white/60 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
             <motion.div variants={menuVariants} initial="hidden" animate="visible">
-              <Link href={`/site/${storeFormData.slug}`} className="flex items-center">
-                {storeFormData.logoUrl ? (
+              <Link href={`/site/${data.slug}`} className="flex items-center">
+                {data.logoUrl ? (
                   <Image
-                    src={storeFormData.logoUrl}
-                    alt={storeFormData.name}
+                    src={data.logoUrl}
+                    alt={data.name}
                     width={120}
                     height={40}
-                    className="object-contain transition-transform duration-300 hover:scale-105"
-                    // Removed the filter style to display the logo's original colors
                     loader={loader}
+                    className="object-contain hover:scale-105 transition"
                   />
                 ) : (
-                  <span className="text-2xl font-bold text-gray-900 transition-transform duration-300 hover:scale-105">
-                    {/* Changed text-white to a dark gray */}
-                    {storeFormData.name}
-                  </span>
+                  <span className="text-2xl font-bold text-gray-900">{data.name}</span>
                 )}
               </Link>
             </motion.div>
 
-            {/* Desktop Nav + Interactive Search */}
+            {/* Desktop Nav + Search */}
             <div className="hidden lg:flex items-center space-x-8">
               {navItems.map((label, index) => (
                 <motion.div
@@ -79,38 +164,36 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }: any) => {
                   initial="hidden"
                   animate="visible"
                   custom={index}
-                  whileHover={{ y: -3, scale: 1.05 }}
-                  className="relative font-medium text-gray-700 hover:text-blue-600 transition"
-                  // Changed text-white to a dark gray and hover:text-blue-400 to blue-600
+                  whileHover={{ scale: 1.05 }}
+                  className="font-medium text-gray-700 hover:text-blue-600 transition"
                 >
                   <Link
-                    href={`/site/${storeFormData.slug}${label === "Home" ? "" : "#"+label.toLowerCase()}`}
-                    scroll={false}
-                    className="py-2"
+                    href={`/site/${data.slug}${label === "Home" ? "" : "#" + label.toLowerCase()}`}
                   >
                     {label}
                   </Link>
                 </motion.div>
               ))}
 
+              {/* Search */}
               <div className="relative flex items-center">
                 <AnimatePresence>
                   {isSearchVisible && (
                     <motion.input
                       initial={{ width: 0, opacity: 0 }}
-                      animate={{ width: "250px", opacity: 1 }}
+                      animate={{ width: 260, opacity: 1 }}
                       exit={{ width: 0, opacity: 0 }}
-                      type="search"
-                      placeholder="Search vehicles..."
-                      className="bg-gray-100 placeholder-gray-500 text-gray-900 rounded-full py-2 pl-4 pr-10 focus:bg-gray-200 focus:outline-none transition-all duration-300"
-                      // Changed colors for light mode
+                      placeholder="Search..."
+                      className="bg-gray-100 text-gray-700 rounded-full py-2 pl-4 pr-10 focus:outline-none"
                     />
                   )}
                 </AnimatePresence>
+
                 <motion.button
                   onClick={() => setIsSearchVisible(!isSearchVisible)}
-                  className={`p-2 rounded-full ${isSearchVisible ? 'bg-blue-600' : 'bg-transparent'} text-gray-700 transition-colors duration-300 hover:bg-blue-600`}
-                  // Changed text-white to text-gray-700
+                  className={`p-2 rounded-full ${
+                    isSearchVisible ? "bg-blue-600 text-white" : "text-gray-700 hover:bg-gray-200"
+                  }`}
                   whileTap={{ scale: 0.9 }}
                 >
                   <MagnifyingGlassIcon className="h-5 w-5" />
@@ -118,29 +201,41 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }: any) => {
               </div>
             </div>
 
-            {/* Icons & Mobile Toggle */}
+            {/* Right Side: Profile + Mobile Button */}
             <div className="flex items-center space-x-4">
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => router.push(`/site/${storeFormData.slug}/automotive/profile`)}
-                className="p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition-colors text-gray-700"
-                // Changed colors for light mode
-              >
-                <UserIcon className="h-6 w-6" />
-              </motion.button>
+              {/* Auth/Profile */}
+              {!user ? (
+                <div className="hidden lg:flex space-x-2">
+                  <button
+                    onClick={handleGoogleSignIn}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition"
+                  >
+                    Login
+                  </button>
+                  <button
+                    onClick={handleGoogleSignUp}
+                    className="px-4 py-2 bg-green-600 text-white rounded-full hover:bg-green-700 transition"
+                  >
+                    Register
+                  </button>
+                </div>
+              ) : (
+                <motion.button
+                  onClick={handleProfileClick}
+                  className="hidden lg:flex items-center space-x-2 p-2 rounded-full hover:bg-gray-200 transition"
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <UserIcon className="h-6 w-6 text-gray-700" />
+                  <span className="font-medium text-gray-700">{user.name || "Profile"}</span>
+                </motion.button>
+              )}
 
+              {/* Mobile Menu Toggle */}
               <button
-                className="lg:hidden p-2 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors"
-                // Changed colors for light mode
+                className="lg:hidden p-2 rounded-full bg-gray-200 text-gray-700 hover:bg-gray-300 transition"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                aria-label="Toggle menu"
               >
-                {mobileMenuOpen ? (
-                  <XMarkIcon className="h-6 w-6" />
-                ) : (
-                  <Bars3BottomRightIcon className="h-6 w-6" />
-                )}
+                {mobileMenuOpen ? <XMarkIcon className="h-6 w-6" /> : <Bars3BottomRightIcon className="h-6 w-6" />}
               </button>
             </div>
           </div>
@@ -154,21 +249,48 @@ const Header: React.FC<HeaderProps> = ({ storeFormData }: any) => {
               initial="closed"
               animate="open"
               exit="closed"
-              className="lg:hidden bg-white/50 border-t border-gray-200 overflow-hidden"
-              // Changed colors for light mode
+              className="lg:hidden bg-white/80 border-t border-gray-200 overflow-hidden"
             >
-              <div className="flex flex-col px-4 py-4 space-y-3">
+              <div className="flex flex-col px-4 py-4 space-y-4">
                 {navItems.map((label) => (
                   <Link
                     key={label}
-                    href={`/site/${storeFormData.slug}${label === "Home" ? "" : "#"+label.toLowerCase()}`}
-                    className="text-gray-900 font-medium hover:text-blue-600 transition"
-                    // Changed colors for light mode
+                    href={`/site/${data.slug}${label === "Home" ? "" : "#" + label.toLowerCase()}`}
+                    className="text-gray-900 font-medium hover:text-blue-600"
                     onClick={() => setMobileMenuOpen(false)}
                   >
                     {label}
                   </Link>
                 ))}
+
+                {/* Auth Mobile */}
+                <div className="pt-3 border-t">
+                  {user ? (
+                    <>
+                      <button
+                        onClick={handleProfileClick}
+                        className="w-full text-left py-2"
+                      >
+                        Profile
+                      </button>
+                      <button
+                        onClick={() => signOut({ callbackUrl: "/" })}
+                        className="w-full text-left py-2 text-red-600"
+                      >
+                        Logout
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button onClick={handleGoogleSignIn} className="w-full text-left py-2">
+                        Login
+                      </button>
+                      <button onClick={handleGoogleSignUp} className="w-full text-left py-2">
+                        Register
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
             </motion.div>
           )}

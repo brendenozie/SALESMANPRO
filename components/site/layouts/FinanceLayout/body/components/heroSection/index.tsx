@@ -191,7 +191,7 @@ export default function HeroSection({ heroSlides, themeSettings }: HeroSectionPr
           </motion.div>
 
           {/* --- RIGHT COLUMN: VISUAL COMPOSITION --- */}
-          <div className="relative hidden lg:block h-full min-h-[600px]">
+          <div className="relative lg:block h-full min-h-[600px]">
              {/* Main Image with Mask */}
              <motion.div
                variants={imageVariants}
