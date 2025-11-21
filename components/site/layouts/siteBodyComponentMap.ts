@@ -533,6 +533,8 @@ export const folderMap: Record<string, string> = {
   'ghuba': 'GhubaLayout',
   'security-services': 'SecurityLayout',
   'security-consulting': 'Security2Layout',
+  'furniture': 'FurnitureLayout',
+  'fashion': 'FashionLayout',
   'default': 'DefaultLayout',
   'other': 'DefaultLayout',
   'general-purpose-site': 'DefaultLayout',

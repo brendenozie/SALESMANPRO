@@ -21,6 +21,27 @@ export const SITE_CATEGORIES: Category[] = [
       { name: "Artisan Marketplace (v3)", link: "https://artisan-shop.salesmanpro.site", description: "Focuses on handcrafted and unique items.", tag: 'Standard' },
     ]
   },
+  // {
+  //   name: "Photography Portfolio",
+  //   icon: "📸",
+  //   variants: [
+  //     { name: "Photo Gallery", link: "https://photography.salesmanpro.site", description: "Showcase your photography work.", tag: 'Popular' }
+  //   ]
+  // },
+  {
+    name: "Furniture Store",
+    icon: "🛋️",
+    variants: [
+      { name: "Furniture Shop", link: "https://furniture.salesmanpro.site", description: "Elegant design for furniture products.", tag: 'Standard' }
+    ]
+  },
+  {
+    name: "Fashion Boutique",
+    icon: "👗",
+    variants: [
+      { name: "Fashion Shop", link: "https://fashion.salesmanpro.site", description: "Trendy and stylish fashion products.", tag: 'Standard' }
+    ]
+  },
   { 
     name: "Consultant & Coach", 
     icon: "💡", 
