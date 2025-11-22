@@ -37,7 +37,6 @@ import { CompanyLocation } from "@prisma/client";
 import { categoryReducer } from "@/hooks/categoryReducer";
 import toast from "react-hot-toast";
 import { PaymentSettings } from "../PaymentAccordion/PaymentAccordion";
-import { revalidateCompanyCache } from "@/lib/company-fetcher";
 
 const SITE_CATEGORIES_WITH_PRICING = [
   "service provider",
@@ -243,11 +242,13 @@ export default function CreateStoreForm({
 
     // --- Configuration Keys ---
     // Stripe
-    stripeKey: null,
     
-    // PayPal
-    paypalKey: null,
-    
+    stripePublishableKey: null,
+    stripeSecretKey: null,
+
+    paypalClientId: null,
+    paypalClientSecret: null,
+  
     // M-Pesa
     mpesaShortcode: null,
     mpesaConsumerKey: null,

@@ -95,8 +95,7 @@ export const paymentSteps: StepConfig[] = [
             onChange={(upd) =>
               h.onUpdatePaymentSettings({
                 id: upd.id ?? '',
-                stripeKey: upd.stripeKey ?? null,
-                paypalKey: upd.paypalKey ?? null,
+                
                 mpesaShortcode: upd.mpesaShortcode ?? null,
                 mpesaConsumerKey: upd.mpesaConsumerKey ?? null,
                 mpesaConsumerSecret: upd.mpesaConsumerSecret ?? null,
@@ -110,6 +109,12 @@ export const paymentSteps: StepConfig[] = [
                 paystackSecretKey: upd.paystackSecretKey ?? null,
                 ghubaMerchantId: upd.ghubaMerchantId ?? null,
                 ghubaApiKey: upd.ghubaApiKey ?? null,
+                
+                stripePublishableKey: upd.stripePublishableKey ?? null,
+                stripeSecretKey: upd.stripeSecretKey ?? null,
+
+                paypalClientId: upd.paypalClientId ?? null,
+                paypalClientSecret: upd.paypalClientSecret ?? null,
                 
               })
             }
