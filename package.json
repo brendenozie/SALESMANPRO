@@ -23,6 +23,7 @@
     "@next-auth/prisma-adapter": "^1.0.7",
     "@next/bundle-analyzer": "^13.4.12",
     "@prisma/client": "^5.22.0",
+    "@sentry/nextjs": "^10.26.0",
     "@stripe/stripe-js": "^1.44.1",
     "@tanstack/react-virtual": "^3.13.12",
     "apexcharts": "^4.0.0",
