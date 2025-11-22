@@ -45,7 +45,48 @@ export const STORE_CATEGORY_MAP: Record<string, string[]> = {
     "Other"
   ],
 
-  
+  "Fashion Shop":[
+    "Fashion",
+    "Accessories",
+    "Shoes",
+    "Jewelry",
+    "Bags",
+    "Clothing",
+    "Beauty Products",
+    "Watches",
+    "Sunglasses",
+    "Hats & Caps",
+    "Scarves & Gloves",
+    "Swimwear",
+    "Lingerie",
+    "Outerwear",
+    "Activewear",
+    "Kids' Fashion",
+    "Menswear",
+    "Womenswear",
+    "Vintage Clothing",
+    "Custom Tailoring",
+    "Other"
+  ],
+
+  "Furniture Shop" : [
+    "Furniture",
+    "Living Room Furniture",
+    "Bedroom Furniture",
+    "Dining Room Furniture",
+    "Office Furniture",
+    "Outdoor Furniture",
+    "Storage Solutions",
+    "Home Decor",
+    "Lighting",
+    "Rugs & Carpets",
+    "Curtains & Blinds",
+    "Mattresses",
+    "Kids' Furniture",
+    "Antique Furniture",
+    "Custom Furniture",
+    "Other"
+  ],
   
   "Public Speaking": [
       // Core Coaching Categories
