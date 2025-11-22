@@ -63,12 +63,8 @@ const Header = () => {
               alt="SalesmanPro Logo"
               className="w-10 h-10 md:w-12 md:h-12 object-contain cursor-pointer transition-transform duration-300 hover:scale-110"
             />
-            <span
-              className={classNames(
-                "hidden lg:block text-2xl font-extrabold tracking-tight transition-colors duration-300 text-gray-900" 
-              )}
-            >
-              SalesmanPro
+            <span className="text-2xl font-bold text-slate-900 tracking-tight">
+              Salesman<span className="text-orange-600">Pro</span>
             </span>
           </Link>
         </Motion.div>

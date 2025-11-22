@@ -1,9 +1,10 @@
 "use client";
 
-import { GlobeAltIcon, UsersIcon } from "@heroicons/react/24/outline";
+import { ArrowRightIcon, GlobeAltIcon, UsersIcon } from "@heroicons/react/24/outline";
 import { motion, useMotionValue, useTransform, animate } from "framer-motion";
 import { useEffect } from "react";
 import body from "@/assets/body.png";
+import { useSession } from "next-auth/react";
 
 // Helper Component for the animated number counter
 function AnimatedCounter({ value }: { value: number }) {
@@ -23,12 +24,14 @@ function AnimatedCounter({ value }: { value: number }) {
 }
 
 // Sub-component for the floating statistic cards for better structure
-function StatCard({ icon, value, label, className, isTime = false }: {
+function StatCard({ icon, value, label, className, isTime = false, mouseX, mouseY }: {
   icon: React.ReactNode;
   value: number;
   label: string;
   className?: string;
   isTime?: boolean;
+  mouseX?: any;
+  mouseY?: any;
 }) {
   return (
     <motion.div
@@ -36,6 +39,8 @@ function StatCard({ icon, value, label, className, isTime = false }: {
       whileInView={{ opacity: 1, scale: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.3, ease: "circOut" }}
       viewport={{ once: true }}
+      style={{ translateX: useTransform(mouseX, [-200, 200], [-20, 20]), translateY: useTransform(mouseY, [-200, 200], [-20, 20]) }}
+             
       // Light-mode styling for the "glassmorphism" effect
       className={`flex items-center gap-4 bg-white/70 backdrop-blur-lg border border-gray-200 rounded-xl p-4 w-52 shadow-lg ${className}`}
     >
@@ -54,6 +59,30 @@ function StatCard({ icon, value, label, className, isTime = false }: {
 
 
 export default function AboutUs() {
+
+  const { data : session} = useSession();
+
+  const mouseX = useMotionValue(0);
+    const mouseY = useMotionValue(0);
+  
+    const rotateX = useTransform(mouseY, [-400, 400], [10, -10], { clamp: true });
+    const rotateY = useTransform(mouseX, [-400, 400], [-10, 10], { clamp: true });
+  
+    const handleMouseMove = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+      const { clientX, clientY, currentTarget } = event;
+      const { left, top, width, height } = currentTarget.getBoundingClientRect();
+      const x = clientX - left - width / 2;
+      const y = clientY - top - height / 2;
+      mouseX.set(x);
+      mouseY.set(y);
+    };
+  
+    const handleMouseLeave = () => {
+      mouseX.set(0);
+      mouseY.set(0);
+    };
+  
+
   // Animation variants for staggering children elements
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -77,6 +106,12 @@ export default function AboutUs() {
     },
   };
 
+  const handleGoogleSignIn = () => {
+  const authUrl = new URL("https://salesmanpro.site/signin");
+  authUrl.searchParams.set("callbackUrl", window.location.origin);
+  window.location.href = authUrl.toString();
+};
+
   return (
     // Main section with a light background
     <section id={"about-us"} className="relative w-full py-24 px-6 md:px-12 bg-white text-gray-800 overflow-hidden">
@@ -91,7 +126,7 @@ export default function AboutUs() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.5 }}
-          className="space-y-8"
+          className="space-y-8 order-1 lg:order-2"
         >
           <motion.h2
             variants={itemVariants}
@@ -118,14 +153,36 @@ export default function AboutUs() {
           </motion.p>
 
           <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4">
+              {!session ? (
+                <motion.button 
+                  onClick={() => { handleGoogleSignIn(); }}
+                  whileHover={{ scale: 1.05, boxShadow: "0px 10px 20px -5px rgba(99, 102, 241, 0.4)" }}
+                  whileTap={{ scale: 0.95 }}
+                  className="rounded-full bg-red-600 text-white font-semibold px-8 py-3 transition-shadow duration-300"
+                >
+                  Start Your Journey
+                </motion.button>
+              ):(
+                <motion.button 
+                  onClick={() => {
+                    window.location.href = "/dashboards";
+                  }}
+                  whileHover={{ scale: 1.05, backgroundColor: "#f3f4f6" /* bg-gray-100 */ }}
+                  whileTap={{ scale: 0.95 }}
+                  // Light-mode secondary button styles
+                  className="rounded-full border border-gray-300 text-gray-800 font-semibold px-8 py-3 transition-colors duration-300"
+                >
+                  Go to Dashboard
+                </motion.button>
+              )
+            }
             <motion.button 
-              whileHover={{ scale: 1.05, boxShadow: "0px 10px 20px -5px rgba(99, 102, 241, 0.4)" }}
-              whileTap={{ scale: 0.95 }}
-              className="rounded-full bg-red-600 text-white font-semibold px-8 py-3 transition-shadow duration-300"
-            >
-              Start Your Journey
-            </motion.button>
-            <motion.button 
+              onClick={() => {
+                const featuresSection = document.getElementById("features");
+                if (featuresSection) {
+                  featuresSection.scrollIntoView({ behavior: "smooth" });
+                }
+              }}
               whileHover={{ scale: 1.05, backgroundColor: "#f3f4f6" /* bg-gray-100 */ }}
               whileTap={{ scale: 0.95 }}
               // Light-mode secondary button styles
@@ -139,40 +196,50 @@ export default function AboutUs() {
         {/* Right Content - Visuals */}
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          viewport={{ once: true }}
-          className="relative flex justify-center items-center"
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
+          style={{ perspective: "1000px" }}
+          animate={{ opacity: 1, scale: 1, transition: { duration: 1, delay: 0.5, ease: "easeOut" } }}
+          className="relative flex justify-center items-center order-2 lg:order-1"
         >
-          {/* Glowing Border Effect remains effective */}
-          <div className="relative w-full max-w-md p-1 rounded-2xl bg-gradient-to-br from-red-500 to-yellow-500">
-            {/* Inner background is now white */}
-            <div className="w-full h-full bg-white rounded-xl overflow-hidden shadow-2xl shadow-indigo-500/20">
-              {/* Replaced Next.js Image with a standard img tag to resolve the error */}
-              <img
-                src={body.src || "https://placehold.co/500x500/E2E8F0/475569?text=Your+Image"} // Replace with your compelling, high-quality image
-                alt="A successful entrepreneur using SalesmanPro"
-                width={500}
-                height={500}
-                className="object-cover aspect-square"
-              />
-            </div>
-          </div>
+          <motion.div
+                  className="relative w-full max-w-md lg:max-w-lg"
+                  style={{ rotateX, rotateY, transition: "transform 0.1s ease-out" }}
+                >
+                  {/* Glowing Border Effect remains effective */}
+                  <div className="relative w-full max-w-md p-1 rounded-2xl bg-gradient-to-br from-red-500 to-yellow-500">
+                    {/* Inner background is now white */}
+                    <div className="w-full h-full bg-white rounded-xl overflow-hidden shadow-2xl shadow-indigo-500/20">
+                      {/* Replaced Next.js Image with a standard img tag to resolve the error */}
+                      <img
+                        src={body.src || "https://placehold.co/500x500/E2E8F0/475569?text=Your+Image"} // Replace with your compelling, high-quality image
+                        alt="A successful entrepreneur using SalesmanPro"
+                        width={500}
+                        height={500}
+                        className="object-cover aspect-square"
+                      />
+                    </div>
+                  </div>
 
-          {/* Floating Stat Cards with updated props */}
-          <StatCard
-            icon={<UsersIcon className="text-indigo-600" />}
-            value={10000}
-            label="Businesses Empowered"
-            className="absolute -bottom-8 -left-8"
-          />
-          <StatCard
-            icon={<GlobeAltIcon className="text-indigo-600" />}
-            value={24} // Will display as 24/7
-            label="Global Support"
-            className="absolute -top-8 -right-8"
-            isTime
-          />
+                  {/* Floating Stat Cards with updated props */}
+                  <StatCard
+                    icon={<UsersIcon className="text-indigo-600" />}
+                    value={10000}
+                    label="🎉 Businesses Empowered"
+                    className="absolute -bottom-8 -left-8"
+                    mouseX={mouseX}
+                    mouseY={mouseY}
+                  />
+                  <StatCard
+                    icon={<GlobeAltIcon className="text-indigo-600" />}
+                    value={24} // Will display as 24/7
+                    label="🚀 Global Support"
+                    className="absolute -top-8 -right-8"
+                    isTime
+                    mouseX={mouseX}
+                    mouseY={mouseY}
+                  />
+                </motion.div>
         </motion.div>
       </div>
     </section>
