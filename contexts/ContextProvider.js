@@ -41,7 +41,7 @@ export const ContextProvider = ({ children }) => {
     return true;
   });
   const [location, setLocation] = useState(null);
-  const [locationName, setLocationName] = useState("Detecting location...");
+  // const [locationName, setLocationName] = useState("Detecting location...");
   const [isClicked, setIsClicked] = useState(initialState);
   const [isLoading, setIsLoading] = useState(false);
   const [cart, setCart] = useState(() => {
@@ -64,24 +64,24 @@ export const ContextProvider = ({ children }) => {
     setUser(session?.user || null);
   }, [session]);
 
-  useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setLocation({ latitude, longitude });
-          fetchLocationName(latitude, longitude);
-        },
-        (error) => {
-          setLocationName("Location access denied.");
-        },
-        { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
-      );
-    } else {
-      console.error("Geolocation is not supported by this browser.");
-      setLocationName("Geolocation not supported.");
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (navigator.geolocation) {
+  //     navigator.geolocation.getCurrentPosition(
+  //       (position) => {
+  //         const { latitude, longitude } = position.coords;
+  //         setLocation({ latitude, longitude });
+  //         fetchLocationName(latitude, longitude);
+  //       },
+  //       (error) => {
+  //         setLocationName("Location access denied.");
+  //       },
+  //       { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+  //     );
+  //   } else {
+  //     console.error("Geolocation is not supported by this browser.");
+  //     setLocationName("Geolocation not supported.");
+  //   }
+  // }, []);
 
 
   useEffect(() => {
@@ -111,15 +111,15 @@ export const ContextProvider = ({ children }) => {
     }
   }, [isDarkMode]);
   
-  const fetchLocationName = async (lat, lon) => {
-    try {
-      const response = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`);
-      const data = await response.json();
-      setLocationName(data.city || data.locality || "Unknown location");
-    } catch (error) {
-      console.error("Error fetching location name:", error);
-    }
-  };
+  // const fetchLocationName = async (lat, lon) => {
+  //   try {
+  //     const response = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`);
+  //     const data = await response.json();
+  //     setLocationName(data.city || data.locality || "Unknown location");
+  //   } catch (error) {
+  //     console.error("Error fetching location name:", error);
+  //   }
+  // };
 
   const addToCart = (product) => {
     setCart((prevCart) => {
@@ -202,22 +202,22 @@ export const ContextProvider = ({ children }) => {
       setThemeSettings,
       isLoading,
       cartSubtotal,
-      location,
+      // location,
       isOpen, 
       setIsOpen,
       onClose,
       setOnClose,
       onUpdate, 
       setOnUpdate,
-      setLocation,
-      locationName,
-      setLocationName,
+      // setLocation,
+      // locationName,
+      // setLocationName,
       isCartOpen,
       setIsCartOpen
     }),
-    [user, cart, currentColor, isCartOpen, isDarkMode, activeMenu, isOpen, onClose , onUpdate, screenSize, isClicked, themeSettings, location,locationName, isLoading, cartSubtotal]
+    [user, cart, currentColor, isCartOpen, isDarkMode, activeMenu, isOpen, onClose , onUpdate, screenSize, isClicked, themeSettings, isLoading, cartSubtotal]
   );
-
+// , location,locationName
   return (
       <StateContext.Provider value={contextValue}>{children}</StateContext.Provider>
   );

@@ -7,7 +7,6 @@ import { Metadata } from "next";
 import { getAuthSession } from "@/lib/auth";   
 import TokenSignIn from "@/components/TokenSignIn";
 
-
 export const metadata: Metadata = {
   metadataBase: new URL(siteMetadata.siteUrl),
   title: {

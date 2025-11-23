@@ -186,13 +186,41 @@ export default function CheckoutPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target as any;
+
     let v = value;
+
+    // Formatters
     if (name === 'cardNumber') v = formatCreditCardNumber(value);
     if (name === 'cardExpiry') v = formatExpirationDate(value);
     if (name === 'cvv') v = formatCVC(value);
-    setFormData((fd: any) => ({ ...fd, [name]: v }));
-    setError((err: any) => ({ ...err, [name]: '' }));
+
+    // Normalize M-Pesa phone to digits only
+    if (name === 'mpesaPhone') {
+      v = value.replace(/\D/g, ''); // remove non-numeric characters
+    }
+
+    setFormData((prev: any) => ({
+      ...prev,
+      [name]: v,
+    }));
+
+    // Clear field-specific errors as user types
+    setError((prev: any) => ({
+      ...prev,
+      [name]: '',
+    }));
   };
+
+
+  // const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  //   const { name, value } = e.target as any;
+  //   let v = value;
+  //   if (name === 'cardNumber') v = formatCreditCardNumber(value);
+  //   if (name === 'cardExpiry') v = formatExpirationDate(value);
+  //   if (name === 'cvv') v = formatCVC(value);
+  //   setFormData((fd: any) => ({ ...fd, [name]: v }));
+  //   setError((err: any) => ({ ...err, [name]: '' }));
+  // };
 
   const next = () => {
     if (validateStep()) setCurrentStep((s) => Math.min(s + 1, steps.length - 1));

@@ -25,7 +25,6 @@ export default function DynamicStoreBody() {
   const folder = folderMap[key] ?? folderMap['default'];
   const siteComponentName = siteComponentNameMap[folder] ?? siteComponentNameMap['DefaultLayout'];
 
-  console.log(`DynamicStoreBody - Loading component for category: ${storeFormData.category}, resolved to folder: ${folder}, component: ${siteComponentName}`);
   const BodyComponent = dynamic<{ storeData: StoreForm }>(
     () => import(`@/components/site/layouts/${folder}/body/${siteComponentName}`).then(mod => mod.default),
     {

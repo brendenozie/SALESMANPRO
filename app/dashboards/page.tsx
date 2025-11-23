@@ -17,14 +17,8 @@ import {
   ClockIcon,
   ArrowLeftOnRectangleIcon, // Imported for Logout button
 } from '@heroicons/react/24/outline';
-import { useSession } from 'next-auth/react';
-// Removed: import { useSession, signOut } from 'next-auth/react'; 
+import { useSession, signOut } from 'next-auth/react'; 
 
-// --- START: Simulated Auth & Data (Replaces next-auth/react) ---
-// const useSession = () => ({
-//   data: { user: { name: 'Simulated Admin' } },
-//   status: 'authenticated',
-// });
 
 // Mock Sign Out function for demonstration
 const mockSignOut = ({ callbackUrl } : { callbackUrl: string }) => {
