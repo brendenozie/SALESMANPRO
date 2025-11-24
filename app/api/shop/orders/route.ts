@@ -1,24 +1,23 @@
+// app/api/shop/orders/route.ts
 import { NextResponse } from "next/server";
-import { createOrder } from "@/lib/orders/createOrder";
-import { initiateMpesaPayment } from "@/lib/payments/mpesa";
-import { initiatePaystackPayment } from "@/lib/payments/paystack";
-
 import { z } from "zod";
-import { sendOrderConfirmationEmail } from "@/lib/emails/orderEmail";
-import { formatResponse } from "@/lib/formatResponse";
+import prisma from "@/server/db/prismadb";
+import { createOrder  as createOrderRecord } from "@/lib/orders/createOrder";// your createOrder helper path
+import { getCompanyPaymentConfig } from "@/lib/paymentsv2/index";
+import { initiateMpesaPayment } from "@/lib/paymentsv2/mpesa";
+import { initiatePaystackPayment } from "@/lib/paymentsv2/paystack";
+import { initiateGhubaPayment } from "@/lib/paymentsv2/ghuba";
+import { initiateStripePaymentIntent } from "@/lib/paymentsv2/stripe";
+import { createPaypalOrder } from "@/lib/paymentsv2/paypal";
 
+/* Order schema - mirrors your existing schema (light validation) */
 const orderSchema = z.object({
   name: z.string(),
   email: z.string().email(),
   phone: z.string(),
-  cardNumber: z.string().optional(),
-  cardExpiry: z.string().optional(),
-  cvv: z.string().optional(),
   mpesaPhone: z.string().optional(),
-  promoCode: z.string().optional(),
   consumerId: z.string(),
-  delivery: z.boolean().optional(),
-  paymentOption: z.enum(["cod", "pickupatshop", "mpesa", "card", "paystack"]).default("cod"),
+  paymentOption: z.enum(["cod", "pickupatshop", "mpesa", "card", "paystack", "ghuba", "stripe", "paypal"]).default("cod"),
   items: z.array(
     z.object({
       marketplaceListingId: z.string(),
@@ -28,109 +27,97 @@ const orderSchema = z.object({
       price: z.number().positive(),
     })
   ),
+  trackingNumber: z.string().optional(),
   totalPrice: z.number().positive(),
-  shippingAddress: z
-    .object({
-      display_name: z.string(),
-      lat: z.number(),
-      lng: z.number(),
-    })
-    .optional(),
-  shippingMethod: z.enum(["Standard", "Express", "AT SHOP"]).optional(),
+  totalFinalPrice: z.number().optional(),
+  shippingAddress: z.any().optional(),
+  shippingMethod: z.string().optional(),
+  companyId: z.string().optional(),
+  paymentData: z.any().optional(),
 });
 
-/* -------------------------------------------------------------------------- */
-/*                               HELPER FUNCTIONS                             */
-/* -------------------------------------------------------------------------- */
-
 function generateTrackingNumber() {
-  return Math.floor(100000 + Math.random() * 900000).toString();
+  return `TRK${Math.floor(100000 + Math.random() * 900000).toString()}`;
 }
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
     const parsed = orderSchema.safeParse(body);
-    
     if (!parsed.success) {
-      return formatResponse(false, null, parsed.error.flatten(), 400);
+      return NextResponse.json({ success: false, error: parsed.error.flatten() }, { status: 400 });
     }
-  
-    const {
-      consumerId,
-      items,
-      totalPrice,
-      shippingAddress,
-      shippingMethod,
-      delivery,
-      paymentOption,
-      name,
-      email,
-      phone,
-      cardNumber,
-      cardExpiry,
-      cvv,
-      mpesaPhone,
-      promoCode,
-    } = parsed.data;
-  
-    const trackingNumber = `TRK${generateTrackingNumber()}`;
-    let orderStatus = "PENDING";
-    let deliveryStatus = "Order Placed";
-    const responsePayload: Record<string, any> = {};
 
-    // app/api/shop/orders/route.ts
-    const order = await createOrder({
-      consumerId,
-      name,
-      email,
-      phone,
-      mpesaPhone,
-      promoCode,
-      totalPrice,
-      shippingAddress,
-      shippingMethod,
-      status: "PENDING",
-      delivery,
-      paymentOption,
+    const data = parsed.data;
+    const trackingNumber = data.trackingNumber ?? generateTrackingNumber();
+
+    const orderDb = await createOrderRecord({
+      consumerId: data.consumerId,
+      items: data.items,
+      totalPrice: data.totalPrice,
+      totalFinalPrice: data.totalFinalPrice ?? data.totalPrice,
+      mpesaPhone: data.mpesaPhone,
+      paymentOption: data.paymentOption,
+      shippingAddress: data.shippingAddress,
+      shippingMethod: data.shippingMethod,
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
+      promoCode: data.paymentData?.promoCode ?? undefined,
       trackingNumber,
-      deliveryStatus,
-      items, // ✅ pass plain array here
+      deliveryStatus: "Order Placed",
+      delivery: false,
+      notes: data.paymentData?.notes ?? undefined,
     });
 
+    let paymentResponse = null;
+    const cfg = await getCompanyPaymentConfig(data.companyId);
 
-    console.log("Order created with ID:", order);
-    let paymentResponse;
-
-    switch (paymentOption) {
-      case "mpesa":
-        paymentResponse = await initiateMpesaPayment(order, body.paymentData.mpesaPhone);
+    switch (data.paymentOption) {
+      case "mpesa": {
+        const phoneNumber = data.paymentData?.mpesaPhone ?? data.mpesaPhone ?? data.phone;
+        if (!phoneNumber) return NextResponse.json({ success: false, error: "mpesaPhone required" }, { status: 400 });
+        paymentResponse = await initiateMpesaPayment(orderDb, phoneNumber, cfg.credentials);
         break;
-      case "paystack":
-        paymentResponse = await initiatePaystackPayment(order, body.email);
+      }
+      case "paystack": {
+        paymentResponse = await initiatePaystackPayment(orderDb, data.email, cfg.credentials);
         break;
+      }
+      case "ghuba": {
+        paymentResponse = await initiateGhubaPayment(orderDb, cfg.credentials);
+        break;
+      }
+      case "stripe": {
+        paymentResponse = await initiateStripePaymentIntent(orderDb, cfg.credentials);
+        break;
+      }
+      case "paypal": {
+        paymentResponse = await createPaypalOrder(orderDb, cfg.credentials);
+        break;
+      }
       case "cod":
-      case "pickupatshop":
+      case "pickupatshop": {
         paymentResponse = { message: "Payment on delivery or pickup confirmed." };
+        // mark paymentStatus accordingly if you want
+        await prisma.customerOrder.update({ where: { id: orderDb.id }, data: { paymentStatus: "PENDING" } });
         break;
+      }
       default:
         paymentResponse = { message: "Unknown payment option" };
     }
 
-    // await sendOrderConfirmationEmail(order);
-
     return NextResponse.json({
       success: true,
       data: {
-        order,
+        order: orderDb,
         trackingNumber,
         paymentResponse,
-        authorizationUrl: paymentResponse?.authorization_url || null
-      }
+        authorizationUrl: paymentResponse?.data?.authorization_url ?? paymentResponse?.authorization_url ?? null,
+      },
     });
-
-  } catch (err) {
+  } catch (err: any) {
     console.error("Order creation failed:", err);
-    return NextResponse.json({ success: false, error: "Server Error" }, { status: 500 });
+    return NextResponse.json({ success: false, error: err?.message ?? String(err) }, { status: 500 });
   }
 }

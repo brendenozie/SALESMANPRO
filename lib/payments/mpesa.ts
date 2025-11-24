@@ -39,9 +39,6 @@ export async function initiateMpesaPayment(order: any, phoneNumber: string) {
     TransactionDesc: `Payment for order ${order.id}`,
   };
 
-  console.log("FINAL STK PAYLOAD:", payload);
-
-
   const res = await fetch(`${MPESA_BASE_URL}/mpesa/stkpush/v1/processrequest`, {
     method: "POST",
     headers: {

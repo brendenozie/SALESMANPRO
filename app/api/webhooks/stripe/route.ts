@@ -1,27 +1,38 @@
-import { NextResponse } from "next/server";
-import * as Sentry from "@sentry/nextjs";
+// import { NextRequest, NextResponse } from "next/server";
+// import Stripe from "stripe";
 
-export async function POST(req: Request) {
-  try {
-    const data = await req.json();
+// export const config = {
+//   api: { bodyParser: false } // critical for raw-body
+// };
 
-    const callback = data?.Body?.stkCallback;
+// const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+//   apiVersion: "2024-06-20",
+// });
 
-    if (!callback) {
-      return new NextResponse("Invalid STK callback", { status: 400 });
-    }
+// export async function POST(req: NextRequest) {
+//   const rawBody = Buffer.from(await req.arrayBuffer());
 
-    console.log("M-Pesa STK Callback:", callback);
+//   const signature = req.headers.get("stripe-signature");
+//   if (!signature) {
+//     return NextResponse.json({ error: "Missing signature" }, { status: 400 });
+//   }
 
-    /**
-     * CALLBACK SAMPLE:
-     * callback.ResultCode === 0 → success
-     * callback.CallbackMetadata.Item[] → mpesaReceiptNumber, amount, phone
-     */
+//   let event;
+//   try {
+//     event = stripe.webhooks.constructEvent(
+//       rawBody,
+//       signature,
+//       process.env.STRIPE_WEBHOOK_SECRET!
+//     );
+//   } catch (err: any) {
+//     return NextResponse.json({ error: `Invalid signature` }, { status: 400 });
+//   }
 
-    return NextResponse.json({ ok: true });
-  } catch (err: any) {
-    Sentry.captureException(err);
-    return new NextResponse("Error", { status: 400 });
-  }
-}
+//   switch (event.type) {
+//     case "payment_intent.succeeded":
+//       // TODO: Reconcile order status & idempotency
+//       break;
+//   }
+
+//   return NextResponse.json({ received: true });
+// }

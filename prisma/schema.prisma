@@ -522,6 +522,7 @@ model PaymentSettings {
   mpesaConsumerKey    String?
   mpesaConsumerSecret String?
   mpesaCallbackUrl    String?
+  mpesaPasskey        String?
 
   // --- Paystack Configuration (NEW) ---
   paystackPublicKey String?
@@ -535,6 +536,22 @@ model PaymentSettings {
   // --- Ghuba Configuration (NEW) ---
   ghubaMerchantId    String?
   ghubaApiKey        String? // IMPORTANT: Must be encrypted in the database in a real-world application.
+
+  stripeSecret_encrypted String?
+  stripeSecret_iv        String?
+  stripeSecret_tag       String?
+
+  paypalSecret_encrypted String?
+  paypalSecret_iv        String?
+  paypalSecret_tag       String?
+
+  paystackSecret_encrypted String?
+  paystackSecret_iv        String?
+  paystackSecret_tag       String?
+
+  ghubaSecret_encrypted String?
+  ghubaSecret_iv        String?
+  ghubaSecret_tag       String?
 }
 
 // model PaymentSettings {
@@ -5308,4 +5325,13 @@ model Delivery {
   @@index([companyId])
   @@index([riderId])
   @@index([status])
+}
+
+model Idempotency {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt DateTime @default(now())
+  locked    Boolean  @default(false)
+  response  Json?
+
+  @@index([createdAt], name: "idempotency_createdAt_idx")
 }

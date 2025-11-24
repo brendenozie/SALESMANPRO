@@ -161,6 +161,7 @@ const GATEWAYS: Record<string, GatewayConfig> = {
       { key: "mpesaConsumerKey", label: "Consumer Key", requiredWhenEnabled: true },
       { key: "mpesaConsumerSecret", label: "Consumer Secret", secret: true, requiredWhenEnabled: true },
       { key: "mpesaCallbackUrl", label: "Callback URL", type: "url", requiredWhenEnabled: true },
+      { key: "mpesaPasskey", label: "Lipa na M-Pesa Passkey", secret: true, requiredWhenEnabled: true },
     ],
     testEndpoint: "/api/payments/mpesa/test",
     extraEndpoint: "/api/payments/mpesa/stkpush",

@@ -174,10 +174,10 @@ export const companySchema = z.object({
       isGhubaEnabled: z.boolean().nullable().optional(),
 
       // --- Stripe Configuration ---
-      stripeKey: z.string().nullable().optional(),
+      // stripeKey: z.string().nullable().optional(),
 
       // --- PayPal Configuration ---
-      paypalKey: z.string().nullable().optional(),
+      // paypalKey: z.string().nullable().optional(),
 
       // --- M-Pesa Configuration ---
       mpesaShortcode: z.string().nullable().optional(),
@@ -191,6 +191,33 @@ export const companySchema = z.object({
       // --- Ghuba Configuration (NEW) ---
       ghubaMerchantId: z.string().nullable().optional(),
       ghubaApiKey: z.string().nullable().optional(),
+
+      // --- Stripe Configuration ---
+      stripePublishableKey: z.string().nullable().optional(),
+      stripeSecretKey: z.string().nullable().optional(),
+
+      paypalClientId: z.string().nullable().optional(),
+      paypalClientSecret: z.string().nullable().optional(),
+      // --- Encryption fields ---
+      mpesaSecret_encrypted: z.string().nullable().optional(),
+      mpesaSecret_iv: z.string().nullable().optional(),
+      mpesaSecret_tag: z.string().nullable().optional(),
+
+      stripeSecret_encrypted: z.string().nullable().optional(),
+      stripeSecret_iv: z.string().nullable().optional(),
+      stripeSecret_tag: z.string().nullable().optional(),
+
+      paypalSecret_encrypted: z.string().nullable().optional(),
+      paypalSecret_iv: z.string().nullable().optional(),
+      paypalSecret_tag: z.string().nullable().optional(),
+
+      paystackSecret_encrypted: z.string().nullable().optional(),
+      paystackSecret_iv: z.string().nullable().optional(),
+      paystackSecret_tag: z.string().nullable().optional(),
+
+      ghubaSecret_encrypted: z.string().nullable().optional(),
+      ghubaSecret_iv: z.string().nullable().optional(),
+      ghubaSecret_tag: z.string().nullable().optional(),
   }).nullable().optional(),
 
   shippingSettings: z.object({

@@ -119,24 +119,45 @@ export function transformCompanyToStoreForm(raw: any): StoreForm {
     }
     : null,
   paymentSettings: raw.PaymentSettings
-    ? {
+    ? ({
       id: String(raw.PaymentSettings.id),
-      stripeKey: raw.PaymentSettings.stripeKey ?? null,
-      paypalKey: raw.PaymentSettings.paypalKey ?? null,
+      // legacy keys (kept for reference)
+      // stripeKey: raw.PaymentSettings.stripeKey ?? null,
+      // paypalKey: raw.PaymentSettings.paypalKey ?? null,
+
+      // mpesa
       mpesaShortcode: raw.PaymentSettings.mpesaShortcode ?? null,
+      mpesaPasskey: raw.PaymentSettings.mpesaPasskey ?? null,
       mpesaConsumerKey: raw.PaymentSettings.mpesaConsumerKey ?? null,
       mpesaConsumerSecret: raw.PaymentSettings.mpesaConsumerSecret ?? null,
       mpesaCallbackUrl: raw.PaymentSettings.mpesaCallbackUrl ?? null,
+
+      // stripe
       isStripeEnabled: raw.PaymentSettings.isStripeEnabled ?? false,
+      stripePublishableKey: raw.PaymentSettings.stripePublishableKey ?? null,
+      stripeSecretKey: raw.PaymentSettings.stripeSecretKey ?? null,
+
+      // paypal
       isPaypalEnabled: raw.PaymentSettings.isPaypalEnabled ?? false,
-      isMpesaEnabled: raw.is,
+      paypalClientId: raw.PaymentSettings.paypalClientId ?? null,
+      paypalSecret: raw.PaymentSettings.paypalSecret ?? null,
+
+      // mpesa toggle (fixed typo)
+      isMpesaEnabled: raw.PaymentSettings.isMpesaEnabled ?? false,
+
+      // other providers
       isPaystackEnabled: raw.PaymentSettings.isPaystackEnabled ?? false,
-      isGhubaEnabled: raw.PaymentSettings.isGhubaEnabled ?? false,
       paystackPublicKey: raw.PaymentSettings.paystackPublicKey ?? null,
       paystackSecretKey: raw.PaymentSettings.paystackSecretKey ?? null,
+
+      isGhubaEnabled: raw.PaymentSettings.isGhubaEnabled ?? false,
       ghubaMerchantId: raw.PaymentSettings.ghubaMerchantId ?? null,
-      ghubaApiKey: raw.PaymentSettings.ghubaApiKey ?? null
-    }
+      ghubaApiKey: raw.PaymentSettings.ghubaApiKey ?? null,
+      ghubaSecret_tag: raw.PaymentSettings.ghubaSecret_tag ?? null,
+
+      // any additional unknown keys are preserved by spreading (if present)
+      ...raw.PaymentSettings
+    } as any)
     : null,
   shippingSettings: raw.ShippingSettings
     ? {
