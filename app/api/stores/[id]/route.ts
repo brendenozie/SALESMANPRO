@@ -6,6 +6,7 @@ import { companySchema } from "@/lib/validations/company";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { revalidateCompanyCache } from "@/lib/company-fetcher";
+import { encrypt } from "@/lib/crypto/aes";
 
 export const dynamic = "force-dynamic";
 
@@ -90,9 +91,64 @@ async function updateCompany(req: Request, { params }: { params: { id: string } 
     return formatResponse(false, null, "Company not found or unauthorized", 404);
   }
 
+  
   const existingPaymentSettingsId = companyToUpdate.paymentSettingsId;
   // Remove `id` from the nested PaymentSettings payload because Prisma's update/create inputs do not accept the related record's id field.
   const paymentSettingsData = paymentSettings ? (({ id, ...rest }: any) => rest)(paymentSettings) : undefined;
+
+  // =========================
+// 🔐 PREPARE ENCRYPTED PAYMENT SETTINGS
+// =========================
+let encryptedPaymentSettings: any = null;
+
+if (paymentSettingsData) {
+  encryptedPaymentSettings = { ...paymentSettingsData };
+
+  // M-PESA SECRET
+  if (paymentSettingsData.mpesaConsumerSecret) {
+    const encrypted = encrypt(paymentSettingsData.mpesaConsumerSecret);
+    encryptedPaymentSettings.mpesaSecret_encrypted = encrypted.value;
+    encryptedPaymentSettings.mpesaSecret_iv = encrypted.iv;
+    encryptedPaymentSettings.mpesaSecret_tag = encrypted.tag;
+    encryptedPaymentSettings.mpesaConsumerSecret = null;
+  }
+
+  // STRIPE SECRET
+  if (paymentSettingsData.stripeSecretKey) {
+    const encrypted = encrypt(paymentSettingsData.stripeSecretKey);
+    encryptedPaymentSettings.stripeSecret_encrypted = encrypted.value;
+    encryptedPaymentSettings.stripeSecret_iv = encrypted.iv;
+    encryptedPaymentSettings.stripeSecret_tag = encrypted.tag;
+    encryptedPaymentSettings.stripeSecretKey = null;
+  }
+
+  // PAYPAL SECRET
+  if (paymentSettingsData.paypalClientSecret) {
+    const encrypted = encrypt(paymentSettingsData.paypalClientSecret);
+    encryptedPaymentSettings.paypalSecret_encrypted = encrypted.value;
+    encryptedPaymentSettings.paypalSecret_iv = encrypted.iv;
+    encryptedPaymentSettings.paypalSecret_tag = encrypted.tag;
+    encryptedPaymentSettings.paypalClientSecret = null;
+  }
+
+  // PAYSTACK SECRET
+  if (paymentSettingsData.paystackSecretKey) {
+    const encrypted = encrypt(paymentSettingsData.paystackSecretKey);
+    encryptedPaymentSettings.paystackSecret_encrypted = encrypted.value;
+    encryptedPaymentSettings.paystackSecret_iv = encrypted.iv;
+    encryptedPaymentSettings.paystackSecret_tag = encrypted.tag;
+    encryptedPaymentSettings.paystackSecretKey = null;
+  }
+
+  // GHUBA API SECRET
+  if (paymentSettingsData.ghubaApiKey) {
+    const encrypted = encrypt(paymentSettingsData.ghubaApiKey);
+    encryptedPaymentSettings.ghubaSecret_encrypted = encrypted.value;
+    encryptedPaymentSettings.ghubaSecret_iv = encrypted.iv;
+    encryptedPaymentSettings.ghubaSecret_tag = encrypted.tag;
+    encryptedPaymentSettings.ghubaApiKey = null;
+  }
+}
 
   const updatedCompany = await prisma.company.update({
     where: { id },
@@ -136,22 +192,35 @@ async function updateCompany(req: Request, { params }: { params: { id: string } 
         : undefined,
 
       AnalyticsConfig: analyticsConfig ? { update: analyticsConfig } : undefined,
+      // PaymentSettings: paymentSettings
+      //           ? {
+      //                 // Use upsert to handle both creation and updates
+      //                 upsert: {
+      //                     // 1. Where: Targets the related record using the foreign key
+      //                     where: {
+      //                         // If an ID exists, use it. If not, use a dummy value to trigger the 'create' block.
+      //                         id: existingPaymentSettingsId || "non-existent-id", 
+      //                     },
+      //                     // 2. Update: What to do if the record is found
+      //                     update: paymentSettingsData as any,
+      //                     // 3. Create: What to do if the record is not found
+      //                     create: paymentSettingsData as any,
+      //                 },
+      //             }
+      //           : undefined,
+      
       PaymentSettings: paymentSettings
-                ? {
-                      // Use upsert to handle both creation and updates
-                      upsert: {
-                          // 1. Where: Targets the related record using the foreign key
-                          where: {
-                              // If an ID exists, use it. If not, use a dummy value to trigger the 'create' block.
-                              id: existingPaymentSettingsId || "non-existent-id", 
-                          },
-                          // 2. Update: What to do if the record is found
-                          update: paymentSettingsData as any,
-                          // 3. Create: What to do if the record is not found
-                          create: paymentSettingsData as any,
-                      },
-                  }
-                : undefined,
+        ? {
+            upsert: {
+              where: {
+                id: existingPaymentSettingsId || "non-existent-id",
+              },
+              update: encryptedPaymentSettings,
+              create: encryptedPaymentSettings,
+            },
+          }
+        : undefined,
+
 
       ShippingSettings: shippingSettings ? { update: shippingSettings } : undefined,
 

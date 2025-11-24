@@ -5,6 +5,7 @@ import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { VerifiedUser } from "@/lib/verifyAuth"; 
 import { sl } from "date-fns/locale";
+import { encrypt } from "@/lib/crypto/aes";
 
 export const dynamic = "force-dynamic";
 
@@ -106,8 +107,64 @@ async function createCompany(req: Request, context: HandlerContext) {
   const data = parseResult.data;
 
   const paymentSettingsData = data.paymentSettings 
-        ? (({ id, ...rest }: any) => rest)(data.paymentSettings) 
+        ? (({ id, ...rest }: any) => rest)(
+            {
+              ...data.paymentSettings,
+            }
+        ) 
         : undefined;
+
+  let encryptedPaymentSettings: any = undefined;
+
+if (paymentSettingsData) {
+  encryptedPaymentSettings = { ...paymentSettingsData };
+
+  // Stripe Secret
+  if (paymentSettingsData.stripeSecretKey) {
+    const encrypted = encrypt(paymentSettingsData.stripeSecretKey);
+    encryptedPaymentSettings.stripeSecret_encrypted = encrypted.value;
+    encryptedPaymentSettings.stripeSecret_iv = encrypted.iv;
+    encryptedPaymentSettings.stripeSecret_tag = encrypted.tag;
+    encryptedPaymentSettings.stripeSecretKey = null;
+  }
+
+  // PayPal Secret
+  if (paymentSettingsData.paypalClientSecret) {
+    const encrypted = encrypt(paymentSettingsData.paypalClientSecret);
+    encryptedPaymentSettings.paypalSecret_encrypted = encrypted.value;
+    encryptedPaymentSettings.paypalSecret_iv = encrypted.iv;
+    encryptedPaymentSettings.paypalSecret_tag = encrypted.tag;
+    encryptedPaymentSettings.paypalClientSecret = null;
+  }
+
+  // Paystack Secret
+  if (paymentSettingsData.paystackSecretKey) {
+    const encrypted = encrypt(paymentSettingsData.paystackSecretKey);
+    encryptedPaymentSettings.paystackSecret_encrypted = encrypted.value;
+    encryptedPaymentSettings.paystackSecret_iv = encrypted.iv;
+    encryptedPaymentSettings.paystackSecret_tag = encrypted.tag;
+    encryptedPaymentSettings.paystackSecretKey = null;
+  }
+
+  // Ghuba API Secret
+  if (paymentSettingsData.ghubaApiKey) {
+    const encrypted = encrypt(paymentSettingsData.ghubaApiKey);
+    encryptedPaymentSettings.ghubaSecret_encrypted = encrypted.value;
+    encryptedPaymentSettings.ghubaSecret_iv = encrypted.iv;
+    encryptedPaymentSettings.ghubaSecret_tag = encrypted.tag;
+    encryptedPaymentSettings.ghubaApiKey = null;
+  }
+
+  // Mpesa Secret
+  if (paymentSettingsData.mpesaConsumerSecret) {
+    const encrypted = encrypt(paymentSettingsData.mpesaConsumerSecret);
+    encryptedPaymentSettings.mpesaSecret_encrypted = encrypted.value;
+    encryptedPaymentSettings.mpesaSecret_iv = encrypted.iv;
+    encryptedPaymentSettings.mpesaSecret_tag = encrypted.tag;
+    encryptedPaymentSettings.mpesaConsumerSecret = null;
+  }
+}
+
 
   try {
     const newCompany = await prisma.company.create({
@@ -143,7 +200,9 @@ async function createCompany(req: Request, context: HandlerContext) {
         // Nested One-to-One
         SEO: data.seo ? { create: data.seo } : undefined,
         AnalyticsConfig: data.analyticsConfig ? { create: data.analyticsConfig } : undefined,
-        PaymentSettings: paymentSettingsData ? { create: paymentSettingsData } : undefined,
+        // PaymentSettings: paymentSettingsData ? { create: paymentSettingsData } : undefined,
+        PaymentSettings: encryptedPaymentSettings ? { create: encryptedPaymentSettings } : undefined,
+
         ShippingSettings: data.shippingSettings ? { create: data.shippingSettings } : undefined,
 
         // Nested One-to-Many
