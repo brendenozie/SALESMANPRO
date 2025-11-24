@@ -75,7 +75,9 @@ const dashboardComponents: Record<string, React.ComponentType<any>> = {
   'automotive': AutomotiveDashboardClient,
   'travel & tourism': TravelDashboardClient,
   'fitness & wellness': FitnessDashboardClient,
-  'marketplace': EcomDashboardClient
+  'marketplace': EcomDashboardClient,
+  'fashion shop': EcomDashboardClient,
+  'furniture shop': EcomDashboardClient,
 };
 
 const allowedRoles = [
@@ -195,7 +197,7 @@ function getDashboardapiBaseUrl(categoryKey: string, companyId: string) {
       'real estate', 'booking & appointments', 'portfolio & personal branding', 'blog & content',
       'nonprofit & community', 'restaurant & food delivery', 'event & ticketing',
       'healthcare & clinics', 'media & entertainment', 'finance & legal', 'automotive',
-      'travel & tourism', 'fitness & wellness'
+      'travel & tourism', 'fitness & wellness', 'fashion shop', 'furniture shop'
     ].includes(categoryKey)
   ) return `${apiBaseUrl}/admin/dashboard/ecommerce/${companyId}`;
   return null;
