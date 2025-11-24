@@ -42,6 +42,7 @@ export type PaymentSettings = {
   mpesaConsumerKey?: string | null;
   mpesaConsumerSecret?: string | null;
   mpesaCallbackUrl?: string | null;
+  mpesaPasskey?: string | null;
 
   // Paystack
   paystackPublicKey?: string | null;
@@ -674,7 +675,7 @@ export default function PaymentAccordion({ paymentSettings, onChange, onSave }: 
                                     mpesaConsumerKey: fieldValues["mpesaConsumerKey"],
                                     mpesaConsumerSecret: fieldValues["mpesaConsumerSecret"],
                                     mpesaShortcode: fieldValues["mpesaShortcode"],
-                                    passkey: fieldValues["mpesaPasskey"],
+                                    mpesaPasskey: fieldValues["mpesaPasskey"],
                                     mpesaCallbackUrl: fieldValues["mpesaCallbackUrl"],
                                     sandbox: fieldValues["mpesaSandbox"],
                                   }),
