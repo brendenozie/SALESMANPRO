@@ -436,10 +436,19 @@ export default function PaymentAccordion({ paymentSettings, onChange, onSave }: 
   }, [state, validator]);
 
   // reflect parent updates into local state
+  // useEffect(() => {
+  //   dispatch({ type: "REPLACE", payload: clone(paymentSettings ?? {}) });
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [paymentSettings]);
+  const firstLoad = useRef(true);
+
   useEffect(() => {
-    dispatch({ type: "REPLACE", payload: clone(paymentSettings ?? {}) });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (firstLoad.current) {
+      dispatch({ type: "REPLACE", payload: clone(paymentSettings ?? {}) });
+      firstLoad.current = false;
+    }
   }, [paymentSettings]);
+
 
   // debounced outward onChange (emit partial changes)
   useDebouncedEffect(
