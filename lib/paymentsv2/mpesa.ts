@@ -38,9 +38,9 @@ export async function initiateMpesaPayment(order: any, phoneNumber: string, cred
     Timestamp: timestamp,
     TransactionType: "CustomerPayBillOnline",
     Amount: Math.round(order.totalFinalPrice ?? order.totalPrice ?? 0),
-    PartyA: phoneNumber,
+    PartyA: formatPhone(phoneNumber),
     PartyB: shortcode,
-    PhoneNumber: phoneNumber,
+    PhoneNumber: formatPhone(phoneNumber),
     CallBackURL: callbackUrl ?? process.env.MPESA_CALLBACK_URL,
     AccountReference: `ORD-${order.id ?? order.trackingNumber}`,
     TransactionDesc: `Payment for order ${order.trackingNumber}`,
@@ -62,4 +62,21 @@ export async function initiateMpesaPayment(order: any, phoneNumber: string, cred
     throw new Error(`Mpesa STK push failed: ${res.status} ${JSON.stringify(json)}`);
   }
   return json;
+}
+
+
+function formatPhone(phone: string) {
+  // Remove spaces
+  phone = phone.replace(/\s+/g, "");
+
+  // If starts with +254 → convert to 254
+  if (phone.startsWith("+254")) return phone.replace("+254", "254");
+
+  // If starts with 07 → convert to 2547
+  if (phone.startsWith("07")) return phone.replace(/^0/, "254");
+
+  // If already 2547XXXXXXXX → keep it
+  if (phone.startsWith("2547")) return phone;
+
+  throw new Error("Invalid phone number format");
 }

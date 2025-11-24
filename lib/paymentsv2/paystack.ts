@@ -4,7 +4,7 @@ import { timeoutMs } from "./utils";
 export async function initiatePaystackPayment(order: any, customerEmail: string, credentials: { secretKey?: string; baseUrl?: string; callbackUrl?: string }) {
   const secret = credentials?.secretKey ?? process.env.PAYSTACK_SECRET_KEY;
   const baseUrl = credentials?.baseUrl ?? process.env.PAYSTACK_BASE_URL ?? "https://api.paystack.co";
-  const callbackUrl = credentials?.callbackUrl ?? process.env.PAYSTACK_CALLBACK_URL;
+  const callbackUrl = credentials?.callbackUrl ?? `${process.env.NEXT_PUBLIC_BASE_URL}/payments/paystack/callback`;//process.env.PAYSTACK_CALLBACK_URL;
 
   if (!secret) throw new Error("Paystack secret key missing");
 
