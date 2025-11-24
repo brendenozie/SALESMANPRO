@@ -25,24 +25,6 @@ import LocationPicker from "./LocationPicker";
 import { MarketListingForm, ProductForm, IStoreCategory, ILocation } from "@/types/typings";
 import { UnifiedMediaItem } from "./ImageUploader";
 
-// ✅ Unified Media Types
-// interface UnifiedMediaItem {
-//   id?: string;
-//   file?: File;
-//   url: string;
-//   source: "local" | "server";
-// }
-// interface UnifiedMediaItem {
-//   id?: string;
-//   title?: string;
-//   author?: string;
-//   coverPreviewUrl?: string | null;
-//   file?: File;
-//   bookFile?: File | null;
-//   bookFileName?: string;
-//   url?: string;
-//   source: "local" | "server";
-// }
 
 ////////////////////////////////////////////////////////////////////////////////
 // Constants & API
@@ -158,84 +140,6 @@ export async function uploadFiles(
   return Promise.all(uploads);
 }
 
-// export async function uploadFiles(
-//   files: File[],
-//   type: "image" | "video" | "book",
-//   onProgress?: (progress: number, file: File) => void
-// ): Promise<{ url: string; key: string; contentType: string }[]> {
-//   if (!files?.length) return [];
-
-//   const uploads = files.map(async (file) => {
-//     try {
-//       // ✅ Step 1: Request a signed upload URL from your API
-//       const res = await fetch(
-//         `${apiBaseUrl}/upload-url?filename=${encodeURIComponent(file.name)}&type=${type}&contentType=${encodeURIComponent(file.type)}`
-//       );
-
-//       if (!res.ok) {
-//         const text = await res.text();
-//         throw new Error(`Failed to get signed URL: ${text}`);
-//       }
-
-//       const { uploadUrl, publicUrl, key, contentType } = await res.json();
-
-//       // ✅ Step 2: Upload directly to S3
-//       await new Promise<void>((resolve, reject) => {
-//         const xhr = new XMLHttpRequest();
-//         xhr.open("PUT", uploadUrl);
-//         xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
-
-//         xhr.upload.onprogress = (event) => {
-//           if (event.lengthComputable && onProgress) {
-//             const progress = Math.round((event.loaded / event.total) * 100);
-//             onProgress(progress, file);
-//           }
-//         };
-
-//         xhr.onload = () => {
-//           if (xhr.status === 200) resolve();
-//           else reject(new Error(`Upload failed for ${file.name}: ${xhr.status}`));
-//         };
-
-//         xhr.onerror = () => reject(new Error(`Network error during upload for ${file.name}`));
-//         xhr.send(file);
-//       });
-
-//       console.log(`✅ Uploaded: ${file.name} (${contentType}) → ${publicUrl}`);
-//       return { url: publicUrl, key, contentType };
-//     } catch (err) {
-//       console.error("❌ Upload error:", err);
-//       throw err;
-//     }
-//   });
-
-//   return Promise.all(uploads);
-// }
-
-// async function uploadFiles(files: File[], type: "image" | "video" | "book"): Promise<{ url: string }[]> {
-//   if (!files?.length) return [];
-
-//   const uploads = files.map(async (file) => {
-//     const res = await fetch(
-//       `${API_URL}/upload-url?filename=${encodeURIComponent(file.name)}&type=${type}&contentType=${encodeURIComponent(file.type)}`
-//     );
-
-//     if (!res.ok) throw new Error("Failed to get signed URL");
-//     const { uploadUrl, publicUrl } = await res.json();
-
-//     const uploadRes = await fetch(uploadUrl, {
-//       method: "PUT",
-//       body: file,
-//     });
-//     if (!uploadRes.ok) throw new Error("Upload failed");
-
-//     return {
-//       url: publicUrl,
-//     };
-//   });
-
-//   return Promise.all(uploads);
-// }
 
 
 ////////////////////////////////////////////////////////////////////////////////

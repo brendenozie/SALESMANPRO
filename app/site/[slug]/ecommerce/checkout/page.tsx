@@ -672,7 +672,7 @@ const OrderSummary = ({ cart, subtotal, shippingCost, discountAmount, total, est
 
       <div className="mt-4 border-t pt-4 space-y-2 text-gray-600">
         <div className="flex justify-between"><span>Subtotal</span><span>KES {subtotal.toFixed(2)}</span></div>
-        <div className="flex justify-between"><span>Shipping</span><span>{shippingCost > 0 ? `KES ${shippingCost.toFixed(2)}` : 'FREE'}</span></div>
+        <div className="flex justify-between"><span>Shipping</span><span>{shippingCost > 0 ? `KES ${shippingCost.toFixed(2)}` : '0'}</span></div>
         <div className="flex justify-between text-green-600 font-semibold"><span>Discount</span><span>- KES {discountAmount.toFixed(2)}</span></div>
         <div className="flex justify-between font-extrabold text-xl mt-3"><span>Total</span><span>KES {total.toFixed(2)}</span></div>
       </div>
