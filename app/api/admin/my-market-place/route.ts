@@ -42,7 +42,6 @@ async function handleGetListings(req: Request, { params }: RouteParams) {
 
   // 2. Total count for pagination UI
   const total = await prisma.marketplaceListings.count({
-    // where: { companyId, ...(ebookType ? { type: "ebook" } : {}) },
     where: whereClause,
   });
 

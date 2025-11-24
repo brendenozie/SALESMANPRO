@@ -312,7 +312,7 @@ export default function CheckoutPage(): JSX.Element {
 
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="min-h-screen bg-gray-50 p-6 md:p-12">
-      <Section title="🛒 Checkout — Modern" >
+      <Section title="🛒 Checkout " >
         <div className="max-w-6xl mx-auto">
           <div className="flex items-center justify-between mb-6">
             <ProgressHeader currentStep={currentStep} />
