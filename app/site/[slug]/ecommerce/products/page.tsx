@@ -41,12 +41,14 @@ export default async function ProductListPage({ params, searchParams }: {
     prisma.marketplaceListings.count({ where: { companyId } })
   ]);
 
+  const safeInitialListings = initialListings as any;
+
   return (
     <main>
       <ProductsClient
         companyId={companyId}
         slug={slug}
-        initialListings={initialListings}
+        initialListings={safeInitialListings}
         categories={categories}
         totalPages={Math.ceil(totalCount / pageSize)}
       />

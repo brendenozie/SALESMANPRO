@@ -129,8 +129,8 @@ export default function ClientInventoryClient({ companyId, categoriesData, produ
               >
                 {/* Product Image Placeholder (Crucial visual element) */}
                 <div className="h-32 w-full bg-gray-100 dark:bg-gray-700 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
-                    {/* Replace with actual image: <img src={product.imageUrl} alt={product.name} className="object-cover h-full w-full" /> */}
-                    <svg className="h-12 w-12 text-gray-400 dark:text-gray-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4.5-4.5 2 2 3.5-3.5 2 2V15zm-2-9a2 2 0 11-4 0 2 2 0 014 0z" clipRule="evenodd"></path></svg>
+                    <img src={product.images?.[0] || `https://via.placeholder.com/150/`} alt={product.name} className="object-cover h-full w-full" />
+                    {/* <svg className="h-12 w-12 text-gray-400 dark:text-gray-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4.5-4.5 2 2 3.5-3.5 2 2V15zm-2-9a2 2 0 11-4 0 2 2 0 014 0z" clipRule="evenodd"></path></svg> */}
                 </div>
 
                 {/* Status Badges */}
