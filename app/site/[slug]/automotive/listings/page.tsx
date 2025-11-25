@@ -11,7 +11,7 @@ import NewsletterSection from '@/components/site/NewsletterSection/NewsletterSec
 type Listing = any; // MarketListingForm-ish
 
 interface PageProps {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
   searchParams?: {
     page?: string;
     search?: string;
@@ -25,7 +25,7 @@ interface PageProps {
 export const dynamic = 'force-dynamic';
 
 export default async function AutoMarketPage({ params, searchParams = {} }: PageProps) {
-  const { slug } = params;
+  const { slug } = await params;
   const {
     page = '1',
     search = '',
