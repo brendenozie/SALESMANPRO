@@ -5,14 +5,38 @@ import React, { useState, useMemo } from "react";
 import ProductRequestModal from "@/components/ProductRequestModal";
 import AddToProductMarketModal from "@/components/AddToProductMarketModal";
 import { IStoreCategory, MarketListingForm } from "@/types/typings";
+import { useRouter, useSearchParams } from "next/navigation";
 
+// interface ClientProps {
+//   companyId: string;
+//   productsData: MarketListingForm[];
+//   categoriesData: IStoreCategory[];
+// }
 interface ClientProps {
   companyId: string;
   productsData: MarketListingForm[];
   categoriesData: IStoreCategory[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  }
 }
 
-export default function ClientInventoryClient({ companyId, categoriesData, productsData }: ClientProps) {
+
+// export default function ClientInventoryClient({ companyId, categoriesData, productsData }: ClientProps) {
+export default function ClientInventoryClient({ pagination, companyId, categoriesData, productsData }: ClientProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const goToPage = (page: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", page.toString());
+    router.push(`?${params.toString()}`);
+  };
+
+  const { page, totalPages } = pagination;
   const [showRemoveProductModal, setShowRemoveProductModal] = useState(false);
   const [showAddToMarketModal, setShowAddToMarketModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<MarketListingForm | null>(null);
@@ -212,6 +236,52 @@ export default function ClientInventoryClient({ companyId, categoriesData, produ
           )}
         </div>
       </div>
+        
+      {totalPages > 1 && (
+          <div className="flex justify-center mt-12 gap-2">
+
+            {/* Prev Button */}
+            <button
+              disabled={page <= 1}
+              onClick={() => goToPage(page - 1)}
+              className={`px-4 py-2 rounded-lg border 
+                ${page <= 1 ? "opacity-40 cursor-not-allowed" : "hover:bg-gray-100 dark:hover:bg-gray-700"}
+              `}
+            >
+              Prev
+            </button>
+
+            {/* Page Numbers */}
+            {[...Array(totalPages)].map((_, i) => {
+              const p = i + 1;
+              const active = p === page;
+
+              return (
+                <button
+                  key={p}
+                  onClick={() => goToPage(p)}
+                  className={`px-4 py-2 rounded-lg border transition 
+                    ${active ? "bg-blue-600 text-white" : "hover:bg-gray-100 dark:hover:bg-gray-700"}
+                  `}
+                >
+                  {p}
+                </button>
+              );
+            })}
+
+            {/* Next Button */}
+            <button
+              disabled={page >= totalPages}
+              onClick={() => goToPage(page + 1)}
+              className={`px-4 py-2 rounded-lg border 
+                ${page >= totalPages ? "opacity-40 cursor-not-allowed" : "hover:bg-gray-100 dark:hover:bg-gray-700"}
+              `}
+            >
+              Next
+            </button>
+          </div>
+        )}
+
 
       {/* MODALS */}
       {showRemoveProductModal && selectedProduct && (

@@ -13,61 +13,50 @@ type Category = {
   status: string;
 };
 
+
 interface PageProps {
-  params:Promise<{ slug: string }>
+  params: Promise<{ slug: string }>
+  searchParams?: { page?: string }
 }
 
-export default async function ClientInventoryPage({ params }: PageProps) {
-  const { slug : companyId } = await params;
+export default async function ClientInventoryPage({ params, searchParams }: PageProps) {
+  const { slug: companyId } = await params;
   const cookieHeader = (await cookies()).toString();
 
+  const page = Number(searchParams?.page || 1);
+  const limit = 20;
+
   let productsData: MarketListingForm[] = [];
-  let categoriesData: IStoreCategory[] = [];
+  let meta = { page, limit, total: 0, totalPages: 1 };
 
-  try {
-    // --- Fetch marketplace listings ---
-    const res = await fetch(
-      `${apiBaseUrl}/admin/my-market-place?companyId=${encodeURIComponent(companyId)}`,
-      { next: { revalidate: 60 }, headers: { Cookie: cookieHeader } }
-    );
-    if (res.ok) {
-      const json = await res.json();
-      console.log(json);
-      productsData = Array.isArray(json.data.results) ? json.data.results : [];
-    } else {
-      console.error(
-        "[ClientInventoryPage] Failed to fetch marketplace products:",
-        res.status,
-        res.statusText
-      );
-    }
+  // Fetch paginated items
+  const res = await fetch(
+    `${apiBaseUrl}/admin/my-market-place?companyId=${companyId}&page=${page}&limit=${limit}`,
+    { next: { revalidate: 60 }, headers: { Cookie: cookieHeader } }
+  );
 
-    // --- Fetch store categories ---
-    const categoriesRes = await fetch(
-      `${apiBaseUrl}/admin/get-store-categories?companyId=${encodeURIComponent(companyId)}`,
-      { next: { revalidate: 60 }, headers: { Cookie: cookieHeader } }
-    );
-
-    if (categoriesRes.ok) {
-      const json = await categoriesRes.json();
-      categoriesData = Array.isArray(json.data.results) ? json.data.results : [];
-    } else {
-      console.error(
-        "[ClientInventoryPage] Failed to fetch store categories:",
-        categoriesRes.status,
-        categoriesRes.statusText
-      );
-    }
-
-  } catch (err: any) {
-    console.error("[ClientInventoryPage] Error during fetch:", err?.message || err);
+  if (res.ok) {
+    const json = await res.json();
+    productsData = json.data.results || [];
+    meta = json.data.meta || meta;
   }
+
+  // Fetch categories
+  const categoriesRes = await fetch(
+    `${apiBaseUrl}/admin/get-store-categories?companyId=${companyId}`,
+    { next: { revalidate: 60 }, headers: { Cookie: cookieHeader } }
+  );
+
+  const categoriesData = categoriesRes.ok
+    ? (await categoriesRes.json()).data.results
+    : [];
 
   return (
     <ClientInventoryClient
       companyId={companyId}
       productsData={productsData}
       categoriesData={categoriesData}
+      pagination={meta}
     />
   );
 }
