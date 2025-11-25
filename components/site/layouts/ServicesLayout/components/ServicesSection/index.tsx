@@ -1,19 +1,15 @@
-"use client";
+'use client';
 
 import React, { useState } from "react";
-import { 
-  ArrowLongRightIcon, 
-  XMarkIcon, 
-  CalendarDaysIcon, 
-  TagIcon,
-  SparklesIcon,
-  StarIcon
-} from "@heroicons/react/24/outline";
-import { StarIcon as StarIconSolid } from "@heroicons/react/24/solid";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import BookingFormModal from "../BookingFormModal";
-import Link from "next/link";
+import { 
+    ArrowUpRightIcon,
+    ArrowLongRightIcon,
+    StarIcon as StarIconOutline
+} from "@heroicons/react/24/outline";
+import { StarIcon as StarIconSolid, CheckCircleIcon } from "@heroicons/react/24/solid";
+import BookingFormModal from "../BookingFormModal"; 
 import { MarketListingForm } from "@/types/typings";
 
 // --- UTILS ---
@@ -21,349 +17,625 @@ const loader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality 
 
 // --- SUB-COMPONENTS ---
 
-// 1. The "Premium" Service Card (Grid Item)
-const ServiceCard = ({ service, onClick, primaryColor, index }: any) => {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.1, duration: 0.6, ease: [0.215, 0.61, 0.355, 1] }}
-      viewport={{ once: true, margin: "-100px" }}
-      onClick={() => onClick(service)}
-      className="group cursor-pointer relative flex flex-col h-full bg-white dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-[2rem] overflow-hidden hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] transition-all duration-500"
-    >
-      {/* Image Container with organic shape mask (optional feel) */}
-      <div className="relative h-72 w-full overflow-hidden">
-        <Image
-          src={service.images[0] || "/placeholder-service.jpg"}
-          alt={service.name}
-          loader={loader}
-          fill
-          className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/0 to-transparent opacity-60 group-hover:opacity-40 transition-opacity duration-500" />
-        
-        {/* Floating Price Tag */}
-        <div className="absolute top-4 right-4 bg-white/90 dark:bg-black/80 backdrop-blur-md px-4 py-2 rounded-full shadow-sm flex items-center gap-1.5 z-10">
-           <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">From</span>
-           <span className="font-serif font-bold text-gray-900 dark:text-white" style={{ color: primaryColor }}>
-             {(service.finalPrice ?? 0).toFixed(0)}
-           </span>
-        </div>
-      </div>
+interface ServiceCardProps {
+    service: MarketListingForm;
+    primaryColor: string;
+    onBook: (service: MarketListingForm) => void;
+    isSpotlight: boolean;
+    index: number;
+}
 
-      {/* Content */}
-      <div className="p-8 flex flex-col flex-grow relative">
-        {/* Category Badge */}
-        <div className="mb-4 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gray-50 dark:bg-white/10 w-fit">
-          <TagIcon className="w-3 h-3 text-gray-400" />
-          <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-300">
-            {service.category || "Service"}
-          </span>
-        </div>
+// 1. Individual Service Card (Handles both small and large formats)
+const ServiceCard = ({ service, primaryColor, onBook, isSpotlight, index }: ServiceCardProps) => {
+    const [isHovered, setIsHovered] = useState(false);
 
-        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3 group-hover:text-[var(--primary)] transition-colors duration-300" style={{ '--primary': primaryColor } as React.CSSProperties}>
-          {service.name}
-        </h3>
-        
-        <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 leading-relaxed mb-6">
-           {service.description || "Experience premium quality tailored to your specific needs."}
-        </p>
+    const cardVariants = {
+        rest: { 
+            scale: 1, 
+            boxShadow: isSpotlight ? "0 25px 50px -12px rgba(0, 0, 0, 0.4)" : "0 10px 15px -3px rgba(0, 0, 0, 0.2)",
+            transition: { type: "spring", stiffness: 300, damping: 25 }
+        },
+        hover: { 
+            scale: 1.01, 
+            boxShadow: isSpotlight ? "0 40px 80px -20px rgba(0, 0, 0, 0.6)" : "0 20px 30px -5px rgba(0, 0, 0, 0.4)",
+            transition: { type: "spring", stiffness: 300, damping: 20 }
+        }
+    };
 
-        <div className="mt-auto pt-6 border-t border-gray-50 dark:border-white/5 flex items-center justify-between">
-           <div className="flex -space-x-2 overflow-hidden">
-              {/* Fake Avatars for Social Proof feel */}
-              {[1,2,3].map(i => (
-                <div key={i} className="inline-block h-6 w-6 rounded-full ring-2 ring-white dark:ring-gray-900 bg-gray-200" />
-              ))}
-              <span className="h-6 w-6 rounded-full bg-gray-100 ring-2 ring-white flex items-center justify-center text-[8px] font-bold text-gray-500 ml-2">
-                +24
-              </span>
-           </div>
-           
-           <span className="group/btn flex items-center gap-2 text-sm font-bold transition-all duration-300 group-hover:gap-3" style={{ color: primaryColor }}>
-             Book Now <ArrowLongRightIcon className="w-4 h-4" />
-           </span>
-        </div>
-      </div>
-    </motion.div>
-  );
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1, duration: 0.5 }}
+            variants={cardVariants}
+            whileHover="hover"
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            onClick={() => onBook(service)}
+            className={`relative rounded-3xl overflow-hidden cursor-pointer group transition-all duration-500 h-full ${isSpotlight ? 'lg:col-span-2 lg:row-span-2' : 'col-span-1'}`}
+        >
+            {/* Background Image */}
+            <Image
+                src={service.images[0] || "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1400&q=80"}
+                alt={service.name}
+                loader={loader}
+                fill
+                className="object-cover transition-transform duration-[1500ms] group-hover:scale-105 opacity-60"
+            />
+            {/* Dark Overlay Gradient (Essential for visual appeal and text readability) */}
+            <div className={`absolute inset-0 bg-gradient-to-t from-black/95 ${isSpotlight ? 'via-black/50' : 'via-black/70'} to-transparent transition-opacity duration-500`} />
+            
+            {/* Content Area */}
+            <div className={`relative z-10 p-6 flex flex-col justify-end ${isSpotlight ? 'h-full md:p-10 lg:p-14' : 'h-[300px] lg:h-[400px]'}`}>
+                
+                {/* Top Tags (Hidden/Top Alignment) */}
+                <div className="absolute top-6 left-6 flex items-center gap-2">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-white/70 px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm border border-white/10">{service.category || "Service"}</span>
+                </div>
+
+                {/* Main Content (Bottom Alignment) */}
+                <motion.div
+                    animate={{ y: isHovered && !isSpotlight ? 0 : 0 }}
+                >
+                    <h3 className={`font-bold text-white mb-2 leading-tight ${isSpotlight ? 'text-4xl md:text-5xl lg:text-6xl' : 'text-2xl lg:text-3xl'}`}>
+                        {service.name}
+                    </h3>
+                    
+                    {/* Price and Rating */}
+                    <div className="flex items-center gap-4 mb-4 text-white">
+                        <span className={`font-serif font-medium ${isSpotlight ? 'text-3xl' : 'text-xl'}`} style={{ color: primaryColor }}>
+                            ${(service.finalPrice ?? 0).toFixed(0)}
+                        </span>
+                        <div className="flex items-center gap-1 text-sm text-yellow-400">
+                            <StarIconSolid className="w-4 h-4" /> 4.9
+                        </div>
+                    </div>
+
+                    {/* Description (Only for Spotlight Card, or on hover for small cards) */}
+                    {(isSpotlight || isHovered) && (
+                        <motion.p
+                            initial={{ opacity: 0, y: isSpotlight ? 0 : 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: isSpotlight ? 0 : 10 }}
+                            transition={{ duration: 0.3 }}
+                            className={`text-gray-300 line-clamp-3 mb-6 ${isSpotlight ? 'text-lg max-w-lg' : 'text-base max-w-sm'}`}
+                        >
+                            {service.description || "A premium service designed for transformative results and guaranteed satisfaction."}
+                        </motion.p>
+                    )}
+                    
+                    {/* CTA (Visible on all cards, emphasized on hover) */}
+                    <motion.div
+                        initial={{ opacity: 0.8 }}
+                        animate={{ opacity: isHovered ? 1 : 0.8 }}
+                        className="inline-flex items-center gap-2 text-base font-bold uppercase tracking-widest text-white hover:underline underline-offset-8 decoration-2"
+                        style={{ textDecorationColor: primaryColor }}
+                    >
+                        View Details 
+                        <ArrowUpRightIcon className={`w-5 h-5 transition-transform duration-300 ${isHovered ? 'translate-x-1' : 'translate-x-0'}`} />
+                    </motion.div>
+                </motion.div>
+            </div>
+        </motion.div>
+    );
 };
 
 
 // --- MAIN COMPONENT ---
 
 interface ServicesSectionProps {
-  marketplaceListings: MarketListingForm[];
-  themeSettings: any;
-  slug: string;
+    marketplaceListings: MarketListingForm[];
+    themeSettings: any;
+    slug: string;
 }
 
-export default function ServicesSection({ marketplaceListings, themeSettings, slug }: ServicesSectionProps) {
-  const [selectedService, setSelectedService] = useState<MarketListingForm | null>(null);
+export default function ServicesSpotlightDeck({ marketplaceListings, themeSettings, slug }: ServicesSectionProps) {
+    const [activeService, setActiveService] = useState<MarketListingForm | null>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
-  if (!marketplaceListings || marketplaceListings.length === 0) return null;
+    if (!marketplaceListings || marketplaceListings.length === 0) return null;
 
-  const primaryColor = themeSettings?.primaryColor ?? "#000000";
-  // const secondaryColor = themeSettings?.secondaryColor ?? "#FFC107";
+    const primaryColor = themeSettings?.primaryColor ?? "#1d4ed8"; // Default blue
+    const spotlightService = marketplaceListings[0];
+    const secondaryServices = marketplaceListings.slice(1);
 
-  const featuredService = marketplaceListings[0];
-  const otherServices = marketplaceListings.slice(1);
+    const handleOpenModal = (service: MarketListingForm) => {
+        setActiveService(service);
+        setIsModalOpen(true);
+    };
 
-  return (
-    <>
-      <section id="services" className="relative bg-[#FAFAFA] dark:bg-gray-950 py-24 lg:py-32 overflow-hidden">
-        
-        {/* --- ABSTRACT BACKGROUND SHAPES --- */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden">
-           <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-gradient-to-br from-gray-200/40 to-transparent dark:from-white/5 rounded-full blur-3xl opacity-50" />
-           <div className="absolute bottom-[-10%] left-[-10%] w-[600px] h-[600px] bg-gradient-to-tr from-gray-200/40 to-transparent dark:from-white/5 rounded-full blur-3xl opacity-50" />
-           {/* Dot Grid Pattern */}
-           <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:24px_24px] opacity-50 dark:opacity-5" />
-        </div>
-
-        <div className="container mx-auto px-6 relative z-10">
-          
-          {/* --- HEADER --- */}
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-20 gap-8">
-            <div className="max-w-2xl">
-              <motion.div 
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white dark:bg-white/10 shadow-sm border border-gray-100 dark:border-white/5 text-xs font-bold uppercase tracking-widest mb-6"
-                style={{ color: primaryColor }}
-              >
-                <SparklesIcon className="w-4 h-4" />
-                Curated Collection
-              </motion.div>
-              
-              <motion.h2 
-                 initial={{ opacity: 0, y: 20 }}
-                 whileInView={{ opacity: 1, y: 0 }}
-                 transition={{ delay: 0.1 }}
-                 viewport={{ once: true }}
-                 className="text-5xl md:text-6xl lg:text-7xl font-bold text-gray-900 dark:text-white tracking-tight"
-              >
-                Exceptional <br />
-                <span className="font-serif italic text-gray-400 dark:text-gray-600">Services.</span>
-              </motion.h2>
-            </div>
-
-            <motion.p 
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.2 }}
-              className="max-w-xs text-gray-500 dark:text-gray-400 text-sm md:text-base leading-relaxed"
-            >
-              Explore our hand-picked selection of premium services designed to elevate your lifestyle and deliver outstanding results.
-            </motion.p>
-          </div>
-
-
-          {/* --- 1. FEATURED SPOTLIGHT (Magazine Style) --- */}
-          {featuredService && (
-            <motion.div 
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8 }}
-              className="relative group bg-white dark:bg-gray-900 rounded-[2.5rem] p-3 md:p-4 shadow-2xl shadow-gray-200/50 dark:shadow-none mb-24 overflow-hidden border border-gray-100 dark:border-white/10"
-            >
-              <div className="relative rounded-[2rem] overflow-hidden bg-gray-900 aspect-[4/3] md:aspect-[21/9]">
-                <Image
-                  src={featuredService.images[0] || "/placeholder-service.jpg"}
-                  alt={featuredService.name}
-                  loader={loader}
-                  fill
-                  className="object-cover opacity-90 transition-transform duration-[1.5s] group-hover:scale-105"
-                />
+    return (
+        <>
+            <section className="relative bg-white dark:bg-gray-950 py-24 lg:py-32">
                 
-                {/* Cinematic Gradient Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/20 to-transparent" />
-                
-                {/* Content Overlay */}
-                <div className="absolute inset-0 p-8 md:p-16 flex flex-col justify-center max-w-2xl">
-                   <div className="mb-6">
-                      <div className="inline-flex items-center gap-1 bg-white/20 backdrop-blur-md border border-white/30 text-white px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest mb-4">
-                        <StarIconSolid className="w-3 h-3 text-yellow-400" />
-                        Signature Selection
-                      </div>
-                      <h3 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
-                        {featuredService.name}
-                      </h3>
-                      <p className="text-lg md:text-xl text-gray-200 font-light leading-relaxed mb-8 line-clamp-3">
-                        {featuredService.description || "Unlock the full potential of your project with our signature service. Designed for impact and tailored to perfection."}
-                      </p>
-                   </div>
-
-                   <div className="flex flex-wrap items-center gap-6">
-                      <button
-                        onClick={() => setSelectedService(featuredService)}
-                        className="px-8 py-4 bg-white text-gray-900 rounded-full font-bold text-sm tracking-wide transition-transform hover:scale-105 active:scale-95 flex items-center gap-2"
-                      >
-                        Book Appointment
-                        <ArrowLongRightIcon className="w-4 h-4" />
-                      </button>
-                      
-                      <div className="flex items-center gap-4 text-white/80 border-l border-white/20 pl-6">
-                        <div>
-                           <p className="text-[10px] uppercase tracking-widest font-bold opacity-60">Price</p>
-                           <p className="text-xl font-serif">{(featuredService.finalPrice ?? 0).toFixed(2)}</p>
-                        </div>
-                        {featuredService.duration && (
-                          <div>
-                             <p className="text-[10px] uppercase tracking-widest font-bold opacity-60">Duration</p>
-                             <p className="text-xl font-serif">{featuredService.duration}</p>
-                          </div>
-                        )}
-                      </div>
-                   </div>
+                {/* Header */}
+                <div className="container mx-auto px-6 mb-16 md:mb-20">
+                    <h2 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white tracking-tight mb-4">
+                        Discover Our <span className="text-transparent bg-clip-text" style={{ backgroundImage: `linear-gradient(to right, ${primaryColor}, #6366f1)` }}>Service Offerings</span>
+                    </h2>
+                    <p className="text-xl text-gray-500 dark:text-gray-400 max-w-2xl">
+                        Explore our top-tier services, highlighted by our most popular premium package. Click any card to learn more.
+                    </p>
                 </div>
-              </div>
-            </motion.div>
-          )}
 
-
-          {/* --- 2. THE CATALOG GRID --- */}
-          {otherServices.length > 0 && (
-             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {otherServices.map((service, idx) => (
-                   <ServiceCard 
-                      key={service.id} 
-                      index={idx}
-                      service={service} 
-                      onClick={setSelectedService} 
-                      primaryColor={primaryColor} 
-                   />
-                ))}
-             </div>
-          )}
-          
-          {/* View All Link */}
-          <div className="mt-20 flex justify-center">
-            <Link href={`/service-provider/products`} className="group relative inline-flex items-center gap-3 px-8 py-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-full font-bold transition-all hover:pr-10">
-               View Complete Catalog
-               <ArrowLongRightIcon className="w-5 h-5 transition-transform group-hover:translate-x-1" />
-            </Link>
-          </div>
-
-        </div>
-      </section>
-
-
-      {/* --- 3. REFINED PREMIUM MODAL --- */}
-      <AnimatePresence>
-        {selectedService && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
-            
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setSelectedService(null)}
-              className="fixed inset-0 bg-gray-900/60 backdrop-blur-xl transition-opacity"
-            />
-
-            {/* Modal Card */}
-            <motion.div
-              layoutId={`${selectedService.id}`}
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              transition={{ type: "spring", duration: 0.5, bounce: 0.2 }}
-              className="relative w-full max-w-5xl bg-white dark:bg-gray-900 rounded-[2rem] shadow-2xl overflow-hidden flex flex-col md:flex-row max-h-[90vh]"
-            >
-               {/* Close Button */}
-               <button 
-                 onClick={() => setSelectedService(null)}
-                 className="absolute top-4 right-4 z-30 p-2 bg-white/50 hover:bg-white dark:bg-black/20 dark:hover:bg-black/50 rounded-full backdrop-blur-md transition-all border border-transparent hover:border-gray-200"
-               >
-                  <XMarkIcon className="w-5 h-5 text-gray-900 dark:text-white" />
-               </button>
-
-               {/* Left: Immersive Image Panel */}
-               <div className="w-full md:w-[45%] h-64 md:h-auto relative bg-gray-100 dark:bg-gray-800">
-                  <Image
-                    src={selectedService.images[0] || "/placeholder-service.jpg"}
-                    alt={selectedService.name}
-                    loader={loader}
-                    fill
-                    className="object-cover"
-                  />
-                  <div className="absolute inset-0 bg-black/20" />
-                  
-                  {/* Overlay Info (Mobile only or always visible) */}
-                  <div className="absolute bottom-0 left-0 right-0 p-8 bg-gradient-to-t from-black/80 to-transparent">
-                     <h3 className="text-3xl font-bold text-white mb-2">{selectedService.name}</h3>
-                     <div className="flex items-center gap-3 text-white/90 text-sm font-medium">
-                        <span className="flex items-center gap-1"><StarIcon className="w-4 h-4 text-yellow-400" /> 4.9 (120 Reviews)</span>
-                     </div>
-                  </div>
-               </div>
-
-               {/* Right: Interaction Panel */}
-               <div className="w-full md:w-[55%] flex flex-col h-full bg-white dark:bg-gray-900 overflow-y-auto">
-                  
-                  {/* Scrollable Content Area */}
-                  <div className="flex-1 overflow-y-auto p-8 md:p-10 custom-scrollbar">
-                     <div className="mb-8">
-                        <div className="flex items-center justify-between mb-2">
-                           <span className="text-xs font-bold uppercase tracking-widest text-gray-400">{selectedService.category || "Service"}</span>
-                           <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-50 text-green-700 text-[10px] font-bold uppercase rounded-md">Available Now</span>
-                        </div>
-                     </div>
-
-                     <div className="flex flex-wrap gap-4 mb-8">
-                        <div className="px-5 py-3 bg-gray-50 dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 flex-1 min-w-[140px]">
-                           <span className="block text-xs text-gray-400 uppercase font-bold mb-1">Total Price</span>
-                           <span className="text-2xl font-serif font-bold" style={{ color: primaryColor }}>
-                             {(selectedService.finalPrice ?? 0).toFixed(2)}
-                           </span>
-                        </div>
-                        {selectedService.duration && (
-                          <div className="px-5 py-3 bg-gray-50 dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 flex-1 min-w-[140px]">
-                             <span className="block text-xs text-gray-400 uppercase font-bold mb-1">Duration</span>
-                             <span className="text-xl font-medium text-gray-900 dark:text-white flex items-center gap-2">
-                                <CalendarDaysIcon className="w-5 h-5 text-gray-400" />
-                                {selectedService.duration}
-                             </span>
-                          </div>
-                        )}
-                     </div>
-
-                     <div className="prose prose-sm dark:prose-invert prose-gray max-w-none">
-                        <h4 className="text-gray-900 dark:text-white font-bold mb-2">About this service</h4>
-                        <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                           {selectedService.description || "This premium service includes a full consultation, execution by senior specialists, and a satisfaction guarantee. We ensure every detail is met with precision and care."}
-                        </p>
+                {/* === THE SPOTLIGHT CARD DECK === */}
+                <div className="container mx-auto px-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                         
-                        <h4 className="text-gray-900 dark:text-white font-bold mt-6 mb-2">What's Included</h4>
-                        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 list-none pl-0">
-                           {["Consultation", "Premium Materials", "Expert Execution", "Aftercare Support"].map((item, i) => (
-                             <li key={i} className="flex items-center gap-2 text-gray-600 dark:text-gray-400 text-sm">
-                                <div className="w-1.5 h-1.5 rounded-full bg-green-500" /> {item}
-                             </li>
-                           ))}
-                        </ul>
-                     </div>
-                  </div>
+                        {/* 1. SPOTLIGHT CARD (Largest and most prominent) */}
+                        <ServiceCard
+                            service={spotlightService}
+                            primaryColor={primaryColor}
+                            onBook={handleOpenModal}
+                            isSpotlight={true}
+                            index={0}
+                        />
 
-                  {/* Fixed Bottom Action Area */}
-                  <div className="p-6 md:p-8 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-900/50 backdrop-blur-sm">
-                     <BookingFormModal service={selectedService} />
-                     <p className="text-center text-xs text-gray-400 mt-3">
-                        No payment required until service completion.
-                     </p>
-                  </div>
-               </div>
+                        {/* 2. SECONDARY CARDS (Fill the remaining 2 columns in a dynamic layout) */}
+                        {secondaryServices.map((service, index) => (
+                            <ServiceCard
+                                key={service.id}
+                                service={service}
+                                primaryColor={primaryColor}
+                                onBook={handleOpenModal}
+                                isSpotlight={false}
+                                index={index + 1}
+                            />
+                        ))}
 
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-    </>
-  );
+                    </div>
+                </div>
+            </section>
+
+            {/* --- BOOKING MODAL (Reusing the detailed split modal) --- */}
+            <AnimatePresence>
+                {isModalOpen && activeService && (
+                    <motion.div
+                        className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                    >
+                        <div 
+                            onClick={() => setIsModalOpen(false)}
+                            className="fixed inset-0 bg-gray-900/80 backdrop-blur-xl transition-opacity"
+                        />
+
+                        <motion.div
+                            layoutId="booking-modal"
+                            initial={{ scale: 0.95, y: 30 }}
+                            animate={{ scale: 1, y: 0 }}
+                            exit={{ scale: 0.95, y: 30 }}
+                            className="relative w-full max-w-6xl bg-white dark:bg-gray-900 rounded-[2rem] shadow-2xl overflow-hidden flex flex-col md:flex-row max-h-[90vh]"
+                        >
+                             {/* Close Button */}
+                            <button 
+                               onClick={() => setIsModalOpen(false)}
+                               className="absolute top-4 right-4 z-30 p-2 bg-black/5 hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/20 rounded-full transition-all"
+                            >
+                                <ArrowLongRightIcon className="w-6 h-6 text-gray-900 dark:text-white transform rotate-90" />
+                            </button>
+
+                            {/* Left Column: Details & Diagram */}
+                            <div className="w-full md:w-7/12 p-8 md:p-12 overflow-y-auto custom-scrollbar">
+                                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">{activeService.name}</h2>
+                                <p className="text-gray-600 dark:text-gray-300 mb-8">{activeService.description || "Detailed description of service."}</p>
+
+                                {/* INSTRUCTIONAL DIAGRAM SECTION */}
+                                <div className="mb-8 p-6 rounded-2xl border bg-gray-50 dark:bg-gray-800 border-gray-100 dark:border-gray-700">
+                                    <h4 className="text-sm font-bold uppercase tracking-widest text-gray-400 mb-4 flex items-center gap-2">
+                                        <ArrowLongRightIcon className="w-4 h-4" /> **The Service Workflow**
+                                    </h4>
+                                    <div className="relative w-full aspect-[2.5/1] bg-white dark:bg-gray-900 rounded-lg overflow-hidden flex items-center justify-center">
+                                        
+                                        
+
+[Image of business process flow chart diagram]
+
+
+                                    </div>
+                                    <p className="text-xs text-center text-gray-400 mt-2">
+                                        Clear milestones: **Consult $\rightarrow$ Plan $\rightarrow$ Execute $\rightarrow$ Review.**
+                                    </p>
+                                </div>
+                                
+                                <div className="flex flex-wrap gap-4 text-sm font-medium text-gray-700 dark:text-gray-200">
+                                     {["Premium Quality", "Dedicated Team", "Satisfaction Guarantee"].map(feature => (
+                                        <div key={feature} className="flex items-center gap-2">
+                                            <CheckCircleIcon className="w-5 h-5 text-green-500" /> {feature}
+                                        </div>
+                                     ))}
+                                </div>
+                            </div>
+
+                            {/* Right Column: Booking Form */}
+                            <div className="w-full md:w-5/12 bg-gray-50 dark:bg-gray-800 border-l border-gray-100 dark:border-gray-700 flex flex-col">
+                                <div className="p-8 md:p-12 flex-1 overflow-y-auto">
+                                    <div className="mb-8">
+                                        <p className="text-sm text-gray-500 font-medium">Total Estimation</p>
+                                        <p className="text-4xl font-serif font-bold text-gray-900 dark:text-white" style={{ color: primaryColor }}>
+                                            ${(activeService.finalPrice ?? 0).toFixed(2)}
+                                        </p>
+                                    </div>
+                                    <BookingFormModal service={activeService} />
+                                </div>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </>
+    );
 }
+
+
+
+
+
+
+
+
+
+// 'use client';
+
+// import React, { useState, useRef, useEffect } from "react";
+// import Image from "next/image";
+// import { motion, AnimatePresence } from "framer-motion";
+// import { 
+//     ArrowUpRightIcon,
+//     ArrowLongRightIcon,
+//     StarIcon as StarIconOutline,
+//     XMarkIcon,
+//     ArrowLeftIcon,
+//     ArrowRightIcon,
+//     ClockIcon,
+//     CurrencyDollarIcon,
+//     LightBulbIcon // For process diagram highlight
+// } from "@heroicons/react/24/outline";
+// import { StarIcon as StarIconSolid, CheckCircleIcon } from "@heroicons/react/24/solid";
+// import BookingFormModal from "../BookingFormModal"; 
+// import { MarketListingForm } from "@/types/typings";
+
+// // --- UTILS ---
+// const loader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality || 75}`;
+
+// // --- SUB-COMPONENTS ---
+
+// interface ServiceCardProps {
+//     service: MarketListingForm;
+//     primaryColor: string;
+//     onClick: (service: MarketListingForm) => void;
+//     isActive: boolean; // Indicates if this card is currently centered/active
+//     index: number;
+// }
+
+// // 1. Individual Service Card (for the horizontal carousel)
+// const CarouselServiceCard = ({ service, primaryColor, onClick, isActive, index }: ServiceCardProps) => {
+//     return (
+//         <motion.div
+//             initial={{ opacity: 0, scale: 0.9 }}
+//             animate={{ opacity: 1, scale: isActive ? 1.05 : 1 }} // Scale up when active
+//             transition={{ duration: 0.4, ease: "easeOut" }}
+//             onClick={() => onClick(service)}
+//             className={`relative flex-none w-[calc(100vw-3rem)] sm:w-[500px] lg:w-[600px] h-[550px] rounded-3xl overflow-hidden cursor-pointer shadow-xl transition-all duration-300 transform-gpu ${isActive ? 'ring-4' : 'ring-0'}`}
+//             style={{ 
+//                 borderColor: isActive ? primaryColor : 'transparent',
+//                 boxShadow: isActive ? `0 0 40px -5px ${primaryColor}40` : '0 10px 30px -5px rgba(0,0,0,0.4)',
+//                 scrollSnapAlign: 'center' // Enable scroll snapping
+//             }}
+//         >
+//             {/* Background Image with Dark Overlay */}
+//             <Image
+//                 src={service.images[0] || "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1600&q=80"}
+//                 alt={service.name}
+//                 loader={loader}
+//                 fill
+//                 className="object-cover opacity-60 group-hover:opacity-70 transition-opacity duration-300"
+//             />
+//             <div className={`absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent`} />
+            
+//             {/* Content at the bottom */}
+//             <div className="absolute bottom-0 left-0 right-0 p-8 flex flex-col justify-end text-white z-10">
+//                 <span className="text-[10px] font-bold uppercase tracking-widest text-white/70 mb-2">{service.category || "Service"}</span>
+//                 <h3 className="text-4xl font-bold mb-3 leading-tight">{service.name}</h3>
+//                 <div className="flex items-center gap-4">
+//                     <span className="text-2xl font-serif font-medium" style={{ color: primaryColor }}>
+//                         ${(service.finalPrice ?? 0).toFixed(0)}
+//                     </span>
+//                     <div className="flex items-center gap-1 text-base text-yellow-400">
+//                         <StarIconSolid className="w-4 h-4" /> 4.9
+//                     </div>
+//                 </div>
+//                 <p className="text-gray-300 line-clamp-2 mt-4 text-sm">{service.description || "A transformative service designed to elevate your business outcomes."}</p>
+                
+//                 <motion.div
+//                     initial={{ opacity: 0, y: 10 }}
+//                     animate={{ opacity: isActive ? 1 : 0, y: isActive ? 0 : 10 }}
+//                     transition={{ delay: 0.2, duration: 0.3 }}
+//                     className="mt-6 inline-flex items-center gap-2 text-base font-bold uppercase tracking-widest text-white hover:underline underline-offset-8 decoration-2"
+//                     style={{ textDecorationColor: primaryColor }}
+//                 >
+//                     Explore Details <ArrowUpRightIcon className="w-5 h-5" />
+//                 </motion.div>
+//             </div>
+//         </motion.div>
+//     );
+// };
+
+
+// // 2. Expanded Detail View (slides up from bottom)
+// const ExpandedServiceDetail = ({ service, primaryColor, onClose, onBook }: any) => {
+//     return (
+//         <motion.div
+//             initial={{ y: "100%" }}
+//             animate={{ y: 0 }}
+//             exit={{ y: "100%" }}
+//             transition={{ type: "spring", damping: 30, stiffness: 300 }}
+//             className="fixed inset-0 z-[101] bg-white dark:bg-gray-950 rounded-t-[3rem] shadow-2xl overflow-hidden flex flex-col"
+//         >
+//             {/* Close Button */}
+//             <button 
+//                 onClick={onClose}
+//                 className="absolute top-6 right-6 z-20 p-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors"
+//             >
+//                 <XMarkIcon className="w-7 h-7 text-gray-800 dark:text-white" />
+//             </button>
+
+//             {/* Content Area */}
+//             <div className="flex-1 overflow-y-auto custom-scrollbar pt-20 pb-12 px-6 md:px-12 lg:px-24">
+//                 <div className="max-w-4xl mx-auto">
+//                     {/* Header */}
+//                     <div className="mb-10 text-center">
+//                         <h2 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4 leading-tight">
+//                             {service.name}
+//                         </h2>
+//                         <p className="text-lg text-gray-600 dark:text-gray-400">
+//                             {service.description || "In-depth details about this specialized service."}
+//                         </p>
+//                     </div>
+
+//                     {/* Image / Key Visual */}
+//                     <div className="relative w-full aspect-video rounded-3xl overflow-hidden shadow-lg mb-12">
+//                         <Image
+//                             src={service.images[0] || "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1600&q=80"}
+//                             alt={service.name}
+//                             loader={loader}
+//                             fill
+//                             className="object-cover"
+//                         />
+//                     </div>
+
+//                     {/* Features & Price */}
+//                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+//                         <div>
+//                             <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">What's Included?</h3>
+//                             <ul className="space-y-3">
+//                                 {["Comprehensive Analysis", "Strategic Planning", "Dedicated Support", "Performance Tracking", "Satisfaction Guarantee"].map((feature, idx) => (
+//                                     <li key={idx} className="flex items-center gap-3 text-gray-700 dark:text-gray-300">
+//                                         <CheckCircleIcon className="w-6 h-6 text-green-500" />
+//                                         <span>{feature}</span>
+//                                     </li>
+//                                 ))}
+//                             </ul>
+//                         </div>
+//                         <div>
+//                             <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Pricing & Availability</h3>
+//                             <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-2xl flex flex-col gap-4">
+//                                 <div className="flex items-center justify-between text-xl font-bold text-gray-900 dark:text-white">
+//                                     <span>Base Price:</span>
+//                                     <span className="font-serif" style={{ color: primaryColor }}>
+//                                         ${(service.finalPrice ?? 0).toFixed(2)}
+//                                     </span>
+//                                 </div>
+//                                 <div className="flex items-center justify-between text-base text-gray-600 dark:text-gray-400">
+//                                     <span>Average Duration:</span>
+//                                     <span className="flex items-center gap-1">
+//                                         <ClockIcon className="w-5 h-5" /> 2-4 Weeks
+//                                     </span>
+//                                 </div>
+//                                 <div className="flex items-center justify-between text-base text-gray-600 dark:text-gray-400">
+//                                     <span>Category:</span>
+//                                     <span>{service.category}</span>
+//                                 </div>
+//                             </div>
+//                         </div>
+//                     </div>
+
+//                     {/* INSTRUCTIONAL DIAGRAM SECTION */}
+//                     <div className="mb-12 p-8 rounded-3xl bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 border border-gray-200 dark:border-gray-700 shadow-inner">
+//                         <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-3">
+//                             <LightBulbIcon className="w-7 h-7" style={{ color: primaryColor }} /> Our Proven Process for Success
+//                         </h4>
+//                         <p className="text-gray-700 dark:text-gray-300 text-lg mb-8">
+//                             Understanding our workflow helps you anticipate milestones and track progress. We follow a meticulous approach to ensure every project is a success.
+//                         </p>
+//                         <div className="relative w-full aspect-[2.5/1] bg-white dark:bg-gray-900 rounded-xl overflow-hidden shadow-md flex items-center justify-center">
+                            
+                            
+
+
+
+// [Image of business process flow chart diagram]
+
+
+
+//                         </div>
+//                         <p className="text-sm text-center text-gray-500 dark:text-gray-400 mt-4">
+//                             From initial concept to final delivery, our systematic process ensures clarity and efficiency.
+//                         </p>
+//                     </div>
+
+//                     {/* CTA Button */}
+//                     <div className="text-center pb-12">
+//                         <motion.button
+//                             whileHover={{ scale: 1.02 }}
+//                             whileTap={{ scale: 0.98 }}
+//                             onClick={() => onBook(service)}
+//                             className="inline-flex items-center justify-center gap-3 px-10 py-5 text-lg font-bold rounded-full transition-all duration-300 shadow-xl hover:shadow-2xl"
+//                             style={{ backgroundColor: primaryColor, color: 'white' }}
+//                         >
+//                             Book Your Consultation Today
+//                             <ArrowUpRightIcon className="w-6 h-6" />
+//                         </motion.button>
+//                     </div>
+//                 </div>
+//             </div>
+//         </motion.div>
+//     );
+// };
+
+
+// // --- MAIN COMPONENT ---
+
+// interface ServicesSectionProps {
+//     marketplaceListings: MarketListingForm[];
+//     themeSettings: any;
+//     slug: string;
+// }
+
+// export default function ServicesCosmosCarousel({ marketplaceListings, themeSettings, slug }: ServicesSectionProps) {
+//     const [activeService, setActiveService] = useState<MarketListingForm | null>(null);
+//     const [expandedService, setExpandedService] = useState<MarketListingForm | null>(null);
+//     const carouselRef = useRef<HTMLDivElement>(null);
+
+//     useEffect(() => {
+//         if (marketplaceListings && marketplaceListings.length > 0) {
+//             setActiveService(marketplaceListings[0]); // Set first service as active initially
+//         }
+//     }, [marketplaceListings]);
+
+//     // Handle carousel scroll for active state
+//     const handleScroll = () => {
+//         if (!carouselRef.current) return;
+
+//         const scrollContainer = carouselRef.current;
+//         const scrollLeft = scrollContainer.scrollLeft;
+//         const containerWidth = scrollContainer.offsetWidth;
+        
+//         // Find the most centered card
+//         let closestService = null;
+//         let minDistance = Infinity;
+
+//         scrollContainer.childNodes.forEach((child, index) => {
+//             if (child instanceof HTMLElement) {
+//                 const cardCenter = child.offsetLeft + child.offsetWidth / 2;
+//                 const viewportCenter = scrollLeft + containerWidth / 2;
+//                 const distance = Math.abs(cardCenter - viewportCenter);
+
+//                 if (distance < minDistance) {
+//                     minDistance = distance;
+//                     closestService = marketplaceListings[index];
+//                 }
+//             }
+//         });
+//         setActiveService(closestService);
+//     };
+
+//     const scrollCarousel = (direction: 'left' | 'right') => {
+//         if (carouselRef.current) {
+//             const cardWidth = 600; // Approximate card width, adjust as needed
+//             const scrollAmount = direction === 'right' ? cardWidth : -cardWidth;
+//             carouselRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+//         }
+//     };
+
+//     if (!marketplaceListings || marketplaceListings.length === 0) return null;
+
+//     const primaryColor = themeSettings?.primaryColor ?? "#0d9488"; // Default teal
+
+//     const handleOpenBookingModal = (service: MarketListingForm) => {
+//         // This is a placeholder. In a real app, you'd trigger the BookingFormModal directly.
+//         // For this example, we'll just log and keep it simple.
+//         console.log("Opening booking modal for:", service.name);
+//         // You can integrate your existing BookingFormModal here
+//         // For now, setting expandedService to trigger the modal.
+//         setExpandedService(service);
+//     };
+
+//     return (
+//         <>
+//             <section className="relative bg-gray-900 text-white py-24 lg:py-32 overflow-hidden">
+//                 {/* Parallax Background Element */}
+//                 <motion.div
+//                     className="absolute inset-0 z-0"
+//                     initial={{ opacity: 0.1 }}
+//                     animate={{ opacity: 0.2 }}
+//                     transition={{ duration: 1.5 }}
+//                 >
+//                     <Image
+//                         src="https://images.unsplash.com/photo-1518655294026-c23cf75f3a09?auto=format&fit=crop&w=2000&q=80" // Cosmic background image
+//                         alt="Cosmic background"
+//                         loader={loader}
+//                         fill
+//                         className="object-cover object-center"
+//                         style={{ transform: `translateX(${carouselRef.current?.scrollLeft * -0.1}px)` }} // Simple parallax
+//                     />
+//                      <div className="absolute inset-0 bg-gradient-to-b from-gray-950/80 to-black/90" />
+//                 </motion.div>
+
+//                 <div className="container mx-auto px-6 relative z-10">
+                    
+//                     {/* Header */}
+//                     <div className="text-center max-w-4xl mx-auto mb-16 md:mb-20">
+//                         <h2 className="text-5xl md:text-7xl font-bold tracking-tight mb-4">
+//                             Explore Our <span className="text-transparent bg-clip-text" style={{ backgroundImage: `linear-gradient(to right, ${primaryColor}, #67e8f9)` }}>Galactic Services</span>
+//                         </h2>
+//                         <p className="text-xl text-gray-300 max-w-2xl mx-auto">
+//                             Dive into a universe of bespoke solutions. Scroll through to discover unparalleled excellence.
+//                         </p>
+//                     </div>
+
+//                     {/* === COSMOS CAROUSEL === */}
+//                     <div className="relative">
+//                         <div 
+//                             ref={carouselRef}
+//                             onScroll={handleScroll}
+//                             className="flex overflow-x-scroll snap-x snap-mandatory gap-6 pb-6 md:pb-8 lg:pb-12 custom-scrollbar-hide"
+//                             style={{ scrollPadding: '0 20px', '-webkit-overflow-scrolling': 'touch' }} // Centering with scroll-padding
+//                         >
+//                             {marketplaceListings.map((service, index) => (
+//                                 <CarouselServiceCard
+//                                     key={service.id}
+//                                     index={index}
+//                                     service={service}
+//                                     primaryColor={primaryColor}
+//                                     onClick={setExpandedService} // Click to expand
+//                                     isActive={activeService?.id === service.id}
+//                                 />
+//                             ))}
+//                         </div>
+                        
+//                         {/* Carousel Navigation Arrows */}
+//                         <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 flex justify-between px-4 md:px-0 pointer-events-none">
+//                             <button 
+//                                 onClick={() => scrollCarousel('left')}
+//                                 className="p-3 bg-gray-800/60 hover:bg-gray-700/80 rounded-full transition-colors pointer-events-auto shadow-lg ml-[-20px] md:ml-[-40px]"
+//                             >
+//                                 <ArrowLeftIcon className="w-6 h-6 text-white" />
+//                             </button>
+//                             <button 
+//                                 onClick={() => scrollCarousel('right')}
+//                                 className="p-3 bg-gray-800/60 hover:bg-gray-700/80 rounded-full transition-colors pointer-events-auto shadow-lg mr-[-20px] md:mr-[-40px]"
+//                             >
+//                                 <ArrowRightIcon className="w-6 h-6 text-white" />
+//                             </button>
+//                         </div>
+//                     </div>
+
+//                 </div>
+//             </section>
+
+//             {/* --- EXPANDED DETAIL VIEW (SLIDES UP) --- */}
+//             <AnimatePresence>
+//                 {expandedService && (
+//                     <ExpandedServiceDetail 
+//                         service={expandedService} 
+//                         primaryColor={primaryColor} 
+//                         onClose={() => setExpandedService(null)} 
+//                         onBook={handleOpenBookingModal}
+//                     />
+//                 )}
+//             </AnimatePresence>
+//         </>
+//     );
+// }
