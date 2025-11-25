@@ -37,6 +37,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     sellingPrice && finalPrice != null && sellingPrice > finalPrice
       ? Math.round(((sellingPrice - finalPrice) / sellingPrice) * 100)
       : null;
+    
+  const rawImage = images && images.length > 0 ? images[0] : null;
+  const imageSrc =
+    typeof rawImage === 'string' && rawImage.trim() !== ''
+      ? rawImage
+      : 'https://via.placeholder.com/300';
 
   return (
     <motion.div
@@ -52,7 +58,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       >
         {images && images.length > 0 && (
           <Image
-            src={images[0] === "" ? images[0] : `https://via.placeholder.com/300`}
+            src={imageSrc}
             alt={name}
             fill
             loader={loader}

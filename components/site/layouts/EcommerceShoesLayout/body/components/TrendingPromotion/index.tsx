@@ -38,7 +38,7 @@ const itemVariants = {
 };
 
 
-export default function Trending({ promotions, themeSettings }: TrendingProps) {
+export default function TrendingPromotion({ promotions, themeSettings }: TrendingProps) {
     
     // Use the third promotion item or fallback data
     const product = promotions?.[2] || defaultProduct;

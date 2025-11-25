@@ -34,7 +34,7 @@ const dummyPromotionData = {
                   "https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Vans-logo.svg/1187px-Vans-logo.svg.png?20150315211742",
                   "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Puma-logo-%28text%29.svg/768px-Puma-logo-%28text%29.svg.png?20230824220146",
                   "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/New_Balance_logo.svg/450px-New_Balance_logo.svg.png?20160801155106",
-                  "https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/Reebok_wordmark_%282008%E2%80%932014%29.svg/450px-Reebok_wordmark_%282008%E2%80%932014%29.svg.png?20090503203208",
+                  // "https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/Reebok_wordmark_%282008%E2%80%932014%29.svg/450px-Reebok_wordmark_%282008%E2%80%932014%29.svg.png?20090503203208",
                   
   ],
 };
@@ -61,7 +61,7 @@ export default function CategorySection({ promotions, themeSettings }: CategoryS
                   "https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Vans-logo.svg/1187px-Vans-logo.svg.png?20150315211742",
                   "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Puma-logo-%28text%29.svg/768px-Puma-logo-%28text%29.svg.png?20230824220146",
                   "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/New_Balance_logo.svg/450px-New_Balance_logo.svg.png?20160801155106",
-                  "https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/Reebok_wordmark_%282008%E2%80%932014%29.svg/450px-Reebok_wordmark_%282008%E2%80%932014%29.svg.png?20090503203208",
+                  // "https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/Reebok_wordmark_%282008%E2%80%932014%29.svg/450px-Reebok_wordmark_%282008%E2%80%932014%29.svg.png?20090503203208",
                   ]
         }
       : dummyPromotionData;
@@ -146,8 +146,7 @@ export default function CategorySection({ promotions, themeSettings }: CategoryS
                   "https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Vans-logo.svg/1187px-Vans-logo.svg.png?20150315211742",
                   "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Puma-logo-%28text%29.svg/768px-Puma-logo-%28text%29.svg.png?20230824220146",
                   "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/New_Balance_logo.svg/450px-New_Balance_logo.svg.png?20160801155106",
-                  "https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/Reebok_wordmark_%282008%E2%80%932014%29.svg/450px-Reebok_wordmark_%282008%E2%80%932014%29.svg.png?20090503203208",
-                  
+                  // "https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/Reebok_wordmark_%282008%E2%80%932014%29.svg/450px-Reebok_wordmark_%282008%E2%80%932014%29.svg.png?20090503203208"
                 ].map((logo, idx) => (
                     <Image key={idx} src={logo} alt="Brand logo" width={60} height={30} loader={loader} />
                   ))

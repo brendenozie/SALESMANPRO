@@ -1,270 +1,137 @@
 'use client';
 
-import { useStateContext } from '@/contexts/ContextProvider';
-import { useStoreContext } from '@/contexts/StoreContext';
-import { ArrowRightCircleIcon } from '@heroicons/react/24/outline';
-import React from 'react';
+import useSWR from 'swr';
 import ProductCard from '../ProductCard';
-import { MarketListingForm } from '@/types/typings';
+import { SkeletonGrid } from '@/components/site/SkeletonGrid/SkeletonGrid';
+import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+import { createCachedFetcher } from '@/lib/swrCachedFetcher';
 
-interface DailyBestSellsProps {
-  marketplaceListings?: MarketListingForm[];
-  themeSettings?: any;
-}
+import Slider from 'react-slick';
+import 'slick-carousel/slick/slick.css';
+import 'slick-carousel/slick/slick-theme.css';
 
-export default function DailyBestSells({ marketplaceListings, themeSettings }: DailyBestSellsProps) {
+// --- ARROWS ---
+const PrevArrow = ({ onClick }: { onClick?: () => void }) => (
+  <button
+    className="
+      absolute left-0 top-1/2 -translate-y-1/2 z-10 
+      bg-white p-2 rounded-full shadow-lg border border-gray-200
+      hidden sm:block md:hidden
+    "
+    onClick={onClick}
+    aria-label="Previous"
+  >
+    <ChevronLeftIcon className="w-6 h-6 text-gray-700" />
+  </button>
+);
 
-  const { cart, addToCart, decreaseQuantity, removeFromCart } = useStateContext();
-  // const { storeFormData } = useStoreContext();
-  // const { slug, marketplaceListings = [], themeSettings = {} } = storeFormData || {};
-  const primary = themeSettings?.primaryColor || '#f97316';
-  const secondary = themeSettings?.secondaryColor || '#3b82f6';
+const NextArrow = ({ onClick }: { onClick?: () => void }) => (
+  <button
+    className="
+      absolute right-0 top-1/2 -translate-y-1/2 z-10 
+      bg-white p-2 rounded-full shadow-lg border border-gray-200
+      hidden sm:block md:hidden
+    "
+    onClick={onClick}
+    aria-label="Next"
+  >
+    <ChevronRightIcon className="w-6 h-6 text-gray-700" />
+  </button>
+);
 
+export default function DailyBestSells({ id }: { id: string }) {
+  const apiBaseUrl =
+    process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3000/api';
 
-  // Fallback dummy products that match the MarketListingForm structure
-  const dummyProducts: MarketListingForm[] = [
-    {
-      id: '1',
-      name: 'Nike Air Force 1 LV5',
-      // slug: { current: 'nike-air-force-1-lv5' },
-      category: "Men's Shoes",
-      images: [{ _key: 'img1', url: 'https://via.placeholder.com/300' }],
-      finalPrice: 99.95,
-      sellingPrice: 119.95,
-      duration: undefined,
-      productCategoryId: '',
-      subCategory: undefined,
-      tags: [],
-      option: [],
-      color: [],
-      size: [],
-      weight: [],
-      material: [],
-      quantity: 0,
-      buyingPrice: 0,
-      pricingTiers: [],
-      isAvailable: false,
-      isOnOffer: false,
-      isFlashDeal: false,
-      isNewArrival: false,
-      isDiscounted: false,
-      isFeatured: false,
-      bedrooms: [],
-      studios: [],
-      features: [],
-      bookingSlots: [],
-      requiredClientInfo: [],
-      amenities: [],
-      delivery: false,
-      paymentOption: '',
-      status: 'ACTIVE',
-      location: null
-    },
-    {
-      id: '2',
-      name: 'Red Runner Sneakers',
-      // slug: { current: 'red-runner-sneakers' },
-      category: "Men's Shoes",
-      images: [{ _key: 'img2', url: 'https://via.placeholder.com/300' }],
-      finalPrice: 159.95,
-      sellingPrice: 180.00,
-      duration: undefined,
-      productCategoryId: '',
-      subCategory: undefined,
-      tags: [],
-      option: [],
-      color: [],
-      size: [],
-      weight: [],
-      material: [],
-      quantity: 0,
-      buyingPrice: 0,
-      pricingTiers: [],
-      isAvailable: false,
-      isOnOffer: false,
-      isFlashDeal: false,
-      isNewArrival: false,
-      isDiscounted: false,
-      isFeatured: false,
-      bedrooms: [],
-      studios: [],
-      features: [],
-      bookingSlots: [],
-      requiredClientInfo: [],
-      amenities: [],
-      delivery: false,
-      paymentOption: '',
-      status: 'ACTIVE',
-      location: null
-    },
-    {
-      id: '3',
-      name: 'Classic Black Trainers',
-      // slug: { current: 'classic-black-trainers' },
-      category: "Men's Shoes",
-      images: [{ _key: 'img3', url: 'https://via.placeholder.com/300' }],
-      finalPrice: 110.00,
-      sellingPrice: 180.00,
-      duration: undefined,
-      productCategoryId: '',
-      subCategory: undefined,
-      tags: [],
-      option: [],
-      color: [],
-      size: [],
-      weight: [],
-      material: [],
-      quantity: 0,
-      buyingPrice: 0,
-      pricingTiers: [],
-      isAvailable: false,
-      isOnOffer: false,
-      isFlashDeal: false,
-      isNewArrival: false,
-      isDiscounted: false,
-      isFeatured: false,
-      bedrooms: [],
-      studios: [],
-      features: [],
-      bookingSlots: [],
-      requiredClientInfo: [],
-      amenities: [],
-      delivery: false,
-      paymentOption: '',
-      status: 'ACTIVE',
-      location: null
-    },
-    {
-      id: '4',
-      name: 'Blue Sky Trainers',
-      // slug: { current: 'blue-sky-trainers' },
-      category: "Men's Shoes",
-      images: [{ _key: 'img4', url: 'https://via.placeholder.com/300' }],
-      finalPrice: 135.00,
-      sellingPrice: 180.00,
-      duration: undefined,
-      productCategoryId: '',
-      subCategory: undefined,
-      tags: [],
-      option: [],
-      color: [],
-      size: [],
-      weight: [],
-      material: [],
-      quantity: 0,
-      buyingPrice: 0,
-      pricingTiers: [],
-      isAvailable: false,
-      isOnOffer: false,
-      isFlashDeal: false,
-      isNewArrival: false,
-      isDiscounted: false,
-      isFeatured: false,
-      bedrooms: [],
-      studios: [],
-      features: [],
-      bookingSlots: [],
-      requiredClientInfo: [],
-      amenities: [],
-      delivery: false,
-      paymentOption: '',
-      status: 'ACTIVE',
-      location: null
-    },
-    {
-      id: '5',
-      name: 'Gray Casual Loafers',
-      // slug: { current: 'gray-casual-loafers' },
-      category: "Men's Shoes",
-      images: [{ _key: 'img5', url: 'https://via.placeholder.com/300' }],
-      finalPrice: 85.00,
-      sellingPrice: 95.00,
-      duration: undefined,
-      productCategoryId: '',
-      subCategory: undefined,
-      tags: [],
-      option: [],
-      color: [],
-      size: [],
-      weight: [],
-      material: [],
-      quantity: 0,
-      buyingPrice: 0,
-      pricingTiers: [],
-      isAvailable: false,
-      isOnOffer: false,
-      isFlashDeal: false,
-      isNewArrival: false,
-      isDiscounted: false,
-      isFeatured: false,
-      bedrooms: [],
-      studios: [],
-      features: [],
-      bookingSlots: [],
-      requiredClientInfo: [],
-      amenities: [],
-      delivery: false,
-      paymentOption: '',
-      status: 'ACTIVE',
-      location: null
-    },
-    {
-      id: '6',
-      name: 'High-Top Sneakers',
-      // slug: { current: 'high-top-sneakers' },
-      category: "Men's Shoes",
-      images: [{ _key: 'img6', url: 'https://via.placeholder.com/300' }],
-      finalPrice: 165.00,
-      sellingPrice: 180.00,
-      duration: undefined,
-      productCategoryId: '',
-      subCategory: undefined,
-      tags: [],
-      option: [],
-      color: [],
-      size: [],
-      weight: [],
-      material: [],
-      quantity: 0,
-      buyingPrice: 0,
-      pricingTiers: [],
-      isAvailable: false,
-      isOnOffer: false,
-      isFlashDeal: false,
-      isNewArrival: false,
-      isDiscounted: false,
-      isFeatured: false,
-      bedrooms: [],
-      studios: [],
-      features: [],
-      bookingSlots: [],
-      requiredClientInfo: [],
-      amenities: [],
-      delivery: false,
-      paymentOption: '',
-      status: 'ACTIVE',
-      location: null
-    },
-  ];
+  const url = `${apiBaseUrl}/site/productsByFlag?companyId=${id}&flag=isOnOffer&limit=8`;
+  const cacheKey = `products-${id}-isOnOffer`;
+  const fallbackKey = `swr-cache:${cacheKey}:${url}`;
 
-  const productsToShow = marketplaceListings && marketplaceListings?.length > 0 ? marketplaceListings : dummyProducts;
+  const fetcher = createCachedFetcher(cacheKey);
+
+  const fallbackData =
+    typeof window !== 'undefined'
+      ? (() => {
+          try {
+            return JSON.parse(localStorage.getItem(fallbackKey) || 'null');
+          } catch {
+            return null;
+          }
+        })()
+      : null;
+
+  const { data, error, isLoading } = useSWR(url, fetcher, {
+    fallbackData: fallbackData || undefined,
+    revalidateOnFocus: true,
+    dedupingInterval: 30000,
+    refreshInterval: 120000,
+  });
+
+  // --- Slick Settings ---
+  const settings = {
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    arrows: true,
+    dots: true,
+    infinite: false,
+    nextArrow: <NextArrow />,
+    prevArrow: <PrevArrow />,
+    responsive: [
+      {
+        breakpoint: 768, // md
+        settings: {
+          slidesToShow: 1,
+          slidesToScroll: 1,
+        },
+      },
+      {
+        breakpoint: 640, // sm
+        settings: {
+          slidesToShow: 1,
+          slidesToScroll: 1,
+          centerMode: true,
+          centerPadding: '20px',
+        },
+      },
+    ],
+  };
+
+  if (isLoading) return <SkeletonGrid count={8} />;
+  if (error) return <div className="text-center text-gray-500">Error loading products.</div>;
+
+  const products = data?.data || [];
+  if (!products.length)
+    return <div className="text-center text-gray-500">No daily best sells found.</div>;
 
   return (
-    <section className="py-12 bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4">
-        {/* Section Header */}
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-900">Daily Best Sells</h2>
-          <button className="flex items-center text-green-600 font-semibold hover:underline">
-            See All <ArrowRightCircleIcon className="w-6 h-6 ml-2" />
-          </button>
+    <section className="py-8 sm:py-12 bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        {/* Title */}
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl sm:text-2xl font-semibold text-gray-800">
+            Daily Best Sells
+          </h2>
         </div>
-        {/* Products Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {productsToShow.map((product: MarketListingForm) => (
-              <ProductCard key={product.id} product={product} primary={primary} />
+
+        {/* MOBILE CAROUSEL */}
+        <div className="md:hidden overflow-hidden relative">
+          <Slider {...settings}>
+            {products.map((product: any) => (
+              <div key={product._id} className="px-2">
+                <ProductCard product={product} />
+              </div>
+            ))}
+          </Slider>
+        </div>
+
+        {/* DESKTOP GRID */}
+        <div className="hidden md:grid grid-cols-4 gap-6 mt-6">
+          {products.map((product: any) => (
+            <ProductCard key={product._id} product={product} />
           ))}
         </div>
+
       </div>
     </section>
   );

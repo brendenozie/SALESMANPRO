@@ -1,30 +1,48 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
+import dynamic from 'next/dynamic';
+import useSWR from 'swr';
+
 import HeroSlider from '@/components/site/layouts/EcommerceShoesLayout/body/components/HeroSlider';
-// import ProductGrid from '@/components/site/productGrid/ProductGrid';
-import NewsletterSection from '@/components/site/NewsletterSection/NewsletterSection';
-import MetricsSection from '@/components/site/MetricsSection';
-import AwardsSection from '@/components/site/AwardsSection';
-import TestimonialsSection from '@/components/site/TestimonialsSection/TestimonialsSection';
-// import PromotionsSection from '@/components/site/PromotionsSection';
+import { StoreForm, MarketListingForm } from '@/types/typings';
+
+// Above-the-fold components - statically imported
 import CategorySection from './components/CategorySection';
-import PromoSection from './components/PromoSection';
-import PopularProducts from './components/PopularProducts';
 import DailyBestSells from './components/DailyBestSells';
 import FeaturesSection from './components/FeaturesSection';
 import SleepTapeAd from './components/SleepTapeAd';
-import Trending from './components/Trending';
-import AllProducts from './components/AllProducts';
-import { StoreForm } from '@/types/typings';
+import TrendingPromotion from './components/TrendingPromotion';
+
 import BannerSection from './components/BannerSection/BannerSection';
 import { ClockIcon, TagIcon, Squares2X2Icon, ArrowUturnLeftIcon } from '@heroicons/react/24/outline';
 
+// Loading skeleton
+const SectionSkeleton = () => <div className="h-96 w-full animate-pulse bg-gray-200 rounded-lg my-12" />;
 
-type EcommerceSiteShoesProps = {
-  pageData: StoreForm;
-  companyId: string;
-};
+// 🧠 Dynamically import client-side sections (with skeleton fallback)
+const DynamicPopularProducts = dynamic(() => import('./components/PopularProducts'), {
+  loading: () => <SectionSkeleton />,
+  ssr: false,
+});
+
+const DynamicDailyBestSells = dynamic(() => import('./components/DailyBestSells'), {
+  loading: () => <SectionSkeleton />,
+  ssr: false,
+});
+
+const DynamicTrending = dynamic(() => import('./components/TrendingPromotion'), {
+  loading: () => <SectionSkeleton />,
+  ssr: false,
+});
+
+const PromoSection = dynamic(() => import('./components/PromoSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const SecondPromoSection = dynamic(() => import('./components/SecondPromoSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const AllProducts = dynamic(() => import('./components/AllProducts'), { loading: () => <SectionSkeleton />, ssr: false });
+const MetricsSection = dynamic(() => import('@/components/site/MetricsSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const AwardsSection = dynamic(() => import('@/components/site/AwardsSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const TestimonialsSection = dynamic(() => import('@/components/site/TestimonialsSection/TestimonialsSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const NewsletterSection = dynamic(() => import('@/components/site/NewsletterSection/NewsletterSection'), { loading: () => <SectionSkeleton />, ssr: false });
 
 const features = [
   {
@@ -57,40 +75,50 @@ const features = [
   },
 ];
 
-export default function EcommerceShoesSite({ pageData, companyId }: EcommerceSiteShoesProps) {
+
+type EcommerceSiteShoesProps = {
+  pageData: StoreForm;
+  companyId: string;
+};
+
+
+// Generic fetcher
+const fetcher = (url: string) => fetch(url).then(res => res.json());
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000/api";
+
+export default function EcommerceSite({ pageData, companyId }: EcommerceSiteShoesProps) {
   const {
-    heroSlides ,
+    heroSlides,
+    id,
     StoreCategory = [],
     marketplaceListings = [],
+    themeSettings = {},
     testimonials = [],
     awards = [],
     promotions = [],
-    themeSettings = {},
-    slug = '',
+    bannerUrl,
+    slug,
     CoreValues = [],
+    
   } = pageData || {};
 
-  const products = marketplaceListings.length;
-  const customers = 0; // Or from your `storeData`
-  const awardsCount = awards?.length || 0;
-  const support = 24; // Or from your `storeData`
-
   return (
-    <>
+    <div className="space-y-12">
       <HeroSlider heroSlides={heroSlides} />
       <CategorySection promotions={promotions} themeSettings={themeSettings} />
       <PromoSection promotions={promotions} />
-      <PopularProducts themeSettings={themeSettings} marketplaceListings={marketplaceListings} slug={slug} />
+      <DynamicPopularProducts id={id} themeSettings={themeSettings} marketplaceListings={marketplaceListings} slug={slug} />
       <MetricsSection  coreValues={CoreValues} />
-      <DailyBestSells marketplaceListings={marketplaceListings}/>
+      <DynamicDailyBestSells id={id} />
       <SleepTapeAd promotions={promotions} themeSettings={themeSettings} />
+      <TrendingPromotion promotions={promotions} themeSettings={themeSettings}  />
       <FeaturesSection features={features} themeSettings={themeSettings} />
-      <Trending promotions={promotions} themeSettings={themeSettings}  />
       <AllProducts martketplaceListings={marketplaceListings} themeSettings={themeSettings} />
       <AwardsSection awards={awards} />
       <TestimonialsSection testimonials={testimonials} />
       <BannerSection promotions={promotions} themeSettings={themeSettings}/>
-      <NewsletterSection />
-    </>
+      <NewsletterSection />  
+    </div>
   );
 }

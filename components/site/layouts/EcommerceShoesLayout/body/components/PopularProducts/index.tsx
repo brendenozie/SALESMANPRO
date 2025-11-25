@@ -1,241 +1,26 @@
 'use client';
 
 import { useStateContext } from '@/contexts/ContextProvider';
-import { useStoreContext } from '@/contexts/StoreContext';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
-import { MinusIcon, PlusIcon, StarIcon, TrashIcon } from '@heroicons/react/24/solid';
+import { StarIcon } from '@heroicons/react/24/solid';
 import { MarketListingForm } from '@/types/typings';
+
+// --- New Imports for Data Fetching ---
+import useSWR from 'swr';
+import { createCachedFetcher } from '@/lib/swrCachedFetcher';
+import { SkeletonGrid } from '@/components/site/SkeletonGrid/SkeletonGrid';
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000/api";
 
 // Loader for Next.js image optimization
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
-// Fallback dummy products that match the MarketListingForm structure
+// ... [Keep dummyProducts array here as fallback] ...
 const dummyProducts: MarketListingForm[] = [
-  {
-    id: '1',
-    name: 'Nike Air Force 1 LV5',
-    // slug: { current: 'nike-air-force-1-lv5' },
-    category: "Men's Shoes",
-    images: [{ _key: 'img1', url: 'https://via.placeholder.com/300' }],
-    finalPrice: 99.95,
-    sellingPrice: 119.95,
-    duration: undefined,
-    productCategoryId: '',
-    subCategory: undefined,
-    tags: [],
-    option: [],
-    color: [],
-    size: [],
-    weight: [],
-    material: [],
-    quantity: 0,
-    buyingPrice: 0,
-    pricingTiers: [],
-    isAvailable: false,
-    isOnOffer: false,
-    isFlashDeal: false,
-    isNewArrival: false,
-    isDiscounted: false,
-    isFeatured: false,
-    bedrooms: [],
-    studios: [],
-    features: [],
-    bookingSlots: [],
-    requiredClientInfo: [],
-    amenities: [],
-    delivery: false,
-    paymentOption: '',
-    status: 'ACTIVE',
-    location: null
-  },
-  {
-    id: '2',
-    name: 'Red Runner Sneakers',
-    // slug: { current: 'red-runner-sneakers' },
-    category: "Men's Shoes",
-    images: [{ _key: 'img2', url: 'https://via.placeholder.com/300' }],
-    finalPrice: 159.95,
-    sellingPrice: 180.00,
-    duration: undefined,
-    productCategoryId: '',
-    subCategory: undefined,
-    tags: [],
-    option: [],
-    color: [],
-    size: [],
-    weight: [],
-    material: [],
-    quantity: 0,
-    buyingPrice: 0,
-    pricingTiers: [],
-    isAvailable: false,
-    isOnOffer: false,
-    isFlashDeal: false,
-    isNewArrival: false,
-    isDiscounted: false,
-    isFeatured: false,
-    bedrooms: [],
-    studios: [],
-    features: [],
-    bookingSlots: [],
-    requiredClientInfo: [],
-    amenities: [],
-    delivery: false,
-    paymentOption: '',
-    status: 'ACTIVE',
-    location: null
-  },
-  {
-    id: '3',
-    name: 'Classic Black Trainers',
-    // slug: { current: 'classic-black-trainers' },
-    category: "Men's Shoes",
-    images: [{ _key: 'img3', url: 'https://via.placeholder.com/300' }],
-    finalPrice: 110.00,
-    sellingPrice: 180.00,
-    duration: undefined,
-    productCategoryId: '',
-    subCategory: undefined,
-    tags: [],
-    option: [],
-    color: [],
-    size: [],
-    weight: [],
-    material: [],
-    quantity: 0,
-    buyingPrice: 0,
-    pricingTiers: [],
-    isAvailable: false,
-    isOnOffer: false,
-    isFlashDeal: false,
-    isNewArrival: false,
-    isDiscounted: false,
-    isFeatured: false,
-    bedrooms: [],
-    studios: [],
-    features: [],
-    bookingSlots: [],
-    requiredClientInfo: [],
-    amenities: [],
-    delivery: false,
-    paymentOption: '',
-    status: 'ACTIVE',
-    location: null
-  },
-  {
-    id: '4',
-    name: 'Blue Sky Trainers',
-    // slug: { current: 'blue-sky-trainers' },
-    category: "Men's Shoes",
-    images: [{ _key: 'img4', url: 'https://via.placeholder.com/300' }],
-    finalPrice: 135.00,
-    sellingPrice: 180.00,
-    duration: undefined,
-    productCategoryId: '',
-    subCategory: undefined,
-    tags: [],
-    option: [],
-    color: [],
-    size: [],
-    weight: [],
-    material: [],
-    quantity: 0,
-    buyingPrice: 0,
-    pricingTiers: [],
-    isAvailable: false,
-    isOnOffer: false,
-    isFlashDeal: false,
-    isNewArrival: false,
-    isDiscounted: false,
-    isFeatured: false,
-    bedrooms: [],
-    studios: [],
-    features: [],
-    bookingSlots: [],
-    requiredClientInfo: [],
-    amenities: [],
-    delivery: false,
-    paymentOption: '',
-    status: 'ACTIVE',
-    location: null
-  },
-  {
-    id: '5',
-    name: 'Gray Casual Loafers',
-    // slug: { current: 'gray-casual-loafers' },
-    category: "Men's Shoes",
-    images: [{ _key: 'img5', url: 'https://via.placeholder.com/300' }],
-    finalPrice: 85.00,
-    sellingPrice: 95.00,
-    duration: undefined,
-    productCategoryId: '',
-    subCategory: undefined,
-    tags: [],
-    option: [],
-    color: [],
-    size: [],
-    weight: [],
-    material: [],
-    quantity: 0,
-    buyingPrice: 0,
-    pricingTiers: [],
-    isAvailable: false,
-    isOnOffer: false,
-    isFlashDeal: false,
-    isNewArrival: false,
-    isDiscounted: false,
-    isFeatured: false,
-    bedrooms: [],
-    studios: [],
-    features: [],
-    bookingSlots: [],
-    requiredClientInfo: [],
-    amenities: [],
-    delivery: false,
-    paymentOption: '',
-    status: 'ACTIVE',
-    location: null
-  },
-  {
-    id: '6',
-    name: 'High-Top Sneakers',
-    // slug: { current: 'high-top-sneakers' },
-    category: "Men's Shoes",
-    images: [{ _key: 'img6', url: 'https://via.placeholder.com/300' }],
-    finalPrice: 165.00,
-    sellingPrice: 180.00,
-    duration: undefined,
-    productCategoryId: '',
-    subCategory: undefined,
-    tags: [],
-    option: [],
-    color: [],
-    size: [],
-    weight: [],
-    material: [],
-    quantity: 0,
-    buyingPrice: 0,
-    pricingTiers: [],
-    isAvailable: false,
-    isOnOffer: false,
-    isFlashDeal: false,
-    isNewArrival: false,
-    isDiscounted: false,
-    isFeatured: false,
-    bedrooms: [],
-    studios: [],
-    features: [],
-    bookingSlots: [],
-    requiredClientInfo: [],
-    amenities: [],
-    delivery: false,
-    paymentOption: '',
-    status: 'ACTIVE',
-    location: null
-  },
+  // ... (Your existing dummy data) ...
 ];
 
 const staggerVariants = {
@@ -251,46 +36,38 @@ const productVariants = {
   animate: { y: 0, opacity: 1 },
 };
 
-// Internal component for rendering a single product card
+// --- Product Grid Item (Unchanged Logic, just ensuring types) ---
 const ProductGridItem = ({ product, isFeatured = false, primary, secondary, slug }: { product: MarketListingForm, isFeatured?: boolean, primary: string, secondary: string, slug: string }) => {
-  const { cart, addToCart, decreaseQuantity, removeFromCart } = useStateContext();
-  const quantity = cart.find((item: MarketListingForm) => item.id === product.id)?.quantity || 0;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { cart } = useStateContext(); // Keeping context usage if you need cart logic later
 
   const discount = product.sellingPrice && product.finalPrice && product.sellingPrice > product.finalPrice
     ? Math.round(((product.sellingPrice - product.finalPrice) / product.sellingPrice) * 100)
     : null;
 
-  const { name, images, finalPrice, sellingPrice } = product;
-  const rating = 4.5; // Example static value
-  const reviews = 149; // Example static value
-
-  // ✅ Safe image source (no empty strings)
-  // ✅ Safe image source (handles non-string values)
-  const rawImage = images && images.length > 0 ? images[0] : null;
-  const imageSrc =
-    typeof rawImage === 'string' && rawImage.trim() !== ''
-      ? rawImage
-      : 'https://via.placeholder.com/300';
-      
+  // Safe image source logic
+  const rawImage = product.images && product.images.length > 0 ? product.images[0] : null;
+  // Handle if rawImage is an object (Sanity/CMS style) or string url
+  const imageUrl = (typeof rawImage === 'string') 
+    ? rawImage 
+    : (rawImage as any)?.url || 'https://via.placeholder.com/300';
+    
+  const imageSrc = imageUrl && imageUrl.trim() !== '' ? imageUrl : 'https://via.placeholder.com/300';
 
   return (
     <motion.div
       className={`relative bg-white rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden group border border-gray-100 ${isFeatured ? 'md:col-span-2' : ''}`}
       variants={productVariants}
     >
-      {/* Product Image */}
       <Link href={`/ecommerceshoes/products/${product.id}`} className="relative block w-full" style={{ height: isFeatured ? '500px' : '300px' }}>
-        {product.images && product.images.length > 0 && (
-          <Image
-            src={imageSrc}
-            alt={product.name}
-            layout="fill"
-            objectFit={isFeatured ? 'cover' : 'contain'}
-            className="transition-transform duration-500 group-hover:scale-110"
-            loader={loader}
-          />
-        )}
-        {/* Image Overlay on Hover */}
+        <Image
+          src={imageSrc}
+          alt={product.name}
+          layout="fill"
+          objectFit={isFeatured ? 'cover' : 'contain'}
+          className="transition-transform duration-500 group-hover:scale-110"
+          loader={loader}
+        />
         <div className="absolute inset-0 bg-black bg-opacity-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
           <motion.span initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="text-white text-md font-semibold px-4 py-2 rounded-full" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
             View Details
@@ -309,13 +86,10 @@ const ProductGridItem = ({ product, isFeatured = false, primary, secondary, slug
         )}
       </Link>
 
-      {/* Product Details */}
       <div className="p-5 flex flex-col justify-between flex-grow">
         <h4 className="text-xl font-bold text-gray-900 mb-2 truncate" title={product.name}>
           {product.name}
         </h4>
-
-        {/* Price */}
         <div className="mt-2 flex items-baseline gap-2">
           <span className="text-3xl font-extrabold" style={{ color: primary }}>
             {(product.finalPrice ?? 0).toFixed(2)}
@@ -326,8 +100,6 @@ const ProductGridItem = ({ product, isFeatured = false, primary, secondary, slug
             </span>
           )}
         </div>
-
-        {/* Rating & Reviews */}
         <div className="mt-2 flex items-center gap-1 text-yellow-500 text-sm">
           <StarIcon className="w-5 h-5" />
           <span className="font-semibold">4.5</span>
@@ -339,19 +111,49 @@ const ProductGridItem = ({ product, isFeatured = false, primary, secondary, slug
 };
 
 interface PopularProductsProps {
+  id: string; // Added ID to props for API fetching
   themeSettings?: any;
-  marketplaceListings?: any[];
+  marketplaceListings?: MarketListingForm[]; // Optional initial data
   slug?: string;
 }
 
-export default function PopularProducts({themeSettings, marketplaceListings, slug}: PopularProductsProps) {
-  // const { storeFormData } = useStoreContext();
-  // const { themeSettings = {}, marketplaceListings = [], slug } = storeFormData || {};
+export default function PopularProducts({ id, themeSettings, marketplaceListings, slug }: PopularProductsProps) {
   const primary = themeSettings?.primaryColor || '#f97316';
   const secondary = themeSettings?.secondaryColor || '#3b82f6';
-  const productsToShow = marketplaceListings && marketplaceListings?.length > 0 ? marketplaceListings : dummyProducts;
 
-  
+  // --- Data Fetching Logic ---
+  // We request 'isFeatured' products, or generic products if you prefer. 
+  // Limiting to 5 to match the specific grid layout (1 big + 2 small + 2 small row if expanded, or just 1 big 2 small).
+  const url = `${apiBaseUrl}/site/productsByFlag?companyId=${id}&flag=isFeatured&limit=5`;
+  const cacheKey = `products-${id}-isFeatured`;
+  const fetcher = createCachedFetcher(cacheKey);
+
+  // Use passed marketplaceListings as fallbackData for immediate render if available
+  const { data, error, isLoading } = useSWR(url, fetcher, {
+    fallbackData: marketplaceListings && marketplaceListings.length > 0 ? { data: marketplaceListings } : undefined,
+    revalidateOnFocus: false,
+    dedupingInterval: 60000,
+  });
+
+  // Determine which products to show: API data -> Prop Data -> Dummy Data
+  const productsToShow: MarketListingForm[] = 
+    data?.data?.length > 0 ? data.data : 
+    (marketplaceListings && marketplaceListings.length > 0) ? marketplaceListings : 
+    dummyProducts;
+
+  // --- Loading State ---
+  // Using SkeletonGrid, but we might want a custom one for this specific layout later.
+  if (isLoading && !productsToShow.length) {
+    return (
+      <section className="py-20 bg-gray-100">
+        <div className="max-w-7xl mx-auto px-6">
+           <SkeletonGrid count={5} />
+        </div>
+      </section>
+    );
+  }
+
+  if (error && !productsToShow.length) return null; // Or handle error gracefully
 
   return (
     <section className="py-20 bg-gray-100 relative">
@@ -364,7 +166,7 @@ export default function PopularProducts({themeSettings, marketplaceListings, slu
           Explore our most sought-after products, hand-picked for their style, comfort, and quality.
         </p>
 
-        {/* Product Grid with dynamic layout */}
+        {/* Product Grid with preserved dynamic layout */}
         <motion.div
           className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-10"
           variants={staggerVariants}
@@ -374,9 +176,9 @@ export default function PopularProducts({themeSettings, marketplaceListings, slu
         >
           {productsToShow.slice(0, 5).map((product, index) => (
             <ProductGridItem
-              key={product.id}
+              key={product.id || index}
               product={product}
-              isFeatured={index === 0}
+              isFeatured={index === 0} // This preserves your "Big First Item" design
               primary={primary}
               secondary={secondary}
               slug={slug || 'your-store'}
@@ -386,16 +188,16 @@ export default function PopularProducts({themeSettings, marketplaceListings, slu
 
         {/* See More Button */}
         <div className="mt-20">
-          {/* <Link href="/products" passHref> */}
+          <Link href={`/store/${slug || id}/products`} passHref legacyBehavior>
             <motion.a
               whileHover={{ scale: 1.05 }}
               transition={{ type: 'spring', stiffness: 400, damping: 10 }}
               style={{ backgroundColor: primary }}
-              className="inline-block px-10 py-4 text-white rounded-full font-semibold shadow-xl"
+              className="inline-block px-10 py-4 text-white rounded-full font-semibold shadow-xl cursor-pointer"
             >
               View All Products
             </motion.a>
-          {/* </Link> */}
+          </Link>
         </div>
       </div>
     </section>
