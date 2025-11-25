@@ -1,6 +1,7 @@
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
+import { revalidateCompanyCache } from "@/lib/company-fetcher";
 
 // Define route params (none)
 type RouteParams = { params: {} };
@@ -105,13 +106,19 @@ async function handleBulkCreate(req: Request) {
   }));
 
   try {
+    let listing: { company?: { slug?: string | null | undefined } | null | undefined } | null | undefined = {};
+
     const created = await prisma.$transaction(
       preparedListings.map((item) =>
         prisma.marketplaceListings.create({
           data: item,
-        })
+          select: { company: true },
+        },
+      )
       )
     );
+
+    await revalidateCompanyCache(created?.[0]?.company?.slug || "");
 
     return formatResponse(
       true,
