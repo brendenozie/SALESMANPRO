@@ -1,185 +1,135 @@
 'use client';
 
 import useSWR from 'swr';
-import { SkeletonGrid } from '@/components/site/SkeletonGrid/SkeletonGrid';
-import { createCachedFetcher } from '@/lib/swrCachedFetcher';
-import { MarketListingForm } from '@/types/typings';
-import Image from 'next/image';
-import { motion } from 'framer-motion';
-import { HeartIcon, ArrowRightIcon, CubeIcon, SwatchIcon } from '@heroicons/react/24/outline';
 import ProductCard from '../ProductCard';
+import { SkeletonGrid } from '@/components/site/SkeletonGrid/SkeletonGrid';
+import { ArrowRightCircleIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'; // Added Chevron icons
+import { createCachedFetcher } from '@/lib/swrCachedFetcher';
+
+// Import Slick components and styles
+import Slider from 'react-slick';
+import 'slick-carousel/slick/slick.css';
+import 'slick-carousel/slick/slick-theme.css'; 
+// Note: You might need to adjust the paths/import for slick.css/slick-theme.css 
+// based on your project's CSS setup if the imports above don't work globally.
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000/api";
 
-// --- 1. Interface (As Provided) ---
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => {
-  return `${src}?w=${width}&q=${quality || 75}`;
-}
+// --- Custom Arrow Components for Slick ---
+// We'll use these to style the navigation arrows with Heroicons and Tailwind
+const PrevArrow = ({ onClick }: { onClick?: () => void }) => (
+  <button 
+    className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white p-2 rounded-full shadow-lg border border-gray-200 hidden sm:block md:hidden"
+    onClick={onClick}
+    aria-label="Previous"
+  >
+    <ChevronLeftIcon className="w-6 h-6 text-gray-700" />
+  </button>
+);
 
-const MOCK_FURNITURE: MarketListingForm[] = [
-  {
-    id: 'f1',
-    name: 'Oslo Lounge Chair',
-    description: 'Mid-century modern aesthetic with premium ash wood structure.',
-    sellingPrice: 450,
-    finalPrice: 399,
-    isDiscounted: true,
-    discount: 12,
-    isNewArrival: true,
-    isOnOffer: true,
-    isFlashDeal: false,
-    isFeatured: true,
-    isAvailable: true,
-    images: ['https://images.unsplash.com/photo-1567538096630-e0c55bd6374c?q=80&w=1000&auto=format&fit=crop'],
-    tags: ['Living Room', 'Scandi'],
-    brand: 'NordicHome',
-    color: ['Beige', 'Walnut'],
-    size: [],
-    material: ['Ash Wood', 'Linen'],
-    dimensions: 'H: 80cm x W: 75cm',
-    condition: 'New',
-    quantity: 5,
-    category: 'Furniture',
-    subCategory: 'Chairs',
-    productCategoryId: 'cat_f1',
-    option: [],
-    weight: [],
-    pricingTiers: [],
-    features: [],
-    bedrooms: [],
-    studios: [],
-    requiredClientInfo: [],
-    amenities: [],
-    delivery: true,
-    paymentOption: 'Online',
-    status: 'ACTIVE',
-    location: {},
-    duration: null,
-    buyingPrice: 0,
-    bookingSlots: undefined
-  },
-  {
-    id: 'f2',
-    name: 'Marble Coffee Table',
-    description: 'Solid Carrara marble top with industrial steel legs.',
-    sellingPrice: 800,
-    finalPrice: 800,
-    isDiscounted: false,
-    isNewArrival: false,
-    isOnOffer: false,
-    isFlashDeal: false,
-    isFeatured: true,
-    isAvailable: true,
-    images: ['https://images.unsplash.com/photo-1634646477375-586b0208ba51?q=80&w=1000&auto=format&fit=crop'],
-    tags: ['Minimalist', 'Luxury'],
-    brand: 'StoneCraft',
-    color: ['White', 'Black'],
-    size: [],
-    material: ['Marble', 'Steel'],
-    dimensions: 'D: 90cm x H: 45cm',
-    condition: 'New',
-    quantity: 2,
-    category: 'Furniture',
-    subCategory: 'Tables',
-    productCategoryId: 'cat_f2',
-    option: [],
-    weight: [],
-    pricingTiers: [],
-    features: [],
-    bedrooms: [],
-    studios: [],
-    requiredClientInfo: [],
-    amenities: [],
-    delivery: true,
-    paymentOption: 'Online',
-    status: 'ACTIVE',
-    location: {},
-    duration: null,
-    buyingPrice: 0,
-    bookingSlots: undefined
-  },
-  {
-    id: 'f3',
-    name: 'Velvet Sectional Sofa',
-    description: 'Plush velvet finish in deep emerald green. Modular design.',
-    sellingPrice: 2100,
-    finalPrice: 2100,
-    isDiscounted: false,
-    isNewArrival: true,
-    isOnOffer: false,
-    isFlashDeal: false,
-    isFeatured: true,
-    isAvailable: true,
-    images: ['https://images.unsplash.com/photo-1555041469-a586c61ea9bc?q=80&w=1000&auto=format&fit=crop'],
-    tags: ['Living Room', 'Comfort'],
-    brand: 'LuxeLiving',
-    color: ['Green'],
-    size: [],
-    material: ['Velvet', 'Pine'],
-    dimensions: 'W: 280cm x D: 160cm',
-    condition: 'New',
-    quantity: 10,
-    category: 'Furniture',
-    subCategory: 'Sofas',
-    productCategoryId: 'cat_f3',
-    option: [],
-    weight: [],
-    pricingTiers: [],
-    features: [],
-    bedrooms: [],
-    studios: [],
-    requiredClientInfo: [],
-    amenities: [],
-    delivery: true,
-    paymentOption: 'Online',
-    status: 'ACTIVE',
-    location: {},
-    duration: null,
-    buyingPrice: 0,
-    bookingSlots: undefined
-  }
-];
+const NextArrow = ({ onClick }: { onClick?: () => void }) => (
+  <button 
+    className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-white p-2 rounded-full shadow-lg border border-gray-200 hidden sm:block md:hidden"
+    onClick={onClick}
+    aria-label="Next"
+  >
+    <ChevronRightIcon className="w-6 h-6 text-gray-700" />
+  </button>
+);
 
 
-export default function PopularProducts({ id }: { id: string }) {
-  const url = `${apiBaseUrl}/site/productsByFlag?id=${id}&flag=isFeatured&limit=8`;
-  const fetcher = createCachedFetcher(`products-${id}-isFeatured`);
+export default function DailyBestSells({ id }: { id: string }) {
+  const url = `${apiBaseUrl}/site/productsByFlag?companyId=${id}&flag=isOnOffer&limit=8`;
+  const cacheKey = `products-${id}-isOnOffer`;
+  const fallbackKey = `swr-cache:${cacheKey}:${url}`;
 
-  const fallbackData = typeof window !== 'undefined'
-    ? (() => {
-        try {
-          return JSON.parse(
-            localStorage.getItem(`swr-cache:products-${id}-isFeatured:${url}`) || 'null'
-          );
-        } catch {
-          return null;
-        }
-      })()
-    : null;
+  const fetcher = createCachedFetcher(cacheKey);
+
+  const fallbackData =
+    typeof window !== 'undefined'
+      ? (() => {
+          try {
+            return JSON.parse(localStorage.getItem(fallbackKey) || 'null');
+          } catch {
+            return null;
+          }
+        })()
+      : null;
 
   const { data, error, isLoading } = useSWR(url, fetcher, {
+    fallbackData: fallbackData || undefined,
     revalidateOnFocus: true,
     dedupingInterval: 30000,
     refreshInterval: 120000,
-    fallbackData: fallbackData || undefined,
   });
 
+  // --- React Slick Configuration ---
+  const settings = {
+    // Show one card at a time on small screens
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    arrows: true, // Show arrows for navigation
+    dots: true, // Show pagination dots
+    infinite: false, // Don't loop the products
+    // Custom arrows are only shown on small screens (md:hidden)
+    nextArrow: <NextArrow />, 
+    prevArrow: <PrevArrow />,
+    // Responsive settings to switch to grid on desktop
+    responsive: [
+      {
+        breakpoint: 768, // md breakpoint in Tailwind
+        settings: {
+          slidesToShow: 1,
+          slidesToScroll: 1,
+        }
+      },
+      {
+        breakpoint: 640, // sm breakpoint in Tailwind
+        settings: {
+          slidesToShow: 1,
+          slidesToScroll: 1,
+          // Added centerPadding and centerMode for a 'peek' effect on very small screens
+          centerMode: true,
+          centerPadding: '20px', 
+        }
+      }
+    ]
+  };
+
   if (isLoading) return <SkeletonGrid count={8} />;
-  if (error) return <div className="text-center text-gray-500"></div>;
-  if (!data?.data?.length) return <div className="text-center text-gray-500"></div>;
+  if (error) return <div className="text-center text-gray-500">Error loading products.</div>;
+  if (!data?.data?.length)
+    return <div className="text-center text-gray-500">No daily best sells found.</div>;
 
   return (
-    <section className="py-12 max-w-7xl mx-auto px-6 mb-20">
-      {/* Title */}
-      <h2 className="text-3xl font-serif font-bold text-stone-900 mb-8 text-center">
-        Weekly Highlights
-      </h2>
+    <section className="py-8 sm:py-12 bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Daily Best Sells</h2>
+          <button className="flex items-center text-green-600 font-semibold text-sm sm:text-base hover:underline transition duration-150 ease-in-out">
+            See All <ArrowRightCircleIcon className="w-5 h-5 ml-1 sm:w-6 sm:h-6 sm:ml-2" />
+          </button>
+        </div>
 
-      {/* Product Grid (Updated design) */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
-        {(data.data.length > 0 ? data.data : MOCK_FURNITURE).map((item: any) => (
-          <ProductCard key={item.id} product={item} />
-        ))}
+        {/* --- Responsive Product Display --- */}
+        
+        {/* 1. Mobile Carousel (Visible below md) */}
+        <div className="md:hidden relative px-4"> 
+          <Slider {...settings}>
+            {data.data.map((product: any) => (
+              <div key={product.id} className="px-1 outline-none">
+                <ProductCard product={product} />
+              </div>
+            ))}
+          </Slider>
+        </div>
+
+        {/* 2. Desktop Grid (Visible at md and above) */}
+        <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {data.data.map((product: any) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
       </div>
     </section>
   );

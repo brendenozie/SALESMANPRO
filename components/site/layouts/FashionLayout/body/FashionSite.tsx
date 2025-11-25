@@ -21,6 +21,7 @@ import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid';
 
 // Above-the-fold components - statically imported
 import CategorySection from './components/CategorySection';
+import CategoriesSectionV5 from './components/CategorySection';
 
 // Loading skeleton
 const SectionSkeleton = () => <div className="h-96 w-full animate-pulse bg-gray-200 rounded-lg my-12" />;
@@ -355,48 +356,7 @@ const Features = () => {
     <div>
       <HeroSlider heroSlides={heroSlides} themeSettings={themeSettings} />
       <Features />
-      {/* Categories Grid */}
-      <section className="py-24 max-w-7xl mx-auto px-6">
-        <h2 className="text-3xl font-bold text-slate-900 mb-12 text-center">Shop by Category</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 h-[600px]">
-           {/* Large Item */}
-           <div className="md:col-span-1 md:row-span-2 relative rounded-2xl overflow-hidden group cursor-pointer">
-              <Image src="https://images.unsplash.com/photo-1487222477894-8943e31ef7b2?q=80&w=1000" loader={loader} alt="Women" fill className="object-cover transition-transform duration-700 group-hover:scale-105"/>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-              <div className="absolute bottom-8 left-8">
-                 <h3 className="text-2xl font-bold text-white">Women</h3>
-                 <p className="text-white/80 text-sm mt-2">New Collection</p>
-              </div>
-           </div>
-           {/* Small Item 1 */}
-           <div className="relative rounded-2xl overflow-hidden group cursor-pointer">
-              <Image src="https://images.unsplash.com/photo-1617137984095-74e4e5e3613f?q=80&w=1000" loader={loader} alt="Men" fill className="object-cover transition-transform duration-700 group-hover:scale-105"/>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-              <div className="absolute bottom-6 left-6">
-                 <h3 className="text-xl font-bold text-white">Men</h3>
-              </div>
-           </div>
-           {/* Small Item 2 */}
-           <div className="relative rounded-2xl overflow-hidden group cursor-pointer">
-              <Image src="https://images.unsplash.com/photo-1611558709798-e009c8fd7706?q=80&w=1000" loader={loader} alt="Accessories" fill className="object-cover transition-transform duration-700 group-hover:scale-105"/>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-              <div className="absolute bottom-6 left-6">
-                 <h3 className="text-xl font-bold text-white">Accessories</h3>
-              </div>
-           </div>
-           {/* Wide Item */}
-           <div className="md:col-span-2 relative rounded-2xl overflow-hidden group cursor-pointer">
-              <Image src="https://images.unsplash.com/photo-1549298916-b41d501d3772?q=80&w=1000" loader={loader} alt="Shoes" fill className="object-cover transition-transform duration-700 group-hover:scale-105"/>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-              <div className="absolute bottom-8 left-8">
-                 <h3 className="text-2xl font-bold text-white">Shoes</h3>
-                 <button className="mt-4 text-sm font-bold text-white underline decoration-2 underline-offset-4">Browse Collection</button>
-              </div>
-           </div>
-        </div>
-      </section>
-
-      <CategorySection StoreCategory={StoreCategory} themeSettings={themeSettings} />
+      <CategoriesSectionV5 store={pageData} />
       <DynamicPopularProducts id={id} />
       <PromoSection promotions={promotions} />
       <DynamicTrending id={id} />

@@ -3,169 +3,134 @@
 import useSWR from 'swr';
 import ProductCard from '../ProductCard';
 import { SkeletonGrid } from '@/components/site/SkeletonGrid/SkeletonGrid';
-import { ArrowRightIcon } from '@heroicons/react/24/outline';
+import { ArrowRightCircleIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'; // Added Chevron icons
 import { createCachedFetcher } from '@/lib/swrCachedFetcher';
-import { motion } from "framer-motion";
 
-// -------------------------
-// NEW: Modern animation
-// -------------------------
-const staggerContainer = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.15 },
-  },
-};
-
-// -------------------------
-// NEW: Your Mock Products Fallback
-// -------------------------
-const MOCK_PRODUCTS = [
-  {
-    id: '1',
-    name: 'Midnight Velvet Blazer',
-    sellingPrice: 150,
-    finalPrice: 120,
-    isDiscounted: true,
-    discount: 20,
-    isNewArrival: true,
-    isOnOffer: true,
-    isFlashDeal: false,
-    isFeatured: true,
-    isAvailable: true,
-    images: [
-      'https://images.unsplash.com/photo-1591047139829-d91aecb6caea?q=80&w=1000&auto=format&fit=crop'
-    ],
-    tags: ['Formal', 'Winter'],
-    brand: 'LuxeWear',
-  },
-  {
-    id: '2',
-    name: 'Urban Street Bomber',
-    sellingPrice: 85,
-    finalPrice: 85,
-    isDiscounted: false,
-    isFlashDeal: true,
-    isFeatured: true,
-    isAvailable: true,
-    images: [
-      'https://images.unsplash.com/photo-1551028919-32163f06d420?q=80&w=1000&auto=format&fit=crop'
-    ],
-    tags: ['Streetwear', 'Casual'],
-    brand: 'StreetPulse',
-  },
-  {
-    id: '3',
-    name: 'Silk Summer Dress',
-    sellingPrice: 200,
-    finalPrice: 200,
-    isNewArrival: true,
-    isFeatured: true,
-    images: [
-      'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?q=80&w=1000&auto=format&fit=crop'
-    ],
-    tags: ['Summer', 'Luxury'],
-    brand: 'Ethereal',
-  },
-  {
-    id: '4',
-    name: 'Classic Denim Trucker',
-    sellingPrice: 95,
-    finalPrice: 75,
-    isDiscounted: true,
-    discount: 20,
-    isOnOffer: true,
-    images: [
-      'https://images.unsplash.com/photo-1576995853123-5a10305d93c0?q=80&w=1000&auto=format&fit=crop'
-    ],
-    tags: ['Denim', 'Vintage'],
-    brand: 'BlueHeritage',
-  },
-];
-
+// Import Slick components and styles
+import Slider from 'react-slick';
+import 'slick-carousel/slick/slick.css';
+import 'slick-carousel/slick/slick-theme.css'; 
+// Note: You might need to adjust the paths/import for slick.css/slick-theme.css 
+// based on your project's CSS setup if the imports above don't work globally.
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000/api";
 
-export default function PopularProducts({ id }: { id: string }) {
-  const url = `${apiBaseUrl}/site/productsByFlag?id=${id}&flag=isFeatured&limit=8`;
-  const fetcher = createCachedFetcher(`products-${id}-isFeatured`);
+// --- Custom Arrow Components for Slick ---
+// We'll use these to style the navigation arrows with Heroicons and Tailwind
+const PrevArrow = ({ onClick }: { onClick?: () => void }) => (
+  <button 
+    className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white p-2 rounded-full shadow-lg border border-gray-200 hidden sm:block md:hidden"
+    onClick={onClick}
+    aria-label="Previous"
+  >
+    <ChevronLeftIcon className="w-6 h-6 text-gray-700" />
+  </button>
+);
 
-  // Retrieve cached data
-  const fallbackData = typeof window !== 'undefined'
-    ? (() => {
-        try {
-          return JSON.parse(
-            localStorage.getItem(`swr-cache:products-${id}-isFeatured:${url}`) || 'null'
-          );
-        } catch {
-          return null;
-        }
-      })()
-    : null;
+const NextArrow = ({ onClick }: { onClick?: () => void }) => (
+  <button 
+    className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-white p-2 rounded-full shadow-lg border border-gray-200 hidden sm:block md:hidden"
+    onClick={onClick}
+    aria-label="Next"
+  >
+    <ChevronRightIcon className="w-6 h-6 text-gray-700" />
+  </button>
+);
+
+
+export default function DailyBestSells({ id }: { id: string }) {
+  const url = `${apiBaseUrl}/site/productsByFlag?companyId=${id}&flag=isOnOffer&limit=8`;
+  const cacheKey = `products-${id}-isOnOffer`;
+  const fallbackKey = `swr-cache:${cacheKey}:${url}`;
+
+  const fetcher = createCachedFetcher(cacheKey);
+
+  const fallbackData =
+    typeof window !== 'undefined'
+      ? (() => {
+          try {
+            return JSON.parse(localStorage.getItem(fallbackKey) || 'null');
+          } catch {
+            return null;
+          }
+        })()
+      : null;
 
   const { data, error, isLoading } = useSWR(url, fetcher, {
+    fallbackData: fallbackData || undefined,
     revalidateOnFocus: true,
     dedupingInterval: 30000,
     refreshInterval: 120000,
-    fallbackData: fallbackData || undefined,
   });
 
-  // -------------------------
-  // PRIORITY:
-  // 1. API data
-  // 2. fallback cached data
-  // 3. MOCK_PRODUCTS fallback
-  // -------------------------
+  // --- React Slick Configuration ---
+  const settings = {
+    // Show one card at a time on small screens
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    arrows: true, // Show arrows for navigation
+    dots: true, // Show pagination dots
+    infinite: false, // Don't loop the products
+    // Custom arrows are only shown on small screens (md:hidden)
+    nextArrow: <NextArrow />, 
+    prevArrow: <PrevArrow />,
+    // Responsive settings to switch to grid on desktop
+    responsive: [
+      {
+        breakpoint: 768, // md breakpoint in Tailwind
+        settings: {
+          slidesToShow: 1,
+          slidesToScroll: 1,
+        }
+      },
+      {
+        breakpoint: 640, // sm breakpoint in Tailwind
+        settings: {
+          slidesToShow: 1,
+          slidesToScroll: 1,
+          // Added centerPadding and centerMode for a 'peek' effect on very small screens
+          centerMode: true,
+          centerPadding: '20px', 
+        }
+      }
+    ]
+  };
 
-  const products =
-    data?.data?.length > 0 ? data.data : MOCK_PRODUCTS;
-
-  if (isLoading && !fallbackData) return <SkeletonGrid count={8} />;
-  if (error) console.warn("API Error:", error);
+  if (isLoading) return <SkeletonGrid count={8} />;
+  if (error) return <div className="text-center text-gray-500">Error loading products.</div>;
+  if (!data?.data?.length)
+    return <div className="text-center text-gray-500">No daily best sells found.</div>;
 
   return (
-    <section className="py-24 max-w-7xl mx-auto px-6">
-      
-      {/* Header */}
-      <div className="flex justify-between items-end mb-12">
-        <div>
-          <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
-            Trending Now
-          </h2>
-          <p className="text-slate-500 max-w-md">
-            Explore our most popular items, curated just for you based on current seasonal trends.
-          </p>
+    <section className="py-8 sm:py-12 bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Daily Best Sells</h2>
+          <button className="flex items-center text-green-600 font-semibold text-sm sm:text-base hover:underline transition duration-150 ease-in-out">
+            See All <ArrowRightCircleIcon className="w-5 h-5 ml-1 sm:w-6 sm:h-6 sm:ml-2" />
+          </button>
         </div>
 
-        <a
-          href="#"
-          className="hidden md:flex items-center gap-2 text-indigo-600 font-semibold hover:gap-3 transition-all"
-        >
-          View All Products <ArrowRightIcon className="w-5 h-5" />
-        </a>
+        {/* --- Responsive Product Display --- */}
+        
+        {/* 1. Mobile Carousel (Visible below md) */}
+        <div className="md:hidden relative px-4"> 
+          <Slider {...settings}>
+            {data.data.map((product: any) => (
+              <div key={product.id} className="px-1 outline-none">
+                <ProductCard product={product} />
+              </div>
+            ))}
+          </Slider>
+        </div>
+
+        {/* 2. Desktop Grid (Visible at md and above) */}
+        <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {data.data.map((product: any) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
       </div>
-
-      {/* Product Grid */}
-      <motion.div
-        variants={staggerContainer}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8"
-      >
-        {products.map((product: any) => (
-          <ProductCard key={product.id} product={product} />
-        ))}
-      </motion.div>
-
-      {/* Mobile "View All" */}
-      <div className="mt-12 text-center md:hidden">
-        <button className="px-6 py-3 border border-slate-300 rounded-full text-slate-700 font-semibold">
-          View All
-        </button>
-      </div>
-
     </section>
   );
 }

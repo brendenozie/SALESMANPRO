@@ -221,7 +221,7 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
         </div>
       </section>
       {/* Featured Categories */}
-      <RoomSection  themeSettings={themeSettings} />
+      <RoomSection store={pageData}  themeSettings={themeSettings} />
       <DynamicPopularProducts id={id} />
       <PromoSection promotions={promotions} />
       <DynamicTrending id={id} />

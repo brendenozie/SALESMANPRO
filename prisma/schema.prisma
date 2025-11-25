@@ -524,6 +524,10 @@ model PaymentSettings {
   mpesaCallbackUrl    String?
   mpesaPasskey        String?
 
+  mpesaSecret_encrypted String?
+  mpesaSecret_iv        String?
+  mpesaSecret_tag       String?
+
   // --- Paystack Configuration (NEW) ---
   paystackPublicKey String?
   paystackSecretKey String? // IMPORTANT: Must be encrypted in the database in a real-world application.
