@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb';
+import { withApiHandler } from '@/lib/hooks/withApiHandler';
 
-export async function GET(req: Request) {
+async function GETHandler(req: Request) {
   const { searchParams } = new URL(req.url);
   const id = searchParams.get('id');
   
@@ -21,3 +22,5 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'Failed to fetch testimonials' }, { status: 500 });
   }
 }
+
+export const GET = withApiHandler(GETHandler, { requireAuth: false });

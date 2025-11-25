@@ -32,26 +32,26 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
   
 
   // ---- 1. API & CORS HANDLING ----
-  if (pathname.startsWith("/api/")) {
-    const responseHeaders = new Headers();
-    if (origin) {
-      // Allow any subdomain of salesmanpro.site or any origin
-      responseHeaders.set("Access-Control-Allow-Origin", origin);
-    }
-    responseHeaders.set("Access-Control-Allow-Credentials", "true");
-    responseHeaders.set("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
-    responseHeaders.set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");
+  // if (pathname.startsWith("/api/")) {
+  //   const responseHeaders = new Headers();
+  //   if (origin) {
+  //     // Allow any subdomain of salesmanpro.site or any origin
+  //     responseHeaders.set("Access-Control-Allow-Origin", origin);
+  //   }
+  //   responseHeaders.set("Access-Control-Allow-Credentials", "true");
+  //   responseHeaders.set("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+  //   responseHeaders.set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With");
 
-    // Preflight request
-    if (request.method === "OPTIONS") {
-      return new NextResponse(null, { status: 204, headers: responseHeaders });
-    }
+  //   // Preflight request
+  //   if (request.method === "OPTIONS") {
+  //     return new NextResponse(null, { status: 204, headers: responseHeaders });
+  //   }
 
-    // Attach headers to the final response
-    const res = NextResponse.next();
-    responseHeaders.forEach((value, key) => res.headers.set(key, value));
-    return res;
-  }
+  //   // Attach headers to the final response
+  //   const res = NextResponse.next();
+  //   responseHeaders.forEach((value, key) => res.headers.set(key, value));
+  //   return res;
+  // }
 
   // ---- 2. WWW REDIRECT ----
   if (host.startsWith("www.")) {
@@ -141,6 +141,9 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
   // All other requests
   return NextResponse.next();
 }
+
+//OLD
+
 // import { getToken } from "next-auth/jwt";
 // import { NextFetchEvent, NextRequest, NextResponse } from "next/server";
 

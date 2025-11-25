@@ -4,7 +4,40 @@ import { unstable_cache } from 'next/cache';
 
 export const dynamic = 'force-dynamic';
 
-// Helper to map flag → Prisma condition
+// ---------------------------
+// GLOBAL CORS HEADERS
+// ---------------------------
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers":
+    "Content-Type, Authorization, cache-control, X-Requested-With",
+};
+
+function withCors(json: any, status = 200, extraHeaders: Record<string, string> = {}) {
+  return new NextResponse(JSON.stringify(json), {
+    status,
+    headers: {
+      "Content-Type": "application/json",
+      ...CORS_HEADERS,
+      ...extraHeaders,
+    },
+  });
+}
+
+// ---------------------------
+// OPTIONS (PRE-FLIGHT)
+// ---------------------------
+export function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: CORS_HEADERS,
+  });
+}
+
+// ---------------------------
+// FLAG MAP
+// ---------------------------
 const flagMap: Record<string, Record<string, any>> = {
   isFeatured: { isFeatured: true },
   isOnOffer: { isOnOffer: true },
@@ -14,24 +47,26 @@ const flagMap: Record<string, Record<string, any>> = {
   trending: { providerRating: { gte: 4.5 } },
 };
 
-export const revalidate = 60; // Revalidate cached data every 60 seconds
+export const revalidate = 60;
 
-// ✅ Caching wrapper — ensures repeated calls don’t hit the DB
+// ---------------------------
+// CACHED DB QUERY
+// ---------------------------
 const getProductsByFlag = unstable_cache(
-  async (id: string, flag: string, limit: number, page: number) => {
+  async (companyId: string, flag: string, limit: number, page: number) => {
+    const skip = (page - 1) * limit;
+
     const where: any = {
-      company: { id: id },
+      companyId,
       ...(flagMap[flag] || {}),
     };
-
-    const skip = (page - 1) * limit;
 
     const [items, total] = await Promise.all([
       prisma.marketplaceListings.findMany({
         where,
         take: limit,
         skip,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
         select: {
           id: true,
           name: true,
@@ -45,6 +80,7 @@ const getProductsByFlag = unstable_cache(
           isDiscounted: true,
           isFlashDeal: true,
           isNewArrival: true,
+          providerRating: true,
         },
       }),
       prisma.marketplaceListings.count({ where }),
@@ -60,36 +96,34 @@ const getProductsByFlag = unstable_cache(
       },
     };
   },
-  ['products-by-flag'], // cache key
+  ["products-by-flag"],
   { revalidate: 60 }
 );
 
+// ---------------------------
+// GET HANDLER
+// ---------------------------
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const id = searchParams.get('companyId');
-    const flag = searchParams.get('flag') || 'isFeatured';
-    const limit = parseInt(searchParams.get('limit') || '8');
-    const page = parseInt(searchParams.get('page') || '1');
 
-    if (!id) {
-      return NextResponse.json({ error: 'Missing agentId' }, { status: 400 });
+    const companyId = searchParams.get("companyId");
+    const flag = searchParams.get("flag") || "isFeatured";
+    const limit = parseInt(searchParams.get("limit") || "8", 10);
+    const page = parseInt(searchParams.get("page") || "1", 10);
+
+    if (!companyId) {
+      return withCors({ error: "Missing companyId" }, 400);
     }
 
-    const response = await getProductsByFlag(id, flag, limit, page);
+    const result = await getProductsByFlag(companyId, flag, limit, page);
 
-    return NextResponse.json(response, {
-      status: 200,
-      headers: {
-        // ✅ Cache at edge for 2 min, allow stale reads for 10 min
-        'Cache-Control': 's-maxage=120, stale-while-revalidate=600',
-      },
+    return withCors(result, 200, {
+      "Cache-Control": "s-maxage=120, stale-while-revalidate=600",
     });
+
   } catch (error) {
-    console.error('Error fetching products:', error);
-    return NextResponse.json(
-      { error: 'Failed to load products' },
-      { status: 500 }
-    );
+    console.error("Error fetching products:", error);
+    return withCors({ error: "Failed to load products" }, 500);
   }
 }

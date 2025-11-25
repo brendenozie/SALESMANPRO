@@ -10,7 +10,9 @@ export const createCachedFetcher = (cacheKey: string) => {
     const cached = typeof window !== 'undefined' ? localStorage.getItem(localCacheKey) : null;
     if (cached) {
       try {
+        console.log('Found cached SWR data.', cached);
         const parsed = JSON.parse(cached);
+        console.log('Serving data from SWR cache.', parsed);
         return parsed;
       } catch {
         console.warn('Failed to parse cached SWR data.');
