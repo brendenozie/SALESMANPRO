@@ -328,7 +328,7 @@ async function handlePost(req: Request) {
     listing = await tx.marketplaceListings.create({ data , select: { company: true } });
   });
 
-  revalidateCompanyCache(listing?.company?.slug || "");
+   await revalidateCompanyCache(listing?.company?.slug || "");
 
   return formatResponse(true, listing, "Marketplace listing processed successfully.", id ? 200 : 201);
 }

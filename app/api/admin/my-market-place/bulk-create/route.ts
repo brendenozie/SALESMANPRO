@@ -22,8 +22,8 @@ async function handleGetListings(req: Request, { params }: RouteParams) {
 
   const whereClause: any = { companyId };
 
-  if (typeParam === "ebook") whereClause.type = "ebook";
-  if (typeParam === "program") whereClause.type = null;
+  // if (typeParam === "ebook") whereClause.type = "ebook";
+  // if (typeParam === "program") whereClause.type = null;
 
   if (!companyId) {
     return formatResponse(false, null, "Missing required query parameter: companyId.", 400);
