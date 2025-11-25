@@ -170,10 +170,11 @@ export default function PricingSectionLight({ pricingTiers, themeSettings }: Pri
 
           {/* Button */}
           <button
-            className={`mt-12 px-8 py-4 w-full rounded-full text-lg font-bold shadow-xl transition-all duration-300 transform hover:scale-[1.03] focus:outline-none focus:ring-4 focus:ring-opacity-50 text-black`}
+            className={`mt-12 px-8 py-4 w-full rounded-full text-lg font-bold shadow-xl transition-all duration-300 transform hover:scale-[1.03] focus:outline-none focus:ring-4 focus:ring-opacity-50  `}
             style={{
               backgroundColor: plan.isFeatured ? primaryColor : secondaryColor,
               '--tw-ring-color': primaryColor,
+              'color': plan.isFeatured ? 'white' : 'black',
             } as React.CSSProperties}
           >
             Select Plan
@@ -202,7 +203,7 @@ export default function PricingSectionLight({ pricingTiers, themeSettings }: Pri
       >
         {/* --- HEADER --- */}
         <motion.h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-4" variants={sectionVariants}>
-          Choose Your <span className="bg-clip-text text-transparent" style={{ backgroundImage: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})` }}>Perfect Plan</span>
+          Choose Your <span >Perfect Plan</span>
         </motion.h2>
         <motion.p className="text-lg sm:text-xl text-gray-600 mb-12 max-w-2xl mx-auto" variants={sectionVariants}>
           Select the frequency and package that brings the most value to your space.

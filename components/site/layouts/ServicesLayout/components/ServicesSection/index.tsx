@@ -151,7 +151,7 @@ export default function ServicesSpotlightDeck({ marketplaceListings, themeSettin
                 {/* Header */}
                 <div className="container mx-auto px-6 mb-16 md:mb-20">
                     <h2 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-white tracking-tight mb-4">
-                        Discover Our <span className="text-transparent bg-clip-text" style={{ backgroundImage: `linear-gradient(to right, ${primaryColor}, #6366f1)` }}>Service Offerings</span>
+                        Discover Our <span  >Service Offerings</span>
                     </h2>
                     <p className="text-xl text-gray-500 dark:text-gray-400 max-w-2xl">
                         Explore our top-tier services, highlighted by our most popular premium package. Click any card to learn more.
