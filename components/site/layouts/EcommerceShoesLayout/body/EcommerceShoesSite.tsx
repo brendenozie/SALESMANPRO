@@ -113,8 +113,8 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteShoe
       <DynamicDailyBestSells id={id} />
       <SleepTapeAd promotions={promotions} themeSettings={themeSettings} />
       <TrendingPromotion promotions={promotions} themeSettings={themeSettings}  />
-      <FeaturesSection features={features} themeSettings={themeSettings} />
       <AllProducts martketplaceListings={marketplaceListings} themeSettings={themeSettings} />
+      <FeaturesSection features={features} themeSettings={themeSettings} />
       <AwardsSection awards={awards} />
       <TestimonialsSection testimonials={testimonials} />
       <BannerSection promotions={promotions} themeSettings={themeSettings}/>
