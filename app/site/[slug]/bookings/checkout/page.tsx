@@ -1,1371 +1,641 @@
 'use client';
 
-import React, { useState, useMemo, useCallback } from "react";
-import { motion } from "framer-motion";
-import Section from "@/components/site/Section/Section";
-import NewsletterSection from "@/components/site/NewsletterSection/NewsletterSection";
-import Confetti from "react-confetti";
-import { CheckCircleIcon } from "@heroicons/react/24/outline";
-import { useSession } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import Section from '@/components/site/Section/Section';
+import NewsletterSection from '@/components/site/NewsletterSection/NewsletterSection';
+import Confetti from 'react-confetti';
+import {
+  CheckCircleIcon,
+  ArrowLeftIcon,
+  CalendarIcon,
+  ClockIcon,
+  TagIcon,
+  CreditCardIcon,
+  TruckIcon,
+  BanknotesIcon,
+  UserCircleIcon,
+  MapPinIcon,
+} from '@heroicons/react/24/outline';
+import { useSession } from 'next-auth/react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { formatCreditCardNumber, formatExpirationDate, formatCVC } from '@/data/cardFormatter';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000/api";
-const steps = ["Billing", "Payment", "Review"];
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+const STEPS = ['Billing', 'Appointment', 'Payment', 'Review'] as const;
+type StepIndex = 0 | 1 | 2 | 3;
 
-export default function CheckoutPage() {
+export default function ServiceCheckout(): JSX.Element {
   const { data: session } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // ✅ Extract parameters
-  const listingId = searchParams.get("listingId") || "";
-  const name = searchParams.get("name") || "";
-  const price = searchParams.get("price") || "";
-  const productType = searchParams.get("productType") || "";
-  const enrollmentDate = searchParams.get("enrollmentDate") || "";
-  const timeSlot = searchParams.get("timeSlot") || "";
+  // Extract params (same semantics as your previous implementation)
+  const listingId = searchParams.get('listingId') || '';
+  const name = searchParams.get('name') || '';
+  const price = searchParams.get('price') || '';
+  const productType = searchParams.get('productType') || '';
+  const enrollmentDateParam = searchParams.get('enrollmentDate') || ''; // optional preselected
+  const timeSlotParam = searchParams.get('timeSlot') || '';
 
   if (!listingId || !name || !price) {
     return <p className="p-6 text-red-600">Missing booking details.</p>;
   }
 
-  if (productType !== "ebook" && (!enrollmentDate || !timeSlot)) {
-    return (
-      <p className="p-6 text-red-600">
-        Missing enrollment date or time slot for the selected service.
-      </p>
-    );
+  // Service-specific constraints (ebooks may not need date/time)
+  if (productType !== 'ebook' && (!enrollmentDateParam && !timeSlotParam)) {
+    // We'll allow the user to pick date/time in the UI, so don't hard block here.
   }
 
-  const amount = Number(price);
-  const [step, setStep] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [orderPlaced, setOrderPlaced] = useState(false);
-  const [tracking, setTracking] = useState("");
-  const [error, setError] = useState<Record<string, string>>({});
+  // Window sizing for confetti
+  const [windowSize, setWindowSize] = useState({ width: 1200, height: 800 });
+  useEffect(() => {
+    const update = () => setWindowSize({ width: window.innerWidth, height: window.innerHeight });
+    window.addEventListener('resize', update);
+    update();
+    return () => window.removeEventListener('resize', update);
+  }, []);
 
-  // Billing Info
+  // --- Step state
+  const [currentStep, setCurrentStep] = useState<StepIndex>(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isOrderPlaced, setIsOrderPlaced] = useState(false);
+  const [trackingNumber, setTrackingNumber] = useState<string>('');
+  const [submitError, setSubmitError] = useState<string>('');
+
+  // Billing
   const [billing, setBilling] = useState({
-    name: session?.user?.name || "",
-    email: session?.user?.email || "",
-    phone: "",
+    name: session?.user?.name || '',
+    email: session?.user?.email || '',
+    phone: session?.user?.phone || '',
   });
 
-  // Payment Info
-  const [paymentMethod, setPaymentMethod] = useState<"card" | "paystack" | "mpesa">("card");
-  const [card, setCard] = useState({
-    cardNumber: "",
-    cardExpiry: "",
-    cvv: "",
+  // Appointment
+  const [appointment, setAppointment] = useState({
+    date: enrollmentDateParam || '', // ISO date string
+    timeSlot: timeSlotParam || '', // e.g., "10:00 - 11:00"
+    provider: '', // optional provider name/ID if available
+    locationType: 'online', // 'online' | 'inperson'
   });
 
-  const handleBillingChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setBilling((b) => ({ ...b, [e.target.name]: e.target.value }));
-    setError((err) => ({ ...err, [e.target.name]: "" }));
-  };
+  // Payment
+  const [payment, setPayment] = useState({
+    method: 'paystack', // 'paystack' | 'mpesa' | 'card'
+    cardNumber: '',
+    cardExpiry: '',
+    cvv: '',
+    mpesaPhone: session?.user?.phone || '',
+  });
 
-  const handleCardChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCard((c) => ({ ...c, [e.target.name]: e.target.value }));
-    setError((err) => ({ ...err, [e.target.name]: "" }));
-  };
+  // Promo
+  const [promoCode, setPromoCode] = useState('');
+  const [promoMessage, setPromoMessage] = useState('');
+  const [discountRate, setDiscountRate] = useState(0);
 
-  // ✅ Step validation
-  const validate = useCallback(() => {
-    const errs: Record<string, string> = {};
-    if (step === 0) {
-      ["name", "email", "phone"].forEach((f) => {
-        if (!billing[f as keyof typeof billing]) errs[f] = "Required";
-      });
+  // Errors
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Derived totals
+  const amount = Number(price || 0);
+  const discountAmount = useMemo(() => amount * discountRate, [amount, discountRate]);
+  const total = useMemo(() => Math.max(0, amount - discountAmount), [amount, discountAmount]);
+
+  // Promo debounce
+  useEffect(() => {
+    if (!promoCode) {
+      setPromoMessage('');
+      setDiscountRate(0);
+      return;
     }
-    if (step === 1 && paymentMethod === "card") {
-      ["cardNumber", "cardExpiry", "cvv"].forEach((f) => {
-        if (!card[f as keyof typeof card]) errs[f] = "Required";
-      });
+    const t = setTimeout(() => {
+      const normalized = promoCode.trim().toUpperCase();
+      if (normalized === 'SAVE10') {
+        setDiscountRate(0.1);
+        setPromoMessage('🎉 10% discount applied!');
+      } else {
+        setDiscountRate(0);
+        setPromoMessage('❌ Invalid promo code. Try SAVE10!');
+      }
+    }, 300);
+    return () => clearTimeout(t);
+  }, [promoCode]);
+
+  // Helpers to update slices
+  const updateBilling = useCallback((patch: Partial<typeof billing>) => setBilling((s) => ({ ...s, ...patch })), []);
+  const updateAppointment = useCallback((patch: Partial<typeof appointment>) => setAppointment((s) => ({ ...s, ...patch })), []);
+  const updatePayment = useCallback((patch: Partial<typeof payment>) => setPayment((s) => ({ ...s, ...patch })), []);
+
+  // Validation per-step
+  const validateStep = useCallback(
+    (step = currentStep) => {
+      const errs: Record<string, string> = {};
+      if (step === 0) {
+        if (!billing.name?.trim()) errs.name = 'Full name is required';
+        if (!billing.email?.trim() || !/^\S+@\S+\.\S+$/.test(billing.email)) errs.email = 'Valid email required';
+        if (!billing.phone?.trim() || billing.phone.replace(/\D/g, '').length < 9) errs.phone = 'Valid phone required';
+      }
+      if (step === 1) {
+        if (productType !== 'ebook') {
+          if (!appointment.date) errs.date = 'Select an appointment date';
+          if (!appointment.timeSlot) errs.timeSlot = 'Choose a time slot';
+        }
+      }
+      if (step === 2) {
+        if (payment.method === 'card') {
+          const num = (payment.cardNumber || '').replace(/\s/g, '');
+          if (!num || num.length < 13) errs.cardNumber = 'Invalid card number';
+          if (!payment.cardExpiry || payment.cardExpiry.length !== 5) errs.cardExpiry = 'MM/YY';
+          if (!payment.cvv || payment.cvv.length < 3) errs.cvv = 'Invalid CVC';
+        }
+        if (payment.method === 'mpesa') {
+          const p = payment.mpesaPhone?.replace(/\D/g, '');
+          if (!p || p.length < 12) errs.mpesaPhone = 'Use format 2547XXXXXXXX';
+        }
+      }
+      setErrors(errs);
+      return Object.keys(errs).length === 0;
+    },
+    [billing, appointment, payment, productType, currentStep]
+  );
+
+  // Navigation
+  const next = useCallback(() => {
+    if (!validateStep(currentStep)) return;
+    setCurrentStep((s) => Math.min(s + 1, STEPS.length - 1) as StepIndex);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentStep, validateStep]);
+
+  const prev = useCallback(() => {
+    setCurrentStep((s) => Math.max(s - 1, 0) as StepIndex);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
+  // Input handler (with formatters)
+  const onInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    if (name === 'cardNumber') return updatePayment({ cardNumber: formatCreditCardNumber(value) });
+    if (name === 'cardExpiry') return updatePayment({ cardExpiry: formatExpirationDate(value) });
+    if (name === 'cvv') return updatePayment({ cvv: formatCVC(value) });
+    if (name === 'mpesaPhone') return updatePayment({ mpesaPhone: value.replace(/\D/g, '') });
+    if (name === 'name' || name === 'email' || name === 'phone') return updateBilling({ [name]: value } as any);
+    if (name === 'promoCode') return setPromoCode(value);
+    if (name === 'date' || name === 'timeSlot' || name === 'provider' || name === 'locationType') {
+      return updateAppointment({ [name]: value } as any);
     }
-    setError(errs);
-    return Object.keys(errs).length === 0;
-  }, [step, billing, card, paymentMethod]);
-
-  const total = useMemo(() => amount, [amount]);
-
-  const next = () => {
-    if (validate()) setStep((s) => s + 1);
+    if (name === 'paymentMethod') return updatePayment({ method: value });
   };
-  const prev = () => setStep((s) => s - 1);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  if (!validate()) return;
-  setLoading(true);
-  setError({});
+  // Submit (create order + initiate payment flows)
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
 
-  try {
-    const paymentOption = paymentMethod; // rename for API compatibility
+    // Validate all steps
+    for (let s = 0; s < STEPS.length; s++) {
+      if (!validateStep(s as StepIndex)) {
+        setCurrentStep(s as StepIndex);
+        return;
+      }
+    }
 
-    const payload = {
-      consumerId: session?.user?.id,
-      name: billing.name,
-      email: billing.email,
-      phone: billing.phone,
-      promoCode: "", // optional
-      paymentOption,
-      delivery: false, // no delivery for bookings
-      totalPrice: total,
-      cardNumber: paymentOption === "card" ? card.cardNumber : undefined,
-      cardExpiry: paymentOption === "card" ? card.cardExpiry : undefined,
-      cvv: paymentOption === "card" ? card.cvv : undefined,
-      mpesaPhone: paymentOption === "mpesa" ? billing.phone : undefined, // reuse billing phone for M-Pesa
-      items: [
-        {
-          marketplaceListingId: listingId,
-          date: enrollmentDate || new Date().toISOString(),
-          timeSlot,
-          quantity: 1,
-          price: total,
+    setIsSubmitting(true);
+    setSubmitError('');
+
+    try {
+      const payload: any = {
+        consumerId: session?.user?.id,
+        name: billing.name,
+        email: billing.email,
+        phone: billing.phone,
+        promoCode,
+        paymentOption: payment.method,
+        delivery: false,
+        totalPrice: parseFloat(total.toFixed(2)),
+        paymentData: {
+          cardNumber: (payment.cardNumber || '').replace(/\s/g, ''),
+          cardExpiry: payment.cardExpiry,
+          cvv: payment.cvv,
+          mpesaPhone: payment.mpesaPhone,
         },
-      ],
-      shippingAddress: undefined,
-      shippingMethod: "AT SHOP",
-    };
+        items: [
+          {
+            marketplaceListingId: listingId,
+            date: appointment.date || new Date().toISOString(),
+            timeSlot: appointment.timeSlot || '',
+            quantity: 1,
+            price: amount,
+            meta: {
+              productType,
+              provider: appointment.provider,
+              locationType: appointment.locationType,
+            },
+          },
+        ],
+        shippingAddress: undefined,
+        shippingMethod: 'AT SHOP',
+      };
 
-    console.log("🔹 Sending checkout payload:", payload);
+      const res = await fetch(`${API_BASE}/shop/orders`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': process.env.NEXT_PUBLIC_API_SECRET_KEY || '',
+        },
+        body: JSON.stringify(payload),
+      });
 
-    const res = await fetch(`${apiBaseUrl}/shop/orders`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": process.env.NEXT_PUBLIC_API_SECRET_KEY!,
-      },
-      body: JSON.stringify(payload),
-    });
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        const message = body?.message || body?.data || (await res.text()) || res.statusText;
+        throw new Error(message || 'Order submission failed');
+      }
 
-    if (!res.ok) {
-      const text = await res.text();
-      throw new Error(text || "Failed to create order");
+      const body = await res.json();
+
+      // Expecting similar shape to ecommerce endpoint
+      const orderResponse = body.data || body.order || body;
+      const authorizationUrl = orderResponse?.authorizationUrl || orderResponse?.paymentResponse?.authorizationUrl;
+
+      // Handle Paystack redirect
+      if (payment.method === 'paystack') {
+        if (authorizationUrl) {
+          router.push(authorizationUrl);
+          return;
+        }
+        // else continue (maybe backend charged)
+      }
+
+      // For mpesa/card the backend may have returned a tracking number or pending state
+      const tracking = orderResponse?.trackingNumber || orderResponse?.order?.trackingNumber || orderResponse?.id;
+      if (!tracking) {
+        // Not fatal — still show success but indicate pending
+        setTrackingNumber('');
+        setIsOrderPlaced(true);
+      } else {
+        setTrackingNumber(tracking);
+        setIsOrderPlaced(true);
+      }
+    } catch (err: any) {
+      console.error('Submit error', err);
+      setSubmitError(err.message || 'Order failed. Please try again.');
+      setErrors((e) => ({ ...e, submit: err.message || 'Order failed' }));
+    } finally {
+      setIsSubmitting(false);
     }
+  };
 
-    const { order, paymentResponse } = await res.json();
-
-    console.log("✅ Order created:", order);
-    console.log("✅ Payment response:", paymentResponse);
-
-    setTracking(order.trackingNumber);
-    setOrderPlaced(true);
-  } catch (err: any) {
-    console.error("❌ Checkout error:", err);
-    setError({ submit: err.message || "Submission failed." });
-  } finally {
-    setLoading(false);
-  }
-};
-
-
-  // const handleSubmit = async (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   if (!validate()) return;
-  //   setLoading(true);
-  //   try {
-  //     // mock payment handler
-  //     if (paymentMethod === "paystack") {
-  //       console.log("Redirecting to Paystack...");
-  //       // TODO: integrate Paystack inline popup or API initialization
-  //     } else if (paymentMethod === "mpesa") {
-  //       console.log("Triggering M-Pesa STK Push...");
-  //       // TODO: trigger M-Pesa API or SDK
-  //     }
-
-  //     const res = await fetch(`${apiBaseUrl}/shop/orders", {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //         "x-api-key": process.env.NEXT_PUBLIC_API_SECRET_KEY!,
-  //       },
-  //       body: JSON.stringify({
-  //         date: enrollmentDate || new Date().toISOString(),
-  //         timeSlot,
-  //         quantity: 1,
-  //         consumerId: session?.user?.id,
-  //         name: billing.name,
-  //         email: billing.email,
-  //         phone: billing.phone,
-  //         paymentMethod,
-  //         totalPrice: total,
-  //         items: [
-  //           {
-  //             marketplaceListingId: listingId,
-  //             quantity: 1,
-  //             date: enrollmentDate || new Date().toISOString(),
-  //             timeSlot,
-  //             price: total,
-  //           },
-  //         ],
-  //       }),
-  //     });
-  //     if (!res.ok) throw new Error(await res.text());
-  //     const { order } = await res.json();
-  //     setTracking(order.trackingNumber);
-  //     setOrderPlaced(true);
-  //   } catch (err: any) {
-  //     setError({ submit: err.message || "Submission failed." });
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
-  if (orderPlaced) {
+  // Success screen
+  if (isOrderPlaced) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100 p-6">
-        <Confetti />
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="bg-white p-8 rounded-xl shadow-lg text-center max-w-md w-full"
-        >
-          <CheckCircleIcon className="w-16 h-16 text-green-500 mx-auto" />
-          <h2 className="text-2xl font-bold mt-4">Booking Confirmed!</h2>
-          <p className="mt-2">Your tracking number is:</p>
-          <p className="font-mono text-lg mt-1">{tracking}</p>
-          <button
-            onClick={() => router.push("/")}
-            className="mt-6 px-6 py-2 bg-indigo-600 text-white rounded-lg"
-          >
-            Continue Browsing
-          </button>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 to-white p-6">
+        <Confetti width={windowSize.width} height={windowSize.height} recycle={false} numberOfPieces={400} />
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-3xl p-10 shadow-2xl max-w-lg w-full border border-gray-100 text-center">
+          <div className="mx-auto bg-green-100 rounded-full p-4 w-24 h-24 flex items-center justify-center mb-4">
+            <CheckCircleIcon className="w-16 h-16 text-green-600" />
+          </div>
+          <h2 className="text-3xl font-extrabold text-gray-800">Booking Confirmed!</h2>
+          <p className="mt-2 text-gray-600">We’ve booked your appointment.</p>
+          {trackingNumber ? (
+            <p className="mt-2 text-indigo-600 font-medium">Reference: <span className="font-semibold">{trackingNumber}</span></p>
+          ) : (
+            <p className="mt-2 text-gray-600">You will receive confirmation via email / SMS shortly.</p>
+          )}
+          <div className="mt-6 grid gap-3">
+            <button onClick={() => router.push(`/shop/orderTracking?trackingnumber=${trackingNumber}`)} className="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition">
+              Track Booking
+            </button>
+            <button onClick={() => router.push('/')} className="w-full bg-gray-100 text-gray-800 py-3 rounded-xl font-semibold hover:bg-gray-200 transition">
+              Continue Browsing
+            </button>
+          </div>
         </motion.div>
       </div>
     );
   }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 p-6 md:p-12">
-      <Section title="Booking Checkout">
-        {/* Progress */}
-        <div className="flex mb-6">
-          {steps.map((label, i) => (
-            <div key={i} className="flex-1 text-center relative">
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1 }}
-                className={`mx-auto w-8 h-8 rounded-full border-2 flex items-center justify-center font-medium ${
-                  step > i
-                    ? "border-indigo-600 bg-indigo-600 text-white"
-                    : "border-gray-300 text-gray-500"
-                }`}
-              >
+  // Small presentational components in-file (keeps single-file)
+  function StepHeader({ current }: { current: number }) {
+    return (
+      <div className="flex items-center gap-6">
+        {STEPS.map((label, i) => {
+          const isActive = current === i;
+          const isDone = current > i;
+          return (
+            <div key={label} className="flex items-center gap-3">
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold ${isDone ? 'bg-green-500 text-white' : isActive ? 'bg-indigo-600 text-white' : 'bg-white text-gray-500 border border-gray-200'}`}>
                 {i + 1}
-              </motion.div>
-              <p className="text-xs mt-1">{label}</p>
-              {i < steps.length - 1 && (
-                <div
-                  className={`absolute top-3 right-0 w-full h-0.5 ${
-                    step > i ? "bg-indigo-600" : "bg-gray-200"
-                  }`}
-                />
-              )}
-            </div>
-          ))}
-        </div>
-
-        <div className="grid md:grid-cols-3 gap-8">
-          {/* Summary */}
-          <div className="hidden md:block">
-            <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-20">
-              <h2 className="text-xl font-bold mb-4">Booking Summary</h2>
-              <p><strong>Service:</strong> {name}</p>
-              {enrollmentDate && (
-                <p><strong>Date:</strong> {new Date(enrollmentDate).toLocaleDateString()}</p>
-              )}
-              {timeSlot && <p><strong>Time:</strong> {timeSlot}</p>}
-              <div className="border-t pt-3 mt-3 flex justify-between font-bold">
-                <span>Total</span>
-                <span>${total.toFixed(2)}</span>
               </div>
+              <div className="hidden md:block">
+                <div className={`text-sm ${isActive ? 'text-indigo-600 font-semibold' : 'text-gray-600'}`}>{label}</div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  // Modern calendar card UI for appointment selection
+  function AppointmentCard() {
+    // Example time slots — in a real app you might fetch these from the listing API
+    const sampleSlots = [
+      '09:00 - 09:30',
+      '10:00 - 10:30',
+      '11:00 - 11:30',
+      '14:00 - 14:30',
+      '15:00 - 15:30',
+    ];
+
+    return (
+      <div className="space-y-4 p-4 md:p-6">
+        <h3 className="text-2xl font-extrabold text-gray-900 flex items-center gap-3"><CalendarIcon className="w-6 h-6 text-indigo-600" /> Appointment Details</h3>
+        <p className="text-sm text-gray-600">Choose a date and an available time slot for your booking.</p>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+          <div className="p-4 rounded-xl border border-gray-100 bg-white">
+            <label className="text-sm font-medium text-gray-700">Date</label>
+            <div className="mt-2">
+              <input name="date" type="date" value={appointment.date} onChange={onInputChange} className={`w-full p-3 rounded-xl border ${errors.date ? 'border-red-400' : 'border-gray-200'}`} />
+              {errors.date && <p className="text-xs text-red-600 mt-2">{errors.date}</p>}
             </div>
           </div>
 
-          {/* Form */}
-          <form
-            onSubmit={step === steps.length - 1 ? handleSubmit : (e) => e.preventDefault()}
-            className="md:col-span-2 bg-white rounded-3xl p-8 shadow-2xl space-y-6"
-          >
-            {/* Billing Step */}
-            {step === 0 && (
-              <div className="space-y-4">
-                <h2 className="text-2xl font-extrabold">Billing Info</h2>
-                {(["name", "email", "phone"] as const).map((fld) => (
-                  <div key={fld}>
-                    <input
-                      name={fld}
-                      value={billing[fld]}
-                      onChange={handleBillingChange}
-                      placeholder={fld.charAt(0).toUpperCase() + fld.slice(1)}
-                      className={`w-full p-3 border rounded-lg ${
-                        error[fld] ? "border-red-500" : "border-gray-300"
-                      }`}
-                    />
-                    {error[fld] && <p className="text-red-600 text-sm mt-1">{fld} is required</p>}
+          <div className="p-4 rounded-xl border border-gray-100 bg-white">
+            <label className="text-sm font-medium text-gray-700">Time slot</label>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              {sampleSlots.map((s) => (
+                <button type="button" key={s} onClick={() => updateAppointment({ timeSlot: s })} className={`text-left p-2 rounded-lg border ${appointment.timeSlot === s ? 'bg-indigo-50 border-indigo-400' : 'bg-white border-gray-200 hover:border-indigo-200'}`}>
+                  <div className="flex items-center gap-2">
+                    <ClockIcon className="w-4 h-4 text-indigo-600" />
+                    <div className="text-sm font-medium">{s}</div>
                   </div>
-                ))}
+                </button>
+              ))}
+            </div>
+            {errors.timeSlot && <p className="text-xs text-red-600 mt-2">{errors.timeSlot}</p>}
+          </div>
+        </div>
+
+        <div className="mt-2 p-4 rounded-xl border border-gray-100 bg-white">
+          <label className="text-sm font-medium text-gray-700">Location</label>
+          <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-3">
+            <label className={`p-3 rounded-xl border ${appointment.locationType === 'online' ? 'border-indigo-600 bg-indigo-50' : 'border-gray-200 hover:border-indigo-300'} cursor-pointer`}>
+              <input className="sr-only" type="radio" name="locationType" value="online" checked={appointment.locationType === 'online'} onChange={(e) => onInputChange({ ...({} as any), target: { name: 'locationType', value: e.target.value } } as any)} />
+              <div className="font-semibold">Online</div>
+              <div className="text-sm text-gray-500">Remote session (link will be sent)</div>
+            </label>
+
+            <label className={`p-3 rounded-xl border ${appointment.locationType === 'inperson' ? 'border-indigo-600 bg-indigo-50' : 'border-gray-200 hover:border-indigo-300'} cursor-pointer`}>
+              <input className="sr-only" type="radio" name="locationType" value="inperson" checked={appointment.locationType === 'inperson'} onChange={(e) => onInputChange({ ...({} as any), target: { name: 'locationType', value: e.target.value } } as any)} />
+              <div className="font-semibold">In-person</div>
+              <div className="text-sm text-gray-500">Visit the provider's location</div>
+            </label>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Payment step component
+  function PaymentStepUI() {
+    return (
+      <div className="space-y-4 p-4 md:p-6">
+        <h3 className="text-2xl font-extrabold text-gray-900">Payment</h3>
+        <p className="text-sm text-gray-600">Choose how you want to pay for this booking.</p>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
+          {[
+            { value: 'paystack', label: 'Paystack', Icon: BanknotesIcon },
+            { value: 'mpesa', label: 'M-Pesa', Icon: BanknotesIcon },
+            { value: 'card', label: 'Card', Icon: CreditCardIcon },
+          ].map(({ value, label, Icon }) => (
+            <label key={value} className={`p-3 rounded-xl border cursor-pointer text-center ${payment.method === value ? 'border-indigo-600 bg-indigo-50 shadow' : 'border-gray-200 hover:border-indigo-300'}`}>
+              <input className="sr-only" type="radio" name="paymentMethod" value={value} checked={payment.method === value} onChange={(e) => onInputChange({ ...({} as any), target: { name: 'paymentMethod', value: e.target.value } } as any)} />
+              <div className="flex flex-col items-center gap-2">
+                <Icon className="w-7 h-7 text-indigo-600" />
+                <div className="text-sm font-medium">{label}</div>
               </div>
-            )}
+            </label>
+          ))}
+        </div>
 
-            {/* Payment Step */}
-            {step === 1 && (
-              <div className="space-y-4">
-                <h2 className="text-2xl font-extrabold">Payment Method</h2>
-
-                <div className="flex gap-4">
-                  {["card", "paystack", "mpesa"].map((method) => (
-                    <button
-                      type="button"
-                      key={method}
-                      onClick={() => setPaymentMethod(method as any)}
-                      className={`flex-1 p-3 border rounded-lg font-medium ${
-                        paymentMethod === method
-                          ? "border-indigo-600 bg-indigo-100"
-                          : "border-gray-300 bg-white"
-                      }`}
-                    >
-                      {method === "card" && "Card"}
-                      {method === "paystack" && "Paystack"}
-                      {method === "mpesa" && "M-Pesa"}
-                    </button>
-                  ))}
+        <div className="mt-4">
+          {payment.method === 'card' && (
+            <div className="bg-white p-4 rounded-xl border border-gray-100">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-gray-700">Card number</label>
+                  <input name="cardNumber" value={payment.cardNumber} onChange={(e) => onInputChange(e)} maxLength={19} className={`w-full p-3 rounded-xl border ${errors.cardNumber ? 'border-red-400' : 'border-gray-200'}`} />
+                  {errors.cardNumber && <p className="text-xs text-red-600">{errors.cardNumber}</p>}
                 </div>
 
-                {/* Conditional Inputs */}
-                {paymentMethod === "card" && (
-                  <div className="space-y-3">
-                    {(["cardNumber", "cardExpiry", "cvv"] as const).map((fld) => (
-                      <div key={fld}>
-                        <input
-                          name={fld}
-                          value={card[fld]}
-                          onChange={handleCardChange}
-                          placeholder={
-                            fld === "cardNumber"
-                              ? "Card Number"
-                              : fld === "cardExpiry"
-                              ? "MM/YY"
-                              : "CVV"
-                          }
-                          className={`w-full p-3 border rounded-lg ${
-                            error[fld] ? "border-red-500" : "border-gray-300"
-                          }`}
-                        />
-                        {error[fld] && (
-                          <p className="text-red-600 text-sm mt-1">{fld} is required</p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-gray-700">Expiry (MM/YY)</label>
+                  <input name="cardExpiry" value={payment.cardExpiry} onChange={(e) => onInputChange(e)} maxLength={5} className={`w-full p-3 rounded-xl border ${errors.cardExpiry ? 'border-red-400' : 'border-gray-200'}`} />
+                  {errors.cardExpiry && <p className="text-xs text-red-600">{errors.cardExpiry}</p>}
+                </div>
 
-                {paymentMethod === "paystack" && (
-                  <p className="text-sm text-gray-600">
-                    You’ll be redirected to Paystack to complete your payment securely.
-                  </p>
-                )}
-
-                {paymentMethod === "mpesa" && (
-                  <p className="text-sm text-gray-600">
-                    You’ll receive an M-Pesa STK push on your phone after confirming checkout.
-                  </p>
-                )}
-              </div>
-            )}
-
-            {/* Review Step */}
-            {step === 2 && (
-              <div className="space-y-4">
-                <h2 className="text-2xl font-extrabold">Review & Confirm</h2>
-                <div className="space-y-2 text-sm">
-                  <p><strong>Name:</strong> {billing.name}</p>
-                  <p><strong>Email:</strong> {billing.email}</p>
-                  <p><strong>Phone:</strong> {billing.phone}</p>
-                  <p><strong>Payment:</strong> {paymentMethod.toUpperCase()}</p>
-                  <p><strong>Total:</strong> ${total.toFixed(2)}</p>
+                <div className="space-y-1 md:col-span-2">
+                  <label className="text-sm font-medium text-gray-700">CVC</label>
+                  <input name="cvv" value={payment.cvv} onChange={(e) => onInputChange(e)} maxLength={4} className={`w-full p-3 rounded-xl border ${errors.cvv ? 'border-red-400' : 'border-gray-200'}`} />
+                  {errors.cvv && <p className="text-xs text-red-600">{errors.cvv}</p>}
                 </div>
               </div>
-            )}
+              <p className="mt-3 text-xs text-gray-500">Card payments are securely processed by your payment provider.</p>
+            </div>
+          )}
 
-            {/* Navigation */}
-            <div className="flex justify-between mt-8">
-              {step > 0 ? (
-                <button
-                  type="button"
-                  onClick={prev}
-                  className="px-6 py-2 bg-gray-200 rounded-lg"
-                >
-                  Previous
-                </button>
-              ) : (
-                <div />
-              )}
-              {step < steps.length - 1 ? (
-                <button
-                  type="button"
-                  onClick={next}
-                  className="px-6 py-2 bg-indigo-600 text-white rounded-lg"
-                >
-                  Next
-                </button>
-              ) : (
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="px-6 py-2 bg-green-600 text-white rounded-lg"
-                >
-                  {loading ? "Processing…" : "Place Booking"}
-                </button>
-              )}
+          {payment.method === 'mpesa' && (
+            <div className="bg-green-50 p-4 rounded-xl border border-green-100">
+              <label className="text-sm font-medium text-gray-700">M-Pesa Number</label>
+              <input name="mpesaPhone" value={payment.mpesaPhone} onChange={(e) => onInputChange(e)} placeholder="2547XXXXXXXX" className={`w-full p-3 rounded-xl border ${errors.mpesaPhone ? 'border-red-400' : 'border-gray-200'}`} />
+              {errors.mpesaPhone && <p className="text-xs text-red-600">{errors.mpesaPhone}</p>}
+              <p className="mt-2 text-xs text-gray-500">You will receive a payment prompt on this number after placing the booking.</p>
+            </div>
+          )}
+
+          {payment.method === 'paystack' && (
+            <div className="bg-yellow-50 p-4 rounded-xl border border-yellow-100">
+              <div className="font-medium text-yellow-700">Pay via Paystack</div>
+              <p className="text-sm text-gray-600 mt-1">You'll be securely redirected to complete payment (card, bank, USSD).</p>
+            </div>
+          )}
+        </div>
+
+        {/* Promo */}
+        <div className="mt-6 bg-yellow-50 p-4 rounded-lg border border-yellow-100">
+          <div className="flex items-center gap-3">
+            <TagIcon className="w-5 h-5 text-yellow-600" />
+            <div className="flex-1">
+              <label htmlFor="promoCode" className="sr-only">Promo code</label>
+              <div className="flex gap-3">
+                <input id="promoCode" name="promoCode" value={promoCode} onChange={(e) => onInputChange(e)} placeholder="Enter promo (eg. SAVE10)" className="w-full p-3 rounded-xl border border-yellow-200 focus:outline-none focus:ring-2 focus:ring-yellow-200" />
+                <button type="button" onClick={() => {}} className="px-4 py-2 rounded-xl bg-yellow-600 text-white font-semibold">Apply</button>
+              </div>
+              {promoMessage && <p className={`mt-2 text-sm ${promoMessage.startsWith('❌') ? 'text-red-600' : 'text-green-700'}`}>{promoMessage}</p>}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Review step UI
+  function ReviewStepUI() {
+    return (
+      <div className="space-y-4 p-4 md:p-6">
+        <h3 className="text-2xl font-extrabold text-gray-900">Review & Confirm</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 bg-gray-50 p-4 rounded-xl border border-gray-100">
+          <div>
+            <h4 className="font-semibold text-indigo-600 flex items-center gap-2"><UserCircleIcon className="w-5 h-5" /> Billing</h4>
+            <p className="mt-2 text-gray-700"><strong>Name:</strong> {billing.name}</p>
+            <p className="text-gray-700"><strong>Email:</strong> {billing.email}</p>
+            <p className="text-gray-700"><strong>Phone:</strong> {billing.phone}</p>
+          </div>
+
+          <div>
+            <h4 className="font-semibold text-indigo-600 flex items-center gap-2"><CalendarIcon className="w-5 h-5" /> Appointment</h4>
+            <p className="mt-2 text-gray-700"><strong>Service:</strong> {name}</p>
+            <p className="text-gray-700"><strong>Date:</strong> {appointment.date ? new Date(appointment.date).toDateString() : 'TBD'}</p>
+            <p className="text-gray-700"><strong>Time:</strong> {appointment.timeSlot || 'TBD'}</p>
+            <p className="text-gray-700"><strong>Location:</strong> {appointment.locationType === 'online' ? 'Online' : 'In-person'}</p>
+            <p className="text-gray-700"><strong>Payment:</strong> {payment.method.toUpperCase()}</p>
+          </div>
+        </div>
+
+        <div className="p-4 rounded-xl bg-indigo-50 border border-indigo-100">
+          <div className="flex justify-between font-extrabold text-2xl"><span>Final Total</span><span>KES {total.toFixed(2)}</span></div>
+          {discountAmount > 0 && <div className="text-sm text-green-700 mt-1">You saved KES {discountAmount.toFixed(2)}</div>}
+          <p className="text-sm text-indigo-700 mt-2">By placing the booking you agree to our terms & conditions.</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Booking Summary (sticky)
+  function BookingSummary() {
+    return (
+      <div className="bg-white rounded-3xl p-5 shadow-lg border border-gray-100 sticky top-20">
+        <h4 className="text-lg font-extrabold mb-4">Booking Summary</h4>
+        <div className="space-y-3">
+          <div>
+            <div className="font-semibold text-gray-800">{name}</div>
+            <div className="text-sm text-gray-500">Service fee • KES {amount.toFixed(2)}</div>
+          </div>
+
+          <div className="mt-2 border-t pt-3 space-y-1 text-gray-600">
+            <div className="flex justify-between"><span>Date</span><span>{appointment.date ? new Date(appointment.date).toLocaleDateString() : 'TBD'}</span></div>
+            <div className="flex justify-between"><span>Time</span><span>{appointment.timeSlot || 'TBD'}</span></div>
+            <div className="flex justify-between"><span>Discount</span><span>- KES {discountAmount.toFixed(2)}</span></div>
+            <div className="flex justify-between font-extrabold text-xl mt-3"><span>Total</span><span>KES {total.toFixed(2)}</span></div>
+          </div>
+
+          <div className="mt-4 bg-indigo-50 p-3 rounded-lg flex items-center gap-3">
+            <ClockIcon className="w-5 h-5 text-indigo-600" />
+            <div className="text-sm">Estimated: <span className="font-semibold">Appointment slot reserved</span></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="min-h-screen bg-gray-50 p-6 md:p-12">
+      <Section title="🗓️ Booking Checkout">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex items-center justify-between mb-6">
+            <StepHeader current={currentStep} />
+            <div className="text-sm text-gray-500">Step {currentStep + 1} of {STEPS.length}</div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            <div className="lg:col-span-8 space-y-6">
+              <motion.form onSubmit={handleSubmit} className="bg-white rounded-3xl p-6 shadow-lg border border-gray-100 space-y-6" onKeyDown={(e: React.KeyboardEvent<HTMLFormElement>) => { if (e.key === 'Enter') e.stopPropagation(); }}>
+                {/* Step content */}
+                <div className="relative min-h-[360px]">
+                  <AnimatePresence mode="wait">
+                    {currentStep === 0 && (
+                      <motion.div key="billing" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.28 }}>
+                        <div className="space-y-4 p-4 md:p-6">
+                          <h3 className="text-2xl font-extrabold text-gray-900">Billing Information</h3>
+                          <p className="text-sm text-gray-600">Enter your contact details for booking confirmation.</p>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                            <div className="space-y-1">
+                              <label className="text-sm font-medium text-gray-700">Full name</label>
+                              <input name="name" value={billing.name} onChange={onInputChange} className={`w-full p-3 rounded-xl border ${errors.name ? 'border-red-400' : 'border-gray-200'} focus:ring-2 focus:ring-indigo-100`} />
+                              {errors.name && <p className="text-xs text-red-600">{errors.name}</p>}
+                            </div>
+
+                            <div className="space-y-1">
+                              <label className="text-sm font-medium text-gray-700">Email</label>
+                              <input name="email" value={billing.email} onChange={onInputChange} className={`w-full p-3 rounded-xl border ${errors.email ? 'border-red-400' : 'border-gray-200'} focus:ring-2 focus:ring-indigo-100`} />
+                              {errors.email && <p className="text-xs text-red-600">{errors.email}</p>}
+                            </div>
+
+                            <div className="md:col-span-2 space-y-1">
+                              <label className="text-sm font-medium text-gray-700">Phone</label>
+                              <input name="phone" value={billing.phone} onChange={onInputChange} className={`w-full p-3 rounded-xl border ${errors.phone ? 'border-red-400' : 'border-gray-200'} focus:ring-2 focus:ring-indigo-100`} />
+                              {errors.phone && <p className="text-xs text-red-600">{errors.phone}</p>}
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+
+                    {currentStep === 1 && (
+                      <motion.div key="appointment" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.28 }}>
+                        <AppointmentCard />
+                      </motion.div>
+                    )}
+
+                    {currentStep === 2 && (
+                      <motion.div key="payment" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.28 }}>
+                        <PaymentStepUI />
+                      </motion.div>
+                    )}
+
+                    {currentStep === 3 && (
+                      <motion.div key="review" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.28 }}>
+                        <ReviewStepUI />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                {/* Navigation */}
+                <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                  <div>
+                    {currentStep > 0 ? (
+                      <button type="button" onClick={prev} className="flex items-center gap-2 px-4 py-2 rounded-full bg-gray-100 hover:bg-gray-200 transition">
+                        <ArrowLeftIcon className="w-4 h-4" /> Back
+                      </button>
+                    ) : <div />}
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    {currentStep < (STEPS.length - 1) ? (
+                      <button type="button" onClick={next} className="px-6 py-3 rounded-full bg-indigo-600 text-white font-bold shadow hover:bg-indigo-700 transition">
+                        Continue
+                      </button>
+                    ) : (
+                      <button type="button" onClick={() => handleSubmit()} disabled={isSubmitting} className={`px-6 py-3 rounded-full font-bold shadow ${isSubmitting ? 'bg-gray-400 text-white cursor-not-allowed' : 'bg-green-600 text-white hover:bg-green-700'}`}>
+                        {isSubmitting ? 'Processing…' : 'Place Booking'}
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {submitError && <div className="text-red-600 rounded-md bg-red-50 p-3 text-center">{submitError}</div>}
+              </motion.form>
+
+              <NewsletterSection />
             </div>
 
-            {error.submit && (
-              <p className="text-red-600 text-center mt-4">{error.submit}</p>
-            )}
-          </form>
+            <div className="lg:col-span-4">
+              <BookingSummary />
+            </div>
+          </div>
         </div>
       </Section>
-      <NewsletterSection />
-    </div>
+    </motion.div>
   );
 }
-
-
-
-// import React, { useState, useEffect, useMemo, useCallback } from 'react';
-// import { motion, AnimatePresence } from 'framer-motion';
-// import Section from '@/components/site/Section/Section';
-// import NewsletterSection from '@/components/site/NewsletterSection/NewsletterSection';
-// import Confetti from 'react-confetti';
-// import {
-//   CreditCardIcon,
-//   TruckIcon,
-//   TrashIcon,
-//   CheckCircleIcon,
-//   CalendarIcon,
-//   XCircleIcon,
-//   ArrowLeftIcon,
-//   BuildingLibraryIcon,
-//   TagIcon,
-//   MapPinIcon,
-//   UserCircleIcon,
-//   PlusIcon,
-//   MinusIcon,
-//   BanknotesIcon, // New Icon for Paystack/Bank Payments
-// } from '@heroicons/react/24/outline';
-// import { useStateContext } from '@/contexts/ContextProvider';
-// import { useStore } from '@/contexts/StoreContext';
-// import { useSession } from 'next-auth/react';
-// import { useRouter } from 'next/navigation';
-// import ShippingAddress from '@/components/shippingAddress';
-// import { formatCreditCardNumber, formatExpirationDate, formatCVC } from '@/data/cardFormatter';
-
-// const steps = ['Billing', 'Shipping', 'Payment & Promo', 'Review'];
-
-// const stepIcons = [
-//   UserCircleIcon,
-//   MapPinIcon,
-//   CreditCardIcon,
-//   CheckCircleIcon,
-// ];
-
-// const stepVariants = {
-//   enter: {
-//     opacity: 0,
-//     y: 20,
-//     scale: 0.98,
-//   },
-//   center: {
-//     opacity: 1,
-//     y: 0,
-//     scale: 1,
-//     transition: { type: 'spring', stiffness: 200, damping: 22 },
-//   },
-//   exit: {
-//     opacity: 0,
-//     y: -20,
-//     scale: 0.98,
-//     transition: { duration: 0.25 },
-//   },
-// };
-
-// const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
-
-// export default function CheckoutPage() {
-//   const store = useStore();
-//   const router = useRouter();
-//   const { data: session } = useSession();
-//   const { cart = [], clearCart, updateCartQuantity, removeFromCart } = useStateContext() as any;
-//   const [currentStep, setCurrentStep] = useState(0);
-//   const [isSubmitting, setIsSubmitting] = useState(false);
-//   const [isOrderPlaced, setIsOrderPlaced] = useState(false);
-//   const [trackingNumber, setTrackingNumber] = useState("");
-//   const [error, setError] = useState<any>({});
-
-//   const [formData, setFormData] = useState<any>({
-//     name: session?.user?.name || '',
-//     email: session?.user?.email || '',
-//     phone: session?.user?.phone || '',
-    
-//     // Card details (only needed if paymentMethod is 'card')
-//     cardNumber: session?.user?.cardNumber || '',
-//     cardExpiry: session?.user?.cardExpiry || '',
-//     cvv: '',
-
-//     // M-Pesa phone number field
-//     mpesaPhone: session?.user?.phone || '', 
-
-//     shippingAddress: {
-//       display_name: "",
-//       lat: 0.0,
-//       lng: 0.0,
-//     },
-//     promoCode: '',
-//     paymentMethod: 'card', // Default to 'card'
-//     shippingMethod: 'Standard',
-//   });
-
-//   const [promoMessage, setPromoMessage] = useState('');
-//   const [discount, setDiscount] = useState(0);
-//   const [estimatedDelivery, setEstimatedDelivery] = useState('');
-//   const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
-
-//   // Address select handler
-//   const handleAddressSelect = (address: string, coords: { lat: number; lng: number }) => {
-//     setFormData((f: any) => ({
-//       ...f,
-//       shippingAddress: {
-//         display_name: address,
-//         lat: coords.lat,
-//         lng: coords.lng,
-//       }
-//     }));
-//     setError((e: any) => ({ ...e, shippingAddress: '' }));
-//   };
-
-//   // Totals
-//   const subtotal = useMemo(
-//     () => cart.reduce((sum: number, item: any) => sum + (item.finalPrice || 0) * (item.quantity || 0), 0),
-//     [cart]
-//   );
-//   const shippingCost = useMemo(() => formData.shippingMethod === 'Express' ? 15 : 5, [formData.shippingMethod]);
-//   const discountAmount = useMemo(() => subtotal * discount, [subtotal, discount]);
-//   const total = useMemo(() => (subtotal + shippingCost - discountAmount), [subtotal, shippingCost, discountAmount]);
-
-//   // Promo debounce & logic
-//   useEffect(() => {
-//     const id = setTimeout(() => {
-//       if (!formData.promoCode) {
-//         setDiscount(0);
-//         return setPromoMessage('');
-//       }
-//       if (formData.promoCode.trim().toUpperCase() === 'SAVE10') {
-//         setDiscount(0.1);
-//         setPromoMessage('🎉 10% discount applied! Awesome deal!');
-//       } else {
-//         setDiscount(0);
-//         setPromoMessage('❌ Invalid promo code. Try SAVE10!');
-//       }
-//     }, 500);
-//     return () => clearTimeout(id);
-//   }, [formData.promoCode]);
-
-//   // Estimate delivery
-//   useEffect(() => {
-//     const days = formData.shippingMethod === 'Express' ? 2 : 5;
-//     const date = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
-//     setEstimatedDelivery(date.toDateString());
-//   }, [formData.shippingMethod]);
-
-//   // Window size for confetti
-//   useEffect(() => {
-//     const update = () => setWindowSize({ width: window.innerWidth, height: window.innerHeight });
-//     window.addEventListener('resize', update);
-//     update();
-//     return () => window.removeEventListener('resize', update);
-//   }, []);
-
-//   const validateStep = useCallback(() => {
-//     const errs: any = {};
-//     if (currentStep === 0) {
-//       ['name', 'email', 'phone'].forEach((f: string) => {
-//         if (!formData[f]) errs[f] = 'Required';
-//       });
-//     }
-//     if (currentStep === 1) {
-//       if (!formData.shippingAddress?.display_name) {
-//         errs.shippingAddress = 'Please select a shipping address.';
-//       }
-//     }
-//     if (currentStep === 2) {
-//       // Card Validation
-//       if (formData.paymentMethod === 'card') {
-//           if (!formData.cardNumber || formData.cardNumber.replace(/\s/g, '').length < 15) errs.cardNumber = 'Invalid Card Number';
-//           if (!formData.cardExpiry || formData.cardExpiry.length !== 5) errs.cardExpiry = 'Invalid Date (MM/YY)';
-//           if (!formData.cvv || formData.cvv.length < 3 || formData.cvv.length > 4) errs.cvv = 'Invalid CVV (3 or 4 digits)';
-//       }
-//       // M-Pesa Validation
-//       if (formData.paymentMethod === 'mpesa') {
-//           // Basic phone number validation (e.g., must be 12 digits for 254...)
-//           // This should be robust phone validation in a production app
-//           if (!formData.mpesaPhone || formData.mpesaPhone.length < 12) errs.mpesaPhone = 'Invalid M-Pesa number (e.g., 2547XXXXXXXX)';
-//       }
-//       // Paystack / COD / Pickup require no validation fields here
-//     }
-//     setError(errs);
-//     return Object.keys(errs).length === 0;
-//   }, [currentStep, formData]);
-
-//   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-//     const { name, value } = e.target as any;
-//     let v = value;
-//     if (name === 'cardNumber') v = formatCreditCardNumber(value);
-//     if (name === 'cardExpiry') v = formatExpirationDate(value);
-//     if (name === 'cvv') v = formatCVC(value);
-//     setFormData((fd: any) => ({ ...fd, [name]: v }));
-//     setError((err: any) => ({ ...err, [name]: '' }));
-//   };
-
-//   const next = () => {
-//     if (validateStep()) setCurrentStep((s) => Math.min(s + 1, steps.length - 1));
-//   };
-//   const prev = () => setCurrentStep((s) => Math.max(s - 1, 0));
-
-//   const handleSubmit = async (e: React.FormEvent) => {
-//     e.preventDefault();
-//     if (!validateStep() || currentStep !== steps.length - 1) return;
-
-//     setIsSubmitting(true);
-//     setError({});
-
-//     try {
-//       // 1. Prepare the base payload
-//       const payload = {
-//         consumerId: session?.user?.id,
-//         name: formData.name,
-//         email: formData.email,
-//         phone: formData.phone,
-//         promoCode: formData.promoCode,
-//         items: cart.map((i: any) => ({
-//           marketplaceListingId: i.id,
-//           quantity: i.quantity,
-//           price: i.finalPrice,
-//         })),
-//         shippingAddress: formData.shippingAddress,
-//         shippingMethod: formData.shippingMethod,
-//         paymentOption: formData.paymentMethod,
-//         delivery: formData.shippingMethod !== 'pickupatshop',
-//         totalPrice: parseFloat(total.toFixed(2)),
-//         // Add payment-specific data to the payload
-//         paymentData: {
-//           cardNumber: formData.cardNumber.replace(/\s/g, ''), // Send cleaned card number
-//           cardExpiry: formData.cardExpiry,
-//           cvv: formData.cvv,
-//           mpesaPhone: formData.mpesaPhone, 
-//         }
-//       };
-
-//       console.log("Submitting order with payload:", payload);
-      
-//       const res = await fetch(`${apiBaseUrl}/shop/orders`, {
-//         method: 'POST',
-//         headers: {
-//           'Content-Type': 'application/json',
-//           'x-api-key': process.env.NEXT_PUBLIC_API_SECRET_KEY || '',
-//           'Credentials': 'include',
-//         },
-//         body: JSON.stringify(payload),
-//       });
-
-//       if (!res.ok) {
-//         const errorData = await res.json();
-//         const errorMessage = errorData.message || errorData.data || res.statusText;
-//         console.error("Server responded with error:", res.status, errorMessage);
-//         throw new Error(errorMessage || "Order submission failed.");
-//       }
-
-//       let orderResponse = (await res.json()).data;
-
-//       // --- Payment Redirection/Handling Logic ---
-//       switch (formData.paymentMethod) {
-//         case 'paystack':
-//           // The backend should return an 'authorizationUrl' for Paystack
-//           if (orderResponse.authorizationUrl) {
-//             // Redirect the user to Paystack's payment page
-//             router.push(orderResponse.authorizationUrl);
-//             return; // Exit function to wait for Paystack redirect/webhook confirmation
-//           }
-//           throw new Error("Paystack authorization URL missing from server response.");
-        
-//         case 'mpesa':
-//           // The backend initiates the STK Push. The order is tentatively placed.
-//           // The frontend just confirms the prompt was sent.
-//           // Actual order confirmation will happen via a webhook on the backend.
-//           // We can show a special status for "Payment Pending" if needed, 
-//           // but for now, we continue to the success screen based on the backend's immediate response.
-//           console.log("M-Pesa STK Push initiated.");
-//           break; 
-
-//         case 'card':
-//           // Assuming the backend attempted to charge the card with the provided details.
-//           // If the charge was successful, we continue. If it failed, the server returns a 4xx error.
-//           console.log("Card charge successful/order initiated.");
-//           break;
-
-//         case 'cod':
-//         case 'pickupatshop':
-//           // Payment is deferred. Order is placed.
-//           break;
-          
-//         default:
-//           break;
-//       }
-//       // --- END Payment Handling Logic ---
-
-//       // Final Order Confirmation (only reached for successful direct payments or deferred payments)
-//       if (!orderResponse?.trackingNumber) {
-//         throw new Error("No tracking number in response.");
-//       }
-
-//       clearCart();
-//       setTrackingNumber(orderResponse.trackingNumber);
-//       setIsOrderPlaced(true);
-
-//     } catch (err: any) {
-//       console.error("Submit error:", err);
-//       setError({ submit: err.message || 'Order failed. Please verify all details and try again.' });
-//     } finally {
-//       setIsSubmitting(false);
-//     }
-//   };
-
-//   if (isOrderPlaced) {
-//     return <OrderStatus success trackingnumber={trackingNumber} />;
-//   }
-
-//   return (
-//     <motion.div
-//       initial="hidden"
-//       animate="visible"
-//       variants={{
-//         hidden: { opacity: 0 },
-//         visible: { opacity: 1, transition: { staggerChildren: 0.06 } }
-//       }}
-//       className="min-h-screen bg-gray-50 p-6 md:p-12"
-//     >
-//       <style jsx>{`
-//         /* subtle input focus lift */
-//         .input-focus:focus {
-//           transform: scale(1.01);
-//           box-shadow: 0 6px 18px rgba(99,102,241,0.08);
-//         }
-//         /* sparkle animation */
-//         @keyframes sparkle {
-//           0%, 100% { opacity: 0; transform: scale(0.8); }
-//           50% { opacity: 1; transform: scale(1.2); }
-//         }
-//         .sparkle { position: absolute; width: 6px; height: 6px; background: #34D399; border-radius: 50%; animation: sparkle 1.5s infinite ease-in-out; }
-//       `}</style>
-
-//       <Section title="🛒 Secure Checkout">
-//         <div className="max-w-6xl mx-auto">
-//           <ProgressIndicator currentStep={currentStep} />
-
-//           <p className="text-center text-sm text-gray-500 mb-4">
-//             Step {currentStep + 1} of {steps.length} — <span className="font-medium text-indigo-600">{steps[currentStep]}</span>
-//           </p>
-
-//           <div className="grid md:grid-cols-5 gap-8">
-//             <motion.div
-//               initial={{ opacity: 0, x: -30 }}
-//               animate={{ opacity: 1, x: 0 }}
-//               transition={{ duration: 0.45 }}
-//               className="md:col-span-2 hidden md:block"
-//             >
-//               <OrderSummary
-//                 cart={cart}
-//                 estimatedDelivery={estimatedDelivery}
-//                 subtotal={subtotal}
-//                 shippingCost={shippingCost}
-//                 discountAmount={discountAmount}
-//                 total={total}
-//                 updateCartQuantity={updateCartQuantity}
-//                 removeFromCart={removeFromCart}
-//               />
-//             </motion.div>
-
-//             <motion.form
-//               key="checkout-form"
-//               onSubmit={handleSubmit}
-//               className="md:col-span-3 bg-white rounded-3xl p-8 shadow-2xl space-y-8 border border-gray-100"
-//               initial={{ scale: 0.98, opacity: 0 }}
-//               animate={{ scale: 1, opacity: 1 }}
-//               transition={{ type: 'spring', stiffness: 160 }}
-//             >
-//               <AnimatePresence mode="wait">
-//                 <motion.div
-//                   key={currentStep}
-//                   variants={stepVariants}
-//                   initial="enter"
-//                   animate="center"
-//                   exit="exit"
-//                   className="min-h-[300px]"
-//                 >
-//                   <StepContent
-//                     currentStep={currentStep}
-//                     formData={formData}
-//                     handleChange={handleChange}
-//                     error={error}
-//                     handleAddressSelect={handleAddressSelect}
-//                     promoMessage={promoMessage}
-//                     total={total}
-//                     steps={steps}
-//                   />
-//                 </motion.div>
-//               </AnimatePresence>
-
-//               <div className="flex justify-between items-center pt-6 border-t border-gray-100">
-//                 {currentStep > 0 ? (
-//                   <motion.button
-//                     type="button"
-//                     onClick={prev}
-//                     whileHover={{ scale: 1.02 }}
-//                     whileTap={{ scale: 0.98 }}
-//                     transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-//                     className="flex items-center gap-2 px-6 py-3 bg-gray-100 text-gray-700 rounded-full font-semibold hover:bg-gray-200 transition-colors"
-//                   >
-//                     <ArrowLeftIcon className="w-5 h-5" /> Previous Step
-//                   </motion.button>
-//                 ) : <div />}
-
-//                 {currentStep < steps.length - 1 ? (
-//                   <motion.button
-//                     type="button"
-//                     onClick={next}
-//                     whileHover={{ scale: 1.03 }}
-//                     whileTap={{ scale: 0.98 }}
-//                     transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-//                     className="flex items-center gap-2 px-8 py-3 bg-indigo-600 text-white rounded-full font-extrabold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all transform"
-//                   >
-//                     Next: {steps[currentStep + 1]}
-//                   </motion.button>
-//                 ) : (
-//                   <motion.button
-//                     type="submit"
-//                     disabled={isSubmitting}
-//                     whileHover={isSubmitting ? {} : { scale: 1.02 }}
-//                     whileTap={isSubmitting ? {} : { scale: 0.98 }}
-//                     transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-//                     className={`px-8 py-3 rounded-full font-extrabold shadow-lg transition-all transform
-//                       ${isSubmitting
-//                         ? 'bg-gray-400 text-white cursor-not-allowed'
-//                         : 'bg-green-600 text-white shadow-green-200 hover:bg-green-700'
-//                       }`}
-//                   >
-//                     {isSubmitting ? 'Processing Payment…' : '🎉 Place Order'}
-//                   </motion.button>
-//                 )}
-//               </div>
-//               {error.submit && <p className="text-red-600 text-center mt-4 p-3 bg-red-50 rounded-lg">{error.submit}</p>}
-//             </motion.form>
-
-//             {/* Mobile Order Summary */}
-//             <div className="md:hidden col-span-5">
-//               <OrderSummary
-//                 cart={cart}
-//                 estimatedDelivery={estimatedDelivery}
-//                 subtotal={subtotal}
-//                 shippingCost={shippingCost}
-//                 discountAmount={discountAmount}
-//                 total={total}
-//                 updateCartQuantity={updateCartQuantity}
-//                 removeFromCart={removeFromCart}
-//               />
-//             </div>
-//           </div>
-//         </div>
-//       </Section>
-//       <NewsletterSection />
-//     </motion.div>
-//   );
-// }
-
-// /* ------------------------------
-//    ProgressIndicator Component
-//    ------------------------------ */
-// function ProgressIndicator({ currentStep }: { currentStep: number }) {
-//   return (
-//     <div className="flex mb-6 justify-center">
-//       {steps.map((label, i) => {
-//         const Icon = stepIcons[i];
-//         const isCompleted = currentStep > i;
-//         const isActive = currentStep === i;
-
-//         return (
-//           <div key={i} className="flex-1 text-center relative flex items-center justify-center">
-//             <div className="flex flex-col items-center relative z-10">
-//               <motion.div
-//                 initial={{ scale: 0.9, opacity: 0 }}
-//                 animate={{ scale: 1, opacity: 1 }}
-//                 transition={{ type: 'spring', stiffness: 500, damping: 20, delay: i * 0.06 }}
-//                 className={`w-12 h-12 rounded-full border-4 flex items-center justify-center font-bold transition-all duration-300
-//                   ${isCompleted
-//                     ? 'border-green-500 bg-green-500 text-white shadow-md'
-//                     : isActive
-//                       ? 'border-indigo-600 bg-white text-indigo-600'
-//                       : 'border-gray-300 bg-white text-gray-500'
-//                   }`}
-//               >
-//                 <Icon className="w-6 h-6" />
-//               </motion.div>
-//               <p className={`text-sm mt-2 transition-colors duration-300 ${isActive ? 'text-indigo-600 font-bold' : 'text-gray-600'}`}>
-//                 {label}
-//               </p>
-//             </div>
-
-//             {/* Active Glow (shared layoutId for smooth move) */}
-//             {isActive && (
-//               <motion.div
-//                 layoutId="active-glow"
-//                 className="absolute -inset-1 rounded-full pointer-events-none"
-//                 initial={false}
-//                 animate={{ boxShadow: '0 10px 30px rgba(99,102,241,0.08)' }}
-//                 transition={{ type: 'spring', stiffness: 220, damping: 30 }}
-//               />
-//             )}
-
-//             {/* Separator Line */}
-//             {i < steps.length - 1 && (
-//               <div className="absolute left-[calc(50%+24px)] w-[calc(100%-48px)] h-1">
-//                 <motion.div
-//                   className="h-full rounded-full"
-//                   initial={{ width: 0 }}
-//                   animate={{ width: isCompleted ? '100%' : '0%' }}
-//                   transition={{ duration: 0.4 }}
-//                   style={{ backgroundColor: isCompleted ? '#34D399' : '#E5E7EB' }}
-//                 />
-//               </div>
-//             )}
-//           </div>
-//         );
-//       })}
-//     </div>
-//   );
-// }
-
-// /* ------------------------------
-//    OrderSummary Component
-//    ------------------------------ */
-// function OrderSummary({ cart, estimatedDelivery, subtotal, shippingCost, discountAmount, total, updateCartQuantity, removeFromCart }: any) {
-
-//   const handleQuantityChange = (itemId: string, delta: number) => {
-//     const item = cart.find((i: any) => i.id === itemId);
-//     if (!item) return;
-//     const newQuantity = item.quantity + delta;
-//     if (newQuantity <= 0) {
-//       removeFromCart?.(itemId);
-//     } else {
-//       updateCartQuantity?.(itemId, newQuantity);
-//     }
-//   };
-
-//   return (
-//     <motion.div
-//       initial={{ opacity: 0, y: 20 }}
-//       animate={{ opacity: 1, y: 0 }}
-//       transition={{ duration: 0.45, delay: 0.08 }}
-//       className="bg-white rounded-3xl shadow-2xl p-6 sticky top-20 border border-gray-100"
-//     >
-//       <h2 className="text-2xl font-extrabold mb-5 text-gray-800">Your Cart ({cart.length} items)</h2>
-
-//       <div className="space-y-4 max-h-72 overflow-y-auto pr-2">
-//         <AnimatePresence>
-//           {cart.map((item: any) => (
-//             <motion.div
-//               key={item.id}
-//               initial={{ opacity: 0, y: -12 }}
-//               animate={{ opacity: 1, y: 0 }}
-//               exit={{ opacity: 0, x: -50 }}
-//               transition={{ duration: 0.28 }}
-//               whileHover={{ scale: 1.01 }}
-//               className="flex flex-col border-b pb-3 last:border-b-0 last:pb-0 p-2 rounded-lg"
-//             >
-//               <div className="flex justify-between items-start mb-2">
-//                 <p className="font-semibold text-gray-700 leading-snug pr-4">{item.title || item.name}</p>
-//                 <p className="font-extrabold text-lg text-gray-900">${((item.finalPrice || 0) * item.quantity).toFixed(2)}</p>
-//               </div>
-
-//               <div className="flex justify-between items-center">
-//                 <div className="flex items-center space-x-2 text-sm text-gray-500">
-//                   <span className="text-sm font-medium">@ ${((item.finalPrice || 0)).toFixed(2)}</span>
-//                 </div>
-
-//                 <div className="flex items-center space-x-2">
-//                   <div className="flex items-center border border-gray-300 rounded-full overflow-hidden">
-//                     <button
-//                       type="button"
-//                       onClick={() => handleQuantityChange(item.id, -1)}
-//                       className="p-1.5 hover:bg-gray-100 transition-colors disabled:opacity-50"
-//                       disabled={item.quantity <= 1}
-//                     >
-//                       <MinusIcon className="w-4 h-4 text-gray-600" />
-//                     </button>
-//                     <span className="px-3 font-semibold text-gray-800 text-sm">{item.quantity}</span>
-//                     <button
-//                       type="button"
-//                       onClick={() => handleQuantityChange(item.id, 1)}
-//                       className="p-1.5 hover:bg-gray-100 transition-colors"
-//                     >
-//                       <PlusIcon className="w-4 h-4 text-gray-600" />
-//                     </button>
-//                   </div>
-
-//                   <button
-//                     type="button"
-//                     onClick={() => removeFromCart?.(item.id)}
-//                     title="Remove item"
-//                     className="p-1.5 text-red-500 hover:text-white hover:bg-red-500 rounded-full transition-all"
-//                   >
-//                     <TrashIcon className="w-5 h-5" />
-//                   </button>
-//                 </div>
-//               </div>
-//             </motion.div>
-//           ))}
-//         </AnimatePresence>
-
-//         {!cart.length && (
-//           <motion.p
-//             animate={{ y: [0, -6, 0] }}
-//             transition={{ repeat: Infinity, duration: 3 }}
-//             className="text-gray-500 italic py-4 text-center"
-//           >
-//             Your cart is empty. Time to shop!
-//           </motion.p>
-//         )}
-//       </div>
-
-//       <div className="space-y-2 pt-4 border-t mt-4">
-//         <div className="flex justify-between text-gray-600">
-//           <span>Subtotal</span>
-//           <span>${subtotal.toFixed(2)}</span>
-//         </div>
-//         <div className="flex justify-between text-gray-600">
-//           <span>Shipping ({shippingCost > 0 ? 'Cost' : 'Free'})</span>
-//           <span>{shippingCost > 0 ? `$${shippingCost.toFixed(2)}` : 'FREE'}</span>
-//         </div>
-//         <div className="flex justify-between text-green-600 font-semibold border-b pb-3">
-//           <span>Discount</span>
-//           <span>- ${discountAmount.toFixed(2)}</span>
-//         </div>
-//       </div>
-
-//       <div className="flex justify-between font-extrabold text-2xl mt-4">
-//         <span>Order Total</span>
-//         <motion.span
-//           key={total}
-//           initial={{ scale: 1.12, opacity: 0.6 }}
-//           animate={{ scale: 1, opacity: 1 }}
-//           transition={{ type: "spring", stiffness: 300, damping: 20 }}
-//         >
-//           ${total.toFixed(2)}
-//         </motion.span>
-//       </div>
-
-//       <div className="flex items-center gap-2 bg-indigo-50 p-3 rounded-lg mt-4">
-//         <CalendarIcon className="w-5 h-5 text-indigo-600" />
-//         <span className="text-sm font-medium">Estimated Delivery: <span className="font-semibold">{estimatedDelivery}</span></span>
-//       </div>
-//     </motion.div>
-//   );
-// }
-
-// /* ------------------------------
-//    OrderStatus Component
-//    ------------------------------ */
-// function OrderStatus({ success, trackingnumber }: { success: boolean, trackingnumber: String }) {
-//   const router = useRouter();
-//   const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
-//   useEffect(() => {
-//     const update = () => setWindowSize({ width: window.innerWidth, height: window.innerHeight });
-//     window.addEventListener('resize', update); update(); return () => window.removeEventListener('resize', update);
-//   }, []);
-
-//   return (
-//     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-50 to-white p-6">
-//       {success && <Confetti width={windowSize.width} height={windowSize.height} recycle={false} numberOfPieces={500} />}
-//       <motion.div
-//         initial={{ opacity: 0, scale: 0.7, y: 50 }}
-//         animate={{ opacity: 1, scale: 1, y: 0 }}
-//         transition={{ duration: 0.6, type: 'spring', stiffness: 100 }}
-//         className="bg-white p-10 rounded-3xl shadow-2xl shadow-indigo-100 text-center max-w-lg w-full border border-gray-100 relative"
-//       >
-//         {success ? (
-//           <>
-//             <motion.div
-//               initial={{ rotate: -90, scale: 0 }}
-//               animate={{ rotate: 0, scale: 1 }}
-//               transition={{ type: "spring", stiffness: 300, damping: 15 }}
-//               whileHover={{ rotate: 3, scale: 1.05 }}
-//               className="mx-auto bg-green-100 rounded-full p-4 w-24 h-24 flex items-center justify-center relative"
-//             >
-//               <CheckCircleIcon className="w-16 h-16 text-green-600" />
-//               {/* sparkles */}
-//               <div className="sparkle" style={{ top: -6, left: -6 }} />
-//               <div className="sparkle" style={{ top: 6, right: -8, animationDelay: '0.4s' }} />
-//               <div className="sparkle" style={{ bottom: -6, right: 8, animationDelay: '0.25s' }} />
-//             </motion.div>
-
-//             <h2 className="text-4xl font-extrabold text-gray-800 mt-6">Order Placed! 🚀</h2>
-//             <p className="mt-3 text-lg text-gray-600">Your adventure begins now. We've got your back!</p>
-//             <p className="mt-2 text-sm text-indigo-600 font-medium">Tracking Number: <span className="font-semibold">{trackingnumber}</span></p>
-//           </>
-//         ) : (
-//           <>
-//             <XCircleIcon className="w-20 h-20 text-red-500 mx-auto" />
-//             <h2 className="text-3xl font-bold text-gray-800 mt-4">Order Failed</h2>
-//             <p className="mt-2 text-gray-600">Oops! Something went wrong. Please check your payment details or try again.</p>
-//           </>
-//         )}
-//         <div className="mt-8 space-y-4">
-//           {success && (
-//             <motion.button
-//               onClick={() => router.push(`/shop/orderTracking?trackingnumber=${trackingnumber}`)}
-//               whileHover={{ scale: 1.01 }}
-//               transition={{ type: 'spring', stiffness: 220, damping: 20 }}
-//               className="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:bg-indigo-700 transition-colors"
-//             >
-//               Track Your Order Now!
-//             </motion.button>
-//           )}
-//           <button
-//             onClick={() => router.push('/')}
-//             className="w-full bg-gray-100 text-gray-800 py-4 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-gray-200 transition-colors"
-//           >
-//             <ArrowLeftIcon className="w-5 h-5" /> Continue Shopping
-//           </button>
-//         </div>
-//       </motion.div>
-//     </div>
-//   );
-// }
-
-// /* ------------------------------
-//    StepContent Component
-//    ------------------------------ */
-// function StepContent({ currentStep, formData, handleChange, error, handleAddressSelect, promoMessage, total, steps }: any) {
-//   const StepIcon = stepIcons[currentStep];
-
-//   const InputField = ({ name, placeholder, type = 'text', maxLength, autoFocus = false, className = '' }: any) => (
-//     <div className='space-y-1'>
-//       <input
-//         name={name}
-//         type={type}
-//         value={formData[name] || ''}
-//         onChange={handleChange}
-//         placeholder={placeholder}
-//         maxLength={maxLength}
-//         autoFocus={autoFocus}
-//         className={`w-full p-4 border rounded-xl focus:ring-2 transition-all input-focus ${className} ${error[name] ? 'border-red-500 focus:border-red-500 focus:ring-red-100' : 'border-gray-200 focus:border-indigo-500 focus:ring-indigo-100'}`}
-//       />
-//       {error[name] && <p className="text-red-600 text-xs mt-1 font-medium">{error[name]}</p>}
-//     </div>
-//   );
-
-//   // --- Payment Method Renderer ---
-//   const renderPaymentMethodForm = (method: string) => {
-//     switch (method) {
-//       case 'card': // Stripe/General Card Payment
-//         return (
-//           <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} transition={{ duration: 0.28 }} className="space-y-4 pt-4 border-t border-indigo-100">
-//             <h4 className="text-lg font-semibold text-gray-800 flex items-center gap-2"><CreditCardIcon className='w-5 h-5 text-indigo-500'/> Card Details (Secured by Stripe)</h4>
-//             <InputField name="cardNumber" placeholder="Card Number (xxxx xxxx xxxx xxxx)" maxLength={19} />
-//             <div className="flex gap-4">
-//               <InputField name="cardExpiry" placeholder="MM/YY" maxLength={5} />
-//               <InputField name="cvv" placeholder="CVC/CVV" maxLength={4} />
-//             </div>
-//             <p className="text-xs text-gray-500 pt-2 flex items-center gap-1">Your card information is safely processed.</p>
-//           </motion.div>
-//         );
-//       case 'mpesa':
-//         return (
-//           <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} transition={{ duration: 0.28 }} className="space-y-4 pt-4 border-t border-green-100 bg-green-50 p-4 rounded-xl">
-//             <h4 className="text-lg font-semibold text-green-700 flex items-center gap-2"><TagIcon className='w-5 h-5'/> M-Pesa Payment</h4>
-//             <p className="text-sm text-gray-600">A payment prompt will be sent to this number upon placing the order:</p>
-//             <InputField name="mpesaPhone" placeholder="Enter M-Pesa Phone Number (e.g., 2547XXXXXXXX)" type="tel" maxLength={13} />
-//             <ul className="text-xs text-gray-500 list-disc ml-4">
-//               <li>Ensure your phone is near and unlocked.</li>
-//             </ul>
-//           </motion.div>
-//         );
-//       case 'paystack':
-//         return (
-//           <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} transition={{ duration: 0.28 }} className="space-y-4 pt-4 border-t border-yellow-100 bg-yellow-50 p-4 rounded-xl">
-//             <h4 className="text-lg font-semibold text-yellow-700 flex items-center gap-2"><BanknotesIcon className='w-5 h-5'/> Paystack Payment</h4>
-//             <p className="text-sm text-gray-700">You will be **securely redirected to Paystack** to complete your payment (Card, Bank Transfer, USSD) after placing the order.</p>
-//             <p className="text-xs text-gray-500 pt-2">No information is required here.</p>
-//           </motion.div>
-//         );
-//       case 'cod':
-//         return (
-//           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.28 }} className="p-4 bg-blue-50 border-l-4 border-blue-500 rounded-lg">
-//             <p className="font-semibold text-blue-700 flex items-center gap-2"><TruckIcon className='w-5 h-5'/> Pay upon delivery. Please have the exact amount ready.</p>
-//           </motion.div>
-//         );
-//       case 'pickupatshop':
-//         return (
-//           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.28 }} className="p-4 bg-purple-50 border-l-4 border-purple-500 rounded-lg">
-//             <p className="font-semibold text-purple-700 flex items-center gap-2"><BuildingLibraryIcon className='w-5 h-5'/> Pay when you collect your order at the shop.</p>
-//           </motion.div>
-//         );
-//       default:
-//         return null;
-//     }
-//   };
-//   // --- END Payment Method Renderer ---
-
-
-//   return (
-//     <div className="space-y-6">
-//       <h2 className="text-3xl font-extrabold text-gray-900 flex items-center gap-3">
-//         <StepIcon className="w-8 h-8 text-indigo-600" /> {steps[currentStep]}
-//       </h2>
-//       <hr className="border-t border-indigo-100" />
-
-//       {/* STEP 0: Billing */}
-//       {currentStep === 0 && (
-//         <div className="space-y-5">
-//           <InputField name="name" placeholder="Full Name" autoFocus={true} />
-//           <InputField name="email" placeholder="Email Address" type="email" />
-//           <InputField name="phone" placeholder="Phone Number" type="tel" />
-//         </div>
-//       )}
-
-//       {/* STEP 1: Shipping */}
-//       {currentStep === 1 && (
-//         <div className="space-y-6">
-//           <h3 className="text-xl font-semibold text-gray-700">Select Delivery Location 📍</h3>
-//           <ShippingAddress onAddressSelect={handleAddressSelect} />
-//           {error.shippingAddress && <p className="text-red-600 text-xs mt-1 font-medium bg-red-50 p-2 rounded-lg">{error.shippingAddress}</p>}
-
-//           <h3 className="text-xl font-semibold text-gray-700 pt-4">Shipping Method 🚚</h3>
-//           <div className="grid grid-cols-2 gap-4">
-//             {['Standard', 'Express'].map((method: string) => (
-//               <label key={method} className={`p-4 rounded-xl border-2 cursor-pointer transition-all ${formData.shippingMethod === method ? 'border-indigo-600 bg-indigo-50 shadow-md' : 'border-gray-200 hover:border-indigo-300'}`}>
-//                 <input
-//                   type="radio" name="shippingMethod"
-//                   value={method} checked={formData.shippingMethod === method}
-//                   onChange={handleChange} className="hidden"
-//                 />
-//                 <div className="flex flex-col">
-//                   <span className="font-bold text-gray-800">{method}</span>
-//                   <span className="text-sm text-gray-500">{method === 'Express' ? '$15.00 (2 Days)' : '$5.00 (5 Days)'}</span>
-//                 </div>
-//               </label>
-//             ))}
-//           </div>
-//         </div>
-//       )}
-
-//       {/* STEP 2: Payment & Promo */}
-//       {currentStep === 2 && (
-//         <div className="space-y-6">
-//           <h3 className="text-xl font-semibold text-gray-700">Choose Payment Method 💳</h3>
-//           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-//             {[
-//               { value: 'card', label: 'Credit Card', Icon: CreditCardIcon },
-//               { value: 'mpesa', label: 'Mpesa', Icon: TagIcon },
-//               { value: 'paystack', label: 'Paystack', Icon: BanknotesIcon },
-//               { value: 'cod', label: 'Cash on Delivery', Icon: TruckIcon },
-//               { value: 'pickupatshop', label: 'Pickup', Icon: BuildingLibraryIcon },
-//             ].map(({ value, label, Icon }) => (
-//               <label key={value} className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 cursor-pointer transition-all ${formData.paymentMethod === value ? 'border-indigo-600 bg-indigo-50 shadow-md' : 'border-gray-200 hover:border-indigo-300'}`}>
-//                 <input
-//                   type="radio" name="paymentMethod"
-//                   value={value} checked={formData.paymentMethod === value}
-//                   onChange={handleChange} className="hidden"
-//                 />
-//                 <Icon className="w-7 h-7 text-indigo-600" />
-//                 <span className='text-sm font-medium text-center'>{label}</span>
-//               </label>
-//             ))}
-//           </div>
-
-//           {/* RENDER PAYMENT FORM HERE based on selected method */}
-//           {renderPaymentMethodForm(formData.paymentMethod)}
-
-//           {/* Promo Code */}
-//           <h3 className="text-xl font-semibold text-gray-700 pt-4">Apply Promo Code 🎁</h3>
-//           <div className="relative">
-//             <TagIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-//             <input
-//               name="promoCode"
-//               type="text"
-//               value={formData.promoCode || ''}
-//               onChange={handleChange}
-//               placeholder="Enter Promo Code (e.g., SAVE10)"
-//               className={`w-full p-4 border rounded-xl pl-10 focus:ring-2 transition-all input-focus ${error.promoCode ? 'border-red-500 focus:border-red-500 focus:ring-red-100' : 'border-gray-200 focus:border-indigo-500 focus:ring-indigo-100'}`}
-//             />
-//             <AnimatePresence>
-//               {promoMessage && (
-//                 <motion.p
-//                   key={promoMessage}
-//                   initial={{ opacity: 0, y: 10 }}
-//                   animate={{ opacity: 1, y: 0 }}
-//                   exit={{ opacity: 0, y: -10 }}
-//                   transition={{ duration: 0.22 }}
-//                   className={`text-sm mt-2 font-medium ${promoMessage.startsWith('❌') ? 'text-red-500' : 'text-green-600'}`}
-//                 >
-//                   {promoMessage}
-//                 </motion.p>
-//               )}
-//             </AnimatePresence>
-//           </div>
-//         </div>
-//       )}
-
-//       {/* STEP 3: Review */}
-//       {currentStep === 3 && (
-//         <div className="space-y-6">
-//           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-6 rounded-xl border border-gray-100">
-//             <div>
-//               <h3 className="text-xl font-bold mb-3 text-indigo-600 flex items-center gap-2"><UserCircleIcon className='w-5 h-5'/> Billing Info</h3>
-//               <p className="text-gray-700"><strong>Name:</strong> {formData.name}</p>
-//               <p className="text-gray-700"><strong>Email:</strong> {formData.email}</p>
-//               <p className="text-gray-700"><strong>Phone:</strong> {formData.phone}</p>
-//             </div>
-//             <div>
-//               <h3 className="text-xl font-bold mb-3 text-indigo-600 flex items-center gap-2"><MapPinIcon className='w-5 h-5'/> Shipping Details</h3>
-//               <p className="text-gray-700"><strong>Address:</strong> {formData?.shippingAddress?.display_name || "N/A"}</p>
-//               <p className="text-gray-700"><strong>Method:</strong> {formData.shippingMethod}</p>
-//               <p className="text-gray-700"><strong>Payment:</strong> {formData.paymentMethod.toUpperCase()}</p>
-              
-//               {/* Conditional Payment Detail Display */}
-//               {formData.paymentMethod === 'mpesa' && (
-//                 <p className="text-gray-700"><strong>M-Pesa No:</strong> {formData.mpesaPhone}</p>
-//               )}
-//             </div>
-//           </div>
-
-//           <div className="p-6 bg-indigo-50 rounded-xl">
-//             <div className="flex justify-between font-extrabold text-2xl text-gray-900">
-//               <span>Final Total</span>
-//               <motion.span
-//                 key={total}
-//                 initial={{ scale: 1.08, opacity: 0.6 }}
-//                 animate={{ scale: 1, opacity: 1 }}
-//                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
-//               >
-//                 ${total.toFixed(2)}
-//               </motion.span>
-//             </div>
-//             <p className="text-sm text-indigo-700 mt-2 font-medium">By clicking 'Place Order', you agree to our terms and conditions.</p>
-//           </div>
-//         </div>
-//       )}
-//     </div>
-//   );
-// }
