@@ -10,7 +10,7 @@ import { useEffect, useState, useCallback } from "react";
  * @param maxAttempts - Maximum polling attempts (default: 12 → 1 min)
  */
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:3000/api";
 
 export function usePaymentVerification(
   provider: "paystack" | "mpesa",

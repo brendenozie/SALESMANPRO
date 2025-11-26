@@ -12,7 +12,7 @@ import useSWR from 'swr';
 import { createCachedFetcher } from '@/lib/swrCachedFetcher';
 import { SkeletonGrid } from '@/components/site/SkeletonGrid/SkeletonGrid';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // Loader for Next.js image optimization
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>

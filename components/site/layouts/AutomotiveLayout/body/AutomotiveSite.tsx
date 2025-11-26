@@ -57,7 +57,7 @@ const tours = [
   },
 ];
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // Generic fetcher
 const fetcher = (url: string) => fetch(url).then(res => res.json());

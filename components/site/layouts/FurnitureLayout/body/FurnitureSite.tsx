@@ -164,7 +164,7 @@ const MOCK_FURNITURE: MarketListingForm[] = [
   }
 ];
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProps) {
   const {

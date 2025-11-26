@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { AdjustmentsVerticalIcon, StarIcon, ChevronDoubleDownIcon, CheckCircleIcon, MagnifyingGlassIcon, ChevronDownIcon, XCircleIcon, AdjustmentsHorizontalIcon, XMarkIcon, CheckIcon, MagnifyingGlassCircleIcon } from "@heroicons/react/24/outline";
 import debounce from "lodash/debounce";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 const Filters = ({ filters, setFilters }) => {
   const [localFilters, setLocalFilters] = useState(filters);

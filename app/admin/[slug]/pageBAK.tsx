@@ -35,7 +35,7 @@ import { cookies } from 'next/headers';
 
 
 export const dynamic = 'force-dynamic';
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4000/api'; 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api'; 
 
 interface AdminDashboardPageProps {
   params: { slug: string | Promise<string>; };

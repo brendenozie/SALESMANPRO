@@ -11,7 +11,7 @@ import HeroSection from './components/HeroSection';
 // Loading skeleton
 const SectionSkeleton = () => <div className="h-96 w-full animate-pulse bg-gray-200 rounded-lg my-12" />;
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 // Dynamically import below-the-fold components
 const CoreHighlightsSection = dynamic(() => import('./components/CoreHighlightsSection'), { loading: () => <SectionSkeleton />, ssr: false });
 const AboutUsSpotlight = dynamic(() => import('./components/AboutUsSpotlight'), { loading: () => <SectionSkeleton />, ssr: false });
