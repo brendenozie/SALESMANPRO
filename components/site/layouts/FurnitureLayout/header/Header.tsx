@@ -48,6 +48,54 @@ export default function Header() {
   const primaryColor = themeSettings?.primaryColor || '#F97316'; // Furniture accent (orange)
   const secondaryColor = themeSettings?.secondaryColor || '#334155'; // Stone gray
 
+    // Build dynamic nav links from store categories
+    const dynamicNavLinks = React.useMemo(() => {
+      if (!storeFormData?.StoreCategory) return [];
+  
+      // 1. Filter visible categories
+      const rawCategories = (storeFormData.StoreCategory || [])
+        .filter((c) => c.visible ?? true)
+        .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+  
+      // 2. Map categories → simplified nav items
+      let links = rawCategories.map((cat) => ({
+        id: cat.id,
+        label: cat.displayName || "Category",
+        href: `/${storeFormData.slug}/category/${cat.categoryId}`,
+      }));
+  
+      // 3. If fewer than required, pull subcategories
+      if (links.length < 5) {
+        rawCategories.forEach((cat) => {
+          const subs = (cat.subcategories || [])
+            .filter((s) => s.visible ?? true)
+            .slice(0, 5); // limit subcategories per cat
+  
+          subs.forEach((sub) =>
+            links.push({
+              id: sub.id,
+              label: sub.name,
+              href: `/${storeFormData.slug}/subcategory/${sub.slug}`,
+            })
+          );
+        });
+      }
+  
+      // 4. Ensure unique and limit final count
+      const seen = new Set();
+      const finalLinks = [];
+  
+      for (let link of links) {
+        if (!seen.has(link.label)) {
+          finalLinks.push(link);
+          seen.add(link.label);
+        }
+        if (finalLinks.length >= 6) break; // final limit here
+      }
+  
+      return finalLinks;
+    }, [storeFormData])
+
   // --- Auth Handlers ---
   const handleUserAction = () => {
     if (!user) return handleGoogleSignIn();
@@ -93,11 +141,6 @@ export default function Header() {
     window.addEventListener('scroll', onScroll);
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
-
-  const navLinks = ['Living', 'Dining', 'Bedroom', 'Office', 'Decor'].map((item) => ({
-    label: item,
-    href: `/category/${item.toLowerCase()}`,
-  }));
 
   const handleSearch = useCallback(
     debounce((query: string) => {
@@ -152,7 +195,7 @@ export default function Header() {
 
             {/* Desktop Nav */}
             <div className="hidden md:flex gap-6 text-sm font-medium text-stone-600">
-              {navLinks.map((item) => (
+              {/* {navLinks.map((item) => (
                 <Link
                   key={item.label}
                   href={item.href}
@@ -160,7 +203,20 @@ export default function Header() {
                 >
                   {item.label}
                 </Link>
-              ))}
+              ))} */}
+              {dynamicNavLinks.map((item, idx) => (
+                  <motion.div
+                    key={item.id}
+                    initial={{ y: 10, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: idx * 0.07, type: 'spring', stiffness: 300, damping: 24 }}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <Link href={item.href} className="block hover:text-orange-700 transition-colors">
+                      {item.label}
+                    </Link>
+                  </motion.div>
+                ))}
             </div>
           </div>
 
@@ -223,7 +279,7 @@ export default function Header() {
               ref={mobileMenuRef}
             >
               <div className="flex flex-col px-6 py-4 space-y-4">
-                {navLinks.map((item) => (
+                {dynamicNavLinks.map((item) => (
                   <Link key={item.label} href={item.href} className="text-stone-700 font-medium hover:text-orange-600 transition-colors" onClick={() => setMobileMenuOpen(false)}>
                     {item.label}
                   </Link>

@@ -199,12 +199,12 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
                 >
                   {currentSlide.ctaText} <ArrowRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
-                <button 
+                {/* <button 
                   className="px-8 py-4 rounded-full font-semibold text-slate-700 border border-current hover:bg-slate-50 transition-all justify-center flex items-center"
                   style={{ borderColor: primary, color: primary }} // Themed secondary button
                 >
                   View Lookbook
-                </button>
+                </button> */}
               </motion.div>
             </motion.div>
           </AnimatePresence>

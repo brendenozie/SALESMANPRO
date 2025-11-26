@@ -122,6 +122,55 @@ export default function Header() {
     if (wasOpen) mobileMenuToggleButtonRef.current?.focus();
   };
 
+  // Build dynamic nav links from store categories
+  const dynamicNavLinks = React.useMemo(() => {
+    if (!storeFormData?.StoreCategory) return [];
+
+    // 1. Filter visible categories
+    const rawCategories = (storeFormData.StoreCategory || [])
+      .filter((c) => c.visible ?? true)
+      .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+
+    // 2. Map categories → simplified nav items
+    let links = rawCategories.map((cat) => ({
+      id: cat.id,
+      label: cat.displayName || "Category",
+      href: `/${storeFormData.slug}/category/${cat.categoryId}`,
+    }));
+
+    // 3. If fewer than required, pull subcategories
+    if (links.length < 5) {
+      rawCategories.forEach((cat) => {
+        const subs = (cat.subcategories || [])
+          .filter((s) => s.visible ?? true)
+          .slice(0, 5); // limit subcategories per cat
+
+        subs.forEach((sub) =>
+          links.push({
+            id: sub.id,
+            label: sub.name,
+            href: `/${storeFormData.slug}/subcategory/${sub.slug}`,
+          })
+        );
+      });
+    }
+
+    // 4. Ensure unique and limit final count
+    const seen = new Set();
+    const finalLinks = [];
+
+    for (let link of links) {
+      if (!seen.has(link.label)) {
+        finalLinks.push(link);
+        seen.add(link.label);
+      }
+      if (finalLinks.length >= 6) break; // final limit here
+    }
+
+    return finalLinks;
+  }, [storeFormData]);
+
+
   return (
     <>
       <header
@@ -148,9 +197,23 @@ export default function Header() {
 
           {/* Desktop Nav */}
           <div className="hidden md:flex gap-8 text-sm font-medium text-slate-700">
-            {navLinks.map((item) => (
+            {/* {navLinks.map((item) => (
               <a key={item} href="#" className="hover:text-indigo-600 transition-colors">{item}</a>
-            ))}
+            ))} */}
+            {dynamicNavLinks.map((item, idx) => (
+                <motion.div
+                  key={item.id}
+                  initial={{ y: 10, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  transition={{ delay: idx * 0.07, type: 'spring', stiffness: 300, damping: 24 }}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <Link href={item.href} className="block text-sm font-semibold text-slate-900 hover:text-indigo-600">
+                    {item.label}
+                  </Link>
+                </motion.div>
+              ))}
+
           </div>
 
           {/* Icons + Auth */}
@@ -202,7 +265,22 @@ export default function Header() {
             ref={mobileMenuRef}
           >
             <div className="pt-6 pb-8 px-6 space-y-6">
-              {navLinks.map((item, idx) => (
+              {
+                dynamicNavLinks.map((item, idx) => (
+                  <motion.div
+                    key={item.id}
+                    initial={{ y: 10, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ delay: idx * 0.07, type: 'spring', stiffness: 300, damping: 24 }}
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <a href="#" className="block text-lg font-medium text-slate-900 hover:text-indigo-600">
+                      {item.label}
+                    </a>
+                  </motion.div>
+                ))
+              }
+              {/* {navLinks.map((item, idx) => (
                 <motion.div
                   key={item}
                   initial={{ y: 10, opacity: 0 }}
@@ -214,7 +292,7 @@ export default function Header() {
                     {item}
                   </a>
                 </motion.div>
-              ))}
+              ))} */}
 
               <div className="border-t border-gray-200" />
 
