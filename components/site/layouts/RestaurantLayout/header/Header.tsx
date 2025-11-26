@@ -118,7 +118,7 @@ export default function Header() {
     if (user.role?.toLowerCase() === "admin") {
       router.push("/dashboards");
     } else {
-      router.push(`/ecommerce/profile`);
+      router.push(`/restaurent/profile`);
     }
   };
 
@@ -299,6 +299,7 @@ export default function Header() {
                                   <Image
                                     src={item.images[0]}
                                     alt={item.name}
+                                    loader={loader}
                                     width={40}
                                     height={40}
                                     className="rounded-md object-cover"
@@ -329,7 +330,7 @@ export default function Header() {
                             onClick={()=>{
                               if(cart.length === 0) return;
                               if(user){
-                                router.push(`/restaurant/checkout`);
+                                router.push(`/restaurent/checkout`);
                               }else{
                                 handleGoogleSignIn();
                               }

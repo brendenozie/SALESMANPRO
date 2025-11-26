@@ -1391,6 +1391,7 @@ model User {
   // @@index([email])
   InventoryLog          InventoryLog[]
   subscriptionCompanies SubscriptionCompany[]
+  addresses             Address[]
 
   @@index([companyId])
   // @@index([settingsId])
@@ -1458,6 +1459,26 @@ enum ReturnStatus {
   APPROVED
   REJECTED
   COMPLETED
+}
+
+model Address {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  name        String?
+  slug        String?  @unique
+  latitude    Float?
+  longitude   Float?
+  address     String?
+  description String?
+  label       String?
+  street      String?
+  city        String?
+  postal      String?
+  country     String?
+  state       String?
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
 }
 
 model ProductAssignment {
@@ -2500,8 +2521,8 @@ model WishlistItem {
   id                   String               @id @default(auto()) @map("_id") @db.ObjectId
   wishlist             Wishlist             @relation(fields: [wishlistId], references: [id])
   wishlistId           String               @db.ObjectId
-  product              Product              @relation(fields: [productId], references: [id])
-  productId            String               @db.ObjectId
+  product              Product?             @relation(fields: [productId], references: [id])
+  productId            String?              @db.ObjectId
   addedAt              DateTime             @default(now())
   marketplaceListings  marketplaceListings? @relation(fields: [marketplaceListingId], references: [id])
   marketplaceListingId String?              @db.ObjectId

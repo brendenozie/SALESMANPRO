@@ -30,18 +30,18 @@ async function handler(req: Request) {
         .replace(/[^\w-]/g, "");
 
     // upsert by a non-unique field is not allowed; find existing by userId then update by id or create
-    const existing = await prisma.location.findFirst({
-      // where: { user: { id: userId } },
+    const existing = await prisma.address.findFirst({
+      where: { user: { id: userId } },
     });
 
     let location;
     if (existing) {
-      location = await prisma.location.update({
+      location = await prisma.address.update({
         where: { id: existing.id },
         data: { name, slug: safeSlug, latitude, longitude, address, description },
       });
     } else {
-      location = await prisma.location.create({
+      location = await prisma.address.create({
         data: {
           name,
           slug: safeSlug,
@@ -49,6 +49,7 @@ async function handler(req: Request) {
           longitude,
           address,
           description,
+          user: { connect: { id: userId } },
         },
       });
     }

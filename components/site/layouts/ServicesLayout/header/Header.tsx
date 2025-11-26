@@ -157,7 +157,7 @@ const Header = ({ storeFormData }: { storeFormData: any }) => {
   };
 
   const sections = [
-    { id: 'hero', label: 'Home', href: `/${storeFormData?.slug}` },
+    { id: 'hero', label: 'Home', href: `/` },
     { id: 'services', label: 'Services', href: `#services` },
     { id: 'packages', label: 'Packages', href: `#packages` },
     { id: 'contact', label: 'Contact', href: `#booking` },
