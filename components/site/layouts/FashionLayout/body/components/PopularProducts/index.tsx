@@ -97,9 +97,9 @@ export default function DailyBestSells({ id }: { id: string }) {
   };
 
   if (isLoading) return <SkeletonGrid count={8} />;
-  if (error) return <div className="text-center text-gray-500">Error loading products.</div>;
+  if (error) return <div className="text-center text-gray-500"></div>;
   if (!data?.data?.length)
-    return <div className="text-center text-gray-500">No daily best sells found.</div>;
+    return <div className="text-center text-gray-500"></div>;
 
   return (
     <section className="py-8 sm:py-12 bg-gray-50">

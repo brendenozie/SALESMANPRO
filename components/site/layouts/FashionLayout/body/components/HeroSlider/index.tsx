@@ -162,7 +162,7 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
                   className="px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full"
                   style={{ backgroundColor: `${primary}15`, color: primary }} // Themed badge
                 >
-                  {currentSlide.subline}
+                  {currentSlide.badgeText}
                 </span>
               </motion.div>
 
@@ -188,7 +188,7 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
               </motion.h1>
 
               <motion.p variants={fadeIn} className="text-lg text-slate-600 max-w-lg">
-                {currentSlide.badgeText}
+                {currentSlide.subline}
               </motion.p>
               
               {/* CTAs */}

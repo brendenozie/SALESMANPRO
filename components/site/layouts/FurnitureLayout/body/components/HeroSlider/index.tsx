@@ -230,7 +230,7 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
                             className="text-orange-700 font-bold tracking-widest text-xs uppercase mb-2 block"
                             style={{ color: primary }}
                           >
-                            {slide.subline}
+                            {slide.badgeText}
                           </span>
 
                           <h1 className="text-5xl md:text-6xl font-serif font-bold text-stone-900 leading-tight mb-6">
@@ -251,8 +251,8 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
                               ))}
                           </h1>
 
-                          {slide.badgeText && (
-                            <p className="text-stone-600 text-lg mb-8 leading-relaxed">{slide.badgeText}</p>
+                          {slide.subline && (
+                            <p className="text-stone-600 text-lg mb-8 leading-relaxed">{slide.subline}</p>
                           )}
 
                           <div className="flex gap-4">
@@ -266,9 +266,9 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
                               </Link>
                             )}
 
-                            <button className="px-8 py-4 border border-stone-300 text-stone-800 font-medium hover:bg-stone-50 transition-colors">
+                            {/* <button className="px-8 py-4 border border-stone-300 text-stone-800 font-medium hover:bg-stone-50 transition-colors">
                               View Lookbook
-                            </button>
+                            </button> */}
                           </div>
                         </motion.div>
                       </div>

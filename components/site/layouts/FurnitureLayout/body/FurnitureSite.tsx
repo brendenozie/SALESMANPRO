@@ -4,38 +4,22 @@ import React, { useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import useSWR from 'swr';
 import HeroSlider from '@/components/site/layouts/FurnitureLayout/body/components/HeroSlider';
-import Image from 'next/image';
-import { motion } from 'framer-motion';
 import { StoreForm, MarketListingForm } from '@/types/typings';
-
 
 // Above-the-fold components - statically imported
 import CategorySection from './components/CategorySection';
-import { TruckIcon, SwatchIcon, StarIcon, ArrowRightIcon, CubeIcon, HeartIcon } from '@heroicons/react/24/outline';
 import USPSlider from './components/USPSlider';
 import RoomSection from './components/RoomSection';
-import ProductCard from './components/ProductCard';
 
 // Loading skeleton
 const SectionSkeleton = () => <div className="h-96 w-full animate-pulse bg-gray-200 rounded-lg my-12" />;
 
 // 🧠 Dynamically import client-side sections (with skeleton fallback)
-const DynamicPopularProducts = dynamic(() => import('./components/PopularProducts'), {
-  loading: () => <SectionSkeleton />,
-  ssr: false,
-});
-
-const DynamicDailyBestSells = dynamic(() => import('./components/DailyBestSells'), {
-  loading: () => <SectionSkeleton />,
-  ssr: false,
-});
-
-const DynamicTrending = dynamic(() => import('./components/Trending'), {
-  loading: () => <SectionSkeleton />,
-  ssr: false,
-});
-
+const DynamicPopularProducts = dynamic(() => import('./components/PopularProducts'), { loading: () => <SectionSkeleton />, ssr: false,});
+const DynamicDailyBestSells = dynamic(() => import('./components/DailyBestSells'), { loading: () => <SectionSkeleton />,  ssr: false,});
+const DynamicTrending = dynamic(() => import('./components/Trending'), { loading: () => <SectionSkeleton />, ssr: false });
 const PromoSection = dynamic(() => import('./components/PromoSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const WeeklyProducts = dynamic(() => import('./components/WeeklyProducts'), { loading: () => <SectionSkeleton />, ssr: false });
 const SecondPromoSection = dynamic(() => import('./components/SecondPromoSection'), { loading: () => <SectionSkeleton />, ssr: false });
 const AllProducts = dynamic(() => import('./components/AllProducts'), { loading: () => <SectionSkeleton />, ssr: false });
 const MetricsSection = dynamic(() => import('@/components/site/MetricsSection'), { loading: () => <SectionSkeleton />, ssr: false });
@@ -212,14 +196,7 @@ export default function EcommerceSite({ pageData, companyId }: EcommerceSiteProp
       <USPSlider  coreValues={CoreValues} themeSettings={themeSettings} />      
       <CategorySection StoreCategory={StoreCategory} themeSettings={themeSettings} />      
       {/* Product Grid */}
-      <section className="py-12 max-w-7xl mx-auto px-6 mb-20">
-        <h2 className="text-3xl font-serif font-bold text-stone-900 mb-8 text-center">Weekly Highlights</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
-          {MOCK_FURNITURE.map((item) => (
-            <ProductCard key={item.id} product={item} />
-          ))}
-        </div>
-      </section>
+      <WeeklyProducts id={id} />
       {/* Featured Categories */}
       <RoomSection store={pageData}  themeSettings={themeSettings} />
       <DynamicPopularProducts id={id} />
