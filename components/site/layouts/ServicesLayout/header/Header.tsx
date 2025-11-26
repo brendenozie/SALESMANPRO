@@ -306,7 +306,7 @@ const Header = ({ storeFormData }: { storeFormData: any }) => {
                   className="flex items-center gap-2 pl-1 pr-2 py-1 rounded-full border border-transparent hover:border-gray-200 dark:hover:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
                 >
                   {user.image ? (
-                    <Image src={user.image} alt="Profile" width={32} height={32} className="rounded-full" />
+                    <Image src={user.image} loader={loader} alt="Profile" width={32} height={32} className="rounded-full" />
                   ) : (
                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center text-gray-600">
                        <span className="text-xs font-bold">{user.name?.charAt(0) || 'U'}</span>
