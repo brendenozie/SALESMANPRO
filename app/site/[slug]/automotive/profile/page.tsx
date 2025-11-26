@@ -1,4 +1,9 @@
-import React from 'react';
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { useSession, signOut } from 'next-auth/react';
+import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import { 
   WrenchScrewdriverIcon, 
   TrophyIcon, 
@@ -9,10 +14,106 @@ import {
   CogIcon,
   ArrowRightIcon,
   FunnelIcon,
-  ChartBarIcon
+  ChartBarIcon,
+  ArrowRightOnRectangleIcon,
 } from '@heroicons/react/24/solid';
 
+interface UserProfile {
+  id: string;
+  name: string | null;
+  email: string;
+  avatar: string | null;
+  tier?: string;
+}
+
+interface AutomotiveListing {
+  id: string;
+  name: string;
+  description: string | null;
+  images: string[];
+  price: number;
+  make: string | null;
+  model: string | null;
+  year: number | null;
+}
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+
 const AutomotiveDashboard = () => {
+  const { data: session, status } = useSession();
+  const { slug } = useParams() as { slug: string };
+  
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [listings, setListings] = useState<AutomotiveListing[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (status === 'authenticated' && session?.user) {
+      fetchUserData();
+    } else if (status === 'unauthenticated') {
+      setLoading(false);
+    }
+  }, [status, session, slug]);
+
+  const fetchUserData = async () => {
+    try {
+      setLoading(true);
+      const [profileRes, automotiveRes] = await Promise.all([
+        fetch(`${apiBaseUrl}/site/${slug}/me/profile`),
+        fetch(`${apiBaseUrl}/site/${slug}/me/automotive`),
+      ]);
+
+      if (profileRes.ok) {
+        const profileData = await profileRes.json();
+        setUser(profileData);
+      }
+
+      if (automotiveRes.ok) {
+        const data = await automotiveRes.json();
+        setListings(data.items || []);
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Show sign-in prompt if not authenticated
+  if (status === 'loading' || loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-zinc-950">
+        <div className="animate-pulse text-xl text-zinc-400">Loading...</div>
+      </div>
+    );
+  }
+
+  if (status === 'unauthenticated') {
+    return (
+      <section className="flex items-center justify-center min-h-screen bg-zinc-950">
+        <div className="text-center">
+          <UserCircleIcon className="w-20 h-20 mx-auto text-zinc-400 mb-4" />
+          <h2 className="text-2xl font-bold text-white mb-2">
+            Please sign in to access your garage.
+          </h2>
+          <Link href={`/auth/signin`}>
+            <button className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg">
+              Sign In
+            </button>
+          </Link>
+        </div>
+      </section>
+    );
+  }
+
+  // Display values with defaults
+  const displayUser = {
+    name: user?.name || session?.user?.name || 'Driver',
+    handle: (user?.name || session?.user?.name || 'DRIVER').toUpperCase().replace(/\s/g, '_'),
+    avatar: user?.avatar || session?.user?.image,
+    vehicleCount: listings.length,
+  };
+
   return (
     <div className="min-h-screen bg-zinc-950 text-white font-sans selection:bg-red-600 selection:text-white overflow-x-hidden">
       
@@ -39,8 +140,14 @@ const AutomotiveDashboard = () => {
             <NavIcon icon={<TrophyIcon />} label="Events" active={false} />
           </nav>
 
-          <div className="mt-auto">
+          <div className="mt-auto space-y-4">
              <NavIcon icon={<CogIcon />} label="Settings" active={false} />
+             <button 
+               onClick={() => signOut({ callbackUrl: `/site/${slug}` })}
+               className="w-12 h-12 flex items-center justify-center text-zinc-500 hover:text-red-400 transition-colors"
+             >
+               <ArrowRightOnRectangleIcon className="w-6 h-6" />
+             </button>
           </div>
         </aside>
 
@@ -51,13 +158,13 @@ const AutomotiveDashboard = () => {
           <header className="px-8 py-6 flex justify-between items-end border-b border-zinc-800 bg-zinc-950/50 backdrop-blur-sm sticky top-0 z-40">
             <div>
               <p className="text-zinc-500 text-xs font-mono tracking-widest uppercase mb-1">Driver Profile</p>
-              <h1 className="text-3xl font-black italic tracking-tighter text-white">ALEX_TURBO</h1>
+              <h1 className="text-3xl font-black italic tracking-tighter text-white">{displayUser.handle}</h1>
             </div>
             <div className="flex items-center gap-6">
                <div className="text-right hidden md:block">
-                 <p className="text-xs text-zinc-500 font-mono">Reputation</p>
+                 <p className="text-xs text-zinc-500 font-mono">Vehicles</p>
                  <div className="flex items-center gap-1 text-red-500 font-bold">
-                   <TrophyIcon className="w-4 h-4" /> 
+                   <WrenchScrewdriverIcon className="w-4 h-4" /> 
                    <span>Level 42</span>
                  </div>
                </div>

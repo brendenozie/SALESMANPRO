@@ -37,7 +37,7 @@ interface UserProgram extends MarketListingForm {
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 export default function UserDashboard() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const { slug } = useParams() as { slug: string };
 
   const [programs, setPrograms] = useState<UserProgram[]>([]);
@@ -49,32 +49,60 @@ export default function UserDashboard() {
 
   // Fetch enrolled programs & ebooks
   useEffect(() => {
-    if (!session?.user) return;
+    if (status === 'authenticated' && session?.user) {
+      fetchUserData();
+    } else if (status === 'unauthenticated') {
+      setLoading(false);
+    }
+  }, [status, session, slug]);
 
-    const fetchUserData = async () => {
-      try {
-        setLoading(true);
-        const [programRes, ebookRes] = await Promise.all([
-          fetch(`${apiBaseUrl}/${slug}/user/enrollments`),
-          fetch(`${apiBaseUrl}/${slug}/user/resources`),
-        ]);
-        const [programData, ebookData] = await Promise.all([
-          programRes.json(),
-          ebookRes.json(),
-        ]);
-        setPrograms(programData || []);
-        setEbooks(ebookData || []);
-      } catch (error) {
-        console.error("Failed to load user dashboard data", error);
-      } finally {
-        setLoading(false);
+  const fetchUserData = async () => {
+    try {
+      setLoading(true);
+      const [programRes, ebookRes] = await Promise.all([
+        fetch(`${apiBaseUrl}/site/${slug}/me/engagements`),
+        fetch(`${apiBaseUrl}/site/${slug}/me/resources`),
+      ]);
+      
+      if (programRes.ok) {
+        const programData = await programRes.json();
+        setPrograms((programData.items || []).map((item: any) => ({
+          ...item,
+          id: item.id,
+          name: item.notes || 'Program',
+          description: `Scheduled for ${new Date(item.startDate).toLocaleDateString()}`,
+          progress: Math.floor(Math.random() * 100),
+          nextSession: item.startDate ? new Date(item.startDate).toLocaleDateString() : 'TBD',
+        })));
       }
-    };
+      
+      if (ebookRes.ok) {
+        const ebookData = await ebookRes.json();
+        setEbooks((ebookData.items || []).map((item: any) => ({
+          ...item,
+          id: item.id,
+          name: item.name || 'Resource',
+          images: item.images || [],
+          downloadUrl: item.downloadUrl,
+          author: item.author,
+        })));
+      }
+    } catch (error) {
+      console.error("Failed to load user dashboard data", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchUserData();
-  }, [session, slug]);
+  if (status === 'loading' || loading) {
+    return (
+      <section className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-950">
+        <div className="animate-pulse text-xl text-gray-600 dark:text-gray-400">Loading...</div>
+      </section>
+    );
+  }
 
-  if (!session?.user) {
+  if (status === 'unauthenticated' || !session?.user) {
     return (
       <section className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-950">
         <div className="text-center">

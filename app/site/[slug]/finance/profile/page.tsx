@@ -1,4 +1,9 @@
-import React from 'react';
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { useSession, signOut } from 'next-auth/react';
+import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import { 
   BuildingLibraryIcon, 
   DocumentTextIcon, 
@@ -9,10 +14,101 @@ import {
   ChevronRightIcon,
   ArrowDownTrayIcon,
   ScaleIcon,
-  ClockIcon
+  ClockIcon,
+  UserCircleIcon,
+  ArrowRightOnRectangleIcon,
 } from '@heroicons/react/24/outline';
 
+interface UserProfile {
+  id: string;
+  name: string | null;
+  email: string;
+  avatar: string | null;
+  tier?: string;
+}
+
+interface FinanceData {
+  id: string;
+  total: number;
+  status: string;
+}
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+
 const FinanceLegalDashboard = () => {
+  const { data: session, status } = useSession();
+  const { slug } = useParams() as { slug: string };
+  
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [financeData, setFinanceData] = useState<FinanceData[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (status === 'authenticated' && session?.user) {
+      fetchUserData();
+    } else if (status === 'unauthenticated') {
+      setLoading(false);
+    }
+  }, [status, session, slug]);
+
+  const fetchUserData = async () => {
+    try {
+      setLoading(true);
+      const [profileRes, financeRes] = await Promise.all([
+        fetch(`${apiBaseUrl}/site/${slug}/me/profile`),
+        fetch(`${apiBaseUrl}/site/${slug}/me/finance`),
+      ]);
+
+      if (profileRes.ok) {
+        const profileData = await profileRes.json();
+        setUser(profileData);
+      }
+
+      if (financeRes.ok) {
+        const data = await financeRes.json();
+        setFinanceData(data.items || []);
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Show sign-in prompt if not authenticated
+  if (status === 'loading' || loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="animate-pulse text-xl text-slate-600">Loading...</div>
+      </div>
+    );
+  }
+
+  if (status === 'unauthenticated') {
+    return (
+      <section className="flex items-center justify-center min-h-screen bg-slate-50">
+        <div className="text-center">
+          <UserCircleIcon className="w-20 h-20 mx-auto text-slate-400 mb-4" />
+          <h2 className="text-2xl font-bold text-slate-800 mb-2">
+            Please sign in to access your dashboard.
+          </h2>
+          <Link href={`/auth/signin`}>
+            <button className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg">
+              Sign In
+            </button>
+          </Link>
+        </div>
+      </section>
+    );
+  }
+
+  // Display values with defaults
+  const displayUser = {
+    name: user?.name || session?.user?.name || 'User',
+    tier: user?.tier || 'Premium Tier',
+    totalWorth: financeData.reduce((sum, item) => sum + (item.total || 0), 0),
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 font-sans selection:bg-indigo-100">
       
@@ -42,10 +138,17 @@ const FinanceLegalDashboard = () => {
           <div className="flex items-center gap-3 p-2 rounded-xl bg-white/5 hover:bg-white/10 cursor-pointer transition-colors">
             <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-400 to-cyan-300"></div>
             <div className="hidden lg:block">
-              <p className="text-sm font-medium">Arthur Dent</p>
-              <p className="text-xs text-slate-400">Premium Tier</p>
+              <p className="text-sm font-medium">{displayUser.name}</p>
+              <p className="text-xs text-slate-400">{displayUser.tier}</p>
             </div>
           </div>
+          <button 
+            onClick={() => signOut({ callbackUrl: `/site/${slug}` })}
+            className="mt-2 w-full flex items-center justify-center gap-2 p-2 rounded-xl text-slate-400 hover:bg-red-900/30 hover:text-red-300 transition-colors"
+          >
+            <ArrowRightOnRectangleIcon className="w-5 h-5" />
+            <span className="hidden lg:block text-sm">Sign Out</span>
+          </button>
         </div>
       </aside>
 
