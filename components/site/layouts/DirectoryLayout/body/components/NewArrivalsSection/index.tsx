@@ -176,12 +176,12 @@ export default function NewArrivalsSection({ marketplaceListings: dynamicListing
 
                   <div className="mt-4 flex items-center justify-between">
                     <span className="font-extrabold text-xl">{listing.price}</span>
-                    <button
+                    {/* <button
                       onClick={() => setSelectedListing(listing)}
                       className="flex items-center space-x-1 px-4 py-2 bg-blue-500 text-white rounded-full"
                     >
                       View Details <ChevronRightIcon className="h-4 w-4" />
-                    </button>
+                    </button> */}
                   </div>
 
                   {/* Cart Actions */}

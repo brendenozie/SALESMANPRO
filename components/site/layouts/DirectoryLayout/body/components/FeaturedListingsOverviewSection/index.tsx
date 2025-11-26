@@ -428,7 +428,7 @@ function ListingGrid({ listings, baseSlug }: ListingGridProps) {
                 </div>
                 <div className="mt-4 flex items-center justify-between">
                   {/* Price is not directly available in this section's mock/schema, using a placeholder */}
-                  <span className="font-extrabold text-xl text-gray-900 dark:text-white">View Details</span> 
+                  {/* <span className="font-extrabold text-xl text-gray-900 dark:text-white">View Details</span> 
                   <button
                     onClick={() => setSelectedListing(item)}
                     className="flex items-center space-x-1 px-4 py-2 bg-blue-500 text-white rounded-full text-sm font-semibold hover:bg-blue-600 transition-colors duration-200 shadow-md"
@@ -436,7 +436,7 @@ function ListingGrid({ listings, baseSlug }: ListingGridProps) {
                   >
                     View Details
                     <ChevronRightIcon className="h-4 w-4" />
-                  </button>
+                  </button> */}
                 </div>
               </div>
             </motion.div>

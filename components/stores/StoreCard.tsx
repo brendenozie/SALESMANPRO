@@ -19,6 +19,7 @@ interface StoreData {
   id: string;
   slug: string;
   name: string;
+  domain: string;
   companyId: string;
   subscriptionStatus: string;
   category?: string;
@@ -41,6 +42,7 @@ export default function StoreCard({
   slug,
   name,
   category,
+  domain,
   description,
   bannerUrl,
   contactEmail,
@@ -164,9 +166,11 @@ export default function StoreCard({
               <ArrowRightCircleIcon className="h-5 w-5 ml-2" />
             </motion.button>
             
-            {/* Secondary Action: View Live Site (Always available) */}
+            {/* Secondary Action: View Live Site (Always available) https:// */}
             <button
-              onClick={() => navigate(`/site/${slug}`)}
+              // onClick={() => navigate(`https://${domain}`)}
+              // onClick={() => window.location.href = `${domain}`}
+              onClick={() => window.open(`https://${domain}`, "_blank")}
               className="w-full text-center text-blue-600 font-semibold hover:text-blue-800 transition flex items-center justify-center text-sm p-2"
             >
               <GlobeAltIcon className="h-4 w-4 mr-2" />

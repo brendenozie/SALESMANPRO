@@ -35,6 +35,7 @@ interface Store {
   id: string;
   name: string;
   slug: string;
+  domain: string;
   companyId: string; // <-- REQUIRED
   subscriptionStatus: string; // <-- REQUIRED (e.g., 'ACTIVE', 'INACTIVE')
   description?: string;
@@ -258,7 +259,7 @@ const CheckIcon = (
 
 // --- MAIN PRICING SECTION COMPONENT ---
 // It now receives companyId and email, but onSubscriptionSuccess is handled internally
-function PricingSection({ companyId, email }: { companyId: string, email: string }) {
+function PricingSection({ companyId, email, category }: { companyId: string, email: string, category: string }) {
   const paystackPublicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "pk_test_4ec65e0fe08ffa32b2708be2adb75b865d2517ce"; // Fallback to test key
   
   const [plans, setPlans] = useState<Plan[]>([]); 
@@ -310,7 +311,7 @@ function PricingSection({ companyId, email }: { companyId: string, email: string
       setLoading(true); // Start loading screen
       try {
         // In a real Next.js app, process.env.NEXT_PUBLIC_DEFAULT_COMPANY_ID would be available
-        const res = await fetch(`/api/plans?companyId=${defaultCompanyId}`);
+        const res = await fetch(`/api/plans?companyId=${defaultCompanyId}&category=${category}`);
         if (!res.ok) throw new Error("Failed to fetch plans");
         
         const data = await res.json();
@@ -787,11 +788,12 @@ function PricingSection({ companyId, email }: { companyId: string, email: string
 }
 
 
-const PricingModal = ({ isOpen, onClose, companyId, email, onSubscriptionSuccess }: { 
+const PricingModal = ({ isOpen, onClose, companyId, email,category, onSubscriptionSuccess }: { 
   isOpen: boolean, 
   onClose: () => void, 
   companyId: string | null,
   email: string,
+  category: string,
   onSubscriptionSuccess: () => void
 }) => {
     
@@ -821,6 +823,7 @@ const PricingModal = ({ isOpen, onClose, companyId, email, onSubscriptionSuccess
                             <PricingSection 
                               companyId={companyId} 
                               email={email}
+                              category={category}
                               // onSubscriptionSuccess={onSubscriptionSuccess}
                             />
                         </div>
@@ -845,6 +848,7 @@ export default function StoresPage() {
     // State for the new Pricing Modal
     const [isPricingModalOpen, setIsPricingModalOpen] = useState(false);
     const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
+    const [selectedCategory, setSelectedCategory] = useState<string>('');
 
     const router = useRouter();
     const pathname = usePathname();
@@ -888,8 +892,9 @@ export default function StoresPage() {
     };
 
     // New handler to open the pricing modal for a specific company
-    const handleManageSubscription = (companyId: string) => {
+    const handleManageSubscription = (companyId: string, category: string) => {
         setSelectedCompanyId(companyId);
+        setSelectedCategory(category);
         setIsPricingModalOpen(true);
     };
 
@@ -1017,7 +1022,7 @@ export default function StoresPage() {
                                         onDelete={isActive ? () => handleDeleteClick(store) : undefined}
                                         
                                         // Pass this handler to show a "Subscribe" button if !isActive
-                                        onManageSubscription={!isActive ? () => handleManageSubscription(store.id) : undefined}
+                                        onManageSubscription={!isActive ? () => handleManageSubscription(store.id, store.category || '') : undefined}
                                     />
                                 </motion.div>
                             );
@@ -1049,6 +1054,7 @@ export default function StoresPage() {
                 onClose={() => setIsPricingModalOpen(false)}
                 companyId={selectedCompanyId}
                 email={session.user?.email || ''}
+                category={selectedCategory}
                 onSubscriptionSuccess={handleSubscriptionSuccess}
             />
         </>

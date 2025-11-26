@@ -67,6 +67,8 @@ async function getCompanies(req: Request, context: HandlerContext) {
       name: c.name,
       companyId: c.id,
       slug: c.slug,
+      domain: c.domain,
+      category: c.category,
       bannerUrl: c.bannerUrl,
       logoUrl: c.logoUrl,
       description: c.description,
