@@ -1,179 +1,227 @@
-// app/[slug]/profile/page.tsx
-'use client';
+import React from 'react';
+import { 
+  CalendarDaysIcon, 
+  CheckCircleIcon, 
+  BookOpenIcon, 
+  ChatBubbleLeftRightIcon,
+  VideoCameraIcon,
+  ArrowLongRightIcon
+} from '@heroicons/react/24/solid';
+import { ChevronRightIcon, DocumentTextIcon, CheckIcon } from '@heroicons/react/24/outline';
 
-import React, { useState, ChangeEvent } from 'react';
-import { motion } from 'framer-motion';
-import Section from '@/components/site/Section/Section';
-import NewsletterSection from '@/components/site/NewsletterSection/NewsletterSection';
-import { useStore } from '@/contexts/StoreContext';
-import { useStateContext } from '@/contexts/ContextProvider';
+const TargetIcon = ({ className }: { className: string }) => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    fill="none" 
+    viewBox="0 0 24 24" 
+    strokeWidth={2} 
+    stroke="currentColor" 
+    className={className}
+  >
+    <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
+    <circle cx="12" cy="12" r="6" stroke="currentColor" strokeWidth="2" />
+    <circle cx="12" cy="12" r="2" fill="currentColor" />
+  </svg>
+);
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
-
-export default function ProfilePage() {
-  const store = useStore();
-  const { user, orders: initialOrders } = useStateContext();
-
-  const [activeTab, setActiveTab] = useState<'profile' | 'orders'>('profile');
-  const [name, setName] = useState(user?.name || '');
-  const [email, setEmail] = useState(user?.email || '');
-  const [phone, setPhone] = useState(user?.phone || '');
-  const [avatarPreview, setAvatarPreview] = useState(user?.avatarUrl || '/default-avatar.png');
-  const [orders] = useState(initialOrders || []);
-  const [message, setMessage] = useState('');
-
-  const handleAvatarChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) setAvatarPreview(URL.createObjectURL(file));
-    // TODO: upload avatar
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setMessage('');
-    try {
-      const res = await fetch(`${apiBaseUrl}/user/update`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, phone }),
-      });
-      setMessage(res.ok ? 'Profile updated!' : 'Update failed.');
-    } catch {
-      setMessage('Error updating profile');
-    }
-  };
-
-  if (!store) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-xl">Store not found</p>
-      </div>
-    );
-  }
-
+const ConsultantDashboard = () => {
   return (
-    <div className="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 min-h-screen">
-      <Section title=''>
-        {/* Tabs */}
-        <div className="flex space-x-4 mb-6">
-          {['profile', 'orders'].map(tab => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab as any)}
-              className={`px-4 py-2 rounded-md font-medium ${
-                activeTab === tab
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300'
-              }`}
-            >
-              {tab === 'profile' ? 'My Profile' : 'Order History'}
+    <div className="min-h-screen bg-gray-50 text-gray-800 font-sans selection:bg-amber-100">
+      
+      {/* --- HEADER & NEXT SESSION --- */}
+      <div className="bg-white shadow-lg rounded-b-xl border-b border-gray-100 pt-8 pb-10">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          
+          {/* Greeting */}
+          <div className="mb-8">
+            <p className="text-xl font-medium text-gray-500">Hello, Eleanor.</p>
+            <h1 className="text-4xl font-extrabold text-gray-900 mt-1">Ready for the next breakthrough?</h1>
+          </div>
+
+          {/* Next Session Card */}
+          <div className="p-5 bg-blue-900 text-white rounded-xl shadow-xl shadow-blue-900/20 flex flex-col md:flex-row justify-between items-center">
+            <div className="flex items-center gap-4">
+              <CalendarDaysIcon className="w-8 h-8 text-amber-400 flex-shrink-0" />
+              <div>
+                <p className="text-sm uppercase tracking-widest text-blue-300">Next Session</p>
+                <h2 className="text-xl font-bold">1:1 Strategy Deep Dive (Week 4)</h2>
+                <p className="text-sm text-blue-200">Monday, December 2nd @ 10:00 AM PST</p>
+              </div>
+            </div>
+            <button className="mt-4 md:mt-0 px-6 py-2 bg-amber-500 text-blue-900 font-bold rounded-lg flex items-center gap-2 hover:bg-amber-400 transition-colors">
+              <VideoCameraIcon className="w-5 h-5" />
+              Join Call Now
             </button>
-          ))}
+          </div>
+        </div>
+      </div>
+      
+      {/* --- MAIN DASHBOARD CONTENT --- */}
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-10">
+        
+        {/* Quote / Insight */}
+        <div className="mb-10 p-4 border-l-4 border-amber-500 bg-amber-50 rounded-lg text-gray-700 italic">
+          <p className="font-semibold">Coach's Insight:</p>
+          <p className="text-sm">"Remember, delegation isn't avoidance, it's leveraging your unique strengths. Focus on the 20% that moves the needle."</p>
         </div>
 
-        {activeTab === 'profile' && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-            {/* Avatar & Stats */}
-            <div className="flex items-center space-x-6 bg-white dark:bg-gray-800 p-6 rounded-xl shadow">
-              <div className="relative group">
-                <img
-                  src={avatarPreview}
-                  alt="Avatar"
-                  className="w-24 h-24 rounded-full object-cover border-4 border-blue-500"
-                />
-                <label className="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 flex items-center justify-center rounded-full transition-opacity cursor-pointer">
-                  <input type="file" className="hidden" onChange={handleAvatarChange} />
-                  <span className="text-white text-sm">Change</span>
-                </label>
+        {/* --- GOALS & ACTIONS GRID --- */}
+        <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          {/* LEFT COLUMN: Goals & Action Items (Focus) */}
+          <div className="lg:col-span-2 space-y-8">
+            
+            {/* 1. Primary Goal Tracker */}
+            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                  <TargetIcon className="w-6 h-6 text-amber-500" /> Primary Goal: Launch MVP
+                </h2>
+                <span className="text-xs font-medium text-gray-500">Goal Set: Oct 15</span>
               </div>
-              <div>
-                <h2 className="text-2xl font-bold">{user?.name}</h2>
-                <div className="mt-2 flex space-x-4 text-gray-600 dark:text-gray-300">
-                  <div className="flex items-center space-x-1">
-                    <span className="font-semibold">{orders.length}</span>
-                    <span>Orders</span>
-                  </div>
-                </div>
+              
+              <GoalTracker progress={75} milestone="Launch Prep (Week 5)" />
+
+              <div className="mt-4 flex justify-between text-sm text-gray-600">
+                 <p className="font-semibold">Next Milestone: Beta Testing Start (85%)</p>
+                 <button className="text-amber-600 hover:text-amber-700 flex items-center gap-1">
+                   Edit Plan <ArrowLongRightIcon className="w-4 h-4" />
+                 </button>
               </div>
             </div>
 
-            {/* Profile Form */}
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow">
-              {message && <p className="text-green-500 mb-4">{message}</p>}
-              <form onSubmit={handleSubmit} className="space-y-4">
-                {['Name', 'Email', 'Phone'].map((label, i) => {
-                  const state = [name, email, phone][i];
-                  const setter = [setName, setEmail, setPhone][i];
-                  const type = label === 'Email' ? 'email' : label === 'Phone' ? 'tel' : 'text';
-                  return (
-                    <div key={label}>
-                      <label className="block text-sm font-medium">{label}</label>
-                      <input
-                        type={type}
-                        value={state}
-                        onChange={e => setter(e.target.value)}
-                        className="mt-1 w-full border border-gray-300 rounded px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
-                      />
-                    </div>
-                  );
-                })}
-                <button
-                  type="submit"
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md"
-                >
-                  Save Changes
-                </button>
-              </form>
-            </div>
-          </motion.div>
-        )}
+            {/* 2. Action Items / Homework */}
+            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                <CheckCircleIcon className="w-6 h-6 text-blue-600" /> Action Items (This Week)
+              </h2>
+              
+              <div className="space-y-3 divide-y divide-gray-100">
+                <ActionItem task="Finalize delegation matrix for admin tasks." deadline="Due Tomorrow" completed={true} />
+                <ActionItem task="Draft the first version of the email marketing sequence." deadline="Due Friday" completed={false} />
+                <ActionItem task="Book 3 discovery calls for market validation." deadline="Due Next Week" completed={false} />
+                <ActionItem task="Review the 'Pricing Strategy' resource guide." deadline="Optional" completed={true} />
+              </div>
 
-        {activeTab === 'orders' && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-            {orders.map((o : any) => (
-              <motion.div
-                key={o.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow hover:shadow-lg transition"
-              >
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center space-x-3">
-                    <img src={o.items[0]?.thumbnail} className="w-16 h-16 rounded" />
-                    <div>
-                      <h3 className="font-semibold">Order #{o.id}</h3>
-                      <p className="text-sm text-gray-500">{new Date(o.date).toLocaleDateString()}</p>
-                    </div>
-                  </div>
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs ${
-                      o.status === 'Delivered'
-                        ? 'bg-green-100 text-green-800'
-                        : o.status === 'In Transit'
-                        ? 'bg-yellow-100 text-yellow-800'
-                        : 'bg-red-100 text-red-800'
-                    }`}
-                  >
-                    {o.status}
-                  </span>
-                </div>
-                <details className="mt-2">
-                  <summary className="cursor-pointer text-blue-600">View Items</summary>
-                  <ul className="mt-2 space-y-1">
-                    {o.items.map((item:any) => (
-                      <li key={item.id} className="flex justify-between">
-                        <span>{item.name}</span>
-                        <span>x{item.qty}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </details>
-              </motion.div>
-            ))}
-          </motion.div>
-        )}
-      </Section>
-      <NewsletterSection />
+              <div className="mt-6 text-sm text-gray-500">
+                 <p>2/4 Required Actions Complete. Keep the momentum going!</p>
+              </div>
+            </div>
+
+          </div>
+          
+          {/* RIGHT COLUMN: Support & History */}
+          <div className="lg:col-span-1 space-y-8">
+            
+            {/* Session Log */}
+            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200">
+              <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <ChatBubbleLeftRightIcon className="w-5 h-5 text-gray-500" /> Recent Session Log
+              </h3>
+              <div className="space-y-3">
+                <LogItem date="Nov 25" topic="Identifying Bottlenecks" type="Strategy" />
+                <LogItem date="Nov 18" topic="Defining Ideal Client" type="Vision" />
+                <LogItem date="Nov 11" topic="Time Management Framework" type="Tactics" />
+              </div>
+              <button className="w-full mt-4 py-2 border border-gray-200 text-gray-600 rounded-lg text-sm hover:bg-gray-50 transition-colors">
+                View Full History
+              </button>
+            </div>
+
+            {/* Resource Library */}
+            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200">
+              <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <BookOpenIcon className="w-5 h-5 text-gray-500" /> Resource Library
+              </h3>
+              <div className="space-y-3">
+                <ResourceItem name="The Essential Delegation Matrix" type="Template" />
+                <ResourceItem name="Pricing Strategy Playbook" type="PDF Guide" />
+                <ResourceItem name="Q&A Session: Scaling" type="Video" />
+              </div>
+            </div>
+            
+             {/* Quick Links */}
+             <div className="space-y-3 p-4 bg-gray-100 rounded-xl">
+                <QuickLink text="Manage Billing & Invoices" icon={<DocumentTextIcon />} />
+                <QuickLink text="Reschedule or Cancel Session" icon={<CalendarDaysIcon />} />
+             </div>
+
+          </div>
+        </section>
+      </div>
     </div>
   );
-}
+};
+
+// --- SUB COMPONENTS ---
+
+const GoalTracker = ({ progress, milestone }:{progress: number; milestone: string}) => (
+  <div>
+    <div className="flex justify-between items-end mb-2">
+      <span className="text-4xl font-extrabold text-amber-500">{progress}%</span>
+      <span className="text-sm font-semibold text-gray-600">{milestone}</span>
+    </div>
+    <div className="w-full h-3 bg-gray-200 rounded-full overflow-hidden">
+      <div 
+        className="h-full bg-gradient-to-r from-amber-400 to-orange-500 transition-all duration-700" 
+        style={{ width: `${progress}%` }}
+      ></div>
+    </div>
+  </div>
+);
+
+const ActionItem = ({ task, deadline, completed }:{task: string; deadline: string; completed: boolean}) => (
+  <div className="flex items-center justify-between pt-3 cursor-pointer group">
+    <div className="flex items-center gap-3">
+      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${
+        completed 
+          ? 'bg-blue-600 border-blue-600' 
+          : 'border-gray-400 group-hover:border-blue-500'
+      }`}>
+        {completed && <CheckIcon className="w-3.5 h-3.5 text-white" />}
+      </div>
+      <p className={`text-base ${completed ? 'text-gray-400 line-through' : 'text-gray-800 font-medium'}`}>
+        {task}
+      </p>
+    </div>
+    <span className={`text-xs font-medium ${
+      completed ? 'text-gray-400' : deadline.includes('Tomorrow') ? 'text-red-500' : 'text-gray-500'
+    }`}>
+      {deadline}
+    </span>
+  </div>
+);
+
+const LogItem = ({ date, topic, type }:{date: string; topic: string; type: string}) => (
+  <div className="flex justify-between items-center py-2 group cursor-pointer border-b border-gray-100 last:border-b-0">
+    <div className="flex items-center gap-2">
+      <ChatBubbleLeftRightIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
+      <p className="text-sm text-gray-700 group-hover:text-blue-700 transition-colors">{topic}</p>
+    </div>
+    <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">
+      {type}
+    </span>
+  </div>
+);
+
+const ResourceItem = ({ name, type }:{name: string; type: string}) => (
+  <div className="flex justify-between items-center py-2 group cursor-pointer border-b border-gray-100 last:border-b-0">
+    <div className="flex items-center gap-2">
+      <DocumentTextIcon className="w-4 h-4 text-gray-400 flex-shrink-0" />
+      <p className="text-sm text-gray-700 group-hover:text-amber-600 transition-colors">{name}</p>
+    </div>
+    <span className="text-xs text-gray-500">{type}</span>
+  </div>
+);
+
+const QuickLink = ({ text, icon }:{text: string; icon: React.ReactElement}) => (
+    <a href="#" className="flex items-center justify-between p-3 bg-white hover:bg-gray-200 rounded-lg transition-colors border border-gray-200">
+        <div className="flex items-center gap-3">
+            {React.cloneElement(icon, { className: 'w-5 h-5 text-blue-700' })}
+            <span className="font-medium text-sm text-gray-800">{text}</span>
+        </div>
+        <ChevronRightIcon className="w-4 h-4 text-gray-500" />
+    </a>
+);
+
+export default ConsultantDashboard;

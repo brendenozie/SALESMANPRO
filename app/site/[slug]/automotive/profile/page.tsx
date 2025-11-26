@@ -1,179 +1,324 @@
-// app/[slug]/profile/page.tsx
-'use client';
+import React from 'react';
+import { 
+  WrenchScrewdriverIcon, 
+  TrophyIcon, 
+  MapIcon, 
+  ShoppingCartIcon, 
+  BoltIcon,
+  UserCircleIcon,
+  CogIcon,
+  ArrowRightIcon,
+  FunnelIcon,
+  ChartBarIcon
+} from '@heroicons/react/24/solid';
 
-import React, { useState, ChangeEvent } from 'react';
-import { motion } from 'framer-motion';
-import Section from '@/components/site/Section/Section';
-import NewsletterSection from '@/components/site/NewsletterSection/NewsletterSection';
-import { useStore } from '@/contexts/StoreContext';
-import { useStateContext } from '@/contexts/ContextProvider';
-
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
-
-export default function ProfilePage() {
-  const store = useStore();
-  const { user, orders: initialOrders } = useStateContext();
-
-  const [activeTab, setActiveTab] = useState<'profile' | 'orders'>('profile');
-  const [name, setName] = useState(user?.name || '');
-  const [email, setEmail] = useState(user?.email || '');
-  const [phone, setPhone] = useState(user?.phone || '');
-  const [avatarPreview, setAvatarPreview] = useState(user?.avatarUrl || '/default-avatar.png');
-  const [orders] = useState(initialOrders || []);
-  const [message, setMessage] = useState('');
-
-  const handleAvatarChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) setAvatarPreview(URL.createObjectURL(file));
-    // TODO: upload avatar
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setMessage('');
-    try {
-      const res = await fetch(`${apiBaseUrl}/user/update`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, phone }),
-      });
-      setMessage(res.ok ? 'Profile updated!' : 'Update failed.');
-    } catch {
-      setMessage('Error updating profile');
-    }
-  };
-
-  if (!store) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-xl">Store not found</p>
-      </div>
-    );
-  }
-
+const AutomotiveDashboard = () => {
   return (
-    <div className="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 min-h-screen">
-      <Section title=''>
-        {/* Tabs */}
-        <div className="flex space-x-4 mb-6">
-          {['profile', 'orders'].map(tab => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab as any)}
-              className={`px-4 py-2 rounded-md font-medium ${
-                activeTab === tab
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300'
-              }`}
-            >
-              {tab === 'profile' ? 'My Profile' : 'Order History'}
-            </button>
-          ))}
-        </div>
+    <div className="min-h-screen bg-zinc-950 text-white font-sans selection:bg-red-600 selection:text-white overflow-x-hidden">
+      
+      {/* --- BACKGROUND ELEMENTS --- */}
+      {/* Carbon fiber-esque pattern feel */}
+      <div className="fixed inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10 pointer-events-none z-0"></div>
+      <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-red-600/10 rounded-full blur-[100px] pointer-events-none z-0"></div>
 
-        {activeTab === 'profile' && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-            {/* Avatar & Stats */}
-            <div className="flex items-center space-x-6 bg-white dark:bg-gray-800 p-6 rounded-xl shadow">
-              <div className="relative group">
-                <img
-                  src={avatarPreview}
-                  alt="Avatar"
-                  className="w-24 h-24 rounded-full object-cover border-4 border-blue-500"
-                />
-                <label className="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 flex items-center justify-center rounded-full transition-opacity cursor-pointer">
-                  <input type="file" className="hidden" onChange={handleAvatarChange} />
-                  <span className="text-white text-sm">Change</span>
-                </label>
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold">{user?.name}</h2>
-                <div className="mt-2 flex space-x-4 text-gray-600 dark:text-gray-300">
-                  <div className="flex items-center space-x-1">
-                    <span className="font-semibold">{orders.length}</span>
-                    <span>Orders</span>
+      <div className="relative z-10 flex min-h-screen">
+        
+        {/* --- SIDEBAR NAVIGATION (Slim & Technical) --- */}
+        <aside className="w-20 lg:w-24 bg-zinc-900/80 backdrop-blur-md border-r border-zinc-800 flex flex-col items-center py-8 fixed h-full z-50">
+          <div className="mb-12">
+            <div className="w-10 h-10 bg-red-600 rounded flex items-center justify-center transform -skew-x-12">
+               <BoltIcon className="w-6 h-6 text-white transform skew-x-12" />
+            </div>
+          </div>
+          
+          <nav className="flex-1 space-y-8 w-full flex flex-col items-center">
+            <NavIcon icon={<UserCircleIcon />} label="Profile" active />
+            <NavIcon icon={<WrenchScrewdriverIcon />} label="Garage" active={false} />
+            <NavIcon icon={<MapIcon />} label="Routes" active={false} />
+            <NavIcon icon={<ShoppingCartIcon />} label="Market" active={false} />
+            <NavIcon icon={<TrophyIcon />} label="Events" active={false} />
+          </nav>
+
+          <div className="mt-auto">
+             <NavIcon icon={<CogIcon />} label="Settings" active={false} />
+          </div>
+        </aside>
+
+        {/* --- MAIN CONTENT --- */}
+        <main className="flex-1 pl-20 lg:pl-24 w-full">
+          
+          {/* HEADER */}
+          <header className="px-8 py-6 flex justify-between items-end border-b border-zinc-800 bg-zinc-950/50 backdrop-blur-sm sticky top-0 z-40">
+            <div>
+              <p className="text-zinc-500 text-xs font-mono tracking-widest uppercase mb-1">Driver Profile</p>
+              <h1 className="text-3xl font-black italic tracking-tighter text-white">ALEX_TURBO</h1>
+            </div>
+            <div className="flex items-center gap-6">
+               <div className="text-right hidden md:block">
+                 <p className="text-xs text-zinc-500 font-mono">Reputation</p>
+                 <div className="flex items-center gap-1 text-red-500 font-bold">
+                   <TrophyIcon className="w-4 h-4" /> 
+                   <span>Level 42</span>
+                 </div>
+               </div>
+               <div className="w-12 h-12 rounded-full border-2 border-zinc-800 overflow-hidden">
+                 <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=1000&auto=format&fit=crop" className="w-full h-full object-cover" />
+               </div>
+            </div>
+          </header>
+
+          <div className="p-6 lg:p-10 max-w-7xl mx-auto space-y-12">
+
+            {/* --- HERO: CURRENT RIDE --- */}
+            <section className="relative w-full aspect-[16/7] rounded-3xl overflow-hidden group border border-zinc-800 shadow-2xl shadow-black">
+              {/* Image */}
+              <img 
+                src="https://images.unsplash.com/photo-1603584173870-7b299f589279?q=80&w=2069&auto=format&fit=crop" 
+                alt="Main Car" 
+                className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+              />
+              
+              {/* Overlay Gradient */}
+              <div className="absolute inset-0 bg-gradient-to-r from-zinc-950 via-zinc-950/40 to-transparent"></div>
+
+              {/* Car Stats Overlay */}
+              <div className="absolute inset-y-0 left-0 p-8 flex flex-col justify-center max-w-lg">
+                <div className="bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 w-fit uppercase tracking-widest mb-2 transform -skew-x-12">
+                   Daily Driver
+                </div>
+                <h2 className="text-4xl md:text-5xl font-black text-white uppercase italic tracking-tighter mb-2">
+                  Porsche 911 <span className="text-red-600">GT3 RS</span>
+                </h2>
+                <div className="flex items-center gap-4 text-zinc-300 font-mono text-sm mb-8">
+                  <span>2023 Model</span>
+                  <span className="w-1 h-1 bg-zinc-500 rounded-full"></span>
+                  <span>Weissach Package</span>
+                </div>
+
+                {/* Technical Grid */}
+                <div className="grid grid-cols-3 gap-4 border-t border-zinc-700/50 pt-6">
+                  <div>
+                    <p className="text-zinc-500 text-xs font-mono uppercase">Power</p>
+                    <p className="text-2xl font-bold font-mono">518 <span className="text-sm text-red-500">HP</span></p>
+                  </div>
+                  <div>
+                    <p className="text-zinc-500 text-xs font-mono uppercase">0-60 MPH</p>
+                    <p className="text-2xl font-bold font-mono">2.7 <span className="text-sm text-zinc-500">s</span></p>
+                  </div>
+                  <div>
+                    <p className="text-zinc-500 text-xs font-mono uppercase">Torque</p>
+                    <p className="text-2xl font-bold font-mono">342 <span className="text-sm text-zinc-500">lb-ft</span></p>
                   </div>
                 </div>
-              </div>
-            </div>
 
-            {/* Profile Form */}
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow">
-              {message && <p className="text-green-500 mb-4">{message}</p>}
-              <form onSubmit={handleSubmit} className="space-y-4">
-                {['Name', 'Email', 'Phone'].map((label, i) => {
-                  const state = [name, email, phone][i];
-                  const setter = [setName, setEmail, setPhone][i];
-                  const type = label === 'Email' ? 'email' : label === 'Phone' ? 'tel' : 'text';
-                  return (
-                    <div key={label}>
-                      <label className="block text-sm font-medium">{label}</label>
-                      <input
-                        type={type}
-                        value={state}
-                        onChange={e => setter(e.target.value)}
-                        className="mt-1 w-full border border-gray-300 rounded px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
+                <button className="mt-8 flex items-center gap-2 bg-white text-black px-6 py-3 font-bold uppercase text-sm tracking-wide hover:bg-zinc-200 transition-colors w-fit transform -skew-x-12 group-hover:skew-x-0 transition-transform">
+                  <span className="transform skew-x-12 group-hover:skew-x-0">View Build Log</span>
+                  <ArrowRightIcon className="w-4 h-4 transform skew-x-12 group-hover:skew-x-0" />
+                </button>
+              </div>
+            </section>
+
+            {/* --- DASHBOARD GRID --- */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              
+              {/* LEFT: Garage List */}
+              <div className="lg:col-span-2">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-bold uppercase italic tracking-wide flex items-center gap-2">
+                    <div className="w-1 h-6 bg-red-600 skew-x-12"></div>
+                    My Garage
+                  </h3>
+                  <button className="text-xs font-mono text-zinc-400 hover:text-white border border-zinc-700 px-3 py-1 rounded hover:border-white transition-colors">
+                    + Add Vehicle
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Car Card 1 */}
+                  <CarCard 
+                    image="https://images.unsplash.com/photo-1552519507-da3b142c6e3d?q=80&w=2070&auto=format&fit=crop"
+                    name="Chevrolet Camaro SS"
+                    year={2018}
+                    tag="Project Car"
+                    status="In Shop"
+                  />
+                  {/* Car Card 2 */}
+                  <CarCard 
+                    image="https://images.unsplash.com/photo-1580273916550-e323be2ed5d6?q=80&w=1974&auto=format&fit=crop"
+                    name="BMW M4 Competition"
+                    year={2021}
+                    tag="Track Day"
+                    status="Ready"
+                  />
+                </div>
+
+                {/* Maintenance Timeline */}
+                <div className="mt-12">
+                   <h3 className="text-xl font-bold uppercase italic tracking-wide flex items-center gap-2 mb-6">
+                    <div className="w-1 h-6 bg-zinc-600 skew-x-12"></div>
+                    Service History
+                  </h3>
+                  <div className="bg-zinc-900 border border-zinc-800 p-6 rounded-xl">
+                    <div className="space-y-6 relative before:absolute before:inset-y-0 before:left-[9px] before:w-[2px] before:bg-zinc-800">
+                      <TimelineItem 
+                         title="Oil Change & Filter" 
+                         car="Porsche 911 GT3" 
+                         date="2 Days ago" 
+                         active 
+                      />
+                      <TimelineItem 
+                         title="New Michelin Pilot Sport Cup 2" 
+                         car="BMW M4" 
+                         date="2 Weeks ago" 
+                         active={false}
+                      />
+                       <TimelineItem 
+                         title="Suspension Tuning" 
+                         car="Camaro SS" 
+                         date="1 Month ago" 
+                          active={false}
                       />
                     </div>
-                  );
-                })}
-                <button
-                  type="submit"
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md"
-                >
-                  Save Changes
-                </button>
-              </form>
-            </div>
-          </motion.div>
-        )}
-
-        {activeTab === 'orders' && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-            {orders.map((o : any) => (
-              <motion.div
-                key={o.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow hover:shadow-lg transition"
-              >
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center space-x-3">
-                    <img src={o.items[0]?.thumbnail} className="w-16 h-16 rounded" />
-                    <div>
-                      <h3 className="font-semibold">Order #{o.id}</h3>
-                      <p className="text-sm text-gray-500">{new Date(o.date).toLocaleDateString()}</p>
-                    </div>
                   </div>
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs ${
-                      o.status === 'Delivered'
-                        ? 'bg-green-100 text-green-800'
-                        : o.status === 'In Transit'
-                        ? 'bg-yellow-100 text-yellow-800'
-                        : 'bg-red-100 text-red-800'
-                    }`}
-                  >
-                    {o.status}
-                  </span>
                 </div>
-                <details className="mt-2">
-                  <summary className="cursor-pointer text-blue-600">View Items</summary>
-                  <ul className="mt-2 space-y-1">
-                    {o.items.map((item:any) => (
-                      <li key={item.id} className="flex justify-between">
-                        <span>{item.name}</span>
-                        <span>x{item.qty}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </details>
-              </motion.div>
-            ))}
-          </motion.div>
-        )}
-      </Section>
-      <NewsletterSection />
+              </div>
+
+              {/* RIGHT: Stats & Community */}
+              <div className="space-y-8">
+                
+                {/* Driver Stats Box */}
+                <div className="bg-zinc-900/50 border border-zinc-800 p-6 rounded-xl backdrop-blur-md">
+                   <h4 className="text-zinc-500 font-mono text-xs uppercase mb-4">Driving Stats</h4>
+                   
+                   <div className="space-y-4">
+                      {/* Stat 1 */}
+                      <div>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span className="text-zinc-300">Track Days</span>
+                          <span className="font-mono text-white">12/20</span>
+                        </div>
+                        <div className="w-full h-2 bg-zinc-800 rounded-full overflow-hidden">
+                          <div className="h-full w-[60%] bg-gradient-to-r from-red-600 to-orange-500"></div>
+                        </div>
+                      </div>
+
+                       {/* Stat 2 */}
+                       <div>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span className="text-zinc-300">Garage Value</span>
+                          <span className="font-mono text-green-400">+$12k</span>
+                        </div>
+                         <div className="flex items-end gap-1">
+                            <span className="text-2xl font-bold text-white">$482,000</span>
+                         </div>
+                      </div>
+                   </div>
+
+                   <div className="mt-6 pt-6 border-t border-zinc-800 grid grid-cols-2 gap-4">
+                      <div className="text-center p-3 bg-zinc-950 rounded border border-zinc-800">
+                         <BoltIcon className="w-5 h-5 text-yellow-500 mx-auto mb-1" />
+                         <div className="text-xs text-zinc-500">Top Speed</div>
+                         <div className="font-mono font-bold">198 mph</div>
+                      </div>
+                      <div className="text-center p-3 bg-zinc-950 rounded border border-zinc-800">
+                         <MapIcon className="w-5 h-5 text-blue-500 mx-auto mb-1" />
+                         <div className="text-xs text-zinc-500">Miles Driven</div>
+                         <div className="font-mono font-bold">14.2k</div>
+                      </div>
+                   </div>
+                </div>
+
+                {/* Upcoming Events */}
+                <div>
+                   <h4 className="text-white font-bold uppercase italic mb-4 flex justify-between items-center">
+                     Upcoming Meets
+                     <span className="text-xs not-italic font-normal text-red-500 cursor-pointer hover:underline">View Map</span>
+                   </h4>
+                   <div className="space-y-3">
+                      <EventCard day="14" month="OCT" title="Cars & Coffee: Downtown" loc="Los Angeles, CA" />
+                      <EventCard day="22" month="OCT" title="Track Day: Laguna Seca" loc="Monterey, CA" />
+                   </div>
+                </div>
+
+                {/* Part Marketplace Promo */}
+                <div className="relative h-40 rounded-xl overflow-hidden border border-zinc-800 group cursor-pointer">
+                  <img src="https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?q=80&w=2000&auto=format&fit=crop" className="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:scale-110 transition-transform duration-700"/>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent"></div>
+                  <div className="absolute bottom-4 left-4">
+                     <p className="text-xs text-yellow-400 font-bold uppercase mb-1">Marketplace</p>
+                     <p className="text-lg font-bold text-white leading-tight">Find Parts for <br/> your 911 GT3</p>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+        </main>
+      </div>
     </div>
   );
-}
+};
+
+// --- Sub Components ---
+
+const NavIcon = ({ icon, label, active }:{icon: React.ReactNode, label: string, active: boolean}) => (
+  <div className={`relative group cursor-pointer flex justify-center w-full py-3 border-l-2 transition-all duration-300 ${
+    active ? 'border-red-600 bg-red-600/10' : 'border-transparent hover:bg-zinc-800'
+  }`}>
+    <div className={`w-6 h-6 transition-colors duration-300 ${
+      active ? 'text-red-500' : 'text-zinc-500 group-hover:text-white'
+    }`}>
+      {icon}
+    </div>
+    {/* Tooltip */}
+    <span className="absolute left-16 bg-white text-black text-xs font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none">
+      {label}
+    </span>
+  </div>
+);
+
+const CarCard = ({ image, name, year, tag, status }:{image: string, name: string, year: number, tag: string, status: string}) => (
+  <div className="group relative aspect-[16/10] bg-zinc-900 rounded-xl overflow-hidden border border-zinc-800 hover:border-zinc-600 transition-colors cursor-pointer">
+    <img src={image} alt={name} className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity duration-500" />
+    
+    <div className="absolute top-3 right-3 bg-black/60 backdrop-blur border border-white/10 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider text-white">
+      {tag}
+    </div>
+
+    <div className="absolute bottom-0 inset-x-0 p-4 bg-gradient-to-t from-zinc-950 via-zinc-950/90 to-transparent translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+      <div className="flex justify-between items-end">
+        <div>
+          <p className="text-zinc-400 text-xs font-mono">{year}</p>
+          <h4 className="text-white font-bold italic">{name}</h4>
+        </div>
+        <div className={`w-2 h-2 rounded-full mb-1 ${status === 'Ready' ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]' : 'bg-orange-500'}`}></div>
+      </div>
+    </div>
+  </div>
+);
+
+const TimelineItem = ({ title, car, date, active }:{title: string, car: string, date: string, active: boolean}) => (
+  <div className="relative pl-8 flex flex-col gap-1">
+    <div className={`absolute left-0 top-1.5 w-5 h-5 rounded-full border-4 border-zinc-900 ${
+      active ? 'bg-red-500' : 'bg-zinc-700'
+    }`}></div>
+    <h5 className={`font-bold text-sm ${active ? 'text-white' : 'text-zinc-400'}`}>{title}</h5>
+    <p className="text-xs text-zinc-500">{car} • {date}</p>
+  </div>
+);
+
+const EventCard = ({ day, month, title, loc }:{day: string, month: string, title: string, loc: string}) => (
+  <div className="flex gap-4 p-3 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800/50 cursor-pointer transition-colors group">
+     <div className="flex flex-col items-center justify-center w-14 bg-zinc-950 rounded border border-zinc-800 group-hover:border-red-600/50 transition-colors">
+       <span className="text-[10px] text-zinc-500 uppercase">{month}</span>
+       <span className="text-xl font-bold text-white">{day}</span>
+     </div>
+     <div className="flex-1 flex flex-col justify-center">
+       <h5 className="text-white font-bold text-sm leading-tight group-hover:text-red-500 transition-colors">{title}</h5>
+       <p className="text-zinc-500 text-xs mt-0.5">{loc}</p>
+     </div>
+  </div>
+);
+
+export default AutomotiveDashboard;

@@ -390,3 +390,240 @@ const NoContentCard = ({ message, cta, ctaHref, className = "" } : { message: st
     </Link>
   </div>
 );
+
+
+
+// import React from 'react';
+// import { 
+//   StarIcon, 
+//   MapPinIcon, 
+//   CalendarDaysIcon, 
+//   MegaphoneIcon, 
+//   PhotoIcon,
+//   ChartBarIcon,
+//   ClockIcon,
+//   UserGroupIcon,
+//   EnvelopeIcon,
+//   ChevronRightIcon
+// } from '@heroicons/react/24/solid';
+
+// const DownloadIcon = (props) => (
+//   <svg 
+//     xmlns="http://www.w3.org/2000/svg" 
+//     fill="none" 
+//     viewBox="0 0 24 24" 
+//     strokeWidth={2} 
+//     stroke="currentColor" 
+//     {...props}
+//   >
+//     <path 
+//       strokeLinecap="round" 
+//       strokeLinejoin="round" 
+//       d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7-10l5 5m0 0l5-5m-5 5V4" 
+//     />
+//   </svg>
+// );
+
+// const SpeakerDashboard = () => {
+//   return (
+//     <div className="min-h-screen bg-gray-950 text-gray-200 font-sans selection:bg-fuchsia-800 selection:text-white">
+      
+//       {/* --- SPEAKER BRANDING & RATING --- */}
+//       <div className="bg-gray-900 border-b border-fuchsia-900/50 pt-8 pb-12 shadow-2xl shadow-black/50">
+//         <div className="max-w-7xl mx-auto px-6 lg:px-8">
+//           <div className="flex items-start gap-8">
+            
+//             {/* Avatar & Spotlight Effect */}
+//             <div className="w-32 h-32 rounded-full p-1 bg-gradient-to-tr from-fuchsia-500 to-purple-600 relative flex-shrink-0">
+//               <div className="absolute inset-0 rounded-full bg-fuchsia-500/10 blur-xl opacity-70"></div>
+//               <img 
+//                 src="https://images.unsplash.com/photo-1581456492476-c290e2f54a8e?q=80&w=2000&auto=format&fit=crop" 
+//                 alt="Speaker Avatar" 
+//                 className="w-full h-full object-cover rounded-full border-4 border-gray-900"
+//               />
+//             </div>
+            
+//             {/* Info & Tagline */}
+//             <div>
+//               <p className="text-sm font-mono text-fuchsia-400 uppercase tracking-widest mb-1">Impact Speaker</p>
+//               <h1 className="text-4xl font-extrabold text-white">DR. SERAPHINA VANCE</h1>
+//               <p className="text-xl font-light text-gray-400 mt-2">
+//                 "Strategy, Innovation, and the Future of Human-AI Collaboration."
+//               </p>
+              
+//               {/* Rating */}
+//               <div className="flex items-center gap-2 mt-4">
+//                 <StarRating rating={4.9} />
+//                 <span className="text-sm text-gray-500">· 124 Verified Bookings</span>
+//               </div>
+//             </div>
+//           </div>
+//         </div>
+//       </div>
+      
+//       {/* --- MAIN DASHBOARD CONTENT --- */}
+//       <div className="max-w-7xl mx-auto px-6 lg:px-8 py-10">
+        
+//         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+//           {/* LEFT COLUMN: Upcoming Engagements (The Schedule Focus) */}
+//           <div className="lg:col-span-2 space-y-8">
+//             <h2 className="text-2xl font-bold text-white uppercase tracking-wide border-l-4 border-fuchsia-500 pl-3">
+//               <CalendarDaysIcon className="w-6 h-6 inline-block mr-2 text-fuchsia-400" /> 
+//               Upcoming Engagements
+//             </h2>
+
+//             <div className="bg-gray-900 rounded-xl shadow-xl shadow-black/30 border border-gray-800 divide-y divide-gray-800">
+//               <EngagementItem 
+//                 date="05 DEC" 
+//                 time="14:00 GMT" 
+//                 client="Tech Horizons Summit" 
+//                 topic="The Trust Deficit in AI"
+//                 location="London, UK"
+//                 status="Confirmed"
+//               />
+//               <EngagementItem 
+//                 date="18 JAN" 
+//                 time="10:30 PST" 
+//                 client="Global Leadership Retreat" 
+//                 topic="Leading in the Age of Acceleration"
+//                 location="San Francisco, USA"
+//                 status="Confirmed"
+//               />
+//               <EngagementItem 
+//                 date="22 FEB" 
+//                 time="19:00 EST" 
+//                 client="Fortune 500 Board Meeting" 
+//                 topic="Private Briefing on Cyber Risk"
+//                 location="New York, USA"
+//                 status="Pending Contract"
+//               />
+//             </div>
+
+//             {/* Quick Actions Panel */}
+//             <div className="grid grid-cols-2 gap-4">
+//               <QuickActionCard 
+//                 icon={<MegaphoneIcon />} 
+//                 title="New Booking Request" 
+//                 subtitle="Review 2 new leads" 
+//                 color="fuchsia"
+//               />
+//               <QuickActionCard 
+//                 icon={<EnvelopeIcon />} 
+//                 title="Client Messages" 
+//                 subtitle="3 unread communications" 
+//                 color="cyan"
+//               />
+//             </div>
+//           </div>
+          
+//           {/* RIGHT COLUMN: Assets & Metrics */}
+//           <div className="lg:col-span-1 space-y-8">
+            
+//             {/* Media Kit & Downloads */}
+//             <div className="bg-gray-900 p-6 rounded-xl shadow-xl shadow-black/30 border border-gray-800">
+//               <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+//                  <PhotoIcon className="w-5 h-5 text-gray-500" /> Media & Assets
+//               </h3>
+//               <div className="space-y-3">
+//                 <MediaDownloadItem name="Official Speaker Bio (PDF)" type="PDF" />
+//                 <MediaDownloadItem name="High-Res Headshots" type="ZIP" />
+//                 <MediaDownloadItem name="Keynote Deck Template" type="PPTX" />
+//               </div>
+//             </div>
+
+//             {/* Performance Metrics */}
+//             <div className="bg-gray-900 p-6 rounded-xl shadow-xl shadow-black/30 border border-gray-800">
+//                <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+//                  <ChartBarIcon className="w-5 h-5 text-gray-500" /> Impact Metrics
+//                </h3>
+//                <MetricDisplay title="Total Talks Given" value="38" color="fuchsia" />
+//                <MetricDisplay title="Avg. Audience Size" value="550" color="cyan" />
+//                <MetricDisplay title="Client Re-Book Rate" value="85%" color="green" />
+//             </div>
+
+//           </div>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+
+// // --- SUB COMPONENTS ---
+
+// const StarRating = ({ rating }) => (
+//   <div className="flex items-center">
+//     {[...Array(5)].map((_, i) => (
+//       <StarIcon 
+//         key={i} 
+//         className={`w-5 h-5 ${
+//           rating > i ? 'text-yellow-400' : 'text-gray-700'
+//         }`} 
+//       />
+//     ))}
+//     <span className="ml-2 font-bold text-lg text-white">{rating}</span>
+//   </div>
+// );
+
+// const EngagementItem = ({ date, time, client, topic, location, status }) => {
+//   const statusColor = status.includes('Confirmed') ? 'border-green-500' : 'border-amber-500';
+//   const statusText = status.includes('Confirmed') ? 'text-green-400' : 'text-amber-400';
+  
+//   return (
+//     <div className={`p-4 flex items-center justify-between border-l-4 ${statusColor} hover:bg-gray-800/70 transition-colors cursor-pointer group`}>
+//       <div className="flex items-start gap-4">
+//         {/* Date Block */}
+//         <div className="text-center w-12 flex-shrink-0">
+//           <p className="text-xs font-mono text-gray-500 leading-none">{date.split(' ')[1]}</p>
+//           <p className="text-xl font-bold text-white leading-none">{date.split(' ')[0]}</p>
+//         </div>
+//         {/* Details */}
+//         <div>
+//           <p className="font-semibold text-white group-hover:text-fuchsia-400 transition-colors">{client}</p>
+//           <p className="text-sm text-gray-400 italic">"{topic}"</p>
+//           <div className="flex items-center text-xs text-gray-500 mt-1 gap-3">
+//             <span className="flex items-center gap-1"><ClockIcon className="w-3 h-3"/> {time}</span>
+//             <span className="flex items-center gap-1"><MapPinIcon className="w-3 h-3"/> {location}</span>
+//           </div>
+//         </div>
+//       </div>
+      
+//       <div className="text-right flex items-center gap-2">
+//         <span className={`text-xs font-mono font-bold uppercase ${statusText}`}>{status}</span>
+//         <ChevronRightIcon className="w-4 h-4 text-gray-600 group-hover:text-fuchsia-400 transition-colors" />
+//       </div>
+//     </div>
+//   );
+// };
+
+// const MediaDownloadItem = ({ name, type }) => (
+//   <div className="flex justify-between items-center py-2 group cursor-pointer border-b border-gray-800 last:border-b-0">
+//     <div className="flex items-center gap-3">
+//       <DownloadIcon className="w-5 h-5 text-gray-600 group-hover:text-fuchsia-400 transition-colors" />
+//       <p className="text-sm text-white group-hover:text-fuchsia-400">{name}</p>
+//     </div>
+//     <span className="text-xs font-mono text-gray-500">{type}</span>
+//   </div>
+// );
+
+// const MetricDisplay = ({ title, value, color }) => (
+//   <div className="flex justify-between items-center py-3 border-b border-gray-800 last:border-b-0">
+//     <p className="text-sm text-gray-400">{title}</p>
+//     <p className={`text-lg font-bold text-white text-${color}-400`}>{value}</p>
+//   </div>
+// );
+
+// const QuickActionCard = ({ icon, title, subtitle, color }) => (
+//   <div className={`p-4 bg-gray-900 rounded-xl border border-gray-800 flex items-center gap-4 group cursor-pointer hover:border-${color}-500 transition-colors`}>
+//     <div className={`w-10 h-10 rounded-full bg-${color}-500/20 flex items-center justify-center text-${color}-400`}>
+//       {icon}
+//     </div>
+//     <div>
+//       <p className="font-bold text-sm text-white">{title}</p>
+//       <p className="text-xs text-gray-500">{subtitle}</p>
+//     </div>
+//     <ChevronRightIcon className="w-4 h-4 ml-auto text-gray-600 group-hover:text-white transition-colors" />
+//   </div>
+// );
+
+// export default SpeakerDashboard;

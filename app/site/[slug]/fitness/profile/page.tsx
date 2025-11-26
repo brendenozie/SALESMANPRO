@@ -1,179 +1,307 @@
-// app/[slug]/profile/page.tsx
-'use client';
+import React from 'react';
+import { 
+  FireIcon, 
+  ClockIcon, 
+  SunIcon, 
+  BoltIcon, 
+  MapPinIcon, 
+  TrophyIcon,
+  HeartIcon,
+  MoonIcon
+} from '@heroicons/react/24/solid';
+import { ArrowTrendingUpIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 
-import React, { useState, ChangeEvent } from 'react';
-import { motion } from 'framer-motion';
-import Section from '@/components/site/Section/Section';
-import NewsletterSection from '@/components/site/NewsletterSection/NewsletterSection';
-import { useStore } from '@/contexts/StoreContext';
-import { useStateContext } from '@/contexts/ContextProvider';
+const WaterDropIcon = ( { className } : { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 2.25c-2.485 2.77-6.75 7.44-6.75 11.25a6.75 6.75 0 0013.5 0c0-3.81-4.265-8.48-6.75-11.25z" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 22.5c4.97 0 9-4.03 9-9h-18c0 4.97 4.03 9 9 9z" />
+  </svg>
+);
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
-
-export default function ProfilePage() {
-  const store = useStore();
-  const { user, orders: initialOrders } = useStateContext();
-
-  const [activeTab, setActiveTab] = useState<'profile' | 'orders'>('profile');
-  const [name, setName] = useState(user?.name || '');
-  const [email, setEmail] = useState(user?.email || '');
-  const [phone, setPhone] = useState(user?.phone || '');
-  const [avatarPreview, setAvatarPreview] = useState(user?.avatarUrl || '/default-avatar.png');
-  const [orders] = useState(initialOrders || []);
-  const [message, setMessage] = useState('');
-
-  const handleAvatarChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) setAvatarPreview(URL.createObjectURL(file));
-    // TODO: upload avatar
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setMessage('');
-    try {
-      const res = await fetch(`${apiBaseUrl}/user/update`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, phone }),
-      });
-      setMessage(res.ok ? 'Profile updated!' : 'Update failed.');
-    } catch {
-      setMessage('Error updating profile');
-    }
-  };
-
-  if (!store) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-xl">Store not found</p>
-      </div>
-    );
-  }
-
+const FitnessDashboard = () => {
   return (
-    <div className="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 min-h-screen">
-      <Section title=''>
-        {/* Tabs */}
-        <div className="flex space-x-4 mb-6">
-          {['profile', 'orders'].map(tab => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab as any)}
-              className={`px-4 py-2 rounded-md font-medium ${
-                activeTab === tab
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300'
-              }`}
-            >
-              {tab === 'profile' ? 'My Profile' : 'Order History'}
-            </button>
-          ))}
-        </div>
-
-        {activeTab === 'profile' && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-            {/* Avatar & Stats */}
-            <div className="flex items-center space-x-6 bg-white dark:bg-gray-800 p-6 rounded-xl shadow">
-              <div className="relative group">
-                <img
-                  src={avatarPreview}
-                  alt="Avatar"
-                  className="w-24 h-24 rounded-full object-cover border-4 border-blue-500"
+    <div className="min-h-screen bg-gray-50 text-gray-800 font-sans selection:bg-emerald-200">
+      
+      {/* Top Header / Profile Card */}
+      <div className="bg-white shadow-xl rounded-b-3xl pt-8 pb-12">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
+          <div className="flex items-center justify-between border-b border-gray-100 pb-8">
+            <div className="flex items-center gap-6">
+              {/* Avatar */}
+              <div className="w-24 h-24 rounded-full p-1 bg-gradient-to-tr from-emerald-500 to-teal-500">
+                <img 
+                  src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1976&auto=format&fit=crop" 
+                  alt="User Avatar" 
+                  className="w-full h-full object-cover rounded-full border-4 border-white"
                 />
-                <label className="absolute inset-0 bg-black/25 opacity-0 group-hover:opacity-100 flex items-center justify-center rounded-full transition-opacity cursor-pointer">
-                  <input type="file" className="hidden" onChange={handleAvatarChange} />
-                  <span className="text-white text-sm">Change</span>
-                </label>
               </div>
+              
+              {/* Info */}
               <div>
-                <h2 className="text-2xl font-bold">{user?.name}</h2>
-                <div className="mt-2 flex space-x-4 text-gray-600 dark:text-gray-300">
-                  <div className="flex items-center space-x-1">
-                    <span className="font-semibold">{orders.length}</span>
-                    <span>Orders</span>
-                  </div>
+                <p className="text-sm font-medium text-emerald-600 uppercase tracking-widest">Welcome Back</p>
+                <h1 className="text-4xl font-extrabold text-gray-900 mt-1">Serena Williams</h1>
+                <div className="flex items-center gap-4 mt-2 text-gray-500 text-sm">
+                  <span className="flex items-center gap-1">
+                    <MapPinIcon className="w-4 h-4 text-red-500" /> Los Angeles
+                  </span>
+                  <div className="w-1.5 h-1.5 bg-gray-300 rounded-full"></div>
+                  <span className="font-semibold text-gray-700">Active Streak: 42 Days 🔥</span>
                 </div>
               </div>
             </div>
 
-            {/* Profile Form */}
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow">
-              {message && <p className="text-green-500 mb-4">{message}</p>}
-              <form onSubmit={handleSubmit} className="space-y-4">
-                {['Name', 'Email', 'Phone'].map((label, i) => {
-                  const state = [name, email, phone][i];
-                  const setter = [setName, setEmail, setPhone][i];
-                  const type = label === 'Email' ? 'email' : label === 'Phone' ? 'tel' : 'text';
-                  return (
-                    <div key={label}>
-                      <label className="block text-sm font-medium">{label}</label>
-                      <input
-                        type={type}
-                        value={state}
-                        onChange={e => setter(e.target.value)}
-                        className="mt-1 w-full border border-gray-300 rounded px-3 py-2 focus:ring-blue-500 focus:border-blue-500"
-                      />
-                    </div>
-                  );
-                })}
-                <button
-                  type="submit"
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md"
-                >
-                  Save Changes
-                </button>
-              </form>
+            {/* Quick Actions */}
+            <div className="hidden sm:flex items-center gap-4">
+               <button className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-full text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+                 <HeartIcon className="w-5 h-5 text-red-500" /> Log Weight
+               </button>
+               <button className="flex items-center gap-2 px-6 py-2 bg-emerald-600 text-white rounded-full text-sm font-bold hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-500/30">
+                 Start Workout
+               </button>
             </div>
-          </motion.div>
-        )}
+          </div>
+          
+          {/* Daily Motivational Quote */}
+          <div className="mt-8">
+            <blockquote className="text-xl italic text-gray-600 border-l-4 border-emerald-400 pl-4">
+              "Today's efforts determine tomorrow's results. Keep pushing your limits."
+            </blockquote>
+          </div>
+        </div>
+      </div>
+      
+      {/* --- MAIN DASHBOARD CONTENT --- */}
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 py-10">
+        
+        {/* --- 4-COLUMN METRICS GRID (THE RINGS) --- */}
+        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          
+          <MetricCard 
+            title="Steps" 
+            value="12,450" 
+            unit="/ 10k Goal" 
+            icon={<ArrowTrendingUpIcon className="w-6 h-6" />}
+            progress={124.5}
+            color="emerald"
+          />
+          <MetricCard 
+            title="Calories Burned" 
+            value="680" 
+            unit="/ 750 kcal" 
+            icon={<FireIcon className="w-6 h-6" />}
+            progress={90}
+            color="red"
+          />
+          <MetricCard 
+            title="Active Minutes" 
+            value="85" 
+            unit="/ 60 mins" 
+            icon={<ClockIcon className="w-6 h-6" />}
+            progress={141.6}
+            color="teal"
+          />
+          <MetricCard 
+            title="Sleep Score" 
+            value="7.5" 
+            unit="Hours Last Night" 
+            icon={<MoonIcon className="w-6 h-6" />}
+            progress={75}
+            color="indigo"
+          />
 
-        {activeTab === 'orders' && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-            {orders.map((o : any) => (
-              <motion.div
-                key={o.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow hover:shadow-lg transition"
-              >
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center space-x-3">
-                    <img src={o.items[0]?.thumbnail} className="w-16 h-16 rounded" />
-                    <div>
-                      <h3 className="font-semibold">Order #{o.id}</h3>
-                      <p className="text-sm text-gray-500">{new Date(o.date).toLocaleDateString()}</p>
-                    </div>
-                  </div>
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs ${
-                      o.status === 'Delivered'
-                        ? 'bg-green-100 text-green-800'
-                        : o.status === 'In Transit'
-                        ? 'bg-yellow-100 text-yellow-800'
-                        : 'bg-red-100 text-red-800'
-                    }`}
-                  >
-                    {o.status}
-                  </span>
+        </section>
+
+        {/* --- ACTIVITY LOG & TRACKERS SPLIT --- */}
+        <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          {/* LEFT COLUMN: Activity Feed */}
+          <div className="lg:col-span-2 space-y-8">
+             <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                  <BoltIcon className="w-6 h-6 text-yellow-500" /> Recent Activity
+                </h2>
+                <a href="#" className="text-sm font-medium text-emerald-600 hover:text-emerald-800">View All</a>
+             </div>
+
+             <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+                <ActivityList />
+             </div>
+
+             {/* Personal Records / Trophies */}
+             <div className="mt-8">
+               <h2 className="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  <TrophyIcon className="w-6 h-6 text-yellow-500" /> Personal Bests
+                </h2>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                   <TrophyCard title="Max Bench" value="185 kg" icon={<FireIcon />} color="red" />
+                   <TrophyCard title="Fastest Mile" value="5:32 min" icon={<ClockIcon />} color="blue" />
+                   <TrophyCard title="200-Day Streak" value="Achieved!" icon={<SunIcon />} color="orange" />
+                   <TrophyCard title="Half Marathon" value="1:45:00" icon={<MapPinIcon />} color="green" />
                 </div>
-                <details className="mt-2">
-                  <summary className="cursor-pointer text-blue-600">View Items</summary>
-                  <ul className="mt-2 space-y-1">
-                    {o.items.map((item:any) => (
-                      <li key={item.id} className="flex justify-between">
-                        <span>{item.name}</span>
-                        <span>x{item.qty}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </details>
-              </motion.div>
-            ))}
-          </motion.div>
-        )}
-      </Section>
-      <NewsletterSection />
+             </div>
+          </div>
+          
+          {/* RIGHT COLUMN: Daily Trackers / Goals */}
+          <div className="lg:col-span-1 space-y-8">
+            
+            {/* Water Intake Tracker */}
+            <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
+              <div className="flex justify-between items-center mb-4">
+                 <h3 className="font-bold text-gray-900 flex items-center gap-2">
+                    <WaterDropIcon className="w-5 h-5 text-blue-500" /> Water Intake
+                 </h3>
+                 <span className="text-sm font-semibold text-blue-600">8 / 10 Glasses</span>
+              </div>
+              <div className="w-full h-3 bg-blue-100 rounded-full overflow-hidden">
+                 <div className="h-full bg-gradient-to-r from-blue-400 to-cyan-400" style={{ width: '80%' }}></div>
+              </div>
+              <div className="mt-4 flex justify-between">
+                 <button className="text-blue-500 text-sm font-medium hover:text-blue-700">+ Add Glass</button>
+                 <button className="text-gray-400 text-sm hover:text-gray-600">Reset</button>
+              </div>
+            </div>
+
+             {/* Next Challenge Card */}
+             <div className="bg-emerald-500 p-6 rounded-2xl shadow-xl text-white relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full blur-xl -mt-10 -mr-10"></div>
+                <h3 className="font-bold text-lg mb-1 relative z-10">28-Day Marathon Plan</h3>
+                <p className="text-sm opacity-90 relative z-10 mb-4">You are on Week 2, Day 3. Keep focused!</p>
+                <div className="w-full h-2 bg-white/30 rounded-full overflow-hidden mb-4">
+                   <div className="h-full bg-white" style={{ width: '45%' }}></div>
+                </div>
+                <button className="w-full py-2 bg-white text-emerald-700 font-bold rounded-lg text-sm hover:bg-gray-100 transition-colors">
+                  Check Today's Workout
+                </button>
+             </div>
+          </div>
+
+        </section>
+      </div>
     </div>
   );
-}
+};
+
+// --- SUB COMPONENTS ---
+
+const ProgressRing = ({ progress, color }:{progress: number, color: string}) => {
+  const normalizedProgress = Math.min(progress, 100);
+  const strokeDashoffset = 360 - (normalizedProgress / 100) * 360;
+  
+  // Dynamic color selection for the ring stroke
+  const ringColorClass = `stroke-${color}-500`;
+
+  return (
+    <div className="w-24 h-24 relative">
+      <svg className="w-full h-full transform -rotate-90">
+        {/* Background Circle */}
+        <circle
+          cx="50%"
+          cy="50%"
+          r="40%"
+          strokeWidth="10"
+          className="stroke-gray-200 fill-none"
+        />
+        {/* Progress Circle (Arc) */}
+        <circle
+          cx="50%"
+          cy="50%"
+          r="40%"
+          strokeWidth="10"
+          className={`fill-none ${ringColorClass}`}
+          strokeDasharray="360"
+          strokeDashoffset={strokeDashoffset}
+          strokeLinecap="round"
+          style={{ transition: 'stroke-dashoffset 0.5s linear' }}
+        />
+      </svg>
+      {/* Centered Percentage */}
+      <div className="absolute inset-0 flex items-center justify-center">
+        <span className="text-xl font-bold text-gray-900">{Math.round(progress)}%</span>
+      </div>
+       {/* If over 100%, show a small badge */}
+      {progress > 100 && (
+         <div className="absolute top-0 right-0 w-4 h-4 bg-yellow-400 rounded-full border-2 border-white"></div>
+      )}
+    </div>
+  );
+};
+
+const MetricCard = ({ title, value, unit, icon, progress, color }:{title: string, value: number | string, unit: string, icon: React.ReactNode, progress: number, color: string}) => (
+  <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-100 flex items-center justify-between transition-transform hover:scale-[1.02] duration-300 cursor-pointer">
+    <div>
+      <div className={`p-2 w-fit rounded-full bg-${color}-100 text-${color}-600 mb-3`}>
+        {icon}
+      </div>
+      <p className="text-sm font-medium text-gray-500">{title}</p>
+      <h3 className="text-3xl font-extrabold text-gray-900 mt-1">{value}</h3>
+      <p className="text-sm text-gray-500">{unit}</p>
+    </div>
+    
+    <div className="ml-4">
+      <ProgressRing progress={progress} color={color} />
+    </div>
+  </div>
+);
+
+const ActivityItem = ({ type, duration, calories, icon, color }:{type: string, duration: string, calories: number | string, icon: React.ReactNode, color: string}) => (
+  <div className="flex items-center justify-between py-3 px-4 -mx-4 rounded-xl hover:bg-gray-50 transition-colors cursor-pointer group">
+    <div className="flex items-center gap-4">
+      <div className={`w-10 h-10 rounded-full bg-${color}-100 flex items-center justify-center text-${color}-600`}>
+        {icon}
+      </div>
+      <div>
+        <h4 className="font-semibold text-gray-900">{type}</h4>
+        <p className="text-sm text-gray-500">{duration}</p>
+      </div>
+    </div>
+    <div className="flex items-center gap-2">
+       <span className="text-sm font-mono text-gray-600">{calories} kcal</span>
+       <ChevronRightIcon className="w-4 h-4 text-gray-400 group-hover:translate-x-1 transition-transform" />
+    </div>
+  </div>
+);
+
+const ActivityList = () => (
+  <div className="divide-y divide-gray-100">
+    <ActivityItem 
+      type="Outdoor Run" 
+      duration="45 min" 
+      calories="410" 
+      icon={<MapPinIcon />} 
+      color="emerald" 
+    />
+    <ActivityItem 
+      type="Strength Training" 
+      duration="60 min" 
+      calories="350" 
+      icon={<BoltIcon />} 
+      color="red" 
+    />
+    <ActivityItem 
+      type="Yoga & Meditation" 
+      duration="30 min" 
+      calories="120" 
+      icon={<SunIcon />} 
+      color="orange" 
+    />
+    <ActivityItem 
+      type="Cycling" 
+      duration="90 min" 
+      calories="600" 
+      icon={<ClockIcon />} 
+      color="teal" 
+    />
+  </div>
+);
+
+const TrophyCard = ({ title, value, icon, color }:{title: string, value: number | string, icon: React.ReactNode, color: string}) => (
+  <div className={`p-4 rounded-xl shadow-md border border-gray-100 flex flex-col items-center justify-center text-center bg-white hover:shadow-lg transition-shadow`}>
+    <div className={`w-8 h-8 rounded-full bg-${color}-100 text-${color}-600 flex items-center justify-center mb-2`}>
+       {icon}
+    </div>
+    <p className="text-xs text-gray-500 uppercase font-medium">{title}</p>
+    <h5 className="font-bold text-lg text-gray-900 leading-tight">{value}</h5>
+  </div>
+);
+
+export default FitnessDashboard;
