@@ -136,9 +136,9 @@ export async function GET(
           icon: sc.category.icon,
         } : null,
       })),
-      locations: company.CompanyLocation.map((cl) => ({
+      locations: company.CompanyLocation.map((cl: any) => ({
         id: cl.id,
-        isPrimary: cl.isPrimary,
+        isPrimary: cl.isPrimary || false,
         location: cl.location ? {
           id: cl.location.id,
           name: cl.location.name,
