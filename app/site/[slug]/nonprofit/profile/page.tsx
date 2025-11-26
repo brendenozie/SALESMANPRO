@@ -1,4 +1,9 @@
-import React from 'react';
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import { useSession, signOut } from 'next-auth/react';
+import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import { 
   HeartIcon, 
   UsersIcon, 
@@ -7,23 +12,110 @@ import {
   GlobeAmericasIcon,
   SparklesIcon,
   HandThumbUpIcon,
-  MapPinIcon
+  MapPinIcon,
+  UserCircleIcon,
 } from '@heroicons/react/24/outline';
 import { HeartIcon as HeartSolid } from '@heroicons/react/24/solid';
 
+interface UserProfile {
+  id: string;
+  name: string | null;
+  email: string;
+  avatar: string | null;
+  tier?: string;
+}
+
+interface NonprofitData {
+  totalDonations?: number;
+  hoursVolunteered?: number;
+  treesPlanted?: number;
+}
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+
 const CommunityDashboard = () => {
-  // Mock Data
-  const user = {
-    name: "Elena Rodriguez",
-    badge: "Community Hero",
-    impactScore: 850,
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+  const { data: session, status } = useSession();
+  const { slug } = useParams() as { slug: string };
+  
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [nonprofitData, setNonprofitData] = useState<NonprofitData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (status === 'authenticated' && session?.user) {
+      fetchUserData();
+    } else if (status === 'unauthenticated') {
+      setLoading(false);
+    }
+  }, [status, session, slug]);
+
+  const fetchUserData = async () => {
+    try {
+      setLoading(true);
+      const [profileRes, nonprofitRes] = await Promise.all([
+        fetch(`${apiBaseUrl}/site/${slug}/me/profile`),
+        fetch(`${apiBaseUrl}/site/${slug}/me/nonprofit`),
+      ]);
+
+      if (profileRes.ok) {
+        const profileData = await profileRes.json();
+        setUser(profileData);
+      }
+
+      if (nonprofitRes.ok) {
+        const data = await nonprofitRes.json();
+        setNonprofitData({
+          totalDonations: data.totalDonations || 0,
+          hoursVolunteered: data.hoursVolunteered || 0,
+          treesPlanted: data.treesPlanted || 0,
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Show sign-in prompt if not authenticated
+  if (status === 'loading' || loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F3F6F4]">
+        <div className="animate-pulse text-xl text-slate-600">Loading...</div>
+      </div>
+    );
+  }
+
+  if (status === 'unauthenticated') {
+    return (
+      <section className="flex items-center justify-center min-h-screen bg-[#F3F6F4]">
+        <div className="text-center">
+          <UserCircleIcon className="w-20 h-20 mx-auto text-slate-400 mb-4" />
+          <h2 className="text-2xl font-bold text-slate-800 mb-2">
+            Please sign in to access your dashboard.
+          </h2>
+          <Link href={`/auth/signin`}>
+            <button className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg">
+              Sign In
+            </button>
+          </Link>
+        </div>
+      </section>
+    );
+  }
+
+  // Display values with defaults
+  const displayUser = {
+    name: user?.name || session?.user?.name || "Community Member",
+    badge: user?.tier || "Community Hero",
+    impactScore: (nonprofitData?.totalDonations || 0) + (nonprofitData?.hoursVolunteered || 0) * 10,
+    avatar: user?.avatar || session?.user?.image || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-4.0.3&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
   };
 
   const impactStats = [
-    { label: 'Trees Planted', value: '124', icon: GlobeAmericasIcon, color: 'text-emerald-600', bg: 'bg-emerald-100' },
-    { label: 'Hours Volunteered', value: '42', icon: HandThumbUpIcon, color: 'text-amber-600', bg: 'bg-amber-100' },
-    { label: 'Donations', value: '$1,250', icon: HeartIcon, color: 'text-rose-600', bg: 'bg-rose-100' },
+    { label: 'Trees Planted', value: String(nonprofitData?.treesPlanted || 124), icon: GlobeAmericasIcon, color: 'text-emerald-600', bg: 'bg-emerald-100' },
+    { label: 'Hours Volunteered', value: String(nonprofitData?.hoursVolunteered || 42), icon: HandThumbUpIcon, color: 'text-amber-600', bg: 'bg-amber-100' },
+    { label: 'Donations', value: `$${(nonprofitData?.totalDonations || 1250).toLocaleString()}`, icon: HeartIcon, color: 'text-rose-600', bg: 'bg-rose-100' },
   ];
 
   const activeCampaigns = [
@@ -77,10 +169,16 @@ const CommunityDashboard = () => {
 
           <div className="flex items-center gap-4">
             <div className="hidden sm:flex flex-col items-end">
-                <span className="text-sm font-bold text-slate-900">{user.name}</span>
-                <span className="text-xs text-emerald-600 font-medium bg-emerald-50 px-2 py-0.5 rounded-full">{user.badge}</span>
+                <span className="text-sm font-bold text-slate-900">{displayUser.name}</span>
+                <span className="text-xs text-emerald-600 font-medium bg-emerald-50 px-2 py-0.5 rounded-full">{displayUser.badge}</span>
             </div>
-            <img src={user.avatar} className="h-10 w-10 rounded-full border-2 border-white shadow-sm" alt="User" />
+            <img src={displayUser.avatar} className="h-10 w-10 rounded-full border-2 border-white shadow-sm" alt="User" />
+            <button 
+              onClick={() => signOut({ callbackUrl: `/site/${slug}` })}
+              className="hidden sm:block text-sm text-slate-500 hover:text-red-600"
+            >
+              Sign Out
+            </button>
           </div>
         </div>
       </nav>
@@ -94,7 +192,7 @@ const CommunityDashboard = () => {
                 <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none"></div>
                 <div className="relative z-10 flex flex-col h-full justify-between">
                     <div>
-                        <h1 className="text-3xl md:text-4xl font-bold mb-4">Welcome back, {user.name.split(' ')[0]}!</h1>
+                        <h1 className="text-3xl md:text-4xl font-bold mb-4">Welcome back, {displayUser.name?.split(' ')[0] || 'Friend'}!</h1>
                         <p className="text-emerald-100 text-lg max-w-lg">
                             Thanks to you, 3 families received clean water this month. Your compassion is changing the world.
                         </p>
