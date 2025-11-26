@@ -205,7 +205,13 @@ export default function ExcellenceHorizonLight({ slug, themeSettings, promotions
                                             
                                             
 
-[Image of continuous improvement cycle diagram]
+                                             <Image   
+                                                src="https://images.unsplash.com/photo-1557683316-973673baf926?auto=format&fit=crop&w=800&q=80"
+                                                alt="Innovation Process Diagram"
+                                                loader={loader}
+                                                fill
+                                                className="object-contain"
+                                             />
 
 
                                         </div>
@@ -213,7 +219,7 @@ export default function ExcellenceHorizonLight({ slug, themeSettings, promotions
                                   )}
 
                                   <Link 
-                                    href={promotion?.ctaLink || `/${slug}/contact`}
+                                    href={promotion?.ctaLink || `#contact`}
                                     className="inline-flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-gray-900 hover:underline underline-offset-8 decoration-2"
                                     style={{ textDecorationColor: primaryColor }}
                                   >

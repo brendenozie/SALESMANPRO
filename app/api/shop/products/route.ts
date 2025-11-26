@@ -5,6 +5,38 @@ import type { Prisma } from "@prisma/client";
 import { formatResponse } from "@/lib/formatResponse";
 import { request } from "http";
 
+// ---------------------------
+// GLOBAL CORS HEADERS
+// ---------------------------
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers":
+    "Content-Type, Authorization, cache-control, x-api-key, X-Requested-With",
+};
+
+function withCors(json: any, status = 200, extraHeaders: Record<string, string> = {}) {
+  return new NextResponse(JSON.stringify(json), {
+    status,
+    headers: {
+      "Content-Type": "application/json",
+      ...CORS_HEADERS,
+      ...extraHeaders,
+    },
+  });
+}
+
+// ---------------------------
+// OPTIONS (PRE-FLIGHT)
+// ---------------------------
+export function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: CORS_HEADERS,
+  });
+}
+
+
 // GET /api/marketplace-listings?agentId=&search=&brand=&category=&subCategory=&minPrice=&maxPrice=&availability=&sort=&page=&limit=
 export async function GET(req: Request) {
   try {
@@ -22,7 +54,7 @@ export async function GET(req: Request) {
     const limit = parseInt(searchParams.get("limit") || "25", 10);
 
     if (isNaN(page) || page < 1 || isNaN(limit) || limit < 1) {
-      return NextResponse.json({ error: "Invalid pagination parameters." }, { status: 400 });
+      return withCors({ error: "Invalid pagination parameters." }, 400);
     }
     const skip = (page - 1) * limit;
 
@@ -67,15 +99,15 @@ export async function GET(req: Request) {
     ]);
 
     const totalPages = Math.ceil(total / limit);
-    return NextResponse.json(
+    return withCors(
       { data: listings, meta: { total, perPage: limit, page, totalPages, orderBy } },
-      { status: 200 }
+      200
     );
   } catch (err: any) {
     console.error("Error fetching listings:", err);
-    return NextResponse.json(
+    return withCors(
       { error: "Failed to fetch listings", detail: err.message },
-      { status: 500 }
+      500
     );
   }
 }

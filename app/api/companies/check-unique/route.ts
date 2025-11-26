@@ -3,6 +3,37 @@ import prisma from '@/server/db/prismadb';
 import { unstable_cache } from 'next/cache';
 
 // --------------- 🧹 HELPERS ---------------
+// ---------------------------
+// GLOBAL CORS HEADERS
+// ---------------------------
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers":
+    "Content-Type, Authorization, cache-control, x-api-key, X-Requested-With",
+};
+
+function withCors(json: any, status = 200, extraHeaders: Record<string, string> = {}) {
+  return new NextResponse(JSON.stringify(json), {
+    status,
+    headers: {
+      "Content-Type": "application/json",
+      ...CORS_HEADERS,
+      ...extraHeaders,
+    },
+  });
+}
+
+// ---------------------------
+// OPTIONS (PRE-FLIGHT)
+// ---------------------------
+export function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: CORS_HEADERS,
+  });
+}
+
 
 // Sanitize input slug
 function sanitizeSlug(input: string): string {
@@ -68,7 +99,7 @@ export async function GET(req: Request) {
   const ip = req.headers.get('x-forwarded-for') || 'unknown';
 
   if (!checkRateLimit(ip)) {
-    return NextResponse.json({ error: 'Rate limit exceeded. Try again later.' }, { status: 429 });
+    return withCors({ error: 'Rate limit exceeded. Try again later.' }, 429);
   }
 
   const { searchParams } = new URL(req.url);
@@ -76,9 +107,9 @@ export async function GET(req: Request) {
   let domain = searchParams.get('domain');
 
   if (!slug && !domain) {
-    return NextResponse.json(
+    return withCors(
       { error: 'You must provide at least a slug or domain' },
-      { status: 400 }
+      400
     );
   }
 
@@ -130,5 +161,5 @@ export async function GET(req: Request) {
     }
   }
 
-  return NextResponse.json(result);
+  return withCors(result);
 }

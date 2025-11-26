@@ -1,10 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
-import bcrypt from "bcryptjs";
-
-import { formatResponse } from "@/lib/formatResponse";
-import { request } from "http";
 // import jwt from "jsonwebtoken";
+
 
 // In-memory rate limiter (for demo purposes)
 const loginAttempts: Record<string, { count: number; lastAttempt: number }> = {};
@@ -14,6 +11,38 @@ const WINDOW_MS = 15 * 60 * 1000; // 15 minutes
 // JWT Secret (store securely in env variables)
 const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret";
 const JWT_EXPIRES_IN = "1h";
+
+// ---------------------------
+// GLOBAL CORS HEADERS
+// ---------------------------
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers":
+    "Content-Type, Authorization, cache-control, x-api-key, X-Requested-With",
+};
+
+function withCors(json: any, status = 200, extraHeaders: Record<string, string> = {}) {
+  return new NextResponse(JSON.stringify(json), {
+    status,
+    headers: {
+      "Content-Type": "application/json",
+      ...CORS_HEADERS,
+      ...extraHeaders,
+    },
+  });
+}
+
+// ---------------------------
+// OPTIONS (PRE-FLIGHT)
+// ---------------------------
+export function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: CORS_HEADERS,
+  });
+}
+
 
 // POST /api/login
 export async function POST(req: Request) {
@@ -25,9 +54,9 @@ export async function POST(req: Request) {
     // Rate limiting per IP
     const record = loginAttempts[ip] || { count: 0, lastAttempt: now };
     if (now - record.lastAttempt < WINDOW_MS && record.count >= MAX_ATTEMPTS) {
-      return NextResponse.json(
+      return withCors(
         { status: 429, message: "Too many login attempts. Please try again later." },
-        { status: 429 }
+        429
       );
     }
     if (now - record.lastAttempt > WINDOW_MS) {
@@ -40,9 +69,9 @@ export async function POST(req: Request) {
     // Parse credentials
     const { email, password } = await req.json();
     if (!email || !password) {
-      return NextResponse.json(
+      return withCors(
         { status: 400, message: "Missing login details" },
-        { status: 400 }
+        400
       );
     }
 
@@ -78,9 +107,9 @@ export async function POST(req: Request) {
     // });
 
     if (!foundUser) {
-      return NextResponse.json(
+      return withCors(
         { status: 404, message: "Account not found. Please register first." },
-        { status: 404 }
+        404
       );
     }
 
@@ -104,19 +133,18 @@ export async function POST(req: Request) {
     // Exclude password
     const { password: _pw, ...safeUser } = foundUser;
 
-    return NextResponse.json(
+    return withCors(
       {
         status: 200,
         message: "Login successful",
         body: { ...safeUser, role: userRole, token : "xxmega" }
-      },
-      { status: 200 }
+      }, 200
     );
   } catch (error: any) {
     console.error("Login Error:", error);
-    return NextResponse.json(
+    return withCors(
       { status: 500, message: "Internal server error", detail: error.message },
-      { status: 500 }
+      500
     );
   }
 }

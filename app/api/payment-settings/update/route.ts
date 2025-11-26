@@ -2,6 +2,38 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { encrypt } from "@/lib/crypto/aes";
 
+// ---------------------------
+// GLOBAL CORS HEADERS
+// ---------------------------
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers":
+    "Content-Type, Authorization, cache-control, x-api-key, X-Requested-With",
+};
+
+function withCors(json: any, status = 200, extraHeaders: Record<string, string> = {}) {
+  return new NextResponse(JSON.stringify(json), {
+    status,
+    headers: {
+      "Content-Type": "application/json",
+      ...CORS_HEADERS,
+      ...extraHeaders,
+    },
+  });
+}
+
+// ---------------------------
+// OPTIONS (PRE-FLIGHT)
+// ---------------------------
+export function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: CORS_HEADERS,
+  });
+}
+
+
 export async function POST(req: NextRequest) {
   const body = await req.json();
 
@@ -33,7 +65,7 @@ export async function POST(req: NextRequest) {
       where: { id: existing.id },
       data: updatePayload,
     });
-    return NextResponse.json(updated);
+    return withCors(updated);
   }
 
   // Create when no existing settings are found
@@ -44,7 +76,7 @@ export async function POST(req: NextRequest) {
     },
   });
 
-  return NextResponse.json(created);
+  return withCors(created);
 }
 
 // import prisma from "@/server/db/prismadb";

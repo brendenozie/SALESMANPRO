@@ -1,7 +1,37 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 
-import { formatResponse } from "@/lib/formatResponse";
+// ---------------------------
+// GLOBAL CORS HEADERS
+// ---------------------------
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers":
+    "Content-Type, Authorization, cache-control, x-api-key, X-Requested-With",
+};
+
+function withCors(json: any, status = 200, extraHeaders: Record<string, string> = {}) {
+  return new NextResponse(JSON.stringify(json), {
+    status,
+    headers: {
+      "Content-Type": "application/json",
+      ...CORS_HEADERS,
+      ...extraHeaders,
+    },
+  });
+}
+
+// ---------------------------
+// OPTIONS (PRE-FLIGHT)
+// ---------------------------
+export function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: CORS_HEADERS,
+  });
+}
+
 
 // GET /api/trending?agentId=&limit=&days=&weightViews=&weightPurchases=&weightFavorites=
 export async function GET(req: Request) {
@@ -16,7 +46,7 @@ export async function GET(req: Request) {
     const weightFavorites = parseFloat(searchParams.get("weightFavorites") || "1.5");
 
     if (isNaN(limit) || limit < 1 || isNaN(days) || days < 1) {
-      return NextResponse.json({ error: "Invalid query parameters." }, { status: 400 });
+      return withCors({ error: "Invalid query parameters." }, 400);
     }
 
     // Optional filter by agent/company
@@ -50,12 +80,12 @@ export async function GET(req: Request) {
     // Return top N
     const top = trending.slice(0, limit);
 
-    return NextResponse.json(
+    return withCors(
       { data: top, meta: { limit, weights: { views: weightViews, purchases: weightPurchases, favorites: weightFavorites } } },
-      { status: 200 }
+      200
     );
   } catch (err: any) {
     console.error("Error fetching trending products:", err);
-    return NextResponse.json({ error: "Internal Server Error", detail: err.message }, { status: 500 });
+    return withCors({ error: "Internal Server Error", detail: err.message }, 500);
   }
 }

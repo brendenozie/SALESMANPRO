@@ -137,7 +137,7 @@ export default function PricingSectionLight({ pricingTiers, themeSettings }: Pri
           {/* Price */}
           <div className="text-center mb-8">
             <p className="text-6xl font-black mb-1 text-gray-900">
-              ${plan.price.toFixed(0)}
+              {plan.price.toFixed(0)}
             </p>
             <span className="text-lg font-semibold uppercase tracking-wider text-gray-500">
               {plan.frequency ? `/ ${plan.frequency}` : '/ service'}

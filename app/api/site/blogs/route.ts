@@ -1,12 +1,44 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/server/db/prismadb';
 
+// ---------------------------
+// GLOBAL CORS HEADERS
+// ---------------------------
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers":
+    "Content-Type, Authorization, cache-control, x-api-key, X-Requested-With",
+};
+
+function withCors(json: any, status = 200, extraHeaders: Record<string, string> = {}) {
+  return new NextResponse(JSON.stringify(json), {
+    status,
+    headers: {
+      "Content-Type": "application/json",
+      ...CORS_HEADERS,
+      ...extraHeaders,
+    },
+  });
+}
+
+// ---------------------------
+// OPTIONS (PRE-FLIGHT)
+// ---------------------------
+export function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: CORS_HEADERS,
+  });
+}
+
+
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const id = searchParams.get('id');
   
   if (!id) {
-    return NextResponse.json({ error: 'Missing id parameter' }, { status: 400 });
+    return withCors({ error: 'Missing id parameter' }, 400);
   }
 
   try {
@@ -18,9 +50,9 @@ export async function GET(req: Request) {
       orderBy: { createdAt: 'desc' },
     });
 
-    return NextResponse.json({ data: blogs });
+    return withCors({ data: blogs });
   } catch (error) {
     console.error('Error fetching blogs:', error);
-    return NextResponse.json({ error: 'Failed to fetch blogs' }, { status: 500 });
+    return withCors({ error: 'Failed to fetch blogs' }, 500);
   }
 }

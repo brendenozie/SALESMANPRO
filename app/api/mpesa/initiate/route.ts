@@ -6,6 +6,38 @@ const MPESA_SHORTCODE = process.env.MPESA_SHORTCODE!;
 const MPESA_PASSKEY = process.env.MPESA_PASSKEY!;
 const CALLBACK_URL = process.env.MPESA_CALLBACK_URL!; // e.g. https://yourdomain.com/api/mpesa/callback
 
+// ---------------------------
+// GLOBAL CORS HEADERS
+// ---------------------------
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers":
+    "Content-Type, Authorization, cache-control, x-api-key, X-Requested-With",
+};
+
+function withCors(json: any, status = 200, extraHeaders: Record<string, string> = {}) {
+  return new NextResponse(JSON.stringify(json), {
+    status,
+    headers: {
+      "Content-Type": "application/json",
+      ...CORS_HEADERS,
+      ...extraHeaders,
+    },
+  });
+}
+
+// ---------------------------
+// OPTIONS (PRE-FLIGHT)
+// ---------------------------
+export function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: CORS_HEADERS,
+  });
+}
+
+
 // Function to get access token
 async function getMpesaToken() {
   const auth = Buffer.from(
@@ -27,7 +59,7 @@ export async function POST(req: Request) {
     // ✅ Get order
     const order = await prisma.customerOrder.findUnique({ where: { id: orderId } });
     if (!order) {
-      return NextResponse.json({ message: "Order not found" }, { status: 404 });
+      return withCors({ message: "Order not found" }, 404);
     }
 
     const token = await getMpesaToken();
@@ -80,12 +112,12 @@ export async function POST(req: Request) {
       });
     }
 
-    return NextResponse.json({
+    return withCors({
       message: result.CustomerMessage,
       mpesaResponse: result,
     });
   } catch (error) {
     console.error("STK Push initiation error:", error);
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+    return withCors({ error: "Server error" }, 500);
   }
 }

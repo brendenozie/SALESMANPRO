@@ -84,7 +84,7 @@ const ServiceCard = ({ service, primaryColor, onBook, isSpotlight, index }: Serv
                     {/* Price and Rating */}
                     <div className="flex items-center gap-4 mb-4 text-white">
                         <span className={`font-serif font-medium ${isSpotlight ? 'text-3xl' : 'text-xl'}`} style={{ color: primaryColor }}>
-                            ${(service.finalPrice ?? 0).toFixed(0)}
+                            {(service.finalPrice ?? 0).toFixed(0)}
                         </span>
                         <div className="flex items-center gap-1 text-sm text-yellow-400">
                             <StarIconSolid className="w-4 h-4" /> 4.9
@@ -228,14 +228,18 @@ export default function ServicesSpotlightDeck({ marketplaceListings, themeSettin
                                     </h4>
                                     <div className="relative w-full aspect-[2.5/1] bg-white dark:bg-gray-900 rounded-lg overflow-hidden flex items-center justify-center">
                                         
-                                        
-
-[Image of business process flow chart diagram]
+                                        <Image
+                                            src="https://images.unsplash.com/photo-1557683316-973673baf926?auto=format&fit=crop&w=800&q=80"
+                                            alt="Service Workflow Diagram"
+                                            loader={loader}
+                                            fill
+                                            className="object-contain"
+                                        />
 
 
                                     </div>
                                     <p className="text-xs text-center text-gray-400 mt-2">
-                                        Clear milestones: **Consult $\rightarrow$ Plan $\rightarrow$ Execute $\rightarrow$ Review.**
+                                        Clear milestones: <span className="font-semibold">Consult </span>→ Plan → Execute → Review.
                                     </p>
                                 </div>
                                 
@@ -254,7 +258,7 @@ export default function ServicesSpotlightDeck({ marketplaceListings, themeSettin
                                     <div className="mb-8">
                                         <p className="text-sm text-gray-500 font-medium">Total Estimation</p>
                                         <p className="text-4xl font-serif font-bold text-gray-900 dark:text-white" style={{ color: primaryColor }}>
-                                            ${(activeService.finalPrice ?? 0).toFixed(2)}
+                                            {(activeService.finalPrice ?? 0).toFixed(2)}
                                         </p>
                                     </div>
                                     <BookingFormModal service={activeService} />

@@ -2,6 +2,38 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 
+// ---------------------------
+// GLOBAL CORS HEADERS
+// ---------------------------
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers":
+    "Content-Type, Authorization, cache-control, x-api-key, X-Requested-With",
+};
+
+function withCors(json: any, status = 200, extraHeaders: Record<string, string> = {}) {
+  return new NextResponse(JSON.stringify(json), {
+    status,
+    headers: {
+      "Content-Type": "application/json",
+      ...CORS_HEADERS,
+      ...extraHeaders,
+    },
+  });
+}
+
+// ---------------------------
+// OPTIONS (PRE-FLIGHT)
+// ---------------------------
+export function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: CORS_HEADERS,
+  });
+}
+
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -9,7 +41,7 @@ export async function POST(req: Request) {
 
     const stk = body?.Body?.stkCallback;
     if (!stk) {
-      return NextResponse.json({ message: "Invalid M-Pesa callback body" }, { status: 400 });
+      return withCors({ message: "Invalid M-Pesa callback body" }, 400);
     }
 
     const { CheckoutRequestID, MerchantRequestID, ResultCode, ResultDesc } = stk;
@@ -26,12 +58,12 @@ export async function POST(req: Request) {
 
     if (!order) {
       console.warn("⚠️ Callback for unknown order:", CheckoutRequestID);
-      return NextResponse.json({ message: "Order not found" }, { status: 404 });
+      return withCors({ message: "Order not found" }, 404);
     }
 
     // Prevent duplicate callbacks
     if (order.paymentStatus === "COMPLETED") {
-      return NextResponse.json({ success: true, message: "Already processed" });
+      return withCors({ success: true, message: "Already processed" });
     }
 
     // SUCCESSFUL PAYMENT
@@ -70,7 +102,7 @@ export async function POST(req: Request) {
 
       console.log("✅ Payment Successful:", receipt);
 
-      return NextResponse.json({ success: true });
+      return withCors({ success: true });
     }
 
     // FAILED PAYMENT
@@ -85,10 +117,10 @@ export async function POST(req: Request) {
 
     console.log("❌ Payment Failed:", ResultDesc);
 
-    return NextResponse.json({ success: true });
+    return withCors({ success: true });
   } catch (err) {
     console.error("🔥 Callback Handler Error:", err);
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+    return withCors({ error: "Server error" }, 500);
   }
 }
 

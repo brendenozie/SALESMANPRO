@@ -4,6 +4,38 @@ import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
 import { request } from "http";
 
+// ---------------------------
+// GLOBAL CORS HEADERS
+// ---------------------------
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers":
+    "Content-Type, Authorization, cache-control, x-api-key, X-Requested-With",
+};
+
+function withCors(json: any, status = 200, extraHeaders: Record<string, string> = {}) {
+  return new NextResponse(JSON.stringify(json), {
+    status,
+    headers: {
+      "Content-Type": "application/json",
+      ...CORS_HEADERS,
+      ...extraHeaders,
+    },
+  });
+}
+
+// ---------------------------
+// OPTIONS (PRE-FLIGHT)
+// ---------------------------
+export function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: CORS_HEADERS,
+  });
+}
+
+
 // GET /api/marketplace-listings?agentId=&flag=&page=&limit=&sortBy=&order=
 export async function GET(req: Request) {
   try {
@@ -16,7 +48,8 @@ export async function GET(req: Request) {
     const pageParam = parseInt(searchParams.get("page") || "1", 10);
     const limitParam = parseInt(searchParams.get("limit") || "25", 10);
     if (isNaN(pageParam) || pageParam < 1 || isNaN(limitParam) || limitParam < 1) {
-      return NextResponse.json({ error: "Invalid pagination parameters." }, { status: 400 });
+      return withCors({ error: "Invalid pagination parameters." }, 400);
+      
     }
     const skip = (pageParam - 1) * limitParam;
     const take = limitParam;
@@ -48,7 +81,7 @@ export async function GET(req: Request) {
 
     const totalPages = Math.ceil(total / take);
 
-    return NextResponse.json(
+    return withCors(
       {
         data: listings,
         meta: {
@@ -60,13 +93,11 @@ export async function GET(req: Request) {
           order,
         },
       },
-      { status: 200 }
+      200
     );
   } catch (error: any) {
     console.error("Error fetching marketplace listings:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch listings", detail: error.message },
-      { status: 500 }
-    );
+    return withCors(
+      { error: "Failed to fetch listings", detail: error.message }, 500); 
   }
 }

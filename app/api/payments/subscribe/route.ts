@@ -1,6 +1,38 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 
+// ---------------------------
+// GLOBAL CORS HEADERS
+// ---------------------------
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers":
+    "Content-Type, Authorization, cache-control, x-api-key, X-Requested-With",
+};
+
+function withCors(json: any, status = 200, extraHeaders: Record<string, string> = {}) {
+  return new NextResponse(JSON.stringify(json), {
+    status,
+    headers: {
+      "Content-Type": "application/json",
+      ...CORS_HEADERS,
+      ...extraHeaders,
+    },
+  });
+}
+
+// ---------------------------
+// OPTIONS (PRE-FLIGHT)
+// ---------------------------
+export function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: CORS_HEADERS,
+  });
+}
+
+
 export async function POST(req: Request) {
   try {
     const { companyId, planId, amount, currency, billingPeriod, monthsPaidFor, yearsPaidFor } = await req.json();
@@ -10,19 +42,19 @@ export async function POST(req: Request) {
       include: { user: true }
     });
 
-    if (!company) return NextResponse.json({ error: "Company not found" }, { status: 404 });
+    if (!company) return withCors({ error: "Company not found" }, 404);
 
     const plan = await prisma.plan.findUnique({ where: { id: planId } });
-    if (!plan) return NextResponse.json({ error: "Plan not found" }, { status: 404 });
+    if (!plan) return withCors({ error: "Plan not found" }, 404);
 
     const PAYSTACK_SECRET = process.env.PAYSTACK_SECRET_KEY;
     
     if (!PAYSTACK_SECRET) {
-      return NextResponse.json({ error: "Missing PAYSTACK_TEST_SECRET_KEY on server" }, { status: 500 });
+      return withCors({ error: "Missing PAYSTACK_TEST_SECRET_KEY on server" }, 500);
     }
 
     const email = company.user?.email;
-    if (!email) return NextResponse.json({ error: "Email missing" }, { status: 400 });
+    if (!email) return withCors({ error: "Email missing" }, 400);
 
     // 1. Create customer
     await fetch("https://api.paystack.co/customer", {
@@ -52,12 +84,12 @@ export async function POST(req: Request) {
     const data = await paymentRes.json();
 
     if (!paymentRes.ok) {
-      return NextResponse.json({ error: "Payment initialization failed", details: data }, { status: 400 });
+      return withCors({ error: "Payment initialization failed", details: data }, 400);
     }
 
-    return NextResponse.json({ data });
+    return withCors({ data });
   } catch (error) {
-    return NextResponse.json({ error: "Server Error", details: error }, { status: 500 });
+    return withCors({ error: "Server Error", details: error }, 500);
   }
 }
 

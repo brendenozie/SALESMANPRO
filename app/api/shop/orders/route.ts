@@ -10,6 +10,38 @@ import { initiateGhubaPayment } from "@/lib/paymentsv2/ghuba";
 import { initiateStripePaymentIntent } from "@/lib/paymentsv2/stripe";
 import { createPaypalOrder } from "@/lib/paymentsv2/paypal";
 
+// ---------------------------
+// GLOBAL CORS HEADERS
+// ---------------------------
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers":
+  "Content-Type, Authorization, cache-control, x-api-key, X-Requested-With",
+};
+
+function withCors(json: any, status = 200, extraHeaders: Record<string, string> = {}) {
+  return new NextResponse(JSON.stringify(json), {
+    status,
+    headers: {
+      "Content-Type": "application/json",
+      ...CORS_HEADERS,
+      ...extraHeaders,
+    },
+  });
+}
+
+// ---------------------------
+// OPTIONS (PRE-FLIGHT)
+// ---------------------------
+export function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: CORS_HEADERS,
+  });
+}
+
+
 /* Order schema - mirrors your existing schema (light validation) */
 const orderSchema = z.object({
   name: z.string(),
@@ -45,7 +77,7 @@ export async function POST(req: Request) {
     const body = await req.json();
     const parsed = orderSchema.safeParse(body);
     if (!parsed.success) {
-      return NextResponse.json({ success: false, error: parsed.error.flatten() }, { status: 400 });
+      return withCors({ success: false, error: parsed.error.flatten() }, 400);
     }
 
     const data = parsed.data;
@@ -76,7 +108,7 @@ export async function POST(req: Request) {
     switch (data.paymentOption) {
       case "mpesa": {
         const phoneNumber = data.paymentData?.mpesaPhone ?? data.mpesaPhone ?? data.phone;
-        if (!phoneNumber) return NextResponse.json({ success: false, error: "mpesaPhone required" }, { status: 400 });
+        if (!phoneNumber) return withCors({ success: false, error: "mpesaPhone required" }, 400);
         paymentResponse = await initiateMpesaPayment(orderDb, phoneNumber, cfg.credentials);
         break;
       }
@@ -107,7 +139,7 @@ export async function POST(req: Request) {
         paymentResponse = { message: "Unknown payment option" };
     }
 
-    return NextResponse.json({
+    return withCors({
       success: true,
       data: {
         order: orderDb,
@@ -118,6 +150,6 @@ export async function POST(req: Request) {
     });
   } catch (err: any) {
     console.error("Order creation failed:", err);
-    return NextResponse.json({ success: false, error: err?.message ?? String(err) }, { status: 500 });
+    return withCors({ success: false, error: err?.message ?? String(err) }, 500);
   }
 }

@@ -1,6 +1,38 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 
+// ---------------------------
+// GLOBAL CORS HEADERS
+// ---------------------------
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers":
+    "Content-Type, Authorization, cache-control, x-api-key, X-Requested-With",
+};
+
+function withCors(json: any, status = 200, extraHeaders: Record<string, string> = {}) {
+  return new NextResponse(JSON.stringify(json), {
+    status,
+    headers: {
+      "Content-Type": "application/json",
+      ...CORS_HEADERS,
+      ...extraHeaders,
+    },
+  });
+}
+
+// ---------------------------
+// OPTIONS (PRE-FLIGHT)
+// ---------------------------
+export function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: CORS_HEADERS,
+  });
+}
+
+
 /**
  * Manual payment verification route
  * Examples:
@@ -15,9 +47,9 @@ export async function GET(req: Request) {
     const checkoutRequestId = searchParams.get("checkoutRequestId"); // M-Pesa
 
     if (!provider) {
-      return NextResponse.json(
+      return withCors(
         { success: false, message: "Missing provider (paystack/mpesa)" },
-        { status: 400 }
+        400
       );
     }
 
@@ -28,9 +60,9 @@ export async function GET(req: Request) {
     /* -------------------------------------------------------------------------- */
     if (provider === "paystack") {
       if (!reference) {
-        return NextResponse.json(
+        return withCors(
           { success: false, message: "Missing Paystack reference" },
-          { status: 400 }
+          400
         );
       }
 

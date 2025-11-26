@@ -3,18 +3,50 @@ import { getServerSession } from "next-auth";
 import prisma from "@/server/db/prismadb";
 import { authOptions } from "@/lib/auth";
 
+// ---------------------------
+// GLOBAL CORS HEADERS
+// ---------------------------
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers":
+    "Content-Type, Authorization, cache-control, x-api-key, X-Requested-With",
+};
+
+function withCors(json: any, status = 200, extraHeaders: Record<string, string> = {}) {
+  return new NextResponse(JSON.stringify(json), {
+    status,
+    headers: {
+      "Content-Type": "application/json",
+      ...CORS_HEADERS,
+      ...extraHeaders,
+    },
+  });
+}
+
+// ---------------------------
+// OPTIONS (PRE-FLIGHT)
+// ---------------------------
+export function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: CORS_HEADERS,
+  });
+}
+
+
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+      return withCors({ message: "Unauthorized" }, 401);
     }
 
     const body = await request.json();
     const { companyId, content } = body;
 
     if (!companyId || !content?.trim()) {
-      return NextResponse.json({ message: "Invalid request" }, { status: 400 });
+      return withCors({ message: "Invalid request" }, 400);
     }
 
     // 1️⃣ Find admin for the company
@@ -24,7 +56,7 @@ export async function POST(request: Request) {
     });
 
     if (!admin) {
-      return NextResponse.json({ message: "No admin found" }, { status: 404 });
+      return withCors({ message: "No admin found" }, 404);
     }
 
     // 2️⃣ Check if a conversation already exists between user and admin
@@ -76,15 +108,15 @@ export async function POST(request: Request) {
       data: { lastMessageAt: new Date() },
     });
 
-    return NextResponse.json(
+    return withCors(
       { message: "Message sent successfully", conversationId },
-      { status: 201 }
+      201
     );
   } catch (error) {
     console.error("Error sending message to admin:", error);
-    return NextResponse.json(
+    return withCors(
       { message: "Failed to send message" },
-      { status: 500 }
+      500
     );
   }
 }
