@@ -7,14 +7,26 @@
 import { z } from 'zod';
 
 // ============================================================================
+// Helper Functions
+// ============================================================================
+
+/**
+ * Parse and validate a limit parameter with min/max bounds
+ * @param val - The string value from query params
+ * @param defaultLimit - Default limit if not provided (default: 20)
+ * @param maxLimit - Maximum allowed limit (default: 100)
+ */
+export function parseLimit(val: string | undefined, defaultLimit = 20, maxLimit = 100): number {
+  const num = parseInt(val || String(defaultLimit));
+  return isNaN(num) ? defaultLimit : Math.min(Math.max(num, 1), maxLimit);
+}
+
+// ============================================================================
 // Common Query Parameter Schemas
 // ============================================================================
 
 export const paginationSchema = z.object({
-  limit: z.string().optional().transform((val) => {
-    const num = parseInt(val || '20');
-    return isNaN(num) ? 20 : Math.min(Math.max(num, 1), 100);
-  }),
+  limit: z.string().optional().transform((val) => parseLimit(val)),
   cursor: z.string().optional(),
   sort: z.enum(['asc', 'desc']).optional().default('desc'),
 });

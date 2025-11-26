@@ -290,9 +290,17 @@ export interface ServiceDTO {
   images: string[];
   price: number;
   status: string;
-  pricingTiers: any[];
+  pricingTiers: PricingTierDTO[];
   createdAt: string;
   updatedAt: string;
+}
+
+export interface PricingTierDTO {
+  id: string;
+  name: string;
+  price: number;
+  description: string | null;
+  features: string[];
 }
 
 export interface ServicesListDTO {
@@ -581,7 +589,12 @@ export function mapToRealEstateDTO(listing: any): RealEstateListingDTO {
     price: listing.sellingPrice || 0,
     status: listing.status,
     area: listing.area,
-    bedrooms: listing.bedrooms?.[0] || null,
+    // Handle bedrooms field which could be a number, string, or array
+    bedrooms: typeof listing.bedrooms === 'number' 
+      ? listing.bedrooms 
+      : Array.isArray(listing.bedrooms) 
+        ? listing.bedrooms[0] 
+        : parseInt(listing.bedrooms) || null,
     bathrooms: listing.bathrooms,
     amenities: listing.amenities || [],
     location: listing.locationName,
