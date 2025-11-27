@@ -73,15 +73,16 @@ function PricingDetails<T extends Record<string, any>>({
       <header>
         <h2 className="text-2xl font-bold text-gray-800">Pricing Details 📊</h2>
         <p className="text-gray-500 mt-1">
-          Enter cost, revenue and discount; final price and margin auto‑update.
+          Enter your cost and list price; customer pays and margin auto‑update.
         </p>
       </header>
 
       <div className="bg-gray-50 p-6 rounded-lg border space-y-6">
-        <h3 className="text-xl font-semibold text-gray-700">Enter Costs & Discount</h3>
+        <h3 className="text-xl font-semibold text-gray-700">Set Your Prices</h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          {/* Your Cost (buyingPrice) - what you pay for the item */}
           <InputField
-            label="Cost Price (KSh)"
+            label="Your Cost (KSh)"
             name={costField as string}
             type="number"
             value={formData[costField] ?? ""}
@@ -93,8 +94,9 @@ function PricingDetails<T extends Record<string, any>>({
             prefix="KSh"
           />
 
+          {/* List Price (sellingPrice) - what you want to sell for */}
           <InputField
-            label="Selling Price (KSh)"
+            label="List Price (KSh)"
             name={revenueField as string}
             type="number"
             value={formData[revenueField] ?? ""}
@@ -106,6 +108,7 @@ function PricingDetails<T extends Record<string, any>>({
             prefix="KSh"
           />
 
+          {/* Discount (%) */}
           <div>
             <label htmlFor={discountField as string} className="block text-sm font-medium text-gray-700 mb-1">
               Discount (%)
@@ -136,23 +139,34 @@ function PricingDetails<T extends Record<string, any>>({
         </div>
       </div>
 
+      {/* Derived values - Read-only with explanatory tooltip */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        <div className="bg-blue-50 p-5 rounded-lg flex justify-between items-center">
+        {/* Customer Pays (finalPrice) - read-only derived value */}
+        <div className="bg-blue-50 p-5 rounded-lg flex justify-between items-center relative group">
           <div>
-            <p className="text-gray-700 text-sm">Final Price</p>
+            <div className="flex items-center gap-1">
+              <p className="text-gray-700 text-sm">Customer Pays</p>
+              <span className="text-gray-400 cursor-help" title="Calculated as: List Price - (List Price × Discount %)">ⓘ</span>
+            </div>
             <p className="text-blue-800 font-extrabold text-3xl">
               {formatCurrency(formData[finalField] ?? 0)}
             </p>
+            <p className="text-xs text-gray-500 mt-1">Auto-calculated (read-only)</p>
           </div>
           <span className="text-3xl">💰</span>
         </div>
 
-        <div className="bg-green-50 p-5 rounded-lg flex justify-between items-center">
+        {/* Estimated Margin (profitMargin) - read-only derived value */}
+        <div className="bg-green-50 p-5 rounded-lg flex justify-between items-center relative group">
           <div>
-            <p className="text-gray-700 text-sm">Profit Margin</p>
+            <div className="flex items-center gap-1">
+              <p className="text-gray-700 text-sm">Estimated Margin</p>
+              <span className="text-gray-400 cursor-help" title="Calculated as: ((Customer Pays - Your Cost) / Your Cost) × 100">ⓘ</span>
+            </div>
             <p className="text-green-800 font-extrabold text-3xl">
               {formatPercent(formData[marginField] ?? 0)}
             </p>
+            <p className="text-xs text-gray-500 mt-1">Auto-calculated (read-only)</p>
           </div>
           <span className="text-3xl">📈</span>
         </div>

@@ -6,6 +6,7 @@ import React, {
   useMemo,
   useState,
   Suspense,
+  useRef,
 } from "react";
 import Modal from "./Modal";
 import { motion, AnimatePresence } from "framer-motion";
@@ -14,6 +15,11 @@ import {
   ArrowRightIcon,
   CheckCircleIcon,
   XMarkIcon,
+  BoltIcon,
+  Cog6ToothIcon,
+  InformationCircleIcon,
+  PencilSquareIcon,
+  ExclamationCircleIcon,
 } from "@heroicons/react/24/outline";
 import Stepper from "./Stepper";
 import { CATEGORY_STEPS } from "@/constant/CATEGORY_STEPS";
@@ -29,7 +35,134 @@ import { UnifiedMediaItem } from "./ImageUploader";
 ////////////////////////////////////////////////////////////////////////////////
 // Constants & API
 ////////////////////////////////////////////////////////////////////////////////
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+
+////////////////////////////////////////////////////////////////////////////////
+// Mode Types & Semantic Section Configuration
+////////////////////////////////////////////////////////////////////////////////
+
+/** Mode for the listing modal - Fast (minimal fields) or Advanced (all fields) */
+type ListingMode = "FAST" | "ADVANCED";
+
+/**
+ * Semantic section keys for the listing form.
+ * Each section represents a logical grouping of fields.
+ */
+type SectionKey = 
+  | "category"      // Category, subcategory, brand selection
+  | "core"          // Name, description, basic info
+  | "pricing"       // Pricing fields (buyingPrice, sellingPrice, discount)
+  | "media"         // Images, videos, books uploads
+  | "location"      // Location picker
+  | "variants"      // Color, size, weight, material variants
+  | "availability"  // Stock, availability flags
+  | "vehicle"       // Vehicle-specific fields (automotive)
+  | "property"      // Property-specific fields (real estate)
+  | "service"       // Service-specific fields
+  | "contact"       // Contact information
+  | "review";       // Final review section
+
+/**
+ * CATEGORY_FIELD_MAP - Maps category names to the sections that should be shown.
+ * This replaces the rigid numeric step mapping with semantic sections.
+ * 
+ * Fast Mode sections are always: category, core, pricing, media, location, review
+ * Advanced Mode adds additional sections based on category.
+ */
+const CATEGORY_FIELD_MAP: Record<string, { fast: SectionKey[]; advanced: SectionKey[] }> = {
+  // Default for standard products (Electronics, Clothing, etc.)
+  default: {
+    fast: ["category", "core", "pricing", "media", "location", "review"],
+    advanced: ["category", "core", "pricing", "media", "variants", "availability", "contact", "location", "review"],
+  },
+  // Automotive categories
+  "Automotive": {
+    fast: ["category", "core", "pricing", "media", "location", "review"],
+    advanced: ["category", "core", "vehicle", "pricing", "media", "availability", "contact", "location", "review"],
+  },
+  "Cars": {
+    fast: ["category", "core", "pricing", "media", "location", "review"],
+    advanced: ["category", "core", "vehicle", "pricing", "media", "availability", "contact", "location", "review"],
+  },
+  // Real Estate categories
+  "Real Estate": {
+    fast: ["category", "core", "pricing", "media", "location", "review"],
+    advanced: ["category", "core", "property", "pricing", "media", "availability", "contact", "location", "review"],
+  },
+  "Property": {
+    fast: ["category", "core", "pricing", "media", "location", "review"],
+    advanced: ["category", "core", "property", "pricing", "media", "availability", "contact", "location", "review"],
+  },
+  // Service categories
+  "Services": {
+    fast: ["category", "core", "pricing", "media", "location", "review"],
+    advanced: ["category", "core", "service", "pricing", "media", "availability", "contact", "location", "review"],
+  },
+};
+
+/**
+ * SECTION_COMPONENTS - Maps semantic section keys to their dynamic step numbers.
+ * This allows computing visible steps from active sections.
+ */
+const SECTION_COMPONENTS: Record<SectionKey, number> = {
+  category: 1,      // CategoryPicker
+  core: 2,          // ProductDetails
+  pricing: 7,       // PricingDetails
+  media: 8,         // ImageUploader
+  location: 18,     // LocationPicker
+  variants: 9,      // ProductVariants
+  availability: 10, // ProductAvailability
+  vehicle: 3,       // GeneralDetails + EnginePerformance
+  property: 19,     // PropertyTypeDetails
+  service: 16,      // ServiceSpecifics
+  contact: 12,      // ContactLocation
+  review: 11,       // FinalReview
+};
+
+/**
+ * Semantic section labels for stepper display
+ */
+const SECTION_LABELS: Record<SectionKey, string> = {
+  category: "Category",
+  core: "Details",
+  pricing: "Pricing",
+  media: "Media",
+  location: "Location",
+  variants: "Variants",
+  availability: "Availability",
+  vehicle: "Vehicle Info",
+  property: "Property Info",
+  service: "Service Info",
+  contact: "Contact",
+  review: "Review",
+};
+
+/**
+ * Get sections for a given category and mode
+ */
+function getSectionsForCategory(categoryName: string, mode: ListingMode): SectionKey[] {
+  const normalizedName = categoryName?.trim() || "";
+  const config = CATEGORY_FIELD_MAP[normalizedName] || CATEGORY_FIELD_MAP.default;
+  return mode === "FAST" ? config.fast : config.advanced;
+}
+
+/**
+ * Convert semantic sections to step numbers for backward compatibility
+ */
+function sectionsToSteps(sections: SectionKey[]): number[] {
+  return sections.map(s => SECTION_COMPONENTS[s]);
+}
+
+/**
+ * Get step labels from sections
+ */
+function getSectionStepLabels(sections: SectionKey[]): Record<number, string> {
+  const labels: Record<number, string> = {};
+  sections.forEach(s => {
+    labels[SECTION_COMPONENTS[s]] = SECTION_LABELS[s];
+  });
+  return labels;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Small utilities reused from the product modal design
@@ -42,26 +175,37 @@ function useDebouncedCallback<T extends (...a: any[]) => void>(fn: T, wait = 100
   }, [fn, wait]);
 }
 
-function Toast({ msg, onClose }: { msg: string; onClose?: () => void }) {
+function Toast({ msg, onClose, type = "info" }: { msg: string; onClose?: () => void; type?: "info" | "success" | "error" }) {
   useEffect(() => {
     const id = setTimeout(() => onClose && onClose(), 3000);
     return () => clearTimeout(id);
   }, [onClose]);
+  
+  const bgColor = type === "success" ? "bg-green-600" : type === "error" ? "bg-red-600" : "bg-gray-900";
+  
   return (
-    <div className="fixed bottom-6 right-6 z-[9999] bg-gray-900 text-white px-4 py-2 rounded-lg shadow-lg">
+    <div className={`fixed bottom-6 right-6 z-[9999] ${bgColor} text-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-2`}>
+      {type === "success" && <CheckCircleIcon className="h-5 w-5" />}
+      {type === "error" && <ExclamationCircleIcon className="h-5 w-5" />}
       {msg}
     </div>
   );
 }
 
+/**
+ * Autosave draft hook with improved messaging
+ */
 function useAutoSaveDraft(key: string, data: any, enabled = true) {
-  const [status, setStatus] = useState<"saved" | "saving" | "idle">("idle");
+  const [status, setStatus] = useState<"saved" | "saving" | "idle" | "restored">("idle");
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  
   const save = useCallback((payload: any) => {
     if (!enabled) return;
     setStatus("saving");
     try {
       localStorage.setItem(key, JSON.stringify(payload));
       setStatus("saved");
+      setLastSaved(new Date());
     } catch (e) {
       setStatus("idle");
     }
@@ -85,8 +229,80 @@ function useAutoSaveDraft(key: string, data: any, enabled = true) {
   }, [key]);
 
   const clear = useCallback(() => localStorage.removeItem(key), [key]);
+  
+  // Format time since last save
+  const getStatusMessage = useCallback(() => {
+    if (status === "saving") return "Saving draft...";
+    if (status === "saved" && lastSaved) {
+      const seconds = Math.floor((Date.now() - lastSaved.getTime()) / 1000);
+      if (seconds < 60) return "Draft saved";
+      return `Draft saved ${Math.floor(seconds / 60)}m ago`;
+    }
+    if (status === "restored") return "Draft restored";
+    return "";
+  }, [status, lastSaved]);
 
-  return { status, restore, clear };
+  return { status, restore, clear, getStatusMessage, setStatus };
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Validation Helpers
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Validation result interface
+ */
+interface ValidationResult {
+  isValid: boolean;
+  errors: { field: string; message: string }[];
+}
+
+/**
+ * Validate Fast Mode required fields
+ * Required: name, productCategoryId (category), sellingPrice
+ * Recommended but not blocking: at least one image, locationId (category-dependent)
+ * 
+ * This validation is minimal to not block users when optional fields are omitted.
+ */
+function validateFastMode(formData: MarketListingForm, images: UnifiedMediaItem[]): ValidationResult {
+  const errors: { field: string; message: string }[] = [];
+  
+  // Required: Product name
+  if (!formData.name?.trim()) {
+    errors.push({ field: "name", message: "Product name is required" });
+  }
+  
+  // Required: Category selected
+  if (!formData.productCategoryId) {
+    errors.push({ field: "productCategoryId", message: "Please select a category" });
+  }
+  
+  // Required: Selling price must be set and > 0
+  if (!formData.sellingPrice || formData.sellingPrice <= 0) {
+    errors.push({ field: "sellingPrice", message: "List Price must be greater than 0" });
+  }
+  
+  // Note: We do NOT hard-fail on images or location as per requirements
+  // These are recommendations only
+  
+  return {
+    isValid: errors.length === 0,
+    errors,
+  };
+}
+
+/**
+ * Stub for future Zod/Yup schema validation per category
+ * This can be expanded to validate visible sections only
+ */
+function validateSectionSchema(
+  _section: SectionKey,
+  _formData: MarketListingForm,
+  _images: UnifiedMediaItem[]
+): ValidationResult {
+  // Future: Implement Zod/Yup schema validation per section
+  // For now, return valid for all sections except core validation
+  return { isValid: true, errors: [] };
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -413,6 +629,288 @@ function buildListingPayload(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// Review Section Component
+// Summarizes: Core, Pricing, Media, Location, and Category data with inline edit
+////////////////////////////////////////////////////////////////////////////////
+interface ReviewSectionProps {
+  formData: MarketListingForm;
+  images: UnifiedMediaItem[];
+  videos: UnifiedMediaItem[];
+  ebooks: UnifiedMediaItem[];
+  sections: SectionKey[];
+  onNavigateToSection: (section: SectionKey) => void;
+}
+
+const ReviewSection: React.FC<ReviewSectionProps> = ({
+  formData,
+  images,
+  videos,
+  ebooks,
+  sections,
+  onNavigateToSection,
+}) => {
+  const displayValue = (val: any) =>
+    val !== undefined && val !== "" && val !== null ? val : "Not set";
+
+  const formatCurrency = (value: number | null | undefined) => {
+    if (value === undefined || value === null) return "Not set";
+    return new Intl.NumberFormat('en-KE', {
+      style: 'currency',
+      currency: 'KES',
+      minimumFractionDigits: 2,
+    }).format(value);
+  };
+
+  const formatPercent = (value: number | null | undefined) => {
+    if (value === undefined || value === null) return "0%";
+    return `${value.toFixed(2)}%`;
+  };
+
+  const SectionHeader: React.FC<{ title: string; section: SectionKey; icon: React.ReactNode }> = ({
+    title,
+    section,
+    icon,
+  }) => (
+    <div className="flex items-center justify-between mb-3 pb-2 border-b border-gray-200">
+      <div className="flex items-center gap-2">
+        {icon}
+        <h4 className="font-semibold text-gray-800">{title}</h4>
+      </div>
+      {sections.includes(section) && (
+        <button
+          onClick={() => onNavigateToSection(section)}
+          className="text-indigo-600 hover:text-indigo-800 text-sm flex items-center gap-1"
+        >
+          <PencilSquareIcon className="h-4 w-4" />
+          Edit
+        </button>
+      )}
+    </div>
+  );
+
+  const KeyValue: React.FC<{ label: string; value: React.ReactNode }> = ({ label, value }) => (
+    <div className="flex justify-between py-1">
+      <span className="text-gray-600 text-sm">{label}:</span>
+      <span className="text-gray-800 text-sm font-medium">{value}</span>
+    </div>
+  );
+
+  return (
+    <div className="p-6 bg-gray-50 rounded-xl space-y-6">
+      {/* Header */}
+      <div className="text-center">
+        <h2 className="text-2xl font-bold text-gray-800">Review Your Listing</h2>
+        <p className="text-gray-500 mt-1">
+          Check all details before submitting. Click Edit to make changes.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Core Information */}
+        <div className="bg-white p-4 rounded-lg shadow-sm">
+          <SectionHeader
+            title="Core Information"
+            section="core"
+            icon={<InformationCircleIcon className="h-5 w-5 text-blue-500" />}
+          />
+          <KeyValue label="Name" value={displayValue(formData.name)} />
+          <KeyValue
+            label="Description"
+            value={
+              formData.description
+                ? formData.description.substring(0, 50) + (formData.description.length > 50 ? "..." : "")
+                : "Not set"
+            }
+          />
+        </div>
+
+        {/* Category */}
+        <div className="bg-white p-4 rounded-lg shadow-sm">
+          <SectionHeader
+            title="Category"
+            section="category"
+            icon={<CheckCircleIcon className="h-5 w-5 text-green-500" />}
+          />
+          <KeyValue
+            label="Category"
+            value={displayValue(
+              (formData.category as any)?.displayName || (formData.category as any)?.name
+            )}
+          />
+          <KeyValue label="Subcategory" value={displayValue(formData.subCategoryName)} />
+          <KeyValue label="Brand" value={displayValue(formData.brand)} />
+        </div>
+
+        {/* Pricing - with improved labels */}
+        <div className="bg-white p-4 rounded-lg shadow-sm">
+          <SectionHeader
+            title="Pricing"
+            section="pricing"
+            icon={<span className="text-lg">💰</span>}
+          />
+          <KeyValue label="Your Cost" value={formatCurrency(formData.buyingPrice)} />
+          <KeyValue label="List Price" value={formatCurrency(formData.sellingPrice)} />
+          <KeyValue label="Discount" value={formatPercent(formData.discount)} />
+          <div className="mt-2 pt-2 border-t border-gray-100">
+            <KeyValue
+              label="Customer Pays"
+              value={
+                <span className="text-green-600 font-bold">
+                  {formatCurrency(formData.finalPrice)}
+                </span>
+              }
+            />
+            <KeyValue
+              label="Estimated Margin"
+              value={
+                <span className={formData.profitMargin && formData.profitMargin > 0 ? "text-green-600" : "text-red-600"}>
+                  {formatPercent(formData.profitMargin)}
+                </span>
+              }
+            />
+          </div>
+        </div>
+
+        {/* Media */}
+        <div className="bg-white p-4 rounded-lg shadow-sm">
+          <SectionHeader
+            title="Media"
+            section="media"
+            icon={<span className="text-lg">📷</span>}
+          />
+          <KeyValue label="Images" value={`${images.length} uploaded`} />
+          <KeyValue label="Videos" value={`${videos.length} uploaded`} />
+          <KeyValue label="Books/PDFs" value={`${ebooks.length} uploaded`} />
+          {images.length > 0 && (
+            <div className="flex gap-1 mt-2 overflow-x-auto">
+              {images.slice(0, 4).map((img, idx) => (
+                <div key={img.id || idx} className="relative flex-shrink-0">
+                  <img
+                    src={img.url}
+                    alt={`Preview ${idx + 1}`}
+                    className="h-12 w-12 object-cover rounded"
+                  />
+                  {idx === 0 && (
+                    <span className="absolute -top-1 -right-1 bg-indigo-600 text-white text-[8px] px-1 rounded">
+                      Cover
+                    </span>
+                  )}
+                </div>
+              ))}
+              {images.length > 4 && (
+                <div className="h-12 w-12 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-600">
+                  +{images.length - 4}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Location */}
+        <div className="bg-white p-4 rounded-lg shadow-sm">
+          <SectionHeader
+            title="Location"
+            section="location"
+            icon={<span className="text-lg">📍</span>}
+          />
+          <KeyValue label="Location" value={displayValue(formData.locationName)} />
+          <KeyValue
+            label="Coordinates"
+            value={
+              formData.latitude && formData.longitude
+                ? `${formData.latitude.toFixed(4)}, ${formData.longitude.toFixed(4)}`
+                : "Not set"
+            }
+          />
+        </div>
+
+        {/* Availability */}
+        <div className="bg-white p-4 rounded-lg shadow-sm">
+          <SectionHeader
+            title="Status"
+            section="availability"
+            icon={<span className="text-lg">✅</span>}
+          />
+          <KeyValue label="Available" value={formData.isAvailable ? "Yes" : "No"} />
+          <KeyValue label="Featured" value={formData.isFeatured ? "Yes" : "No"} />
+          <KeyValue label="Show on Marketplace" value={formData.showOnGhuba ? "Yes" : "No"} />
+          <KeyValue label="Status" value={displayValue(formData.status)} />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// Mode Selector Component
+////////////////////////////////////////////////////////////////////////////////
+interface ModeSelectorProps {
+  mode: ListingMode;
+  onModeChange: (mode: ListingMode) => void;
+}
+
+const ModeSelector: React.FC<ModeSelectorProps> = ({ mode, onModeChange }) => (
+  <div className="flex flex-col items-center justify-center py-8 px-4">
+    <h2 className="text-2xl font-bold text-gray-800 mb-2">How would you like to create your listing?</h2>
+    <p className="text-gray-500 mb-6 text-center max-w-md">
+      Choose Fast Mode for quick listings with essential fields, or Advanced Mode for complete control.
+    </p>
+    
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-lg">
+      {/* Fast Mode Card */}
+      <button
+        onClick={() => onModeChange("FAST")}
+        className={`p-6 rounded-xl border-2 transition-all ${
+          mode === "FAST"
+            ? "border-indigo-600 bg-indigo-50 shadow-md"
+            : "border-gray-200 hover:border-indigo-300 hover:bg-gray-50"
+        }`}
+      >
+        <div className="flex flex-col items-center text-center">
+          <div className={`p-3 rounded-full ${mode === "FAST" ? "bg-indigo-600" : "bg-gray-200"} mb-3`}>
+            <BoltIcon className={`h-8 w-8 ${mode === "FAST" ? "text-white" : "text-gray-600"}`} />
+          </div>
+          <h3 className="font-semibold text-lg text-gray-800">Fast Mode</h3>
+          <p className="text-sm text-gray-500 mt-1">
+            Quick setup with minimal required fields
+          </p>
+          <ul className="text-xs text-gray-400 mt-3 space-y-1">
+            <li>✓ Category & Brand</li>
+            <li>✓ Name & Pricing</li>
+            <li>✓ Images & Location</li>
+          </ul>
+        </div>
+      </button>
+
+      {/* Advanced Mode Card */}
+      <button
+        onClick={() => onModeChange("ADVANCED")}
+        className={`p-6 rounded-xl border-2 transition-all ${
+          mode === "ADVANCED"
+            ? "border-indigo-600 bg-indigo-50 shadow-md"
+            : "border-gray-200 hover:border-indigo-300 hover:bg-gray-50"
+        }`}
+      >
+        <div className="flex flex-col items-center text-center">
+          <div className={`p-3 rounded-full ${mode === "ADVANCED" ? "bg-indigo-600" : "bg-gray-200"} mb-3`}>
+            <Cog6ToothIcon className={`h-8 w-8 ${mode === "ADVANCED" ? "text-white" : "text-gray-600"}`} />
+          </div>
+          <h3 className="font-semibold text-lg text-gray-800">Advanced Mode</h3>
+          <p className="text-sm text-gray-500 mt-1">
+            Full control with all available fields
+          </p>
+          <ul className="text-xs text-gray-400 mt-3 space-y-1">
+            <li>✓ All Fast Mode fields</li>
+            <li>✓ Variants & Availability</li>
+            <li>✓ Category-specific options</li>
+          </ul>
+        </div>
+      </button>
+    </div>
+  </div>
+);
+
+////////////////////////////////////////////////////////////////////////////////
 // Hook: market listing form state (keeps logic similar to product modal)
 ////////////////////////////////////////////////////////////////////////////////
 function useMarketListingForm(
@@ -486,13 +984,21 @@ export default function ProductMarketModal({
     categories
   );
 
+  // Mode state - Fast or Advanced
+  const [mode, setMode] = useState<ListingMode>("FAST");
+  const [showModeSelector, setShowModeSelector] = useState(!marketListItem); // Show mode selector for new listings
+
   // local UI state
   const [images, setImages] = useState<UnifiedMediaItem[]>([]);
   const [videos, setVideos] = useState<UnifiedMediaItem[]>([]);
   const [ebooks, setBooks] = useState<UnifiedMediaItem[]>([]);
   const [step, setStep] = useState<number>(1);
   const [loading, setLoading] = useState(false);
-  const [toast, setToast] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ msg: string; type: "info" | "success" | "error" } | null>(null);
+  const [validationErrors, setValidationErrors] = useState<{ field: string; message: string }[]>([]);
+  
+  // Ref for auto-focusing invalid fields
+  const formRef = useRef<HTMLDivElement>(null);
 
   // Sync unified media state when formData changes
   useEffect(() => {
@@ -539,9 +1045,9 @@ export default function ProductMarketModal({
     );
   }, [formData.ebooks]);
 
-  // draft autosave
+  // draft autosave with improved messaging
   const draftKey = useMemo(() => `market-listing-draft-${companyId}-${product?.id || "new"}`, [companyId, product?.id]);
-  const { status: autosaveStatus, restore, clear } = useAutoSaveDraft(draftKey, formData, true);
+  const { status: autosaveStatus, restore, clear, getStatusMessage, setStatus: setAutosaveStatus } = useAutoSaveDraft(draftKey, formData, true);
 
   useEffect(() => {
     // restore draft if create flow and draft exists
@@ -549,21 +1055,36 @@ export default function ProductMarketModal({
       const draft = restore();
       if (draft) {
         setFormData((d: any) => ({ ...d, ...draft }));
-        setToast("Restored unsaved draft");
+        setToast({ msg: "📝 Draft restored from your last session", type: "info" });
+        setAutosaveStatus("restored");
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // dynamic steps
+  // Compute semantic sections based on category and mode
   const categoryKey = (formData.category as any)?.displayName?.trim?.() || (formData.category as any)?.name || "";
-  const stepsForCategory = useMemo(() => CATEGORY_STEPS[categoryKey] || [1, 2, 3], [categoryKey]);
+  const activeSections = useMemo(() => getSectionsForCategory(categoryKey, mode), [categoryKey, mode]);
+  
+  // Convert sections to step numbers for backward compatibility with existing FORM_COMPONENTS
+  const stepsForCategory = useMemo(() => sectionsToSteps(activeSections), [activeSections]);
+  const sectionStepLabels = useMemo(() => getSectionStepLabels(activeSections), [activeSections]);
+  
   const lastStepIndex = stepsForCategory.length;
   const isFirstStep = step === 1;
   const isLastStep = step === lastStepIndex;
   const currentDynamicStep = stepsForCategory[step - 1] || 1;
+  const currentSection = activeSections[step - 1];
 
   const FormComponent = useMemo(() => FORM_COMPONENTS[currentDynamicStep] ?? null, [currentDynamicStep]);
+
+  // Navigate to a specific section (for Review section edit links)
+  const navigateToSection = useCallback((section: SectionKey) => {
+    const sectionIndex = activeSections.indexOf(section);
+    if (sectionIndex >= 0) {
+      setStep(sectionIndex + 1);
+    }
+  }, [activeSections]);
 
   // handle input generically
   const handleInputChange = useCallback(
@@ -605,6 +1126,9 @@ export default function ProductMarketModal({
       }
 
       updateField(name as keyof MarketListingForm, val as any);
+      
+      // Clear validation error for this field if it exists
+      setValidationErrors(prev => prev.filter(e => e.field !== name));
     },
     [updateField]
   );
@@ -615,6 +1139,7 @@ export default function ProductMarketModal({
       updateField("productCategoryId", (cat as any)?.categoryId || "");
       updateField("subCategory", (cat as any)?.subcategories || {});
       updateField("subCategoryName", "");
+      setValidationErrors(prev => prev.filter(e => e.field !== "productCategoryId"));
     },
     [updateField]
   );
@@ -637,22 +1162,52 @@ export default function ProductMarketModal({
     updateField("longitude", locationDetails?.longitude ?? 0);
   }, [updateField]);
 
-  // load from product
-  // const handleLoadFromProduct = useCallback(() => {
-  //   const initial = productToListingForm(product ?? undefined, categories, companyId);
-  //   Object.entries(initial).forEach(([key, val]) =>
-  //     updateField(key as keyof MarketListingForm, val as any)
-  //   );
-  //   setToast("Loaded data from product");
-  // }, [product, categories, companyId, updateField]);
+  // Mode change handler
+  const handleModeChange = useCallback((newMode: ListingMode) => {
+    setMode(newMode);
+    setShowModeSelector(false);
+    setStep(1); // Reset to first step when mode changes
+  }, []);
 
   // drag to go back (mobile)
   const handleDragEnd = (_: any, info: any) => {
     if (info.offset.x > 80 && !isFirstStep) setStep((s) => Math.max(1, s - 1));
   };
 
-  // Save / submit
+  // Validate before submission
+  const validateBeforeSubmit = useCallback((): boolean => {
+    const result = validateFastMode(formData, images);
+    setValidationErrors(result.errors);
+    
+    if (!result.isValid) {
+      // Show first error as toast
+      setToast({ msg: result.errors[0]?.message || "Please fill required fields", type: "error" });
+      
+      // Navigate to the section containing the first error
+      const firstError = result.errors[0];
+      if (firstError) {
+        if (firstError.field === "name" || firstError.field === "description") {
+          navigateToSection("core");
+        } else if (firstError.field === "productCategoryId") {
+          navigateToSection("category");
+        } else if (firstError.field === "sellingPrice") {
+          navigateToSection("pricing");
+        }
+      }
+      
+      return false;
+    }
+    
+    return true;
+  }, [formData, images, navigateToSection]);
+
+  // Save / submit with validation
   const handleCreateListing = useCallback(async () => {
+    // Validate required fields first
+    if (!validateBeforeSubmit()) {
+      return;
+    }
+    
     if (!window.confirm("Create listing?")) return;
     setLoading(true);
     try {
@@ -662,7 +1217,7 @@ export default function ProductMarketModal({
       const newVideoItems = videos.filter(v => v.source === "local" && v.file);
       const newBookItems = ebooks.filter(b => b.source === "local" && b.file);
 
-      // 2. Create upload promises for new files
+      // 2. Create upload promises for new files (parallel uploads maintained)
       const uploadImagePromises = newImageItems.map(item =>
         uploadFiles([item.file!], "image", (progress, file) => {
           console.log(`Uploading image ${file.name}: ${progress}%`);
@@ -707,11 +1262,13 @@ export default function ProductMarketModal({
         .filter(Boolean);
 
 
-      // 6. Build payload
+      // 6. Build payload - maintains API contract with buildListingPayload
+      // Category is converted to name string as required by the API
       const payload = buildListingPayload(
         {
           ...formData,
           type: ebookType ? "ebook" : formData.type,
+          // Ensure category is sent as name string (API compliance)
           category: (formData.category as any)?.displayName || (formData.category as any)?.name || formData.category,
           companyId: companyId,
         } as MarketListingForm,
@@ -720,6 +1277,7 @@ export default function ProductMarketModal({
         finalBookUrls
       );
 
+      // 7. POST to api/admin/post-market-list (same endpoint, preserved)
       const res = await fetch(`${apiBaseUrl}/admin/post-market-list`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -732,16 +1290,22 @@ export default function ProductMarketModal({
         throw new Error(json?.message || res.statusText || "Failed to create listing");
       }
 
-      setToast("Listing created!");
+      // Non-blocking success toast
+      setToast({ msg: "✅ Listing created successfully!", type: "success" });
       clear();
-      setShowRequestProductModal(false);
+      
+      // Small delay before closing to show success message
+      setTimeout(() => {
+        setShowRequestProductModal(false);
+      }, 1000);
+      
     } catch (err: any) {
       console.error(err);
-      setToast(err?.message || "Error creating listing");
+      setToast({ msg: err?.message || "Error creating listing", type: "error" });
     } finally {
       setLoading(false);
     }
-  }, [images, videos, ebooks, formData, companyId, clear, setShowRequestProductModal]);
+  }, [images, videos, ebooks, formData, companyId, clear, setShowRequestProductModal, validateBeforeSubmit, ebookType]);
 
 
   // progress %
@@ -751,6 +1315,87 @@ export default function ProductMarketModal({
   const containerVar = {
     hidden: { opacity: 0, y: 12 },
     show: { opacity: 1, y: 0, transition: { when: "beforeChildren", staggerChildren: 0.02 } },
+  };
+
+  // Render current step content
+  const renderStepContent = () => {
+    // Show review section if on review step
+    if (currentSection === "review") {
+      return (
+        <ReviewSection
+          formData={formData}
+          images={images}
+          videos={videos}
+          ebooks={ebooks}
+          sections={activeSections}
+          onNavigateToSection={navigateToSection}
+        />
+      );
+    }
+    
+    // Category step (step 1)
+    if (currentSection === "category") {
+      return (
+        <CategoryPicker
+          formData={{ category: formData.category, subCategory: formData.subCategory, brand: formData.brand }}
+          categories={categories}
+          filteredBrands={(formData.category as any)?.allBrands || []}
+          onCategoryChange={handleCategoryChange}
+          onSubCategoryChange={handleSubCategoryChange}
+          onBrandChange={(b) => updateField("brand", b as any)}
+        />
+      );
+    }
+    
+    // Pricing step with improved labels
+    if (currentSection === "pricing") {
+      return (
+        <PricingDetails<MarketListingForm>
+          formData={formData}
+          setFormData={updateField}
+          costField="buyingPrice"
+          revenueField="sellingPrice"
+          discountField="discount"
+          finalField="finalPrice"
+          marginField="profitMargin"
+        />
+      );
+    }
+    
+    // Location step
+    if (currentSection === "location") {
+      return (
+        <section className="bg-white p-6 rounded-lg shadow-sm">
+          <h2 className="text-lg font-semibold mb-4">Location Details</h2>
+          <LocationPicker
+            selectedLocationId={formData.locationId || null}
+            availableLocations={locations}
+            onLocationSelect={handleLocationSelect}
+          />
+        </section>
+      );
+    }
+    
+    // Dynamic form component for other steps
+    if (FormComponent) {
+      return (
+        <Suspense fallback={<div className="p-6 text-center text-gray-500">Loading step…</div>}>
+          <FormComponent
+            formData={formData}
+            handleInputChange={handleInputChange}
+            setFormData={updateField as any}
+            images={images}
+            setImages={setImages}
+            videos={videos}
+            setVideos={setVideos}
+            books={ebooks}
+            setBooks={setBooks}
+          />
+        </Suspense>
+      );
+    }
+    
+    return <div className="p-6 text-sm text-gray-600">No form available for this step.</div>;
   };
 
   return (
@@ -766,7 +1411,10 @@ export default function ProductMarketModal({
               exit={{ opacity: 0 }}
               className="absolute inset-0 z-40 bg-white/70 backdrop-blur flex items-center justify-center"
             >
-              <div className="animate-pulse text-gray-700">Uploading…</div>
+              <div className="flex flex-col items-center gap-2">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                <div className="text-gray-700">Uploading files…</div>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
@@ -778,122 +1426,140 @@ export default function ProductMarketModal({
               <XMarkIcon className="h-5 w-5 text-gray-700" />
             </button>
             <div>
-              <div className="text-sm font-semibold">{marketListItem ? "Edit Listing" : "Add to Marketplace"}</div>
-              <div className="text-xs text-gray-500">Step {step} of {lastStepIndex}</div>
+              <div className="text-sm font-semibold flex items-center gap-2">
+                {marketListItem ? "Edit Listing" : "Add to Marketplace"}
+                {!showModeSelector && (
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${mode === "FAST" ? "bg-indigo-100 text-indigo-700" : "bg-purple-100 text-purple-700"}`}>
+                    {mode === "FAST" ? "Fast" : "Advanced"}
+                  </span>
+                )}
+              </div>
+              {!showModeSelector && (
+                <div className="text-xs text-gray-500">
+                  Step {step} of {lastStepIndex} • {SECTION_LABELS[currentSection]}
+                </div>
+              )}
             </div>
           </div>
-          <div className="w-64">
-            <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" style={{ width: `${progress}%` }} />
+          
+          <div className="flex items-center gap-3">
+            {/* Mode toggle button */}
+            {!showModeSelector && !marketListItem && (
+              <button
+                onClick={() => setShowModeSelector(true)}
+                className="text-xs text-indigo-600 hover:text-indigo-800 underline"
+              >
+                Change mode
+              </button>
+            )}
+            
+            <div className="w-48 sm:w-64">
+              <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div 
+                  className="h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 transition-all duration-300" 
+                  style={{ width: showModeSelector ? "0%" : `${progress}%` }} 
+                />
+              </div>
             </div>
           </div>
         </div>
 
         {/* Scrollable Content */}
-        <motion.div className="flex-1 overflow-y-auto px-4 py-4" variants={containerVar} initial="hidden" animate="show">
-          <Stepper step={step} stepsForCategory={stepsForCategory} STEP_LABELS={STEP_LABELS} />
+        <motion.div 
+          ref={formRef}
+          className="flex-1 overflow-y-auto px-4 py-4" 
+          variants={containerVar} 
+          initial="hidden" 
+          animate="show"
+        >
+          {showModeSelector ? (
+            <ModeSelector mode={mode} onModeChange={handleModeChange} />
+          ) : (
+            <>
+              <Stepper 
+                step={step} 
+                stepsForCategory={stepsForCategory} 
+                STEP_LABELS={sectionStepLabels}
+                onStepClick={(s) => setStep(s)}
+              />
 
-          <motion.div
-            key={step}
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ type: "spring", stiffness: 240, damping: 30 }}
-            drag="x"
-            dragConstraints={{ left: 0, right: 0 }}
-            onDragEnd={handleDragEnd}
-            className="mt-4"
-          >
-            
-            {step === 1 ? (
-              <CategoryPicker
-                formData={{ category: formData.category, subCategory: formData.subCategory, brand: formData.brand }}
-                categories={categories}
-                filteredBrands={(formData.category as any)?.allBrands || []}
-                onCategoryChange={handleCategoryChange}
-                onSubCategoryChange={handleSubCategoryChange}
-                onBrandChange={(b) => updateField("brand", b as any)}
-              />
-            ) : currentDynamicStep === 7 ? (
-              <PricingDetails<MarketListingForm>
-                formData={formData}
-                setFormData={updateField}
-                costField="buyingPrice"
-                revenueField="sellingPrice"
-                discountField="discount"
-                finalField="finalPrice"
-                marginField="profitMargin"
-              />
-            ) : currentDynamicStep === 18 ? (
-              <section className="bg-white p-6 rounded-lg shadow-sm">
-                <h2 className="text-lg font-semibold mb-4">Location Details</h2>
-                <LocationPicker
-                  selectedLocationId={formData.locationId || null}
-                  availableLocations={locations}
-                  onLocationSelect={handleLocationSelect}
-                />
-              </section>
-            ) : FormComponent ? (
-              <Suspense fallback={<div className="p-6 text-center text-gray-500">Loading step…</div>}>
-                <FormComponent
-                  formData={formData}
-                  handleInputChange={handleInputChange}
-                  setFormData={updateField as any}
-                  images={images}
-                  setImages={setImages}
-                  videos={videos}
-                  setVideos={setVideos}
-                  books={ebooks}
-                  setBooks={setBooks}
-                />
-              </Suspense>
-            ) : (
-              <div className="p-6 text-sm text-gray-600">No form available for this step.</div>
-            )}
-          </motion.div>
+              <motion.div
+                key={step}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ type: "spring", stiffness: 240, damping: 30 }}
+                drag="x"
+                dragConstraints={{ left: 0, right: 0 }}
+                onDragEnd={handleDragEnd}
+                className="mt-4"
+              >
+                {renderStepContent()}
+              </motion.div>
+              
+              {/* Validation errors display */}
+              {validationErrors.length > 0 && (
+                <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <div className="flex items-center gap-2 text-red-700 text-sm font-medium mb-1">
+                    <ExclamationCircleIcon className="h-5 w-5" />
+                    Please fix the following:
+                  </div>
+                  <ul className="text-red-600 text-sm list-disc list-inside">
+                    {validationErrors.map((err, idx) => (
+                      <li key={idx}>{err.message}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </>
+          )}
         </motion.div>
 
         {/* Sticky Footer */}
-        <div className="shrink-0 border-t bg-white/90 backdrop-blur-sm p-4 sticky bottom-0 left-0 right-0 z-30 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="hidden sm:flex items-center gap-2 text-gray-500 text-xs">
-            Progress: {progress}% {autosaveStatus === "saving" ? "• saving…" : autosaveStatus === "saved" ? "• saved" : ""}
+        {!showModeSelector && (
+          <div className="shrink-0 border-t bg-white/90 backdrop-blur-sm p-4 sticky bottom-0 left-0 right-0 z-30 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="hidden sm:flex items-center gap-2 text-gray-500 text-xs">
+              <span>Progress: {progress}%</span>
+              {getStatusMessage() && <span>• {getStatusMessage()}</span>}
+            </div>
+
+            <div className="flex w-full sm:w-auto justify-between sm:justify-end gap-3">
+              {!isFirstStep && (
+                <button
+                  onClick={() => setStep((s) => Math.max(1, s - 1))}
+                  className="w-full sm:w-auto px-4 py-2 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center gap-2 text-gray-700"
+                >
+                  <ArrowLeftIcon className="h-4 w-4" />
+                  <span className="sm:hidden">Back</span>
+                </button>
+              )}
+
+              {!isLastStep && (
+                <button
+                  onClick={() => setStep((s) => Math.min(lastStepIndex, s + 1))}
+                  className="w-full sm:w-auto px-4 py-2 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white flex items-center justify-center gap-2"
+                >
+                  <span className="sm:hidden">Next</span>
+                  <ArrowRightIcon className="h-4 w-4" />
+                </button>
+              )}
+
+              {isLastStep && (
+                <button
+                  onClick={handleCreateListing}
+                  disabled={loading}
+                  className="w-full sm:w-auto px-4 py-2 rounded-full bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white flex items-center justify-center gap-2"
+                >
+                  {loading ? "Submitting..." : "Submit"}
+                  <CheckCircleIcon className="h-4 w-4" />
+                </button>
+              )}
+            </div>
           </div>
-
-          <div className="flex w-full sm:w-auto justify-between sm:justify-end gap-3">
-            {!isFirstStep && (
-              <button
-                onClick={() => setStep((s) => Math.max(1, s - 1))}
-                className="w-full sm:w-auto px-4 py-2 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center gap-2 text-gray-700"
-              >
-                <ArrowLeftIcon className="h-4 w-4" />
-                <span className="sm:hidden">Back</span>
-              </button>
-            )}
-
-            {!isLastStep && (
-              <button
-                onClick={() => setStep((s) => Math.min(lastStepIndex, s + 1))}
-                className="w-full sm:w-auto px-4 py-2 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white flex items-center justify-center gap-2"
-              >
-                <span className="sm:hidden">Next</span>
-                <ArrowRightIcon className="h-4 w-4" />
-              </button>
-            )}
-
-            {isLastStep && (
-              <button
-                onClick={handleCreateListing}
-                className="w-full sm:w-auto px-4 py-2 rounded-full bg-green-600 hover:bg-green-700 text-white flex items-center justify-center gap-2"
-              >
-                Submit
-                <CheckCircleIcon className="h-4 w-4" />
-              </button>
-            )}
-          </div>
-        </div>
+        )}
 
         {/* Toast */}
-        {toast && <Toast msg={toast} onClose={() => setToast(null)} />}
+        {toast && <Toast msg={toast.msg} type={toast.type} onClose={() => setToast(null)} />}
       </div>
     </Modal>
   );
