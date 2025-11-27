@@ -46,8 +46,6 @@ const baseData: Partial<StoreForm> = {
   },
   paymentSettings: {
     id: "",
-    stripeKey: null,
-    paypalKey: null,
     mpesaShortcode: null,
     mpesaConsumerKey: null,
     mpesaConsumerSecret: null,
@@ -60,7 +58,27 @@ const baseData: Partial<StoreForm> = {
     paystackPublicKey: null,
     paystackSecretKey: null,
     ghubaMerchantId: null,
-    ghubaApiKey: null
+    ghubaApiKey: null,
+    mpesaPasskey: null,
+    mpesaSecret_encrypted: null,
+    mpesaSecret_iv: null,
+    mpesaSecret_tag: null,
+    stripePublishableKey: null,
+    stripeSecretKey: null,
+    paypalClientId: null,
+    paypalClientSecret: null,
+    stripeSecret_encrypted: null,
+    stripeSecret_iv: null,
+    stripeSecret_tag: null,
+    paypalSecret_encrypted: null,
+    paypalSecret_iv: null,
+    paypalSecret_tag: null,
+    paystackSecret_encrypted: null,
+    paystackSecret_iv: null,
+    paystackSecret_tag: null,
+    ghubaSecret_encrypted: null,
+    ghubaSecret_iv: null,
+    ghubaSecret_tag: null
   },
   shippingSettings: {
     id: "",
@@ -95,18 +113,33 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
       socialLinks: [
         { channel: SocialChannel.FACEBOOK, url: "https://fb.com/onlinestore" },
         { channel: SocialChannel.INSTAGRAM, url: "https://insta.com/onlinestore" },
+        { channel: SocialChannel.TWITTER, url: "https://twitter.com/onlinestore" }
       ],
       policies: [
         { type: PolicyType.SHIPPING, content: "Free standard shipping on all orders over $50. Express options available." },
         { type: PolicyType.RETURNS,  content: "30-day money-back guarantee. Item must be unworn/unused." },
+        { type: PolicyType.PRIVACY, content: "We respect your privacy and protect your data with industry-standard security." }
+      ],
+      awards: [
+        { name: "Best Online Retailer 2023", iconUrl: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000" },
+      ],
+      metrics: [
+        { label: "Products Sold", value: 15000 },
+        { label: "5-Star Reviews", value: 3200 },
+      ],
+      stats: [
+        { label: "Customer Satisfaction", value: "98%" },
+        { label: "Repeat Customers", value: "75%" },
       ],
       faqs: [
         { question: "What payment methods do you accept?", answer: "Visa, Mastercard, PayPal, and Apple Pay.", order: 1 },
         { question: "How long does shipping take?", answer: "Standard shipping takes 5-7 business days.", order: 2 },
+        { question: "Can I track my order?", answer: "Yes, tracking information is emailed once your order ships.", order: 3 },
       ],
       testimonials: [
         { authorName: "Alex R.", quote: "The quality exceeded my expectations. Fast delivery too!", rating: 5 },
         { authorName: "Mia K.", quote: "I found the perfect gift here. Great customer service.", rating: 5 },
+        { authorName: "Liam S.", quote: "Easy to navigate site and hassle-free returns.", rating: 4 }
       ],
       heroSlides: [
         {
