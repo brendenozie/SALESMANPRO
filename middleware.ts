@@ -93,7 +93,7 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
       if (pathname === "/" || pathname === "") {
         url.pathname = `/site/${subdomain}`;
       } else {
-        url.pathname = `/site/${subdomain}/${pathname}`;
+        url.pathname = `/site/${subdomain}${pathname}`;
       }
       
       const res = NextResponse.rewrite(url);
