@@ -1,4 +1,9 @@
-import React from 'react';
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { useSession, signOut } from 'next-auth/react';
+import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import { 
   MapPinIcon, 
   LinkIcon, 
@@ -8,10 +13,107 @@ import {
   HeartIcon,
   StarIcon,
   Cog6ToothIcon,
-  FireIcon
+  FireIcon,
+  UserCircleIcon,
 } from '@heroicons/react/24/solid';
+import { ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline';
+
+interface UserProfile {
+  id: string;
+  name: string | null;
+  email: string;
+  avatar: string | null;
+  bio: string | null;
+  tier?: string;
+  createdAt: string;
+}
+
+interface MediaItem {
+  id: string;
+  name: string;
+  description: string | null;
+  images: string[];
+  videos: string[] | null;
+}
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
 const UserProfile = () => {
+  const { data: session, status } = useSession();
+  const { slug } = useParams() as { slug: string };
+  
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [media, setMedia] = useState<MediaItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (status === 'authenticated' && session?.user) {
+      fetchUserData();
+    } else if (status === 'unauthenticated') {
+      setLoading(false);
+    }
+  }, [status, session, slug]);
+
+  const fetchUserData = async () => {
+    try {
+      setLoading(true);
+      const [profileRes, mediaRes] = await Promise.all([
+        fetch(`${apiBaseUrl}/site/${slug}/me/profile`),
+        fetch(`${apiBaseUrl}/site/${slug}/me/media`),
+      ]);
+
+      if (profileRes.ok) {
+        const profileData = await profileRes.json();
+        setUser(profileData);
+      }
+
+      if (mediaRes.ok) {
+        const mediaData = await mediaRes.json();
+        setMedia(mediaData.items || []);
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Show sign-in prompt if not authenticated
+  if (status === 'loading' || loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#0f111a]">
+        <div className="animate-pulse text-xl text-slate-400">Loading...</div>
+      </div>
+    );
+  }
+
+  if (status === 'unauthenticated') {
+    return (
+      <section className="flex items-center justify-center min-h-screen bg-[#0f111a]">
+        <div className="text-center">
+          <UserCircleIcon className="w-20 h-20 mx-auto text-slate-400 mb-4" />
+          <h2 className="text-2xl font-bold text-white mb-2">
+            Please sign in to access your profile.
+          </h2>
+          <Link href={`/auth/signin`}>
+            <button className="px-6 py-3 bg-violet-600 hover:bg-violet-700 text-white font-semibold rounded-lg">
+              Sign In
+            </button>
+          </Link>
+        </div>
+      </section>
+    );
+  }
+
+  // Display values with defaults
+  const displayUser = {
+    name: user?.name || session?.user?.name || 'Creator',
+    handle: `@${(user?.email || session?.user?.email || 'user').split('@')[0]}`,
+    avatar: user?.avatar || session?.user?.image || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=1964&auto=format&fit=crop',
+    bio: user?.bio || 'Visual storyteller & film enthusiast. Creating digital dreams one pixel at a time. 🎥 ✨',
+    joinedYear: user?.createdAt ? new Date(user.createdAt).getFullYear() : 2024,
+  };
+
   return (
     <div className="min-h-screen bg-[#0f111a] text-slate-300 font-sans selection:bg-violet-500 selection:text-white">
       
@@ -32,9 +134,17 @@ const UserProfile = () => {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#0f111a] via-transparent to-transparent opacity-90" />
           
-          <button className="absolute top-4 right-4 bg-black/30 backdrop-blur-md border border-white/10 text-white px-4 py-2 rounded-full flex items-center gap-2 hover:bg-white/10 transition-all text-sm font-medium">
-            <PencilSquareIcon className="w-4 h-4" /> Edit Cover
-          </button>
+          <div className="absolute top-4 right-4 flex gap-2">
+            <button className="bg-black/30 backdrop-blur-md border border-white/10 text-white px-4 py-2 rounded-full flex items-center gap-2 hover:bg-white/10 transition-all text-sm font-medium">
+              <PencilSquareIcon className="w-4 h-4" /> Edit Cover
+            </button>
+            <button 
+              onClick={() => signOut({ callbackUrl: `/site/${slug}` })}
+              className="bg-black/30 backdrop-blur-md border border-white/10 text-white px-4 py-2 rounded-full flex items-center gap-2 hover:bg-red-500/20 transition-all text-sm font-medium"
+            >
+              <ArrowRightOnRectangleIcon className="w-4 h-4" /> Sign Out
+            </button>
+          </div>
         </div>
 
         {/* --- PROFILE DATA SECTION --- */}
@@ -48,7 +158,7 @@ const UserProfile = () => {
                 <div className="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-violet-600 rounded-full opacity-75 group-hover:opacity-100 blur transition duration-1000"></div>
                 <div className="relative w-36 h-36 rounded-full border-4 border-[#0f111a] overflow-hidden">
                   <img 
-                    src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=1964&auto=format&fit=crop" 
+                    src={displayUser.avatar} 
                     alt="User Avatar" 
                     className="w-full h-full object-cover"
                   />
@@ -59,12 +169,12 @@ const UserProfile = () => {
               {/* User Details */}
               <div className="mt-4 text-center lg:text-left space-y-2">
                 <h1 className="text-3xl font-bold text-white tracking-tight">
-                  Elena Fisher
+                  {displayUser.name}
                 </h1>
-                <p className="text-violet-400 font-medium">@elenadesign</p>
+                <p className="text-violet-400 font-medium">{displayUser.handle}</p>
                 
                 <p className="text-sm text-slate-400 leading-relaxed max-w-xs">
-                  Visual storyteller & film enthusiast. Creating digital dreams one pixel at a time. 🎥 ✨
+                  {displayUser.bio}
                 </p>
 
                 <div className="flex flex-wrap justify-center lg:justify-start gap-3 mt-4 text-xs font-medium text-slate-400">
@@ -75,7 +185,7 @@ const UserProfile = () => {
                     <LinkIcon className="w-4 h-4 text-slate-500" /> elena.io
                   </span>
                   <span className="flex items-center gap-1">
-                    <CalendarDaysIcon className="w-4 h-4 text-slate-500" /> Joined 2022
+                    <CalendarDaysIcon className="w-4 h-4 text-slate-500" /> Joined {displayUser.joinedYear}
                   </span>
                 </div>
 

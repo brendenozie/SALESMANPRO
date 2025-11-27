@@ -1,4 +1,9 @@
-import React from 'react';
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { useSession, signOut } from 'next-auth/react';
+import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import { 
   LockClosedIcon, 
   MapPinIcon, 
@@ -8,10 +13,103 @@ import {
   ClockIcon,
   CalendarDaysIcon,
   DocumentTextIcon,
-  ChevronRightIcon
+  ChevronRightIcon,
+  UserCircleIcon,
+  ArrowRightOnRectangleIcon,
 } from '@heroicons/react/24/solid';
 
+interface UserProfile {
+  id: string;
+  name: string | null;
+  email: string;
+  avatar: string | null;
+  tier?: string;
+}
+
+interface SecurityService {
+  id: string;
+  startDate: string;
+  endDate: string | null;
+  status: string;
+  totalPrice: number | null;
+}
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+
 const SecurityDashboard = () => {
+  const { data: session, status } = useSession();
+  const { slug } = useParams() as { slug: string };
+  
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [services, setServices] = useState<SecurityService[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (status === 'authenticated' && session?.user) {
+      fetchUserData();
+    } else if (status === 'unauthenticated') {
+      setLoading(false);
+    }
+  }, [status, session, slug]);
+
+  const fetchUserData = async () => {
+    try {
+      setLoading(true);
+      const [profileRes, securityRes] = await Promise.all([
+        fetch(`${apiBaseUrl}/site/${slug}/me/profile`),
+        fetch(`${apiBaseUrl}/site/${slug}/me/security`),
+      ]);
+
+      if (profileRes.ok) {
+        const profileData = await profileRes.json();
+        setUser(profileData);
+      }
+
+      if (securityRes.ok) {
+        const data = await securityRes.json();
+        setServices(data.items || []);
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Show sign-in prompt if not authenticated
+  if (status === 'loading' || loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-950">
+        <div className="animate-pulse text-xl text-gray-400">Loading...</div>
+      </div>
+    );
+  }
+
+  if (status === 'unauthenticated') {
+    return (
+      <section className="flex items-center justify-center min-h-screen bg-gray-950">
+        <div className="text-center">
+          <UserCircleIcon className="w-20 h-20 mx-auto text-gray-400 mb-4" />
+          <h2 className="text-2xl font-bold text-white mb-2">
+            Please sign in to access your dashboard.
+          </h2>
+          <Link href={`/auth/signin`}>
+            <button className="px-6 py-3 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded-lg">
+              Sign In
+            </button>
+          </Link>
+        </div>
+      </section>
+    );
+  }
+
+  // Display values with defaults
+  const displayUser = {
+    name: user?.name || session?.user?.name || 'Client',
+    avatar: user?.avatar || session?.user?.image,
+    activeServices: services.filter(s => s.status === 'CONFIRMED' || s.status === 'ACTIVE').length,
+  };
+
   return (
     <div className="min-h-screen bg-gray-950 text-gray-300 font-sans selection:bg-cyan-700 selection:text-white">
       
@@ -27,10 +125,20 @@ const SecurityDashboard = () => {
           </div>
           <div className="flex items-center gap-4">
             <div className="text-right">
-              <p className="text-sm font-mono text-gray-500">System Time</p>
-              <p className="text-white font-bold">{new Date().toLocaleTimeString()}</p>
+              <p className="text-sm font-mono text-gray-500">Welcome</p>
+              <p className="text-white font-bold">{displayUser.name}</p>
             </div>
-            <div className="w-10 h-10 rounded-full bg-cyan-700"></div> {/* User Avatar Placeholder */}
+            <div className="w-10 h-10 rounded-full bg-cyan-700 overflow-hidden">
+              {displayUser.avatar && (
+                <img src={displayUser.avatar} alt="User" className="w-full h-full object-cover" />
+              )}
+            </div>
+            <button 
+              onClick={() => signOut({ callbackUrl: `/site/${slug}` })}
+              className="p-2 text-gray-400 hover:text-red-400 transition-colors"
+            >
+              <ArrowRightOnRectangleIcon className="w-6 h-6" />
+            </button>
           </div>
         </div>
       </header>
@@ -41,8 +149,8 @@ const SecurityDashboard = () => {
         <section className="grid grid-cols-1 md:grid-cols-4 gap-6">
           
           <StatCard title="Overall Status" value="ACTIVE" accent="green" />
-          <StatCard title="Guards Deployed" value="8" accent="cyan" />
-          <StatCard title="Open Incidents" value="1" accent="amber" />
+          <StatCard title="Active Services" value={String(displayUser.activeServices)} accent="cyan" />
+          <StatCard title="Open Incidents" value="0" accent="amber" />
           <StatCard title="CCTV Feeds" value="12/12 ONLINE" accent="green" />
 
         </section>

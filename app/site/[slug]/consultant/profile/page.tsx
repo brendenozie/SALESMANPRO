@@ -1,13 +1,38 @@
-import React from 'react';
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { useSession, signOut } from 'next-auth/react';
+import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import { 
   CalendarDaysIcon, 
   CheckCircleIcon, 
   BookOpenIcon, 
   ChatBubbleLeftRightIcon,
   VideoCameraIcon,
-  ArrowLongRightIcon
+  ArrowLongRightIcon,
+  UserCircleIcon,
+  ArrowRightOnRectangleIcon,
 } from '@heroicons/react/24/solid';
 import { ChevronRightIcon, DocumentTextIcon, CheckIcon } from '@heroicons/react/24/outline';
+
+interface UserProfile {
+  id: string;
+  name: string | null;
+  email: string;
+  avatar: string | null;
+  tier?: string;
+}
+
+interface Engagement {
+  id: string;
+  startDate: string;
+  endDate: string | null;
+  status: string;
+  notes: string | null;
+}
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
 const TargetIcon = ({ className }: { className: string }) => (
   <svg 
@@ -25,6 +50,82 @@ const TargetIcon = ({ className }: { className: string }) => (
 );
 
 const ConsultantDashboard = () => {
+  const { data: session, status } = useSession();
+  const { slug } = useParams() as { slug: string };
+  
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [engagements, setEngagements] = useState<Engagement[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (status === 'authenticated' && session?.user) {
+      fetchUserData();
+    } else if (status === 'unauthenticated') {
+      setLoading(false);
+    }
+  }, [status, session, slug]);
+
+  const fetchUserData = async () => {
+    try {
+      setLoading(true);
+      const [profileRes, engagementsRes] = await Promise.all([
+        fetch(`${apiBaseUrl}/site/${slug}/me/profile`),
+        fetch(`${apiBaseUrl}/site/${slug}/me/engagements`),
+      ]);
+
+      if (profileRes.ok) {
+        const profileData = await profileRes.json();
+        setUser(profileData);
+      }
+
+      if (engagementsRes.ok) {
+        const data = await engagementsRes.json();
+        setEngagements(data.items || []);
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Show sign-in prompt if not authenticated
+  if (status === 'loading' || loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-pulse text-xl text-gray-600">Loading...</div>
+      </div>
+    );
+  }
+
+  if (status === 'unauthenticated') {
+    return (
+      <section className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="text-center">
+          <UserCircleIcon className="w-20 h-20 mx-auto text-gray-400 mb-4" />
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">
+            Please sign in to access your dashboard.
+          </h2>
+          <Link href={`/auth/signin`}>
+            <button className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg">
+              Sign In
+            </button>
+          </Link>
+        </div>
+      </section>
+    );
+  }
+
+  // Display values with defaults
+  const displayUser = {
+    name: user?.name || session?.user?.name || 'Client',
+    firstName: (user?.name || session?.user?.name || 'there').split(' ')[0],
+    upcomingEngagements: engagements.filter(e => new Date(e.startDate) > new Date()).length,
+  };
+
+  // Get next session if any
+  const nextSession = engagements.find(e => new Date(e.startDate) > new Date());
+
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800 font-sans selection:bg-amber-100">
       
@@ -32,10 +133,21 @@ const ConsultantDashboard = () => {
       <div className="bg-white shadow-lg rounded-b-xl border-b border-gray-100 pt-8 pb-10">
         <div className="max-w-7xl mx-auto px-6 lg:px-8">
           
-          {/* Greeting */}
-          <div className="mb-8">
-            <p className="text-xl font-medium text-gray-500">Hello, Eleanor.</p>
-            <h1 className="text-4xl font-extrabold text-gray-900 mt-1">Ready for the next breakthrough?</h1>
+          <div className="flex justify-between items-start mb-8">
+            {/* Greeting */}
+            <div>
+              <p className="text-xl font-medium text-gray-500">Hello, {displayUser.firstName}.</p>
+              <h1 className="text-4xl font-extrabold text-gray-900 mt-1">Ready for the next breakthrough?</h1>
+            </div>
+            
+            {/* Sign Out Button */}
+            <button 
+              onClick={() => signOut({ callbackUrl: `/site/${slug}` })}
+              className="flex items-center gap-2 px-4 py-2 text-gray-500 hover:text-red-600 transition-colors"
+            >
+              <ArrowRightOnRectangleIcon className="w-5 h-5" />
+              <span className="hidden sm:inline">Sign Out</span>
+            </button>
           </div>
 
           {/* Next Session Card */}
@@ -44,8 +156,21 @@ const ConsultantDashboard = () => {
               <CalendarDaysIcon className="w-8 h-8 text-amber-400 flex-shrink-0" />
               <div>
                 <p className="text-sm uppercase tracking-widest text-blue-300">Next Session</p>
-                <h2 className="text-xl font-bold">1:1 Strategy Deep Dive (Week 4)</h2>
-                <p className="text-sm text-blue-200">Monday, December 2nd @ 10:00 AM PST</p>
+                <h2 className="text-xl font-bold">
+                  {nextSession?.notes || '1:1 Strategy Deep Dive (Week 4)'}
+                </h2>
+                <p className="text-sm text-blue-200">
+                  {nextSession 
+                    ? new Date(nextSession.startDate).toLocaleDateString('en-US', { 
+                        weekday: 'long', 
+                        month: 'long', 
+                        day: 'numeric' 
+                      }) + ' @ ' + new Date(nextSession.startDate).toLocaleTimeString('en-US', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })
+                    : 'Monday, December 2nd @ 10:00 AM PST'}
+                </p>
               </div>
             </div>
             <button className="mt-4 md:mt-0 px-6 py-2 bg-amber-500 text-blue-900 font-bold rounded-lg flex items-center gap-2 hover:bg-amber-400 transition-colors">

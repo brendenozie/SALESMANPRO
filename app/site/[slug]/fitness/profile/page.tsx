@@ -1,4 +1,9 @@
-import React from 'react';
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { useSession, signOut } from 'next-auth/react';
+import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import { 
   FireIcon, 
   ClockIcon, 
@@ -7,9 +12,33 @@ import {
   MapPinIcon, 
   TrophyIcon,
   HeartIcon,
-  MoonIcon
+  MoonIcon,
+  UserCircleIcon,
+  ArrowRightOnRectangleIcon,
 } from '@heroicons/react/24/solid';
 import { ArrowTrendingUpIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
+
+interface UserProfile {
+  id: string;
+  name: string | null;
+  email: string;
+  avatar: string | null;
+  tier?: string;
+}
+
+interface FitnessProgram {
+  id: string;
+  status: string;
+  course?: {
+    title: string;
+    description?: string;
+    image?: string;
+  };
+  progress?: number;
+  nextSession?: string;
+}
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
 const WaterDropIcon = ( { className } : { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
@@ -19,6 +48,80 @@ const WaterDropIcon = ( { className } : { className?: string }) => (
 );
 
 const FitnessDashboard = () => {
+  const { data: session, status } = useSession();
+  const { slug } = useParams() as { slug: string };
+  
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [programs, setPrograms] = useState<FitnessProgram[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (status === 'authenticated' && session?.user) {
+      fetchUserData();
+    } else if (status === 'unauthenticated') {
+      setLoading(false);
+    }
+  }, [status, session, slug]);
+
+  const fetchUserData = async () => {
+    try {
+      setLoading(true);
+      const [profileRes, fitnessRes] = await Promise.all([
+        fetch(`${apiBaseUrl}/site/${slug}/me/profile`),
+        fetch(`${apiBaseUrl}/site/${slug}/me/fitness`),
+      ]);
+
+      if (profileRes.ok) {
+        const profileData = await profileRes.json();
+        setUser(profileData);
+      }
+
+      if (fitnessRes.ok) {
+        const fitnessData = await fitnessRes.json();
+        setPrograms(fitnessData.items || []);
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Show sign-in prompt if not authenticated
+  if (status === 'loading' || loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-pulse text-xl text-gray-600">Loading...</div>
+      </div>
+    );
+  }
+
+  if (status === 'unauthenticated') {
+    return (
+      <section className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="text-center">
+          <UserCircleIcon className="w-20 h-20 mx-auto text-gray-400 mb-4" />
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">
+            Please sign in to access your fitness dashboard.
+          </h2>
+          <Link href={`/auth/signin`}>
+            <button className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg">
+              Sign In
+            </button>
+          </Link>
+        </div>
+      </section>
+    );
+  }
+
+  // Display values with defaults
+  const displayUser = {
+    name: user?.name || session?.user?.name || 'Athlete',
+    avatar: user?.avatar || session?.user?.image || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1976&auto=format&fit=crop',
+    location: 'Los Angeles',
+    streak: programs.length > 0 ? `${programs.length * 10} Days 🔥` : '0 Days',
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800 font-sans selection:bg-emerald-200">
       
@@ -30,7 +133,7 @@ const FitnessDashboard = () => {
               {/* Avatar */}
               <div className="w-24 h-24 rounded-full p-1 bg-gradient-to-tr from-emerald-500 to-teal-500">
                 <img 
-                  src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1976&auto=format&fit=crop" 
+                  src={displayUser.avatar} 
                   alt="User Avatar" 
                   className="w-full h-full object-cover rounded-full border-4 border-white"
                 />
@@ -39,21 +142,24 @@ const FitnessDashboard = () => {
               {/* Info */}
               <div>
                 <p className="text-sm font-medium text-emerald-600 uppercase tracking-widest">Welcome Back</p>
-                <h1 className="text-4xl font-extrabold text-gray-900 mt-1">Serena Williams</h1>
+                <h1 className="text-4xl font-extrabold text-gray-900 mt-1">{displayUser.name}</h1>
                 <div className="flex items-center gap-4 mt-2 text-gray-500 text-sm">
                   <span className="flex items-center gap-1">
-                    <MapPinIcon className="w-4 h-4 text-red-500" /> Los Angeles
+                    <MapPinIcon className="w-4 h-4 text-red-500" /> {displayUser.location}
                   </span>
                   <div className="w-1.5 h-1.5 bg-gray-300 rounded-full"></div>
-                  <span className="font-semibold text-gray-700">Active Streak: 42 Days 🔥</span>
+                  <span className="font-semibold text-gray-700">Active Streak: {displayUser.streak}</span>
                 </div>
               </div>
             </div>
 
             {/* Quick Actions */}
             <div className="hidden sm:flex items-center gap-4">
-               <button className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-full text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
-                 <HeartIcon className="w-5 h-5 text-red-500" /> Log Weight
+               <button 
+                 onClick={() => signOut({ callbackUrl: `/site/${slug}` })}
+                 className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-full text-sm font-medium text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors"
+               >
+                 <ArrowRightOnRectangleIcon className="w-5 h-5" /> Sign Out
                </button>
                <button className="flex items-center gap-2 px-6 py-2 bg-emerald-600 text-white rounded-full text-sm font-bold hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-500/30">
                  Start Workout

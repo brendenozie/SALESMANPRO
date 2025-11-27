@@ -1,6 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSession, signOut } from 'next-auth/react';
+import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import {
   HomeIcon,
   HeartIcon,
@@ -12,71 +15,35 @@ import {
   Squares2X2Icon,
   ArrowRightIcon,
   ChatBubbleLeftRightIcon,
-  PhoneIcon
+  PhoneIcon,
+  UserCircleIcon,
+  ArrowRightOnRectangleIcon,
 } from '@heroicons/react/24/outline';
 import { StarIcon, HeartIcon as HeartSolidIcon } from '@heroicons/react/24/solid';
 
-// --- Mock Data ---
-const USER = {
-  name: 'Sarah Jenkins',
-  avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80',
-  location: 'Seattle, WA',
-  stats: {
-    savedHomes: 12,
-    savedSearches: 4,
-    upcomingTours: 2
-  }
-};
+interface UserProfile {
+  id: string;
+  name: string | null;
+  email: string;
+  avatar: string | null;
+  tier?: string;
+}
 
-const NEXT_TOUR = {
-  id: 101,
-  propertyTitle: 'The Emerald Penthouse',
-  address: '1200 Stewart St, Seattle, WA',
-  date: 'Tomorrow, Oct 26',
-  time: '10:00 AM',
-  image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-  agent: {
-    name: 'David Chen',
-    image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80',
-    phone: '(206) 555-0192'
-  }
-};
+interface PropertyListing {
+  id: string;
+  title: string;
+  description: string | null;
+  images: string[];
+  price: number;
+  status: string;
+  area: string | null;
+  bedrooms: number | null;
+  bathrooms: string | null;
+  amenities: string[];
+  location: string | null;
+}
 
-const SAVED_PROPERTIES = [
-  {
-    id: 1,
-    title: 'Modern Lakeside Villa',
-    address: '45 Lake Washington Blvd',
-    price: '$2,450,000',
-    beds: 4,
-    baths: 3.5,
-    sqft: 3200,
-    image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-    status: 'Active'
-  },
-  {
-    id: 2,
-    title: 'Downtown Loft with View',
-    address: '888 Western Ave #12B',
-    price: '$895,000',
-    beds: 2,
-    baths: 2,
-    sqft: 1450,
-    image: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-    status: 'Pending'
-  },
-  {
-    id: 3,
-    title: 'Craftsman in Queen Anne',
-    address: '2211 Bigelow Ave N',
-    price: '$1,200,000',
-    beds: 3,
-    baths: 2,
-    sqft: 2100,
-    image: 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-    status: 'Active'
-  }
-];
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
 // --- Sub-Components ---
 
@@ -117,7 +84,7 @@ const StatCard = ({ icon: Icon, label, value, colorClass }:{icon: React.ElementT
   </div>
 );
 
-const PropertyCard = ({ property }:{property: {id: number, title: string, address: string, price: string, beds: number, baths: number, sqft: number, image: string, status: string}}) => (
+const PropertyCard = ({ property }:{property: {id: string | number, title: string, address: string, price: string | number, beds: number, baths: number, sqft: number, image: string, status: string}}) => (
   <div className="group relative bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300">
     {/* Image Container */}
     <div className="relative aspect-[4/3] overflow-hidden">
@@ -131,7 +98,7 @@ const PropertyCard = ({ property }:{property: {id: number, title: string, addres
       {/* Top Badges */}
       <div className="absolute top-3 left-3 flex gap-2">
         <span className={`px-3 py-1 text-xs font-bold uppercase tracking-wider rounded-full 
-          ${property.status === 'Active' ? 'bg-emerald-500 text-white' : 'bg-amber-500 text-white'}`}>
+          ${property.status === 'Active' || property.status === 'ACTIVE' ? 'bg-emerald-500 text-white' : 'bg-amber-500 text-white'}`}>
           {property.status}
         </span>
       </div>
@@ -141,7 +108,7 @@ const PropertyCard = ({ property }:{property: {id: number, title: string, addres
 
       {/* Price Overlay (Visible on hover generally, but kept static for clarity) */}
       <div className="absolute bottom-4 left-4 text-white">
-         <h3 className="text-2xl font-bold drop-shadow-md">{property.price}</h3>
+         <h3 className="text-2xl font-bold drop-shadow-md">{typeof property.price === 'number' ? `$${property.price.toLocaleString()}` : property.price}</h3>
       </div>
     </div>
 
@@ -183,7 +150,134 @@ const PropertyCard = ({ property }:{property: {id: number, title: string, addres
 // --- Main Dashboard Layout ---
 
 export default function RealEstateDashboard() {
+  const { data: session, status } = useSession();
+  const { slug } = useParams() as { slug: string };
+  
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [properties, setProperties] = useState<PropertyListing[]>([]);
+  const [loading, setLoading] = useState(true);
   const [activeNav, setActiveNav] = useState('overview');
+
+  useEffect(() => {
+    if (status === 'authenticated' && session?.user) {
+      fetchUserData();
+    } else if (status === 'unauthenticated') {
+      setLoading(false);
+    }
+  }, [status, session, slug]);
+
+  const fetchUserData = async () => {
+    try {
+      setLoading(true);
+      const [profileRes, propertiesRes] = await Promise.all([
+        fetch(`${apiBaseUrl}/site/${slug}/me/profile`),
+        fetch(`${apiBaseUrl}/site/${slug}/me/realestate`),
+      ]);
+
+      if (profileRes.ok) {
+        const profileData = await profileRes.json();
+        setUser(profileData);
+      }
+
+      if (propertiesRes.ok) {
+        const propertiesData = await propertiesRes.json();
+        setProperties(propertiesData.items || []);
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Show sign-in prompt if not authenticated
+  if (status === 'loading' || loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="animate-pulse text-xl text-slate-600">Loading...</div>
+      </div>
+    );
+  }
+
+  if (status === 'unauthenticated') {
+    return (
+      <section className="flex items-center justify-center min-h-screen bg-slate-50">
+        <div className="text-center">
+          <UserCircleIcon className="w-20 h-20 mx-auto text-slate-400 mb-4" />
+          <h2 className="text-2xl font-bold text-slate-800 mb-2">
+            Please sign in to access your dashboard.
+          </h2>
+          <Link href={`/auth/signin`}>
+            <button className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg">
+              Sign In
+            </button>
+          </Link>
+        </div>
+      </section>
+    );
+  }
+
+  // Display values with defaults
+  const displayUser = {
+    name: user?.name || session?.user?.name || 'Sarah Jenkins',
+    avatar: user?.avatar || session?.user?.image || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80',
+    location: 'Seattle, WA',
+    stats: {
+      savedHomes: properties.length || 12,
+      savedSearches: 4,
+      upcomingTours: 2
+    }
+  };
+
+  const NEXT_TOUR = {
+    id: 101,
+    propertyTitle: 'The Emerald Penthouse',
+    address: '1200 Stewart St, Seattle, WA',
+    date: 'Tomorrow, Oct 26',
+    time: '10:00 AM',
+    image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+    agent: {
+      name: 'David Chen',
+      image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80',
+      phone: '(206) 555-0192'
+    }
+  };
+
+  // Default properties if none loaded
+  const displayProperties = properties.length > 0 ? properties.map(p => ({
+    id: p.id,
+    title: p.title,
+    address: p.location || 'Unknown location',
+    price: p.price,
+    beds: p.bedrooms || 0,
+    baths: parseFloat(p.bathrooms || '0'),
+    sqft: parseInt(p.area || '0'),
+    image: p.images?.[0] || 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+    status: p.status
+  })) : [
+    {
+      id: '1',
+      title: 'Modern Lakeside Villa',
+      address: '45 Lake Washington Blvd',
+      price: '$2,450,000',
+      beds: 4,
+      baths: 3.5,
+      sqft: 3200,
+      image: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+      status: 'Active'
+    },
+    {
+      id: '2',
+      title: 'Downtown Loft with View',
+      address: '888 Western Ave #12B',
+      price: '$895,000',
+      beds: 2,
+      baths: 2,
+      sqft: 1450,
+      image: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+      status: 'Pending'
+    }
+  ];
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans selection:bg-emerald-100 selection:text-emerald-900">
@@ -191,7 +285,7 @@ export default function RealEstateDashboard() {
       {/* Mobile Header */}
       <div className="lg:hidden flex items-center justify-between p-4 bg-white border-b border-slate-200 sticky top-0 z-20">
         <div className="font-bold text-xl tracking-tight text-slate-900">Luxe<span className="text-emerald-600">Estate</span>.</div>
-        <img src={USER.avatar} alt="User" className="w-8 h-8 rounded-full ring-2 ring-slate-100" />
+        <img src={displayUser.avatar} alt="User" className="w-8 h-8 rounded-full ring-2 ring-slate-100" />
       </div>
 
       <div className="max-w-[1600px] mx-auto flex">
@@ -207,11 +301,11 @@ export default function RealEstateDashboard() {
 
           {/* User Profile Summary in Sidebar */}
           <div className="flex items-center gap-4 mb-8 p-4 bg-slate-800/50 rounded-2xl">
-             <img src={USER.avatar} alt={USER.name} className="w-12 h-12 rounded-full object-cover border-2 border-slate-700" />
+             <img src={displayUser.avatar} alt={displayUser.name} className="w-12 h-12 rounded-full object-cover border-2 border-slate-700" />
              <div>
-                <h3 className="font-bold">{USER.name}</h3>
+                <h3 className="font-bold">{displayUser.name}</h3>
                 <p className="text-xs text-slate-400 flex items-center gap-1">
-                  <MapPinIcon className="w-3 h-3" /> {USER.location}
+                  <MapPinIcon className="w-3 h-3" /> {displayUser.location}
                 </p>
              </div>
           </div>
@@ -219,16 +313,24 @@ export default function RealEstateDashboard() {
           <nav className="space-y-2 flex-1">
             <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 px-4">Dashboard</div>
             <SidebarItem icon={HomeIcon} label="Overview" active={activeNav === 'overview'} onClick={() => setActiveNav('overview')} />
-            <SidebarItem icon={HeartIcon} label="Saved Homes" active={activeNav === 'saved'} onClick={() => setActiveNav('saved')} badge={USER.stats.savedHomes} />
-            <SidebarItem icon={MagnifyingGlassIcon} label="Saved Searches" active={activeNav === 'searches'} onClick={() => setActiveNav('searches')} badge={USER.stats.savedSearches} />
-            <SidebarItem icon={CalendarDaysIcon} label="Tours & Events" active={activeNav === 'tours'} onClick={() => setActiveNav('tours')} badge={USER.stats.upcomingTours} />
+            <SidebarItem icon={HeartIcon} label="Saved Homes" active={activeNav === 'saved'} onClick={() => setActiveNav('saved')} badge={displayUser.stats.savedHomes} />
+            <SidebarItem icon={MagnifyingGlassIcon} label="Saved Searches" active={activeNav === 'searches'} onClick={() => setActiveNav('searches')} badge={displayUser.stats.savedSearches} />
+            <SidebarItem icon={CalendarDaysIcon} label="Tours & Events" active={activeNav === 'tours'} onClick={() => setActiveNav('tours')} badge={displayUser.stats.upcomingTours} />
             
             <div className="mt-10 text-xs font-bold text-slate-500 uppercase tracking-wider mb-4 px-4">Account</div>
             <SidebarItem icon={BellIcon} label="Notifications" active={activeNav === 'notifications'} onClick={() => setActiveNav('notifications')} />
             <SidebarItem icon={Cog6ToothIcon} label="Settings" active={activeNav === 'settings'} onClick={() => setActiveNav('settings')} />
           </nav>
+          
+          <button 
+            onClick={() => signOut({ callbackUrl: `/site/${slug}` })}
+            className="mb-4 flex items-center gap-3 px-4 py-3.5 rounded-xl text-slate-400 hover:bg-red-900/30 hover:text-red-300 transition-all"
+          >
+            <ArrowRightOnRectangleIcon className="w-5 h-5" />
+            <span className="font-medium">Sign Out</span>
+          </button>
 
-           <div className="mt-auto p-4 bg-gradient-to-br from-indigo-600/20 to-purple-600/20 rounded-2xl border border-indigo-500/20">
+           <div className="p-4 bg-gradient-to-br from-indigo-600/20 to-purple-600/20 rounded-2xl border border-indigo-500/20">
             <h4 className="font-bold text-white mb-1">Need help buying?</h4>
             <p className="text-xs text-slate-300 mb-3">Connect with a premium agent today.</p>
             <button className="w-full py-2 text-sm font-semibold bg-white text-slate-900 rounded-lg hover:bg-slate-100 transition-colors">Find an Agent</button>
@@ -241,7 +343,7 @@ export default function RealEstateDashboard() {
           {/* Header */}
           <header className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-slate-900">Welcome back, Sarah.</h1>
+              <h1 className="text-3xl font-bold text-slate-900">Welcome back, {displayUser.name?.split(' ')[0] || 'there'}.</h1>
               <p className="text-slate-500 mt-1">Here's whats happening with your property search.</p>
             </div>
             <button className="flex items-center gap-2 bg-emerald-600 text-white px-5 py-3 rounded-xl font-semibold hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-600/20">
@@ -255,19 +357,19 @@ export default function RealEstateDashboard() {
              <StatCard 
                icon={HeartIcon} 
                label="Saved Properties" 
-               value={USER.stats.savedHomes} 
+               value={displayUser.stats.savedHomes} 
                colorClass={{bg: 'bg-rose-100', text: 'text-rose-600'}}
              />
              <StatCard 
                icon={MagnifyingGlassIcon} 
                label="Active Searches" 
-               value={USER.stats.savedSearches} 
+               value={displayUser.stats.savedSearches} 
                colorClass={{bg: 'bg-blue-100', text: 'text-blue-600'}}
              />
              <StatCard 
                icon={CalendarDaysIcon} 
                label="Upcoming Tours" 
-               value={USER.stats.upcomingTours} 
+               value={displayUser.stats.upcomingTours} 
                colorClass={{bg: 'bg-emerald-100', text: 'text-emerald-600'}}
              />
           </div>
@@ -279,12 +381,12 @@ export default function RealEstateDashboard() {
                <div className="flex items-center justify-between">
                  <h2 className="text-xl font-bold text-slate-900">Recently Saved Homes</h2>
                  <button className="text-emerald-600 font-semibold text-sm flex items-center gap-1 hover:gap-2 transition-all">
-                   View all {USER.stats.savedHomes} <ArrowRightIcon className="w-4 h-4"/>
+                   View all {displayUser.stats.savedHomes} <ArrowRightIcon className="w-4 h-4"/>
                  </button>
                </div>
 
                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {SAVED_PROPERTIES.slice(0,2).map(property => (
+                  {displayProperties.slice(0,2).map(property => (
                     <PropertyCard key={property.id} property={property} />
                   ))}
                </div>

@@ -1,6 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSession, signOut } from 'next-auth/react';
+import { useParams } from 'next/navigation';
+import Link from 'next/link';
 import {
   CalendarDaysIcon,
   TicketIcon,
@@ -11,55 +14,31 @@ import {
   QrCodeIcon,
   ArrowRightIcon,
   FireIcon,
+  UserCircleIcon,
 } from '@heroicons/react/24/outline';
 import { StarIcon } from '@heroicons/react/24/solid';
 import TicketModal from './components/TicketModal';
 
-// --- Mock Data ---
-const USER = {
-  name: 'Alex Rivera',
-  handle: '@arivera_events',
-  role: 'Music Enthusiast',
-  avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80',
-  cover: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
-  location: 'San Francisco, CA',
-  stats: {
-    eventsAttended: 42,
-    upcoming: 3,
-    following: 128
-  }
-};
+interface UserProfile {
+  id: string;
+  name: string | null;
+  email: string;
+  avatar: string | null;
+  tier?: string;
+}
 
-const UPCOMING_EVENTS = [
-  {
-    id: 1,
-    title: 'Neon Nights Festival',
-    date: 'Oct 24, 2024',
-    time: '8:00 PM',
-    location: 'Chase Center',
-    image: 'https://images.unsplash.com/photo-1533174072545-e8d4aa97edf9?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
-    category: 'Music'
-  },
-  {
-    id: 2,
-    title: 'Future Tech Summit',
-    date: 'Nov 02, 2024',
-    time: '9:00 AM',
-    location: 'Moscone Center',
-    image: 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
-    category: 'Tech'
-  }
-];
+interface EventItem {
+  id: string;
+  title: string;
+  date: string;
+  time?: string;
+  location?: string;
+  image: string;
+  category?: string;
+  rating?: number;
+}
 
-const PAST_EVENTS = [
-  {
-    id: 3,
-    title: 'Jazz in the Park',
-    date: 'Sep 15, 2024',
-    rating: 5,
-    image: 'https://images.unsplash.com/photo-1511192336575-5a79af67a629?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
-  }
-];
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
 
 // --- Sub-Components ---
 
@@ -78,7 +57,7 @@ const NavItem = ({ icon: Icon, label, active, onClick }: { icon: React.ElementTy
   </button>
 );
 
-const EventCard = ({ event, isUpcoming, onOpenTicket }:{event: {id: number, title: string, date: string, time?: string, location?: string, image: string, category?: string, rating?: number}, isUpcoming: boolean, onOpenTicket: (event: any) => void}) => (
+const EventCard = ({ event, isUpcoming, onOpenTicket }:{event: EventItem, isUpcoming: boolean, onOpenTicket: (event: any) => void}) => (
   <div className="group relative overflow-hidden rounded-2xl bg-slate-800 border border-slate-700/50 hover:border-purple-500/50 transition-all duration-300 hover:shadow-xl hover:shadow-purple-900/10 hover:-translate-y-1">
     <div className="flex h-full">
       {/* Image Section */}
@@ -121,7 +100,7 @@ const EventCard = ({ event, isUpcoming, onOpenTicket }:{event: {id: number, titl
         <div className="mt-auto">
           {isUpcoming ? (
             <button 
-                onClick={() => onOpenTicket(event)} // Trigger the modal here
+                onClick={() => onOpenTicket(event)}
                 className="flex items-center gap-2 text-sm font-semibold text-white bg-slate-700 hover:bg-purple-600 px-4 py-2 rounded-lg transition-colors w-fit"
               >
                 View Ticket
@@ -130,7 +109,7 @@ const EventCard = ({ event, isUpcoming, onOpenTicket }:{event: {id: number, titl
           ) : (
             <div className="flex items-center gap-1 text-yellow-500">
               <StarIcon className="w-4 h-4" />
-              <span className="font-bold text-white">{event.rating}.0</span>
+              <span className="font-bold text-white">{event.rating || 5}.0</span>
               <span className="text-slate-500 text-xs ml-1">(My Rating)</span>
             </div>
           )}
@@ -143,9 +122,146 @@ const EventCard = ({ event, isUpcoming, onOpenTicket }:{event: {id: number, titl
 // --- Main Dashboard ---
 
 export default function UserDashboard() {
+  const { data: session, status } = useSession();
+  const { slug } = useParams() as { slug: string };
+  
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [upcomingEvents, setUpcomingEvents] = useState<EventItem[]>([]);
+  const [pastEvents, setPastEvents] = useState<EventItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('upcoming');
   const [selectedTicket, setSelectedTicket] = useState(null);
-  
+
+  useEffect(() => {
+    if (status === 'authenticated' && session?.user) {
+      fetchUserData();
+    } else if (status === 'unauthenticated') {
+      setLoading(false);
+    }
+  }, [status, session, slug]);
+
+  const fetchUserData = async () => {
+    try {
+      setLoading(true);
+      const [profileRes, eventsRes] = await Promise.all([
+        fetch(`${apiBaseUrl}/site/${slug}/me/profile`),
+        fetch(`${apiBaseUrl}/site/${slug}/me/events`),
+      ]);
+
+      if (profileRes.ok) {
+        const profileData = await profileRes.json();
+        setUser(profileData);
+      }
+
+      if (eventsRes.ok) {
+        const eventsData = await eventsRes.json();
+        const now = new Date();
+        const upcoming: EventItem[] = [];
+        const past: EventItem[] = [];
+        
+        (eventsData.items || []).forEach((event: any) => {
+          const eventDate = new Date(event.startDate);
+          const formattedEvent: EventItem = {
+            id: event.id,
+            title: event.title,
+            date: eventDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+            time: eventDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+            location: event.location,
+            image: event.imageUrl || 'https://images.unsplash.com/photo-1533174072545-e8d4aa97edf9?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+            category: event.type,
+            rating: 5,
+          };
+          
+          if (eventDate >= now) {
+            upcoming.push(formattedEvent);
+          } else {
+            past.push(formattedEvent);
+          }
+        });
+        
+        setUpcomingEvents(upcoming);
+        setPastEvents(past);
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Show sign-in prompt if not authenticated
+  if (status === 'loading' || loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-950">
+        <div className="animate-pulse text-xl text-slate-400">Loading...</div>
+      </div>
+    );
+  }
+
+  if (status === 'unauthenticated') {
+    return (
+      <section className="flex items-center justify-center min-h-screen bg-slate-950">
+        <div className="text-center">
+          <UserCircleIcon className="w-20 h-20 mx-auto text-slate-400 mb-4" />
+          <h2 className="text-2xl font-bold text-white mb-2">
+            Please sign in to access your dashboard.
+          </h2>
+          <Link href={`/auth/signin`}>
+            <button className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg">
+              Sign In
+            </button>
+          </Link>
+        </div>
+      </section>
+    );
+  }
+
+  // Display values with defaults
+  const displayUser = {
+    name: user?.name || session?.user?.name || 'Alex Rivera',
+    handle: user?.email ? `@${user.email.split('@')[0]}` : '@user_events',
+    role: user?.tier || 'Music Enthusiast',
+    avatar: user?.avatar || session?.user?.image || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&auto=format&fit=crop&w=150&q=80',
+    cover: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80',
+    location: 'San Francisco, CA',
+    stats: {
+      eventsAttended: pastEvents.length || 42,
+      upcoming: upcomingEvents.length || 3,
+      following: 128
+    }
+  };
+
+  // Default events if none loaded
+  const displayUpcomingEvents = upcomingEvents.length > 0 ? upcomingEvents : [
+    {
+      id: '1',
+      title: 'Neon Nights Festival',
+      date: 'Oct 24, 2024',
+      time: '8:00 PM',
+      location: 'Chase Center',
+      image: 'https://images.unsplash.com/photo-1533174072545-e8d4aa97edf9?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+      category: 'Music'
+    },
+    {
+      id: '2',
+      title: 'Future Tech Summit',
+      date: 'Nov 02, 2024',
+      time: '9:00 AM',
+      location: 'Moscone Center',
+      image: 'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+      category: 'Tech'
+    }
+  ];
+
+  const displayPastEvents = pastEvents.length > 0 ? pastEvents : [
+    {
+      id: '3',
+      title: 'Jazz in the Park',
+      date: 'Sep 15, 2024',
+      rating: 5,
+      image: 'https://images.unsplash.com/photo-1511192336575-5a79af67a629?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+    }
+  ];
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 font-sans selection:bg-purple-500 selection:text-white">
@@ -153,7 +269,7 @@ export default function UserDashboard() {
       {/* Mobile Header */}
       <div className="lg:hidden flex items-center justify-between p-4 bg-slate-900 border-b border-slate-800">
         <div className="font-bold text-xl tracking-tight">Event<span className="text-purple-500">Hive</span></div>
-        <img src={USER.avatar} alt="User" className="w-8 h-8 rounded-full ring-2 ring-purple-500" />
+        <img src={displayUser.avatar} alt="User" className="w-8 h-8 rounded-full ring-2 ring-purple-500" />
       </div>
 
       <div className="max-w-7xl mx-auto flex flex-col lg:flex-row">
@@ -187,14 +303,14 @@ export default function UserDashboard() {
           <div className="relative rounded-3xl overflow-hidden bg-slate-900 border border-slate-800 mb-8 group">
             {/* Banner Image */}
             <div className="h-48 w-full relative">
-              <img src={USER.cover} alt="Cover" className="w-full h-full object-cover" />
+              <img src={displayUser.cover} alt="Cover" className="w-full h-full object-cover" />
               <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/20 to-transparent" />
             </div>
 
             <div className="relative px-6 pb-6 -mt-16 flex flex-col md:flex-row items-end md:items-center gap-6">
               <div className="relative">
                 <img 
-                  src={USER.avatar} 
+                  src={displayUser.avatar} 
                   alt="Profile" 
                   className="w-32 h-32 rounded-2xl border-4 border-slate-900 shadow-2xl object-cover" 
                 />
@@ -202,21 +318,21 @@ export default function UserDashboard() {
               </div>
               
               <div className="flex-1 mb-2">
-                <h2 className="text-3xl font-bold text-white">{USER.name}</h2>
-                <p className="text-purple-400 font-medium">{USER.handle}</p>
+                <h2 className="text-3xl font-bold text-white">{displayUser.name}</h2>
+                <p className="text-purple-400 font-medium">{displayUser.handle}</p>
                 <div className="flex items-center gap-2 text-slate-400 text-sm mt-1">
                   <MapPinIcon className="w-4 h-4" />
-                  {USER.location}
+                  {displayUser.location}
                 </div>
               </div>
 
               <div className="flex gap-3 w-full md:w-auto mt-4 md:mt-0">
                 <div className="text-center px-6 py-2 bg-slate-800 rounded-xl border border-slate-700">
-                   <span className="block text-xl font-bold text-white">{USER.stats.eventsAttended}</span>
+                   <span className="block text-xl font-bold text-white">{displayUser.stats.eventsAttended}</span>
                    <span className="text-xs text-slate-400 uppercase">Events</span>
                 </div>
                 <div className="text-center px-6 py-2 bg-slate-800 rounded-xl border border-slate-700">
-                   <span className="block text-xl font-bold text-white">{USER.stats.following}</span>
+                   <span className="block text-xl font-bold text-white">{displayUser.stats.following}</span>
                    <span className="text-xs text-slate-400 uppercase">Following</span>
                 </div>
               </div>
@@ -244,11 +360,11 @@ export default function UserDashboard() {
           {/* Grid Layout for Events */}
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
             {activeTab === 'upcoming' ? (
-               UPCOMING_EVENTS.map(event => (
+               displayUpcomingEvents.map(event => (
                  <EventCard key={event.id} event={event} isUpcoming={true} onOpenTicket={setSelectedTicket} />
                ))
             ) : (
-               PAST_EVENTS.map(event => (
+               displayPastEvents.map(event => (
                  <EventCard key={event.id} event={event} isUpcoming={false} onOpenTicket={setSelectedTicket}/>
                ))
             )}
