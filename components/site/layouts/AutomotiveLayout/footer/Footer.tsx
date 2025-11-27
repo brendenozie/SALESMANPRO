@@ -26,10 +26,10 @@ const Footer :React.FC<FooterProps> = ({ storeFormData }) => {
         <div>
           <h3 className="text-xl font-semibold text-white mb-4">Quick Links</h3>
           <ul className="space-y-2 text-sm">
-            <li><a href={`/site/${storeFormData.slug}/about`} className="hover:text-white transition-colors">About</a></li>
-            <li><a href={`/site/${storeFormData.slug}/contact`} className="hover:text-white transition-colors">Contact</a></li>
-            <li><a href={`/site/${storeFormData.slug}/privacy`} className="hover:text-white transition-colors">Privacy Policy</a></li>
-            <li><a href={`/site/${storeFormData.slug}/terms`} className="hover:text-white transition-colors">Terms of Service</a></li>
+            <li><a href={`/about`} className="hover:text-white transition-colors">About</a></li>
+            <li><a href={`/contact`} className="hover:text-white transition-colors">Contact</a></li>
+            <li><a href={`/privacy`} className="hover:text-white transition-colors">Privacy Policy</a></li>
+            <li><a href={`/terms`} className="hover:text-white transition-colors">Terms of Service</a></li>
           </ul>
         </div>
 
@@ -37,10 +37,10 @@ const Footer :React.FC<FooterProps> = ({ storeFormData }) => {
         <div>
           <h3 className="text-xl font-semibold text-white mb-4">Customer Care</h3>
           <ul className="space-y-2 text-sm">
-            <li><a href={`/site/${storeFormData.slug}/help`} className="hover:text-white transition-colors">Help Center</a></li>
-            <li><a href={`/site/${storeFormData.slug}/returns`} className="hover:text-white transition-colors">Returns</a></li>
-            <li><a href={`/site/${storeFormData.slug}/shipping`} className="hover:text-white transition-colors">Shipping</a></li>
-            <li><a href={`/site/${storeFormData.slug}/track`} className="hover:text-white transition-colors">Track Order</a></li>
+            <li><a href={`/help`} className="hover:text-white transition-colors">Help Center</a></li>
+            <li><a href={`/returns`} className="hover:text-white transition-colors">Returns</a></li>
+            <li><a href={`/shipping`} className="hover:text-white transition-colors">Shipping</a></li>
+            <li><a href={`/track`} className="hover:text-white transition-colors">Track Order</a></li>
           </ul>
         </div>
 

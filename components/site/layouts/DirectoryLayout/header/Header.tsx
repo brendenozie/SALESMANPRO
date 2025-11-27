@@ -85,7 +85,7 @@ export default function Header() {
   // NAV ITEMS
   // --------------------------------------
   const navItems = [
-    { label: 'Home', href: `/site/${slug}` },
+    { label: 'Home', href: `/` },
     { label: 'Listings', href: `/directorylistings/products` },
     { label: 'Categories', href: `/directorylistings/categories` },
   ];
@@ -103,18 +103,18 @@ export default function Header() {
 
   const handleGoogleSignIn = () => {
     const url = new URL("https://auth.salesmanpro.site/signin");
-    url.searchParams.set("callbackUrl", `${window.location.origin}/site/${slug}`);
+    url.searchParams.set("callbackUrl", `${window.location.origin}`);
     window.location.href = url.toString();
   };
 
   const handleGoogleSignUp = () => {
     const url = new URL("https://auth.salesmanpro.site/signup");
-    url.searchParams.set("callbackUrl", `${window.location.origin}/site/${slug}`);
+    url.searchParams.set("callbackUrl", `${window.location.origin}`);
     window.location.href = url.toString();
   };
 
   const handleSignOutUser = () =>
-    signOut({ callbackUrl: `/site/${slug}` });
+    signOut({ callbackUrl: `/` });
 
 
   // --------------------------------------
@@ -319,7 +319,7 @@ export default function Header() {
                     handleGoogleSignIn();
                     return;
                   }
-                  router.push(`/checkout`)
+                  router.push(`/directorylistings/checkout`)
                 }}
                 className="relative text-gray-700 dark:text-gray-200"
               >

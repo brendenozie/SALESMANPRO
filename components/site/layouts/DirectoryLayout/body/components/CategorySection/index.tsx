@@ -140,11 +140,13 @@ export default function CategoryGridSection({ StoreCategory, isLoading = false }
   // 3. map to unified item shape
   const items = dataToRender.slice(0, 12).map((raw: any, idx: number) => {
     const isMain = !!raw.subcategories || !!raw.displayName && visibleMain.some((m: any) => m === raw || m.displayName === raw.displayName);
+    const id = raw.id || makeSlug(raw.slug) || makeSlug(raw.displayName || raw.name || raw.title);
     const name = raw.displayName || raw.name || raw.title || 'Untitled';
     const slug = raw.slug || makeSlug(name) || (isMain ? makeSlug(name) : makeSlug(name));
     const theme = THEMES[idx % THEMES.length];
 
     return {
+      id,
       name,
       slug,
       count: isMain ? (raw.subcategories?.length || raw.count || 0).toLocaleString() : (raw.count || '').toString(),
@@ -188,7 +190,7 @@ export default function CategoryGridSection({ StoreCategory, isLoading = false }
           ) : (
             items.map((item, idx) => (
               <motion.div key={idx} variants={itemVariants} className="group">
-                <Link href={`/categories/${item.slug}`} className="block h-full">
+                <Link href={`/directorylistings/products?category=${item.id}`} className="block h-full">
                   <div className={`h-full bg-white rounded-2xl p-6 border border-gray-100 shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1 relative overflow-hidden`}>
 
                     {/* Accent bar */}
@@ -226,7 +228,7 @@ export default function CategoryGridSection({ StoreCategory, isLoading = false }
         </motion.div>
 
         <div className="mt-10 text-center">
-          <Link href="/categories" className="inline-flex items-center gap-2 text-base font-bold px-6 py-3 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-all">
+          <Link href="/directorylistings/categories" className="inline-flex items-center gap-2 text-base font-bold px-6 py-3 rounded-full bg-blue-600 text-white hover:bg-blue-700 transition-all">
             View All Categories
 n          <ArrowRightIcon className="w-4 h-4" />
           </Link>

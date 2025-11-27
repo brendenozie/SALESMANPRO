@@ -3,32 +3,35 @@
 import React, { useRef, useState, useEffect } from "react";
 import Image from "next/image";
 import useSWR from "swr";
-import { createCachedFetcher } from "@/lib/swrCachedFetcher";
+import { motion, AnimatePresence } from "framer-motion";
+import { createPortal } from "react-dom";
 
 import {
-  HeartIcon,
-  ShoppingBagIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   XMarkIcon,
   StarIcon,
+  ShoppingBagIcon,
   TrashIcon,
   MinusIcon,
   PlusIcon,
 } from "@heroicons/react/24/outline";
+
 import { StarIcon as StarSolid } from "@heroicons/react/24/solid";
-import { createPortal } from "react-dom";
-import { motion, AnimatePresence } from "framer-motion";
 import { useStateContext } from "@/contexts/ContextProvider";
-import { MarketListingForm } from "@/types/typings";
+import { createCachedFetcher } from "@/lib/swrCachedFetcher";
+import { SkeletonGrid } from "@/components/site/SkeletonGrid/SkeletonGrid";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
-
-const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
+// ---------------------------
+// IMAGE LOADER
+// ---------------------------
+const loader = ({ src, width, quality }: any) =>
   `${src}?w=${width}&q=${quality || 75}`;
 
-// Rating Stars
-const RatingStars: React.FC<{ count?: number }> = ({ count = 0 }) => (
+// ---------------------------
+// RATING
+// ---------------------------
+const RatingStars = ({ count = 0 }: { count?: number }) => (
   <div className="flex items-center space-x-0.5">
     {Array.from({ length: 5 }).map((_, i) =>
       i < count ? (
@@ -40,30 +43,26 @@ const RatingStars: React.FC<{ count?: number }> = ({ count = 0 }) => (
   </div>
 );
 
-interface NewArrivalsSectionProps {
-  id: string;
-  currency?: string;
-  marketplaceListings?: MarketListingForm[];
-}
-
-export default function NewArrivalsSection({
+// ------------------------------------------
+// FINAL COMPONENT — POPULAR PRODUCTS SECTION
+// ------------------------------------------
+export default function PopularProductsSection({
   id,
   currency = "KES",
-  // marketplaceListings: dynamicListings,
-}: NewArrivalsSectionProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [showToast, setShowToast] = useState(false);
-  const [selectedListing, setSelectedListing] = useState<any>(null);
+}: {
+  id: string;
+  currency?: string;
+}) {
+  const apiBaseUrl =
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
-  const { cart, addToCart, decreaseQuantity, removeFromCart } = useStateContext();
-
-  // --- SWR integration from DailyBestSells ---
-  const url = `${apiBaseUrl}/site/productsByFlag?companyId=${id}&flag=trending&limit=8`;
-  const cacheKey = `products-${id}-trending`;
+  const url = `${apiBaseUrl}/site/productsByFlag?companyId=${id}&flag=isPopular&limit=12`;
+  const cacheKey = `popular-products-${id}`;
   const fallbackKey = `swr-cache:${cacheKey}:${url}`;
 
   const fetcher = createCachedFetcher(cacheKey);
 
+  // Get fallback data from localStorage
   const fallbackData =
     typeof window !== "undefined"
       ? (() => {
@@ -82,85 +81,96 @@ export default function NewArrivalsSection({
     refreshInterval: 120000,
   });
 
-  // 🔄 Merge API data + dynamicListings support
-  const apiListings =
-    data?.data?.map((product: any) => ({
-      id: product.id,
-      businessName: product.storeName || product.brand || "Store",
-      title: product.name,
-      category: product.category || "General",
-      price: `${currency} ${product.finalPrice?.toLocaleString() || product.price}`,
-      img:
-        product.images?.[0] ||
-        "https://placehold.co/600x400/CCCCCC/333333?text=No+Image",
-      rating: product.rating || 4,
-      description: product.description,
-      tags: product.isFeatured ? ["Featured"] : [],
-    })) || [];
+  const products = data?.data || [];
 
-  const listingsToDisplay = apiListings;
+  // ------------------------------------------
+  // CART + UI STATE
+  // ------------------------------------------
+  const { cart, addToCart, decreaseQuantity, removeFromCart } =
+    useStateContext();
 
-  // --- Horizontal Scroll Controls ---
+  const containerRef = useRef<any>(null);
+  const [showToast, setShowToast] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+
+  // ------------------------------------------
+  // SCROLL CONTROL
+  // ------------------------------------------
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
 
   useEffect(() => {
     const checkScroll = () => {
       if (!containerRef.current) return;
+
       setCanScrollLeft(containerRef.current.scrollLeft > 0);
+
       setCanScrollRight(
         containerRef.current.scrollLeft <
-          containerRef.current.scrollWidth - containerRef.current.clientWidth
+          containerRef.current.scrollWidth -
+            containerRef.current.clientWidth
       );
     };
 
     containerRef.current?.addEventListener("scroll", checkScroll);
     checkScroll();
 
-    return () => containerRef.current?.removeEventListener("scroll", checkScroll);
-  }, [listingsToDisplay]);
+    return () =>
+      containerRef.current?.removeEventListener("scroll", checkScroll);
+  }, [products]);
 
-  const scroll = (direction: "left" | "right") => {
+  const scroll = (dir: "left" | "right") => {
     if (!containerRef.current) return;
+
     const amount = containerRef.current.clientWidth * 0.8;
+
     containerRef.current.scrollBy({
-      left: direction === "left" ? -amount : amount,
+      left: dir === "left" ? -amount : amount,
       behavior: "smooth",
     });
   };
 
-  // --- Cart Logic ---
-  const handleAddToCart = (listing: any) => {
-    addToCart(listing);
+  // ------------------------------------------
+  // HANDLERS
+  // ------------------------------------------
+  const handleAddToCart = (item: any) => {
+    addToCart(item);
     setShowToast(true);
     setTimeout(() => setShowToast(false), 2500);
   };
 
-  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+  const handleImageError = (e: any) => {
     e.currentTarget.src =
-      "https://placehold.co/600x400/CCCCCC/333333?text=Image+Not+Found";
+      "https://placehold.co/600x400/CCCCCC/333333?text=No+Image";
   };
 
-  if (isLoading) return <div className="text-center py-10">Loading...</div>;
-  if (error) return <div className="text-center py-10"></div>;
-  if (!listingsToDisplay.length)
-    return <div className="text-center py-10"></div>;
+  // ------------------------------------------
+  // LOADING + ERROR
+  // ------------------------------------------
+  if (isLoading) return <SkeletonGrid count={8} />;
+  if (error) return <div className="text-center text-gray-500"></div>;
+  if (!products.length)
+    return <div className="text-center text-gray-500"></div>;
 
+  // ------------------------------------------
+  // RENDER
+  // ------------------------------------------
   return (
     <section className="relative px-4 sm:px-6 lg:px-8 py-16 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900">
       <div className="max-w-7xl mx-auto">
         {/* HEADER */}
-        <div className="flex flex-col sm:flex-row items-center justify-between mb-10 gap-4">
+        <div className="flex flex-col sm:flex-row items-center justify-between mb-10">
           <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white">
-            Discover What's <span className="text-orange-500">New & Trending</span>
+            Popular <span className="text-orange-500">Products</span>
           </h2>
 
           <div className="flex space-x-3">
             <motion.button
               onClick={() => scroll("left")}
-              disabled={!canScrollLeft}
               className={`p-3 rounded-full shadow-md ${
-                canScrollLeft ? "opacity-100" : "opacity-40 cursor-not-allowed"
+                canScrollLeft
+                  ? "opacity-100"
+                  : "opacity-40 cursor-not-allowed"
               }`}
             >
               <ChevronLeftIcon className="h-6 w-6" />
@@ -168,9 +178,10 @@ export default function NewArrivalsSection({
 
             <motion.button
               onClick={() => scroll("right")}
-              disabled={!canScrollRight}
               className={`p-3 rounded-full shadow-md ${
-                canScrollRight ? "opacity-100" : "opacity-40 cursor-not-allowed"
+                canScrollRight
+                  ? "opacity-100"
+                  : "opacity-40 cursor-not-allowed"
               }`}
             >
               <ChevronRightIcon className="h-6 w-6" />
@@ -178,53 +189,62 @@ export default function NewArrivalsSection({
           </div>
         </div>
 
-        {/* SCROLL CAROUSEL */}
+        {/* HORIZONTAL SCROLL LIST */}
         <div
           ref={containerRef}
           className="flex space-x-6 pb-6 overflow-x-auto custom-scrollbar snap-x snap-mandatory"
         >
-          {listingsToDisplay.map((listing: any) => {
+          {products.map((product: any) => {
             const quantity =
-              cart.find((item: MarketListingForm) => item.id === listing.id)?.quantity || 0;
+              cart.find((i: any) => i.id === product.id)?.quantity || 0;
 
             return (
               <motion.div
-                key={listing.id}
+                key={product.id}
                 className="min-w-[280px] sm:min-w-[320px] max-w-[320px] bg-white dark:bg-gray-800 rounded-3xl shadow-xl flex-shrink-0 snap-center"
               >
                 {/* IMAGE */}
                 <div
-                  onClick={() => setSelectedListing(listing)}
                   className="relative w-full h-52 sm:h-60 rounded-t-3xl overflow-hidden cursor-pointer"
+                  onClick={() => setSelectedProduct(product)}
                 >
                   <Image
-                    loader={loader}
-                    src={listing.images?.[0] || "https://placehold.co/600x400/CCCCCC/333333?text=No+Image"}
-                    alt={listing.title}
+                    src={
+                      product.thumbnail ||
+                      product.images?.[0] ||
+                      "https://placehold.co/600x400/CCC/333?text=No+Image"
+                    }
+                    alt={product.name}
                     fill
-                    className="object-cover"
+                    loader={loader}
                     onError={handleImageError}
+                    className="object-cover"
                   />
                 </div>
 
                 {/* CONTENT */}
-                <div className="p-5 flex flex-col">
-                  <p className="text-sm text-gray-500">{listing.businessName}</p>
-                  <h3 className="font-bold text-xl">{listing.name}</h3>
-                  <p className="text-sm text-gray-600">{listing.category}</p>
+                <div className="p-5">
+                  <h3 className="font-bold text-xl">{product.name}</h3>
+                  <p className="text-sm text-gray-600">
+                    {product.brand || "General"}
+                  </p>
 
-                  <RatingStars count={listing.rating} />
+                  <RatingStars count={product.rating || 4} />
 
                   <div className="mt-4 flex items-center justify-between">
-                    <span className="font-extrabold text-xl">{listing.finalPrice || listing.sellingPrice || "0.00"}</span>
+                    <span className="font-extrabold text-xl">
+                      {currency}{" "}
+                      {product.finalPrice?.toLocaleString() ||
+                        product.price?.toLocaleString()}
+                    </span>
                   </div>
 
-                  {/* CART ACTIONS */}
+                  {/* CART BUTTONS */}
                   {quantity > 0 ? (
                     <div className="mt-5 flex items-center justify-between">
                       <div className="flex items-center space-x-3">
                         <button
-                          onClick={() => decreaseQuantity(listing.id)}
+                          onClick={() => decreaseQuantity(product.id)}
                           className="p-2 bg-gray-100 rounded-full"
                         >
                           {quantity === 1 ? (
@@ -237,7 +257,7 @@ export default function NewArrivalsSection({
                         <span className="text-lg font-bold">{quantity}</span>
 
                         <button
-                          onClick={() => addToCart(listing)}
+                          onClick={() => addToCart(product)}
                           className="p-2 bg-gray-100 rounded-full"
                         >
                           <PlusIcon className="h-5 w-5 text-gray-600" />
@@ -245,15 +265,15 @@ export default function NewArrivalsSection({
                       </div>
 
                       <button
-                        onClick={() => removeFromCart(listing.id)}
-                        className="text-sm font-medium text-red-600"
+                        onClick={() => removeFromCart(product.id)}
+                        className="text-sm text-red-600 font-medium"
                       >
                         Remove
                       </button>
                     </div>
                   ) : (
                     <button
-                      onClick={() => handleAddToCart(listing)}
+                      onClick={() => handleAddToCart(product)}
                       className="mt-5 w-full py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg"
                     >
                       Add to Cart
@@ -266,7 +286,7 @@ export default function NewArrivalsSection({
         </div>
       </div>
 
-      {/* TOAST */}
+      {/* ------------------------ TOAST ------------------------ */}
       <AnimatePresence>
         {showToast &&
           createPortal(
@@ -274,7 +294,7 @@ export default function NewArrivalsSection({
               initial={{ y: 50, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 50, opacity: 0 }}
-              className="fixed bottom-6 right-6 bg-green-600 text-white px-6 py-3 rounded-xl shadow-lg flex items-center gap-2"
+              className="fixed bottom-6 right-6 bg-green-600 text-white px-6 py-3 rounded-xl shadow-lg flex items-center space-x-2"
             >
               <ShoppingBagIcon className="h-5 w-5" />
               <span>Item added to cart!</span>
@@ -283,33 +303,33 @@ export default function NewArrivalsSection({
           )}
       </AnimatePresence>
 
-      {/* MODAL */}
+      {/* ------------------------ MODAL ------------------------ */}
       <AnimatePresence>
-        {selectedListing &&
+        {selectedProduct &&
           createPortal(
             <motion.div
+              className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60"
+              onClick={() => setSelectedProduct(null)}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              onClick={() => setSelectedListing(null)}
-              className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60"
             >
               <motion.div
+                onClick={(e: React.MouseEvent) => e.stopPropagation()}
+                className="bg-white dark:bg-gray-800 rounded-3xl max-w-lg w-full p-6 relative"
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.9, opacity: 0 }}
-                onClick={(e: any) => e.stopPropagation()}
-                className="bg-white dark:bg-gray-800 rounded-3xl max-w-lg w-full p-6 relative"
               >
                 <button
-                  onClick={() => setSelectedListing(null)}
+                  onClick={() => setSelectedProduct(null)}
                   className="absolute top-4 right-4"
                 >
                   <XMarkIcon className="h-6 w-6" />
                 </button>
 
-                <h2 className="text-2xl font-bold">{selectedListing.title}</h2>
-                <p className="mt-2">{selectedListing.description}</p>
+                <h2 className="text-2xl font-bold">{selectedProduct.name}</h2>
+                <p className="mt-2">{selectedProduct.description}</p>
               </motion.div>
             </motion.div>,
             document.body

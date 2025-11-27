@@ -59,10 +59,10 @@ const Footer :React.FC<FooterProps> = ({ storeFormData }) => {
         <div>
           <h3 className="text-xl font-semibold text-white mb-4">Quick Links</h3>
           <ul className="space-y-2 text-sm">
-            <li><a href={`/site/${storeFormData.slug}/directorylistings/about`} className="hover:text-white transition-colors">About</a></li>
-            <li><a href={`/site/${storeFormData.slug}/directorylistings/contact`} className="hover:text-white transition-colors">Contact</a></li>
-            <li><a href={`/site/${storeFormData.slug}/directorylistings/privacy`} className="hover:text-white transition-colors">Privacy Policy</a></li>
-            <li><a href={`/site/${storeFormData.slug}/directorylistings/terms`} className="hover:text-white transition-colors">Terms of Service</a></li>
+            <li><a href={`/directorylistings/about`} className="hover:text-white transition-colors">About</a></li>
+            <li><a href={`/directorylistings/contact`} className="hover:text-white transition-colors">Contact</a></li>
+            <li><a href={`/directorylistings/privacy`} className="hover:text-white transition-colors">Privacy Policy</a></li>
+            <li><a href={`/directorylistings/terms`} className="hover:text-white transition-colors">Terms of Service</a></li>
           </ul>
         </div>
 
@@ -70,10 +70,10 @@ const Footer :React.FC<FooterProps> = ({ storeFormData }) => {
         <div>
           <h3 className="text-xl font-semibold text-white mb-4">Customer Care</h3>
           <ul className="space-y-2 text-sm">
-            <li><a href={`/site/${storeFormData.slug}/directorylistings/help`} className="hover:text-white transition-colors">Help Center</a></li>
-            <li><a href={`/site/${storeFormData.slug}/directorylistings/returns`} className="hover:text-white transition-colors">Returns</a></li>
-            <li><a href={`/site/${storeFormData.slug}/directorylistings/shipping`} className="hover:text-white transition-colors">Shipping</a></li>
-            <li><a href={`/site/${storeFormData.slug}/directorylistings/track`} className="hover:text-white transition-colors">Track Order</a></li>
+            <li><a href={`/directorylistings/help`} className="hover:text-white transition-colors">Help Center</a></li>
+            <li><a href={`/directorylistings/returns`} className="hover:text-white transition-colors">Returns</a></li>
+            <li><a href={`/directorylistings/shipping`} className="hover:text-white transition-colors">Shipping</a></li>
+            <li><a href={`/directorylistings/track`} className="hover:text-white transition-colors">Track Order</a></li>
           </ul>
         </div>
 

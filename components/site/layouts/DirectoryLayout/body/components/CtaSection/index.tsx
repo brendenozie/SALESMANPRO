@@ -82,7 +82,7 @@ export default function HeroCtaSection({
   const finalSubtitle = mainAppPromo?.description || storeTagline || 'Discover top-rated businesses, book appointments, and connect with professionals in your community—all in one place.';
   const finalButtonLabel = mainAppPromo?.ctaText || 'Explore Services';
   const finalButtonHref = mainAppPromo?.ctaLink || '/explore';
-  const finalImageUrl = mainAppPromo?.imageUrl || 'https://placehold.co/1200x800/2563EB/FFFFFF?text=Local+Services+CTA'; // Generic placeholder
+  const finalImageUrl = mainAppPromo?.imageUrl || 'https://images.unsplash.com/photo-1556740738-b6154637d57a?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'; // Generic placeholder
   const finalImageAlt = mainAppPromo?.title || 'Person using a mobile app to find local services';
 
   // Use primary color from theme settings for the button background if available
@@ -114,7 +114,7 @@ export default function HeroCtaSection({
 
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     e.currentTarget.onerror = null; // Prevents infinite loop if placeholder also fails
-    e.currentTarget.src = 'https://placehold.co/1200x800/CCCCCC/333333?text=Image+Not+Found'; // Generic placeholder
+    e.currentTarget.src = 'https://images.unsplash.com/photo-1556740738-b6154637d57a?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'; // Generic placeholder
   };
 
   return (

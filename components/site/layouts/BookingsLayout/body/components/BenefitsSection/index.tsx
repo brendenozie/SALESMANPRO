@@ -51,7 +51,7 @@ interface AboutAndBenefitsSectionProps {
 const sampleData = {
     name: 'SwiftServe',
     description: 'At SwiftServe, we’re committed to connecting you with top-tier professionals for all your needs. From home services to personal care, our platform guarantees a seamless and satisfying experience from start to finish.',
-    bannerUrl: 'https://images.unsplash.com/photo-1542626991-cbc9322c34d4?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+    bannerUrl: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop',
     themeSettings: {
         primaryColor: '#059669', // Emerald 600
         secondaryColor: '#FBBF24', // Amber 400
@@ -167,7 +167,7 @@ export default function AboutAndBenefitsSection({name, description, bannerUrl, t
                         }}
                     >
                         <Image
-                            src={bannerUrl || sampleData.bannerUrl}
+                            src={bannerUrl || sampleData.bannerUrl || "https://images.unsplash.com/photo-1451187580459-43490279c0fa?q=80&w=2072&auto=format&fit=crop"}
                             loader={loader}
                             alt="A happy customer enjoying a service"
                             fill

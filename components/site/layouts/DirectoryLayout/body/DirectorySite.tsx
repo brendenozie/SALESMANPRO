@@ -10,6 +10,7 @@ import { StoreForm } from '@/types/typings';
 
 // Above-the-fold components - statically imported
 import HeroSection from './components/HeroSection';
+import PopularProductsSection from './components/PopularSection';
 const  apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
 // Loading skeleton
@@ -54,13 +55,13 @@ export default function DirectorySite({ pageData, companyId }: { pageData: Store
 
       <PromotionSection promotions={pageData.promotions} />
 
-      <NewArrivalsSection marketplaceListings={pageData.marketplaceListings} currency={pageData.currency} />
+      <NewArrivalsSection id={companyId} marketplaceListings={pageData.marketplaceListings} currency={pageData.currency} />
 
       <CategorySection StoreCategory={pageData.StoreCategory}/>
 
-      <NewArrivalsSection marketplaceListings={pageData.marketplaceListings} currency={pageData.currency} />
-
-      <FeaturedListingsOverviewSection />
+      <PopularProductsSection id={pageData.id} currency={pageData.currency} />
+      
+      <FeaturedListingsOverviewSection  marketplaceListings={pageData.marketplaceListings} />
 
       {testimonialsData?.data && <TestimonialsSection testimonial={testimonialsData?.data} />}
 

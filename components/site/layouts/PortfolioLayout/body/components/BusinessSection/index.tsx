@@ -210,7 +210,8 @@ export default function ServicesSection({name, slug, description, themeSettings,
               
               return (
                 <motion.a
-                  href={offer.id ? `/${slug || 'store'}/product/${offer.id}` : `/${slug || 'store'}/contact`}
+                  // href={offer.id ? `/portfolio/category/${offer.id}` : `/${slug || 'store'}/contact`}
+                  href={"#contact"}
                   key={offer.id || idx}
                   className="block"
                   variants={{
@@ -287,7 +288,7 @@ export default function ServicesSection({name, slug, description, themeSettings,
             viewport={{ once: true, amount: 0.2 }}
           >
              <a
-                href={`/${slug || 'store'}/all-products`}
+                href={`#services`}
                 className="inline-flex items-center gap-3 text-xl font-extrabold px-12 py-5 rounded-full shadow-2xl transition-all duration-500 transform hover:scale-[1.05] relative overflow-hidden"
                 style={{ 
                     // Maintain primary gradient background for the CTA

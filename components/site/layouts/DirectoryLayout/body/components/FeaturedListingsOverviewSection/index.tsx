@@ -11,11 +11,16 @@ import {
   ChevronRightIcon,
   XMarkIcon,
   MapPinIcon,
-  StarIcon as StarOutline // Outline star for ratings
+  StarIcon as StarOutline, // Outline star for ratings
+  MinusIcon,
+  PlusIcon,
+  TrashIcon
 } from '@heroicons/react/24/outline';
 import { StarIcon as StarSolid } from '@heroicons/react/24/solid'; // Solid star for ratings
 import { createPortal } from 'react-dom';
 import { useStoreContext } from '@/contexts/StoreContext';
+import { MarketListingForm } from '@/types/typings';
+import { useStateContext } from '@/contexts/ContextProvider';
 
 // Assuming useStoreContext is available and provides storeFormData
 // import { useStoreContext } from '@/contexts/StoreContext';
@@ -30,28 +35,28 @@ export type ProductForListing = {
   size?: string[];
 };
 
-export type MarketplaceListing = {
-  id: string;
-  title: string; // Used for the listing's main title
-  name: string; // Used for the business name
-  description?: string; // Listing-specific description
-  finalPrice: number; // Numeric price
-  images: string[]; // Array of image URLs
-  isAvailable: boolean;
-  isFeatured: boolean; // Can be used for tags
-  product?: ProductForListing; // Nested product details
-  // Assuming a 'location' field might be added to MarketplaceListing or derived
-  location?: string;
-  // Assuming a 'rating' might be added or calculated
-  rating?: number;
-};
+// export type MarketplaceListing = {
+//   id: string;
+//   title: string; // Used for the listing's main title
+//   name: string; // Used for the business name
+//   description?: string; // Listing-specific description
+//   finalPrice: number; // Numeric price
+//   images: string[]; // Array of image URLs
+//   isAvailable: boolean;
+//   isFeatured: boolean; // Can be used for tags
+//   product?: ProductForListing; // Nested product details
+//   // Assuming a 'location' field might be added to MarketplaceListing or derived
+//   location?: string;
+//   // Assuming a 'rating' might be added or calculated
+//   rating?: number;
+// };
 
-export type StoreForm = {
-  slug?: string; // For the base path of the site
-  marketplaceListings?: MarketplaceListing[];
-  currency?: string; // From transformCompanyToStoreForm
-  // Add other relevant StoreForm fields if needed
-};
+// export type StoreForm = {
+//   slug?: string; // For the base path of the site
+//   marketplaceListings?: MarketListingForm[];
+//   currency?: string; // From transformCompanyToStoreForm
+//   // Add other relevant StoreForm fields if needed
+// };
 
 // Placeholder for useStoreContext to make the component runnable independently
 // In a real application, you would uncomment the actual import.
@@ -279,6 +284,11 @@ function ListingGrid({ listings, baseSlug }: ListingGridProps) {
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
 
+  
+  const { cart, addToCart, decreaseQuantity, removeFromCart } = useStateContext();
+
+
+  
   // Effect to update scroll button visibility
   useEffect(() => {
     const checkScroll = () => {
@@ -313,12 +323,12 @@ function ListingGrid({ listings, baseSlug }: ListingGridProps) {
     });
   };
 
-  const handleAddToCart = () => {
-    // This is a placeholder for adding to cart functionality
-    // In a directory context, this might be "Add to Favorites" or "Contact Business"
-    setShowToast(true);
-    setTimeout(() => setShowToast(false), 2500);
-  };
+  // --- Cart Logic ---
+    const handleAddToCart = (listing: any) => {
+      addToCart(listing);
+      setShowToast(true);
+      setTimeout(() => setShowToast(false), 2500);
+    };
 
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     e.currentTarget.onerror = null; // Prevents infinite loop if placeholder also fails
@@ -331,9 +341,7 @@ function ListingGrid({ listings, baseSlug }: ListingGridProps) {
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
         <div className="flex flex-col sm:flex-row items-center justify-between mb-10 gap-4">
-          <h2 className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white leading-tight">
-            Discover What's <span className="text-orange-500">New & Trending</span>
-          </h2>
+          
           <div className="flex space-x-3">
             <motion.button
               onClick={() => scroll('left')}
@@ -363,84 +371,85 @@ function ListingGrid({ listings, baseSlug }: ListingGridProps) {
           ref={containerRef}
           className="flex space-x-6 pb-6 overflow-x-auto custom-scrollbar scroll-snap-x snap-mandatory"
         >
-          {listings.map((item:any) => (
-            <motion.div
-              key={item.id}
-              className="min-w-[280px] sm:min-w-[320px] max-w-[320px] bg-white dark:bg-gray-800 rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 relative group flex-shrink-0 snap-center border border-gray-100 dark:border-gray-700"
-              whileHover={{ y: -5 }}
-            >
-              {/* Top Action Buttons */}
-              <div className="absolute top-4 right-4 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  className="p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-md hover:bg-white transition-colors text-gray-500 hover:text-red-500"
-                  aria-label="Add to Favorites"
-                >
-                  <HeartIcon className="h-5 w-5" />
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                  onClick={handleAddToCart}
-                  className="p-2 bg-white/80 backdrop-blur-sm rounded-full shadow-md hover:bg-white transition-colors text-gray-500 hover:text-green-600"
-                  aria-label="Add to Cart"
-                >
-                  <ShoppingBagIcon className="h-5 w-5" />
-                </motion.button>
-              </div>
-
-              {/* Tags/Badges */}
-              {(item.tags?.length ?? 0) > 0 && (
-                <span className="absolute top-4 left-4 bg-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">
-                  {item.tags?.[0]}
-                </span>
-              )}
-
-              {/* Image */}
-              <div className="relative w-full h-52 sm:h-60 rounded-t-3xl overflow-hidden cursor-pointer" onClick={() => setSelectedListing(item)}>
-                <Image
-                  src={item.imageUrl}
-                  alt={item.name}
-                  fill
-                  className="object-cover transition-transform duration-300 group-hover:scale-105"
-                  loader={loader}
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  onError={handleImageError}
-                />
-              </div>
-
-              {/* Content */}
-              <div className="p-5 flex flex-col justify-between">
-                <div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 uppercase font-medium">{item.name}</p> {/* Using item.name for business name */}
-                  <h3 className="font-bold text-xl text-gray-900 dark:text-white mt-1 leading-tight">{item.title}</h3> {/* Using item.title for listing title */}
-                  <p className="text-sm text-gray-600 dark:text-gray-300 mt-0.5">{item.subtitle}</p> {/* Using item.subtitle for category/subtitle */}
-                  {item.location && (
-                    <div className="flex items-center text-gray-500 dark:text-gray-400 text-sm mt-1">
-                      <MapPinIcon className="h-4 w-4 mr-1 text-blue-500" />
-                      <span>{item.location}</span>
-                    </div>
-                  )}
-                  {item.rating !== undefined && (
-                    <div className="pt-1">{renderStars(item.rating)}</div>
-                  )}
-                </div>
-                <div className="mt-4 flex items-center justify-between">
-                  {/* Price is not directly available in this section's mock/schema, using a placeholder */}
-                  {/* <span className="font-extrabold text-xl text-gray-900 dark:text-white">View Details</span> 
-                  <button
-                    onClick={() => setSelectedListing(item)}
-                    className="flex items-center space-x-1 px-4 py-2 bg-blue-500 text-white rounded-full text-sm font-semibold hover:bg-blue-600 transition-colors duration-200 shadow-md"
-                    aria-label={`View details for ${item.title}`}
-                  >
-                    View Details
-                    <ChevronRightIcon className="h-4 w-4" />
-                  </button> */}
-                </div>
-              </div>
-            </motion.div>
-          ))}
+          {listings.map((listing:any) => {
+            const quantity =  cart.find((item: MarketListingForm) => item.id === listing.id)?.quantity || 0;
+            
+                        return (
+                          <motion.div
+                            key={listing.id}
+                            className="min-w-[280px] sm:min-w-[320px] max-w-[320px] bg-white dark:bg-gray-800 rounded-3xl shadow-xl flex-shrink-0 snap-center"
+                          >
+                            {/* IMAGE */}
+                            <div
+                              onClick={() => setSelectedListing(listing)}
+                              className="relative w-full h-52 sm:h-60 rounded-t-3xl overflow-hidden cursor-pointer"
+                            >
+                              <Image
+                                loader={loader}
+                                src={listing.images?.[0] || "https://placehold.co/600x400/CCCCCC/333333?text=No+Image"}
+                                alt={listing.title}
+                                fill
+                                className="object-cover"
+                                onError={handleImageError}
+                              />
+                            </div>
+            
+                            {/* CONTENT */}
+                            <div className="p-5 flex flex-col">
+                              <p className="text-sm text-gray-500">{listing.businessName}</p>
+                              <h3 className="font-bold text-xl">{listing.name}</h3>
+                              <p className="text-sm text-gray-600">{listing.category}</p>
+            
+                              {renderStars(listing.rating)}
+            
+                              <div className="mt-4 flex items-center justify-between">
+                                <span className="font-extrabold text-xl">{listing.finalPrice || listing.sellingPrice || "0.00"}</span>
+                              </div>
+            
+                              {/* CART ACTIONS */}
+                              {quantity > 0 ? (
+                                <div className="mt-5 flex items-center justify-between">
+                                  <div className="flex items-center space-x-3">
+                                    <button
+                                      onClick={() => decreaseQuantity(listing.id)}
+                                      className="p-2 bg-gray-100 rounded-full"
+                                    >
+                                      {quantity === 1 ? (
+                                        <TrashIcon className="h-5 w-5 text-red-500" />
+                                      ) : (
+                                        <MinusIcon className="h-5 w-5 text-gray-600" />
+                                      )}
+                                    </button>
+            
+                                    <span className="text-lg font-bold">{quantity}</span>
+            
+                                    <button
+                                      onClick={() => addToCart(listing)}
+                                      className="p-2 bg-gray-100 rounded-full"
+                                    >
+                                      <PlusIcon className="h-5 w-5 text-gray-600" />
+                                    </button>
+                                  </div>
+            
+                                  <button
+                                    onClick={() => removeFromCart(listing.id)}
+                                    className="text-sm font-medium text-red-600"
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
+                              ) : (
+                                <button
+                                  onClick={() => handleAddToCart(listing)}
+                                  className="mt-5 w-full py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-lg"
+                                >
+                                  Add to Cart
+                                </button>
+                              )}
+                            </div>
+                          </motion.div>
+                        );
+          })}
         </div>
       </div>
 
@@ -515,7 +524,7 @@ function ListingGrid({ listings, baseSlug }: ListingGridProps) {
                     <button
                       className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-full text-base font-semibold hover:from-orange-600 hover:to-red-600 transition-all duration-300 shadow-lg hover:shadow-xl"
                       onClick={() => {
-                        handleAddToCart();
+                        handleAddToCart(selectedListing);
                         setSelectedListing(null);
                       }}
                     >
@@ -533,14 +542,18 @@ function ListingGrid({ listings, baseSlug }: ListingGridProps) {
   );
 }
 
+interface FeaturedListingsOverviewSectionProps {
+  marketplaceListings?: MarketListingForm[];
+}
+
 // Parent component that uses ListingGrid
-export default function FeaturedListingsOverviewSection() {
+export default function FeaturedListingsOverviewSection({ marketplaceListings }: FeaturedListingsOverviewSectionProps) {
   const router = useRouter();
   // Assuming useStoreContext is available and provides storeFormData
   const { storeFormData } = useStoreContext();
 
   // Use dynamic listings from storeFormData, or fallback if not available
-  const dynamicListings = storeFormData?.marketplaceListings || [];
+  const dynamicListings = marketplaceListings || [];
   const currency = storeFormData?.currency || 'KES'; // Default currency
 
   // Transform dynamic listings to the format expected by ListingGrid
@@ -595,7 +608,7 @@ export default function FeaturedListingsOverviewSection() {
             whileHover={{ scale: 1.05, boxShadow: "0 10px 20px rgba(59, 130, 246, 0.3)" }}
             whileTap={{ scale: 0.95 }}
             className="inline-flex items-center px-8 py-4 border border-transparent text-base font-semibold rounded-full shadow-lg text-white bg-blue-600 hover:bg-blue-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            onClick={() => router.push(`/site/${baseSlug}/listings`)}
+            onClick={() => router.push(`/directorylistings/listings`)}
             aria-label="View all listings"
           >
             View All Listings

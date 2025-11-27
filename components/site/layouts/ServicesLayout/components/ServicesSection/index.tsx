@@ -111,7 +111,7 @@ const ServiceCard = ({ service, primaryColor, onBook, isSpotlight, index }: Serv
                         className="inline-flex items-center gap-2 text-base font-bold uppercase tracking-widest text-white hover:underline underline-offset-8 decoration-2"
                         style={{ textDecorationColor: primaryColor }}
                     >
-                        View Details 
+                        Book Now 
                         <ArrowUpRightIcon className={`w-5 h-5 transition-transform duration-300 ${isHovered ? 'translate-x-1' : 'translate-x-0'}`} />
                     </motion.div>
                 </motion.div>
@@ -229,7 +229,7 @@ export default function ServicesSpotlightDeck({ marketplaceListings, themeSettin
                                     <div className="relative w-full aspect-[2.5/1] bg-white dark:bg-gray-900 rounded-lg overflow-hidden flex items-center justify-center">
                                         
                                         <Image
-                                            src="https://images.unsplash.com/photo-1557683316-973673baf926?auto=format&fit=crop&w=800&q=80"
+                                            src={ activeService.images?.[0] || "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1400&q=80"}
                                             alt="Service Workflow Diagram"
                                             loader={loader}
                                             fill

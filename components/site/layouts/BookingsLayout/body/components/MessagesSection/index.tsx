@@ -2,52 +2,124 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { motion, AnimatePresence } from 'framer-motion'; // Added AnimatePresence for smooth modal exit
+import { motion, AnimatePresence } from 'framer-motion';
+import { useRouter } from "next/navigation"; // Added for routing
 import { useStoreContext } from '@/contexts/StoreContext';
-import Link from 'next/link';
-import { XMarkIcon, MagnifyingGlassIcon, ArrowRightIcon, TagIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, MagnifyingGlassIcon, TagIcon, CalendarDaysIcon, ClockIcon } from '@heroicons/react/24/outline';
 import { MarketListingForm } from '@/types/typings';
-// Assuming BookingForm and MarketListingForm types/components exist
-// import BookingForm from '../../../components/BookingForm'; 
-// import { MarketListingForm } from '@/types/typings'; 
 
-// --- PLACEHOLDER COMPONENTS (Keep these for demonstration) ---
-// Placeholder type for external dependencies
-// type MarketListingForm = {
-//     id: string;
-//     name: string;
-//     description: string;
-//     images?: string[];
-//     finalPrice: number;
-//     isAvailable: boolean;
-// };
+// --- UPDATED FUNCTIONAL BOOKING FORM ---
+const BookingForm = ({ service }: { service: MarketListingForm }) => {
+    const router = useRouter();
+    const [date, setDate] = useState("");
+    const [timeSlot, setTimeSlot] = useState("");
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
 
-// Placeholder for BookingForm component (assumed to be complex and imported)
-const BookingForm = ({ service, slug }: { service: MarketListingForm, slug: string }) => (
-    <div className="p-5 bg-white rounded-xl border border-gray-200 shadow-md">
-        <p className="text-lg font-bold text-gray-800 mb-4">Finalize Your Service Booking</p>
-        <div className="space-y-3">
-            <input type="text" placeholder="Your Name" className="w-full p-3 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 transition" required />
-            <input type="email" placeholder="Email Address" className="w-full p-3 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 transition" required />
-            <select className="w-full p-3 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 transition">
-                <option>Select Date & Time Slot...</option>
-                <option disabled={!service.isAvailable}>Tomorrow, 10:00 AM</option>
-                <option disabled={!service.isAvailable}>Friday, 2:00 PM</option>
-            </select>
-        </div>
-        
-        <button
-            style={{ backgroundColor: service.isAvailable ? '#059669' : '#9ca3af' }}
-            className={`mt-6 w-full text-white px-6 py-3 rounded-xl text-lg font-semibold transition-all duration-300 shadow-lg ${service.isAvailable ? 'hover:bg-emerald-700' : 'cursor-not-allowed'}`}
-            disabled={!service.isAvailable}
-        >
-            {service.isAvailable ? `Book for KES ${service.finalPrice?.toLocaleString('en-KE', { minimumFractionDigits: 2 })}` : 'Notify Me When Available'}
-        </button>
-        {!service.isAvailable && (
-             <p className="mt-2 text-sm text-center text-red-500">This service is temporarily unavailable for booking.</p>
-        )}
-    </div>
-);
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        setError("");
+
+        if (!date || !timeSlot) {
+            setError("Please select both a preferred date and time.");
+            return;
+        }
+
+        setLoading(true);
+
+        // Build the query string based on your logic
+        const query: Record<string, string> = {
+            listingId: String(service.id),
+            name: service.name ?? "",
+            price: service.finalPrice !== undefined ? String(service.finalPrice) : String(service.sellingPrice ?? 0),
+            date,
+            timeSlot,
+        };
+        const params = new URLSearchParams(query);
+
+        // Navigate to checkout
+        router.push(`/bookings/checkout?${params.toString()}`);
+    };
+
+    return (
+        <form onSubmit={handleSubmit} className="p-6 bg-white rounded-2xl border border-gray-100 shadow-xl flex flex-col h-full">
+            <div className="mb-6">
+                <h3 className="text-xl font-bold text-gray-900">Finalize Booking</h3>
+                <p className="text-sm text-gray-500 mt-1">Select a time to reserve this service.</p>
+            </div>
+
+            <div className="space-y-4 flex-grow">
+                {/* Date Input */}
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Select Date
+                    </label>
+                    <div className="relative">
+                        <CalendarDaysIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                        <input
+                            type="date"
+                            required
+                            value={date}
+                            onChange={(e) => setDate(e.target.value)}
+                            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition outline-none"
+                        />
+                    </div>
+                </div>
+
+                {/* Time Input */}
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Select Time
+                    </label>
+                    <div className="relative">
+                        <ClockIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+                        <input
+                            type="time"
+                            required
+                            value={timeSlot}
+                            onChange={(e) => setTimeSlot(e.target.value)}
+                            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition outline-none"
+                        />
+                    </div>
+                </div>
+
+                {/* Error Message */}
+                {error && (
+                    <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg">
+                        {error}
+                    </div>
+                )}
+            </div>
+
+            {/* Action Button */}
+            <div className="mt-8">
+                <button
+                    type="submit"
+                    disabled={!service.isAvailable || loading}
+                    className={`w-full py-4 rounded-xl text-lg font-bold text-white shadow-lg transition-all duration-300 flex items-center justify-center
+                    ${!service.isAvailable 
+                        ? 'bg-gray-400 cursor-not-allowed' 
+                        : 'bg-emerald-600 hover:bg-emerald-700 hover:shadow-emerald-200 hover:-translate-y-1'
+                    }`}
+                >
+                    {loading ? (
+                         <span className="flex items-center gap-2">
+                            <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Processing...
+                         </span>
+                    ) : !service.isAvailable ? (
+                        'Temporarily Unavailable'
+                    ) : (
+                        `Book for KES ${service.finalPrice?.toLocaleString('en-KE', { minimumFractionDigits: 0 })}`
+                    )}
+                </button>
+            </div>
+        </form>
+    );
+};
 
 
 const loader = ({ src, width, quality }: any) => `${src}?w=${width}&q=${quality || 75}`;
@@ -60,9 +132,8 @@ interface ServicesSectionProps {
     } | null;
 }
 
-export default function ServicesSection({marketplaceListings, slug, themeSettings}: ServicesSectionProps) {
+export default function ServicesSection({ marketplaceListings, slug, themeSettings }: ServicesSectionProps) {
     // --- Data Initialization and State ---
-    // The component will use the provided marketplaceListings or the sampleData if none are provided.
     const sampleData = {
         marketplaceListings: [
             {
@@ -70,7 +141,7 @@ export default function ServicesSection({marketplaceListings, slug, themeSetting
                 name: "Premium Haircut & Styling",
                 description: "Experience a top-tier haircut with our master stylists, including a relaxing wash and a personalized styling session to perfect your look.",
                 images: ["https://images.unsplash.com/photo-1596461404986-e88e404b4c73?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"],
-                finalPrice: 7500.00, // Adjusted price to be more realistic in KES
+                finalPrice: 7500.00,
                 isAvailable: true
             },
             {
@@ -151,7 +222,7 @@ export default function ServicesSection({marketplaceListings, slug, themeSetting
     return (
         <section id="services" className="relative bg-white py-24 overflow-hidden text-gray-900">
             <div className="max-w-7xl mx-auto px-6 lg:px-12">
-                
+
                 {/* 🎨 HEADER, TITLE, AND SEARCH BAR */}
                 <div className="text-center mb-16">
                     <motion.span
@@ -164,7 +235,7 @@ export default function ServicesSection({marketplaceListings, slug, themeSetting
                     >
                         Our Offerings
                     </motion.span>
-                    
+
                     <motion.h2
                         className="mt-6 text-4xl sm:text-5xl font-extrabold text-gray-900 tracking-tight leading-tight"
                         initial={{ opacity: 0, y: 10 }}
@@ -174,7 +245,7 @@ export default function ServicesSection({marketplaceListings, slug, themeSetting
                     >
                         Discover Our Signature <span style={{ color: primaryColor }}>Services</span>
                     </motion.h2>
-                    
+
                     <motion.p
                         className="mt-4 text-lg text-gray-700 max-w-2xl mx-auto leading-relaxed"
                         initial={{ opacity: 0 }}
@@ -184,9 +255,9 @@ export default function ServicesSection({marketplaceListings, slug, themeSetting
                     >
                         Browse our carefully curated catalog of services designed to provide exceptional quality and value for all your needs.
                     </motion.p>
-                    
+
                     {/* Search Input with modern styling */}
-                    <motion.div 
+                    <motion.div
                         className="mt-10 max-w-lg mx-auto relative"
                         initial={{ opacity: 0, scale: 0.9 }}
                         whileInView={{ opacity: 1, scale: 1 }}
@@ -224,56 +295,56 @@ export default function ServicesSection({marketplaceListings, slug, themeSetting
                     >
                         {(filteredListings as MarketListingForm[]).map((item, i) => (
                             <motion.div
-                                    key={item.id}
-                                    className={`relative rounded-3xl overflow-hidden bg-white border ${item.isAvailable ? 'border-gray-200' : 'border-red-200 opacity-80'} shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 flex flex-col group cursor-pointer`}
-                                    variants={cardVariants}
-                                    onClick={() => setSelected(item)}
-                                >
-                                    {/* Image Area with Hover Zoom */}
-                                    <div className="relative w-full h-56 overflow-hidden">
-                                        <Image
-                                            src={item.images?.[0] || 'https://images.unsplash.com/photo-1555548680-77a28e3a2b3b?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'}
-                                            loader={loader}
-                                            alt={item.name}
-                                            fill
-                                            className="object-cover transition-transform duration-500 group-hover:scale-110"
-                                            sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 25vw"
-                                        />
-                                        {/* Availability Ribbon */}
-                                        <div className={`absolute top-0 right-0 p-2 text-xs font-bold text-white shadow-lg rounded-bl-xl ${item.isAvailable ? 'bg-emerald-600' : 'bg-red-600'}`}>
-                                            {item.isAvailable ? 'AVAILABLE' : 'BOOKED'}
-                                        </div>
+                                key={item.id}
+                                className={`relative rounded-3xl overflow-hidden bg-white border ${item.isAvailable ? 'border-gray-200' : 'border-red-200 opacity-80'} shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 flex flex-col group cursor-pointer`}
+                                variants={cardVariants}
+                                onClick={() => setSelected(item)}
+                            >
+                                {/* Image Area with Hover Zoom */}
+                                <div className="relative w-full h-56 overflow-hidden">
+                                    <Image
+                                        src={item.images?.[0] || 'https://images.unsplash.com/photo-1555548680-77a28e3a2b3b?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'}
+                                        loader={loader}
+                                        alt={item.name}
+                                        fill
+                                        className="object-cover transition-transform duration-500 group-hover:scale-110"
+                                        sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 25vw"
+                                    />
+                                    {/* Availability Ribbon */}
+                                    <div className={`absolute top-0 right-0 p-2 text-xs font-bold text-white shadow-lg rounded-bl-xl ${item.isAvailable ? 'bg-emerald-600' : 'bg-red-600'}`}>
+                                        {item.isAvailable ? 'AVAILABLE' : 'BOOKED'}
                                     </div>
-                                    
-                                    {/* Content Area */}
-                                    <div className="p-6 flex flex-col flex-grow">
-                                        <h3 className="text-xl font-extrabold text-gray-900 mb-2 leading-tight">
-                                            {item.name}
-                                        </h3>
-                                        
-                                        {/* Price Section */}
-                                        <div className="flex items-center text-2xl font-extrabold mb-4" style={{ color: primaryColor }}>
-                                            <TagIcon className="w-5 h-5 mr-2 text-gray-400" />
-                                            KES {(item.finalPrice || item.sellingPrice || 0).toLocaleString('en-KE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                                        </div>
+                                </div>
 
-                                        <p className="text-sm text-gray-600 flex-grow mb-4 line-clamp-3">
-                                            {item.description || 'A unique service designed to provide exceptional results and an unforgettable experience.'}
-                                        </p>
-                                        
-                                        {/* Action Button */}
-                                        <button
-                                            className="mt-auto flex items-center justify-center p-3 rounded-xl font-bold transition-all duration-300 border-2"
-                                            style={{ 
-                                                color: primaryColor, 
-                                                borderColor: primaryColor + '50',
-                                                backgroundColor: primaryColor + '10'
-                                            }}
-                                        >
-                                            View Details & Book
-                                        </button>
+                                {/* Content Area */}
+                                <div className="p-6 flex flex-col flex-grow">
+                                    <h3 className="text-xl font-extrabold text-gray-900 mb-2 leading-tight">
+                                        {item.name}
+                                    </h3>
+
+                                    {/* Price Section */}
+                                    <div className="flex items-center text-2xl font-extrabold mb-4" style={{ color: primaryColor }}>
+                                        <TagIcon className="w-5 h-5 mr-2 text-gray-400" />
+                                        KES {(item.finalPrice || item.sellingPrice || 0).toLocaleString('en-KE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                                     </div>
-                                </motion.div>
+
+                                    <p className="text-sm text-gray-600 flex-grow mb-4 line-clamp-3">
+                                        {item.description || 'A unique service designed to provide exceptional results and an unforgettable experience.'}
+                                    </p>
+
+                                    {/* Action Button */}
+                                    <button
+                                        className="mt-auto flex items-center justify-center p-3 rounded-xl font-bold transition-all duration-300 border-2"
+                                        style={{
+                                            color: primaryColor,
+                                            borderColor: primaryColor + '50',
+                                            backgroundColor: primaryColor + '10'
+                                        }}
+                                    >
+                                        View Details & Book
+                                    </button>
+                                </div>
+                            </motion.div>
                         ))}
                     </motion.div>
                 ) : (
@@ -317,7 +388,7 @@ export default function ServicesSection({marketplaceListings, slug, themeSetting
                             >
                                 <XMarkIcon className="w-7 h-7" />
                             </button>
-                            
+
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                                 {/* Service Details (Left Side) */}
                                 <div className="space-y-6">
@@ -337,21 +408,21 @@ export default function ServicesSection({marketplaceListings, slug, themeSetting
                                         {selected.name}
                                     </h2>
                                     <p className="mt-3 text-lg text-gray-700 leading-relaxed">{selected.description || 'No detailed description available.'}</p>
-                                    
+
                                     {/* Price and Availability Bar */}
                                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-lg shadow-inner" style={{ backgroundColor: primaryColor + '10' }}>
                                         <p className="font-bold text-gray-800 text-xl">
-                                            Price: <span style={{ color: primaryColor }} className="text-2xl font-extrabold">KES { (selected.finalPrice || 0).toLocaleString('en-KE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }</span>
+                                            Price: <span style={{ color: primaryColor }} className="text-2xl font-extrabold">KES {(selected.finalPrice || 0).toLocaleString('en-KE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                         </p>
                                         <span className={`inline-flex items-center gap-1.5 text-lg font-bold mt-2 sm:mt-0 ${selected.isAvailable ? 'text-green-700' : 'text-red-700'}`}>
                                             {selected.isAvailable ? 'Available Now' : 'Booked Out'}
                                         </span>
                                     </div>
                                 </div>
-                                
+
                                 {/* Booking Form (Right Side) */}
                                 <div className="flex flex-col space-y-6 pt-0 md:pt-4">
-                                    <BookingForm service={selected} slug={sampleData.slug || ''} />
+                                    <BookingForm service={selected} />
                                 </div>
                             </div>
                         </motion.div>

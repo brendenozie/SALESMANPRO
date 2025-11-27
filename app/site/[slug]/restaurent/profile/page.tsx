@@ -313,7 +313,7 @@ export default function AccountDashboard() {
   // --- Data Calculations ---
   const totalOrders = orders?.length || 0;
   const wishlistCount = wishlist?.length || 0;
-  const inTransitCount = orders && orders.filter((x: any) => x.status === "In Transit").length || 0;
+  const inTransitCount = orders && orders?.filter((x: any) => x.status === "In Transit").length || 0;
   const tierValue = profile.tier || "Standard"; 
   
   /* --------------------------------------

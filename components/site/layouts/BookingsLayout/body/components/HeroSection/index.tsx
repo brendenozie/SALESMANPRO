@@ -14,6 +14,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { useStoreContext } from "@/contexts/StoreContext";
 import { MarketListingForm, HeroSlide } from "@/types/typings";
+import { useRouter } from "next/navigation";
 
 // --- Loader helper ---
 const loader = ({ src, width, quality }: any) =>
@@ -44,6 +45,20 @@ export default function Hero({
 }: HeroProps) {
   const { storeFormData } = useStoreContext();
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#00A880';
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  
+  // --- Booking bar local state ---
+  const [searchTerm, setSearchTerm] = useState("");
+  const [date, setDate] = useState(new Date());
+  const [timeSlot, setTimeSlot] = useState<string>("");
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const dropdownRef = useRef<HTMLUListElement | null>(null);
+  const [activeIndex, setActiveIndex] = useState(-1);
+  const [selectedListing, setSelectedListing] = useState<MarketListingForm | null>(null);
+  const [isFocused, setIsFocused] = useState(false);
+  const router = useRouter();
+
 
   // Helper for dynamic RGB shadows
   const hexToRgb = (hex: string) => {
@@ -63,14 +78,6 @@ export default function Hero({
     };
   }, [name, description, bannerUrl, heroSlides, marketplaceListings]);
 
-  // --- Booking bar local state ---
-  const [searchTerm, setSearchTerm] = useState("");
-  const [date, setDate] = useState(new Date());
-  const [time, setTime] = useState(new Date());
-  const inputRef = useRef<HTMLInputElement | null>(null);
-  const dropdownRef = useRef<HTMLUListElement | null>(null);
-  const [activeIndex, setActiveIndex] = useState(-1);
-  const [isFocused, setIsFocused] = useState(false);
 
   // --- Filter listings ---
   const filteredListings = useMemo(() => {
@@ -103,10 +110,31 @@ export default function Hero({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleSearch = useCallback(() => {
-    // In a real app, you'd likely route to a search page here
-    alert(`Searching for "${searchTerm || "all"}" on ${date.toDateString()} @ ${time.toLocaleTimeString()}`);
-  }, [searchTerm, date, time]);
+  // --- Handle Search / Booking Submission ---
+  const handleSubmit = (service: MarketListingForm) => {
+    
+          setError("");
+  
+          if (!date || !timeSlot) {
+              setError("Please select both a preferred date and time.");
+              return;
+          }
+  
+          setLoading(true);
+  
+          // Build the query string based on your logic
+          const query: Record<string, string> = {
+              listingId: String(service.id),
+              name: service.name ?? "",
+              price: service.finalPrice !== undefined ? String(service.finalPrice) : String(service.sellingPrice ?? 0),
+              date: date.toISOString().split('T')[0],
+              timeSlot,
+          };
+          const params = new URLSearchParams(query);
+  
+          // Navigate to checkout
+          router.push(`/bookings/checkout?${params.toString()}`);
+      };
 
   return (
     <section className="relative h-[85vh] min-h-screen w-full flex flex-col items-center justify-center overflow-hidden">
@@ -198,6 +226,7 @@ export default function Hero({
                       <li
                         key={item.id}
                         onClick={() => {
+                          setSelectedListing(heroData.marketplaceListings?.find(listing => listing.id === item.id) || null);
                           setSearchTerm(item.name);
                           setActiveIndex(-1);
                           setIsFocused(false);
@@ -261,8 +290,8 @@ export default function Hero({
                 <label className="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1 mb-0.5">Time</label>
                 <div className="w-full">
                   <DatePicker
-                    selected={time}
-                    onChange={(t) => t && setTime(t)}
+                    selected={timeSlot ? new Date(`1970-01-01T${timeSlot}:00`) : null}
+                    onChange={(t) => t && setTimeSlot(t.toTimeString().slice(0,5))}
                     showTimeSelect
                     showTimeSelectOnly
                     timeIntervals={30}
@@ -279,7 +308,13 @@ export default function Hero({
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={handleSearch}
+                onClick={() => {
+                  if (selectedListing) {
+                    handleSubmit(selectedListing);
+                  } else {
+                    setError("Please select a valid service from the list.");
+                  }
+                }}
                 className="w-full md:w-auto h-full min-h-[60px] md:min-h-0 px-8 rounded-[1.5rem] md:rounded-full text-white font-bold text-lg shadow-lg flex items-center justify-center gap-2 transition-all"
                 style={{ 
                   background: `linear-gradient(135deg, ${primaryColor}, #10B981)`,

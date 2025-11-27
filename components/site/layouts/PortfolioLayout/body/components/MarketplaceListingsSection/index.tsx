@@ -1,12 +1,12 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRightIcon } from '@heroicons/react/24/outline';
-import { useStoreContext } from '@/contexts/StoreContext';
+import { ArrowLongRightIcon, ArrowRightIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 import { MarketListingForm, StoreForm } from '@/types/typings';
+import BookingFormModal from '../BookingFormModal';
 
 // Loader for Next.js Image component
 const imageLoader = ({ src, width, quality }: any) => {
@@ -166,7 +166,9 @@ interface MarketplaceListingsSectionProps {
 
 
 export default function MarketplaceListingsSection({ name, slug, themeSettings, marketplaceListings }: MarketplaceListingsSectionProps) {
-  
+  const [activeService, setActiveService] = useState<MarketListingForm | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+    
 
   const primaryColor = themeSettings?.primaryColor || '#00A880';
   const secondaryColor = themeSettings?.secondaryColor || '#10B981';
@@ -276,13 +278,16 @@ export default function MarketplaceListingsSection({ name, slug, themeSettings, 
                       {item.finalPrice}
                       {/* {item.priceUnit}$/ */}
                     </p>
-                    <Link
-                      href={`/${slug}/product/${item.id}`}
+                    <button
+                      onClick={() => {
+                        setActiveService(item);
+                        setIsModalOpen(true);
+                      }}
                       className="inline-flex items-center gap-2 text-base font-semibold px-6 py-3 rounded-full shadow-md transition-all duration-300 transform hover:scale-105"
                       style={{ backgroundColor: primaryColor, color: '#fff' }}
                     >
-                      View Details
-                    </Link>
+                      Book Now
+                    </button>
                   </div>
                 </div>
               </motion.div>
@@ -290,6 +295,88 @@ export default function MarketplaceListingsSection({ name, slug, themeSettings, 
           </motion.div>
         </div>
       </section>
+
+      {/* --- BOOKING MODAL (Reusing the detailed split modal) --- */}
+                  <AnimatePresence>
+                      {isModalOpen && activeService && (
+                          <motion.div
+                              className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              exit={{ opacity: 0 }}
+                          >
+                              <div 
+                                  onClick={() => setIsModalOpen(false)}
+                                  className="fixed inset-0 bg-gray-900/80 backdrop-blur-xl transition-opacity"
+                              />
+      
+                              <motion.div
+                                  layoutId="booking-modal"
+                                  initial={{ scale: 0.95, y: 30 }}
+                                  animate={{ scale: 1, y: 0 }}
+                                  exit={{ scale: 0.95, y: 30 }}
+                                  className="relative w-full max-w-6xl bg-white dark:bg-gray-900 rounded-[2rem] shadow-2xl overflow-hidden flex flex-col md:flex-row max-h-[90vh]"
+                              >
+                                   {/* Close Button */}
+                                  <button 
+                                     onClick={() => setIsModalOpen(false)}
+                                     className="absolute top-4 right-4 z-30 p-2 bg-black/5 hover:bg-black/10 dark:bg-white/10 dark:hover:bg-white/20 rounded-full transition-all"
+                                  >
+                                      <ArrowLongRightIcon className="w-6 h-6 text-gray-900 dark:text-white transform rotate-90" />
+                                  </button>
+      
+                                  {/* Left Column: Details & Diagram */}
+                                  <div className="w-full md:w-7/12 p-8 md:p-12 overflow-y-auto custom-scrollbar">
+                                      <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">{activeService.name}</h2>
+                                      <p className="text-gray-600 dark:text-gray-300 mb-8">{activeService.description || "Detailed description of service."}</p>
+      
+                                      {/* INSTRUCTIONAL DIAGRAM SECTION */}
+                                      <div className="mb-8 p-6 rounded-2xl border bg-gray-50 dark:bg-gray-800 border-gray-100 dark:border-gray-700">
+                                          <h4 className="text-sm font-bold uppercase tracking-widest text-gray-400 mb-4 flex items-center gap-2">
+                                              <ArrowLongRightIcon className="w-4 h-4" /> **The Service Workflow**
+                                          </h4>
+                                          <div className="relative w-full aspect-[2.5/1] bg-white dark:bg-gray-900 rounded-lg overflow-hidden flex items-center justify-center">
+                                              
+                                              <Image
+                                                  src={ activeService.images?.[0] || "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1400&q=80"}
+                                                  alt="Service Workflow Diagram"
+                                                  loader={imageLoader}
+                                                  fill
+                                                  className="object-contain"
+                                              />
+      
+      
+                                          </div>
+                                          <p className="text-xs text-center text-gray-400 mt-2">
+                                              Clear milestones: <span className="font-semibold">Consult </span>→ Plan → Execute → Review.
+                                          </p>
+                                      </div>
+                                      
+                                      <div className="flex flex-wrap gap-4 text-sm font-medium text-gray-700 dark:text-gray-200">
+                                           {["Premium Quality", "Dedicated Team", "Satisfaction Guarantee"].map(feature => (
+                                              <div key={feature} className="flex items-center gap-2">
+                                                  <CheckCircleIcon className="w-5 h-5 text-green-500" /> {feature}
+                                              </div>
+                                           ))}
+                                      </div>
+                                  </div>
+      
+                                  {/* Right Column: Booking Form */}
+                                  <div className="w-full md:w-5/12 bg-gray-50 dark:bg-gray-800 border-l border-gray-100 dark:border-gray-700 flex flex-col">
+                                      <div className="p-8 md:p-12 flex-1 overflow-y-auto">
+                                          <div className="mb-8">
+                                              <p className="text-sm text-gray-500 font-medium">Total Estimation</p>
+                                              <p className="text-4xl font-serif font-bold text-gray-900 dark:text-white" style={{ color: primaryColor }}>
+                                                  {(activeService.finalPrice ?? 0).toFixed(2)}
+                                              </p>
+                                          </div>
+                                          <BookingFormModal service={activeService} />
+                                      </div>
+                                  </div>
+                              </motion.div>
+                          </motion.div>
+                      )}
+                  </AnimatePresence>
     </AnimatePresence>
   );
 }
