@@ -502,7 +502,9 @@ function FastModeReview({
   ebooks: UnifiedMediaItem[];
   onJumpTo: (section: FastModeSection) => void;
 }) {
-  const categoryName = (formData.category as any)?.displayName || (formData.category as any)?.name || "Not selected";
+  // Safely extract category display name with proper fallback chain
+  const category = formData.category as { displayName?: string; name?: string } | null;
+  const categoryName = category?.displayName || category?.name || "Not selected";
 
   return (
     <div className="space-y-6">
@@ -922,11 +924,12 @@ export default function ProductMarketModal({
 
       // 6. Build payload using buildListingPayload (API COMPLIANCE: payload keys preserved)
       // Category string conversion: use displayName || name || raw category
+      const categoryForPayload = formData.category as { displayName?: string; name?: string } | null;
       const payload = buildListingPayload(
         {
           ...formData,
           type: ebookType ? "ebook" : formData.type,
-          category: (formData.category as any)?.displayName || (formData.category as any)?.name || formData.category,
+          category: categoryForPayload?.displayName || categoryForPayload?.name || formData.category,
           companyId: companyId,
         } as MarketListingForm,
         finalImageUrls,
@@ -989,6 +992,9 @@ export default function ProductMarketModal({
     show: { opacity: 1, y: 0, transition: { when: "beforeChildren", staggerChildren: 0.02 } },
   };
 
+  // Extract typed category for cleaner code (used in both Fast and Advanced modes)
+  const categoryWithBrands = formData.category as { allBrands?: string[] } | null;
+
   // Render Fast Mode section content
   const renderFastModeContent = () => {
     switch (fastSection) {
@@ -999,10 +1005,10 @@ export default function ProductMarketModal({
             <CategoryPicker
               formData={{ category: formData.category, subCategory: formData.subCategory, brand: formData.brand }}
               categories={categories}
-              filteredBrands={(formData.category as any)?.allBrands || []}
+              filteredBrands={categoryWithBrands?.allBrands || []}
               onCategoryChange={handleCategoryChange}
               onSubCategoryChange={handleSubCategoryChange}
-              onBrandChange={(b) => updateField("brand", b as any)}
+              onBrandChange={(b) => updateField("brand", b as MarketListingForm["brand"])}
             />
             
             {/* Inline Product Name Input for Fast Mode (doesn't require full ProductDetails) */}
@@ -1212,10 +1218,10 @@ export default function ProductMarketModal({
                   <CategoryPicker
                     formData={{ category: formData.category, subCategory: formData.subCategory, brand: formData.brand }}
                     categories={categories}
-                    filteredBrands={(formData.category as any)?.allBrands || []}
+                    filteredBrands={categoryWithBrands?.allBrands || []}
                     onCategoryChange={handleCategoryChange}
                     onSubCategoryChange={handleSubCategoryChange}
-                    onBrandChange={(b) => updateField("brand", b as any)}
+                    onBrandChange={(b) => updateField("brand", b as MarketListingForm["brand"])}
                   />
                 ) : currentDynamicStep === 7 ? (
                   // Pricing step (7) uses PricingDetails with derived read-only values
@@ -1244,7 +1250,7 @@ export default function ProductMarketModal({
                     <FormComponent
                       formData={formData}
                       handleInputChange={handleInputChange}
-                      setFormData={updateField as any}
+                      setFormData={updateField}
                       images={images}
                       setImages={setImages}
                       videos={videos}
