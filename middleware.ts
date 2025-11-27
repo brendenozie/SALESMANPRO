@@ -118,21 +118,29 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
 
     // Derive tenant slug (first part before first dot)
     // "flourishhub.co.ke" -> "flourishhub"
-    const slug = normalizedHost.split(".")[0]; 
+    // const slug = normalizedHost.split(".")[0]; 
 
-    // Build the internal rewrite path for Next.js
+    // // Build the internal rewrite path for Next.js
     
-    if (pathname === "/" || pathname === "") {
-      url.pathname = `/site/${slug}`;
-    } else {
-      // "/publicspeaking/id" -> "/site/flourishhub/publicspeaking/id"
-      url.pathname = `/site/${slug}/${pathname}`;
-    }
+    // if (pathname === "/" || pathname === "") {
+    //   url.pathname = `/site/${slug}`;
+    // } else {
+    //   // "/publicspeaking/id" -> "/site/flourishhub/publicspeaking/id"
+    //   url.pathname = `/site/${slug}/${pathname}`;
+    // }
+
+
+    const identifier = host; // e.g. "flourishhub.co.ke"
+
+    url.pathname = pathname === "/" || pathname === ""
+        ? `/site/${identifier}`
+        : `/site/${identifier}${pathname}`;
+
 
     const res = NextResponse.rewrite(url);
     res.headers.set("x-requested-host", host);
     res.headers.set("x-original-path", pathname);
-    res.headers.set("x-rewritten-slug", slug);
+    res.headers.set("x-rewritten-slug", normalizedHost);
     
     return res;
   }
