@@ -292,8 +292,16 @@ function validateFastMode(formData: MarketListingForm, images: UnifiedMediaItem[
 }
 
 /**
- * Stub for future Zod/Yup schema validation per category
- * This can be expanded to validate visible sections only
+ * Stub for future Zod/Yup schema validation per category.
+ * This function is intentionally left as a placeholder for future implementation.
+ * It can be expanded to validate visible sections only using a schema per category.
+ * 
+ * @see Requirements item 6: "Future-friendly: Integrate a Zod/Yup schema per category (stub acceptable)"
+ * 
+ * @param _section - The section key to validate
+ * @param _formData - The form data to validate
+ * @param _images - The images array for media validation
+ * @returns ValidationResult with isValid and errors
  */
 function validateSectionSchema(
   _section: SectionKey,
@@ -301,7 +309,14 @@ function validateSectionSchema(
   _images: UnifiedMediaItem[]
 ): ValidationResult {
   // Future: Implement Zod/Yup schema validation per section
-  // For now, return valid for all sections except core validation
+  // Example implementation:
+  // const schema = SECTION_SCHEMAS[_section];
+  // if (schema) {
+  //   const result = schema.safeParse(_formData);
+  //   if (!result.success) {
+  //     return { isValid: false, errors: result.error.errors.map(e => ({ field: e.path.join('.'), message: e.message })) };
+  //   }
+  // }
   return { isValid: true, errors: [] };
 }
 
@@ -996,9 +1011,6 @@ export default function ProductMarketModal({
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState<{ msg: string; type: "info" | "success" | "error" } | null>(null);
   const [validationErrors, setValidationErrors] = useState<{ field: string; message: string }[]>([]);
-  
-  // Ref for auto-focusing invalid fields
-  const formRef = useRef<HTMLDivElement>(null);
 
   // Sync unified media state when formData changes
   useEffect(() => {
@@ -1466,7 +1478,6 @@ export default function ProductMarketModal({
 
         {/* Scrollable Content */}
         <motion.div 
-          ref={formRef}
           className="flex-1 overflow-y-auto px-4 py-4" 
           variants={containerVar} 
           initial="hidden" 
