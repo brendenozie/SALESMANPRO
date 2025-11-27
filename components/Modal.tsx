@@ -91,19 +91,20 @@ function Modal({ isOpen, onClose, children }: ModalProps) {
           />
 
           {/* Modal Container */}
-          <motion.div
+         <motion.div
             className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-0 sm:p-6 overflow-y-auto"
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.98 }}
-            transition={{ type: "spring", stiffness: 250, damping: 25 }}
+            transition={{ type: 'spring', stiffness: 250, damping: 25 }}
           >
-            {/* Inner Container (NO overflow-hidden to allow sticky footer) */}
+            {/* Inner Container */}
             <div
               className="
-                w-full sm:w-auto
-                sm:max-w-[90vw] 
-                flex flex-col 
+                w-full
+                sm:w-[90vw]     
+                sm:max-w-[750px] 
+                flex flex-col
                 bg-transparent
                 sm:max-h-full
               "
@@ -111,6 +112,7 @@ function Modal({ isOpen, onClose, children }: ModalProps) {
               {children}
             </div>
           </motion.div>
+
         </>
       )}
     </AnimatePresence>
