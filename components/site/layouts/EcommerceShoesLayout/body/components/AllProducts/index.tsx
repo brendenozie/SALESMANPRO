@@ -253,7 +253,9 @@ export default function AllProducts({ martketplaceListings, themeSettings }: All
         {/* Section Header */}
         <div className="flex justify-between items-center mb-8">
           <h2 className="text-3xl font-bold text-gray-900">AllProducts</h2>
-          <button className="flex items-center text-green-600 font-semibold hover:underline">
+          <button 
+          onClick={() => window.location.href = `/ecommerceshoes/products`}
+          className="flex items-center text-green-600 font-semibold hover:underline">
             See All <ArrowRightCircleIcon className="w-6 h-6 ml-2" />
           </button>
         </div>

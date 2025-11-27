@@ -181,14 +181,14 @@ export default function PopularProducts({ id, themeSettings, marketplaceListings
               isFeatured={index === 0} // This preserves your "Big First Item" design
               primary={primary}
               secondary={secondary}
-              slug={slug || 'your-store'}
+              slug={product.id || 'your-store'}
             />
           ))}
         </motion.div>
 
         {/* See More Button */}
         <div className="mt-20">
-          <Link href={`/store/${slug || id}/products`} passHref legacyBehavior>
+          <Link href={`/ecommerceshoes/products`} passHref legacyBehavior>
             <motion.a
               whileHover={{ scale: 1.05 }}
               transition={{ type: 'spring', stiffness: 400, damping: 10 }}

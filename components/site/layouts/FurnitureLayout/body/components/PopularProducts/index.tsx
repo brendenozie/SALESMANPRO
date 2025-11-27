@@ -105,8 +105,10 @@ export default function DailyBestSells({ id }: { id: string }) {
     <section className="py-8 sm:py-12 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Daily Best Sells</h2>
-          <button className="flex items-center text-green-600 font-semibold text-sm sm:text-base hover:underline transition duration-150 ease-in-out">
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Popular Products</h2>
+          <button 
+          onClick={() => window.location.href = `/furnitureecommerce/products?filter=onOffer`}
+          className="flex items-center text-green-600 font-semibold text-sm sm:text-base hover:underline transition duration-150 ease-in-out">
             See All <ArrowRightCircleIcon className="w-5 h-5 ml-1 sm:w-6 sm:h-6 sm:ml-2" />
           </button>
         </div>

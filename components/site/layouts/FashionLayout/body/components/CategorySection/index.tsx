@@ -142,7 +142,7 @@ export default function CategoriesSectionV5({
         id: cat.id || `cat-${Math.random()}`,
         name: cat.displayName || "Category",
         imageUrl: getCategoryImageUrl(cat),
-        href: `/${storeSlug}/category/${safeSlug(cat.categoryId || cat.displayName || "category")}`,
+        href: `/fashionecommerce/products?category=${safeSlug(cat.categoryId || cat.displayName || "category")}`,
         subtitle: subCount > 0 ? `${subCount} Collections` : "Browse Category",
       };
     });
@@ -167,7 +167,7 @@ export default function CategoriesSectionV5({
               id: sub.id || `sub-${Math.random()}`,
               name: sub.name || "Collection",
               imageUrl: getSubcategoryImageUrl(sub),
-              href: `/${storeSlug}/subcategory/${safeSlug(sub.slug)}`,
+              href: `/fashionecommerce/products?subcategory=${safeSlug(sub.name || "collection")}`,
               subtitle: "Featured Collection",
             });
           });
@@ -237,7 +237,7 @@ export default function CategoriesSectionV5({
         {/* View All Button */}
         <div className="mt-12 text-center">
           <Link
-            href={`/${storeSlug}/categories`}
+            href={`/fashionecommerce/categories`}
             className="inline-flex items-center justify-center px-8 py-3 border border-gray-300 dark:border-gray-700 rounded-full text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors shadow-sm"
           >
             Browse All Categories

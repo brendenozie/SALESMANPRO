@@ -35,6 +35,10 @@ export default function CategorySection({ StoreCategory , themeSettings }: HeroS
           {StoreCategory && StoreCategory.map((cat: IStoreCategory) => (
             <motion.div
               key={cat.id}
+              onClick={() => {
+                // Navigate to category page
+                window.location.href = `/furnitureecommerce/products?category=${cat.id}`;
+              }}
               whileHover={{ scale: 1.05 }}
               transition={{ type: 'spring', stiffness: 300, damping: 20 }}
               className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200 p-5 flex flex-col items-center text-center cursor-pointer"
@@ -63,6 +67,10 @@ export default function CategorySection({ StoreCategory , themeSettings }: HeroS
           {/* See All */}
           <motion.div
             whileHover={{ scale: 1.05 }}
+            onClick={() => {
+              // Navigate to all categories page
+              window.location.href = `/furnitureecommerce/categories`;
+            }}
             transition={{ type: 'spring', stiffness: 300, damping: 20 }}
             className="bg-white border-2 border-dashed border-gray-300 rounded-xl p-5 flex flex-col items-center justify-center text-center cursor-pointer hover:border-gray-400 transition-all"
           >

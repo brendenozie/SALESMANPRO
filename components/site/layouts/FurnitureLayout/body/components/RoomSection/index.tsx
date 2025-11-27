@@ -68,7 +68,7 @@ export default function RoomSection({ store, themeSettings }: RoomSectionProps) 
         return {
           name: match.displayName || roomType.defaultName,
           img: (match as any).imageUrl || (match as any).image || roomType.defaultImg,
-          href: `/${storeSlug}/category/${safeSlug(match.categoryId || match.displayName || '')}`,
+          href: `/furnitureecommerce/products?category=${safeSlug(match.categoryId || match.displayName || '')}`,
           isDynamic: true
         };
       }
@@ -76,7 +76,7 @@ export default function RoomSection({ store, themeSettings }: RoomSectionProps) 
       return {
         name: roomType.defaultName,
         img: roomType.defaultImg,
-        href: `/${storeSlug}/categories`, // General link if specific not found
+        href: `/furnitureecommerce/categories`, // General link if specific not found
         isDynamic: false
       };
     });
@@ -99,6 +99,7 @@ export default function RoomSection({ store, themeSettings }: RoomSectionProps) 
           href={`/${storeSlug}/categories`}
           className="group flex items-center text-stone-500 hover:text-[color:var(--primary)] transition-colors duration-300 underline underline-offset-4"
           style={{ '--primary': primary } as React.CSSProperties}
+          onClick={() => window.location.href = `/furnitureecommerce/categories`}
         >
           View Full Catalog
           <ArrowRightIcon className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
@@ -109,7 +110,7 @@ export default function RoomSection({ store, themeSettings }: RoomSectionProps) 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {rooms.map((room, idx) => (
           <Link href={room.href} key={idx} passHref legacyBehavior>
-            <motion.a 
+            <motion.div
               whileHover={{ y: -8 }}
               transition={{ type: 'spring', stiffness: 300 }}
               className="relative h-[400px] rounded-2xl overflow-hidden group cursor-pointer block shadow-sm hover:shadow-xl"
@@ -146,7 +147,7 @@ export default function RoomSection({ store, themeSettings }: RoomSectionProps) 
                   </div>
                 </div>
               </div>
-            </motion.a>
+            </motion.div>
           </Link>
         ))}
       </div>
