@@ -345,10 +345,13 @@ function useProductForm(product: Partial<ProductForm> | null, companyId: string)
 
   const [formData, setFormData] = useState<ProductForm>(getInitial);
 
+  // DERIVED PRICING: Compute finalPrice and profitMargin from costPrice, sellingPrice, discount via useEffect
+  // These are read-only in UI but present in payload
   useEffect(() => {
-    const sellingPrice = formData.sellingPrice;
-    const costPrice = formData.costPrice;
-    const discount = formData.discount;
+    // Add null/undefined checks to prevent NaN values
+    const sellingPrice = formData.sellingPrice ?? 0;
+    const costPrice = formData.costPrice ?? 0;
+    const discount = formData.discount ?? 0;
     const calculatedFinalPrice = Math.max(sellingPrice - (sellingPrice * discount) / 100, 0);
     const calculatedProfitMargin = costPrice > 0 ? ((calculatedFinalPrice - costPrice) / costPrice) * 100 : 0;
     if (formData.finalPrice !== calculatedFinalPrice || formData.profitMargin !== calculatedProfitMargin) {
@@ -627,39 +630,43 @@ export default function AddProductModal({
   const FormComponent = FORM_COMPONENTS[currentDynamicStep] ?? null;
 
   // Fast Mode: Navigation helpers
-  const fastSectionIndex = FAST_MODE_SECTIONS.findIndex((s) => s.id === fastSection);
+  // Compute fastSectionIndex once and reuse to avoid multiple findIndex calls
+  const fastSectionIndex = useMemo(
+    () => FAST_MODE_SECTIONS.findIndex((s) => s.id === fastSection),
+    [fastSection]
+  );
   const fastProgress = Math.round(((fastSectionIndex + 1) / FAST_MODE_SECTIONS.length) * 100);
-  const isFirstFastSection = fastSection === "core";
-  const isLastFastSection = fastSection === "review";
+  const isFirstFastSection = fastSectionIndex === 0;
+  const isLastFastSection = fastSectionIndex === FAST_MODE_SECTIONS.length - 1;
 
-  const goToNextFastSection = () => {
-    const idx = FAST_MODE_SECTIONS.findIndex((s) => s.id === fastSection);
-    if (idx < FAST_MODE_SECTIONS.length - 1) {
-      setFastSection(FAST_MODE_SECTIONS[idx + 1].id);
+  const goToNextFastSection = useCallback(() => {
+    if (fastSectionIndex < FAST_MODE_SECTIONS.length - 1) {
+      setFastSection(FAST_MODE_SECTIONS[fastSectionIndex + 1].id);
     }
-  };
+  }, [fastSectionIndex]);
 
-  const goToPrevFastSection = () => {
-    const idx = FAST_MODE_SECTIONS.findIndex((s) => s.id === fastSection);
-    if (idx > 0) {
-      setFastSection(FAST_MODE_SECTIONS[idx - 1].id);
+  const goToPrevFastSection = useCallback(() => {
+    if (fastSectionIndex > 0) {
+      setFastSection(FAST_MODE_SECTIONS[fastSectionIndex - 1].id);
     }
-  };
+  }, [fastSectionIndex]);
 
   // Input change handler supporting numeric fields
+  // Default to 0 instead of undefined for numeric fields to ensure consistent pricing calculations
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const target = e.target as HTMLInputElement;
     const { name, type, value } = target;
     let val: any = type === 'checkbox' ? target.checked : value;
     
-    // Parse numeric fields
-    if ([
+    // Parse numeric fields - default to 0 if NaN to ensure consistent behavior
+    const numericFields = [
       "costPrice", "sellingPrice", "discount", "finalPrice", "profitMargin",
       "quantity", "engineSize", "year", "bathrooms", "hourlyRate", "minimumHours",
       "totalCapacity", "providerRating"
-    ].includes(name)) {
+    ];
+    if (numericFields.includes(name)) {
       const parsed = parseFloat(val as string);
-      val = isNaN(parsed) ? undefined : parsed;
+      val = isNaN(parsed) ? 0 : parsed;
     } else if (val === "") {
       val = undefined;
     }
