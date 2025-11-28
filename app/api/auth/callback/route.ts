@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
       // include id as `sub` for compatibility
       sub: userId,
     };
-    const token = await encode({ token: tokenPayload, secret: process.env.NEXTAUTH_SECRET! });
+    const token = await encode({ token: tokenPayload, secret: process.env.NEXT_PUBLIC_NEXTAUTH_SECRET! });
     return NextResponse.redirect(`${target}?auth=success&token=${token}`);
 
 

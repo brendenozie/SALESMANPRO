@@ -16,7 +16,7 @@ import { decode, encode } from "next-auth/jwt";
 const baseUrl = process.env.NEXTAUTH_URL || "https://salesmanpro.site";
 // ⚠️ IMPORTANT: This secret MUST be the *exact same*
 // environment variable as your auth app.
-const aSharedSecret = process.env.NEXTAUTH_SECRET;
+const aSharedSecret = process.env.NEXT_PUBLIC_NEXTAUTH_SECRET;
 
 if (!aSharedSecret) {
   throw new Error("NEXTAUTH_SECRET is not set!");
@@ -372,7 +372,7 @@ export const authOptions: NextAuthOptions = {
     },
   },
 
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: process.env.NEXT_PUBLIC_NEXTAUTH_SECRET,
   pages: {
     signIn: "/signin",
   },
@@ -659,7 +659,7 @@ export const getAuthSession = () => getServerSession(authOptions);
 //       return session;
 //     },
 //   },
-//   secret: process.env.NEXTAUTH_SECRET,
+//   secret: process.env.NEXT_PUBLIC_NEXTAUTH_SECRET,
 //   pages: {
 //     signIn: "/signin",
 //   },
