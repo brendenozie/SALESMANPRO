@@ -181,7 +181,7 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
 // };
 
 // export default async function middleware(request: NextRequest, ev: NextFetchEvent) {
-//   // const token = await getToken({ req: request, secret: process.env.NEXT_PUBLIC_NEXTAUTH_SECRET });
+//   // const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
 //   const url = request.nextUrl.clone();
 //   const pathname = url.pathname;
 //   const host = request.headers.get("host")?.split(":")[0] || "";
@@ -205,7 +205,7 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
 
 //   // // Verify the token if available
 //   // if (token) {
-//   //   const decoded = await decode({ token, secret: process.env.NEXT_PUBLIC_NEXTAUTH_SECRET! });
+//   //   const decoded = await decode({ token, secret: process.env.NEXTAUTH_SECRET! });
 //   //   if (decoded) return NextResponse.next();
 //   // }
 
@@ -465,7 +465,7 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
 //   // ---- 4. SESSION-BASED PROTECTION ----
 //   //
 //   // if (protectedPaths.some((p) => pathname.startsWith(p))) {
-//   //   const token = await getToken({ req: request, secret: process.env.NEXT_PUBLIC_NEXTAUTH_SECRET });
+//   //   const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
 
 //   //   if (!token) {
 //   //     url.pathname = "/signin";

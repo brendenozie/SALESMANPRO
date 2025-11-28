@@ -5,10 +5,10 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { encode } from "next-auth/jwt"; // You might need to install `next-auth/jwt` or find another way to encode
 
-const JWT_SECRET = process.env.NEXT_PUBLIC_NEXTAUTH_SECRET!;
+const JWT_SECRET = process.env.NEXTAUTH_SECRET!;
 
 if (!JWT_SECRET) {
-  throw new Error("NEXT_PUBLIC_NEXTAUTH_SECRET is not set!");
+  throw new Error("NEXTAUTH_SECRET is not set!");
 }
 
 // A simple utility to encode the token on the client.
