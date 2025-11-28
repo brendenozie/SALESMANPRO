@@ -11,7 +11,7 @@ export default function TokenSignIn() {
   const [isSigningIn, setIsSigningIn] = useState(false);
 
   useEffect(() => {
-    const token = searchParams.get("token");  // FIXED KEY NAME
+    const token = searchParams.get("auth_token");  // FIXED KEY NAME
 
     if (token && status === "unauthenticated" && !isSigningIn) {
       setIsSigningIn(true);
