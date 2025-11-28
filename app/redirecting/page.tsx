@@ -25,6 +25,21 @@ async function createClientSideToken(session: any): Promise<string | null> {
   return token;
 }
 
+function safeDecode(url: string) {
+  let decoded = url;
+  try {
+    while (decoded.includes("%")) {
+      const once = decodeURIComponent(decoded);
+      if (once === decoded) break;
+      decoded = once;
+    }
+  } catch (e) {
+    // fallback
+  }
+  return decoded;
+}
+
+
 export default function RedirectingPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -45,9 +60,10 @@ export default function RedirectingPage() {
 
     if (status === "authenticated" && session) {
       // const callbackUrl = searchParams.get("callbackUrl");
+      // const raw = searchParams.get("callbackUrl");
+      // const callbackUrl = raw ? decodeURIComponent(raw) : null;
       const raw = searchParams.get("callbackUrl");
-      const callbackUrl = raw ? decodeURIComponent(raw) : null;
-
+      const callbackUrl = raw ? safeDecode(raw) : null;
 
       if (!callbackUrl) {
         setError("No callback URL provided. Cannot complete sign-in.");
