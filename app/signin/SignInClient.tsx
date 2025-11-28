@@ -111,7 +111,7 @@ export default function SignInClient({ providers }: { providers: Provider[] }) {
   }, [providers]);
 
    const handleRegister = () => {
-    const registerUrl = new URL("https://salesmanpro.site/signup");
+    const registerUrl = new URL("https://auth.salesmanpro.site/signup");
     registerUrl.searchParams.set("callbackUrl", window.location.origin);
     window.location.href = registerUrl.toString();
   }

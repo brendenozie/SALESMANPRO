@@ -32,13 +32,13 @@ const Header = () => {
   ];
 
   const handleGoogleSignIn = () => {
-    const authUrl = new URL("https://salesmanpro.site/signin");
+    const authUrl = new URL("https://auth.salesmanpro.site/signin");
     authUrl.searchParams.set("callbackUrl", window.location.origin);
     window.location.href = authUrl.toString();
   };
 
   const handleRegister = () => {
-    const registerUrl = new URL("https://salesmanpro.site/signup");
+    const registerUrl = new URL("https://auth.salesmanpro.site/signup");
     registerUrl.searchParams.set("callbackUrl", window.location.origin);
     window.location.href = registerUrl.toString();
   }

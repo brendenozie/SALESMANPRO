@@ -216,7 +216,7 @@ const AdminDashboardPage = () => {
     // If user is not authenticated, redirect to Google Sign-In
     if (status === "unauthenticated" || !session) {
       const handleGoogleSignIn = () => {
-        const authUrl = new URL("https://salesmanpro.site/signin");
+        const authUrl = new URL("https://auth.salesmanpro.site/signin");
         authUrl.searchParams.set("callbackUrl", window.location.origin);
         window.location.href = authUrl.toString();
       };
