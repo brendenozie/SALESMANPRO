@@ -64,7 +64,7 @@ export default function ListingsSection({ products, slug }: any) {
   }
 
   return (
-    <section className="bg-gray-50 dark:bg-gray-950 py-16 sm:py-24">
+    <section id='listings' className="bg-gray-50 dark:bg-gray-950 py-16 sm:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Heading: Cleaner, focuses on filtering/browsing */}
         <motion.h2
@@ -96,7 +96,7 @@ export default function ListingsSection({ products, slug }: any) {
           viewport={{ once: true, amount: 0.1 }}
         >
           {products.map((prop: any) => (
-            <Link key={prop.id} href={`/property/${prop.id}`} passHref legacyBehavior>
+            <Link key={prop.id} href={`/realestate/listings/${prop.id}`} passHref legacyBehavior>
               <motion.a
                 className="group relative flex flex-col bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700
                            hover:shadow-2xl hover:border-emerald-400 transition-all duration-300 ease-in-out cursor-pointer
@@ -109,7 +109,7 @@ export default function ListingsSection({ products, slug }: any) {
                 {/* Image Area */}
                 <div className="relative h-56 w-full"> {/* Slightly reduced height for more compact feel */}
                   <Image
-                    src={prop.imageUrl || `https://placehold.co/600x350/059669/D1FAE5?text=Property`}
+                    src={prop.images?.[0] || prop.imageUrl || `https://placehold.co/600x350/059669/D1FAE5?text=Property`}
                     alt={`Image of ${prop.name}`}
                     layout="fill"
                     objectFit="cover"
@@ -175,13 +175,15 @@ export default function ListingsSection({ products, slug }: any) {
         {/* Optional: Pagination or Load More button */}
         {/* Placeholder for future expansion */}
         <motion.div
-          className="text-center mt-12"
+          onClick={() => router.push(`/realestate/listings`)}
+          className="mt-12 text-center text-emerald-600 dark:text-emerald-400 font-semibold cursor-pointer hover:underline transition duration-150 ease-in-out"
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.5 }}
           transition={{ delay: 0.3, duration: 0.7 }}
         >
           {/* Implement Pagination or Load More button here */}
+            View More Listings
         </motion.div>
 
       </div>

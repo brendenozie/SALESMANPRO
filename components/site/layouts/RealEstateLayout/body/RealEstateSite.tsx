@@ -21,6 +21,7 @@ import TrendingLocations from "./components/TrendingLocations";
 import WhyChooseUs from "./components/WhyChooseUs";
 import { useStoreContext } from "@/contexts/StoreContext";
 import { StoreForm } from "@/types/typings";
+import FeaturedListingsWrapper from "./components/FeaturedListings";
 
 
 // --- Sample Data Definition ---
@@ -350,6 +351,15 @@ const sampleStoreData : StoreForm = {
   tourPackages: []
 };
 
+// Updated SearchFilters to include category and subcategory
+interface SearchFilters {
+  location: string;
+  minPrice: string;
+  maxPrice: string;
+  category?: string; // The ID or slug of the selected category
+  subcategory?: string; // The ID or slug of the selected subcategory
+}
+
 //──────────────────────────────────────────────────────────────────────────────
 // Main RealEstateSite Component
 //──────────────────────────────────────────────────────────────────────────────
@@ -365,6 +375,7 @@ export default function RealEstateSite({ pageData, companyId }: { pageData: Stor
 
   // Destructure data using the potentially updated storeData
   const {
+    id,
     name,
     slug,
     description,
@@ -394,10 +405,11 @@ export default function RealEstateSite({ pageData, companyId }: { pageData: Stor
     // For now, it defaults to sample data if `storeFormData` is empty.
   }, [slug]);
 
-  const handleSearch = () => {
+  
+  const handleSearch = (filters: SearchFilters) => {
     // Implement actual search logic, e.g., navigate to a search results page
-    alert(`Searching in ${location || 'all locations'} between KES ${minPrice || 'any'} and KES ${maxPrice || 'any'}`);
-    router.push(`/listings?location=${location}&minPrice=${minPrice}&maxPrice=${maxPrice}`);
+    alert(`Searching in ${filters.location || 'all locations'} between KES ${filters.minPrice || 'any'} and KES ${filters.maxPrice || 'any'}`);
+    router.push(`/realestate/listings?location=${filters.location}&minPrice=${filters.minPrice}&maxPrice=${filters.maxPrice}`);
   };
 
   const handleNewsletter = (e: React.FormEvent) => {
@@ -449,7 +461,7 @@ export default function RealEstateSite({ pageData, companyId }: { pageData: Stor
       <CategoriesSection store={storeData} />
 
       {/* Featured Listings Section (using marketplaceListings as source) storeData.featuredListings || */}
-      <FeaturedListings listings={marketplaceListings} slug={slug} />
+      <FeaturedListingsWrapper companyId={id} />
 
       {/* Trending Locations Section */}
       <TrendingLocations

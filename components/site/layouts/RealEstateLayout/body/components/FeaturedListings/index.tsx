@@ -5,6 +5,78 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { MarketListingForm } from '@/types/typings'; // Assuming this is correct
+import useSWR from "swr";
+import { createCachedFetcher } from "@/lib/swrCachedFetcher";
+import { useSearchParams } from "next/navigation";
+
+// API BASE
+const apiBaseUrl =
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+
+// Build dynamic search URL for real estate
+const buildQuery = (companyId: string, params: URLSearchParams) => {
+  const q = new URLSearchParams();
+
+  q.set("companyId", companyId);
+
+  // Supported search filters
+  const filters = [
+    "location",
+    "minPrice",
+    "maxPrice",
+    "bedrooms",
+    "bathrooms",
+    "propertyType",
+    "keywords",
+    "limit",
+    "page",
+  ];
+
+  filters.forEach((key) => {
+    const value = params.get(key);
+    if (value) q.set(key, value);
+  });
+
+  // return `${apiBaseUrl}/realestate/search?${q.toString()}`; &flag=isOnOffe
+  return `${apiBaseUrl}/site/productsByFlag?${q.toString()}&flag=isFeaturedListing`;
+};
+
+export default function FeaturedListingsWrapper({ companyId }: { companyId: string }) {
+  const params = useSearchParams();
+
+  // build dynamic URL with filters
+  const url = buildQuery(companyId, params);
+
+  // SWR cache keys
+  const cacheKey = `listings-${companyId}`;
+  const fallbackKey = `swr-cache:${cacheKey}:${url}`;
+  const fetcher = createCachedFetcher(cacheKey);
+
+  // Local fallback
+  const fallbackData =
+    typeof window !== "undefined"
+      ? (() => {
+          try {
+            return JSON.parse(localStorage.getItem(fallbackKey) || "null");
+          } catch {
+            return null;
+          }
+        })()
+      : null;
+
+  const { data, error, isLoading } = useSWR(url, fetcher, {
+    fallbackData: fallbackData || undefined,
+    revalidateOnFocus: true,
+    dedupingInterval: 30000,
+    refreshInterval: 120000,
+  });
+
+  // If backend responses wrap data
+  const listings: MarketListingForm[] = data?.data || [];
+
+  // Inject into your design
+  return <FeaturedListings listings={listings} slug={companyId} isLoading={isLoading} error={error} />;
+}
 
 // --- Helper Functions and Icons (Kept mostly the same, but simplified for clarity) ---
 
@@ -43,12 +115,13 @@ const BathIcon = (props: any) => (<svg {...props} xmlns="http://www.w3.org/2000/
 const SquareFootIcon = (props: any) => (<svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M16.5 6v.75m0 3v.75m0 3v.75m0 3V18m-9-3.75h.008v.008H7.5v-.008Zm0 2.25h.008v.008H7.5V16.5Zm0 2.25h.008v.008H7.5V18.75Z" /><path strokeLinecap="round" strokeLinejoin="round" d="M12 2.25a.75.75 0 0 0-1.5 0v.562a49.168 49.168 0 0 1-3.478 1.197 50.554 50.554 0 0 0-1.5.124.75.75 0 0 0-.75.75v3.626a.75.75 0 0 0 .61.745c.386.065.779.117 1.17.155L12 12l2.695-1.84c.39-.038.783-.09 1.17-.155a.75.75 0 0 0 .61-.745V4.877a.75.75 0 0 0-.75-.75 2.25 2.25 0 0 0-.124-1.5 50.554 50.554 0 0 0-1.197-3.478V2.25Zm-4.25 10.25a.75.75 0 0 0-1.5 0v3.89a.75.75 0 0 0 .75.75h.75a.75.75 0 0 0 .75-.75v-3.89Zm8.5 0a.75.75 0 0 0-1.5 0v3.89a.75.75 0 0 0 .75.75h.75a.75.75 0 0 0 .75-.75v-3.89Z" /></svg>);
 const LocationIcon = (props: any) => (<svg {...props} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /><path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" /></svg>);
 
+
 // --- Main Component ---
-export default function FeaturedListings({ listings, slug }: any) {
+function FeaturedListings({ listings, companyId }: any) {
   if (!listings || listings.length === 0) {
     return (
       <section className="bg-gray-50 dark:bg-gray-950 py-16 text-center text-gray-700 dark:text-gray-300">
-        <p className="text-xl font-medium">No exclusive featured listings available at the moment. Please check back soon!</p>
+        <p className="text-xl font-medium"></p>
       </section>
     );
   }
@@ -85,7 +158,7 @@ export default function FeaturedListings({ listings, slug }: any) {
           viewport={{ once: true, amount: 0.1 }}
         >
           {listings.map((item: MarketListingForm) => (
-            <Link key={item.id} href={`/property/${item.id}`} passHref legacyBehavior>
+            <Link key={item.id} href={`/realestate/listings/${item.id}`} passHref legacyBehavior>
               <motion.a
                 className="group relative flex flex-col bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700
                            hover:shadow-2xl hover:border-emerald-400 transition-all duration-300 ease-in-out cursor-pointer
@@ -169,7 +242,7 @@ export default function FeaturedListings({ listings, slug }: any) {
             viewport={{ once: true, amount: 0.5 }}
             transition={{ delay: 0.3, duration: 0.7 }}
           >
-            <Link href={`/listings`} passHref>
+            <Link href={`/realestate/listings`} passHref>
               <motion.a
                 className="inline-flex items-center justify-center px-8 py-4 border-2 border-amber-500 text-lg font-semibold rounded-full shadow-lg
                            text-amber-500 bg-white hover:bg-amber-50 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-amber-400 dark:border-amber-400
@@ -188,7 +261,3 @@ export default function FeaturedListings({ listings, slug }: any) {
     </section>
   );
 }
-
-// NOTE: Please ensure you replace the `legacyBehavior` prop on the Link component with
-// the standard implementation once you are on a Next.js version that supports it fully,
-// or adjust your Next.js configuration.
