@@ -61,46 +61,100 @@ export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
-      // An ID for this custom provider
-      id: "token-signin",
-      name: "Token Sign-In",
-      credentials: {
-        token: { label: "Token", type: "text" },
-      },
-      async authorize(credentials) {
-        if (!credentials?.token) {
-          console.error("Authorize: No token provided.");
-          return null;
-        }
+          // An ID for this custom provider
+          id: "token-signin",
+          name: "Token Sign-In",
+          credentials: {
+            token: { label: "Token", type: "text" },
+          },
+          async authorize(credentials) {
+            if (!credentials?.token) {
+              console.error("Authorize: No token provided.");
+              return null;
+            }
+            
+            // 🚨 CRITICAL DEBUGGING LINE: Log the received token's length
+            console.log(`Authorize: Token received. Length: ${credentials.token.length}.`);
+    
+            try {
+              // Decode the token using the shared secret
+              const decodedToken = await decode({
+                token: credentials.token,
+                secret: aSharedSecret,
+              });
+    
+              if (!decodedToken || !decodedToken.email) {
+                console.error("Authorize: Token decoding failed or no email/data found.");
+                // Log the result of the decode attempt if it failed without an exception
+                console.log("Decoded Result (if available):", decodedToken);
+                return null;
+              }
+              
+              // 🚀 SUCCESS: Log the email/user ID to confirm decoding worked
+              console.log(`Token Sign-In SUCCESS for email: ${decodedToken.email}`);
+    
+              // The decoded token is trusted. Return it as the user object.
+              // Note: Since this token comes from the other app, we trust its contents and skip a DB lookup here.
+              return {
+                id: decodedToken.id as string,
+                name: decodedToken.name,
+                email: decodedToken.email,
+                image: decodedToken.image,
+                role: decodedToken.role, // Pass through your custom properties
+                // ... add other properties from your token
+              };
+            } catch (error) {
+              // ❌ FAILURE: The error here is usually due to Expiration or Secret Mismatch
+              console.error("-----------------------------------------------");
+              console.error("TOKEN AUTHORIZATION FAILED! Reason:", (error as Error).message);
+              console.error("Full Error Object:", error);
+              console.error("Action needed: Check NEXTAUTH_SECRET on both domains.");
+              console.error("-----------------------------------------------");
+              return null;
+            }
+          },
+        }),
+    // CredentialsProvider({
+    //   // An ID for this custom provider
+    //   id: "token-signin",
+    //   name: "Token Sign-In",
+    //   credentials: {
+    //     token: { label: "Token", type: "text" },
+    //   },
+    //   async authorize(credentials) {
+    //     if (!credentials?.token) {
+    //       console.error("Authorize: No token provided.");
+    //       return null;
+    //     }
         
-        try {
-          // Decode the token using the shared secret
-          const decodedToken = await decode({
-            token: credentials.token,
-            secret: aSharedSecret,
-          });
+    //     try {
+    //       // Decode the token using the shared secret
+    //       const decodedToken = await decode({
+    //         token: credentials.token,
+    //         secret: aSharedSecret,
+    //       });
 
-          if (!decodedToken || !decodedToken.email) {
-            console.error("Authorize: Token decoding failed or no email found.");
-            return null;
-          }
+    //       if (!decodedToken || !decodedToken.email) {
+    //         console.error("Authorize: Token decoding failed or no email found.");
+    //         return null;
+    //       }
 
-          // The decoded token is trusted. Return it as the user object.
-          // This object will be passed to the 'jwt' callback.
-          return {
-            id: decodedToken.id as string,
-            name: decodedToken.name,
-            email: decodedToken.email,
-            image: decodedToken.image,
-            role: decodedToken.role, // Pass through your custom properties
-            // ... add other properties from your token
-          };
-        } catch (error) {
-          console.error("Token authorization error:", error);
-          return null;
-        }
-      },
-    }),
+    //       // The decoded token is trusted. Return it as the user object.
+    //       // This object will be passed to the 'jwt' callback.
+    //       return {
+    //         id: decodedToken.id as string,
+    //         name: decodedToken.name,
+    //         email: decodedToken.email,
+    //         image: decodedToken.image,
+    //         role: decodedToken.role, // Pass through your custom properties
+    //         // ... add other properties from your token
+    //       };
+    //     } catch (error) {
+    //       console.error("Token authorization error:", error);
+    //       return null;
+    //     }
+    //   },
+    // }),
     // ✅ Credentials: Email & Password
     CredentialsProvider({
       id: "credentials-email-password",
