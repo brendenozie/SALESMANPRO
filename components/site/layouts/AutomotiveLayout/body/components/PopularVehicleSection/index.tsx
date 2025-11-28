@@ -5,11 +5,13 @@ import useSWR from "swr";
 import { useSearchParams } from "next/navigation";
 import { createCachedFetcher } from "@/lib/swrCachedFetcher";
 import { MarketListingForm } from "@/types/typings";
-import AutomotiveFeatured from "./AutomotiveFeatured"; // <-- your original UI component
+import PopularVehiclesSection from "./PopularVehiclesSection"; // your Popular UI component
 
+// API base
 const apiBaseUrl =
   process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
+// Build dynamic URL for vehicle search
 const buildQuery = (companyId: string, params: URLSearchParams) => {
   const q = new URLSearchParams();
 
@@ -32,10 +34,11 @@ const buildQuery = (companyId: string, params: URLSearchParams) => {
     if (value) q.set(key, value);
   });
 
-  return `${apiBaseUrl}/site/productsByFlag?${q.toString()}&flag=isFeaturedListing`;
+  // Popular Vehicle flag
+  return `${apiBaseUrl}/site/productsByFlag?${q.toString()}&flag=isPopularListing`;
 };
 
-export default function AutomotiveFeaturedListingsWrapper({
+export default function PopularVehiclesWrapper({
   companyId,
 }: {
   companyId: string;
@@ -44,7 +47,7 @@ export default function AutomotiveFeaturedListingsWrapper({
 
   const url = buildQuery(companyId, params);
 
-  const cacheKey = `automotive-featured-${companyId}`;
+  const cacheKey = `popular-vehicles-${companyId}`;
   const fallbackKey = `swr-cache:${cacheKey}:${url}`;
   const fetcher = createCachedFetcher(cacheKey);
 
@@ -68,11 +71,12 @@ export default function AutomotiveFeaturedListingsWrapper({
 
   const listings: MarketListingForm[] = data?.data || [];
 
+  // Pass functional data to your original UI
   return (
-    <AutomotiveFeatured
+    <PopularVehiclesSection
       listings={listings}
-      error={error}
       isLoading={isLoading}
+      error={error}
       slug={companyId}
     />
   );

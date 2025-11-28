@@ -72,7 +72,7 @@ const SubcategoryCard = ({ subcat }: { subcat: ISubcategory }) => {
 
   return (
     <motion.div variants={itemVariants} className="h-full">
-      <Link href={`/search?subcategory=${subcat.slug}`} passHref legacyBehavior>
+      <Link href={`/automotive/listings?subcategory=${subcat.name}`} passHref legacyBehavior>
         <a className="group relative flex flex-col items-center justify-between h-52 w-full p-6
                       rounded-[2rem] overflow-hidden transition-all duration-500 ease-out
                       bg-white dark:bg-white/5 
@@ -141,57 +141,7 @@ const SubcategoryCard = ({ subcat }: { subcat: ISubcategory }) => {
     </motion.div>
   );
 };
-const SubcategoryCardV1 = ({ subcat }: { subcat: ISubcategory }) => {
-  const icon = subcat.icon || FALLBACK_ICON;
-  const hasImageIcon = icon.startsWith("http");
 
-  return (
-    <motion.div variants={itemVariants}>
-      <Link href={`/search?subcategory=${subcat.slug}`} passHref legacyBehavior>
-        <a className="group relative flex flex-col items-center justify-between h-48 p-6 rounded-3xl overflow-hidden transition-all duration-500 
-                      bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800
-                      hover:shadow-2xl hover:-translate-y-2 hover:border-[color:var(--primary)] dark:hover:border-[color:var(--primary)]">
-          
-          {/* Hover Gradient Background */}
-          <div 
-            className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-500"
-            style={{ background: `radial-gradient(circle at center, var(--primary), transparent 70%)` }}
-          />
-
-          {/* Icon Container */}
-          <div className="relative z-10 flex-1 flex items-center justify-center">
-            <div 
-              className="relative flex items-center justify-center w-20 h-20 rounded-2xl transition-all duration-500 
-                         bg-gray-50 dark:bg-gray-800 group-hover:scale-110 group-hover:rotate-3"
-              style={{ boxShadow: '0 0 0 1px rgba(var(--primary-rgb), 0.1)' }}
-            >
-              {/* Inner Glow on Hover */}
-              <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-20 transition-opacity duration-500 bg-[color:var(--primary)]" />
-              
-              {hasImageIcon ? (
-                <img src={icon} alt={subcat.name} className="w-12 h-12 object-contain drop-shadow-md group-hover:drop-shadow-xl transition-all" />
-              ) : (
-                <span className="text-4xl filter drop-shadow-sm group-hover:drop-shadow-lg transition-all">{icon}</span>
-              )}
-            </div>
-          </div>
-
-          {/* Text & Action */}
-          <div className="relative z-10 w-full text-center mt-4">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-[color:var(--primary)] transition-colors duration-300">
-              {subcat.name}
-            </h3>
-            
-            <div className="flex items-center justify-center gap-1 mt-1 text-xs font-semibold text-gray-400 group-hover:text-[color:var(--secondary)] transition-colors opacity-0 transform translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 duration-300">
-              <span>Browse</span>
-              <ArrowRightIcon className="w-3 h-3" />
-            </div>
-          </div>
-        </a>
-      </Link>
-    </motion.div>
-  );
-};
 
 /* -------------------------------------------------------------------------- */
 /* Main Component */
@@ -301,7 +251,7 @@ export default function AutomotiveSubcategoriesSection({ store }: AutomotiveSubc
           viewport={{ once: true }}
           transition={{ delay: 0.4 }}
         >
-          <Link href="/search" passHref legacyBehavior>
+          <Link href="/automotive/listings" passHref legacyBehavior>
             <a className="inline-flex items-center justify-center px-8 py-4 text-base font-bold text-white rounded-full shadow-xl transition-transform duration-300 hover:scale-105 active:scale-95"
                style={{ background: `linear-gradient(135deg, var(--primary), var(--secondary))` }}>
               View Full Inventory

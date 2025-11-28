@@ -66,7 +66,7 @@ const VehicleCard = ({
   const location = (item as any).location || "Nairobi Showroom";
 
   return (
-    <Link href={`/listing/${item.id}`} passHref legacyBehavior>
+    <Link href={`/automotive/listings/${item.id}`} passHref legacyBehavior>
       <motion.a
         whileHover={{ y: -8 }}
         transition={{ type: "spring", stiffness: 300, damping: 20 }}
@@ -151,13 +151,18 @@ const VehicleCard = ({
 
 // --- Main Section ---
 
-export default function FeaturedVehicleSection({
+export default function PopularVehiclesSection({
   listings,
-  slug,
+  isLoading,
+  error,
+  slug
 }: {
   listings: MarketListingForm[];
+  isLoading: boolean;
+  error: any;
   slug: string;
 }) {
+
   if (!listings || listings.length === 0) {
     return (
       <section className="py-20 bg-gray-50 dark:bg-gray-950 text-center">
@@ -202,7 +207,7 @@ export default function FeaturedVehicleSection({
                <span className="text-xs font-bold uppercase tracking-widest text-indigo-600 dark:text-indigo-400">Premium Inventory</span>
              </div>
             <h2 className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white tracking-tight leading-tight">
-              Featured <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-500">Arrivals</span>
+              Popular <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-blue-500">Arrivals</span>
             </h2>
           </motion.div>
 
@@ -211,7 +216,7 @@ export default function FeaturedVehicleSection({
              whileInView={{ opacity: 1, x: 0 }}
              viewport={{ once: true }}
           >
-             <Link href={`/listings`} className="hidden md:inline-flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-indigo-600 transition-colors">
+             <Link href={`/automotive/listings`} className="hidden md:inline-flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-indigo-600 transition-colors">
                 View Full Catalog <ArrowRightIcon className="w-4 h-4" />
              </Link>
           </motion.div>

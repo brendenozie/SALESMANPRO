@@ -14,12 +14,12 @@ import HeroSection, { IFilters } from "./components/HeroSection";
 const SectionSkeleton = () => <div className="h-96 w-full animate-pulse bg-gray-200 rounded-lg my-12" />;
 
 // Dynamically import below-the-fold components
-const FeaturedListings = dynamic(() => import('./components/FeaturedListingsSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const AutomotiveFeaturedListingsWrapper = dynamic(() => import('./components/FeaturedListingsSection'), { loading: () => <SectionSkeleton />, ssr: false });
 const HowItWorks = dynamic(() => import('./components/HowItWorksSection'), { loading: () => <SectionSkeleton />, ssr: false });
 const BrowseByCategory = dynamic(() => import('./components/BrowseByCategorySection'), { loading: () => <SectionSkeleton />, ssr: false });
 const FilterBarSection = dynamic(() => import('./components/FilterBarSection'), { loading: () => <SectionSkeleton />, ssr: false });
 const TrendingLocations = dynamic(() => import('./components/TrendingLocationsSection'), { loading: () => <SectionSkeleton />, ssr: false });
-const FeaturedVehicleSection = dynamic(() => import('./components/FeaturedVehicleSection'), { loading: () => <SectionSkeleton />, ssr: false });
+const PopularVehiclesWrapper = dynamic(() => import('./components/PopularVehicleSection'), { loading: () => <SectionSkeleton />, ssr: false });
 const VideoShowcaseSection = dynamic(() => import('./components/VideoShowcaseSection'), { loading: () => <SectionSkeleton />, ssr: false });
 const MarketInsightsSection = dynamic(() => import('./components/MarketInsightsSection'), { loading: () => <SectionSkeleton />, ssr: false });
 const TestimonialsCarouselSection = dynamic(() => import('./components/TestimonialsCarouselSection'), { loading: () => <SectionSkeleton />, ssr: false });
@@ -122,7 +122,7 @@ export default function AutomotiveSite({ pageData, companyId }: { pageData: Stor
           onSearch={handleSearch}
       />
 
-      <FeaturedListings listings={listings} slug=""/>
+      <AutomotiveFeaturedListingsWrapper companyId={pageData.id}/>
 
       <HowItWorks />
 
@@ -167,7 +167,7 @@ export default function AutomotiveSite({ pageData, companyId }: { pageData: Stor
       />      
 
       {/* Featured Vehicles */}
-      <FeaturedVehicleSection  listings={listings} slug=""/>
+      <PopularVehiclesWrapper  companyId={pageData.id} />
 
       {/* If videos are stored under latestVideos */}
       {blogsData?.data && <VideoShowcaseSection blogs={blogsData.data || []} />}
