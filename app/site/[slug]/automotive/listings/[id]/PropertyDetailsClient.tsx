@@ -50,7 +50,7 @@ export default function PropertyDetailsClient({ data }: { data: any }) {
   };
 
   return (
-    <div className="min-h-screen bg-white font-sans text-gray-900 pb-20">
+    <div className="min-h-screen bg-white font-sans text-gray-900 py-20">
       
       {/* --- LIGHTBOX MODAL --- */}
       {isGalleryOpen && (
@@ -154,7 +154,7 @@ export default function PropertyDetailsClient({ data }: { data: any }) {
 
             {/* Description */}
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">About this home</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">About this vehicle</h2>
               <div className="prose prose-indigo text-gray-600 leading-relaxed whitespace-pre-line text-lg max-w-none">
                 {data.description || "No description provided."}
               </div>
@@ -190,7 +190,7 @@ export default function PropertyDetailsClient({ data }: { data: any }) {
               </div>
               <div className="flex-1 text-center sm:text-left">
                 <h3 className="text-xl font-bold text-gray-900">Hosted by {host.name || "Real Estate Agency"}</h3>
-                <p className="text-indigo-600 font-medium mb-1">{host.role || "Licensed Agent"}</p>
+                <p className="text-indigo-600 font-medium mb-1">{ "Licensed Agent"}</p>
                 <div className="flex justify-center sm:justify-start gap-3 mt-4">
                   <button className="flex items-center gap-2 px-5 py-2.5 bg-gray-900 text-white rounded-xl font-medium hover:bg-gray-800 transition-colors shadow-lg shadow-gray-900/10">
                     <ChatBubbleLeftRightIcon className="w-5 h-5" />

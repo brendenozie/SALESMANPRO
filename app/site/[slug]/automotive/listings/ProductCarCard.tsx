@@ -83,7 +83,7 @@ export default function CarCard({ car }: { car: any }) {
             <p className="text-2xl font-bold text-slate-900">${Number(car.price || 0).toLocaleString()}</p>
           </div>
 
-          <Link href={`/cars/${car.slug || car.id}`} className="px-4 py-2 bg-slate-900 text-white text-sm font-medium rounded-lg hover:bg-blue-600 transition-colors">
+          <Link href={`/automotive/listings/${car.id}`} className="px-4 py-2 bg-slate-900 text-white text-sm font-medium rounded-lg hover:bg-blue-600 transition-colors">
             Details
           </Link>
         </div>

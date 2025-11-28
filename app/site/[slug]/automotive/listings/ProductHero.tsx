@@ -31,7 +31,7 @@ export default function Hero() {
               <ArrowRightIcon className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </a>
 
-            <a href="/sell" className="bg-white/5 hover:bg-white/10 border border-white/10 text-white px-8 py-3.5 rounded-xl font-semibold transition-all backdrop-blur-sm">
+            <a href="#" className="bg-white/5 hover:bg-white/10 border border-white/10 text-white px-8 py-3.5 rounded-xl font-semibold transition-all backdrop-blur-sm">
               Sell or Trade
             </a>
           </div>
