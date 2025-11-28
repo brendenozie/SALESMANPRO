@@ -44,7 +44,10 @@ export default function RedirectingPage() {
     }
 
     if (status === "authenticated" && session) {
-      const callbackUrl = searchParams.get("callbackUrl");
+      // const callbackUrl = searchParams.get("callbackUrl");
+      const raw = searchParams.get("callbackUrl");
+      const callbackUrl = raw ? decodeURIComponent(raw) : null;
+
 
       if (!callbackUrl) {
         setError("No callback URL provided. Cannot complete sign-in.");
