@@ -38,14 +38,14 @@ const fallbackTestimonials: Testimonial[] = [
   },
 ];
 
-export default function TestimonialsSection() {
+interface TestimonialsSectionProps {
+  testimonials?: Testimonial[];
+}
 
-  const { storeFormData } = useStoreContext() as { storeFormData : StoreForm };
-  
-  const store = storeFormData;
+export default function TestimonialsSection({ testimonials }: TestimonialsSectionProps) {
   
   // Pull testimonials from store, sorted by order
-  const raw = (store.testimonials ?? [])
+  const raw = (testimonials ?? [])
     .slice()
     .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 

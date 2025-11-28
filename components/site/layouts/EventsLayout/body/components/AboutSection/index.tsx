@@ -47,13 +47,17 @@ const FeatureCard = ({
 /** 
  * AboutSection renders a grid of up to 4 collection images (fallback if none),
  * a description, and three feature cards.
+ * 
  */
-export default function AboutSection() {
 
-    const { storeFormData } = useStoreContext() as { storeFormData : StoreForm };
-    
+interface AboutSectionProps {
+  storeFormData: StoreForm;
+}
+
+export default function AboutSection({ storeFormData }: AboutSectionProps) {
+
     const store = storeFormData;
-
+    
   // 1) Description from store or fallback
   const description =
     store.description ||

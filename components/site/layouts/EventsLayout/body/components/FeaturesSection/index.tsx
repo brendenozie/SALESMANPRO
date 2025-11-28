@@ -8,7 +8,7 @@ import {
   ShieldCheckIcon,
   BellAlertIcon,
 } from "@heroicons/react/24/outline";
-import { StoreForm } from "@/types/typings";
+import { IPromotion, StoreForm } from "@/types/typings";
 import { useStoreContext } from "@/contexts/StoreContext";
 
 type FeatureItem = {
@@ -70,17 +70,19 @@ const fallbackFeatures: FeatureItem[] = [
   },
 ];
 
-export default function WhyChooseUsSection() {
+interface FeaturesSectionProps {
+  promotions: IPromotion[];
+  description?: string | null;
+}
 
-  const { storeFormData } = useStoreContext() as { storeFormData : StoreForm };
-  
-  const store = storeFormData;
+export default function WhyChooseUsSection({ promotions, description }: FeaturesSectionProps) {
+
   
   // Try to pull a dynamic feature list out of themeSettings:
   // (e.g. stored in your DB as [{ icon, title, description }, ...])
   let features: FeatureItem[] = fallbackFeatures;//[];
 
-  const raw = (store.promotions as any[]) ?? [];
+  const raw = (promotions as any[]) ?? [];
   if (
     Array.isArray(raw) &&
     raw.every(
@@ -115,7 +117,7 @@ export default function WhyChooseUsSection() {
             </span>
           </h2>
           <p className="text-lg text-gray-300 mb-16 max-w-3xl mx-auto">
-            {store.description ||
+            {description ||
               "Whether you're an attendee looking for your next adventure or an organizer planning a hit event, our platform is built with powerful, intuitive tools to make it happen."}
           </p>
         </motion.div>

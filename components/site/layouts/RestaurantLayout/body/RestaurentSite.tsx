@@ -38,7 +38,7 @@ export default function RestaurentSite({ pageData, companyId }: { pageData: Stor
 
         <RestaurantHero heroSlides={pageData.heroSlides} themeSettings={pageData.themeSettings} slug={pageData.slug} />
 
-        <SignatureDishes marketplaceListings={pageData.marketplaceListings} />
+        <SignatureDishes marketplaceListings={pageData.marketplaceListings} StoreCategory={pageData.StoreCategory} />
 
         <WhyDineWithUs />
 

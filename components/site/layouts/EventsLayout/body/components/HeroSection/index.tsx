@@ -59,8 +59,12 @@ const imageVariants = {
   },
 };
 
-export default function HeroComponent() {
-  const { storeFormData } = useStoreContext() as { storeFormData: StoreForm };
+interface HeroComponentProps {
+  storeFormData: StoreForm
+}
+
+export default function HeroComponent({ storeFormData }: HeroComponentProps) {
+  
   const store = storeFormData;
 
   const hasEvents = store.events && Array.isArray(store.events) && store.events.length > 0;

@@ -88,23 +88,22 @@ const fallbackEvents: IEvent[] = [
   },
 ];
 
-export default function LiveEventsSection() {
+interface LiveEventsSectionProps {
+  events?: IEvent[];
+}
 
-  const { storeFormData } = useStoreContext() as { storeFormData : StoreForm };
-  
-  const store = storeFormData;
+export default function LiveEventsSection({ events }: LiveEventsSectionProps) {
   
   // Derive upcoming events (with image & subtitle fields added if missing)
-  const rawEvents = (store.events || []).map((e) => ({
+  const rawEvents = (events || []).map((e) => ({
     ...e,
     title: e.title || "Upcoming Event",
     subtitle: e.description || "",
-    image: (e as any).bannerUrl || store.bannerUrl || "/images/placeholder-event.jpg",
+    image: (e as any).bannerUrl || "https://www.unsplash.com/wp-content/uploads/2015/01/unsplash-1.jpg",
     location: (e as any).location || "",
   })) as typeof fallbackEvents;
 
   const eventsToShow = rawEvents.length > 0 ? rawEvents : fallbackEvents;
-  const slug = store.slug;
 
   return (
     <section id="events" className="relative bg-gray-950 py-24 sm:py-32 px-4 sm:px-10 overflow-hidden">
@@ -174,7 +173,7 @@ export default function LiveEventsSection() {
                     {'Art, culture, and inspiration.'}
                   </p>
                   <a
-                    href={`/${slug}/event/${event.id}`}
+                    href={`/event/${event.id}`}
                     className="inline-flex items-center justify-center px-6 py-3 text-sm font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-900"
                   >
                     View Event

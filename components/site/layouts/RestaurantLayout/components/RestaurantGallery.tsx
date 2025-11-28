@@ -71,12 +71,48 @@ const itemVariants = {
 // Static fallback gallery images data
 const fallbackGalleryImages: GalleryImage[] = [
   { id: "fb-g1", imageUrl: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", altText: "Restaurant Interior", category: "Ambiance", spanClasses: "md:col-span-2 md:row-span-2", order: 1 },
-  { id: "fb-g2", imageUrl: "https://images.unsplash.com/photo-1504674900247-087700ff9563?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", altText: "Delicious Pasta", category: "Dishes", order: 2 },
-  { id: "fb-g3", imageUrl: "https://images.unsplash.com/photo-1555939594-58d7ce5614f0?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", altText: "Grilled Steak", category: "Dishes", order: 3 },
-  { id: "fb-g4", imageUrl: "https://images.unsplash.com/photo-1551632436-cbf8dd35ba34?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", altText: "Chef in Action", category: "Team", spanClasses: "md:col-span-2", order: 4 },
-  { id: "fb-g5", imageUrl: "https://images.unsplash.com/photo-1543353071-873f17a7a08d?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", altText: "Dessert Platter", category: "Dishes", order: 5 },
-  { id: "fb-g6", imageUrl: "https://images.unsplash.com/photo-1563682704-c05296061618?q=80&w=2670&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D", altText: "Cocktail Bar", category: "Ambiance", order: 6 },
-];
+  {
+    id: "fb-g2",
+    imageUrl:
+      "https://blog-assets.lightspeedhq.com/img/2021/10/a1a3dafe-2.jpg?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    altText: "Delicious Pasta with sauce and herbs",
+    category: "Dishes",
+    order: 2,
+  },
+  {
+    id: "fb-g3",
+    imageUrl:
+      "https://bdc2020.o0bc.com/wp-content/uploads/2017/08/081317coverpicmain-630a6433d8b2e.jpg?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    altText: "Perfectly Grilled Steak on a plate",
+    category: "Dishes",
+    order: 3,
+  },
+  {
+    id: "fb-g4",
+    imageUrl:
+      "https://designbyfinch.com/wp-content/uploads/2023/07/nsk.jpg?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    altText: "Chef in Action preparing food in a busy kitchen",
+    category: "Team",
+    spanClasses: "md:col-span-2",
+    order: 4,
+  },
+  {
+    id: "fb-g5",
+    imageUrl:
+      "https://dozi4r4ug9739.cloudfront.net/images/1762616074584-pexels-pixabay-260922.jpg?w=1920&q=75&auto=format&fit=crop",
+    altText: "Elegant Dessert Platter with fruit and chocolate",
+    category: "Dishes",
+    order: 5,
+  },
+  {
+    id: "fb-g6",
+    imageUrl:
+      "https://www1.lovethatdesign.com/wp-content/uploads/2021/09/Love-That-Design-Nairobi-Street-Kitchen-Kenya-10-2048x1152.jpg?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    altText: "Stylish Cocktail Bar ambiance at night",
+    category: "Ambiance",
+    order: 6,
+  },
+]
 
 export default function RestaurantGallery() {
   const { storeFormData } = useStoreContext() as { storeFormData : StoreForm };

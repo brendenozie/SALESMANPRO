@@ -50,22 +50,22 @@ export default function EventsSite({ pageData, companyId }: { pageData: StoreFor
   return (
     <div className="font-sans">
       {/* Hero */}
-      <HeroComponent/>
+      <HeroComponent storeFormData={pageData} />
 
       {/* About */}
-      <AboutSection />
+      <AboutSection storeFormData={pageData}/>
 
       {/* Features */}
-      <FeaturesSection />
+      <FeaturesSection promotions={pageData.promotions} description={pageData.description} />
 
       {/* How It Works */}
       <HowItWorksSection />
 
       {/* Live Events - Render when data is ready */}
-      {eventsData?.data && <LiveEventsSection/>}
+      {eventsData?.data && <LiveEventsSection events={eventsData.data} />}
 
       {/* Testimonials - Render when data is ready */}
-      {testimonialsData?.data && <TestimonialsSection />}
+      {testimonialsData?.data && <TestimonialsSection testimonials={testimonialsData.data} />}
 
       {/* Pricing (for event organizers) */}
       <PricingSection />
