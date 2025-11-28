@@ -1,14 +1,13 @@
 // File: /app/auth/callback/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth"; // adjust this import path
+import { getAuthSession } from "@/lib/auth"; // adjust this import path
 import { encode } from "next-auth/jwt";
 
 export async function GET(req: NextRequest) {
   const target = req.nextUrl.searchParams.get("target") || "https://salesmanpro.site";
 
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getAuthSession();
 
     if (!session) {
       // If no session, redirect user back with an error state
