@@ -32,6 +32,9 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
   
 
   // ---- 1. API & CORS HANDLING ----
+   if (pathname.startsWith("/api")) {
+    return NextResponse.next();
+  }
   // if (pathname.startsWith("/api/")) {
   //   const responseHeaders = new Headers();
   //   if (origin) {
