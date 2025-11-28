@@ -1,6 +1,6 @@
 import prisma from "@/server/db/prismadb";
 import { loadStore } from "@/lib/loadStore";
-import ListingsClient from "./listingsClient";
+import ListingsClient from "./ListingsClient";
 // import HeroSection from "./HeroSection";
 import { Prisma } from "@prisma/client";
 import HeroSection from "./HeroSection";
