@@ -154,7 +154,7 @@ export default function PropertyDetailsClient({ data }: { data: any }) {
 
             {/* Description */}
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">About this vehicle</h2>
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">About this Trip</h2>
               <div className="prose prose-indigo text-gray-600 leading-relaxed whitespace-pre-line text-lg max-w-none">
                 {data.description || "No description provided."}
               </div>
