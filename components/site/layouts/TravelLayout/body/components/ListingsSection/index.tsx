@@ -21,9 +21,16 @@ const defaultListings = [
   {
     id: "1",
     title: "Sanctuary in Ubud",
+    name: "Sanctuary in Ubud",
     location: "Bali, Indonesia",
     description: "Immerse yourself in the spiritual heart of Bali. Private villas surrounded by lush jungle and ancient temples.",
     thumbnail: "https://images.unsplash.com/photo-1536152470817-f90694154373?q=80&w=2940&auto=format&fit=crop",
+    images: [
+      "https://images.unsplash.com/photo-1536152470817-f90694154373?q=80&w=2940&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=2940&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=2940&auto=format&fit=crop",
+    ],
+    finalPrice: 1290,
     price: 1290,
     duration: "7 Days",
     rating: 4.92,
@@ -37,6 +44,12 @@ const defaultListings = [
     location: "Alaska, USA",
     description: "A rugged expedition through the frozen north. Helicopter tours, grizzly spotting, and luxury cabin stays.",
     thumbnail: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=3540&auto=format&fit=crop",
+    images: [
+      "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=3540&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=2940&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=2940&auto=format&fit=crop",
+    ],
+    finalPrice: 2450,
     price: 2450,
     duration: "10 Days",
     rating: 4.85,
@@ -50,6 +63,12 @@ const defaultListings = [
     location: "Kyoto, Japan",
     description: "Walk the philosopher's path during Sakura season. Tea ceremonies, historic shrines, and culinary mastery.",
     thumbnail: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=3540&auto=format&fit=crop",
+    images: [
+      "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=3540&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=2940&auto=format&fit=crop",
+      "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=2940&auto=format&fit=crop",
+    ],
+    finalPrice: 1850,
     price: 1850,
     duration: "8 Days",
     rating: 4.95,
@@ -109,8 +128,8 @@ function ListingCard({ listing }: { listing: typeof defaultListings[0] }) {
         {/* Image with Zoom Effect */}
         <div className="absolute inset-0 transform transition-transform duration-700 ease-out group-hover:scale-110">
           <Image
-            src={listing.thumbnail}
-            alt={listing.title}
+            src={listing.images?.[0] || listing.thumbnail || "https://images.unsplash.com/photo-1533414417583-f0eb64df94e9?q=80&w=3540&auto=format&fit=crop"}
+            alt={listing.title || listing.name || "Thumbnail"}
             loader={customLoader}
             fill
             className="object-cover"
@@ -143,7 +162,7 @@ function ListingCard({ listing }: { listing: typeof defaultListings[0] }) {
         {/* Price Tag - Floating Glass */}
         <div className="absolute bottom-4 right-4">
             <div className="bg-white/90 backdrop-blur-sm px-4 py-2 rounded-2xl shadow-lg text-gray-900 font-bold text-sm">
-                {formatCurrency(listing.price)}
+                {formatCurrency(listing.finalPrice || listing.price)}
                 <span className="text-gray-500 font-normal text-xs ml-1">/ pp</span>
             </div>
         </div>
@@ -167,7 +186,7 @@ function ListingCard({ listing }: { listing: typeof defaultListings[0] }) {
         {/* Title */}
         <Link href={`/trips/${listing.id}`} className="block group-hover:text-indigo-600 transition-colors duration-300">
           <h3 className="text-2xl font-serif font-bold text-gray-900 mb-2 leading-tight">
-            {listing.title}
+            {listing.title || listing.name}
           </h3>
         </Link>
 
@@ -183,7 +202,7 @@ function ListingCard({ listing }: { listing: typeof defaultListings[0] }) {
             {listing.duration}
           </div>
 
-          <Link href={`/trips/${listing.id}`} passHref>
+          <Link href={`/travel/listings/${listing.id}`} passHref>
             <span className="flex items-center text-sm font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">
               View Trip
               <ArrowRightIcon className="h-4 w-4 ml-1 transform group-hover:translate-x-1 transition-transform duration-300" />
@@ -196,7 +215,7 @@ function ListingCard({ listing }: { listing: typeof defaultListings[0] }) {
 }
 
 // --- Main Section --- //
-export default function ListingsSection({ listings, title, subtitle }: any) {
+export default function ListingsSection({ listings, title, subtitle, name, description }: any) {
   // Use passed data or fallback to internal samples
   const activeListings = listings && listings.length > 0 ? listings : defaultListings;
 
@@ -223,7 +242,7 @@ export default function ListingsSection({ listings, title, subtitle }: any) {
             transition={{ delay: 0.1 }}
             className="text-4xl md:text-5xl font-serif font-bold text-gray-900 mb-6 leading-[1.1]"
           >
-            {title || "Find Your Next Great Adventure"}
+            {title || name || "Find Your Next Great Adventure"}
           </motion.h2>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -231,7 +250,7 @@ export default function ListingsSection({ listings, title, subtitle }: any) {
             transition={{ delay: 0.2 }}
             className="text-lg text-gray-600 leading-relaxed"
           >
-            {subtitle || "Explore hand-picked itineraries designed to immerse you in local culture, breathtaking nature, and unforgettable moments."}
+            {subtitle || description || "Explore hand-picked itineraries designed to immerse you in local culture, breathtaking nature, and unforgettable moments."}
           </motion.p>
         </div>
 
@@ -245,6 +264,10 @@ export default function ListingsSection({ listings, title, subtitle }: any) {
         {/* Bottom Action */}
         <div className="mt-16 text-center">
             <motion.button
+                onClick={() => { window.location.href = '/travel/listings'; }}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className="inline-flex items-center px-8 py-3 border border-transparent text-base font-medium rounded-full shadow-sm text-white bg-gray-900 hover:bg-gray-800 transition-all"

@@ -20,7 +20,7 @@ interface IDestination {
   name: string;
   country?: string;
   images?: string[];
-  bannerImage?: string;
+  // bannerImage?: string;
   description?: string;
 }
 
@@ -78,7 +78,7 @@ const fallbackDestinations = [
 
 const DestinationCard = ({ data }: { data: any }) => {
   return (
-    <Link href={`/destinations/${data.id}`} className="block h-full">
+    <Link href={`/travel/listings?location=${data.id}`} className="block h-full">
       <motion.div
         className="group relative h-[450px] w-[320px] rounded-[2rem] overflow-hidden cursor-pointer shadow-md hover:shadow-2xl transition-shadow duration-500"
         whileHover={{ y: -10 }}
@@ -133,20 +133,24 @@ const DestinationCard = ({ data }: { data: any }) => {
   );
 };
 
-export default function TrendingLocations() {
-  const { storeFormData } = useStoreContext();
-  const { destinations = [] } = storeFormData || {};
+interface TrendingLocationsProps {
+  destinations?: IDestination[] | undefined | null;
+  name?: string;
+}
+
+export default function TrendingLocations({ destinations = [], name }: TrendingLocationsProps) {
+  // const { storeFormData } = useStoreContext();
+  // const { destinations = [] } = storeFormData || {};
   
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   
   // Normalize Data
-  const activeDestinations =
-    destinations.length > 0
-      ? destinations.map((d: any) => ({
+  const activeDestinations = destinations &&  destinations?.length > 0
+      ? destinations?.map((d: any) => ({
           id: d.id,
           name: d.name,
           country: d.country || "Global",
-          image: d.bannerImage || (d.images && d.images[0]) || fallbackDestinations[0].image,
+          image:  (d.images && d.images[0]) || fallbackDestinations[0].image, //d.bannerImage ||
           count: Math.floor(Math.random() * 150) + 30, // Mock data if real count doesn't exist
         }))
       : fallbackDestinations;
@@ -188,7 +192,7 @@ export default function TrendingLocations() {
             >
                 <MapPinIcon className="h-5 w-5 text-indigo-600" />
                 <span className="text-sm font-bold text-indigo-600 uppercase tracking-wider">
-                    Wanderlust Awaits
+                    {name} Awaits
                 </span>
             </motion.div>
             <motion.h2 
@@ -252,7 +256,7 @@ export default function TrendingLocations() {
                 transition={{ delay: 0.5 }}
                 className="snap-center flex-shrink-0 h-[450px] w-[200px] flex items-center justify-center"
             >
-                <Link href="/destinations" className="group flex flex-col items-center gap-4 text-gray-400 hover:text-indigo-600 transition-colors">
+                <Link href="/travel/listings" className="group flex flex-col items-center gap-4 text-gray-400 hover:text-indigo-600 transition-colors">
                     <div className="h-16 w-16 rounded-full border-2 border-dashed border-gray-300 group-hover:border-indigo-600 flex items-center justify-center transition-colors">
                         <ArrowRightIcon className="h-6 w-6" />
                     </div>

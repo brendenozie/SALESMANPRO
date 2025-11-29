@@ -84,7 +84,7 @@ function ExpertCard({ expert }: { expert: any }) {
       {/* Background Image */}
       <div className="absolute inset-0">
         <Image
-          src={"https://via.placeholder.com/600x800?text=No+Image"}//expert.image || expert.photoUrl || 
+          src={expert.image || expert.photoUrl || "https://images.unsplash.com/photo-1580489944761-15a19d654956?q=80&w=600&auto=format"}// 
           alt={"Travel Expert"}
           loader={({ src, width, quality }) =>
             `${src}?w=${width}&q=${quality || 75}`
@@ -111,7 +111,7 @@ function ExpertCard({ expert }: { expert: any }) {
         {/* Text Content */}
         <div className="relative z-10 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
           <h3 className="text-3xl font-serif font-bold text-white mb-2">
-            {expert.user.name || "Travel Expert"}
+            {expert.user?.name || "Travel Expert"}
           </h3>
 
           {/* Separator Line */}
@@ -189,8 +189,8 @@ export default function MeetExperts({ experts }: { experts?: Expert[] }) {
             initial={{ opacity: 0, x: 20 }}
             whileInView={{ opacity: 1, x: 0 }}
           >
-            <Link href="/experts" className="group flex items-center gap-2 text-gray-900 font-semibold hover:text-indigo-600 transition-colors">
-              View All 45+ Experts
+            <Link href="#" className="group flex items-center gap-2 text-gray-900 font-semibold hover:text-indigo-600 transition-colors">
+              More Than 45+ Experts
               <ArrowLongRightIcon className="h-5 w-5 transform group-hover:translate-x-1 transition-transform" />
             </Link>
           </motion.div>

@@ -374,7 +374,7 @@ export default function TravelSite({ pageData, companyId }: { pageData: StoreFor
         <Listings listings={pageData?.marketplaceListings} slug={pageData?.slug}/>
 
         {/* Trending Locations */}
-        <TrendingLocations />
+        <TrendingLocations destinations={pageData?.destinations} name={pageData?.name} />
 
         {/* Meet Agents */}
         <MeetAgents experts={pageData?.Expert} />
