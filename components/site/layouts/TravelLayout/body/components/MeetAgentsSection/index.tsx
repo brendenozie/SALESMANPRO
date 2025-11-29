@@ -84,14 +84,15 @@ function ExpertCard({ expert }: { expert: any }) {
       {/* Background Image */}
       <div className="absolute inset-0">
         <Image
-          src={expert.image || expert.photoUrl || "https://via.placeholder.com/600x800?text=No+Image"}
-          alt={expert.user.name || "Travel Expert"}
+          src={"https://via.placeholder.com/600x800?text=No+Image"}//expert.image || expert.photoUrl || 
+          alt={"Travel Expert"}
           loader={({ src, width, quality }) =>
             `${src}?w=${width}&q=${quality || 75}`
           }
           fill
           className="object-cover transition-transform duration-700 ease-out group-hover:scale-110 grayscale-[30%] group-hover:grayscale-0"
           sizes="(max-width: 768px) 100vw, 33vw"
+
         />
         {/* Gradient Overlay - Darker at bottom for text readability */}
         <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/40 to-transparent opacity-80 transition-opacity duration-500" />
