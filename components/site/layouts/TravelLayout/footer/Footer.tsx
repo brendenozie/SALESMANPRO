@@ -19,11 +19,11 @@ export default function Footer() {
   const [newsletterEmail, setNewsletterEmail] = useState("");
 
   const navLinks = [
-    { label: "Home", href: `/${storeFormData?.slug}` },
-    { label: "Destinations", href: `/${storeFormData?.slug}/destinations` },
-    { label: "Tours", href: `/${storeFormData?.slug}/tours` },
-    { label: "About", href: `/${storeFormData?.slug}/about` },
-    { label: "Contact", href: `/${storeFormData?.slug}/contact` },
+    { label: "Home", href: `/` },
+    { label: "Destinations", href: `/#destinations` },
+    { label: "Tours", href: `/#tours` },
+    { label: "About", href: `/#about` },
+    { label: "Contact", href: `/#contact` },
   ];
 
   const handleSubscribe = (e: React.FormEvent) => {
@@ -38,7 +38,7 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-12 pb-12">
         {/* About & Logo */}
         <div className="space-y-4">
-          <Link href={`/${storeFormData?.slug}`}>
+          <Link href={`/`}>
             {storeFormData?.logoUrl ? (
               <Image
                 src={storeFormData?.logoUrl}

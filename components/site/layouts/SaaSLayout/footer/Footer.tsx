@@ -33,35 +33,35 @@ export default function SaasFooter() {
     {
       title: "Product",
       links: [
-        { label: "Features", href: `/${storeFormData?.slug}#features` },
-        { label: "Pricing", href: `/${storeFormData?.slug}#pricing` },
-        { label: "Docs", href: `/${storeFormData?.slug}/docs` },
-        { label: "API", href: `/${storeFormData?.slug}/api` },
+        { label: "Features", href: `/#features` },
+        { label: "Pricing", href: `/#pricing` },
+        { label: "Docs", href: `/#docs` },
+        { label: "API", href: `/#api` },
       ],
     },
     {
       title: "Company",
       links: [
-        { label: "About Us", href: `/${storeFormData?.slug}/about` },
-        { label: "Careers", href: `/${storeFormData?.slug}/careers` },
-        { label: "Blog", href: `/${storeFormData?.slug}/blog` },
-        { label: "Contact", href: `/${storeFormData?.slug}/contact` },
+        { label: "About Us", href: `/#about` },
+        { label: "Careers", href: `/#careers` },
+        { label: "Blog", href: `/#blog` },
+        { label: "Contact", href: `/#contact` },
       ],
     },
     {
       title: "Legal",
       links: [
-        { label: "Privacy Policy", href: `/${storeFormData?.slug}/privacy` },
-        { label: "Terms of Service", href: `/${storeFormData?.slug}/terms` },
-        { label: "Security", href: `/${storeFormData?.slug}/security` },
+        { label: "Privacy Policy", href: `/#privacy` },
+        { label: "Terms of Service", href: `/#terms` },
+        { label: "Security", href: `/#security` },
       ],
     },
     {
       title: "Support",
       links: [
-        { label: "Help Center", href: `/${storeFormData?.slug}/support` },
-        { label: "API Status", href: `/${storeFormData?.slug}/status` },
-        { label: "Community", href: `/${storeFormData?.slug}/community` },
+        { label: "Help Center", href: `/#support` },
+        { label: "API Status", href: `/#status` },
+        { label: "Community", href: `/#community` },
       ],
     },
   ];
@@ -72,7 +72,7 @@ export default function SaasFooter() {
       <div className="max-w-7xl mx-auto px-6 py-16 grid grid-cols-1 md:grid-cols-3 gap-12">
         {/* Brand & Contact */}
         <div className="space-y-6">
-          <Link href={`/${storeFormData?.slug}`} className="flex items-center space-x-2 cursor-pointer">
+          <Link href={`/`} className="flex items-center space-x-2 cursor-pointer">
             {storeFormData?.logoUrl ? (
               <Image
                 src={storeFormData?.logoUrl}

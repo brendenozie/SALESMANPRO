@@ -163,7 +163,7 @@ const Header = ({ storeFormData }: { storeFormData: any }) => {
     { id: 'contact', label: 'Contact', href: `#booking` },
   ];
 
-  const isHomePath = pathname === `/${storeFormData?.slug}` || pathname === '/';
+  const isHomePath = pathname === `/` || pathname === '/';
 
   if (!storeFormData) return null; // Or a skeleton loader
 
