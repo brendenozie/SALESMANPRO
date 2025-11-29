@@ -23,12 +23,12 @@ const store = {
   description: "Discover breathtaking destinations and immersive experiences worldwide.",
   bannerUrl: "/images/travel-hero.jpg",
   categories: [
-  { id: 1, name: "Beaches", icon: "/icons/beach.svg" },
-  { id: 2, name: "Mountains", icon: "/icons/mountain.svg" },
-  { id: 3, name: "Cities", icon: "/icons/city.svg" },
-  { id: 4, name: "Adventure", icon: "/icons/adventure.svg" },
-  { id: 5, name: "Cruises", icon: "/icons/cruise.svg" },
-  { id: 6, name: "Wellness", icon: "/icons/wellness.svg" },
+  { id: 1, name: "Beaches", icon: "https://example.com/icons/beach.svg" },
+  { id: 2, name: "Mountains", icon: "https://example.com/icons/mountain.svg" },
+  { id: 3, name: "Cities", icon: "https://example.com/icons/city.svg" },
+  { id: 4, name: "Adventure", icon: "https://example.com/icons/adventure.svg" },
+  { id: 5, name: "Cruises", icon: "https://example.com/icons/cruise.svg" },
+  { id: 6, name: "Wellness", icon: "https://example.com/icons/wellness.svg" },
   ],
   featured: [
   { id: "d1", name: "Maldives Getaway", subtitle: "Crystal clear waters & private villas", imageUrl: "/destinations/maldives.jpg" },
@@ -371,19 +371,19 @@ export default function TravelSite({ pageData, companyId }: { pageData: StoreFor
         <FilterBar />
 
         {/* Listings Section */}
-        <Listings listings={storeFormData?.marketplaceListings} slug={'slug'}/>
+        <Listings listings={pageData?.marketplaceListings} slug={pageData?.slug}/>
 
         {/* Trending Locations */}
         <TrendingLocations />
 
         {/* Meet Agents */}
-        <MeetAgents experts={storeFormData?.Expert} />
+        <MeetAgents experts={pageData?.Expert} />
 
         {/* Market Insights */}
         <MarketInsights
-          virtualTours={[]}//storeFormData?.virtualTours
-          blogPosts={storeFormData?.blogs}
-          regionCosts={[]}//storeFormData?.RegionCosts
+          virtualTours={[]}//pageData?.virtualTours
+          blogPosts={pageData?.blogs}
+          regionCosts={[]}//pageData?.RegionCosts
         />
 
         {/* Virtual Tours */}
