@@ -130,7 +130,7 @@ export default function HeroSlider({ heroSlides, themeSettings }: HeroSliderProp
   const currentSlide = heroSlidesToShow[current];
 
   return (
-    <section className="relative w-full min-h-screen flex items-center bg-[#f8f8f8] overflow-hidden">
+    <section className="relative w-full min-h-screen flex items-center bg-[#f8f8f8] overflow-hidden mt-10 ">
       {/* Subtle Background Accent (Replaced the harsh skew) */}
       <div className="absolute inset-y-0 right-0 w-[50vw] bg-indigo-50/50 [clip-path:polygon(20%_0%,_100%_0%,_100%_100%,_0%_100%)] z-0 hidden md:block" />
 
