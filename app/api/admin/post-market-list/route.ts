@@ -333,5 +333,23 @@ async function handlePost(req: Request) {
   return formatResponse(true, listing, "Marketplace listing processed successfully.", id ? 200 : 201);
 }
 
+
+async function handleDelete(req: Request, { params }: { params: { id: string } }) {
+  const auth = await verifyAuth(req);
+  if (!auth.success) return formatResponse(false, null, auth.error, 401);
+  const { id } = params;
+
+  let listing: { company?: { slug?: string | null | undefined } | null | undefined } | null | undefined = {};
+  await prisma.$transaction(async tx => {
+    listing = await tx.marketplaceListings.delete({ where: { id }, select: { company: true } });
+  }
+  );
+  await revalidateCompanyCache(listing?.company?.slug || "");
+
+  return formatResponse(true, null, "Marketplace listing deleted successfully.", 200);
+}
+
 // Wrap withApiHandler
 export const POST = withApiHandler(handlePost);
+export const PUT = withApiHandler(handlePost);
+export const DELETE = withApiHandler(handleDelete);
