@@ -640,8 +640,7 @@ const ServiceListingForm: React.FC<ServiceListingFormProps> = ({
             
                     // 6. Build final payload
                     const payload = { ...MarketListingForm, images: finalImageUrls, videos: finalVideoUrls, ebooks: finalBookUrls };
-                    
-            await onSave(payload);
+                    await onSave(payload);
             // onClose() will be called by parent after successful save
         } catch (error) {
             console.error('Failed to save service:', error);

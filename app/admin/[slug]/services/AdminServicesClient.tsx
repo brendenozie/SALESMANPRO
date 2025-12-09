@@ -93,6 +93,15 @@ export default function AdminServicesClient({
   const [isSuccess, setIsSuccess] = useState<boolean | null>(null);
   const [message, setMessage] = useState("");
   const [activeTabIndex, setActiveTabIndex] = useState(0);
+  const [page, setPage] = useState(1);
+  
+  useEffect(() => {
+    if (companyId && initialServices.length === 0 && page === 1) {
+      fetchServices(page);
+    }else if(companyId && page > 1){
+      fetchServices(page);
+    }
+  }, [page, companyId]);
 
 
   // Context & Theme
@@ -152,25 +161,43 @@ export default function AdminServicesClient({
     setMessage("");
   };
 
+  const fetchServices = async (page: number) => {
+    try {
+      const res = await fetch(
+        `/api/admin/my-market-place?companyId=${encodeURIComponent(companyId)}&page=${page}`,
+        { cache: 'no-store' }
+      );
+      if (res.ok) {
+        const json = await res.json();
+        const rawList =
+          Array.isArray(json)
+            ? json
+            : Array.isArray((json as any).data.results)
+            ? (json as any).data.results
+            : Array.isArray((json as any).data.listing)
+            ? (json as any).data.listing
+            : [];
+        const updatedServices = rawList.map((item: any) => ({
+          ...item,
+          startDealDate: item.startDealDate ? new Date(item.startDealDate) : undefined, 
+          endDealDate: item.endDealDate ? new Date(item.endDealDate) : undefined,
+          availabilityStart: item.availabilityStart ? new Date(item.availabilityStart) : undefined,
+          availabilityEnd: item.availabilityEnd ? new Date(item.availabilityEnd) : undefined,
+          createdAt: item.createdAt ? new Date(item.createdAt) : undefined,
+          updatedAt: item.updatedAt ? new Date(item.updatedAt) : undefined,
+        }));
+        setServices(updatedServices);
+      } else {
+        console.error(`Failed to fetch services: ${res.status} ${res.statusText}`);
+      }
+    } catch (error) {
+      console.error("Error fetching services:", error);
+    }
+  };
+
   const handleSubmit = async (data: MarketListingForm) => {
     setIsSubmitting(true);
     
-    // Simulate API Call
-    // await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    // Optimistic Update
-    // if (editingService) {
-    //     setServices(prev => prev.map(s => s.id === editingService.id ? data : s));
-    // } else {
-    //     // Mock new service
-    //     setServices(prev => [...prev, data]);
-    // }
-
-    // setIsSubmitting(false);
-    // setIsModalOpen(false);
-  // };
-
-  //   const handleSaveService = async (data: MarketListingForm) => {
     setIsLoading(true);
     setIsSuccess(null);
     setMessage("");
@@ -407,13 +434,25 @@ export default function AdminServicesClient({
             {/* Pagination Footer (Static for Demo) */}
             <div className="bg-gray-50 dark:bg-gray-800/50 px-6 py-4 border-t border-gray-200 dark:border-gray-800 flex items-center justify-between">
                 <span className="text-sm text-gray-500 dark:text-gray-400">
-                    Showing <span className="font-medium text-gray-900 dark:text-white">1</span> to <span className="font-medium text-gray-900 dark:text-white">{processedServices.length}</span> of <span className="font-medium text-gray-900 dark:text-white">{processedServices.length}</span> results
+                    Showing <span className="font-medium text-gray-900 dark:text-white">
+                      {page}
+                      {/* </span> to <span className="font-medium text-gray-900 dark:text-white">{processedServices.length}</span> of <span className="font-medium text-gray-900 dark:text-white">{processedServices.length} */}
+                      </span> results
                 </span>
                 <div className="flex gap-2">
-                    <button className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700 disabled:opacity-50" disabled>
+                    <button className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700 disabled:opacity-50" 
+                        onClick={
+                            () => setPage(prev => Math.max(prev - 1, 1))
+                        }
+                        disabled={page === 1}>
                         Previous
                     </button>
-                    <button className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700 disabled:opacity-50" disabled>
+                    <button className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700 disabled:opacity-50" 
+                        onClick={
+                            () => setPage(prev => prev + 1)
+                        }
+                        // disabled={page === Math.ceil(processedServices.length / 10)}
+                        >
                         Next
                     </button>
                 </div>
