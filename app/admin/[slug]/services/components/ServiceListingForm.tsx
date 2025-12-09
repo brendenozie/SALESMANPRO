@@ -15,7 +15,8 @@ import {
     Cog6ToothIcon,
     ArrowLeftIcon, // For Previous button
     ArrowRightIcon, // For Next button
-    ArrowPathIcon, // For loading spinner
+    ArrowPathIcon,
+    CheckCircleIcon, // For loading spinner
 } from '@heroicons/react/24/outline';
 import { useStoreContext } from '@/contexts/StoreContext';
 
@@ -25,7 +26,8 @@ import ServiceCategoryTab from './ServiceCategoryTab';
 import ServicePricingTab from './ServicePricingTab';
 import ServiceSpecificsTab from './ServiceSpecificsTab';
 import ServiceAvailabilityTab from './ServiceAvailabilityTab';
-import ServiceMediaTab from './ServiceMediaTab';
+// import ServiceMediaTab from './ServiceMediaTab';
+import ImageUploader from '@/components/ImageUploader';
 import ServiceContactLocationTab from './ServiceContactLocationTab';
 import ServiceAdvancedOptionsTab from './ServiceAdvancedOptionsTab';
 import { IStoreCategory, MarketListingForm } from '@/types/typings';
@@ -34,10 +36,51 @@ import { IStoreCategory, MarketListingForm } from '@/types/typings';
 export type SellerType = "INDIVIDUAL" | "COMPANY";
 export type ListingStatus = "ACTIVE" | "PENDING" | "REJECTED" | "ARCHIVED";
 
+
+
+// Animation Variants
+const overlayVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1 },
+    exit: { opacity: 0 }
+};
+
+const modalVariants = {
+    hidden: { opacity: 0, scale: 0.95, y: 20 },
+    visible: { 
+        opacity: 1, 
+        scale: 1, 
+        y: 0,
+        transition: { type: "spring", damping: 25, stiffness: 300 }
+    },
+    exit: { opacity: 0, scale: 0.95, y: 20 }
+};
+
+const contentVariants = {
+    hidden: { opacity: 0, x: 20 },
+    visible: { opacity: 1, x: 0, transition: { duration: 0.3 } },
+    exit: { opacity: 0, x: -20, transition: { duration: 0.2 } }
+};
+
+
+// NOTE: keep API constants consistent with your app's env
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+
 export interface BookingSlot {
     date: string;
     time: string;
     capacity: number;
+}
+
+export interface UnifiedMediaItem {
+  id: string;
+  title: string;
+  author: string;
+  coverPreviewUrl?: string | null;
+  file?: File | null; // ✅ unified field
+  fileName?: string;
+  url?: string;
+  source: "local" | "server";
 }
 
 export interface PricingTier {
@@ -122,6 +165,64 @@ interface ServiceListingFormProps {
     // companies?: { id: string; name: string }[];
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// Upload helper for getting signed URLs and uploading files
+////////////////////////////////////////////////////////////////////////////////
+// utils/uploadFiles.ts
+export async function uploadFiles(
+  files: File[],
+  type: "image" | "video" | "book",
+  onProgress?: (progress: number, file: File) => void
+): Promise<{ url: string; key: string; contentType: string }[]> {
+  if (!files?.length) return [];
+
+  const uploads = files.map(async (file) => {
+    try {
+      // ✅ Step 1: Request a signed upload URL from your API
+      const res = await fetch(
+        `${apiBaseUrl}/upload-url?filename=${encodeURIComponent(file.name)}&type=${type}&contentType=${encodeURIComponent(file.type)}`
+      );
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Failed to get signed URL: ${text}`);
+      }
+
+      const { uploadUrl, publicUrl, key, contentType } = await res.json();
+
+      // ✅ Step 2: Upload directly to S3
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("PUT", uploadUrl);
+        xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
+
+        xhr.upload.onprogress = (event) => {
+          if (event.lengthComputable && onProgress) {
+            const progress = Math.round((event.loaded / event.total) * 100);
+            onProgress(progress, file);
+          }
+        };
+
+        xhr.onload = () => {
+          if (xhr.status === 200) resolve();
+          else reject(new Error(`Upload failed for ${file.name}: ${xhr.status}`));
+        };
+
+        xhr.onerror = () => reject(new Error(`Network error during upload for ${file.name}`));
+        xhr.send(file);
+      });
+
+      console.log(`✅ Uploaded: ${file.name} (${contentType}) → ${publicUrl}`);
+      return { url: publicUrl, key, contentType };
+    } catch (err) {
+      console.error("❌ Upload error:", err);
+      throw err;
+    }
+  });
+
+  return Promise.all(uploads);
+}
+
 const ServiceListingForm: React.FC<ServiceListingFormProps> = ({
     isOpen,
     onClose,
@@ -130,6 +231,7 @@ const ServiceListingForm: React.FC<ServiceListingFormProps> = ({
     productCategories: propProductCategories,
     paymentOptions: propPaymentOptions,
     deliveryMethods: propDeliveryMethods,
+    
     // sellers: propSellers,
     // companies: propCompanies,
 }) => {
@@ -148,6 +250,35 @@ const ServiceListingForm: React.FC<ServiceListingFormProps> = ({
     // const companies = propCompanies || mockCompanies;
     const deliveryMethods = propDeliveryMethods || mockDeliveryMethods;
     const paymentOptions = propPaymentOptions || mockPaymentOptions;
+
+     // Unified media states with proper initialization from existing product data
+      const [images, setImages] = useState<UnifiedMediaItem[]>(
+        initialData?.images?.map((img: any, idx: number) => ({ 
+          id: img.url || `server-img-${idx}`,
+          url: typeof img === 'string' ? img : img.url, 
+          source: 'server' as const,
+          title: "Untitled Image",
+          author: "Unknown",
+        })) || []
+      );
+      const [videos, setVideos] = useState<UnifiedMediaItem[]>(
+        initialData?.videos?.map((vid: any, idx: number) => ({ 
+          id: vid.url || `server-vid-${idx}`,
+          url: typeof vid === 'string' ? vid : vid.url, 
+          source: 'server' as const,
+          title: "Untitled Video",
+          author: "Unknown",
+        })) || []
+      );
+      const [books, setBooks] = useState<UnifiedMediaItem[]>(
+        initialData?.ebooks?.map((book: any, idx: number) => ({
+          id: book.url || `server-book-${idx}`,
+          url: typeof book === 'string' ? book : book.url,
+          source: 'server' as const,
+          title: book.title || "Untitled Book",
+          author: book.author || "Unknown",
+        })) || []
+      );
 
     // Tab data for rendering - useMemo to prevent re-creation on every render
     const tabs = useMemo(() => [
@@ -190,10 +321,12 @@ const ServiceListingForm: React.FC<ServiceListingFormProps> = ({
                     ...(newFormData as any)[parent],
                     [child]: type === 'number' ? parseFloat(value) : value,
                 };
-            } else if (name === 'images') {
-                // Special handling for images array, assuming value is already an array of strings
-                (newFormData as any)[name] = value as unknown as string[];
-            } else if (type === 'number') {
+            } 
+            // else if (name === 'images') {
+            //     // Special handling for images array, assuming value is already an array of strings
+            //     (newFormData as any)[name] = value as unknown as string[];
+            // } 
+            else if (type === 'number') {
                 (newFormData as any)[name] = parseFloat(value);
             } else if (type === 'checkbox') {
                 (newFormData as any)[name] = checked;
@@ -455,7 +588,60 @@ const ServiceListingForm: React.FC<ServiceListingFormProps> = ({
 
         setIsSubmitting(true);
         try {
-            await onSave(MarketListingForm);
+            // 1. Filter local files that need uploading
+                    const newImageItems = images.filter(i => i.source === "local" && i.file);
+                    const newVideoItems = videos.filter(v => v.source === "local" && v.file);
+                    const newBookItems = books.filter(b => b.source === "local" && b.file);
+            
+                    // 2. Create upload promises for new files
+                    const uploadImagePromises = newImageItems.map(item =>
+                      uploadFiles([item.file!], "image", (progress, file) => {
+                        console.log(`Uploading image ${file.name}: ${progress}%`);
+                      }).then(result => ({ id: item.id, url: result[0].url }))
+                    );
+            
+                    const uploadVideoPromises = newVideoItems.map(item =>
+                      uploadFiles([item.file!], "video", (progress, file) => {
+                        console.log(`Uploading video ${file.name}: ${progress}%`);
+                      }).then(result => ({ id: item.id, url: result[0].url }))
+                    );
+            
+                    const uploadBookPromises = newBookItems.map(item =>
+                      uploadFiles([item.file!], "book", (progress, file) => {
+                        console.log(`Uploading book ${file.name}: ${progress}%`);
+                      }).then(result => ({ id: item.id, url: result[0].url }))
+                    );
+            
+                    // 3. Run all uploads in parallel
+                    const [uploadedImages, uploadedVideos, uploadedBooks] = await Promise.all([
+                      Promise.all(uploadImagePromises),
+                      Promise.all(uploadVideoPromises),
+                      Promise.all(uploadBookPromises),
+                    ]);
+            
+                    // 4. Create lookup maps for quick access
+                    const imageUrlMap = new Map(uploadedImages.map(i => [i.id, i.url]));
+                    const videoUrlMap = new Map(uploadedVideos.map(v => [v.id, v.url]));
+                    const bookUrlMap = new Map(uploadedBooks.map(b => [b.id, b.url]));
+            
+                    // 5. Build final URL arrays (server + newly uploaded)
+                    const finalImageUrls = images
+                      .map(img => (img.source === "server" ? img.url : imageUrlMap.get(img.id)!))
+                      .filter(Boolean);
+            
+                    const finalVideoUrls = videos
+                      .map(vid => (vid.source === "server" ? vid.url : videoUrlMap.get(vid.id)!))
+                      .filter(Boolean);
+            
+                    const finalBookUrls = books
+                      .map(book => (book.source === "server" ? book.url : bookUrlMap.get(book.id)!))
+                      .filter(Boolean);
+            
+            
+                    // 6. Build final payload
+                    const payload = { ...MarketListingForm, images: finalImageUrls, videos: finalVideoUrls, ebooks: finalBookUrls };
+                    
+            await onSave(payload);
             // onClose() will be called by parent after successful save
         } catch (error) {
             console.error('Failed to save service:', error);
@@ -487,80 +673,183 @@ const ServiceListingForm: React.FC<ServiceListingFormProps> = ({
 
     if (!isOpen) return null;
 
+    // Calculate Progress for Mobile Bar
+    const progress = ((activeTabIndex + 1) / tabs.length) * 100;
+
     return (
         <AnimatePresence>
             {isOpen && (
                 <motion.div
-                    className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50 overflow-auto"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 lg:p-6"
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
                 >
+                    {/* Backdrop with Blur */}
+                    <motion.div 
+                        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+                        variants={overlayVariants}
+                        onClick={onClose}
+                    />
+
+                    {/* Modal Card */}
                     <motion.div
-                        className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-6xl p-8 relative flex flex-col transform-gpu"
-                        // max-h-[95vh] 
+                        className="relative w-full max-w-6xl h-[100dvh] sm:h-auto sm:max-h-[90vh] bg-white dark:bg-gray-900 sm:rounded-3xl shadow-2xl flex flex-col md:flex-row overflow-hidden"
                         variants={modalVariants}
-                        initial="hidden"
-                        animate="visible"
-                        exit="exit"
                     >
-                        {/* Close Button */}
-                        <button
-                            onClick={onClose}
-                            className="absolute top-6 right-6 text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors duration-200 z-10 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
-                            aria-label="Close modal"
-                        >
-                            <XMarkIcon className="w-8 h-8" />
-                        </button>
+                        
+                        {/* --------------------------------------------------------- */}
+                        {/* SIDEBAR (Desktop) / TOPBAR (Mobile)                       */}
+                        {/* --------------------------------------------------------- */}
+                        
+                        {/* Mobile Header & Progress */}
+                        <div className="md:hidden bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 z-20">
+                            <div className="flex items-center justify-between p-4">
+                                <h3 className="font-bold text-gray-900 dark:text-white truncate max-w-[70%]">
+                                    {initialData ? 'Edit Service' : 'New Service'}
+                                </h3>
+                                <button onClick={onClose} className="p-2 bg-gray-100 dark:bg-gray-800 rounded-full">
+                                    <XMarkIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                                </button>
+                            </div>
+                            {/* Horizontal Icon Scroll */}
+                            <div className="flex overflow-x-auto hide-scrollbar px-4 pb-3 gap-6 snap-x">
+                                {tabs.map((tab, index) => {
+                                    const isActive = activeTabIndex === index;
+                                    const isCompleted = index < activeTabIndex;
+                                    const hasError = tab.fields?.some(field => errors[field]);
 
-                        {/* Header */}
-                        <h3 className="text-4xl font-extrabold mb-6 text-gray-900 dark:text-gray-100 leading-tight">
-                            {initialData ? `Edit: ${initialData.name || 'Service Listing'}` : "Add New Service Listing"}
-                        </h3>
+                                    return (
+                                        <button
+                                            key={tab.id}
+                                            onClick={() => setActiveTabIndex(index)}
+                                            className={`flex flex-col items-center flex-shrink-0 snap-center transition-colors ${isActive ? 'text-primary' : 'text-gray-400'}`}
+                                            style={{ color: isActive ? primaryColor : '' }}
+                                        >
+                                            <div className={`relative p-2 rounded-full mb-1 transition-all ${isActive ? 'bg-indigo-50 dark:bg-indigo-900/30 ring-2 ring-offset-2 ring-indigo-500' : ''}`}>
+                                                <tab.icon className="w-5 h-5" />
+                                                {hasError && <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border border-white" />}
+                                            </div>
+                                            <span className="text-[10px] font-medium uppercase tracking-wider">{tab.name}</span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                            {/* Progress Line */}
+                            <div className="h-1 w-full bg-gray-100 dark:bg-gray-800">
+                                <motion.div 
+                                    className="h-full bg-gradient-to-r from-indigo-500 to-purple-500"
+                                    initial={{ width: 0 }}
+                                    animate={{ width: `${progress}%` }}
+                                />
+                            </div>
+                        </div>
 
-                        <form onSubmit={handleSubmit} className="flex flex-col lg:flex-row flex-grow">
-                            {/* Tabs Navigation (Left Sidebar - Desktop Only) */}
-                            <div className="hidden lg:block lg:w-1/4 p-6 border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-bl-2xl lg:rounded-tl-2xl overflow-y-auto custom-scrollbar">
-                                <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-6">Service Setup</h3>
-                                <nav className="space-y-2">
-                                    {tabs.map((tab, index) => (
+                        {/* Desktop Sidebar */}
+                        <div className="hidden md:flex flex-col w-1/4 bg-gray-50 dark:bg-gray-800/50 border-r border-gray-200 dark:border-gray-700 p-8">
+                            <h2 className="text-2xl font-extrabold text-gray-900 dark:text-white mb-2">
+                                {initialData ? 'Edit Service' : 'Create Service'}
+                            </h2>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">
+                                Complete the steps below to publish your listing.
+                            </p>
+
+                            <nav className="space-y-1 relative">
+                                {/* Connector Line */}
+                                <div className="absolute left-[1.15rem] top-4 bottom-4 w-0.5 bg-gray-200 dark:bg-gray-700 -z-10" />
+
+                                {tabs.map((tab, index) => {
+                                    const isActive = activeTabIndex === index;
+                                    const isCompleted = index < activeTabIndex;
+                                    const hasError = tab.fields?.some(field => errors[field]);
+
+                                    return (
                                         <motion.button
                                             key={tab.id}
-                                            type="button"
-                                            onClick={() => setActiveTabIndex(index)} // Navigate by index
-                                            className={`
-                                                w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-sm font-medium transition-all duration-200
-                                                ${activeTabIndex === index
-                                                    ? 'font-bold'
-                                                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
-                                                }
+                                            onClick={() => setActiveTabIndex(index)}
+                                            className={`group w-full flex items-center gap-4 p-3 rounded-xl transition-all duration-200 relative overflow-hidden
+                                                ${isActive ? 'bg-white dark:bg-gray-700 shadow-sm' : 'hover:bg-gray-100 dark:hover:bg-gray-700/50'}
                                             `}
-                                            style={{
-                                                backgroundColor: activeTabIndex === index ? `${primaryColor}1A` : '',
-                                                color: activeTabIndex === index ? primaryColor : '',
-                                            }}
-                                            whileHover={{ scale: 1.02 }}
-                                            whileTap={{ scale: 0.98 }}
-                                            aria-current={activeTabIndex === index ? 'page' : undefined}
                                         >
-                                            <tab.icon className="w-5 h-5" />
-                                            {tab.name}
-                                            {/* Error indicator for tab */}
-                                            {tab.fields.some(field => errors[field as keyof MarketListingForm]) ||
-                                             (tab.id === 'pricing' && (errors['pricingTiers[0].name'] || errors['pricingTiers[0].price'])) || // Specific check for nested errors
-                                             (tab.id === 'availability' && (errors['bookingSlots[0].date'] || errors['bookingSlots[0].time'] || errors['bookingSlots[0].capacity']))
-                                            ? (
-                                                <span className="ml-auto text-red-500 text-xs font-bold">!</span>
-                                            ) : null}
-                                        </motion.button>
-                                    ))}
-                                </nav>
-                            </div>
+                                            {/* Status Indicator */}
+                                            <div className={`
+                                                w-8 h-8 rounded-full flex items-center justify-center border-2 flex-shrink-0 transition-colors
+                                                ${isActive 
+                                                    ? 'border-indigo-600 bg-indigo-600 text-white' 
+                                                    : isCompleted 
+                                                        ? 'border-green-500 bg-green-500 text-white'
+                                                        : hasError 
+                                                            ? 'border-red-500 bg-red-50 text-red-500'
+                                                            : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-400'
+                                                }
+                                            `}>
+                                                {isCompleted ? <CheckCircleIcon className="w-5 h-5" /> : <tab.icon className="w-4 h-4" />}
+                                            </div>
 
-                            {/* Form Content (Right Section) */}
-                            <div className="flex-1 p-8 lg:p-10 bg-white dark:bg-gray-800 rounded-br-2xl lg:rounded-tr-2xl overflow-y-auto custom-scrollbar">
-                                <AnimatePresence mode="wait">
-                                    {activeTabId === 'details' && (
+                                            {/* Label */}
+                                            <div className="text-left">
+                                                <p className={`text-sm font-semibold ${isActive ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
+                                                    {tab.name}
+                                                </p>
+                                                {isActive && (
+                                                    <motion.p 
+                                                        initial={{ opacity: 0 }} 
+                                                        animate={{ opacity: 1 }} 
+                                                        className="text-xs text-indigo-600 dark:text-indigo-400"
+                                                    >
+                                                        In Progress
+                                                    </motion.p>
+                                                )}
+                                            </div>
+                                            
+                                            {/* Active Bar Indicator */}
+                                            {isActive && (
+                                                <motion.div 
+                                                    layoutId="activeTabIndicator"
+                                                    className="absolute left-0 top-0 bottom-0 w-1 bg-indigo-600 rounded-l-xl"
+                                                />
+                                            )}
+                                        </motion.button>
+                                    );
+                                })}
+                            </nav>
+                        </div>
+
+                        {/* --------------------------------------------------------- */}
+                        {/* MAIN CONTENT AREA                                         */}
+                        {/* --------------------------------------------------------- */}
+                        
+                        <div className="flex-1 flex flex-col h-full bg-white dark:bg-gray-900 relative">
+                            {/* Desktop Close Button (Floating) */}
+                            <button
+                                onClick={onClose}
+                                className="hidden md:flex absolute top-6 right-6 z-20 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
+                            >
+                                <XMarkIcon className="w-6 h-6" />
+                            </button>
+
+                            {/* Scrollable Form Content */}
+                            <div className="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-10 pb-24 md:pb-24">
+                                <div className="max-w-3xl mx-auto">
+                                    <div className="mb-6 md:mb-8">
+                                        <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                                            {tabs[activeTabIndex].name}
+                                        </h2>
+                                        <p className="text-gray-500 dark:text-gray-400">
+                                            Please provide the details below.
+                                        </p>
+                                    </div>
+
+                                    <form id="service-form" onSubmit={handleSubmit}>
+                                        <AnimatePresence mode="wait">
+                                            <motion.div
+                                                key={activeTabId}
+                                                variants={contentVariants}
+                                                initial="hidden"
+                                                animate="visible"
+                                                exit="exit"
+                                            >
+                                                                                    {activeTabId === 'details' && (
                                         <ServiceDetailsTab
                                             MarketListingForm={MarketListingForm}
                                             handleChange={handleChange}
@@ -627,14 +916,22 @@ const ServiceListingForm: React.FC<ServiceListingFormProps> = ({
                                     )}
 
                                     {activeTabId === 'media' && (
-                                        <ServiceMediaTab
-                                            MarketListingForm={MarketListingForm}
-                                            handleChange={handleChange}
-                                            errors={errors}
-                                            fieldVariants={fieldVariants}
-                                            tabContentVariants={tabContentVariants}
-                                            primaryColor={primaryColor}
-                                        />
+                                        // <ServiceMediaTab
+                                        //     MarketListingForm={MarketListingForm}
+                                        //     handleChange={handleChange}
+                                        //     errors={errors}
+                                        //     fieldVariants={fieldVariants}
+                                        //     tabContentVariants={tabContentVariants}
+                                        //     primaryColor={primaryColor}
+                                        // />
+                                        <ImageUploader
+                                                    images={images}
+                                                    setImages={setImages}
+                                                    videos={videos}
+                                                    setVideos={setVideos}
+                                                    books={books}
+                                                    setBooks={setBooks}
+                                                  />
                                     )}
 
                                     {activeTabId === 'contactLocation' && (
@@ -661,63 +958,63 @@ const ServiceListingForm: React.FC<ServiceListingFormProps> = ({
                                             primaryColor={primaryColor}
                                         />
                                     )}
-                                </AnimatePresence>
-
-                                {/* Form Actions (Navigation Buttons) */}
-                                <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700 flex justify-between gap-4">
-                                    {/* Previous Button */}
-                                    {!isFirstTab && (
-                                        <button
-                                            type="button"
-                                            onClick={handlePreviousTab}
-                                            className="px-6 py-3 rounded-lg text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center gap-2"
-                                        >
-                                            <ArrowLeftIcon className="w-5 h-5" /> Previous
-                                        </button>
-                                    )}
-
-                                    {/* Spacer for alignment if only Next/Submit is present */}
-                                    {isFirstTab && !isLastTab && <div className="flex-grow"></div>}
-
-                                    {/* Cancel Button (Always visible) */}
-                                    <button
-                                        type="button"
-                                        onClick={onClose}
-                                        className="px-6 py-3 rounded-lg text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                                    >
-                                        Cancel
-                                    </button>
-
-                                    {/* Next or Submit Button */}
-                                    {isLastTab ? (
-                                        <button
-                                            type="submit"
-                                            className="px-6 py-3 rounded-lg text-white font-semibold transition-colors shadow-md flex items-center justify-center"
-                                            style={{ backgroundColor: primaryColor }}
-                                            disabled={isSubmitting}
-                                        >
-                                            {isSubmitting && (
-                                                <svg className="animate-spin h-5 w-5 text-white mr-3" viewBox="0 0 24 24">
-                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                                </svg>
-                                            )}
-                                            {initialData ? 'Update Service' : 'Create Service'}
-                                        </button>
-                                    ) : (
-                                        <button
-                                            type="button"
-                                            onClick={handleNextTab}
-                                            className="px-6 py-3 rounded-lg text-white font-semibold transition-colors shadow-md flex items-center gap-2"
-                                            style={{ backgroundColor: primaryColor }}
-                                            disabled={isSubmitting}
-                                        >
-                                            Next <ArrowRightIcon className="w-5 h-5" />
-                                        </button>
-                                    )}
+                                            </motion.div>
+                                        </AnimatePresence>
+                                    </form>
                                 </div>
                             </div>
-                        </form>
+
+                            {/* --------------------------------------------------------- */}
+                            {/* STICKY FOOTER ACTIONS                                     */}
+                            {/* --------------------------------------------------------- */}
+                            
+                            <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-t border-gray-100 dark:border-gray-800 flex justify-between items-center z-10">
+                                {/* Previous Button */}
+                                <button
+                                    type="button"
+                                    onClick={() => !isFirstTab && setActiveTabIndex(prev => prev - 1)}
+                                    disabled={isFirstTab}
+                                    className={`
+                                        flex items-center gap-2 px-6 py-2.5 rounded-lg font-medium transition-all
+                                        ${isFirstTab 
+                                            ? 'opacity-0 pointer-events-none' 
+                                            : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'
+                                        }
+                                    `}
+                                >
+                                    <ArrowLeftIcon className="w-4 h-4" /> Back
+                                </button>
+
+                                {/* Next / Submit Button */}
+                                {isLastTab ? (
+                                    <button
+                                        onClick={handleSubmit}
+                                        disabled={isSubmitting}
+                                        className="flex items-center gap-2 px-8 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-lg shadow-indigo-200 dark:shadow-none transform active:scale-95 transition-all"
+                                    >
+                                        {isSubmitting ? (
+                                            <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                                            </svg>
+                                        ) : (
+                                            <>
+                                                {initialData ? 'Update Service' : 'Complete Setup'}
+                                                <CheckCircleIcon className="w-5 h-5" />
+                                            </>
+                                        )}
+                                    </button>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        onClick={() => setActiveTabIndex(prev => prev + 1)}
+                                        className="flex items-center gap-2 px-8 py-2.5 rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-semibold shadow-lg transform active:scale-95 transition-all hover:opacity-90"
+                                    >
+                                        Next Step <ArrowRightIcon className="w-4 h-4" />
+                                    </button>
+                                )}
+                            </div>
+                        </div>
                     </motion.div>
                 </motion.div>
             )}

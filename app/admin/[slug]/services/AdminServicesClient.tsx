@@ -1,33 +1,36 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
+  PlusIcon,
+  MagnifyingGlassIcon,
+  FunnelIcon,
+  ArrowsUpDownIcon,
   PencilSquareIcon,
+  EyeIcon,
+  TrashIcon,
+  PhotoIcon,
   CheckCircleIcon,
   ClockIcon,
-  XMarkIcon,
-  PlusIcon,
-  ExclamationCircleIcon,
-  EyeIcon,
-  ArrowPathIcon,
-  ChevronUpIcon,
-  ChevronDownIcon,
+  XCircleIcon,
+  NoSymbolIcon,
+  InboxIcon
 } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import { useStoreContext } from "@/contexts/StoreContext";
-// Assuming this is a local component; it's mocked in the final component for the demo
-import ServiceListingForm from "./components/ServiceListingForm"; 
-import { MarketListingForm } from "@/types/typings"; 
+import { MarketListingForm } from "@/types/typings";
+import  ServiceListingForm  from "./components/ServiceListingForm"; // Legacy import replaced
+import { set } from "lodash";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
+  `${src}?w=${width}&q=${quality || 75}`;
 
-
-// --- Props & Helper Definitions (Retained/Refined) ---
+// --- Types & Interfaces ---
 
 interface Props {
   initialServices: MarketListingForm[];
-  productCategories: { id: string; name: string }[]; 
+  productCategories: { id: string; name: string }[];
   paymentOptions: string[];
   deliveryMethods: string[];
   sellers?: { id: string; name: string }[];
@@ -36,177 +39,152 @@ interface Props {
   categoriesData: any[];
 }
 
-// Image loader for Next.js Image component
-const imageLoader = ({ src, width, quality }: { src: string; width: number; quality?: number }) =>
-  `${src}?w=${width}&q=${quality || 75}`;
+// --- Helper Components ---
 
-
-// --- MOCK API Helper (Simplified for Demo) ---
-// This function is retained but marked as simplified/mocked for a clean demo
-function buildListingPayload(formData: MarketListingForm): any {
-  // Simplified for demo, as the original logic was overly complex for a frontend file
-  return { ...formData };
-}
-
-
-// --- Status Badge Component (Visually Enhanced) ---
-
-// Status badge component (enhanced for visual appeal)
-const StatusBadge = React.memo(({ status }: { status: any }) => {
-    let colorClass = "";
-    let icon = null;
-    let text = "";
-
+const StatusBadge = ({ status }: { status: string }) => {
+  const styles = useMemo(() => {
     switch (status) {
-      case "ACTIVE":
-        colorClass = "bg-green-100 text-green-700 dark:bg-green-800 dark:text-green-200 border-green-300 dark:border-green-600";
-        icon = <CheckCircleIcon className="w-4 h-4" />;
-        text = "Active";
-        break;
-      case "PENDING":
-        colorClass = "bg-yellow-100 text-yellow-700 dark:bg-yellow-800 dark:text-yellow-200 border-yellow-300 dark:border-yellow-600";
-        icon = <ClockIcon className="w-4 h-4" />;
-        text = "Pending";
-        break;
-      case "REJECTED":
-        colorClass = "bg-red-100 text-red-700 dark:bg-red-800 dark:text-red-200 border-red-300 dark:border-red-600";
-        icon = <XMarkIcon className="w-4 h-4" />;
-        text = "Rejected";
-        break;
-      case "ARCHIVED":
-        colorClass = "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600";
-        icon = <ExclamationCircleIcon className="w-4 h-4" />;
-        text = "Archived";
-        break;
-      default:
-        return null;
+      case "ACTIVE": return "bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800";
+      case "PENDING": return "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800";
+      case "REJECTED": return "bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400 dark:border-red-800";
+      default: return "bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700";
     }
+  }, [status]);
 
-    return (
-      <motion.span
-        className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold border shadow-sm ${colorClass}`}
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ type: "spring", stiffness: 200, damping: 10 }}
-      >
-        {icon} {text}
-      </motion.span>
-    );
-});
-StatusBadge.displayName = 'StatusBadge';
+  const Icon = useMemo(() => {
+    switch (status) {
+      case "ACTIVE": return CheckCircleIcon;
+      case "PENDING": return ClockIcon;
+      case "REJECTED": return XCircleIcon;
+      default: return NoSymbolIcon;
+    }
+  }, [status]);
 
+  return (
+    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${styles}`}>
+      <Icon className="w-3.5 h-3.5" />
+      {status.charAt(0).toUpperCase() + status.slice(1).toLowerCase()}
+    </span>
+  );
+};
 
 // --- Main Component ---
 
 export default function AdminServicesClient({
   initialServices,
-  productCategories,
+  categoriesData,
+  companyId = "",
+  // Pass these through to the modal
   paymentOptions,
   deliveryMethods,
-  sellers = [],
-  companies = [],
-  companyId = "",
-  categoriesData,
+  productCategories
 }: Props) {
-
+  
+  // State
   const [services, setServices] = useState<MarketListingForm[]>(initialServices);
-  const [isFormModalOpen, setIsFormModalOpen] = useState(false);
-  const [serviceToEdit, setServiceToEdit] = useState<MarketListingForm | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSuccess, setIsSuccess] = useState<boolean | null>(null);
-  const [message, setMessage] = useState<string>("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingService, setEditingService] = useState<MarketListingForm | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortConfig, setSortConfig] = useState<{ key: keyof MarketListingForm; direction: 'ascending' | 'descending' } | null>({ key: 'name', direction: 'ascending' });
+  const [sortConfig, setSortConfig] = useState<{ key: keyof MarketListingForm; direction: 'asc' | 'desc' } | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formErrors, setFormErrors] = useState<Partial<MarketListingForm & { [key: string]: string }>>({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+  const [isSuccess, setIsSuccess] = useState<boolean | null>(null);
+  const [message, setMessage] = useState("");
+  const [activeTabIndex, setActiveTabIndex] = useState(0);
 
 
+  // Context & Theme
   const { storeFormData } = useStoreContext();
-  // Using theme colors for a captivating, branded look
-  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#0d9488';
-  const secondaryColor = storeFormData?.themeSettings?.secondaryColor || '#f97316';
+  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#4F46E5'; // Default Indigo
 
 
-  useEffect(() => {
-    setServices(initialServices);
-  }, [initialServices]);
 
-  // --- Sorting & Filtering Logic (Intuitive) ---
+  // --- Filtering & Sorting ---
 
-  const sortedAndFilteredServices = useMemo(() => {
-    let sortableItems = [...services];
-    
-    // 1. Filtering
-    const filtered = sortableItems.filter(item => 
-        item.name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-        item.productCategoryId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.status?.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+  const processedServices = useMemo(() => {
+    let result = [...services];
 
-    // 2. Sorting
-    if (sortConfig !== null) {
-      filtered.sort((a, b) => {
-        const aValue = a[sortConfig.key] as any;
-        const bValue = b[sortConfig.key] as any;
+    // Filter
+    if (searchTerm) {
+      const lowerTerm = searchTerm.toLowerCase();
+      result = result.filter(s => 
+        s.name?.toLowerCase().includes(lowerTerm) || 
+        s.status?.toLowerCase().includes(lowerTerm)
+      );
+    }
 
-        if (aValue < bValue) {
-          return sortConfig.direction === 'ascending' ? -1 : 1;
-        }
-        if (aValue > bValue) {
-          return sortConfig.direction === 'ascending' ? 1 : -1;
-        }
+    // Sort
+    if (sortConfig) {
+      result.sort((a, b) => {
+        // @ts-ignore - dynamic key access
+        if (a[sortConfig.key] < b[sortConfig.key]) return sortConfig.direction === 'asc' ? -1 : 1;
+        // @ts-ignore
+        if (a[sortConfig.key] > b[sortConfig.key]) return sortConfig.direction === 'asc' ? 1 : -1;
         return 0;
       });
     }
 
-    return filtered;
+    return result;
   }, [services, searchTerm, sortConfig]);
 
-  const requestSort = (key: keyof MarketListingForm) => {
-    let direction: 'ascending' | 'descending' = 'ascending';
-    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
-      direction = 'descending';
-    }
-    setSortConfig({ key, direction });
-  };
-  
-  const SortIndicator = (key: keyof MarketListingForm) => {
-    if (!sortConfig || sortConfig.key !== key) {
-        return <ChevronUpIcon className="w-4 h-4 text-gray-400 opacity-30" />;
-    }
-    if (sortConfig.direction === 'ascending') {
-        return <ChevronUpIcon className="w-4 h-4 text-gray-500 dark:text-gray-300" />;
-    }
-    return <ChevronDownIcon className="w-4 h-4 text-gray-500 dark:text-gray-300" />;
+  const handleSort = (key: keyof MarketListingForm) => {
+    setSortConfig(current => ({
+      key,
+      direction: current?.key === key && current.direction === 'asc' ? 'desc' : 'asc'
+    }));
   };
 
-  // --- Helper Functions (Retained/Refined) ---
+  // --- Actions ---
 
   const handleOpenCreate = () => {
-    setServiceToEdit(null);
+    setEditingService(null);
     setIsFormModalOpen(true);
     setIsSuccess(null);
     setMessage("");
   };
 
   const handleOpenEdit = (service: MarketListingForm) => {
-    setServiceToEdit(service);
+    setEditingService(service);
     setIsFormModalOpen(true);
     setIsSuccess(null);
     setMessage("");
   };
 
-  const handleSaveService = async (data: MarketListingForm) => {
+  const handleSubmit = async (data: MarketListingForm) => {
+    setIsSubmitting(true);
+    
+    // Simulate API Call
+    // await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    // Optimistic Update
+    // if (editingService) {
+    //     setServices(prev => prev.map(s => s.id === editingService.id ? data : s));
+    // } else {
+    //     // Mock new service
+    //     setServices(prev => [...prev, data]);
+    // }
+
+    // setIsSubmitting(false);
+    // setIsModalOpen(false);
+  // };
+
+  //   const handleSaveService = async (data: MarketListingForm) => {
     setIsLoading(true);
     setIsSuccess(null);
     setMessage("");
 
     try {
-        const payload = buildListingPayload({...data,companyId});
+
+      
+        // const payload = buildListingPayload({...data,companyId});
         
         // Mock API call simulation
         await new Promise(resolve => setTimeout(resolve, 1000));
         
         // Mock successful response data structure
-        const responseData = { ...payload, id: payload.id || `svc-${Date.now()}` }; 
+        const responseData = { ...data, id: data.id || `svc-${Date.now()}` }; 
         const savedService: MarketListingForm = responseData; 
 
         if (data.id) {
@@ -229,222 +207,247 @@ export default function AdminServicesClient({
     }
   };
 
-  const getCategoryName = (categoryId: string) => {
-    const category = categoriesData.find((cat: any) => cat.id === categoryId);
-    return category ? (category.displayName || category.category?.name) : "N/A";
-  };
-  
-  // --- Render Section (Visually Appealing) ---
+  // --- Render ---
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        
-        {/* Header Section (Captivating) */}
-        <div className="flex flex-col sm:flex-row justify-between items-center mb-10 gap-6">
-          <h1 className="text-4xl sm:text-5xl lg:text-5xl font-extrabold text-center sm:text-left">
-            <span className="bg-clip-text text-transparent" style={{ backgroundColor: `${primaryColor}` }}>
-              Service Listing Manager
-            </span>
-          </h1>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 p-6 lg:p-10 font-sans text-gray-900 dark:text-gray-100 transition-colors duration-300">
+      
+      {/* 1. Header Section */}
+      <div className="max-w-7xl mx-auto mb-10">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div>
+            <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white sm:text-4xl">
+              Service Management
+            </h1>
+            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+              Manage your service listings, pricing, and availability.
+            </p>
+          </div>
+          
           <motion.button
+            whileHover={{ scale: 1.02, boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)" }}
+            whileTap={{ scale: 0.98 }}
             onClick={handleOpenCreate}
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-full font-semibold text-lg shadow-xl transition-all duration-300 transform hover:scale-[1.03]"
-            style={{ backgroundColor: primaryColor, color: 'white' }}
-            whileHover={{ backgroundColor: secondaryColor, boxShadow: `0 8px 15px -3px ${primaryColor}40` }}
-            whileTap={{ scale: 0.95 }}
-            disabled={isLoading} 
+            className="group relative inline-flex items-center gap-2 px-6 py-3 text-sm font-semibold text-white rounded-xl shadow-md transition-all overflow-hidden"
+            style={{ backgroundColor: primaryColor }}
           >
-            {isLoading ? (
-              <ArrowPathIcon className="w-6 h-6 animate-spin" />
-            ) : (
-              <PlusIcon className="w-6 h-6" />
-            )}
-            New Service
+            <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
+            <PlusIcon className="w-5 h-5 relative z-10" />
+            <span className="relative z-10">Create New Service</span>
           </motion.button>
         </div>
+      </div>
 
-        {/* Global Message/Notification */}
-        <AnimatePresence>
-          {message && (
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className={`mb-8 p-4 rounded-xl shadow-lg text-center font-medium ${
-                isSuccess ? 'bg-green-100 text-green-800 dark:bg-green-700 dark:text-green-100' : 'bg-red-100 text-red-800 dark:bg-red-700 dark:text-red-100'
-              }`}
-            >
-              {message}
-            </motion.div>
-          )}
-        </AnimatePresence>
+      {/* 2. Controls Toolbar */}
+      <div className="max-w-7xl mx-auto mb-6">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-2 flex flex-col md:flex-row gap-2">
+            
+            {/* Search */}
+            <div className="relative flex-grow group">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 group-focus-within:text-indigo-500 transition-colors" aria-hidden="true" />
+                </div>
+                <input
+                    type="text"
+                    className="block w-full pl-10 pr-3 py-2.5 border-transparent bg-transparent text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-0 sm:text-sm"
+                    placeholder="Search services, categories, or tags..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+            </div>
 
-        {/* Search Bar (Intuitive) */}
-        <div className="mb-6">
-            <input
-                type="text"
-                placeholder="Search services by name, category, or status..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-md focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-950 transition-shadow"
-                style={{ '--tw-ring-color': primaryColor } as React.CSSProperties}
-            />
+            {/* Separator (Desktop) */}
+            <div className="hidden md:block w-px bg-gray-200 dark:bg-gray-700 my-2" />
+
+            {/* Filter Button (Mock) */}
+            <button className="flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors">
+                <FunnelIcon className="w-4 h-4" />
+                <span>Filter</span>
+            </button>
         </div>
+      </div>
 
-        {/* Data Table Container (Beautiful & Intuitive) */}
-        <div className="bg-white dark:bg-gray-800 shadow-2xl rounded-2xl overflow-hidden border border-gray-200 dark:border-gray-700">
+      {/* 3. Data Table */}
+      
+      <div className="max-w-7xl mx-auto">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl shadow-gray-200/50 dark:shadow-black/50 overflow-hidden border border-gray-200 dark:border-gray-800">
             <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-100 dark:divide-gray-700">
-                    <thead className="bg-gray-50 dark:bg-gray-700">
-                        <tr>
-                            {/* Table Headers */}
-                            {[{key:'name', label:'Service Name', minW:'min-w-[250px]'}, 
-                             {key:'productCategoryId', label:'Category', minW:'min-w-[150px]'},
-                             {key:'sellingPrice', label:'Price', minW:'min-w-[120px]'},
-                             {key:'status', label:'Status', minW:'min-w-[150px]'},
-                             {key:'id', label:'Actions', minW:'min-w-[120px]'},
-                            ].map(({key, label, minW}) => (
-                                <th
-                                    key={key}
-                                    onClick={() => requestSort(key as keyof MarketListingForm)}
-                                    className={`px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer transition-colors hover:bg-gray-100 dark:hover:bg-gray-600 ${minW}`}
-                                    style={{ borderBottom: `2px solid ${primaryColor}30` }}
+                <table className="min-w-full whitespace-nowrap text-left">
+                    <thead>
+                        <tr className="bg-gray-50/50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
+                            {/* Header Cell Helper */}
+                            {[
+                                { label: 'Service Name', key: 'name', width: 'w-1/3' },
+                                { label: 'Category', key: 'productCategoryId', width: 'w-1/6' },
+                                { label: 'Price', key: 'sellingPrice', width: 'w-1/6' },
+                                { label: 'Status', key: 'status', width: 'w-1/6' },
+                                { label: 'Actions', key: 'actions', width: 'w-1/12' }
+                            ].map((header) => (
+                                <th 
+                                    key={header.key} 
+                                    className={`px-6 py-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider ${header.width} ${header.key !== 'actions' ? 'cursor-pointer hover:text-gray-700 dark:hover:text-gray-200' : ''}`}
+                                    onClick={() => header.key !== 'actions' && handleSort(header.key as keyof MarketListingForm)}
                                 >
-                                    <div className="flex items-center gap-1">
-                                        {label}
-                                        {SortIndicator(key as keyof MarketListingForm)}
+                                    <div className="flex items-center gap-2">
+                                        {header.label}
+                                        {header.key !== 'actions' && (
+                                            <ArrowsUpDownIcon className={`w-3 h-3 transition-opacity ${sortConfig?.key === header.key ? 'opacity-100 text-indigo-500' : 'opacity-30'}`} />
+                                        )}
                                     </div>
                                 </th>
                             ))}
                         </tr>
                     </thead>
-                    <motion.tbody
-                        className="divide-y divide-gray-100 dark:divide-gray-700"
-                        initial="hidden"
-                        animate="visible"
-                        variants={{ hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.05 } } }}
-                    >
-                        <AnimatePresence>
-                            {sortedAndFilteredServices.length === 0 ? (
-                                <motion.tr initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-                                    <td colSpan={5} className="py-10 text-center text-gray-500 dark:text-gray-400">
-                                        No services match your search criteria.
-                                    </td>
-                                </motion.tr>
-                            ) : (
-                                sortedAndFilteredServices.map((svc) => (
+
+                    <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                        <AnimatePresence mode="popLayout">
+                            {processedServices.length > 0 ? (
+                                processedServices.map((service, index) => (
                                     <motion.tr
-                                        key={svc.id}
-                                        className="group hover:bg-gray-50 dark:hover:bg-gray-700 transition duration-150 ease-in-out cursor-pointer"
+                                        key={service.id || index}
                                         initial={{ opacity: 0, y: 10 }}
                                         animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, x: -50 }}
-                                        onClick={() => handleOpenEdit(svc)}
+                                        exit={{ opacity: 0, scale: 0.95 }}
+                                        transition={{ duration: 0.2, delay: index * 0.05 }}
+                                        className="group hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
                                     >
-                                        {/* Image/Name Column */}
-                                        <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-gray-100 flex items-center gap-3">
-                                            <div className="relative w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 shadow-md border border-gray-200 dark:border-gray-600">
-                                                {svc.images && svc.images.length > 0 && svc.images[0] ? (
-                                                    <Image
-                                                        src={svc.images[0].url}
-                                                        loader={imageLoader}
-                                                        alt={svc.name || "Service Image"}
-                                                        layout="fill"
-                                                        objectFit="cover"
-                                                        className="transition-transform duration-300 group-hover:scale-110"
-                                                    />
-                                                ) : (
-                                                    <div className="w-full h-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-500 text-xs">
-                                                        <PencilSquareIcon className="w-6 h-6" />
+                                        {/* Name & Image */}
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-4">
+                                                <div className="relative w-12 h-12 rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-sm flex-shrink-0 group-hover:scale-110 transition-transform duration-300">
+                                                    {service.images && service.images[0] ? (
+                                                        <Image 
+                                                            src={service.images[0].url || service.images[0]} 
+                                                            alt={service.name} 
+                                                            loader={loader}
+                                                            fill 
+                                                            className="object-cover" 
+                                                        />
+                                                    ) : (
+                                                        <PhotoIcon className="w-6 h-6 m-auto text-gray-400" />
+                                                    )}
+                                                </div>
+                                                <div>
+                                                    <div className="text-sm font-semibold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                                                        {service.name}
                                                     </div>
-                                                )}
+                                                    <div className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[200px]">
+                                                        {service.description || "No description provided"}
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <span className="truncate max-w-xs">{svc.name || "Untitled Service"}</span>
-                                        </td>
-                                        
-                                        {/* Category Column */}
-                                        <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
-                                            {getCategoryName(svc.productCategoryId)}
                                         </td>
 
-                                        {/* Price Column */}
-                                        <td className="px-6 py-4 text-sm font-bold" style={{ color: primaryColor }}>
-                                            {(svc.hourlyRate ? `$${svc.hourlyRate.toFixed(2)}/hr` : (svc.sellingPrice !== undefined && svc.sellingPrice !== null ? `$${svc.sellingPrice.toFixed(2)}` : 'N/A'))}
-                                        </td>
-                                        
-                                        {/* Status Column */}
-                                        <td className="px-6 py-4 text-sm">
-                                            <StatusBadge status={svc.status} />
+                                        {/* Category */}
+                                        <td className="px-6 py-4">
+                                            <span className="px-2.5 py-1 rounded-md bg-gray-100 dark:bg-gray-800 text-xs font-medium text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
+                                                {categoriesData.find(c => c.id === service.productCategoryId)?.name || 'General'}
+                                            </span>
                                         </td>
 
-                                        {/* Actions Column (Engaging) */}
-                                        <td className="px-6 py-4 flex items-center gap-2">
-                                            <motion.button
-                                                onClick={(e: React.MouseEvent) => { e.stopPropagation(); handleOpenEdit(svc); }}
-                                                className="p-2 rounded-full text-white shadow-md transition-colors"
-                                                style={{ backgroundColor: primaryColor }}
-                                                whileHover={{ scale: 1.1, backgroundColor: secondaryColor }}
-                                                whileTap={{ scale: 0.9 }}
-                                                aria-label="Edit Service"
-                                            >
-                                                <PencilSquareIcon className="w-5 h-5" />
-                                            </motion.button>
-                                            <motion.button
-                                                onClick={(e: React.MouseEvent) => { e.stopPropagation(); alert(`Viewing ${svc.name}`); }}
-                                                className="p-2 rounded-full text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 shadow-sm transition-colors"
-                                                whileHover={{ scale: 1.1, backgroundColor: 'rgba(0,0,0,0.1)' }}
-                                                whileTap={{ scale: 0.9 }}
-                                                aria-label="View Details"
-                                            >
-                                                <EyeIcon className="w-5 h-5" />
-                                            </motion.button>
+                                        {/* Price */}
+                                        <td className="px-6 py-4">
+                                            <div className="text-sm font-mono font-medium text-gray-900 dark:text-gray-100">
+                                                {/* {service.currency || 'USD'} */}
+                                                 {service.sellingPrice?.toFixed(2)}
+                                            </div>
+                                            {service.hourlyRate && (
+                                                <div className="text-xs text-gray-400">
+                                                    {/* {service.currency}  */}
+                                                    {service.hourlyRate}/hr
+                                                </div>
+                                            )}
+                                        </td>
+
+                                        {/* Status */}
+                                        <td className="px-6 py-4">
+                                            <StatusBadge status={service.status} />
+                                        </td>
+
+                                        {/* Actions */}
+                                        <td className="px-6 py-4">
+                                            <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                                <button 
+                                                    onClick={() => handleOpenEdit(service)}
+                                                    className="p-2 rounded-lg text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 transition-colors"
+                                                    title="Edit"
+                                                >
+                                                    <PencilSquareIcon className="w-5 h-5" />
+                                                </button>
+                                                <button 
+                                                    className="p-2 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
+                                                    title="Delete"
+                                                >
+                                                    <TrashIcon className="w-5 h-5" />
+                                                </button>
+                                            </div>
                                         </td>
                                     </motion.tr>
                                 ))
+                            ) : (
+                                <tr className="h-64">
+                                    <td colSpan={5} className="text-center">
+                                        <div className="flex flex-col items-center justify-center p-8">
+                                            <div className="w-16 h-16 bg-gray-50 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
+                                                <InboxIcon className="w-8 h-8 text-gray-400" />
+                                            </div>
+                                            <h3 className="text-lg font-medium text-gray-900 dark:text-white">No services found</h3>
+                                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                                Try adjusting your search or create a new service.
+                                            </p>
+                                        </div>
+                                    </td>
+                                </tr>
                             )}
                         </AnimatePresence>
-                    </motion.tbody>
+                    </tbody>
                 </table>
+            </div>
+            
+            {/* Pagination Footer (Static for Demo) */}
+            <div className="bg-gray-50 dark:bg-gray-800/50 px-6 py-4 border-t border-gray-200 dark:border-gray-800 flex items-center justify-between">
+                <span className="text-sm text-gray-500 dark:text-gray-400">
+                    Showing <span className="font-medium text-gray-900 dark:text-white">1</span> to <span className="font-medium text-gray-900 dark:text-white">{processedServices.length}</span> of <span className="font-medium text-gray-900 dark:text-white">{processedServices.length}</span> results
+                </span>
+                <div className="flex gap-2">
+                    <button className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700 disabled:opacity-50" disabled>
+                        Previous
+                    </button>
+                    <button className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700 disabled:opacity-50" disabled>
+                        Next
+                    </button>
+                </div>
             </div>
         </div>
       </div>
 
-      {/* Service Listing Form Modal (Mocked) */}
-      {/* Retaining the original modal structure for compatibility */}
-      {/* NOTE: You must ensure your ServiceListingForm component uses Framer Motion for a smooth experience. */}
-      {isFormModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-            <h3 className="text-2xl font-bold mb-4 border-b pb-2">
-              {serviceToEdit ? 'Edit Service Listing' : 'Create New Service Listing'}
-            </h3>
-            {/* Mocked ServiceListingForm Component */}
-            <div className="h-[400px] flex items-center justify-center border border-dashed border-gray-400 rounded-lg">
-                <p className="text-gray-500">ServiceListingForm component goes here.</p>
-            </div>
-            {/* Mock Close Button */}
-            <div className="mt-4 flex justify-end">
-                <button 
-                    onClick={() => setIsFormModalOpen(false)}
-                    className="px-4 py-2 bg-gray-300 dark:bg-gray-600 rounded-lg text-gray-800 dark:text-gray-200"
-                >
-                    Close Mock Form
-                </button>
-            </div>
-            {/* Original Component Call (Commented out for the mock) */}
-            <ServiceListingForm
-              isOpen={isFormModalOpen} // Note: This prop might be redundant if the parent controls the display
-              onClose={() => setIsFormModalOpen(false)}
-              onSave={handleSaveService}
-              initialData={serviceToEdit}
+      {/* 4. Multi-Step Wizard Modal Integration */}
+      {/* <ServiceListingForm
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        initialData={editingService}
+        tabs={formTabs} // Pass the tabs configuration
+        activeTabIndex={activeTabIndex}
+        setActiveTabIndex={setActiveTabIndex}
+        activeTabId={formTabs[activeTabIndex].id}
+        handleSubmit={handleSubmit}
+        errors={{}} // Pass form errors here
+        isSubmitting={isSubmitting}
+        primaryColor={primaryColor}
+      > */}
+      <ServiceListingForm
+              isOpen={isModalOpen} // Note: This prop might be redundant if the parent controls the display
+              onClose={() => setIsModalOpen(false)}
+              onSave={handleSubmit}
+              initialData={editingService}
               productCategories={categoriesData}
               paymentOptions={paymentOptions}
               deliveryMethods={deliveryMethods}
+              // errors={formErrors} // Pass form errors here
+              // setErrors={setFormErrors}
+              // isSubmitting={isSubmitting}
+              // primaryColor={primaryColor}
             />
-          </div>
-        </div>
-      )}
 
     </div>
   );
