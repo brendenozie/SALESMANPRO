@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from "next/navigation"; // Added for routing
 import { useStoreContext } from '@/contexts/StoreContext';
-import { XMarkIcon, MagnifyingGlassIcon, TagIcon, CalendarDaysIcon, ClockIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, MagnifyingGlassIcon, TagIcon, CalendarDaysIcon, ClockIcon, CheckCircleIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
 import { MarketListingForm } from '@/types/typings';
 
 // --- UPDATED FUNCTIONAL BOOKING FORM ---
@@ -295,56 +295,99 @@ export default function ServicesSection({ marketplaceListings, slug, themeSettin
                     >
                         {(filteredListings as MarketListingForm[]).map((item, i) => (
                             <motion.div
-                                key={item.id}
-                                className={`relative rounded-3xl overflow-hidden bg-white border ${item.isAvailable ? 'border-gray-200' : 'border-red-200 opacity-80'} shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 flex flex-col group cursor-pointer`}
-                                variants={cardVariants}
-                                onClick={() => setSelected(item)}
-                            >
-                                {/* Image Area with Hover Zoom */}
-                                <div className="relative w-full h-56 overflow-hidden">
-                                    <Image
-                                        src={item.images?.[0] || 'https://images.unsplash.com/photo-1555548680-77a28e3a2b3b?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'}
+                                    key={item.id}
+                                    layout
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, scale: 0.95 }}
+                                    onClick={() => setSelected(item)}
+                                    className={`
+                                        group relative flex flex-col w-full overflow-hidden
+                                        bg-white rounded-[2rem] cursor-pointer
+                                        border border-gray-100
+                                        transition-all duration-500 ease-out
+                                        hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)]
+                                        ${!item.isAvailable ? 'grayscale-[0.8] opacity-90' : ''}
+                                    `}
+                                    >
+                                    {/* --- Image Section --- */}
+                                    <div className="relative w-full h-64 overflow-hidden bg-gray-100">
+                                        <Image
+                                        src={item.images?.[0] || 'https://images.unsplash.com/photo-1555548680-77a28e3a2b3b?q=80&w=2940&auto=format&fit=crop'}
                                         loader={loader}
                                         alt={item.name}
                                         fill
-                                        className="object-cover transition-transform duration-500 group-hover:scale-110"
-                                        sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 25vw"
-                                    />
-                                    {/* Availability Ribbon */}
-                                    <div className={`absolute top-0 right-0 p-2 text-xs font-bold text-white shadow-lg rounded-bl-xl ${item.isAvailable ? 'bg-emerald-600' : 'bg-red-600'}`}>
-                                        {item.isAvailable ? 'AVAILABLE' : 'BOOKED'}
+                                        className="object-cover transition-transform duration-700 ease-in-out group-hover:scale-105"
+                                        sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
+                                        />
+                                        
+                                        {/* Gradient Overlay for text contrast if needed, or purely aesthetic */}
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                                        {/* Modern Floating Status Pill */}
+                                        <div className={`
+                                        absolute top-4 left-4 px-3 py-1.5 rounded-full
+                                        flex items-center gap-1.5 text-xs font-bold tracking-wide shadow-sm backdrop-blur-md
+                                        ${item.isAvailable 
+                                            ? 'bg-white/90 text-emerald-700 border border-emerald-100' 
+                                            : 'bg-white/90 text-red-600 border border-red-100'}
+                                        `}>
+                                        {item.isAvailable ? (
+                                            <><CheckCircleIcon className="w-3.5 h-3.5" /> AVAILABLE</>
+                                        ) : (
+                                            <><XMarkIcon className="w-3.5 h-3.5" /> BOOKED</>
+                                        )}
+                                        </div>
                                     </div>
-                                </div>
 
-                                {/* Content Area */}
-                                <div className="p-6 flex flex-col flex-grow">
-                                    <h3 className="text-xl font-extrabold text-gray-900 mb-2 leading-tight">
-                                        {item.name}
-                                    </h3>
+                                    {/* --- Content Section --- */}
+                                    <div className="flex flex-col flex-grow p-6 pt-5">
+                                        
+                                        {/* Header & Price Row */}
+                                        <div className="flex items-start justify-between gap-4 mb-3">
+                                        <h3 className="text-lg font-bold text-gray-900 leading-snug group-hover:text-[color:var(--primary)] transition-colors" style={{ '--primary': primaryColor } as any}>
+                                            {item.name}
+                                        </h3>
+                                        </div>
 
-                                    {/* Price Section */}
-                                    <div className="flex items-center text-2xl font-extrabold mb-4" style={{ color: primaryColor }}>
-                                        <TagIcon className="w-5 h-5 mr-2 text-gray-400" />
-                                        KES {(item.finalPrice || item.sellingPrice || 0).toLocaleString('en-KE', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                        {/* Price Tag - Large and Clear */}
+                                        <div className="mb-4">
+                                        <div className="flex items-baseline gap-1" style={{ color: primaryColor }}>
+                                            <span className="text-sm font-medium text-gray-400">KES</span>
+                                            <span className="text-2xl font-extrabold tracking-tight">
+                                            {(item.finalPrice || item.sellingPrice || 0).toLocaleString('en-KE')}
+                                            </span>
+                                        </div>
+                                        </div>
+
+                                        {/* Description */}
+                                        <p className="text-sm text-gray-500 leading-relaxed line-clamp-2 mb-6 flex-grow">
+                                        {item.description || 'Experience premium service quality designed to exceed your expectations.'}
+                                        </p>
+
+                                        {/* Interactive Button */}
+                                        <div className="mt-auto">
+                                        <button
+                                            className="relative w-full overflow-hidden rounded-xl p-[1px] group/btn transition-transform active:scale-[0.98]"
+                                        >
+                                            {/* Button Border Gradient (Optional visual flair) */}
+                                            <div className="absolute inset-0 bg-gradient-to-r from-gray-200 to-gray-300 group-hover/btn:from-[color:var(--primary)] group-hover/btn:to-[color:var(--primary)] transition-colors opacity-50" style={{ '--primary': primaryColor } as any} />
+                                            
+                                            {/* Button Content */}
+                                            <div className={`
+                                            relative flex items-center justify-center gap-2 w-full px-4 py-3 bg-white rounded-[11px]
+                                            text-sm font-bold transition-all duration-300
+                                            group-hover/btn:bg-opacity-95
+                                            `}
+                                            style={{ color: primaryColor }}
+                                            >
+                                            <span>View Details</span>
+                                            <ArrowRightIcon className="w-4 h-4 transition-transform duration-300 group-hover/btn:translate-x-1" />
+                                            </div>
+                                        </button>
+                                        </div>
                                     </div>
-
-                                    <p className="text-sm text-gray-600 flex-grow mb-4 line-clamp-3">
-                                        {item.description || 'A unique service designed to provide exceptional results and an unforgettable experience.'}
-                                    </p>
-
-                                    {/* Action Button */}
-                                    <button
-                                        className="mt-auto flex items-center justify-center p-3 rounded-xl font-bold transition-all duration-300 border-2"
-                                        style={{
-                                            color: primaryColor,
-                                            borderColor: primaryColor + '50',
-                                            backgroundColor: primaryColor + '10'
-                                        }}
-                                    >
-                                        View Details & Book
-                                    </button>
-                                </div>
-                            </motion.div>
+                                    </motion.div>
                         ))}
                     </motion.div>
                 ) : (
