@@ -6,12 +6,8 @@ import { z } from "zod";
 /**
  * Schema-driven Payment Settings Accordion (Option C)
  *
- * Single-file, production-grade, dynamic / schema-driven
- * Add new gateways by editing `GATEWAYS` below.
- *
- * Notes:
- * - Uses `zod` for validation. Install zod before using.
- * - Replace testEndpoint values to point to your server endpoints.
+ * Modified: Ghuba is selected by default with auto-generated credentials
+ * ONLY IF no other payment methods are currently enabled.
  */
 
 /* ============================
@@ -78,44 +74,40 @@ function useDebouncedEffect(cb: () => void, deps: any[], delay = 350) {
   }, deps);
 }
 
+// Helper to generate random credentials
+const generateGhubaCredentials = () => {
+  const rand = () => Math.random().toString(36).substring(2, 8).toUpperCase();
+  return {
+    merchantId: `GHB-${Math.floor(100000 + Math.random() * 900000)}`,
+    apiKey: `gk_live_${rand()}${rand()}`,
+  };
+};
+
 /* ============================
    Zod validation schema + helpers
    ============================ */
 
-/**
- * We'll build a top-level Zod schema dynamically from the gateway config.
- * Each gateway has fields; if the gateway is enabled the required fields will be required.
- */
-
-// helper types for gateway field config
 type FieldConfig = {
   key: keyof PaymentSettings;
   label: string;
   placeholder?: string;
   type?: "text" | "password" | "url" | "number";
-  requiredWhenEnabled?: boolean; // validation: required only when gateway is enabled
+  requiredWhenEnabled?: boolean;
   secret?: boolean;
   hint?: string;
 };
 
 type GatewayConfig = {
-  id: string; // used as toggle key prefix, e.g. "isStripeEnabled" expected
+  id: string;
   toggleKey: keyof PaymentSettings;
   label: string;
   hint?: string;
   feeDescription?: string | null;
   fields: FieldConfig[];
-  testEndpoint?: string; // POST endpoint to test connection
-  extraEndpoint?: string; // Additional POST endpoint for extra functionality
+  testEndpoint?: string;
+  extraEndpoint?: string;
   example?: Partial<PaymentSettings>;
 };
-
-/* ============================
-   Gateway Schema (extendable)
-   ============================ */
-
-
-
 
 const GATEWAYS: Record<string, GatewayConfig> = {
   ghuba: {
@@ -180,26 +172,18 @@ const GATEWAYS: Record<string, GatewayConfig> = {
   },
 };
 
-/* Build zod schema dynamically */
 function buildZodSchemaForAll(settings: PaymentSettings) {
-  // start with a base object allowing unknown keys (we will validate known ones)
   const shape: Record<string, any> = {};
 
   Object.values(GATEWAYS).forEach((g) => {
-    // toggle key must be boolean (nullable)
     shape[String(g.toggleKey)] = z.boolean().nullable().optional();
-
-    // for each field, if requiredWhenEnabled -> validate presence when toggle true
     g.fields.forEach((f) => {
-      // always allow string | null
       shape[String(f.key)] = z.union([z.string(), z.null(), z.undefined()]).optional();
     });
   });
 
-  // general keys allowed
   const base = z.object(shape).passthrough();
 
-  // create a refinement that enforces requiredWhenEnabled
   const refined = base.superRefine((obj, ctx) => {
     Object.values(GATEWAYS).forEach((g) => {
       const enabled = !!obj[String(g.toggleKey)];
@@ -259,7 +243,6 @@ const Toggle: React.FC<{
         </label>
         {description && <div className="text-xs text-gray-500">{description}</div>}
       </div>
-
       <div>
         <button
           id={id}
@@ -332,9 +315,10 @@ const InputField: React.FC<{
           placeholder={placeholder}
           onChange={(e) => onChange(e.target.value)}
           type={secret && !reveal ? "password" : type}
-          className={`w-full rounded-md border px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 ${error ? "border-red-300" : "border-gray-200"}`}
+          className={`w-full rounded-md border px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 ${
+            error ? "border-red-300" : "border-gray-200"
+          }`}
         />
-
         {secret && (
           <div className="absolute right-2 top-2 flex items-center gap-2">
             <button
@@ -369,7 +353,8 @@ const GatewaySection: React.FC<{
           {hint && <div className="text-xs text-gray-500">{hint}</div>}
         </div>
         <div className="text-sm text-gray-600">
-          {enabled ? "Enabled" : "Disabled"} {errorCount > 0 && <span className="ml-2 text-red-600">({errorCount} errors)</span>}
+          {enabled ? "Enabled" : "Disabled"}{" "}
+          {errorCount > 0 && <span className="ml-2 text-red-600">({errorCount} errors)</span>}
         </div>
       </div>
       <div className="mt-4">{children}</div>
@@ -404,7 +389,6 @@ function useTestConnection() {
       setResult({ label, success: false, response: err?.message ?? String(err) });
     } finally {
       setLoading(null);
-      // keep result for short time
       setTimeout(() => setResult(null), 2500);
     }
   }, []);
@@ -417,13 +401,34 @@ function useTestConnection() {
    ============================ */
 
 export default function PaymentAccordion({ paymentSettings, onChange, onSave }: PaymentAccordionProps) {
-  const initial = useMemo<PaymentSettings>(() => ({ ...(paymentSettings ?? {}) }), [paymentSettings]);
+  // Logic: Check if any OTHER gateways are enabled. If not, default Ghuba to true and fill credentials.
+  const initial = useMemo<PaymentSettings>(() => {
+    const s = { ...(paymentSettings ?? {}) };
+
+    // List of other gateways to check against
+    const otherGateways = ["isStripeEnabled", "isPaypalEnabled", "isMpesaEnabled", "isPaystackEnabled"];
+    const hasOtherEnabled = otherGateways.some((key) => !!s[key]);
+
+    // If no other gateway is enabled AND Ghuba isn't already set, enable it and gen credentials
+    if (!hasOtherEnabled && !s.isGhubaEnabled) {
+      s.isGhubaEnabled = true;
+      
+      const creds = generateGhubaCredentials();
+      
+      // Only auto-fill if empty
+      if (!s.ghubaMerchantId) s.ghubaMerchantId = creds.merchantId;
+      if (!s.ghubaApiKey) s.ghubaApiKey = creds.apiKey;
+    }
+
+    return s;
+  }, [paymentSettings]);
+
   const [state, dispatch] = useReducer(reducer, clone(initial) as PaymentSettings);
 
-  // build zod validator once (it's based on GATEWAYS)
+  // build zod validator once
   const validator = useMemo(() => buildZodSchemaForAll(state), [state]);
 
-  // errors map (key -> message)
+  // errors map
   const errors = useMemo(() => {
     const raw = validator.safeParse(state);
     if (raw.success) return {};
@@ -435,22 +440,17 @@ export default function PaymentAccordion({ paymentSettings, onChange, onSave }: 
     return map;
   }, [state, validator]);
 
-  // reflect parent updates into local state
-  // useEffect(() => {
-  //   dispatch({ type: "REPLACE", payload: clone(paymentSettings ?? {}) });
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [paymentSettings]);
   const firstLoad = useRef(true);
 
+  // When props change (e.g. from DB load), update state, but respect the initialization logic above
   useEffect(() => {
     if (firstLoad.current) {
-      dispatch({ type: "REPLACE", payload: clone(paymentSettings ?? {}) });
+      dispatch({ type: "REPLACE", payload: clone(initial) });
       firstLoad.current = false;
     }
-  }, [paymentSettings]);
+  }, [initial]);
 
-
-  // debounced outward onChange (emit partial changes)
+  // debounced outward onChange
   useDebouncedEffect(
     () => {
       onChange(clone(state));
@@ -475,20 +475,18 @@ export default function PaymentAccordion({ paymentSettings, onChange, onSave }: 
     if (onSave) await onSave(clone(state));
   }, [errors, onSave, state]);
 
-  // dirty check
+  // dirty check (compare against the calculated initial state, which may include auto-gen fields)
   const dirty = useMemo(() => JSON.stringify(initial) !== JSON.stringify(state), [initial, state]);
 
-  // test connection hook
   const { loading: testLoading, result: testResult, test } = useTestConnection();
 
-  // local state for mpesa ad-hoc fields and loading
+  // local state for mpesa ad-hoc fields
   const [fieldValues, setFieldValues] = useState<Record<string, any>>({});
   const updateField = useCallback((key: string, value: any) => {
     setFieldValues((s) => ({ ...(s ?? {}), [key]: value }));
   }, []);
   const [mpesaLoading, setMpesaLoading] = useState(false);
 
-  // sync some mpesa-related values from main state into local ad-hoc fields when available
   useEffect(() => {
     setFieldValues((prev = {}) => ({
       mpesaPhone: prev.mpesaPhone ?? "",
@@ -500,7 +498,6 @@ export default function PaymentAccordion({ paymentSettings, onChange, onSave }: 
       mpesaCallbackUrl: prev.mpesaCallbackUrl ?? state.mpesaCallbackUrl ?? "",
       mpesaSandbox: prev.mpesaSandbox ?? state.mpesaSandbox ?? false,
     }));
-    // only sync when relevant state fields change
   }, [
     state.mpesaConsumerKey,
     state.mpesaConsumerSecret,
@@ -510,13 +507,11 @@ export default function PaymentAccordion({ paymentSettings, onChange, onSave }: 
     state.mpesaSandbox,
   ]);
 
-  // helper: compute errorCount for gateway quickly
   const gatewayErrorCount = useCallback(
     (g: GatewayConfig) => g.fields.filter((f) => !!errors[String(f.key)]).length,
     [errors]
   );
 
-  // helper: check gateway validity only for that gateway
   const isGatewayValid = useCallback(
     (g: GatewayConfig) => {
       const enabled = !!state[String(g.toggleKey)];
@@ -532,50 +527,46 @@ export default function PaymentAccordion({ paymentSettings, onChange, onSave }: 
     [state]
   );
 
-  // test action per gateway
   const testGateway = useCallback(
     async (g: GatewayConfig) => {
-      // Do isolated validation: only require the gateway's required fields
       if (!isGatewayValid(g)) {
-        // quick UX: set a small visual result (we use test hook's result)
         setTimeout(() => {
-          // emulate failed state via test hook's result setter (can't set directly) -> call test with a small short-circuit payload
           test(g.label, g.testEndpoint, { __simulate: "invalidate" });
         }, 10);
         return;
       }
-
-      // collect payload from fields
       const payload: Record<string, any> = {};
       g.fields.forEach((f) => {
         payload[String(f.key)] = state[String(f.key)];
       });
-      // include toggle for context
       payload[String(g.toggleKey)] = !!state[String(g.toggleKey)];
-
       await test(g.label, g.testEndpoint, payload);
     },
     [isGatewayValid, state, test]
   );
-
-  /* ============================
-     Render
-     ============================ */
 
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-6">
       <header className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-extrabold">Payment Gateway Configuration</h2>
-          <p className="text-sm text-gray-500">Enable gateways, enter credentials and test connections. Secrets are masked by default.</p>
+          <p className="text-sm text-gray-500">
+            Enable gateways, enter credentials and test connections. Secrets are masked by default.
+          </p>
         </div>
 
         <div className="flex items-center gap-3">
-          <button onClick={handleSave} disabled={!dirty} className={`px-4 py-2 rounded-md text-sm text-white ${dirty ? "bg-indigo-600 hover:bg-indigo-700" : "bg-gray-300 cursor-not-allowed"}`}>
+          <button
+            onClick={handleSave}
+            disabled={!dirty}
+            className={`px-4 py-2 rounded-md text-sm text-white ${
+              dirty ? "bg-indigo-600 hover:bg-indigo-700" : "bg-gray-300 cursor-not-allowed"
+            }`}
+          >
             Save
           </button>
           <button
-            onClick={() => dispatch({ type: "REPLACE", payload: clone(paymentSettings ?? {}) })}
+            onClick={() => dispatch({ type: "REPLACE", payload: clone(initial) })}
             className="px-4 py-2 rounded-md border text-sm"
           >
             Reset
@@ -636,7 +627,11 @@ export default function PaymentAccordion({ paymentSettings, onChange, onSave }: 
                       {!isGatewayValid(g) ? (
                         <span className="text-red-600">Fix {errCount} required field(s) to test.</span>
                       ) : testResult && testResult.label === g.label ? (
-                        testResult.success ? <span className="text-green-600">Connection OK</span> : <span className="text-red-600">Connection failed</span>
+                        testResult.success ? (
+                          <span className="text-green-600">Connection OK</span>
+                        ) : (
+                          <span className="text-red-600">Connection failed</span>
+                        )
                       ) : (
                         <span className="text-gray-500">{g.feeDescription ?? ""}</span>
                       )}
@@ -644,72 +639,64 @@ export default function PaymentAccordion({ paymentSettings, onChange, onSave }: 
                   </div>
 
                   {g.id === "mpesa" && (
-                        <div className="mt-4 space-y-3">
-
-                          {/* Phone Number */}
-                          <div>
-                            <label className="block text-sm font-medium">Phone Number (07XXXXXXXX)</label>
-                            <input
-                              type="tel"
-                              value={fieldValues["mpesaPhone"] || ""}
-                              onChange={(e) => updateField("mpesaPhone", e.target.value)}
-                              placeholder="2547XXXXXXXX"
-                              className="w-full border px-3 py-2 rounded"
-                            />
-                          </div>
-
-                          {/* Amount */}
-                          <div>
-                            <label className="block text-sm font-medium">Amount</label>
-                            <input
-                              type="number"
-                              value={fieldValues["mpesaAmount"] || ""}
-                              onChange={(e) => updateField("mpesaAmount", e.target.value)}
-                              placeholder="100"
-                              className="w-full border px-3 py-2 rounded"
-                            />
-                          </div>
-
-                          <button
-                            onClick={async () => {
-                              try {
-                                setMpesaLoading(true);
-
-                                const res = await fetch("/api/payments/mpesa/stkpush", {
-                                  method: "POST",
-                                  headers: { "Content-Type": "application/json" },
-                                  body: JSON.stringify({
-                                    phoneNumber: fieldValues["mpesaPhone"],
-                                    amount: Number(fieldValues["mpesaAmount"]),
-                                    mpesaConsumerKey: fieldValues["mpesaConsumerKey"],
-                                    mpesaConsumerSecret: fieldValues["mpesaConsumerSecret"],
-                                    mpesaShortcode: fieldValues["mpesaShortcode"],
-                                    mpesaPasskey: fieldValues["mpesaPasskey"],
-                                    mpesaCallbackUrl: fieldValues["mpesaCallbackUrl"],
-                                    sandbox: fieldValues["mpesaSandbox"],
-                                  }),
-                                });
-
-                                const out = await res.json().catch(() => null);
-                                if (!out || !out.ok) {
-                                  window.alert("STK Push failed: " + (out?.data?.errorMessage || out?.error || "Unknown"));
-                                } else {
-                                  window.alert("STK Push Sent Successfully!");
-                                }
-                              } catch (err: any) {
-                                window.alert("STK Push Error: " + (err?.message ?? String(err)));
-                              } finally {
-                                setMpesaLoading(false);
-                              }
-                            }}
-                            className="w-full py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
-                            disabled={mpesaLoading}
-                          >
-                            {mpesaLoading ? "Sending..." : "Send STK Push"}
-                          </button>
-                        </div>
-                      )}
-
+                    <div className="mt-4 space-y-3">
+                      <div>
+                        <label className="block text-sm font-medium">Phone Number (07XXXXXXXX)</label>
+                        <input
+                          type="tel"
+                          value={fieldValues["mpesaPhone"] || ""}
+                          onChange={(e) => updateField("mpesaPhone", e.target.value)}
+                          placeholder="2547XXXXXXXX"
+                          className="w-full border px-3 py-2 rounded"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium">Amount</label>
+                        <input
+                          type="number"
+                          value={fieldValues["mpesaAmount"] || ""}
+                          onChange={(e) => updateField("mpesaAmount", e.target.value)}
+                          placeholder="100"
+                          className="w-full border px-3 py-2 rounded"
+                        />
+                      </div>
+                      <button
+                        onClick={async () => {
+                          try {
+                            setMpesaLoading(true);
+                            const res = await fetch("/api/payments/mpesa/stkpush", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({
+                                phoneNumber: fieldValues["mpesaPhone"],
+                                amount: Number(fieldValues["mpesaAmount"]),
+                                mpesaConsumerKey: fieldValues["mpesaConsumerKey"],
+                                mpesaConsumerSecret: fieldValues["mpesaConsumerSecret"],
+                                mpesaShortcode: fieldValues["mpesaShortcode"],
+                                mpesaPasskey: fieldValues["mpesaPasskey"],
+                                mpesaCallbackUrl: fieldValues["mpesaCallbackUrl"],
+                                sandbox: fieldValues["mpesaSandbox"],
+                              }),
+                            });
+                            const out = await res.json().catch(() => null);
+                            if (!out || !out.ok) {
+                              window.alert("STK Push failed: " + (out?.data?.errorMessage || out?.error || "Unknown"));
+                            } else {
+                              window.alert("STK Push Sent Successfully!");
+                            }
+                          } catch (err: any) {
+                            window.alert("STK Push Error: " + (err?.message ?? String(err)));
+                          } finally {
+                            setMpesaLoading(false);
+                          }
+                        }}
+                        className="w-full py-2 bg-green-600 text-white rounded hover:bg-green-700 transition"
+                        disabled={mpesaLoading}
+                      >
+                        {mpesaLoading ? "Sending..." : "Send STK Push"}
+                      </button>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="text-sm text-gray-500">Enable to configure {g.label}.</div>
@@ -721,11 +708,20 @@ export default function PaymentAccordion({ paymentSettings, onChange, onSave }: 
 
       <footer className="flex items-center justify-between pt-4">
         <div className="text-sm text-gray-600">
-          Status: {Object.keys(errors).length ? <span className="text-red-600">Configuration incomplete</span> : <span className="text-green-600">OK</span>}
+          Status:{" "}
+          {Object.keys(errors).length ? (
+            <span className="text-red-600">Configuration incomplete</span>
+          ) : (
+            <span className="text-green-600">OK</span>
+          )}
         </div>
 
         <div className="flex gap-2">
-          <button onClick={handleSave} disabled={!dirty} className={`px-4 py-2 rounded-md text-white ${dirty ? "bg-indigo-600" : "bg-gray-300"}`}>
+          <button
+            onClick={handleSave}
+            disabled={!dirty}
+            className={`px-4 py-2 rounded-md text-white ${dirty ? "bg-indigo-600" : "bg-gray-300"}`}
+          >
             Save
           </button>
           <button onClick={() => onChange(clone(state))} className="px-4 py-2 rounded-md border">

@@ -231,37 +231,55 @@ export default function CreateStoreForm({
     },
     paymentSettings: {
       id: "",
-    // companyId: "", // Keep this commented or include if you use it in your component
-    
-    // --- New Enablement Flags ---
-    isStripeEnabled: false,   // New: Default to false
-    isPaypalEnabled: false,   // New: Default to false
-    isMpesaEnabled: false,    // New: Default to false
-    isPaystackEnabled: false, // New: Default to false
-    isGhubaEnabled: false,    // New: Default to false
+      // companyId: "", // Keep this commented or include if you use it in your component
+      // --- New Enablement Flags ---
+      isStripeEnabled: false, // New: Default to false
+      isPaypalEnabled: false, // New: Default to false
+      isMpesaEnabled: false, // New: Default to false
+      isPaystackEnabled: false, // New: Default to false
+      isGhubaEnabled: false, // New: Default to false
 
-    // --- Configuration Keys ---
-    // Stripe
-    
-    stripePublishableKey: null,
-    stripeSecretKey: null,
 
-    paypalClientId: null,
-    paypalClientSecret: null,
-  
-    // M-Pesa
-    mpesaShortcode: null,
-    mpesaConsumerKey: null,
-    mpesaConsumerSecret: null,
-    mpesaCallbackUrl: null,
-    
-    // --- Paystack Keys ---
-    paystackPublicKey: null,  // New: Paystack Public Key
-    paystackSecretKey: null,  // New: Paystack Secret Key
 
-    // Ghuba (NEW FIELDS)
-    ghubaMerchantId: null,
-    ghubaApiKey: null
+
+      // --- Configuration Keys ---
+      // Stripe
+      stripePublishableKey: null,
+      stripeSecretKey: null,
+
+      paypalClientId: null,
+      paypalClientSecret: null,
+
+      // M-Pesa
+      mpesaShortcode: null,
+      mpesaConsumerKey: null,
+      mpesaConsumerSecret: null,
+      mpesaCallbackUrl: null,
+
+      // --- Paystack Keys ---
+      paystackPublicKey: null, // New: Paystack Public Key
+      paystackSecretKey: null, // New: Paystack Secret Key
+
+
+      // Ghuba (NEW FIELDS)
+      ghubaMerchantId: null,
+      ghubaApiKey: null,
+      mpesaPasskey: null,
+      mpesaSecret_encrypted: null,
+      mpesaSecret_iv: null,
+      mpesaSecret_tag: null,
+      stripeSecret_encrypted: null,
+      stripeSecret_iv: null,
+      stripeSecret_tag: null,
+      paypalSecret_encrypted: null,
+      paypalSecret_iv: null,
+      paypalSecret_tag: null,
+      paystackSecret_encrypted: null,
+      paystackSecret_iv: null,
+      paystackSecret_tag: null,
+      ghubaSecret_encrypted: null,
+      ghubaSecret_iv: null,
+      ghubaSecret_tag: null
     },
     shippingSettings: {
       id: "",
