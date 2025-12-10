@@ -20,6 +20,9 @@ import {
   PlusIcon,
   MinusIcon,
   BanknotesIcon,
+  GlobeAltIcon,
+  WalletIcon,
+  CurrencyDollarIcon,
 } from '@heroicons/react/24/outline';
 import { useStateContext } from '@/contexts/ContextProvider';
 import { useStore } from '@/contexts/StoreContext';
@@ -33,7 +36,31 @@ type StepIndex = 0 | 1 | 2 | 3;
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
-export default function CheckoutPage(): JSX.Element {
+// --- 1. CONFIGURATION MAPPING ---
+// Maps backend IDs to UI Icons and Labels
+const METHOD_CONFIG: Record<string, { label: string; Icon: any; colorClass: string }> = {
+  ghuba: { label: 'Ghuba Pay', Icon: WalletIcon, colorClass: 'text-purple-600 bg-purple-50 border-purple-200' },
+  stripe: { label: 'Credit Card (Stripe)', Icon: CreditCardIcon, colorClass: 'text-blue-600 bg-blue-50 border-blue-200' },
+  paypal: { label: 'PayPal', Icon: GlobeAltIcon, colorClass: 'text-indigo-600 bg-indigo-50 border-indigo-200' },
+  mpesa: { label: 'M-Pesa', Icon: TagIcon, colorClass: 'text-green-600 bg-green-50 border-green-200' },
+  paystack: { label: 'Paystack', Icon: BanknotesIcon, colorClass: 'text-yellow-600 bg-yellow-50 border-yellow-200' },
+  cod: { label: 'Cash on Delivery', Icon: TruckIcon, colorClass: 'text-gray-600 bg-gray-50 border-gray-200' },
+};
+
+
+// --- Types ---
+interface PublicPaymentMethod {
+  id: string;
+  label: string;
+  isEnabled: boolean;
+  meta: Record<string, any>;
+}
+
+interface CheckoutPageProps {
+  paymentMethods: PublicPaymentMethod[];
+}
+
+export default function CheckoutPage({ paymentMethods = [] }: CheckoutPageProps): JSX.Element {
   const { data: session } = useSession();
   const router = useRouter();
   const store = useStore();
@@ -62,13 +89,29 @@ export default function CheckoutPage(): JSX.Element {
   });
 
   // Payment
+  // const [payment, setPayment] = useState({
+  //   method: 'paystack', // 'paystack' | 'mpesa' | 'card' | 'cod' | 'pickupatshop'
+  //   cardNumber: session?.user?.cardNumber || '',
+  //   cardExpiry: session?.user?.cardExpiry || '',
+  //   cvv: '',
+  //   mpesaPhone: session?.user?.phone || '',
+  // });
+  // 2. INITIALIZE PAYMENT STATE DYNAMICALLY
+  // Default to the first available method from props
   const [payment, setPayment] = useState({
-    method: 'paystack', // 'paystack' | 'mpesa' | 'card' | 'cod' | 'pickupatshop'
+    method: paymentMethods[0]?.id || '', 
     cardNumber: session?.user?.cardNumber || '',
     cardExpiry: session?.user?.cardExpiry || '',
     cvv: '',
     mpesaPhone: session?.user?.phone || '',
   });
+
+  // Watch for changes in props to update default if needed
+  useEffect(() => {
+    if (paymentMethods.length > 0 && !payment.method) {
+        setPayment(prev => ({ ...prev, method: paymentMethods[0].id }));
+    }
+  }, [paymentMethods]);
 
   // Promo / discounts
   const [promoCode, setPromoCode] = useState('');
@@ -135,34 +178,69 @@ export default function CheckoutPage(): JSX.Element {
   };
 
   // Form validations (only run when moving forward / submitting)
-  const validateStep = useCallback(
-    (step = currentStep) => {
-      const errs: Record<string, string> = {};
-      if (step === 0) {
-        if (!billing.name?.trim()) errs.name = 'Full name is required';
-        if (!billing.email?.trim() || !/^\S+@\S+\.\S+$/.test(billing.email)) errs.email = 'Valid email required';
-        if (!billing.phone?.trim() || billing.phone.replace(/\D/g, '').length < 9) errs.phone = 'Valid phone required';
-      }
-      if (step === 1) {
-        if (!shipping.display_name) errs.shippingAddress = 'Select a delivery location';
-      }
-      if (step === 2) {
-        if (payment.method === 'card') {
-          const num = (payment.cardNumber || '').replace(/\s/g, '');
-          if (!num || num.length < 15) errs.cardNumber = 'Invalid card number';
-          if (!payment.cardExpiry || payment.cardExpiry.length !== 5) errs.cardExpiry = 'MM/YY';
-          if (!payment.cvv || payment.cvv.length < 3) errs.cvv = 'Invalid CVV';
+   const validateStep = useCallback(
+      (step = currentStep) => {
+        const errs: Record<string, string> = {};
+        if (step === 0) {
+          if (!billing.name?.trim()) errs.name = 'Full name is required';
+          if (!billing.email?.trim() || !/^\S+@\S+\.\S+$/.test(billing.email)) errs.email = 'Valid email required';
+          if (!billing.phone?.trim() || billing.phone.replace(/\D/g, '').length < 9) errs.phone = 'Valid phone required';
         }
-        if (payment.method === 'mpesa') {
-          const p = payment.mpesaPhone?.replace(/\D/g, '');
-          if (!p || p.length < 12) errs.mpesaPhone = 'Use format 2547XXXXXXXX';
+        if (step === 1) {
+          if (!shipping.display_name) errs.shippingAddress = 'Select a delivery location';
         }
-      }
-      setErrors(errs);
-      return Object.keys(errs).length === 0;
-    },
-    [billing, payment, shipping, currentStep]
-  );
+        if (step === 2) {
+          // Validate based on selected method
+          if (payment.method === 'card' || payment.method === 'stripe') {
+             // Basic client validation (Stripe usually handles this in Elements, but if you send raw data:)
+             // Note: Sending raw card data to your own API is discouraged unless PCI compliant. 
+             // Assuming this is a placeholder or you have a specific flow.
+             /* const num = (payment.cardNumber || '').replace(/\s/g, '');
+             if (!num || num.length < 15) errs.cardNumber = 'Invalid card number';
+             if (!payment.cardExpiry || payment.cardExpiry.length !== 5) errs.cardExpiry = 'MM/YY';
+             if (!payment.cvv || payment.cvv.length < 3) errs.cvv = 'Invalid CVV';
+             */
+          }
+          if (payment.method === 'mpesa') {
+            const p = payment.mpesaPhone?.replace(/\D/g, '');
+            if (!p || p.length < 12) errs.mpesaPhone = 'Use format 2547XXXXXXXX';
+          }
+          if (!payment.method) errs.paymentMethod = 'Please select a payment method';
+        }
+        setErrors(errs);
+        return Object.keys(errs).length === 0;
+      },
+      [billing, payment, shipping, currentStep]
+    );
+  
+  // const validateStep = useCallback(
+  //   (step = currentStep) => {
+  //     const errs: Record<string, string> = {};
+  //     if (step === 0) {
+  //       if (!billing.name?.trim()) errs.name = 'Full name is required';
+  //       if (!billing.email?.trim() || !/^\S+@\S+\.\S+$/.test(billing.email)) errs.email = 'Valid email required';
+  //       if (!billing.phone?.trim() || billing.phone.replace(/\D/g, '').length < 9) errs.phone = 'Valid phone required';
+  //     }
+  //     if (step === 1) {
+  //       if (!shipping.display_name) errs.shippingAddress = 'Select a delivery location';
+  //     }
+  //     if (step === 2) {
+  //       if (payment.method === 'card') {
+  //         const num = (payment.cardNumber || '').replace(/\s/g, '');
+  //         if (!num || num.length < 15) errs.cardNumber = 'Invalid card number';
+  //         if (!payment.cardExpiry || payment.cardExpiry.length !== 5) errs.cardExpiry = 'MM/YY';
+  //         if (!payment.cvv || payment.cvv.length < 3) errs.cvv = 'Invalid CVV';
+  //       }
+  //       if (payment.method === 'mpesa') {
+  //         const p = payment.mpesaPhone?.replace(/\D/g, '');
+  //         if (!p || p.length < 12) errs.mpesaPhone = 'Use format 2547XXXXXXXX';
+  //       }
+  //     }
+  //     setErrors(errs);
+  //     return Object.keys(errs).length === 0;
+  //   },
+  //   [billing, payment, shipping, currentStep]
+  // );
 
   // Step navigation
   const next = useCallback(() => {
@@ -335,7 +413,16 @@ export default function CheckoutPage(): JSX.Element {
                   </StepWrapper>
 
                   <StepWrapper active={currentStep === 2}>
-                    <PaymentStep payment={payment} onChange={updatePayment} errors={errors} />
+                    {/* <PaymentStep payment={payment} onChange={updatePayment} errors={errors} /> */}
+                    {/* 3. PASS PAYMENT METHODS TO PAYMENT STEP */}
+                    <div className={currentStep === 2 ? 'block' : 'hidden'}>
+                        <PaymentStep 
+                            payment={payment} 
+                            onChange={updatePayment} 
+                            errors={errors} 
+                            availableMethods={paymentMethods} 
+                        />
+                    </div>
                     {/* Promo */}
                     <div className="mt-6 bg-yellow-50 p-4 rounded-lg border border-yellow-100">
                       <div className="flex items-center gap-3">
@@ -528,7 +615,129 @@ function ShippingStep({ shipping, onChange, onSelect, errors }: any) {
 /* ------------------------------
    Payment Step
    ------------------------------ */
-function PaymentStep({ payment, onChange, errors }: any) {
+   
+/* ------------------------------
+   Payment Step (Modified)
+   ------------------------------ */
+function PaymentStep({ payment, onChange, errors, availableMethods = [] }: any) {
+  
+  if (availableMethods.length === 0) {
+      return <div className="p-6 text-center text-red-500">No payment methods available for this store.</div>;
+  }
+
+  return (
+    <div className="space-y-4 p-4 md:p-6">
+      <h3 className="text-2xl font-extrabold text-gray-900">Payment</h3>
+      <p className="text-sm text-gray-600">Choose how you want to pay.</p>
+
+      {/* 4. DYNAMIC RENDER based on props */}
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-4">
+        {availableMethods.map((m: PublicPaymentMethod) => {
+          // Fallback if config is missing for a new ID
+          const config = METHOD_CONFIG[m.id] || { label: m.label || m.id, Icon: CurrencyDollarIcon, colorClass: 'border-gray-200' };
+          const Icon = config.Icon;
+          const isSelected = payment.method === m.id;
+
+          return (
+            <label
+              key={m.id}
+              className={`p-4 rounded-xl border cursor-pointer text-center transition-all ${
+                isSelected ? `${config.colorClass} ring-2 ring-offset-1 ring-indigo-500 shadow-md` : 'border-gray-200 hover:border-indigo-300 bg-white'
+              }`}
+            >
+              <input
+                className="sr-only"
+                type="radio"
+                name="paymentMethod"
+                value={m.id}
+                checked={isSelected}
+                onChange={(e) => onChange({ method: e.target.value })}
+              />
+              <div className="flex flex-col items-center gap-2">
+                <Icon className={`w-8 h-8 ${isSelected ? 'text-current' : 'text-gray-400'}`} />
+                <div className="text-sm font-semibold">{m.label || config.label}</div>
+              </div>
+            </label>
+          );
+        })}
+      </div>
+
+      {/* 5. CONDITIONAL FORM FIELDS based on Selection */}
+      <div className="mt-6">
+        
+        {/* Stripe / Credit Card */}
+        {payment.method === 'stripe' && (
+          <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+             <div className="flex items-center gap-2 mb-3 text-blue-800">
+                <CreditCardIcon className="w-5 h-5"/> <span className="font-semibold">Secure Credit Card Payment</span>
+             </div>
+             {/* Note: In a real app, you would render <CardElement /> here using Stripe.js */}
+             <div className="text-sm text-gray-600">
+                You will be redirected to Stripe's secure checkout page to complete your purchase.
+             </div>
+          </div>
+        )}
+
+        {/* M-Pesa */}
+        {payment.method === 'mpesa' && (
+          <div className="bg-green-50 p-6 rounded-xl border border-green-200">
+            <label className="text-sm font-bold text-green-800 block mb-2">M-Pesa Phone Number</label>
+            <div className="relative">
+                <input
+                    name="mpesaPhone"
+                    value={payment.mpesaPhone}
+                    onChange={(e) => onChange({ mpesaPhone: e.target.value.replace(/\D/g, '') })}
+                    placeholder="2547XXXXXXXX"
+                    className={`w-full p-3 pl-4 rounded-xl border ${errors.mpesaPhone ? 'border-red-400' : 'border-green-300'} focus:ring-2 focus:ring-green-500 outline-none`}
+                />
+            </div>
+            {errors.mpesaPhone && <p className="text-xs text-red-600 mt-1">{errors.mpesaPhone}</p>}
+            <p className="mt-3 text-xs text-green-700 flex items-center gap-1">
+                <CheckCircleIcon className="w-4 h-4"/> You will receive an STK push prompt on this number.
+            </p>
+          </div>
+        )}
+
+        {/* Ghuba */}
+        {payment.method === 'ghuba' && (
+          <div className="bg-purple-50 p-4 rounded-xl border border-purple-200">
+             <h4 className="font-semibold text-purple-900">Ghuba Pay</h4>
+             <p className="text-sm text-purple-700 mt-1">
+                Fast and secure local payments. You will be redirected to the Ghuba gateway to finalize payment.
+             </p>
+          </div>
+        )}
+
+        {/* PayPal */}
+        {payment.method === 'paypal' && (
+          <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-200 text-indigo-900">
+             <h4 className="font-semibold">Pay with PayPal</h4>
+             <p className="text-sm mt-1">You will be redirected to PayPal to complete your purchase securely.</p>
+          </div>
+        )}
+
+        {/* Paystack */}
+        {payment.method === 'paystack' && (
+          <div className="bg-yellow-50 p-4 rounded-xl border border-yellow-200 text-yellow-800">
+            <div className="font-bold">Pay via Paystack</div>
+            <p className="text-sm mt-1">Secure payment via Card, Bank Transfer, or USSD.</p>
+          </div>
+        )}
+
+        {/* COD */}
+        {payment.method === 'cod' && (
+          <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 text-gray-800">
+            <div className="font-bold">Cash on Delivery</div>
+            <p className="text-sm mt-1">Pay the courier upon arrival. Please ensure you have the exact amount.</p>
+          </div>
+        )}
+
+      </div>
+    </div>
+  );
+}
+
+function PaymentStepV1({ payment, onChange, errors }: any) {
   return (
     <div className="space-y-4 p-4 md:p-6">
       <h3 className="text-2xl font-extrabold text-gray-900">Payment</h3>
