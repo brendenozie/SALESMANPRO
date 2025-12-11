@@ -1,8 +1,5 @@
 import React, { ChangeEvent } from 'react';
 
-/**
- * Interface for Shipping settings, directly mapping to the Prisma schema model.
- */
 export interface ShippingSettings {
   id?: string;
   companyId?: string;
@@ -11,36 +8,34 @@ export interface ShippingSettings {
   regions?: string[] | null;
   enablePickup?: boolean | null;
   pickupInstructions?: string | null;
+  standardRate?: number | null;
+  expressRate?: number | null;
 }
 
-/**
- * Props for the ShippingAccordion component.
- */
 export interface ShippingAccordionProps {
   shippingSettings: ShippingSettings | null;
   onChange: (updated: ShippingSettings) => void;
 }
 
-/**
- * A component for editing shipping-related settings.
- * It handles input fields for carrier info, regions, and local pickup options.
- */
 export default function ShippingAccordion({
   shippingSettings,
   onChange,
 }: ShippingAccordionProps) {
 
-  /**
-   * A generic handler to update a specific field in the shipping settings object.
-   * It creates a new object with the updated field and calls the parent onChange handler.
-   * @param key The key of the field to update.
-   * @param value The new value for the field.
-   */
   const updateField = <K extends keyof ShippingSettings>(
     key: K,
     value: ShippingSettings[K]
   ) => {
     onChange({ ...shippingSettings, [key]: value });
+  };
+
+  /**
+   * Helper to parse string input to number for rates
+   */
+  const handlePriceChange = (field: keyof ShippingSettings, value: string) => {
+    const floatValue = parseFloat(value);
+    // If the input is empty or invalid, you might want to set it to 0 or null
+    updateField(field, isNaN(floatValue) ? 0 : floatValue);
   };
 
   return (
@@ -50,85 +45,135 @@ export default function ShippingAccordion({
         <span className="text-2xl" role="img" aria-label="settings">🚚</span>
       </div>
 
-      {/* Shipping Configuration Section */}
-      <section className="p-6 border border-gray-200 rounded-xl bg-gray-50">
-        <h3 className="text-xl font-bold text-gray-800 mb-4">
-          Shipping Configuration
-        </h3>
-        <p className="text-sm text-gray-600 mb-6">
-          Define your shipping carriers and rules.
-        </p>
-        <div className="space-y-6">
-          <div>
-            <label htmlFor="carrierName" className="block text-sm font-semibold text-gray-700">
-              Carrier Name
-            </label>
-            <input
-              id="carrierName"
-              type="text"
-              // Correctly binding the value to the prop
-              value={shippingSettings?.carrierName || ''}
-              onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                updateField('carrierName', e.target.value)
-              }
-              placeholder="e.g., FedEx"
-              className="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2 text-sm shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out"
-            />
+      <div className="space-y-6">
+        {/* Section 1: Configuration */}
+        <section className="p-6 border border-gray-200 rounded-xl bg-gray-50">
+          <h3 className="text-xl font-bold text-gray-800 mb-4">
+            General Configuration
+          </h3>
+          <div className="space-y-6">
+            <div>
+              <label htmlFor="carrierName" className="block text-sm font-semibold text-gray-700">
+                Carrier Name
+              </label>
+              <input
+                id="carrierName"
+                type="text"
+                value={shippingSettings?.carrierName || ''}
+                onChange={(e) => updateField('carrierName', e.target.value)}
+                placeholder="e.g., FedEx"
+                className="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2 text-sm shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+            <div>
+              <label htmlFor="trackingUrl" className="block text-sm font-semibold text-gray-700">
+                Tracking URL
+              </label>
+              <input
+                id="trackingUrl"
+                type="text"
+                value={shippingSettings?.trackingUrl || ''}
+                onChange={(e) => updateField('trackingUrl', e.target.value)}
+                placeholder="e.g., https://www.fedex.com/track?tracknum="
+                className="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2 text-sm shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
+            <div>
+              <label htmlFor="regions" className="block text-sm font-semibold text-gray-700">
+                Regions (comma-separated)
+              </label>
+              <input
+                id="regions"
+                type="text"
+                value={shippingSettings?.regions?.join(', ') || ''}
+                onChange={(e) =>
+                  updateField('regions', e.target.value.split(',').map(k => k.trim()).filter(k => k.length > 0))
+                }
+                placeholder="e.g., North America, Europe"
+                className="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2 text-sm shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+              />
+            </div>
           </div>
-          <div>
-            <label htmlFor="trackingUrl" className="block text-sm font-semibold text-gray-700">
-              Tracking URL
-            </label>
-            <input
-              id="trackingUrl"
-              type="text"
-              // Correctly binding the value to the prop
-              value={shippingSettings?.trackingUrl || ''}
-              onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                updateField('trackingUrl', e.target.value)
-              }
-              placeholder="e.g., https://www.fedex.com/track?tracknum="
-              className="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2 text-sm shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out"
-            />
+        </section>
+
+        {/* Section 2: Shipping Rates (NEW) */}
+        <section className="p-6 border border-gray-200 rounded-xl bg-gray-50">
+          <h3 className="text-xl font-bold text-gray-800 mb-2">
+            Shipping Rates
+          </h3>
+          <p className="text-sm text-gray-600 mb-6">
+             Set your flat rates for standard and express delivery.
+          </p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Standard Shipping Input */}
+            <div className="relative">
+              <label htmlFor="standardRate" className="block text-sm font-semibold text-gray-700 mb-1">
+                Standard Shipping
+              </label>
+              <div className="relative mt-2 rounded-md shadow-sm">
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                  <span className="text-gray-500 sm:text-sm">$</span>
+                </div>
+                <input
+                  type="number"
+                  name="standardRate"
+                  id="standardRate"
+                  min="0"
+                  step="0.01"
+                  className="block w-full rounded-md border border-gray-300 pl-7 pr-4 py-2 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  placeholder="0.00"
+                  value={shippingSettings?.standardRate || ''}
+                  onChange={(e) => handlePriceChange('standardRate', e.target.value)}
+                />
+              </div>
+              <p className="mt-1 text-xs text-gray-500">Usually 5-7 business days</p>
+            </div>
+
+            {/* Express Shipping Input */}
+            <div className="relative">
+              <label htmlFor="expressRate" className="block text-sm font-semibold text-gray-700 mb-1">
+                Express Shipping
+              </label>
+              <div className="relative mt-2 rounded-md shadow-sm">
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                  <span className="text-gray-500 sm:text-sm">$</span>
+                </div>
+                <input
+                  type="number"
+                  name="expressRate"
+                  id="expressRate"
+                  min="0"
+                  step="0.01"
+                  className="block w-full rounded-md border border-gray-300 pl-7 pr-4 py-2 focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                  placeholder="0.00"
+                  value={shippingSettings?.expressRate || ''}
+                  onChange={(e) => handlePriceChange('expressRate', e.target.value)}
+                />
+              </div>
+              <p className="mt-1 text-xs text-gray-500">Usually 1-2 business days</p>
+            </div>
           </div>
-          <div>
-            <label htmlFor="regions" className="block text-sm font-semibold text-gray-700">
-              Regions (comma-separated)
-            </label>
-            <input
-              id="regions"
-              type="text"
-              // Correctly binding the value to the prop
-              value={shippingSettings?.regions?.join(', ') || ''}
-              onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                updateField(
-                  'regions',
-                  e.target.value
-                    .split(',')
-                    .map(k => k.trim())
-                    .filter(k => k.length > 0)
-                )
-              }
-              placeholder="e.g., North America, Europe"
-              className="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2 text-sm shadow-sm focus:ring-indigo-500 focus:border-indigo-500 transition duration-150 ease-in-out"
-            />
-          </div>
-          <div className="flex items-center">
+        </section>
+
+        {/* Section 3: Local Pickup */}
+        <section className="p-6 border border-gray-200 rounded-xl bg-gray-50">
+           <h3 className="text-xl font-bold text-gray-800 mb-4">
+            Pickup Settings
+          </h3>
+          <div className="flex items-center mb-4">
             <input
               id="enablePickup"
               type="checkbox"
-              // Correctly binding the checked state to the prop
               checked={shippingSettings?.enablePickup || false}
-              onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                updateField('enablePickup', e.target.checked)
-              }
+              onChange={(e) => updateField('enablePickup', e.target.checked)}
               className="h-4 w-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
             />
             <label htmlFor="enablePickup" className="ml-2 block text-sm font-semibold text-gray-700">
               Enable local pickup
             </label>
           </div>
-          {/* Conditionally render the pickup instructions field */}
+          
           {(shippingSettings?.enablePickup || false) && (
             <div>
               <label htmlFor="pickupInstructions" className="block text-sm font-semibold text-gray-700">
@@ -137,18 +182,15 @@ export default function ShippingAccordion({
               <textarea
                 id="pickupInstructions"
                 rows={3}
-                // Correctly binding the value to the prop
                 value={shippingSettings?.pickupInstructions || ''}
-                onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
-                  updateField('pickupInstructions', e.target.value)
-                }
+                onChange={(e) => updateField('pickupInstructions', e.target.value)}
                 placeholder="e.g., Pick up at our main office between 9am-5pm."
-                className="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2 text-sm shadow-sm focus:ring-indigo-500 focus:border-indigo-500 resize-none transition duration-150 ease-in-out"
+                className="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2 text-sm shadow-sm focus:ring-indigo-500 focus:border-indigo-500 resize-none"
               />
             </div>
           )}
-        </div>
-      </section>
+        </section>
+      </div>
     </div>
   );
 }

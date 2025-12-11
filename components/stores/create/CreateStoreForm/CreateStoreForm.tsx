@@ -288,7 +288,10 @@ export default function CreateStoreForm({
       trackingUrl: null,
       regions: null,
       enablePickup: null,
-      pickupInstructions: null
+      pickupInstructions: null,
+      
+      standardRate: 0.00,
+      expressRate: 0.00,
     },
     blogs: [],
     companyCategoryId: "",

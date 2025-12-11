@@ -577,6 +577,8 @@ model ShippingSettings {
   enablePickup       Boolean?
   pickupInstructions String?
   company            Company?
+  standardRate       Float?   @default(0.00)
+  expressRate        Float?   @default(0.00)
 }
 
 model PageSection {
