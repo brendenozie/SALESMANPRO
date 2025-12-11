@@ -95,7 +95,7 @@ export const paymentSteps: StepConfig[] = [
             onChange={(upd) =>
               h.onUpdatePaymentSettings({
                 id: upd.id ?? '',
-                
+
                 mpesaShortcode: upd.mpesaShortcode ?? null,
                 mpesaConsumerKey: upd.mpesaConsumerKey ?? null,
                 mpesaConsumerSecret: upd.mpesaConsumerSecret ?? null,
@@ -109,13 +109,28 @@ export const paymentSteps: StepConfig[] = [
                 paystackSecretKey: upd.paystackSecretKey ?? null,
                 ghubaMerchantId: upd.ghubaMerchantId ?? null,
                 ghubaApiKey: upd.ghubaApiKey ?? null,
-                
+
                 stripePublishableKey: upd.stripePublishableKey ?? null,
                 stripeSecretKey: upd.stripeSecretKey ?? null,
 
                 paypalClientId: upd.paypalClientId ?? null,
                 paypalClientSecret: upd.paypalClientSecret ?? null,
-                
+                mpesaPasskey: upd.mpesaPasskey ?? null,
+                mpesaSecret_encrypted: upd.mpesaSecret_encrypted ?? null,
+                mpesaSecret_iv: upd.mpesaSecret_iv ?? null,
+                mpesaSecret_tag: upd.mpesaSecret_tag ?? null,
+                stripeSecret_encrypted: upd.stripeSecret_encrypted ?? null,
+                stripeSecret_iv: upd.stripeSecret_iv ?? null,
+                stripeSecret_tag: upd.stripeSecret_tag ?? null,
+                paypalSecret_encrypted: upd.paypalSecret_encrypted ?? null,
+                paypalSecret_iv: upd.paypalSecret_iv ?? null,
+                paypalSecret_tag: upd.paypalSecret_tag ?? null,
+                paystackSecret_encrypted: upd.paystackSecret_encrypted ?? null,
+                paystackSecret_iv: upd.paystackSecret_iv ?? null,
+                paystackSecret_tag: upd.paystackSecret_tag ?? null,
+                ghubaSecret_encrypted: upd.ghubaSecret_encrypted ?? null,
+                ghubaSecret_iv: upd.ghubaSecret_iv ?? null,
+                ghubaSecret_tag: upd.ghubaSecret_tag ?? null
               })
             }
           />
@@ -140,6 +155,8 @@ export const paymentSteps: StepConfig[] = [
                     : [],
                 enablePickup: f.shippingSettings.enablePickup ?? null,
                 pickupInstructions: f.shippingSettings.pickupInstructions ?? null,
+                standardRate: f.shippingSettings.standardRate ?? null,
+                expressRate: f.shippingSettings.expressRate ?? null,
               }
             : {
                 id: '',
@@ -148,6 +165,8 @@ export const paymentSteps: StepConfig[] = [
                 regions: [],
                 enablePickup: null,
                 pickupInstructions: null,
+                standardRate: null,
+                expressRate: null,
               }
         }
         onChange={(upd) =>
@@ -159,6 +178,8 @@ export const paymentSteps: StepConfig[] = [
               regions: upd.regions ?? [],
               enablePickup: upd.enablePickup ?? null,
               pickupInstructions: upd.pickupInstructions ?? null,
+              standardRate: upd.standardRate ?? null,
+              expressRate: upd.expressRate ?? null
             }
           })
         }

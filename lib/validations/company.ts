@@ -218,6 +218,7 @@ export const companySchema = z.object({
       ghubaSecret_encrypted: z.string().nullable().optional(),
       ghubaSecret_iv: z.string().nullable().optional(),
       ghubaSecret_tag: z.string().nullable().optional(),
+      
   }).nullable().optional(),
 
   shippingSettings: z.object({
@@ -226,6 +227,8 @@ export const companySchema = z.object({
       regions: z.any().nullable().optional(),
       enablePickup: z.boolean().nullable().optional(),
       pickupInstructions: z.string().nullable().optional(),
+      standardRate: z.number().nullable().optional(),
+      expressRate: z.number().nullable().optional(),
   }).nullable().optional(),//z.array().optional(),
   
   // -- Many-to-Many through explicit join table --
