@@ -6,7 +6,8 @@ import { createOrder as createOrderRecord } from "@/lib/orders/createOrder";
 import { getCompanyPaymentConfig } from "@/lib/paymentsv2/index";
 import { initiateMpesaPayment } from "@/lib/paymentsv2/mpesa";
 import { initiatePaystackPayment } from "@/lib/paymentsv2/paystack";
-import { initiateGhubaPayment } from "@/lib/paymentsv2/ghuba";
+// import { initiateGhubaPayment } from "@/lib/paymentsv2/ghuba";
+import { initiatePaystackPayment as initiateGhubaPayment } from "@/lib/payments/paystack";
 import { initiateStripePaymentIntent } from "@/lib/paymentsv2/stripe";
 import { createPaypalOrder } from "@/lib/paymentsv2/paypal";
 
@@ -162,7 +163,8 @@ export async function POST(req: Request) {
         paymentResponse = await initiatePaystackPayment(orderDb, data.email, cfg.credentials);
         break;
       case "ghuba":
-        paymentResponse = await initiateGhubaPayment(orderDb, cfg.credentials);
+        // paymentResponse = await initiateGhubaPayment(orderDb, cfg.credentials);
+        paymentResponse = await initiateGhubaPayment(orderDb, data.email);
         break;
       case "stripe":
         paymentResponse = await initiateStripePaymentIntent(orderDb, cfg.credentials);
