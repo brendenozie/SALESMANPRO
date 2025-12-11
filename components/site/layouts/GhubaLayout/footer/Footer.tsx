@@ -17,6 +17,10 @@ const Footer = () => {
   // if (path.startsWith('/agent')) return null;
   // if (path.startsWith('/clients')) return null;  
   // if (path.startsWith('/site')) return null;
+  if (path.startsWith('/ghuba/profile')) return null;
+  if (path.startsWith('/shop/profile')) return null;
+  if(path.includes('/shop/profile')) return null;
+  if (path.includes('/ghuba/profile')) return null;
   // if (path.startsWith('/shop/profile')) return null;
   // if (path.startsWith('/dashboards')) return null;
   // if (path.startsWith('/play')) return null;

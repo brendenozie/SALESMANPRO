@@ -17,16 +17,16 @@ import {
   PhoneIcon,
   MapPinIcon
 } from "@heroicons/react/24/outline";
-import { useStateContext } from "@/contexts/ContextProvider.js";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { debounce } from "lodash";
 import { usePathname } from 'next/navigation';
+import { useStateContext } from "@/contexts/ContextProvider";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
-
+//  location, setLocation, locationName, setLocationName,
 const Header = () => {
-  const {user, isDarkMode, setMode, cart, isCartOpen, setIsCartOpen, location, setLocation, locationName, setLocationName,isOpen, setIsOpen, onClose, onUpdate } = useStateContext();
+  const {user, isDarkMode, setMode, cart, isCartOpen, setIsCartOpen,isOpen, setIsOpen, onClose, onUpdate } = useStateContext();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
 
@@ -36,14 +36,18 @@ const Header = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // const path = usePathname();
+  const path = usePathname();
   // bail out on /stores or any deeper stores route
   // if (path.startsWith('/stores')) return null;  
   // if (path.startsWith('/admin')) return null;
   // if (path.startsWith('/agent')) return null;
   // if (path.startsWith('/clients')) return null;
   // if (path.startsWith('/site')) return null;
-  // if (path.startsWith('/shop/profile')) return null;
+  if (path.startsWith('/ghuba/profile')) return null;
+  if (path.startsWith('/shop/profile')) return null;
+  
+  if(path.includes('/shop/profile')) return null;
+  if (path.includes('/ghuba/profile')) return null;
   // if (path.startsWith('/dashboards')) return null;
   // if (path.startsWith('/play')) return null;
   // if (path.startsWith('/doctor')) return null;
@@ -51,7 +55,17 @@ const Header = () => {
   
   return (
     <header className="w-full bg-gradient-to-r from-gray-100 via-gray-50 to-gray-200 dark:from-gray-800 dark:via-gray-700 dark:to-gray-900 shadow-md transition-colors duration-300">
-      <TopBar location={location} setLocation={setLocation} locationName={locationName} setLocationName={setLocationName} isOpen={isOpen} setIsOpen={setIsOpen} onClose={onClose} onUpdate={onUpdate}/>
+      <TopBar location={""} setLocation={function (value: React.SetStateAction<string>): void {
+        throw new Error("Function not implemented.");
+      } } locationName={""} setLocationName={function (value: React.SetStateAction<string>): void {
+        throw new Error("Function not implemented.");
+      } } isOpen={false} setIsOpen={function (value: React.SetStateAction<boolean>): void {
+        throw new Error("Function not implemented.");
+      } } onClose={function (): void {
+        throw new Error("Function not implemented.");
+      } } onUpdate={function (): void {
+        throw new Error("Function not implemented.");
+      } }/>
       <nav
         className={`sticky top-0 z-50 bg-gradient-to-b from-white via-gray-50 to-white dark:from-black dark:via-gray-900 dark:to-black bg-opacity-90 backdrop-blur-md transition-all duration-300 ${
           isSticky ? "shadow-2xl" : "shadow-none"
@@ -66,16 +80,24 @@ const Header = () => {
               loading="lazy"
             />
           </a>
-          <SearchBar location={location} setLocation={setLocation} locationName={locationName} setLocationName={setLocationName}/>
+          <SearchBar location={""} setLocation={function (value: React.SetStateAction<string>): void {
+            throw new Error("Function not implemented.");
+          } } locationName={""} setLocationName={function (value: React.SetStateAction<string>): void {
+            throw new Error("Function not implemented.");
+          } } />
+          {/* setLocationName */}
           <NavIcons
             user={user}
             cart={cart}
             isMobileMenuOpen={isMobileMenuOpen}
             setIsMobileMenuOpen={setIsMobileMenuOpen}
             isDarkMode={isDarkMode}
-            setDarkMode={setMode}
-            isCartOpen={isCartOpen} 
-            setIsCartOpen={setIsCartOpen}
+            // setDarkMode={setMode}
+            isCartOpen={isCartOpen} setDarkMode={function (value: React.SetStateAction<string>): void {
+              throw new Error("Function not implemented.");
+            } } setIsCartOpen={function (value: React.SetStateAction<boolean>): void {
+              throw new Error("Function not implemented.");
+            } }            // setIsCartOpen={setIsCartOpen}
           />
         </div>
         {/* Desktop Menu */}
@@ -93,17 +115,17 @@ const Header = () => {
 
 export default Header;
 
-const SearchBar = ({location, setLocation, locationName, setLocationName}) => {
+const SearchBar = ({location, setLocation, locationName, setLocationName}:{location: string, setLocation: React.Dispatch<React.SetStateAction<string>>, locationName: string, setLocationName: React.Dispatch<React.SetStateAction<string>>}) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   const router = useRouter();
 
   // Simulating API call to fetch search suggestions
-  const fetchSuggestions = async (query) => {
+  const fetchSuggestions = async (query: string) => {
     setLoading(true);
     setError(null);
 
@@ -176,7 +198,7 @@ const SearchBar = ({location, setLocation, locationName, setLocationName}) => {
           exit={{ opacity: 0, y: -10 }}
           className="absolute top-full mt-2 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden z-50"
         >
-          {suggestions.map((item, index) => (
+          {suggestions.map((item: { id: string; title: string }, index) => (
             <li
               key={index}
               className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 text-black dark:text-white cursor-pointer transition"
@@ -194,7 +216,7 @@ const SearchBar = ({location, setLocation, locationName, setLocationName}) => {
   );
 };
 
-const TopBar = ({location, setLocation, locationName, setLocationName, isOpen, setIsOpen, onClose, onUpdate}) => (
+const TopBar = ({location, setLocation, locationName, setLocationName, isOpen, setIsOpen, onClose, onUpdate}:{location: string, setLocation: React.Dispatch<React.SetStateAction<string>>, locationName: string, setLocationName: React.Dispatch<React.SetStateAction<string>>, isOpen: boolean, setIsOpen: React.Dispatch<React.SetStateAction<boolean>>, onClose: () => void, onUpdate: () => void}) => (
   <div className="bg-yellow-400 text-black text-sm py-2 hidden md:block animate-fadeIn dark:bg-yellow-500">
     <div className="container mx-auto flex justify-between px-6">
       <div className="flex space-x-6">
@@ -228,7 +250,7 @@ const NavIcons = ({
   setDarkMode,
   isCartOpen,
   setIsCartOpen
-}) => {
+}: {user: any, cart: any[], isMobileMenuOpen: boolean, setIsMobileMenuOpen: React.Dispatch<React.SetStateAction<boolean>>, isDarkMode: boolean, setDarkMode: React.Dispatch<React.SetStateAction<string>>, isCartOpen: boolean, setIsCartOpen: React.Dispatch<React.SetStateAction<boolean>>}) => {
   const router = useRouter();
   const [isMounted, setIsMounted] = useState(false);
 
@@ -318,16 +340,92 @@ const BottomNav = () => {
   );
 };
 
-const MobileMenu = ({ setIsMobileMenuOpen }) => (
-  <div className="fixed top-0 left-0 w-full h-full bg-white dark:bg-black flex flex-col items-center justify-center space-y-6 z-50">
-    <button onClick={() => setIsMobileMenuOpen(false)} className="absolute top-4 right-6">
-      <XMarkIcon className="w-6 h-6" />
-    </button>
-    {menuItems.map(({ name, icon: Icon, link }) => (
-      <button key={name} onClick={() => router.push(link)} className="text-2xl flex items-center space-x-2">
-        <Icon className="w-6 h-6" />
-        <span>{name}</span>
+
+// "use client";
+
+// import React from "react";
+// import { useRouter } from "next/navigation";
+// import {
+//   HomeIcon,
+//   DocumentTextIcon,
+//   DocumentDuplicateIcon,
+//   TruckIcon,
+//   UserIcon,
+//   XMarkIcon,
+// } from "@heroicons/react/24/outline";
+
+// ICON TYPE FIX
+type IconType =
+  | React.ComponentType<React.SVGProps<SVGSVGElement>>
+  | React.ForwardRefExoticComponent<
+      React.SVGProps<SVGSVGElement> & React.RefAttributes<SVGSVGElement>
+    >;
+
+interface MenuItem {
+  name: string;
+  icon: IconType;
+  link: string;
+}
+
+const MobileMenu = ({
+  setIsMobileMenuOpen,
+}: {
+  setIsMobileMenuOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}) => {
+  const router = useRouter();
+
+  const mobileMenuItems: MenuItem[] = [
+    { name: "Home", icon: HomeIcon, link: "/" },
+    { name: "Products", icon: DocumentTextIcon, link: "/ghuba/productlist" },
+    { name: "Categories", icon: DocumentDuplicateIcon, link: "/ghuba/categories" },
+    { name: "Orders", icon: TruckIcon, link: "/ghuba/orderTracking" },
+    { name: "Profile", icon: UserIcon, link: "/ghuba/profile" },
+  ];
+
+  return (
+    <div className="fixed top-0 left-0 w-full h-full bg-white dark:bg-black flex flex-col items-center justify-center space-y-6 z-50">
+      <button
+        onClick={() => setIsMobileMenuOpen(false)}
+        className="absolute top-4 right-6"
+      >
+        <XMarkIcon className="w-6 h-6" />
       </button>
-    ))}
-  </div>
-);
+
+      {mobileMenuItems.map(({ name, icon: Icon, link }) => (
+        <button
+          key={name}
+          onClick={() => router.push(link)}
+          className="text-2xl flex items-center space-x-2"
+        >
+          <Icon className="w-6 h-6" />
+          <span>{name}</span>
+        </button>
+      ))}
+    </div>
+  );
+};
+
+// const MobileMenu = ({ setIsMobileMenuOpen }: { setIsMobileMenuOpen: React.Dispatch<React.SetStateAction<boolean>> }) => {
+//   const router = useRouter();
+//   const mobileMenuItems = [
+//     { name: "Home", icon: HomeIcon, link: "/" },
+//     { name: "Products", icon: DocumentTextIcon, link: "/ghuba/productlist" },
+//     { name: "Categories", icon: DocumentDuplicateIcon, link: "/ghuba/categories" },
+//     { name: "Orders", icon: TruckIcon, link: "/ghuba/orderTracking" },
+//     { name: "Profile", icon: UserIcon, link: "/ghuba/profile" },
+//   ];
+
+//   return (
+//     <div className="fixed top-0 left-0 w-full h-full bg-white dark:bg-black flex flex-col items-center justify-center space-y-6 z-50">
+//       <button onClick={() => setIsMobileMenuOpen(false)} className="absolute top-4 right-6">
+//         <XMarkIcon className="w-6 h-6" />
+//       </button>
+//       {mobileMenuItems.map(({ name, icon: Icon, link }: { name: string; icon: React.ComponentType<React.SVGProps<SVGSVGElement>>; link: string }) => (
+//         <button key={name} onClick={() => router.push(link)} className="text-2xl flex items-center space-x-2">
+//           <Icon className="w-6 h-6" />
+//           <span>{name}</span>
+//         </button>
+//       ))}
+//     </div>
+//   );
+// };
