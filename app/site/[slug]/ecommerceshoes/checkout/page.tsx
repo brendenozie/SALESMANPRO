@@ -16,10 +16,12 @@ export default async function CheckoutRoute({ params }: PageProps) {
   // This prevents sending secret keys to the client
   const enabledPaymentMethods = getEnabledPaymentMethods(raw.PaymentSettings);
 
+  const shippingSettings = raw.ShippingSettings || {};
+
   // 3. Render the Client Component with the data
   return (
     <main className="bg-gray-50 dark:bg-gray-900 min-h-screen w-full">
-      <CheckoutClient paymentMethods={enabledPaymentMethods} />
+      <CheckoutClient paymentMethods={enabledPaymentMethods} shippingSettings={shippingSettings} />
     </main>
   );
 }

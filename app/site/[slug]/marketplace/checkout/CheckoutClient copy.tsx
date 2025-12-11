@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Section from '@/components/site/Section/Section';
 import NewsletterSection from '@/components/site/NewsletterSection/NewsletterSection';
@@ -8,26 +8,38 @@ import Confetti from 'react-confetti';
 import {
   CreditCardIcon,
   TruckIcon,
+  TrashIcon,
   CheckCircleIcon,
+  CalendarIcon,
+  XCircleIcon,
   ArrowLeftIcon,
+  BuildingLibraryIcon,
   TagIcon,
+  MapPinIcon,
+  UserCircleIcon,
+  PlusIcon,
+  MinusIcon,
   BanknotesIcon,
   GlobeAltIcon,
   WalletIcon,
   CurrencyDollarIcon,
-  PlusIcon,
-  MinusIcon,
-  MapPinIcon,
-  UserCircleIcon,
-  CalendarIcon
 } from '@heroicons/react/24/outline';
 import { useStateContext } from '@/contexts/ContextProvider';
+import { useStore } from '@/contexts/StoreContext';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import ShippingAddress from '@/components/shippingAddress';
 import { formatCreditCardNumber, formatExpirationDate, formatCVC } from '@/data/cardFormatter';
+import { loadStore } from '@/lib/loadStore';
+import { getEnabledPaymentMethods } from '@/utils/payment-utils';
 
-// --- CONFIGURATION MAPPING ---
+const STEPS = ['Billing', 'Shipping', 'Payment', 'Review'] as const;
+type StepIndex = 0 | 1 | 2 | 3;
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+
+// --- 1. CONFIGURATION MAPPING ---
+// Maps backend IDs to UI Icons and Labels
 const METHOD_CONFIG: Record<string, { label: string; Icon: any; colorClass: string }> = {
   ghuba: { label: 'Ghuba Pay', Icon: WalletIcon, colorClass: 'text-purple-600 bg-purple-50 border-purple-200' },
   stripe: { label: 'Credit Card (Stripe)', Icon: CreditCardIcon, colorClass: 'text-blue-600 bg-blue-50 border-blue-200' },
@@ -37,9 +49,6 @@ const METHOD_CONFIG: Record<string, { label: string; Icon: any; colorClass: stri
   cod: { label: 'Cash on Delivery', Icon: TruckIcon, colorClass: 'text-gray-600 bg-gray-50 border-gray-200' },
 };
 
-const STEPS = ['Billing', 'Shipping', 'Payment', 'Review'] as const;
-type StepIndex = 0 | 1 | 2 | 3;
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
 // --- Types ---
 interface PublicPaymentMethod {
@@ -49,17 +58,30 @@ interface PublicPaymentMethod {
   meta: Record<string, any>;
 }
 
-interface CheckoutClientProps {
-  paymentMethods: PublicPaymentMethod[];
-  shippingSettings?: Record<string, any>;
+// interface CheckoutPageProps {
+//   paymentMethods: PublicPaymentMethod[];
+// }
+
+interface PageProps {
+  params: Promise<{ slug: string }>;
 }
 
-export default function CheckoutClient({ paymentMethods = [], shippingSettings = {} }: CheckoutClientProps) {
+export default async function CheckoutPage({ params }: PageProps) {
+
+  const { slug } = await params;
+
+  // 1. Load the store data (just like you did in the main page)
+  const { raw } = await loadStore(slug);
+
+  // 2. Filter the payment methods securely
+  const enabledPaymentMethods = getEnabledPaymentMethods(raw.PaymentSettings);
+
   const { data: session } = useSession();
   const router = useRouter();
+  const store = useStore();
   const { cart = [], clearCart, updateCartQuantity, removeFromCart } = useStateContext() as any;
 
-  // --- State ---
+  // --- Split state into focused slices (reduces re-renders & avoids focus jumping) ---
   const [currentStep, setCurrentStep] = useState<StepIndex>(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isOrderPlaced, setIsOrderPlaced] = useState(false);
@@ -78,48 +100,59 @@ export default function CheckoutClient({ paymentMethods = [], shippingSettings =
     display_name: '',
     lat: 0,
     lng: 0,
-    method: 'AT SHOP',
+    method: 'AT SHOP', // 'Standard' | 'Express' | 'AT SHOP'
   });
 
-  // Payment - Default to first available method
+  // Payment
+  // const [payment, setPayment] = useState({
+  //   method: 'paystack', // 'paystack' | 'mpesa' | 'card' | 'cod' | 'pickupatshop'
+  //   cardNumber: session?.user?.cardNumber || '',
+  //   cardExpiry: session?.user?.cardExpiry || '',
+  //   cvv: '',
+  //   mpesaPhone: session?.user?.phone || '',
+  // });
+  // 2. INITIALIZE PAYMENT STATE DYNAMICALLY
+  // Default to the first available method from props
   const [payment, setPayment] = useState({
-    method: paymentMethods[0]?.id || '',
+    method: enabledPaymentMethods[0]?.id || '', // Default to first available method
     cardNumber: session?.user?.cardNumber || '',
     cardExpiry: session?.user?.cardExpiry || '',
     cvv: '',
     mpesaPhone: session?.user?.phone || '',
   });
 
-  // Update payment method default if props load later
+  // Watch for changes in props to update default if needed
   useEffect(() => {
-    if (paymentMethods.length > 0 && !payment.method) {
-        setPayment(prev => ({ ...prev, method: paymentMethods[0].id }));
+    if (enabledPaymentMethods.length > 0 && !payment.method) {
+        setPayment(prev => ({ ...prev, method: enabledPaymentMethods[0].id }));
     }
-  }, [paymentMethods, payment.method]);
+  }, [enabledPaymentMethods]);
 
   // Promo / discounts
   const [promoCode, setPromoCode] = useState('');
   const [promoMessage, setPromoMessage] = useState('');
   const [discountRate, setDiscountRate] = useState(0);
+
+  // Errors per-step
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // confetti sizing
   const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-        const update = () => setWindowSize({ width: window.innerWidth, height: window.innerHeight });
-        window.addEventListener('resize', update);
-        update();
-        return () => window.removeEventListener('resize', update);
-    }
+    const update = () => setWindowSize({ width: window.innerWidth, height: window.innerHeight });
+    window.addEventListener('resize', update);
+    update();
+    return () => window.removeEventListener('resize', update);
   }, []);
 
-  // Totals
+  // Totals (memoized)
   const subtotal = useMemo(() => cart.reduce((s: number, i: any) => s + (i.finalPrice || 0) * (i.quantity || 0), 0), [cart]);
-  const shippingCost = useMemo(() => (shipping.method === 'Express' ? shippingSettings.expressRate ?? 0 : shipping.method === 'Standard' ? shippingSettings.standardRate ?? 0 : 0), [shipping.method, shippingSettings]);
+  const shippingCost = useMemo(() => (shipping.method === 'Express' ? 1000 : shipping.method === 'Standard' ? 500 : 0), [shipping.method]);
   const discountAmount = useMemo(() => subtotal * discountRate, [subtotal, discountRate]);
   const total = useMemo(() => subtotal + shippingCost - discountAmount, [subtotal, shippingCost, discountAmount]);
 
-  // Promo debounce
+  // Promo debounce (light)
   useEffect(() => {
     if (!promoCode) {
       setPromoMessage('');
@@ -139,15 +172,18 @@ export default function CheckoutClient({ paymentMethods = [], shippingSettings =
     return () => clearTimeout(t);
   }, [promoCode]);
 
+  // Helper: update slices
   const updateBilling = useCallback((patch: Partial<typeof billing>) => setBilling((s) => ({ ...s, ...patch })), []);
   const updateShipping = useCallback((patch: Partial<typeof shipping>) => setShipping((s) => ({ ...s, ...patch })), []);
   const updatePayment = useCallback((patch: Partial<typeof payment>) => setPayment((s) => ({ ...s, ...patch })), []);
 
+  // Address select (from ShippingAddress child)
   const handleAddressSelect = (address: string, coords: { lat: number; lng: number }) => {
     updateShipping({ display_name: address, lat: coords.lat, lng: coords.lng });
     setErrors((e) => ({ ...e, shippingAddress: '' }));
   };
 
+  // Quantity handlers forwarded to context
   const handleQuantityChange = (itemId: string, delta: number) => {
     const item = cart.find((i: any) => i.id === itemId);
     if (!item) return;
@@ -156,44 +192,75 @@ export default function CheckoutClient({ paymentMethods = [], shippingSettings =
     else updateCartQuantity?.(itemId, newQty);
   };
 
-  const onInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    if (name === 'cardNumber') return updatePayment({ cardNumber: formatCreditCardNumber(value) });
-    if (name === 'cardExpiry') return updatePayment({ cardExpiry: formatExpirationDate(value) });
-    if (name === 'cvv') return updatePayment({ cvv: formatCVC(value) });
-    if (name === 'mpesaPhone') return updatePayment({ mpesaPhone: value.replace(/\D/g, '') });
-    if (name === 'name' || name === 'email' || name === 'phone') return updateBilling({ [name]: value } as any);
-    if (name === 'promoCode') return setPromoCode(value);
-    if (name === 'shippingMethod') return updateShipping({ method: value });
-    if (name === 'paymentMethod') return updatePayment({ method: value as any });
-  };
-
-  const validateStep = useCallback(
-    (step = currentStep) => {
-      const errs: Record<string, string> = {};
-      if (step === 0) {
-        if (!billing.name?.trim()) errs.name = 'Full name is required';
-        if (!billing.email?.trim() || !/^\S+@\S+\.\S+$/.test(billing.email)) errs.email = 'Valid email required';
-        if (!billing.phone?.trim() || billing.phone.replace(/\D/g, '').length < 9) errs.phone = 'Valid phone required';
-      }
-      if (step === 1) {
-        if (!shipping.display_name) errs.shippingAddress = 'Select a delivery location';
-      }
-      if (step === 2) {
-        if (payment.method === 'mpesa') {
-          const p = payment.mpesaPhone?.replace(/\D/g, '');
-          if (!p || p.length < 12) errs.mpesaPhone = 'Use format 2547XXXXXXXX';
+  // Form validations (only run when moving forward / submitting)
+   const validateStep = useCallback(
+      (step = currentStep) => {
+        const errs: Record<string, string> = {};
+        if (step === 0) {
+          if (!billing.name?.trim()) errs.name = 'Full name is required';
+          if (!billing.email?.trim() || !/^\S+@\S+\.\S+$/.test(billing.email)) errs.email = 'Valid email required';
+          if (!billing.phone?.trim() || billing.phone.replace(/\D/g, '').length < 9) errs.phone = 'Valid phone required';
         }
-        if (!payment.method) errs.paymentMethod = 'Please select a payment method';
-      }
-      setErrors(errs);
-      return Object.keys(errs).length === 0;
-    },
-    [billing, payment, shipping, currentStep]
-  );
+        if (step === 1) {
+          if (!shipping.display_name) errs.shippingAddress = 'Select a delivery location';
+        }
+        if (step === 2) {
+          // Validate based on selected method
+          if (payment.method === 'stripe') {
+             // Basic client validation (Stripe usually handles this in Elements, but if you send raw data:)
+             // Note: Sending raw card data to your own API is discouraged unless PCI compliant. 
+             // Assuming this is a placeholder or you have a specific flow.
+             /* const num = (payment.cardNumber || '').replace(/\s/g, '');
+             if (!num || num.length < 15) errs.cardNumber = 'Invalid card number';
+             if (!payment.cardExpiry || payment.cardExpiry.length !== 5) errs.cardExpiry = 'MM/YY';
+             if (!payment.cvv || payment.cvv.length < 3) errs.cvv = 'Invalid CVV';
+             */
+          }
+          if (payment.method === 'mpesa') {
+            const p = payment.mpesaPhone?.replace(/\D/g, '');
+            if (!p || p.length < 12) errs.mpesaPhone = 'Use format 2547XXXXXXXX';
+          }
+          if (!payment.method) errs.paymentMethod = 'Please select a payment method';
+        }
+        setErrors(errs);
+        return Object.keys(errs).length === 0;
+      },
+      [billing, payment, shipping, currentStep]
+    );
+  
+  // const validateStep = useCallback(
+  //   (step = currentStep) => {
+  //     const errs: Record<string, string> = {};
+  //     if (step === 0) {
+  //       if (!billing.name?.trim()) errs.name = 'Full name is required';
+  //       if (!billing.email?.trim() || !/^\S+@\S+\.\S+$/.test(billing.email)) errs.email = 'Valid email required';
+  //       if (!billing.phone?.trim() || billing.phone.replace(/\D/g, '').length < 9) errs.phone = 'Valid phone required';
+  //     }
+  //     if (step === 1) {
+  //       if (!shipping.display_name) errs.shippingAddress = 'Select a delivery location';
+  //     }
+  //     if (step === 2) {
+  //       if (payment.method === 'card') {
+  //         const num = (payment.cardNumber || '').replace(/\s/g, '');
+  //         if (!num || num.length < 15) errs.cardNumber = 'Invalid card number';
+  //         if (!payment.cardExpiry || payment.cardExpiry.length !== 5) errs.cardExpiry = 'MM/YY';
+  //         if (!payment.cvv || payment.cvv.length < 3) errs.cvv = 'Invalid CVV';
+  //       }
+  //       if (payment.method === 'mpesa') {
+  //         const p = payment.mpesaPhone?.replace(/\D/g, '');
+  //         if (!p || p.length < 12) errs.mpesaPhone = 'Use format 2547XXXXXXXX';
+  //       }
+  //     }
+  //     setErrors(errs);
+  //     return Object.keys(errs).length === 0;
+  //   },
+  //   [billing, payment, shipping, currentStep]
+  // );
 
+  // Step navigation
   const next = useCallback(() => {
     if (!validateStep(currentStep)) return;
+    // setCurrentStep((s) => Math.min(s + 1, (STEPS.length - 1) as StepIndex));
     setCurrentStep((s) => {
       const nextIdx = Math.min(s + 1, STEPS.length - 1);
       return nextIdx as StepIndex;
@@ -206,8 +273,23 @@ export default function CheckoutClient({ paymentMethods = [], shippingSettings =
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
+  // Input handlers (formatters applied only for relevant fields)
+  const onInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    if (name === 'cardNumber') return updatePayment({ cardNumber: formatCreditCardNumber(value) });
+    if (name === 'cardExpiry') return updatePayment({ cardExpiry: formatExpirationDate(value) });
+    if (name === 'cvv') return updatePayment({ cvv: formatCVC(value) });
+    if (name === 'mpesaPhone') return updatePayment({ mpesaPhone: value.replace(/\D/g, '') });
+    if (name === 'name' || name === 'email' || name === 'phone') return updateBilling({ [name]: value } as any);
+    if (name === 'promoCode') return setPromoCode(value);
+    if (name === 'shippingMethod') return updateShipping({ method: value });
+    if (name === 'paymentMethod') return updatePayment({ method: value as any });
+  };
+
+  // Submit handler
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+    // final validate all steps
     for (let s = 0; s < STEPS.length; s++) {
       if (!validateStep(s as StepIndex)) {
         setCurrentStep(s as StepIndex);
@@ -255,31 +337,32 @@ export default function CheckoutClient({ paymentMethods = [], shippingSettings =
 
       if (!res.ok) {
         const body = await res.json().catch(() => ({}));
-        throw new Error(body?.message || body?.data || res.statusText);
+        const message = body?.message || body?.data || res.statusText;
+        throw new Error(message || 'Order submission failed');
       }
 
       const { data: orderResponse } = await res.json();
 
-      console.log('Order response', orderResponse);
-      console.log('Payment method', payment.method);
-      console.log('Order response links', {
-        authorizationUrl: orderResponse?.authorizationUrl,
-        checkoutUrl: orderResponse?.checkoutUrl,
-        approveLink: orderResponse?.approveLink,
-      });
-
-      if (payment.method === 'paystack' && orderResponse?.authorizationUrl) {
-        router.push(orderResponse.authorizationUrl);
-        return;
-      }
-      if (payment.method === 'ghuba' && orderResponse?.authorizationUrl) {
-          // router.push(orderResponse.checkoutUrl);
-          router.push(orderResponse.authorizationUrl);
-          return;
-      }
-      if (payment.method === 'paypal' && orderResponse?.approveLink) {
-          router.push(orderResponse.approveLink);
-          return;
+      // Payment flows
+      switch (payment.method) {
+        case 'paystack':
+          if (orderResponse?.authorizationUrl) {
+            // Redirect to paystack
+            router.push(orderResponse.authorizationUrl);
+            return;
+          }
+          throw new Error('Paystack authorization URL missing');
+        case 'mpesa':
+          // STK push initiated by backend - show pending state but for simplicity continue to success if backend returned a tracking number
+          break;
+        case 'stripe':
+          // Backend charged directly or returned result
+          break;
+        // case 'cod':
+        // case 'pickupatshop':          
+        //   break;
+        default:
+          break;
       }
 
       if (!orderResponse?.trackingNumber) throw new Error('Server did not return a tracking number');
@@ -295,6 +378,7 @@ export default function CheckoutClient({ paymentMethods = [], shippingSettings =
     }
   };
 
+  // If order placed, show status with confetti
   if (isOrderPlaced) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 to-white p-6">
@@ -329,32 +413,40 @@ export default function CheckoutClient({ paymentMethods = [], shippingSettings =
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            {/* Left: Form (large column) */}
             <div className="lg:col-span-8 space-y-6">
-              <form onSubmit={handleSubmit} className="bg-white rounded-3xl p-6 shadow-lg border border-gray-100 space-y-6" onKeyDown={(e) => { if (e.key === 'Enter') e.stopPropagation(); }}>
+              <motion.form onSubmit={handleSubmit} className="bg-white rounded-3xl p-6 shadow-lg border border-gray-100 space-y-6" onKeyDown={(e: React.KeyboardEvent<HTMLFormElement>) => { if (e.key === 'Enter') e.stopPropagation(); }}>
+                {/* Steps area: render all steps, only visually active one receives focus */}
                 <div className="relative min-h-[360px]">
+                  {/* We'll keep all steps mounted to avoid focus loss; animate their visibility */}
                   <StepWrapper active={currentStep === 0}>
                     <BillingStep billing={billing} onChange={updateBilling} errors={errors} />
                   </StepWrapper>
 
                   <StepWrapper active={currentStep === 1}>
-                    <ShippingStep shipping={shipping} onChange={updateShipping} onSelect={handleAddressSelect} errors={errors} shippingSettings={shippingSettings} />
+                    <ShippingStep shipping={shipping} onChange={updateShipping} onSelect={handleAddressSelect} errors={errors} />
                   </StepWrapper>
 
                   <StepWrapper active={currentStep === 2}>
-                    <PaymentStep 
-                        payment={payment} 
-                        onChange={updatePayment} 
-                        errors={errors} 
-                        availableMethods={paymentMethods} 
-                    />
-                     <div className="mt-6 bg-yellow-50 p-4 rounded-lg border border-yellow-100">
+                    {/* <PaymentStep payment={payment} onChange={updatePayment} errors={errors} /> */}
+                    {/* 3. PASS PAYMENT METHODS TO PAYMENT STEP */}
+                    <div className={currentStep === 2 ? 'block' : 'hidden'}>
+                        <PaymentStep 
+                            payment={payment} 
+                            onChange={updatePayment} 
+                            errors={errors} 
+                            availableMethods={enabledPaymentMethods} 
+                        />
+                    </div>
+                    {/* Promo */}
+                    <div className="mt-6 bg-yellow-50 p-4 rounded-lg border border-yellow-100">
                       <div className="flex items-center gap-3">
                         <TagIcon className="w-5 h-5 text-yellow-600" />
                         <div className="flex-1">
                           <label htmlFor="promoCode" className="sr-only">Promo code</label>
                           <div className="flex gap-3">
                             <input id="promoCode" name="promoCode" value={promoCode} onChange={onInputChange} placeholder="Enter promo (eg. SAVE10)" className="w-full p-3 rounded-xl border border-yellow-200 focus:outline-none focus:ring-2 focus:ring-yellow-200" />
-                            <button type="button" onClick={() => {}} className="px-4 py-2 rounded-xl bg-yellow-600 text-white font-semibold">Apply</button>
+                            <button type="button" onClick={() => { /* promo is auto-applied by effect */ }} className="px-4 py-2 rounded-xl bg-yellow-600 text-white font-semibold">Apply</button>
                           </div>
                           {promoMessage && <p className={`mt-2 text-sm ${promoMessage.startsWith('❌') ? 'text-red-600' : 'text-green-700'}`}>{promoMessage}</p>}
                         </div>
@@ -367,13 +459,16 @@ export default function CheckoutClient({ paymentMethods = [], shippingSettings =
                   </StepWrapper>
                 </div>
 
+                {/* Navigation */}
                 <div className="flex items-center justify-between pt-4 border-t border-gray-100">
                   <div>
                     {currentStep > 0 ? (
                       <button type="button" onClick={prev} className="flex items-center gap-2 px-4 py-2 rounded-full bg-gray-100 hover:bg-gray-200 transition">
                         <ArrowLeftIcon className="w-4 h-4" /> Back
                       </button>
-                    ) : <div />}
+                    ) : (
+                      <div />
+                    )}
                   </div>
 
                   <div className="flex items-center gap-3">
@@ -388,11 +483,14 @@ export default function CheckoutClient({ paymentMethods = [], shippingSettings =
                     )}
                   </div>
                 </div>
+
                 {submitError && <div className="text-red-600 rounded-md bg-red-50 p-3 text-center">{submitError}</div>}
-              </form>
+              </motion.form>
+
               <NewsletterSection />
             </div>
 
+            {/* Right: Order Summary (sticky) */}
             <div className="lg:col-span-4">
               <MemoizedOrderSummary
                 cart={cart}
@@ -413,7 +511,11 @@ export default function CheckoutClient({ paymentMethods = [], shippingSettings =
   );
 }
 
-// --- SUBCOMPONENTS (StepWrapper, PaymentStep, etc.) ---
+/* ------------------------------
+   Small presentational / step components inside single file
+   (Keeps single-file requirement but modular)
+   ------------------------------ */
+
 function StepWrapper({ children, active }: { children: React.ReactNode; active: boolean }) {
   return (
     <AnimatePresence mode="wait">
@@ -432,6 +534,7 @@ function StepWrapper({ children, active }: { children: React.ReactNode; active: 
     </AnimatePresence>
   );
 }
+
 
 function ProgressHeader({ currentStep }: { currentStep: number }) {
   return (
@@ -454,21 +557,28 @@ function ProgressHeader({ currentStep }: { currentStep: number }) {
   );
 }
 
+/* ------------------------------
+   Billing Step
+   ------------------------------ */
 function BillingStep({ billing, onChange, errors }: any) {
   return (
     <div className="space-y-4 p-4 md:p-6">
       <h3 className="text-2xl font-extrabold text-gray-900">Billing Information</h3>
+      <p className="text-sm text-gray-600">Enter your contact details for order updates.</p>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
         <div className="space-y-1">
           <label className="text-sm font-medium text-gray-700">Full name</label>
           <input name="name" value={billing.name} onChange={(e) => onChange({ name: e.target.value })} className={`w-full p-3 rounded-xl border ${errors.name ? 'border-red-400' : 'border-gray-200'} focus:ring-2 focus:ring-indigo-100`} />
           {errors.name && <p className="text-xs text-red-600">{errors.name}</p>}
         </div>
+
         <div className="space-y-1">
           <label className="text-sm font-medium text-gray-700">Email</label>
           <input name="email" value={billing.email} onChange={(e) => onChange({ email: e.target.value })} className={`w-full p-3 rounded-xl border ${errors.email ? 'border-red-400' : 'border-gray-200'} focus:ring-2 focus:ring-indigo-100`} />
           {errors.email && <p className="text-xs text-red-600">{errors.email}</p>}
         </div>
+
         <div className="md:col-span-2 space-y-1">
           <label className="text-sm font-medium text-gray-700">Phone</label>
           <input name="phone" value={billing.phone} onChange={(e) => onChange({ phone: e.target.value })} className={`w-full p-3 rounded-xl border ${errors.phone ? 'border-red-400' : 'border-gray-200'} focus:ring-2 focus:ring-indigo-100`} />
@@ -479,24 +589,31 @@ function BillingStep({ billing, onChange, errors }: any) {
   );
 }
 
-function ShippingStep({ shipping, onChange, onSelect, errors, shippingSettings }: any) {
+/* ------------------------------
+   Shipping Step
+   ------------------------------ */
+function ShippingStep({ shipping, onChange, onSelect, errors }: any) {
   return (
     <div className="space-y-4 p-4 md:p-6">
       <h3 className="text-2xl font-extrabold text-gray-900">Delivery</h3>
+      <p className="text-sm text-gray-600">Where should we deliver your items?</p>
+
       <div className="mt-4">
         <label className="text-sm font-medium text-gray-700">Search or pick a saved address</label>
         <div className="mt-2">
+          {/* ShippingAddress is your own component; ensure it calls onSelect(address, coords) */}
           <ShippingAddress onAddressSelect={(addr: string, coords: any) => onSelect(addr, coords)} />
           {errors.shippingAddress && <p className="mt-2 text-xs text-red-600">{errors.shippingAddress}</p>}
         </div>
       </div>
+
       <div className="mt-4">
         <label className="text-sm font-medium text-gray-700">Shipping method</label>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
           {[
             { id: 'AT SHOP', title: 'Pickup (At shop)', subtitle: 'No delivery' },
-            { id: 'Standard', title: 'Standard', subtitle: `5 days • KES ${shippingSettings.standardRate ?? 500}` },
-            { id: 'Express', title: 'Express', subtitle: `2 days • KES ${shippingSettings.expressRate ?? 1000}` },
+            { id: 'Standard', title: 'Standard', subtitle: '5 days • KES 500' },
+            { id: 'Express', title: 'Express', subtitle: '2 days • KES 1000' },
           ].map((m) => (
             <label key={m.id} className={`p-3 rounded-xl border ${shipping.method === m.id ? 'border-indigo-600 bg-indigo-50 shadow' : 'border-gray-200 hover:border-indigo-300'} cursor-pointer`}>
               <input className="sr-only" type="radio" name="shippingMethod" value={m.id} checked={shipping.method === m.id} onChange={(e) => onChange({ method: e.target.value })} />
@@ -510,21 +627,47 @@ function ShippingStep({ shipping, onChange, onSelect, errors, shippingSettings }
   );
 }
 
+/* ------------------------------
+   Payment Step
+   ------------------------------ */
+   
+/* ------------------------------
+   Payment Step (Modified)
+   ------------------------------ */
 function PaymentStep({ payment, onChange, errors, availableMethods = [] }: any) {
+  
   if (availableMethods.length === 0) {
       return <div className="p-6 text-center text-red-500">No payment methods available for this store.</div>;
   }
+
   return (
     <div className="space-y-4 p-4 md:p-6">
       <h3 className="text-2xl font-extrabold text-gray-900">Payment</h3>
+      <p className="text-sm text-gray-600">Choose how you want to pay.</p>
+
+      {/* 4. DYNAMIC RENDER based on props */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-4">
         {availableMethods.map((m: PublicPaymentMethod) => {
+          // Fallback if config is missing for a new ID
           const config = METHOD_CONFIG[m.id] || { label: m.label || m.id, Icon: CurrencyDollarIcon, colorClass: 'border-gray-200' };
           const Icon = config.Icon;
           const isSelected = payment.method === m.id;
+
           return (
-            <label key={m.id} className={`p-4 rounded-xl border cursor-pointer text-center transition-all ${isSelected ? `${config.colorClass} ring-2 ring-offset-1 ring-indigo-500 shadow-md` : 'border-gray-200 hover:border-indigo-300 bg-white'}`}>
-              <input className="sr-only" type="radio" name="paymentMethod" value={m.id} checked={isSelected} onChange={(e) => onChange({ method: e.target.value })} />
+            <label
+              key={m.id}
+              className={`p-4 rounded-xl border cursor-pointer text-center transition-all ${
+                isSelected ? `${config.colorClass} ring-2 ring-offset-1 ring-indigo-500 shadow-md` : 'border-gray-200 hover:border-indigo-300 bg-white'
+              }`}
+            >
+              <input
+                className="sr-only"
+                type="radio"
+                name="paymentMethod"
+                value={m.id}
+                checked={isSelected}
+                onChange={(e) => onChange({ method: e.target.value })}
+              />
               <div className="flex flex-col items-center gap-2">
                 <Icon className={`w-8 h-8 ${isSelected ? 'text-current' : 'text-gray-400'}`} />
                 <div className="text-sm font-semibold">{m.label || config.label}</div>
@@ -533,39 +676,152 @@ function PaymentStep({ payment, onChange, errors, availableMethods = [] }: any) 
           );
         })}
       </div>
+
+      {/* 5. CONDITIONAL FORM FIELDS based on Selection */}
       <div className="mt-6">
+        
+        {/* Stripe / Credit Card */}
         {payment.method === 'stripe' && (
           <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
              <div className="flex items-center gap-2 mb-3 text-blue-800">
                 <CreditCardIcon className="w-5 h-5"/> <span className="font-semibold">Secure Credit Card Payment</span>
              </div>
-             <div className="text-sm text-gray-600">You will be redirected to Stripe's secure checkout page.</div>
+             {/* Note: In a real app, you would render <CardElement /> here using Stripe.js */}
+             <div className="text-sm text-gray-600">
+                You will be redirected to Stripe's secure checkout page to complete your purchase.
+             </div>
           </div>
         )}
+
+        {/* M-Pesa */}
         {payment.method === 'mpesa' && (
           <div className="bg-green-50 p-6 rounded-xl border border-green-200">
             <label className="text-sm font-bold text-green-800 block mb-2">M-Pesa Phone Number</label>
-            <input name="mpesaPhone" value={payment.mpesaPhone} onChange={(e) => onChange({ mpesaPhone: e.target.value.replace(/\D/g, '') })} placeholder="2547XXXXXXXX" className={`w-full p-3 pl-4 rounded-xl border ${errors.mpesaPhone ? 'border-red-400' : 'border-green-300'} focus:ring-2 focus:ring-green-500 outline-none`} />
+            <div className="relative">
+                <input
+                    name="mpesaPhone"
+                    value={payment.mpesaPhone}
+                    onChange={(e) => onChange({ mpesaPhone: e.target.value.replace(/\D/g, '') })}
+                    placeholder="2547XXXXXXXX"
+                    className={`w-full p-3 pl-4 rounded-xl border ${errors.mpesaPhone ? 'border-red-400' : 'border-green-300'} focus:ring-2 focus:ring-green-500 outline-none`}
+                />
+            </div>
             {errors.mpesaPhone && <p className="text-xs text-red-600 mt-1">{errors.mpesaPhone}</p>}
-            <p className="mt-3 text-xs text-green-700 flex items-center gap-1"><CheckCircleIcon className="w-4 h-4"/> You will receive an STK push prompt.</p>
+            <p className="mt-3 text-xs text-green-700 flex items-center gap-1">
+                <CheckCircleIcon className="w-4 h-4"/> You will receive an STK push prompt on this number.
+            </p>
           </div>
         )}
+
+        {/* Ghuba */}
         {payment.method === 'ghuba' && (
           <div className="bg-purple-50 p-4 rounded-xl border border-purple-200">
              <h4 className="font-semibold text-purple-900">Ghuba Pay</h4>
-             <p className="text-sm text-purple-700 mt-1">Fast and secure local payments via Ghuba gateway.</p>
+             <p className="text-sm text-purple-700 mt-1">
+                Fast and secure local payments. You will be redirected to the Ghuba gateway to finalize payment.
+             </p>
           </div>
         )}
+
+        {/* PayPal */}
         {payment.method === 'paypal' && (
           <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-200 text-indigo-900">
              <h4 className="font-semibold">Pay with PayPal</h4>
-             <p className="text-sm mt-1">You will be redirected to PayPal.</p>
+             <p className="text-sm mt-1">You will be redirected to PayPal to complete your purchase securely.</p>
           </div>
         )}
+
+        {/* Paystack */}
         {payment.method === 'paystack' && (
           <div className="bg-yellow-50 p-4 rounded-xl border border-yellow-200 text-yellow-800">
             <div className="font-bold">Pay via Paystack</div>
             <p className="text-sm mt-1">Secure payment via Card, Bank Transfer, or USSD.</p>
+          </div>
+        )}
+
+        {/* COD */}
+        {payment.method === 'cod' && (
+          <div className="bg-gray-50 p-4 rounded-xl border border-gray-200 text-gray-800">
+            <div className="font-bold">Cash on Delivery</div>
+            <p className="text-sm mt-1">Pay the courier upon arrival. Please ensure you have the exact amount.</p>
+          </div>
+        )}
+
+      </div>
+    </div>
+  );
+}
+
+function PaymentStepV1({ payment, onChange, errors }: any) {
+  return (
+    <div className="space-y-4 p-4 md:p-6">
+      <h3 className="text-2xl font-extrabold text-gray-900">Payment</h3>
+      <p className="text-sm text-gray-600">Choose how you want to pay.</p>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
+        {[
+          { value: 'paystack', label: 'Paystack', Icon: BanknotesIcon },
+          { value: 'mpesa', label: 'M-Pesa', Icon: TagIcon },
+          { value: 'card', label: 'Card', Icon: CreditCardIcon },
+          { value: 'cod', label: 'Cash on Delivery', Icon: TruckIcon },
+        ].map(({ value, label, Icon }) => (
+          <label key={value} className={`p-3 rounded-xl border cursor-pointer text-center ${payment.method === value ? 'border-indigo-600 bg-indigo-50 shadow' : 'border-gray-200 hover:border-indigo-300'}`}>
+            <input className="sr-only" type="radio" name="paymentMethod" value={value} checked={payment.method === value} onChange={(e) => onChange({ method: e.target.value })} />
+            <div className="flex flex-col items-center gap-2">
+              <Icon className="w-7 h-7 text-indigo-600" />
+              <div className="text-sm font-medium">{label}</div>
+            </div>
+          </label>
+        ))}
+      </div>
+
+      {/* Payment details conditional */}
+      <div className="mt-4">
+        {payment.method === 'card' && (
+          <div className="bg-white p-4 rounded-xl border border-gray-100">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-gray-700">Card number</label>
+                <input name="cardNumber" value={payment.cardNumber} onChange={(e) => onChange({ cardNumber: formatCreditCardNumber(e.target.value) })} maxLength={19} className={`w-full p-3 rounded-xl border ${errors.cardNumber ? 'border-red-400' : 'border-gray-200'}`} />
+                {errors.cardNumber && <p className="text-xs text-red-600">{errors.cardNumber}</p>}
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-gray-700">Expiry (MM/YY)</label>
+                <input name="cardExpiry" value={payment.cardExpiry} onChange={(e) => onChange({ cardExpiry: formatExpirationDate(e.target.value) })} maxLength={5} className={`w-full p-3 rounded-xl border ${errors.cardExpiry ? 'border-red-400' : 'border-gray-200'}`} />
+                {errors.cardExpiry && <p className="text-xs text-red-600">{errors.cardExpiry}</p>}
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-gray-700">CVC</label>
+                <input name="cvv" value={payment.cvv} onChange={(e) => onChange({ cvv: formatCVC(e.target.value) })} maxLength={4} className={`w-full p-3 rounded-xl border ${errors.cvv ? 'border-red-400' : 'border-gray-200'}`} />
+                {errors.cvv && <p className="text-xs text-red-600">{errors.cvv}</p>}
+              </div>
+            </div>
+            <p className="mt-3 text-xs text-gray-500">Card payments are securely processed by your payment provider.</p>
+          </div>
+        )}
+
+        {payment.method === 'mpesa' && (
+          <div className="bg-green-50 p-4 rounded-xl border border-green-100">
+            <label className="text-sm font-medium text-gray-700">M-Pesa Number</label>
+            <input name="mpesaPhone" value={payment.mpesaPhone} onChange={(e) => onChange({ mpesaPhone: e.target.value.replace(/\D/g, '') })} placeholder="2547XXXXXXXX" className={`w-full p-3 rounded-xl border ${errors.mpesaPhone ? 'border-red-400' : 'border-gray-200'}`} />
+            {errors.mpesaPhone && <p className="text-xs text-red-600">{errors.mpesaPhone}</p>}
+            <p className="mt-2 text-xs text-gray-500">You will receive a payment prompt on this number after placing the order.</p>
+          </div>
+        )}
+
+        {payment.method === 'paystack' && (
+          <div className="bg-yellow-50 p-4 rounded-xl border border-yellow-100">
+            <div className="font-medium text-yellow-700">Pay via Paystack</div>
+            <p className="text-sm text-gray-600 mt-1">You'll be securely redirected to complete payment (card, bank, USSD).</p>
+          </div>
+        )}
+
+        {payment.method === 'cod' && (
+          <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
+            <div className="font-medium text-blue-700">Cash on Delivery</div>
+            <p className="text-sm text-gray-600 mt-1">Pay the courier when your order arrives. Please have exact change ready.</p>
           </div>
         )}
       </div>
@@ -573,7 +829,10 @@ function PaymentStep({ payment, onChange, errors, availableMethods = [] }: any) 
   );
 }
 
-function ReviewStep({ billing, shipping, payment, total }: any) {
+/* ------------------------------
+   Review Step
+   ------------------------------ */
+function ReviewStep({ billing, shipping, payment, total, subtotal, shippingCost, discountAmount }: any) {
   return (
     <div className="space-y-4 p-4 md:p-6">
       <h3 className="text-2xl font-extrabold text-gray-900">Review & Confirm</h3>
@@ -584,13 +843,16 @@ function ReviewStep({ billing, shipping, payment, total }: any) {
           <p className="text-gray-700"><strong>Email:</strong> {billing.email}</p>
           <p className="text-gray-700"><strong>Phone:</strong> {billing.phone}</p>
         </div>
+
         <div>
           <h4 className="font-semibold text-indigo-600 flex items-center gap-2"><MapPinIcon className="w-5 h-5" /> Shipping</h4>
           <p className="mt-2 text-gray-700"><strong>Address:</strong> {shipping.display_name || 'N/A'}</p>
           <p className="text-gray-700"><strong>Method:</strong> {shipping.method}</p>
           <p className="text-gray-700"><strong>Payment:</strong> {payment.method.toUpperCase()}</p>
+          {payment.method === 'mpesa' && <p className="text-gray-700"><strong>M-Pesa:</strong> {payment.mpesaPhone}</p>}
         </div>
       </div>
+
       <div className="p-4 rounded-xl bg-indigo-50 border border-indigo-100">
         <div className="flex justify-between font-extrabold text-2xl"><span>Final Total</span><span>{total.toFixed(2)}</span></div>
         <p className="text-sm text-indigo-700 mt-2">By placing the order you agree to our terms & conditions.</p>
@@ -599,17 +861,25 @@ function ReviewStep({ billing, shipping, payment, total }: any) {
   );
 }
 
-const MemoizedOrderSummary = React.memo(({ cart, subtotal, shippingCost, discountAmount, total, estimatedDelivery, onInc, onDec, onRemove }: any) => {
+/* ------------------------------
+   Memoized OrderSummary
+   ------------------------------ */
+const OrderSummary = ({ cart, subtotal, shippingCost, discountAmount, total, estimatedDelivery, onInc, onDec, onRemove }: any) => {
   return (
     <div className="bg-white rounded-3xl p-5 shadow-lg border border-gray-100 sticky top-20">
       <h4 className="text-lg font-extrabold mb-4">Your Cart</h4>
+
       <div className="space-y-3 max-h-64 overflow-y-auto pr-2">
-        {cart.length === 0 ? <div className="text-gray-500 italic py-8 text-center">Cart is empty</div> : cart.map((item: any) => (
+        {cart.length === 0 ? (
+          <div className="text-gray-500 italic py-8 text-center">Cart is empty</div>
+        ) : (
+          cart.map((item: any) => (
             <div key={item.id} className="flex items-start justify-between gap-3 p-3 rounded-xl border border-gray-50">
               <div className="flex-1">
                 <div className="font-semibold text-gray-800">{item.title || item.name}</div>
                 <div className="text-sm text-gray-500">KES {((item.finalPrice || 0)).toFixed(2)} • Qty: {item.quantity}</div>
               </div>
+
               <div className="flex flex-col items-end gap-2">
                 <div className="font-extrabold">KES {(((item.finalPrice || 0) * item.quantity)).toFixed(2)}</div>
                 <div className="flex items-center gap-2">
@@ -620,22 +890,30 @@ const MemoizedOrderSummary = React.memo(({ cart, subtotal, shippingCost, discoun
                 <button onClick={() => onRemove(item.id)} className="text-sm text-red-500 mt-1">Remove</button>
               </div>
             </div>
-          ))}
+          ))
+        )}
       </div>
+
       <div className="mt-4 border-t pt-4 space-y-2 text-gray-600">
         <div className="flex justify-between"><span>Subtotal</span><span>KES {subtotal.toFixed(2)}</span></div>
         <div className="flex justify-between"><span>Shipping</span><span>{shippingCost > 0 ? `KES ${shippingCost.toFixed(2)}` : '0'}</span></div>
         <div className="flex justify-between text-green-600 font-semibold"><span>Discount</span><span>- KES {discountAmount.toFixed(2)}</span></div>
         <div className="flex justify-between font-extrabold text-xl mt-3"><span>Total</span><span>KES {total.toFixed(2)}</span></div>
       </div>
+
       <div className="mt-4 bg-indigo-50 p-3 rounded-lg flex items-center gap-3">
         <CalendarIcon className="w-5 h-5 text-indigo-600" />
         <div className="text-sm">Estimated Delivery: <span className="font-semibold">{estimatedDelivery}</span></div>
       </div>
     </div>
   );
-});
+};
 
+const MemoizedOrderSummary = React.memo(OrderSummary);
+
+/* ------------------------------
+   Utility
+   ------------------------------ */
 function estimateDeliveryText(method: string) {
   if (method === 'Express') return new Date(Date.now() + 2 * 24 * 3600 * 1000).toDateString();
   if (method === 'Standard') return new Date(Date.now() + 5 * 24 * 3600 * 1000).toDateString();

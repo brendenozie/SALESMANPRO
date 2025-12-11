@@ -51,9 +51,10 @@ interface PublicPaymentMethod {
 
 interface CheckoutClientProps {
   paymentMethods: PublicPaymentMethod[];
+  shippingSettings?: Record<string, any>;
 }
 
-export default function CheckoutClient({ paymentMethods = [] }: CheckoutClientProps) {
+export default function CheckoutClient({ paymentMethods = [], shippingSettings = {} }: CheckoutClientProps) {
   const { data: session } = useSession();
   const router = useRouter();
   const { cart = [], clearCart, updateCartQuantity, removeFromCart } = useStateContext() as any;
@@ -114,7 +115,7 @@ export default function CheckoutClient({ paymentMethods = [] }: CheckoutClientPr
 
   // Totals
   const subtotal = useMemo(() => cart.reduce((s: number, i: any) => s + (i.finalPrice || 0) * (i.quantity || 0), 0), [cart]);
-  const shippingCost = useMemo(() => (shipping.method === 'Express' ? 1000 : shipping.method === 'Standard' ? 500 : 0), [shipping.method]);
+  const shippingCost = useMemo(() => (shipping.method === 'Express' ? shippingSettings.expressRate ?? 0 : shipping.method === 'Standard' ? shippingSettings.standardRate ?? 0 : 0), [shipping.method, shippingSettings]);
   const discountAmount = useMemo(() => subtotal * discountRate, [subtotal, discountRate]);
   const total = useMemo(() => subtotal + shippingCost - discountAmount, [subtotal, shippingCost, discountAmount]);
 
@@ -336,7 +337,7 @@ export default function CheckoutClient({ paymentMethods = [] }: CheckoutClientPr
                   </StepWrapper>
 
                   <StepWrapper active={currentStep === 1}>
-                    <ShippingStep shipping={shipping} onChange={updateShipping} onSelect={handleAddressSelect} errors={errors} />
+                    <ShippingStep shipping={shipping} onChange={updateShipping} onSelect={handleAddressSelect} errors={errors} shippingSettings={shippingSettings} />
                   </StepWrapper>
 
                   <StepWrapper active={currentStep === 2}>
@@ -478,7 +479,7 @@ function BillingStep({ billing, onChange, errors }: any) {
   );
 }
 
-function ShippingStep({ shipping, onChange, onSelect, errors }: any) {
+function ShippingStep({ shipping, onChange, onSelect, errors, shippingSettings }: any) {
   return (
     <div className="space-y-4 p-4 md:p-6">
       <h3 className="text-2xl font-extrabold text-gray-900">Delivery</h3>
@@ -494,8 +495,8 @@ function ShippingStep({ shipping, onChange, onSelect, errors }: any) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
           {[
             { id: 'AT SHOP', title: 'Pickup (At shop)', subtitle: 'No delivery' },
-            { id: 'Standard', title: 'Standard', subtitle: '5 days • KES 500' },
-            { id: 'Express', title: 'Express', subtitle: '2 days • KES 1000' },
+            { id: 'Standard', title: 'Standard', subtitle: `5 days • KES ${shippingSettings.standardRate ?? 500}` },
+            { id: 'Express', title: 'Express', subtitle: `2 days • KES ${shippingSettings.expressRate ?? 1000}` },
           ].map((m) => (
             <label key={m.id} className={`p-3 rounded-xl border ${shipping.method === m.id ? 'border-indigo-600 bg-indigo-50 shadow' : 'border-gray-200 hover:border-indigo-300'} cursor-pointer`}>
               <input className="sr-only" type="radio" name="shippingMethod" value={m.id} checked={shipping.method === m.id} onChange={(e) => onChange({ method: e.target.value })} />
