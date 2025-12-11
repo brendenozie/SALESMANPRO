@@ -24,28 +24,44 @@ export interface PlanItem {
 }
 
 
+// interface SubscriptionItem {
+//   id: string;
+//   userId: string;
+//   user: {
+//     id: string;
+//     name: string;
+//     email: string;
+//   };
+//   planId: string;
+//   plan: {
+//     id: string;
+//     name: string;
+//   };
+//   startDate: Date;
+//   endDate: Date | null;
+//   status: "ACTIVE" | "CANCELLED" | "EXPIRED" | "TRIALING";
+//   billingCycle: "MONTHLY" | "ANNUALLY";
+//   amount: number;
+//   paymentMethod: string | null;
+//   lastPaymentDate: Date | null;
+//   createdAt: Date;
+//   updatedAt: Date;
+// }
 interface SubscriptionItem {
-  id: string;
-  userId: string;
-  user: {
     id: string;
-    name: string;
-    email: string;
-  };
-  planId: string;
-  plan: {
-    id: string;
-    name: string;
-  };
-  startDate: Date;
-  endDate: Date | null;
-  status: "ACTIVE" | "CANCELLED" | "EXPIRED" | "TRIALING";
-  billingCycle: "MONTHLY" | "ANNUALLY";
-  amount: number;
-  paymentMethod: string | null;
-  lastPaymentDate: Date | null;
-  createdAt: Date;
-  updatedAt: Date;
+    userId: string;
+    user: { id: string; name: string; email: string; };
+    planId: string;
+    plan: { id: string; name: string; };
+    startDate: string;
+    endDate: string | null;
+    status: "ACTIVE" | "CANCELLED" | "EXPIRED" | "TRIALING";
+    billingCycle: "MONTHLY" | "ANNUALLY";
+    amount: number;
+    paymentMethod: string | null;
+    lastPaymentDate: string | null;
+    createdAt: string;
+    updatedAt: string;
 }
 
 interface PlansClientProps {

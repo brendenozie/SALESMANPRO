@@ -626,10 +626,11 @@ export function PlansClient({
               });
       
               const data = await res.json();
-      
-              setSubscriptions(data.items);
-              setCurrentPage(data.page);
-              setTotalPages(data.totalPages);
+              
+              console.log("Fetched subscriptions data:", data.data);
+              setSubscriptions(data.data.subscriptions);
+              setCurrentPage(data.data.page);
+              setTotalPages(data.data.totalPages);
             } catch (error) {
               toast.error("Failed to fetch subscriptions.");
             } finally {
