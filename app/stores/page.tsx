@@ -475,7 +475,8 @@ function PricingSection({ companyId, email, category }: { companyId: string, ema
           
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-4">
-              Pricing for <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-amber-500">{category}</span> Businesses
+              {/* {category} */}
+              Pricing for <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-amber-500">SalesmanPro</span> Businesses
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-10">
               Choose the plan that fits your growth stage. Upgrade anytime as you scale.
