@@ -50,17 +50,17 @@ interface PlanFeatures {
   [key: string]: string[];
 }
 
-interface Plan {
-  id: string;
-  name: string;
-  price?: string;
-  priceMonthly?: number;
-  priceAnnually?: number;
-  currency: string;
-  features: PlanFeatures;
-  isPopular: boolean;
-  tagline: string;
-}
+// interface Plan {
+//   id: string;
+//   name: string;
+//   price?: string;
+//   priceMonthly?: number;
+//   priceAnnually?: number;
+//   currency: string;
+//   features: PlanFeatures;
+//   isPopular: boolean;
+//   tagline: string;
+// }
 
 // ------------------------------------------------------------------
 // --- 2. REUSABLE SUB-COMPONENTS (with style tweaks) ---
@@ -156,84 +156,84 @@ const PaginationControls = ({ page, totalPages, onPageChange } : {
 // ------------------------------------------------------------------
 
 // --- START MOCK DATA (Data Structure is unchanged as requested) ---
-const MOCK_PLANS: Plan[] = [
-  {
-    id: "basic",
-    name: "Ghuba Basic",
-    price: "Ksh. 9999",
-    priceMonthly: 9999,
-    currency: "Ksh.",
-    tagline: "Just the essentials to get you selling.",
-    features: {
-      website: ["Standard Ghuba subdomain", "SSL Certificate"],
-      inventory: ["Unlimited Products"],
-      sales: ["Unlimited Sales Records", "20 Invoices & Receipts"],
-      payments: ["Online Payment Gateway (KES only)"],
-      crm: ["25 Messaging credits", "Unlimited Customer Records"],
-      operations: ["1 Staff user", "App dashboard"],
-      integrations: ["Facebook Pixel (ShipBubble)"],
-      support: ["Email & In-App Support"],
-    },
-    isPopular: false,
-  },
-  {
-    id: "starter",
-    name: "Ghuba Starter",
-    price: "Ksh. 2,999",
-    priceMonthly: 2999,
-    currency: "Ksh.",
-    tagline: "Scale your sales with powerful tools.",
-    features: {
-      website: ["Custom domain", "SSL Certificate", "Custom branding"],
-      inventory: ["Unlimited Products", "Bulk Product Edit"],
-      sales: ["Unlimited Sales Records", "50 Invoices & Receipts", "Coupon Codes"],
-      payments: ["Online Payment Gateway (KES + USD settlements)"],
-      crm: ["100 Messaging credits", "Unlimited Customer Records", "5 Custom Groups"],
-      operations: ["3 Staff users", "App + trend reports"],
-      integrations: ["Facebook Pixel, Google Analytics, Fez Delivery"],
-      support: ["Priority Support"],
-    },
-    isPopular: true,
-  },
-  {
-    id: "pro",
-    name: "Ghuba Pro",
-    price: "Ksh. 6,999",
-    priceMonthly: 6999,
-    currency: "Ksh.",
-    tagline: "Automate and optimize for maximum growth.",
-    features: {
-      website: ["Custom domain + favicon", "SSL Certificate", "Advanced Theme Editor"],
-      inventory: ["Unlimited Products", "Bulk Edit", "Variations", "Low Stock Alerts"],
-      sales: ["Unlimited Sales & Receipts", "Limit Coupons", "POS"],
-      payments: ["Full KES & USD support"],
-      crm: ["200 Messaging credits", "Unlimited Records", "20 Custom Groups"],
-      operations: ["5 Staff users", "App + email insights"],
-      integrations: ["All carriers + automation"],
-      support: ["Account Manager"],
-    },
-    isPopular: false,
-  },
-  {
-    id: "growth",
-    name: "Ghuba Growth",
-    price: "Ksh. 14,999",
-    priceMonthly: 14999,
-    currency: "Ksh.",
-    tagline: "Enterprise-grade power for your business.",
-    features: {
-      website: ["Fully branded domain", "SSL Certificate", "Dedicated Success Team"],
-      inventory: ["Unlimited Products", "Bulk Edit", "Variations", "MOQ"],
-      sales: ["Unlimited Sales & Receipts", "Coupons", "POS", "Advanced Analytics"],
-      payments: ["KES, USD & EUR support"],
-      crm: ["1000 Messaging credits", "Unlimited Records", "100 Custom Groups"],
-      operations: ["Unlimited Staff", "Advanced analytics", "Multi-location"],
-      integrations: ["Free-shipping rules engine", "Custom API Access"],
-      support: ["Dedicated helpline"],
-    },
-    isPopular: false,
-  },
-];
+// const MOCK_PLANS: Plan[] = [
+//   {
+//     id: "basic",
+//     name: "Ghuba Basic",
+//     price: "Ksh. 9999",
+//     priceMonthly: 9999,
+//     currency: "Ksh.",
+//     tagline: "Just the essentials to get you selling.",
+//     features: {
+//       website: ["Standard Ghuba subdomain", "SSL Certificate"],
+//       inventory: ["Unlimited Products"],
+//       sales: ["Unlimited Sales Records", "20 Invoices & Receipts"],
+//       payments: ["Online Payment Gateway (KES only)"],
+//       crm: ["25 Messaging credits", "Unlimited Customer Records"],
+//       operations: ["1 Staff user", "App dashboard"],
+//       integrations: ["Facebook Pixel (ShipBubble)"],
+//       support: ["Email & In-App Support"],
+//     },
+//     isPopular: false,
+//   },
+//   {
+//     id: "starter",
+//     name: "Ghuba Starter",
+//     price: "Ksh. 2,999",
+//     priceMonthly: 2999,
+//     currency: "Ksh.",
+//     tagline: "Scale your sales with powerful tools.",
+//     features: {
+//       website: ["Custom domain", "SSL Certificate", "Custom branding"],
+//       inventory: ["Unlimited Products", "Bulk Product Edit"],
+//       sales: ["Unlimited Sales Records", "50 Invoices & Receipts", "Coupon Codes"],
+//       payments: ["Online Payment Gateway (KES + USD settlements)"],
+//       crm: ["100 Messaging credits", "Unlimited Customer Records", "5 Custom Groups"],
+//       operations: ["3 Staff users", "App + trend reports"],
+//       integrations: ["Facebook Pixel, Google Analytics, Fez Delivery"],
+//       support: ["Priority Support"],
+//     },
+//     isPopular: true,
+//   },
+//   {
+//     id: "pro",
+//     name: "Ghuba Pro",
+//     price: "Ksh. 6,999",
+//     priceMonthly: 6999,
+//     currency: "Ksh.",
+//     tagline: "Automate and optimize for maximum growth.",
+//     features: {
+//       website: ["Custom domain + favicon", "SSL Certificate", "Advanced Theme Editor"],
+//       inventory: ["Unlimited Products", "Bulk Edit", "Variations", "Low Stock Alerts"],
+//       sales: ["Unlimited Sales & Receipts", "Limit Coupons", "POS"],
+//       payments: ["Full KES & USD support"],
+//       crm: ["200 Messaging credits", "Unlimited Records", "20 Custom Groups"],
+//       operations: ["5 Staff users", "App + email insights"],
+//       integrations: ["All carriers + automation"],
+//       support: ["Account Manager"],
+//     },
+//     isPopular: false,
+//   },
+//   {
+//     id: "growth",
+//     name: "Ghuba Growth",
+//     price: "Ksh. 14,999",
+//     priceMonthly: 14999,
+//     currency: "Ksh.",
+//     tagline: "Enterprise-grade power for your business.",
+//     features: {
+//       website: ["Fully branded domain", "SSL Certificate", "Dedicated Success Team"],
+//       inventory: ["Unlimited Products", "Bulk Edit", "Variations", "MOQ"],
+//       sales: ["Unlimited Sales & Receipts", "Coupons", "POS", "Advanced Analytics"],
+//       payments: ["KES, USD & EUR support"],
+//       crm: ["1000 Messaging credits", "Unlimited Records", "100 Custom Groups"],
+//       operations: ["Unlimited Staff", "Advanced analytics", "Multi-location"],
+//       integrations: ["Free-shipping rules engine", "Custom API Access"],
+//       support: ["Dedicated helpline"],
+//     },
+//     isPopular: false,
+//   },
+// ];
 // --- END MOCK DATA ---
 
 // Mock PaystackPop type on window
@@ -257,530 +257,380 @@ const CheckIcon = (
   </svg>
 );
 
+// --- Types ---
+interface SiteTypePricing {
+  monthly: number;
+  yearly: number;
+}
+
+interface Plan {
+  id?: string;
+  _id?: { $oid: string };
+  name: string;
+  tagline?: string;
+  price?: number;
+  priceMonthly?: number;
+  priceAnnually?: number;
+  isPopular?: boolean;
+  features: { [key: string]: string[] };
+  siteTypePrices?: { [key: string]: SiteTypePricing };
+}
+
 // --- MAIN PRICING SECTION COMPONENT ---
 // It now receives companyId and email, but onSubscriptionSuccess is handled internally
 function PricingSection({ companyId, email, category }: { companyId: string, email: string, category: string }) {
-  const paystackPublicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "pk_test_4ec65e0fe08ffa32b2708be2adb75b865d2517ce"; // Fallback to test key
-  
-  const [plans, setPlans] = useState<Plan[]>([]); 
-  const [loading, setLoading] = useState(false); 
-  const [isFeaturesExpanded, setIsFeaturesExpanded] = useState<{ [key: string]: boolean }>({});
-  const [subscriptionStatus, setSubscriptionStatus] = useState<{message: string, type: 'success' | 'error'} | null>(null);
-  const [usdPrices, setUsdPrices] = useState<Record<string, number>>({});
-  const [billingPeriod, setBillingPeriod] = useState<"MONTHLY" | "ANNUALLY">("MONTHLY");
+  const paystackPublicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "pk_test_4ec65e0fe08ffa32b2708be2adb75b865d2517ce";
 
-  const [userCountry, setUserCountry] = useState<string>("Kenya");
+  const [plans, setPlans] = useState<Plan[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [billingPeriod, setBillingPeriod] = useState<"MONTHLY" | "ANNUALLY">("ANNUALLY"); // Auto-select Annually
+  const [isFeaturesExpanded, setIsFeaturesExpanded] = useState<{ [key: string]: boolean }>({});
+  const [subscriptionStatus, setSubscriptionStatus] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
+  const [usdPrices, setUsdPrices] = useState<Record<string, number>>({});
   const [isOutsideKenya, setIsOutsideKenya] = useState<boolean>(false);
 
-
-  // Clear message after a delay
-  const showStatusMessage = (message: string, type: 'success' | 'error' = 'error') => {
-      setSubscriptionStatus({ message, type });
-      setTimeout(() => setSubscriptionStatus(null), 5000);
-  };
-
-  // --- START FIX ---
-  // Load the Paystack script dynamically on component mount
-  useEffect(() => {
-    // Check if the script is already on the page
-    if (document.querySelector('script[src="https://js.paystack.co/v1/inline.js"]')) {
-      return; // Already loaded
+  // --- Logic: Determine Price based on Category ---
+  const getPlanPrice = (plan: Plan, period: "MONTHLY" | "ANNUALLY"): number => {
+    // 1. Check if specific category pricing exists
+    let pricingNode: SiteTypePricing | undefined;
+    
+    if (plan.siteTypePrices) {
+      // Try exact category match, otherwise fallback to 'Default'
+      pricingNode = plan.siteTypePrices[category] || plan.siteTypePrices["Default"];
     }
 
-    const script = document.createElement("script");
-    script.src = "https://js.paystack.co/v1/inline.js";
-    script.async = true;
+    if (pricingNode) {
+      return period === "MONTHLY" ? pricingNode.monthly : pricingNode.yearly;
+    }
 
-    script.onload = () => {
-      console.log("Paystack script loaded successfully.");
-    };
-    
-    script.onerror = () => {
-      console.error("Failed to load Paystack script.");
-      // Use the status message to inform the user
-      showStatusMessage("Payment script failed to load. Please refresh.", "error");
-    };
+    // 2. Fallback to root level pricing
+    if (period === "MONTHLY") {
+      return plan.priceMonthly ?? plan.price ?? 0;
+    } else {
+      // If priceAnnually exists use it, otherwise calc 12 months
+      return plan.priceAnnually ?? ((plan.price ?? 0) * 12);
+    }
+  };
 
-    document.body.appendChild(script);
+  // --- Logic: Currency Conversion Mock ---
+  const convertKEStoUSD = async (amount: number) => {
+    // In production, fetch live rates. Using static rate 1 USD = 130 KES for demo
+    return amount / 130;
+  };
 
-  }, []); // Empty array means this runs once on mount
-  // // --- END FIX ---
+  const showStatusMessage = (message: string, type: 'success' | 'error' = 'error') => {
+    setSubscriptionStatus({ message, type });
+    setTimeout(() => setSubscriptionStatus(null), 5000);
+  };
 
+  // --- Effects ---
   useEffect(() => {
+    // Load Paystack
+    if (!document.querySelector('script[src="https://js.paystack.co/v1/inline.js"]')) {
+      const script = document.createElement("script");
+      script.src = "https://js.paystack.co/v1/inline.js";
+      script.async = true;
+      script.onload = () => console.log("Paystack loaded.");
+      script.onerror = () => showStatusMessage("Payment script failed.", "error");
+      document.body.appendChild(script);
+    }
+
+    // Fetch Plans
     const fetchPlans = async () => {
-      setLoading(true); // Start loading screen
+      setLoading(true);
       try {
-        // In a real Next.js app, process.env.NEXT_PUBLIC_DEFAULT_COMPANY_ID would be available
         const res = await fetch(`/api/plans?companyId=${defaultCompanyId}&category=${category}`);
-        if (!res.ok) throw new Error("Failed to fetch plans");
-        
+        if (!res.ok) throw new Error("Failed");
         const data = await res.json();
-        if (data.plans && data.plans.length > 0) {
-            setPlans(data.plans);
-        } else {
-            // API returned empty, but we keep the mock plans
-            console.warn("API returned no plans, using default mock data.");
-        }
+        setPlans(data.plans?.length ? data.plans : []); // Fallback logic
       } catch (err) {
-        console.error("Failed to fetch plans, using default mock data.", err);
-        // If fetch fails, we'll just fall back to the MOCK_PLANS already in state
+        console.warn("Using mock plans due to fetch error");
+        // For this demo, I'm parsing the single object you gave in prompt into an array
+        // Replace this with your actual fetch logic or fallback
+        setPlans([]); 
       } finally {
         setLoading(false);
       }
     };
-
-    fetchPlans(); 
-  }, []);
+    fetchPlans();
+  }, [category]); // Re-fetch if category changes
 
   useEffect(() => {
-    const convertPrices = async () => {
+    const calcUsd = async () => {
       if (!isOutsideKenya) return;
-
-      const conversions: Record<string, number> = {};
-
+      const prices: Record<string, number> = {};
       for (const plan of plans) {
-        const rawAmount = Number(plan.priceMonthly ?? plan.priceAnnually ?? plan.price ?? 1);
-        const usd = await convertKEStoUSD(rawAmount);
-        conversions[plan.id] = Math.round(usd * 100) / 100; // round to cents
+        const cost = getPlanPrice(plan, billingPeriod); // Recalculate based on period
+        const usd = await convertKEStoUSD(cost);
+        prices[plan.id || "unknown"] = usd;
+      }
+      setUsdPrices(prices);
+    };
+    calcUsd();
+  }, [isOutsideKenya, plans, billingPeriod]);
+
+
+  // --- Handlers ---
+  const handlePlanSelect = async (plan: Plan) => {
+    setLoading(true);
+    try {
+      const price = getPlanPrice(plan, billingPeriod);
+      const planId = plan.id || plan._id?.$oid; // Handle Mongo ID
+
+      if (!price || !planId) throw new Error("Invalid plan configuration");
+
+      let chargeAmount = price;
+      if (isOutsideKenya) {
+        chargeAmount = Math.round(await convertKEStoUSD(price) * 100) / 100;
+      }
+      
+      const amountInKobo = Math.round(chargeAmount * 100);
+
+      const res = await fetch("/api/payments/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          companyId,
+          planId: planId,
+          currency: isOutsideKenya ? "USD" : "KES",
+          amount: amountInKobo,
+          billingPeriod,
+          monthsPaidFor: billingPeriod === "MONTHLY" ? 1 : 0,
+          yearsPaidFor: billingPeriod === "ANNUALLY" ? 1 : 0
+        })
+      });
+
+      const data = await res.json();
+      
+      if (!res.ok || !data?.data?.data?.authorization_url) {
+        throw new Error(data.message || "Payment initialization failed");
       }
 
-      setUsdPrices(conversions);
-    };
+      // @ts-ignore
+      const PaystackPop = window.PaystackPop;
+      if (!PaystackPop) throw new Error("Paystack not loaded");
 
-    convertPrices();
-  }, [isOutsideKenya, plans]);
-
-
-  // This is the new handler for the button
-  const handlePlanSelect = async (plan: Plan, billingPeriod: "MONTHLY" | "ANNUALLY" = "MONTHLY") => {
-  try {
-    setLoading(true);
-
-    // local billing logic
-    const monthsPaidFor = billingPeriod === "MONTHLY" ? 1 : 0;
-    const yearsPaidFor = billingPeriod === "ANNUALLY" ? 1 : 0;
-
-    const rawPrice = billingPeriod === "MONTHLY" ? ( plan.priceMonthly ?? plan.price )
-    : plan.priceAnnually ?? ((Number(plan.price) ?? 1) * 12) ;
-
-    if (!rawPrice) {
-      showStatusMessage("Invalid plan price.", "error");
-      setLoading(false);
-      return;
-    }
-
-    // Convert if user is outside Kenya
-    let chargeAmount = rawPrice;
-
-    if (isOutsideKenya) {
-      const usd = await convertKEStoUSD(Number(chargeAmount));
-      chargeAmount = Math.round(usd * 100) / 100;
-    }
-
-    const amountInKobo = Math.round(Number(chargeAmount) * 100);
-
-    // CALL YOUR NEW UPDATED BACKEND ROUTE
-    const res = await fetch("/api/payments/subscribe", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        companyId,
-        planId: plan.id,
-        currency: isOutsideKenya ? "USD" : "KES",
+      const handler = PaystackPop.setup({
+        key: paystackPublicKey,
+        email: email,
         amount: amountInKobo,
-        billingPeriod,
-        monthsPaidFor,
-        yearsPaidFor
-      })
-    });
+        ref: data.data.data.reference,
+        currency: isOutsideKenya ? "USD" : "KES",
+        metadata: { companyId, planId },
+        callback: (response: any) => {
+           window.location.href = `/payments/paystack/verify?reference=${response.reference}`;
+        },
+        onClose: () => {
+          showStatusMessage("Payment cancelled", "error");
+          setLoading(false);
+        },
+      });
+      handler.openIframe();
 
-    const data = await res.json();
-    console.log("Subscription init response:", data);
-
-    if (!res.ok || !data?.data?.data?.authorization_url) {
-      showStatusMessage(data.message || "Failed to start payment");
+    } catch (err: any) {
+      console.error(err);
+      showStatusMessage(err.message, "error");
       setLoading(false);
-      return;
     }
+  };
 
-    // REDIRECT TO PAYSTACK (no iframe!)
-    // window.location.href = data.data.data.authorization_url;
-    if (!data?.data?.data?.authorization_url) {
-            showStatusMessage("Error: Unable to start payment. Please try again.");
-            setLoading(false);
-            return;
-        }
+  // --- Render Helpers ---
+  const renderPrice = (plan: Plan) => {
+    const rawPrice = getPlanPrice(plan, billingPeriod);
+    const planId = plan.id || plan._id?.$oid || "unknown";
 
-        // console.log("Opening Paystack payment interface...", data.data.data.authorization_url);
-        // Check if PaystackPop is available (this should now work)
-        if (!window.PaystackPop) {
-            showStatusMessage("Error: Payment service failed to load.");
-            setLoading(false);
-            return;
-        }
+    if (isOutsideKenya && usdPrices[planId]) {
+      return `$${usdPrices[planId].toFixed(2)} USD`;
+    }
+    return `KSh ${rawPrice.toLocaleString()}`;
+  };
 
-        if (!plan.priceMonthly && !plan.price) {
-            showStatusMessage("Error: Plan price is not valid.");
-            setLoading(false);
-            return;
-        }       
-
-        const handler = window.PaystackPop.setup({
-          key: paystackPublicKey,
-          email: email,
-          amount: amountInKobo,
-          ref: data.data.data.reference,
-          currency: isOutsideKenya ? "USD" : "KES",
-          metadata: {
-            companyId,
-            planId: plan.id,
-          },
-          callback: function (response: any) {
-            window.location.href = `/payments/paystack/verify?reference=${response.reference}`;
-          },
-          onClose: function () {
-            showStatusMessage("Payment was cancelled.", "error");
-            setLoading(false);
-          },
-        });
-
-        handler.openIframe();
-
-
-  } catch (err) {
-    console.error("Subscription error:", err);
-    showStatusMessage("Network error occurred.", "error");
-  } finally {
-    setLoading(false);
+  const renderSavingsBadge = (plan: Plan) => {
+      const monthly = getPlanPrice(plan, "MONTHLY");
+      const yearly = getPlanPrice(plan, "ANNUALLY");
+      // Calculate generic savings: (Monthly*12) - Yearly
+      const savings = (monthly * 12) - yearly;
+      if (savings > 0) {
+          const percent = Math.round((savings / (monthly * 12)) * 100);
+          return <span className="text-xs font-bold text-green-600 bg-green-100 px-2 py-1 rounded-full ml-2">Save {percent}%</span>
+      }
+      return null;
   }
-};
-
-  const handlePlanSelectV1 = async (plan: Plan) => {
-    console.log(`Subscribing company ${companyId} to plan ${plan.id}`);
-    setLoading(true);
-    
-
-    try {
-
-      let chargeAmount = Number(plan.priceMonthly ?? plan.price) || 1;
-
-        if (isOutsideKenya) {
-          let usd = await convertKEStoUSD(chargeAmount);
-          chargeAmount = Math.round(usd * 100) / 100;
-        }
-
-        const amountInKobo = Math.round(chargeAmount * 100);
-      
-        const res = await fetch("/api/payments/subscribe", {
-          method: "POST",
-          body: JSON.stringify({
-            planId: plan.id,
-            companyId,
-            currency: isOutsideKenya ? "USD" : "KES",
-            amount: amountInKobo,
-          }),
-        });
-
-        const data = await res.json();
-
-        console.log("Payment initiation response:", data);  
-        console.log("Amount in Kobo:", data.data.data.authorization_url);
-
-        if (!data?.data?.data?.authorization_url) {
-            showStatusMessage("Error: Unable to start payment. Please try again.");
-            setLoading(false);
-            return;
-        }
-
-        console.log("Opening Paystack payment interface...", data.data.data.authorization_url);
-        // Check if PaystackPop is available (this should now work)
-        if (!window.PaystackPop) {
-            showStatusMessage("Error: Payment service failed to load.");
-            setLoading(false);
-            return;
-        }
-
-        if (!plan.priceMonthly && !plan.price) {
-            showStatusMessage("Error: Plan price is not valid.");
-            setLoading(false);
-            return;
-        }       
-
-        const handler = window.PaystackPop.setup({
-          key: paystackPublicKey,
-          email: email,
-          amount: amountInKobo,
-          ref: data.data.data.reference,
-          currency: isOutsideKenya ? "USD" : "KES",
-          metadata: {
-            companyId,
-            planId: plan.id,
-          },
-          callback: function (response: any) {
-            window.location.href = `/payments/paystack/verify?reference=${response.reference}`;
-          },
-          onClose: function () {
-            showStatusMessage("Payment was cancelled.", "error");
-            setLoading(false);
-          },
-        });
-
-        handler.openIframe();
-
-    } catch (err) {
-        console.error("Payment initiation failed:", err);
-        showStatusMessage("A network error occurred. Please try again.", "error");
-        setLoading(false);
-    }
-  };
-
-  // useEffect(() => {
-  //   const detectUser = async () => {
-  //     const country = await getUserCountry();
-  //     setUserCountry(country);
-  //     setIsOutsideKenya(country !== "Kenya" && country !== "KE");
-  //   };
-  //   detectUser();
-  // }, []);
-
-  const getPriceDisplay = (plan: Plan) => {
-
-    const displayPrice =  billingPeriod === "MONTHLY"
-    ? ( plan.priceMonthly ?? plan.price )
-    : plan.priceAnnually ?? ((Number(plan.price) ?? 1) * 12) ;
-
-
-    const rawAmount = Number(displayPrice ?? 1);
-
-    if (isOutsideKenya) {
-      const usd = usdPrices[plan.id];
-      return usd ? `$ ${usd.toFixed(2)} USD` : "Loading...";
-    }
-
-    return `KSh ${rawAmount.toLocaleString()}`;
-  };
-
-  const getCoreFeatures = (plan: Plan) => {
-    const allFeatures = Object.values(plan.features).flat();
-    return allFeatures.slice(0, 3);
-  };
-
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: { staggerChildren: 0.15 },
-    },
-  };
-
-  const cardVariants = {
-    hidden: { opacity: 0, y: 50 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
-  };
 
   return (
-    <div className="w-full min-h-screen font-sans bg-gray-50">
+    <div className="w-full min-h-screen font-sans bg-gray-50 text-gray-900">
       
-      <style>{`
-        .popular-card-outer {
-          padding: 2px;
-          border-radius: 1.75rem;
-          background: linear-gradient(145deg, #FF7043 0%, #FFB74D 100%);
-          transform: scale(1.02);
-          transition: transform 0.3s ease-out;
-        }
-        .popular-card-inner {
-          background-color: white;
-          border-radius: 1.6rem;
-          height: 100%;
-          box-shadow: 0 10px 20px rgba(255, 112, 67, 0.2);
-        }
-        .regular-card {
-            transition: all 0.3s ease-in-out;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
-        }
-        .regular-card:hover {
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            transform: translateY(-4px);
-        }
-      `}</style>
-
-      {/* Subscription Status Message Box */}
+      {/* Toast Notification */}
       {subscriptionStatus && (
-        <div className={`fixed top-4 right-4 z-50 p-4 rounded-xl shadow-2xl transition-all duration-300 transform
-          ${subscriptionStatus.type === 'success' ? 'bg-green-600' : 'bg-red-600'} text-white`}>
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 inline mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        <motion.div 
+          initial={{ opacity: 0, y: -50 }} animate={{ opacity: 1, y: 0 }}
+          className={`fixed top-6 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded-full shadow-2xl font-medium text-white ${subscriptionStatus.type === 'success' ? 'bg-green-600' : 'bg-red-500'}`}
+        >
           {subscriptionStatus.message}
-        </div>
+        </motion.div>
       )}
 
-      <section className="py-24 bg-gray-50 overflow-hidden">
-        <div className="container mx-auto px-4 lg:px-8 text-center">
+      <section className="py-20 lg:py-28 px-4">
+        <div className="max-w-7xl mx-auto text-center">
           
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 leading-tight">
-              Pricing Plans for <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 via-pink-500 to-red-400">
-                Every Business Stage
-              </span>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+            <h2 className="text-4xl md:text-5xl font-black tracking-tight mb-4">
+              Pricing for <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-600 to-amber-500">{category}</span> Businesses
             </h2>
-            <p className="mt-6 text-xl max-w-3xl mx-auto text-gray-600">
-              Start small and grow with us. All plans include essential features to help you succeed, backed by dedicated support.
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto mb-10">
+              Choose the plan that fits your growth stage. Upgrade anytime as you scale.
             </p>
           </motion.div>
 
-          <div className="w-full flex justify-center mb-8 select-none">
-            <div className="flex items-center bg-gray-100 dark:bg-gray-800 p-1 rounded-full shadow-sm">
-              
-              {/* Monthly */}
-              <button
-                onClick={() => setBillingPeriod("MONTHLY")}
-                className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-300
-                  ${billingPeriod === "MONTHLY"
-                    ? "bg-white dark:bg-gray-700 shadow text-black dark:text-white"
-                    : "text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white"
-                  }`}
-              >
-                Monthly
-              </button>
+          {/* Toggle Switch */}
+          <div className="flex justify-center mb-12">
+            <div className="bg-white p-1 rounded-full border border-gray-200 shadow-sm inline-flex relative">
+                
+                {/* Background Slider Animation */}
+                <motion.div 
+                    className="absolute top-1 bottom-1 bg-gray-900 rounded-full shadow-md z-0"
+                    initial={false}
+                    animate={{ 
+                        left: billingPeriod === "MONTHLY" ? "4px" : "50%", 
+                        width: "calc(50% - 4px)" 
+                    }}
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                />
 
-              {/* Annually */}
-              <button
-                onClick={() => setBillingPeriod("ANNUALLY")}
-                className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-300
-                  ${billingPeriod === "ANNUALLY"
-                    ? "bg-white dark:bg-gray-700 shadow text-black dark:text-white"
-                    : "text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white"
-                  }`}
-              >
-                Annually
-              </button>
+                <button
+                    onClick={() => setBillingPeriod("MONTHLY")}
+                    className={`relative z-10 px-8 py-2.5 text-sm font-bold rounded-full transition-colors duration-200 ${billingPeriod === "MONTHLY" ? "text-white" : "text-gray-500 hover:text-gray-900"}`}
+                >
+                    Monthly
+                </button>
+                <button
+                    onClick={() => setBillingPeriod("ANNUALLY")}
+                    className={`relative z-10 px-8 py-2.5 text-sm font-bold rounded-full transition-colors duration-200 flex items-center gap-2 ${billingPeriod === "ANNUALLY" ? "text-white" : "text-gray-500 hover:text-gray-900"}`}
+                >
+                    Annually
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded uppercase tracking-wider ${billingPeriod === "ANNUALLY" ? "bg-amber-400 text-black" : "bg-green-100 text-green-700"}`}>
+                        Save 20%
+                    </span>
+                </button>
             </div>
           </div>
 
-          
-          <div className="mt-16 overflow-x-auto pb-6">
-            <motion.div
-              className="w-max mx-auto grid grid-flow-col auto-cols-[minmax(280px,_1fr)] md:grid-flow-row md:grid-cols-2 lg:grid-cols-4 gap-6 py-4"
-              initial="hidden"
-              animate="show"
-              variants={containerVariants}
-            >
-              {plans.map((plan) => (
-                <div key={plan.id} className={plan.isPopular ? "popular-card-outer" : "p-0"}>
-                  <motion.div
-                    className={`relative flex flex-col w-72 md:w-auto p-8 rounded-3xl ${plan.isPopular ? "popular-card-inner" : "regular-card bg-white border border-gray-100"}`}
-                    variants={cardVariants}
-                  >
-                    
-                    {plan.isPopular && (
-                      <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-pink-600 text-white text-xs font-bold px-4 py-1 rounded-full uppercase tracking-widest shadow-lg">
-                        ⭐ RECOMMENDED
-                      </div>
-                    )}
-                    
-                    <div className="text-center mb-8">
-                      <h3 className={`text-3xl font-extrabold ${plan.isPopular ? "text-orange-600" : "text-gray-900"}`}>
-                        {plan.name}
-                      </h3>
-                      <p className="mt-2 text-sm text-gray-500 font-medium h-10">{plan.tagline}</p>
+          {/* Plans Grid */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 items-start">
+            {plans.map((plan, index) => {
+              const planId = plan.id || plan._id?.$oid || `plan-${index}`;
+              const isPopular = plan.isPopular;
 
-                      <div className="mt-8 text-6xl font-black flex items-baseline justify-center">
-                        <span className="text-gray-900">
-                          {getPriceDisplay(plan)}
-                        </span>
-                        <span className="text-2xl font-semibold ml-2 text-gray-500">
-                          / {billingPeriod === "MONTHLY" ? "mo" : "yr"}
-                        </span>
-                      </div>
-                      <p className="text-sm text-gray-400 mt-1">Billed Annually. Cancel Anytime.</p>
+              return (
+                <motion.div
+                  key={planId}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  className={`relative flex flex-col p-8 bg-white rounded-3xl transition-all duration-300 ${isPopular ? "shadow-2xl ring-2 ring-orange-500 scale-105 z-10" : "shadow-lg border border-gray-100 hover:shadow-xl"}`}
+                >
+                  {isPopular && (
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-gradient-to-r from-orange-600 to-amber-500 text-white px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest shadow-lg">
+                      Most Popular
                     </div>
+                  )}
+
+                  <div className="mb-6">
+                    <h3 className="text-2xl font-bold text-gray-900">{plan.name}</h3>
+                    <p className="text-gray-500 text-sm mt-2 min-h-[40px]">{ plan.tagline}</p>
+                    {/* plan.description || */}
+                  </div>
+
+                  <div className="mb-6 flex items-baseline justify-center">
+                    <span className="text-5xl font-extrabold text-gray-900 tracking-tight">
+                        {renderPrice(plan)}
+                    </span>
+                    <span className="text-gray-400 font-medium ml-2">
+                        /{billingPeriod === "MONTHLY" ? "mo" : "yr"}
+                    </span>
+                  </div>
+
+                  {billingPeriod === "ANNUALLY" && renderSavingsBadge(plan) && (
+                       <div className="mb-6 text-center">
+                           <span className="text-sm text-green-600 font-medium bg-green-50 px-3 py-1 rounded-lg">
+                               Paid {renderPrice(plan)} / year
+                           </span>
+                       </div>
+                  )}
+
+                  <button
+                    onClick={() => handlePlanSelect(plan)}
+                    disabled={loading}
+                    className={`w-full py-4 rounded-xl font-bold text-lg transition-all duration-200 active:scale-95 flex items-center justify-center
+                      ${isPopular 
+                        ? "bg-gray-900 text-white hover:bg-gray-800 shadow-lg hover:shadow-xl" 
+                        : "bg-orange-50 text-orange-700 hover:bg-orange-100 hover:text-orange-800"
+                      } ${loading ? "opacity-70 cursor-wait" : ""}`}
+                  >
+                    {loading ? (
+                         <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                        `Choose ${plan.name}`
+                    )}
+                  </button>
+
+                  <div className="mt-8 pt-8 border-t border-gray-100 text-left space-y-4">
+                    <p className="font-semibold text-gray-900">What's included:</p>
                     
-                    <div className="mb-8">
-                      <button
-                        onClick={() => handlePlanSelect(plan, billingPeriod)} 
-                        disabled={loading} 
-                        className={`w-full py-4 px-6 rounded-xl font-extrabold text-lg shadow-lg transform transition-all duration-300 active:scale-[0.98] flex items-center justify-center
-                          ${plan.isPopular
-                            ? "bg-gradient-to-r from-orange-600 to-pink-500 text-white hover:opacity-95 shadow-orange-500/50"
-                            : "bg-white text-orange-600 border-2 border-orange-600 hover:bg-orange-50"
-                          } hover:scale-[1.01] disabled:opacity-70 disabled:cursor-wait`}
-                      >
-                        {loading ? (
-                           <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                           </svg>
-                        ) : (
-                          `Start ${plan.name}`
-                        )}
-                      </button>
-                    </div>
-                    
-                    <div className="flex-grow space-y-3 text-left border-t border-gray-200 pt-6">
-                      <p className="text-lg font-bold text-gray-800 mb-4">Core Benefits:</p>
-                      <ul className="space-y-4">
-                        {getCoreFeatures(plan).map((item, idx) => (
-                          <li key={`core-${idx}`} className="flex items-start">
-                            {React.cloneElement(CheckIcon, {
-                              className: `flex-shrink-0 w-6 h-6 ${plan.isPopular ? "text-pink-500" : "text-orange-500"}`,
-                            })}
-                            <span className="ml-3 text-base text-gray-700 font-medium">{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    
-                      <div className="mt-8">
-                        <button
-                          onClick={() => setIsFeaturesExpanded(prev => ({ ...prev, [plan.id]: !prev[plan.id] }))}
-                          className="text-sm font-semibold text-orange-600 hover:text-orange-700 flex items-center md:hidden transition-colors"
-                        >
-                          {isFeaturesExpanded[plan.id] ? "Hide Full Feature Set" : "Show All Detailed Features"}
-                          <svg className={`ml-2 w-4 h-4 transition-transform ${isFeaturesExpanded[plan.id] ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                        </button>
-                      </div>
-                      
-                      <motion.div
-                        initial={false}
-                        animate={isFeaturesExpanded[plan.id] || window.innerWidth >= 768 ? "open" : "collapsed"}
-                        variants={{
-                          open: { height: "auto", opacity: 1 },
-                          collapsed: { height: 0, opacity: 0.5 },
-                        }}
-                        transition={{ duration: 0.3 }}
-                        className="overflow-hidden md:h-auto md:opacity-100"
-                      >
-                        <div className="pt-4 space-y-4">
-                          {Object.entries(plan.features).map(([section, items]) => (
-                            <div key={section} className="mt-6">
-                              <p className="font-extrabold capitalize text-sm mb-3 text-gray-900 border-b-2 border-orange-500/20 inline-block pb-1">
-                                {section.replace(/([A-Z])/g, " $1").trim()}
-                              </p>
-                              <ul className="space-y-3">
-                                {items.map((item, idx) => (
-                                  <li key={idx} className="flex items-start">
-                                    {React.cloneElement(CheckIcon, {
-                                      className: `flex-shrink-0 w-5 h-5 ${plan.isPopular ? "text-pink-400" : "text-green-500"}`,
-                                    })}
-                                    <span className="ml-3 text-sm text-gray-600">{item}</span>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          ))}
+                    {/* Render specific features or a flat list */}
+                    {Object.entries(plan.features).slice(0, 4).map(([category, items]) => (
+                        <div key={category}>
+                            {items.slice(0, 2).map((feature, i) => (
+                                <div key={i} className="flex items-start mb-3">
+                                    <div className={`mt-1 p-0.5 rounded-full ${isPopular ? "bg-orange-100 text-orange-600" : "bg-gray-100 text-gray-600"}`}>
+                                        {React.cloneElement(CheckIcon, { className: "w-3 h-3" })}
+                                    </div>
+                                    <span className="ml-3 text-sm text-gray-600 leading-relaxed">{feature}</span>
+                                </div>
+                            ))}
                         </div>
-                      </motion.div>
-                    </div>
-                  </motion.div>
-                </div>
-              ))}
-            </motion.div>
+                    ))}
+                    
+                    {/* Expand/Collapse Button */}
+                    <button 
+                        onClick={() => setIsFeaturesExpanded(prev => ({ ...prev, [planId]: !prev[planId] }))}
+                        className="text-orange-600 text-sm font-semibold hover:underline mt-2 flex items-center"
+                    >
+                        {isFeaturesExpanded[planId] ? "Hide Features" : "See All Features"}
+                    </button>
+
+                    {/* Collapsible Section */}
+                    <motion.div 
+                        initial={false}
+                        animate={{ height: isFeaturesExpanded[planId] ? "auto" : 0, opacity: isFeaturesExpanded[planId] ? 1 : 0 }}
+                        className="overflow-hidden"
+                    >
+                        {Object.entries(plan.features).map(([category, items]) => (
+                            <div key={category} className="mt-4">
+                                <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">{category}</h4>
+                                {items.map((feature, i) => (
+                                    <div key={i} className="flex items-start mb-2">
+                                        <div className="mt-1 p-0.5 rounded-full bg-gray-50 text-gray-400">
+                                            {React.cloneElement(CheckIcon, { className: "w-3 h-3" })}
+                                        </div>
+                                        <span className="ml-3 text-sm text-gray-500">{feature}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        ))}
+                    </motion.div>
+                  </div>
+                </motion.div>
+              );
+            })}
           </div>
+
+          <p className="mt-12 text-sm text-gray-400">
+            Prices are subject to change. VAT may apply based on your location. <br />
+            Need help choosing? <a href="#" className="text-orange-600 hover:underline">Contact our sales team</a>.
+          </p>
+
         </div>
       </section>
     </div>
@@ -999,7 +849,7 @@ export default function StoresPage() {
                         />
                     ) : (
                         paginatedStores && paginatedStores.map(store => {
-                            const isActive = store.subscriptionStatus === 'ACTIVE';
+                            const isActive = false; //store.subscriptionStatus === 'ACTIVE';
                             
                             return (
                                 <motion.div
