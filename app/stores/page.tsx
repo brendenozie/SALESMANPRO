@@ -499,7 +499,7 @@ function PricingSection({ companyId, email, category }: { companyId: string, ema
 
                 <button
                     onClick={() => setBillingPeriod("MONTHLY")}
-                    className={`relative z-10 px-8 py-2.5 text-sm font-bold rounded-full transition-colors duration-200 ${billingPeriod === "MONTHLY" ? "text-white" : "text-gray-500 hover:text-gray-900"}`}
+                    className={`relative z-10 px-16 py-2.5 text-sm font-bold rounded-full transition-colors duration-200 ${billingPeriod === "MONTHLY" ? "text-white" : "text-gray-500 hover:text-gray-900"}`}
                 >
                     Monthly
                 </button>
@@ -849,7 +849,7 @@ export default function StoresPage() {
                         />
                     ) : (
                         paginatedStores && paginatedStores.map(store => {
-                            const isActive = false; //store.subscriptionStatus === 'ACTIVE';
+                            const isActive = store.subscriptionStatus === 'ACTIVE';
                             
                             return (
                                 <motion.div
