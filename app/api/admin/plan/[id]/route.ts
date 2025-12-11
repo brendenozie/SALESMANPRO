@@ -15,6 +15,30 @@ import { withApiHandler } from "@/lib/hooks/withApiHandler";
  * PUT /api/plans/[id]
  * Updates a specific plan.
  */
+// import { NextResponse } from "next/server";
+// import prisma from "@/server/db/prismadb";
+
+// export async function PUT(req: Request, { params }: any) {
+//   const body = await req.json();
+//   const { id } = params;
+
+//   const updatedPlan = await prisma.plan.update({
+//     where: { id },
+//     data: {
+//       name: body.name,
+//       description: body.description,
+//       priceMonthly: body.priceMonthly,
+//       priceAnnually: body.priceAnnually,
+//       features: body.features,
+//       isPopular: body.isPopular,
+//       status: body.status,
+//       siteTypePrices: body.siteTypePrices ?? {}, // NEW
+//     },
+//   });
+
+//   return NextResponse.json(updatedPlan);
+// }
+
 const putHandler = async (
   request: Request,
   { params }: { params: { id: string } }
@@ -31,6 +55,7 @@ const putHandler = async (
     features,
     isPopular,
     status,
+    siteTypePrices,
   } = await request.json();
 
   const updatedPlan = await prisma.plan.update({
@@ -43,6 +68,7 @@ const putHandler = async (
       features,
       isPopular,
       status: status as PlanStatus, // Ensure enum typing
+      siteTypePrices: siteTypePrices ?? {}, // NEW FIELD
     },
   });
 

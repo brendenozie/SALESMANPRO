@@ -4368,30 +4368,61 @@ enum BillingCycle {
 
 // Represents a pricing plan offered by a company.
 model Plan {
-  id            String     @id @default(auto()) @map("_id") @db.ObjectId
-  name          String     @unique
-  description   String?
-  category      String? // e.g., "Basic", "Pro", "Enterprise"
-  price         Int? // e.g., 999
-  currency      String // "KES"
-  features      Json // nested object exactly like MongoDB
-  isPopular     Boolean    @default(false)
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  name        String  @unique
+  description String?
+  category    String?
+  price       Int?
+  currency    String
+  features    Json
+  isPopular   Boolean @default(false)
+
+  // BASE pricing (optional fallback)
   priceMonthly  Int?
   priceAnnually Int?
-  status        PlanStatus @default(ACTIVE)
-  companyId     String     @db.ObjectId
-  company       Company    @relation(fields: [companyId], references: [id])
 
-  // Optional future use: subscription linking
-  subscriptions Subscription[]
+  // NEW: Site type–specific pricing
+  siteTypePrices Json? // { ecommerce: {monthly: 1000, yearly: 9000}, blog: {monthly: 500, yearly: 5000} }
 
-  createdAt             DateTime?             @default(now())
-  updatedAt             DateTime?             @updatedAt
+  status    PlanStatus @default(ACTIVE)
+  companyId String     @db.ObjectId
+  company   Company    @relation(fields: [companyId], references: [id])
+
+  subscriptions         Subscription[]
   subscriptionCompanies SubscriptionCompany[]
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
 
   @@index([isPopular])
   @@index([category])
 }
+
+// model Plan {
+//   id            String     @id @default(auto()) @map("_id") @db.ObjectId
+//   name          String     @unique
+//   description   String?
+//   category      String? // e.g., "Basic", "Pro", "Enterprise"
+//   price         Int? // e.g., 999
+//   currency      String // "KES"
+//   features      Json // nested object exactly like MongoDB
+//   isPopular     Boolean    @default(false)
+//   priceMonthly  Int?
+//   priceAnnually Int?
+//   status        PlanStatus @default(ACTIVE)
+//   companyId     String     @db.ObjectId
+//   company       Company    @relation(fields: [companyId], references: [id])
+
+//   // Optional future use: subscription linking
+//   subscriptions Subscription[]
+
+//   createdAt             DateTime?             @default(now())
+//   updatedAt             DateTime?             @updatedAt
+//   subscriptionCompanies SubscriptionCompany[]
+
+//   @@index([isPopular])
+//   @@index([category])
+// }
 
 // model Plan {
 //   id        String  @id @default(auto()) @map("_id") @db.ObjectId
@@ -4453,20 +4484,34 @@ model SubscriptionCompany {
   id        String  @id @default(auto()) @map("_id") @db.ObjectId
   companyId String  @db.ObjectId
   company   Company @relation(fields: [companyId], references: [id])
-  userId    String  @db.ObjectId
-  user      User    @relation(fields: [userId], references: [id])
+
+  userId String @db.ObjectId
+  user   User   @relation(fields: [userId], references: [id])
 
   planId String? @db.ObjectId
   plan   Plan?   @relation(fields: [planId], references: [id])
 
-  status      String // ACTIVE | INACTIVE | CANCELLED | EXPIRED | PAST_DUE
-  renewalDate DateTime?
-  startedAt   DateTime  @default(now())
-  endedAt     DateTime?
-  trialEndsAt DateTime?
+  status       String // ACTIVE | INACTIVE | CANCELLED | EXPIRED | PAST_DUE
+  billingCycle String  @default("MONTHLY") // MONTHLY | ANNUALLY
+  amountPaid   Float?
+  currency     String? @default("USD")
 
-  paystackRef      String? // subscription code from Paystack
-  paystackCustomer String? // Paystack customer email/id
+  startedAt         DateTime  @default(now())
+  renewalDate       DateTime?
+  endedAt           DateTime?
+  trialEndsAt       DateTime?
+  gracePeriodEndsAt DateTime?
+
+  cancelAtPeriodEnd Boolean @default(false)
+
+  // Paystack / Stripe / MPesa
+  gateway               String?
+  gatewaySubscriptionId String?
+  gatewayCustomerId     String?
+
+  meta Json?
+
+  payments SubscriptionPayment[] // <--- LINK TO HISTORY
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -4476,6 +4521,63 @@ model SubscriptionCompany {
   @@index([companyId])
   @@index([userId])
   @@index([status])
+}
+
+// model SubscriptionCompany {
+//   id        String  @id @default(auto()) @map("_id") @db.ObjectId
+//   companyId String  @db.ObjectId
+//   company   Company @relation(fields: [companyId], references: [id])
+//   userId    String  @db.ObjectId
+//   user      User    @relation(fields: [userId], references: [id])
+
+//   planId String? @db.ObjectId
+//   plan   Plan?   @relation(fields: [planId], references: [id])
+
+//   status      String // ACTIVE | INACTIVE | CANCELLED | EXPIRED | PAST_DUE
+//   renewalDate DateTime?
+//   startedAt   DateTime  @default(now())
+//   endedAt     DateTime?
+//   trialEndsAt DateTime?
+
+//   paystackRef      String? // subscription code from Paystack
+//   paystackCustomer String? // Paystack customer email/id
+
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+//   package   Package? @relation(fields: [packageId], references: [id])
+//   packageId String?  @db.ObjectId
+
+//   @@index([companyId])
+//   @@index([userId])
+//   @@index([status])
+// }
+
+model SubscriptionPayment {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  subscriptionId String              @db.ObjectId
+  subscription   SubscriptionCompany @relation(fields: [subscriptionId], references: [id])
+
+  amount   Float
+  currency String @default("USD")
+  status   String // SUCCESS | FAILED | PENDING | REFUNDED | DISPUTED
+  type     String // INITIAL | RENEWAL | UPGRADE | DOWNGRADE | PRORATION | REFUND
+
+  gateway        String? // PAYSTACK | STRIPE | MPESA
+  gatewayRef     String? // transaction reference from gateway
+  gatewayMessage String? // optional "Insufficient funds", "Completed", etc.
+
+  paidAt      DateTime?
+  nextBilling DateTime?
+
+  meta Json? // full gateway payload (Paystack event, Stripe webhook, etc.)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([subscriptionId])
+  @@index([status])
+  @@index([type])
 }
 
 // A Patient is a specialized type of User
@@ -5095,7 +5197,7 @@ model Destination {
   @@index([images])
 }
 
-// Package model: Represents a travel package or tour.
+// TourPackage model: Represents a travel package or tour.
 model TourPackage {
   id              String        @id @default(auto()) @map("_id") @db.ObjectId
   name            String
