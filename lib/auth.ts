@@ -409,6 +409,13 @@ export const authOptions: NextAuthOptions = {
     },
 
     async session({ session, token }) {
+      
+      // if (!token.isActive) {
+      //   // ⛔ immediately invalidate session
+      //   return null;
+      // }
+
+
       if (session.user) {
         Object.assign(session.user, {
           id: token.id as string,

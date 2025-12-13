@@ -29,8 +29,6 @@ export async function updateNotificationPreferences(preferences: {
   emailAlerts: boolean; 
   smsAlerts: boolean;
   inAppNotifications: boolean;
-  // emailNotifications: boolean;
-  // inAppNotifications: boolean;
 }) {
   const res = await fetch("/api/user/notifications", {
     method: "PUT",
@@ -43,7 +41,7 @@ export async function updateNotificationPreferences(preferences: {
 }
 
 export async function deactivateAccount() {
-  const res = await fetch("/api/user/delete", {
+  const res = await fetch("/api/user/soft-delete", {
     method: "DELETE",
   });
 
