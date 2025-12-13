@@ -19,6 +19,7 @@ import {
 import { useStoreContext } from '@/contexts/StoreContext';
 import { useSession, signOut } from 'next-auth/react';
 import clsx from 'clsx'; // Utility for conditional classes
+import { changePassword, deactivateAccount, logoutUser, updateNotificationPreferences, updateUserProfile } from '@/lib/user-actions';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
   
@@ -53,19 +54,19 @@ const useMockUserContext = () => {
   });
 
   // Mock API functions for demo/testing
-  const updateUserProfile = (data: any) => new Promise((resolve) => setTimeout(() => { setUserData(prev => ({ ...prev, ...data })); resolve({ success: true, message: 'Profile updated successfully!' }); }, 500));
-  const changePassword = (oldPass: string, newPass: string) => new Promise((resolve, reject) => setTimeout(() => (oldPass === 'password123' ? resolve({ success: true, message: 'Password changed successfully!' }) : reject({ success: false, message: 'Incorrect old password.' })), 500));
-  const updateNotificationPreferences = (newPrefs: any) => new Promise((resolve) => setTimeout(() => { setUserData((prev) => ({ ...prev, notifications: { ...prev.notifications, ...newPrefs } })); resolve({ success: true, message: 'Notification preferences updated!' }); }, 500));
-  const deactivateAccount = () => new Promise((resolve) => setTimeout(() => { alert('Account Deactivation Initiated.'); resolve({ success: true, message: 'Account deactivation process started.' }); }, 500));
-  const logoutUser = (path:string) => new Promise((resolve) => { setTimeout(() => { signOut({ callbackUrl: `/${path}` }); resolve({ success: true, message: 'Logged out.' }); }, 500);});
+  // const updateUserProfile = (data: any) => new Promise((resolve) => setTimeout(() => { setUserData(prev => ({ ...prev, ...data })); resolve({ success: true, message: 'Profile updated successfully!' }); }, 500));
+  // const changePassword = (oldPass: string, newPass: string) => new Promise((resolve, reject) => setTimeout(() => (oldPass === 'password123' ? resolve({ success: true, message: 'Password changed successfully!' }) : reject({ success: false, message: 'Incorrect old password.' })), 500));
+  // const updateNotificationPreferences = (newPrefs: any) => new Promise((resolve) => setTimeout(() => { setUserData((prev) => ({ ...prev, notifications: { ...prev.notifications, ...newPrefs } })); resolve({ success: true, message: 'Notification preferences updated!' }); }, 500));
+  // const deactivateAccount = () => new Promise((resolve) => setTimeout(() => { alert('Account Deactivation Initiated.'); resolve({ success: true, message: 'Account deactivation process started.' }); }, 500));
+  // const logoutUser = (path:string) => new Promise((resolve) => { setTimeout(() => { signOut({ callbackUrl: `/${path}` }); resolve({ success: true, message: 'Logged out.' }); }, 500);});
 
   return {
     user: userData,
-    updateUserProfile,
-    changePassword,
-    updateNotificationPreferences,
-    deactivateAccount,
-    logoutUser,
+    // updateUserProfile,
+    // changePassword,
+    // updateNotificationPreferences,
+    // deactivateAccount,
+    // logoutUser,
   };
 };
 // --- END MOCK CONTEXTS ---
@@ -85,18 +86,46 @@ export default function UserSettingsPage( { companyId }: { companyId: string } )
   const { storeFormData } = storeContext;
 
   // Prefer next-auth session if available
-  const session = useSession?.(); // may be undefined in some setups
+  const session = useSession(); // may be undefined in some setups
   // Prefer a mocked user context for demo, but can be swapped to an actual user hook later
-  const mockUser = useMockUserContext();
-  // If you have a real user-provider hook, you can swap it in easily; for now we use mock user data & functions
-  const {
-    user,
-    updateUserProfile,
-    changePassword,
-    updateNotificationPreferences,
-    deactivateAccount,
-    logoutUser,
-  } = mockUser;
+  // const mockUser = useMockUserContext();
+  // // If you have a real user-provider hook, you can swap it in easily; for now we use mock user data & functions
+  // const {
+  //   user,
+  //   updateUserProfile,
+  //   changePassword,
+  //   updateNotificationPreferences,
+  //   deactivateAccount,
+  //   logoutUser,
+  // } = mockUser;
+
+  const user = session && session.data && session.data.user ? {
+    id: session.data.user.id,
+    name: session.data.user.name || 'User',
+    email: session.data.user.email || '',
+    phone: session.data.user.phone || '',
+    avatarUrl: 'https://placehold.co/100x100/E02A50/FFFFFF?text=U',
+    // session.data.user.avatarUrl || 
+    // notifications: session.data.user.notifications || {
+    //   emailAlerts: true,
+    //   smsAlerts: false,
+    //   inAppNotifications: true,
+    // },
+  } : useMockUserContext().user;
+
+  const notifications = {
+    emailAlerts: true,
+    smsAlerts: false,
+    inAppNotifications: true,
+  }
+
+  // const {
+  //   updateUserProfile,
+  //   changePassword,
+  //   updateNotificationPreferences,
+  //   deactivateAccount,
+  //   logoutUser,
+  // } = useMockUserContext();
 
   // Theme / colors (unchanged)
   const primaryColor = storeFormData?.themeSettings?.primaryColor || '#E02A50';
@@ -114,9 +143,9 @@ export default function UserSettingsPage( { companyId }: { companyId: string } )
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
-  const [emailAlerts, setEmailAlerts] = useState(user.notifications.emailAlerts);
-  const [smsAlerts, setSmsAlerts] = useState(user.notifications.smsAlerts);
-  const [inAppNotifications, setInAppNotifications] = useState(user.notifications.inAppNotifications);
+  const [emailAlerts, setEmailAlerts] = useState(notifications.emailAlerts);
+  const [smsAlerts, setSmsAlerts] = useState(notifications.smsAlerts);
+  const [inAppNotifications, setInAppNotifications] = useState(notifications.inAppNotifications);
 
   // Domain-related state
   const [customDomain, setCustomDomain] = useState('');
@@ -141,9 +170,9 @@ export default function UserSettingsPage( { companyId }: { companyId: string } )
     setProfileEmail(user.email);
     setProfilePhone(user.phone);
     setProfileAvatar(user.avatarUrl);
-    setEmailAlerts(user.notifications.emailAlerts);
-    setSmsAlerts(user.notifications.smsAlerts);
-    setInAppNotifications(user.notifications.inAppNotifications);
+    setEmailAlerts(notifications.emailAlerts);
+    setSmsAlerts(notifications.smsAlerts);
+    setInAppNotifications(notifications.inAppNotifications);
   }, [user]);
 
   const showStatus = (type: 'success' | 'error', message: string) => {
@@ -286,7 +315,7 @@ export default function UserSettingsPage( { companyId }: { companyId: string } )
   const handleLogout = async () => {
     if (window.confirm('Are you sure you want to log out?')) {
       try {
-        await logoutUser(storeFormData.category);
+        await logoutUser();
       } catch (error: any) {
         showStatus('error', error.message || 'Failed to log out.');
       }
