@@ -308,6 +308,8 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
 
     const categoryKey = normalizeCategory(company?.category || userRole);
 
+    // console.log("[AdminDashboardPage] Rendering dashboard for companyId:", companyId, "categoryKey:", categoryKey, "userRole:", userRole);
+
     const isPrincipalLike =
       ['educational & online courses', 'head teacher', 'school head'].includes(categoryKey) ||
       [
@@ -365,7 +367,8 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
     // --- Educator Dashboards ---
     if (
       educatorRoles.includes(userRole) ||
-      (userRole === 'CONSUMER' && ['educational & online courses', 'head teacher', 'school head'].includes(categoryKey))
+      (userRole === 'CONSUMER' && ['educational & online courses', 'head teacher', 'school head'].includes(categoryKey)) ||
+      isPrincipalLike
     ) {
       if (isPrincipalLike) {
         let principalDashboardData: PrincipalDashboardData;
