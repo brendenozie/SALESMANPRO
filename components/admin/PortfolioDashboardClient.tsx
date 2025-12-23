@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
+import dynamic from 'next/dynamic'; // Required for ApexCharts in Next.js
 // Simulating Link component behavior
 import {
   BriefcaseIcon,
@@ -16,31 +17,91 @@ import {
 } from '@heroicons/react/24/outline';
 import { useParams } from 'next/navigation';
 
+// Dynamically import ApexCharts to avoid SSR issues
+const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
+
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
-// --- MOCK CHART COMPONENTS (FOR SINGLE-FILE MANDATE) ---
+// --- APEX CHART COMPONENTS ---
 
-const ChartTwo: React.FC<{data: any}> = ({ data }) => (
-  <div className="flex flex-col items-center justify-center h-full min-h-[220px] bg-gray-800/50 rounded-xl p-4 border border-dashed border-cyan-700">
-    <span className="text-cyan-500 font-semibold text-sm">
-      [Placeholder: Monthly Project Views Line Chart]
-    </span>
-     <pre className="mt-2 text-xs text-cyan-500/80 dark:text-cyan-500/50 bg-gray-900 p-2 rounded">
-      {JSON.stringify(data, null, 2)}
-    </pre>
-  </div>
-);
+const ProjectViewsChart: React.FC<{ data: any[] }> = ({ data }) => {
+  const series = [{
+    name: "Project Views",
+    data: data?.map(d => d.views) || []
+  }];
 
-const ChartThree: React.FC<{data: any}> = ({ data }) => (
-  <div className="flex flex-col items-center justify-center h-full min-h-[220px] bg-gray-800/50 rounded-xl p-4 border border-dashed border-fuchsia-700">
-    <span className="text-fuchsia-500 font-semibold text-sm">
-      [Placeholder: Inquiries Trend Bar Chart]
-    </span>
-    <pre className="mt-2 text-xs text-fuchsia-500/80 dark:text-fuchsia-500/50 bg-gray-900 p-2 rounded">
-      {JSON.stringify(data, null, 2)}
-    </pre>
-  </div>
-);
+  const options: any = {
+    chart: {
+      type: 'area',
+      toolbar: { show: false },
+      background: 'transparent',
+      fontFamily: 'inherit',
+    },
+    colors: ['#06b6d4'], // cyan-500
+    stroke: { curve: 'smooth', width: 3 },
+    fill: {
+      type: 'gradient',
+      gradient: {
+        shadeIntensity: 1,
+        opacityFrom: 0.45,
+        opacityTo: 0.05,
+        stops: [20, 100]
+      }
+    },
+    dataLabels: { enabled: false },
+    grid: { borderColor: '#374151', strokeDashArray: 4 },
+    xaxis: {
+      categories: data?.map(d => d.name) || [],
+      axisBorder: { show: false },
+      axisTicks: { show: false },
+      labels: { style: { colors: '#9ca3af' } }
+    },
+    yaxis: {
+      labels: { style: { colors: '#9ca3af' } }
+    },
+    tooltip: { theme: 'dark' },
+  };
+
+  return <Chart options={options} series={series} type="area" height={300} />;
+};
+
+const InquiriesTrendChart: React.FC<{ data: any[] }> = ({ data }) => {
+  const series = [{
+    name: "Inquiries",
+    data: data?.map(d => d.count) || []
+  }];
+
+  const options: any = {
+    chart: {
+      type: 'bar',
+      toolbar: { show: false },
+      background: 'transparent',
+    },
+    colors: ['#d946ef'], // fuchsia-500
+    plotOptions: {
+      bar: {
+        borderRadius: 6,
+        columnWidth: '45%',
+        distributed: true,
+      }
+    },
+    dataLabels: { enabled: false },
+    legend: { show: false },
+    grid: { borderColor: '#374151', strokeDashArray: 4 },
+    xaxis: {
+      categories: data?.map(d => d.month) || [],
+      axisBorder: { show: false },
+      labels: { style: { colors: '#9ca3af' } }
+    },
+    yaxis: {
+      labels: { style: { colors: '#9ca3af' } }
+    },
+    tooltip: { theme: 'dark' },
+  };
+
+  return <Chart options={options} series={series} type="bar" height={300} />;
+};
+
 
 // --- TYPE DEFINITIONS ---
 
@@ -104,15 +165,15 @@ export default function PortfolioDashboardClient() {
   }, []);
 
   const cards = data ? [
-    { title: 'Total Projects', value: data.metrics.totalProjects, icon: BriefcaseIcon, accent: 'border-cyan-500 text-cyan-500', link: '/admin/projects', description: 'Your body of work.' },
-    { title: 'Core Skills', value: data.metrics.totalSkills, icon: LightBulbIcon, accent: 'border-amber-500 text-amber-500', link: '/admin/skills', description: 'Defined competencies.' },
-    { title: 'Client Testimonials', value: data.metrics.testimonials, icon: UserCircleIcon, accent: 'border-green-500 text-green-500', link: '/admin/testimonials', description: 'Positive feedback score.' },
-    { title: 'Inquiries (MoM)', value: data.metrics.inquiriesThisMonth, icon: ChatBubbleLeftRightIcon, accent: 'border-fuchsia-500 text-fuchsia-500', link: '/admin/inquiries', description: 'Leads generated this month.'},
-    { title: 'Upcoming Meetings', value: data.metrics.upcomingMeetings, icon: CalendarDaysIcon, accent: 'border-blue-500 text-blue-500', link: '/admin/calendar', description: 'Scheduled this week.' },
+    { title: 'Total Projects', value: data.metrics.totalProjects, icon: BriefcaseIcon, accent: 'border-cyan-500 text-cyan-500', link: `/admin/${companyId}/projects`, description: 'Your body of work.' },
+    { title: 'Core Skills', value: data.metrics.totalSkills, icon: LightBulbIcon, accent: 'border-amber-500 text-amber-500', link: `/admin/${companyId}/skills`, description: 'Defined competencies.' },
+    { title: 'Client Testimonials', value: data.metrics.testimonials, icon: UserCircleIcon, accent: 'border-green-500 text-green-500', link: `/admin/${companyId}/testimonials`, description: 'Positive feedback score.' },
+    { title: 'Inquiries (MoM)', value: data.metrics.inquiriesThisMonth, icon: ChatBubbleLeftRightIcon, accent: 'border-fuchsia-500 text-fuchsia-500', link: `/admin/${companyId}/inquiries`, description: 'Leads generated this month.'},
+    { title: 'Upcoming Meetings', value: data.metrics.upcomingMeetings, icon: CalendarDaysIcon, accent: 'border-blue-500 text-blue-500', link: `/admin/${companyId}/calendar`, description: 'Scheduled this week.' },
   ] : [];
 
   // Component for visually appealing metric cards
-  const MetricCard: React.FC<{ card: (typeof cards)[0] }> = useCallback(({ card }) => (
+  const MetricCard: React.FC<{ card: (typeof cards)[0] }> = useCallback(({ card, }) => (
     <a
       key={card.title}
       href={card.link}
@@ -164,7 +225,7 @@ export default function PortfolioDashboardClient() {
               </h1>
             </div>
             <a
-              href="/profile"
+              href={`/admin/${companyId}/settings`}
               className="flex items-center gap-2 px-4 py-2 rounded-full bg-fuchsia-600 text-white font-medium hover:bg-fuchsia-700 transition transform hover:scale-105 shadow-lg shadow-fuchsia-900/50"
             >
               <UserCircleIcon className="w-5 h-5" />
@@ -182,7 +243,7 @@ export default function PortfolioDashboardClient() {
         <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
           <div className="lg:col-span-2 space-y-8">
-            <div className="bg-gray-800 p-6 rounded-2xl shadow-2xl border-t-4 border-cyan-600">
+            {/* <div className="bg-gray-800 p-6 rounded-2xl shadow-2xl border-t-4 border-cyan-600">
               <h3 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
                 <BriefcaseIcon className="w-6 h-6 text-cyan-400" /> Monthly Project Views
               </h3>
@@ -198,7 +259,23 @@ export default function PortfolioDashboardClient() {
               <div className="min-h-[300px]">
                 <ChartThree data={data.charts.inquiriesTrend} />
               </div>
+            </div> */}
+            {/* Functional Apex Area Chart */}
+            <div className="bg-gray-800 p-6 rounded-2xl border-t-4 border-cyan-600">
+              <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                <BriefcaseIcon className="w-6 h-6 text-cyan-400" /> Project Engagement
+              </h3>
+              <ProjectViewsChart data={data.charts.monthlyProjectViews} />
             </div>
+
+            {/* Functional Apex Bar Chart */}
+            <div className="bg-gray-800 p-6 rounded-2xl border-t-4 border-fuchsia-600">
+              <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                <ChatBubbleLeftRightIcon className="w-6 h-6 text-fuchsia-400" /> Inquiries Trend
+              </h3>
+              <InquiriesTrendChart data={data.charts.inquiriesTrend} />
+            </div>
+            
           </div>
 
           <div className="lg:col-span-1">
