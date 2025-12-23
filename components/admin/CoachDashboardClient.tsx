@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
+import dynamic from 'next/dynamic';
 import {
   UsersIcon,
   CurrencyDollarIcon,
@@ -15,17 +17,66 @@ import {
   BookOpenIcon,
   PuzzlePieceIcon,
 } from '@heroicons/react/24/outline';
-// Removed: import { useParams } from 'next/navigation';
-// Removed: useCallback import
 
-// Mocking the environment variable for standalone use
-const apiBaseUrl = 'http://127.0.0.1:3000/api'; // Or process.env.NEXT_PUBLIC_API_URL
+// Dynamic import for ApexCharts
+const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
-// --- INTERFACES ---
-interface Session {
-    user: { name: string; email: string; }
-}
+const apiBaseUrl = 'http://127.0.0.1:3000/api';
 
+// --- APEX CHART COMPONENTS ---
+
+const QRRChart: React.FC<{ data: any }> = ({ data }) => {
+  const series = [{
+    name: "Revenue",
+    data: data?.values || [32000, 41000, 38000, 51000, 49000, 62000]
+  }];
+
+  const options: any = {
+    chart: { type: 'area', toolbar: { show: false }, zoom: { enabled: false } },
+    colors: ['#4f46e5'], // indigo-600
+    fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.1 } },
+    dataLabels: { enabled: false },
+    stroke: { curve: 'smooth', width: 3 },
+    xaxis: {
+      categories: data?.labels || ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+      labels: { style: { colors: '#64748b' } }
+    },
+    yaxis: { labels: { style: { colors: '#64748b' }, formatter: (val: number) => `$${val / 1000}k` } },
+    grid: { borderColor: '#f1f5f9' },
+    tooltip: { theme: 'light' }
+  };
+
+  return <Chart options={options} series={series} type="area" height={250} />;
+};
+
+const ConversionFunnelChart: React.FC<{ data: any }> = ({ data }) => {
+  const series = [{
+    name: "Prospects",
+    data: data?.values || [500, 380, 210, 80, 42]
+  }];
+
+  const options: any = {
+    chart: { type: 'bar', toolbar: { show: false } },
+    plotOptions: {
+      bar: { borderRadius: 4, horizontal: true, barHeight: '70%', distributed: true }
+    },
+    colors: ['#818cf8', '#6366f1', '#4f46e5', '#4338ca', '#3730a3'],
+    dataLabels: { 
+        enabled: true, 
+        textAnchor: 'start', 
+        style: { colors: ['#fff'] },
+        formatter: (val: any, opt: any) => `${opt.w.globals.labels[opt.dataPointIndex]}: ${val}`
+    },
+    xaxis: { categories: ['Leads', 'Qualified', 'Consulted', 'Proposed', 'Won'] },
+    yaxis: { labels: { show: false } },
+    grid: { show: false },
+    legend: { show: false }
+  };
+
+  return <Chart options={options} series={series} type="bar" height={250} />;
+};
+
+// --- INTERFACES & TYPES ---
 export interface CoachTask {
   id: string;
   name: string;
@@ -43,211 +94,157 @@ export interface CoachDashboardData {
     openLeads: number;
   };
   tasks: CoachTask[];
+  charts: {
+      qrr: any;
+      funnel: any;
+  }
 }
 
-// Type definition for the Metric Card structure
-export type MetricCard = {
-    title: string;
-    value: number;
-    icon: React.ElementType;
-    accent: string;
-    link: string;
-    description: string;
-};
-
-// --- MOCK CHART COMPONENTS ---
-const ChartTwo = () => (
-    <div className="flex items-center justify-center h-full min-h-[250px] bg-indigo-50 rounded-2xl p-4 border border-dashed border-indigo-300">
-        <span className="text-indigo-700 font-semibold text-sm">[Placeholder: Quarterly Recurring Revenue (QRR) Trend]</span>
-    </div>
-);
-const ChartThree = () => (
-    <div className="flex items-center justify-center h-full min-h-[250px] bg-amber-50 rounded-2xl p-4 border border-dashed border-amber-300">
-        <span className="text-amber-700 font-semibold text-sm">[Placeholder: Lead to Client Conversion Funnel]</span>
-    </div>
-);
-
-// Reusable Metric Card Component (Moved outside to follow rules of hooks)
-const MainMetricCard: React.FC<{ card: MetricCard }> = ({ card }) => (
-    <a href={card.link} className={`relative p-6 rounded-2xl bg-white shadow-xl transition duration-300 hover:shadow-2xl transform hover:scale-[1.02] group cursor-pointer border-b-4 ${card.accent.split(' ')[1]} border-opacity-80`}>
+// --- SUB-COMPONENTS ---
+const MainMetricCard: React.FC<{ card: any }> = ({ card }) => (
+    <motion.a 
+        href={card.link} 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className={`relative p-6 rounded-3xl bg-white shadow-lg border border-gray-100 transition-all hover:shadow-2xl hover:-translate-y-1 group`}
+    >
       <div className="flex items-center justify-between mb-4">
-        <div className={`rounded-xl p-3 ${card.accent.replace('text-', 'bg-').replace('-500', '-100')}`}>
-          <card.icon className={`w-8 h-8 ${card.accent.split(' ')[0]}`} />
+        <div className={`rounded-2xl p-3 ${card.accentBg}`}>
+          <card.icon className={`w-7 h-7 ${card.accentText}`} />
         </div>
-        <span className="text-sm font-semibold text-gray-500 group-hover:text-gray-900 transition">{card.title}</span>
+        <ArrowRightIcon className="w-5 h-5 text-gray-300 group-hover:text-indigo-500 transition-colors" />
       </div>
-      <p className="text-4xl font-extrabold text-gray-900 mt-1">{card.value.toLocaleString()}</p>
-      <p className="mt-2 text-xs text-gray-500 italic">{card.description}</p>
-    </a>
+      <p className="text-sm font-bold text-gray-500 uppercase tracking-tight">{card.title}</p>
+      <p className="text-3xl font-black text-gray-900 mt-1">{card.value.toLocaleString()}</p>
+    </motion.a>
 );
 
-
-// --- MAIN COMPONENT ---
 export default function CoachDashboardClient() {
-  // FIX: Explicitly define coachId since Next.js useParams is not available
   const coachId = 'demo-coach-123';
   const [data, setData] = useState<CoachDashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
-  // Mocking session data for display purposes
-  const session: Session = { user: { name: "Dr. Alex Taylor", email: "alex.taylor@growthcorp.com" } };
 
-  // Mock Data Fetching Logic (Replace with actual API call)
   useEffect(() => {
-    // Simulating API latency and fetching coach-specific data
     const fetchData = async () => {
         setIsLoading(true);
-        setError(null);
         try {
-            // --- MOCK API CALL START ---
-            await new Promise(resolve => setTimeout(resolve, 1500)); 
-
-            const mockData: CoachDashboardData = {
-                metrics: {
-                    activeClients: 42,
-                    sessionsThisWeek: 18,
-                    programSalesYTD: 124,
-                    billedRevenueYTD: 154780,
-                    openLeads: 9,
-                },
+            // Simulated API response including chart data
+            await new Promise(r => setTimeout(r, 1000));
+            setData({
+                metrics: { activeClients: 42, sessionsThisWeek: 18, programSalesYTD: 124, billedRevenueYTD: 154780, openLeads: 9 },
                 tasks: [
                     { id: 't1', name: 'Prep QBR deck for Zenith Corp.', dueDate: '2025-10-21', dueTime: '10:00 AM', priority: 'High' },
                     { id: 't2', name: 'Follow up with 3 open leads.', dueDate: '2025-10-21', dueTime: '02:30 PM', priority: 'Medium' },
-                    { id: 't3', name: 'Review Module 4 content draft.', dueDate: '2025-10-22', dueTime: '09:00 AM', priority: 'Medium' },
-                ]
-            };
-            setData(mockData);
-            // --- MOCK API CALL END ---
-
-            // In a real app, the endpoint would be:
-            // const response = await fetch(`${apiBaseUrl}/coach/dashboard/consulting?coachId=${coachId}`, { ... });
-
+                ],
+                charts: { qrr: null, funnel: null }
+            });
         } catch (err: any) {
-            setError(err.message || "Failed to fetch dashboard data.");
+            setError("Failed to sync growth data.");
         } finally {
             setIsLoading(false);
         }
     };
     fetchData();
-  }, [coachId]);
+  }, []);
 
-  // --- Loading/Error States ---
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 text-indigo-600 flex flex-col items-center justify-center">
-        <ArrowPathIcon className="w-12 h-12 animate-spin mb-4" />
-        <p className="text-xl font-semibold">Loading Growth Command Center...</p>
-      </div>
-    );
-  }
+  if (isLoading) return (
+    <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center text-indigo-600">
+      <ArrowPathIcon className="w-12 h-12 animate-spin mb-4" />
+      <p className="text-lg font-black uppercase tracking-widest">Optimizing Performance...</p>
+    </div>
+  );
 
-  if (error || !data) {
-    return (
-      <div className="min-h-screen bg-red-50 text-red-600 flex flex-col items-center justify-center text-center p-4">
-        <ExclamationCircleIcon className="w-16 h-16 mb-4" />
-        <h2 className="text-2xl font-bold mb-2">Dashboard Unavailable</h2>
-        <p>{error || "Could not connect to the growth center."}</p>
-      </div>
-    );
-  }
-
-  const { activeClients, sessionsThisWeek, programSalesYTD, billedRevenueYTD, openLeads } = data.metrics;
-
-  const cards: MetricCard[] = [
-    { title: 'Active Clients', value: activeClients, icon: UsersIcon, accent: 'text-indigo-500 border-indigo-500', link: '/coach/clients', description: 'Currently receiving 1:1 or program support.' },
-    { title: 'Sessions This Week', value: sessionsThisWeek, icon: CalendarDaysIcon, accent: 'text-purple-500 border-purple-500', link: '/coach/schedule', description: 'Booked consultations and coaching calls.' },
-    { title: 'Program Sales YTD', value: programSalesYTD, icon: BookOpenIcon, accent: 'text-amber-500 border-amber-500', link: '/coach/courses', description: 'Enrollments in all digital products.' },
+  const metricCards = [
+    { title: 'Active Clients', value: data?.metrics.activeClients, icon: UsersIcon, accentBg: 'bg-indigo-50', accentText: 'text-indigo-600', link: '#' },
+    { title: 'Weekly Sessions', value: data?.metrics.sessionsThisWeek, icon: CalendarDaysIcon, accentBg: 'bg-purple-50', accentText: 'text-purple-600', link: '#' },
+    { title: 'Program Sales', value: data?.metrics.programSalesYTD, icon: BookOpenIcon, accentBg: 'bg-amber-50', accentText: 'text-amber-600', link: '#' },
   ];
-    
-  // Utility to determine task badge color
-  const getPriorityClasses = (priority: CoachTask['priority']) => {
-    switch (priority) {
-      case 'High': return 'bg-red-100 text-red-700 border-red-400';
-      case 'Medium': return 'bg-amber-100 text-amber-700 border-amber-400';
-      case 'Low': return 'bg-green-100 text-green-700 border-green-400';
-      default: return 'bg-gray-100 text-gray-700 border-gray-400';
-    }
-  };
 
   return (
-    <div className="min-h-screen bg-gray-100 font-sans">
-      <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
-        <header className="mb-10 p-6 sm:p-8 bg-white rounded-3xl shadow-2xl border-l-8 border-indigo-600">
-          <p className="text-base text-gray-500 font-medium">Hello, {session.user.name.split(' ')[0]}</p>
-          <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-900 tracking-tight flex items-center gap-3">
-            Growth Command <span className="text-indigo-600">Center</span>
-            <ChartBarSquareIcon className="w-10 h-10 text-indigo-500" />
-          </h1>
+    <div className="min-h-screen bg-[#FDFDFF] py-12 px-6">
+      <div className="max-w-7xl mx-auto">
+        
+        <header className="mb-12 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div>
+            <h1 className="text-5xl font-black text-slate-900 leading-none">Growth <span className="text-indigo-600">Command</span></h1>
+            <p className="text-slate-500 mt-2 font-medium">Strategy & Operations Overview</p>
+          </div>
+          <div className="flex gap-3">
+            <button className="bg-white border border-slate-200 px-6 py-3 rounded-2xl font-bold text-slate-700 hover:bg-slate-50 transition">Log Session</button>
+            <button className="bg-indigo-600 px-6 py-3 rounded-2xl font-bold text-white shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition">+ New Client</button>
+          </div>
         </header>
 
-        {/* --- Primary Financial & Lead Metrics --- */}
-        <section className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 mb-10">
-            {/* YTD Revenue Card */}
-            <a href="/coach/payments" className="col-span-1 lg:col-span-2 p-8 rounded-3xl bg-indigo-600 text-white shadow-2xl transition duration-300 hover:bg-indigo-700 flex flex-col justify-between transform hover:scale-[1.01]">
-                <div className="flex items-center justify-between mb-4">
-                    <CurrencyDollarIcon className="w-10 h-10 text-white opacity-90" />
-                    <span className="text-xl font-bold uppercase tracking-wider opacity-90">Billed Revenue YTD</span>
+        {/* --- Highlight Row --- */}
+        <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+            <div className="lg:col-span-2 bg-indigo-600 rounded-[2.5rem] p-10 text-white flex flex-col justify-between relative overflow-hidden shadow-2xl">
+                <div className="relative z-10">
+                    <p className="text-indigo-100 font-bold uppercase tracking-widest text-sm mb-2">Billed Revenue YTD</p>
+                    <h2 className="text-6xl font-black">${data?.metrics.billedRevenueYTD.toLocaleString()}</h2>
                 </div>
-                <h2 className="text-5xl sm:text-7xl font-black leading-tight">${billedRevenueYTD.toLocaleString()}</h2>
-                <p className="mt-3 text-sm opacity-80 font-light">Track your annual financial progress and key milestones. Click for full finance reports.</p>
-            </a>
-            
-            {/* Open Leads Card */}
-            <a href="/coach/leads" className="col-span-1 p-8 rounded-3xl bg-amber-500 text-white shadow-2xl transition duration-300 hover:bg-amber-600 flex flex-col justify-between transform hover:scale-[1.01]">
-                 <div className="flex items-center justify-between mb-4">
-                    <BriefcaseIcon className="w-10 h-10 text-white opacity-90" />
-                    <span className="text-xl font-bold uppercase tracking-wider opacity-90">Open Leads</span>
+                <div className="mt-8 flex gap-4 relative z-10">
+                    <div className="bg-white/10 backdrop-blur-md px-4 py-2 rounded-xl text-sm font-bold border border-white/10">↑ 12% vs last month</div>
                 </div>
-                <h2 className="text-5xl font-black leading-tight">{openLeads}</h2>
-                <p className="mt-3 text-sm opacity-80 font-light">Prospects currently in the sales pipeline and ready for outreach.</p>
-            </a>
+                {/* Abstract shape for flair */}
+                <div className="absolute -right-10 -bottom-10 w-64 h-64 bg-white/5 rounded-full blur-3xl"></div>
+            </div>
+
+            <div className="bg-amber-400 rounded-[2.5rem] p-10 text-amber-950 flex flex-col justify-between shadow-xl">
+                <div>
+                    <BriefcaseIcon className="w-10 h-10 mb-4 opacity-80" />
+                    <p className="font-bold uppercase tracking-widest text-sm mb-1">Open Leads</p>
+                    <h2 className="text-6xl font-black">{data?.metrics.openLeads}</h2>
+                </div>
+                <button className="w-full bg-amber-950 text-white py-4 rounded-2xl font-bold mt-6 hover:bg-black transition">Start Outreach</button>
+            </div>
         </section>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
-            {/* Three Main Metric Cards */}
-            <section className="grid grid-cols-1 sm:grid-cols-3 lg:col-span-2 gap-6">
-                {cards.map((card) => <MainMetricCard key={card.title} card={card} />)}
-            </section>
-            
-            {/* Action Items / Tasks */}
-            <section className="lg:col-span-1 bg-white p-6 rounded-3xl shadow-xl border border-gray-200">
-                <div className="flex justify-between items-center mb-4 border-b border-gray-100 pb-3">
-                    <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2"><PuzzlePieceIcon className="w-6 h-6 text-amber-500" /> Today's Action Items</h2>
-                    <a href="/coach/tasks" className="text-sm text-indigo-600 hover:text-indigo-800 font-medium flex items-center">Manage All <ArrowRightIcon className="w-3 h-3 ml-1" /></a>
+        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+            {metricCards.map((card, i) => <MainMetricCard key={i} card={card} />)}
+        </section>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2 space-y-8">
+                <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
+                    <h3 className="text-xl font-black mb-6 flex items-center gap-2">
+                        <ChartBarSquareIcon className="w-6 h-6 text-indigo-500" /> Revenue Trajectory
+                    </h3>
+                    <QRRChart data={data?.charts.qrr} />
                 </div>
-                {data.tasks.length > 0 ? (
-                    <ul className="space-y-4">
-                        {data.tasks.map((task) => (
-                            <li key={task.id} className="flex justify-between items-start p-4 bg-gray-50 rounded-xl border-l-4 border-amber-400 hover:bg-amber-50 transition shadow-sm">
-                                <div className="flex flex-col">
-                                    <div className="font-medium text-gray-800">{task.name}</div>
-                                    <span className={`mt-1 text-xs font-semibold px-2 py-0.5 rounded-full ${getPriorityClasses(task.priority)} inline-block w-fit`}>{task.priority} Priority</span>
+
+                <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm">
+                    <h3 className="text-xl font-black mb-6 flex items-center gap-2">
+                        <UsersIcon className="w-6 h-6 text-purple-500" /> Client Acquisition Funnel
+                    </h3>
+                    <ConversionFunnelChart data={data?.charts.funnel} />
+                </div>
+            </div>
+
+            <div className="bg-white p-8 rounded-3xl border border-slate-100 shadow-sm h-fit">
+                <h3 className="text-xl font-black mb-6 flex items-center gap-2">
+                    <PuzzlePieceIcon className="w-6 h-6 text-amber-500" /> Action Items
+                </h3>
+                <div className="space-y-4">
+                    {data?.tasks.map(task => (
+                        <div key={task.id} className="p-4 bg-slate-50 rounded-2xl border border-slate-100 hover:border-indigo-200 transition group">
+                            <div className="flex justify-between items-start mb-2">
+                                <span className={`text-[10px] font-black uppercase px-2 py-1 rounded-md border ${
+                                    task.priority === 'High' ? 'bg-red-50 text-red-600 border-red-100' : 'bg-slate-100 text-slate-600 border-slate-200'
+                                }`}>
+                                    {task.priority}
+                                </span>
+                                <div className="flex items-center text-slate-400 group-hover:text-indigo-500 transition-colors">
+                                    <ClockIcon className="w-4 h-4 mr-1" />
+                                    <span className="text-xs font-bold">{task.dueTime}</span>
                                 </div>
-                                <span className="text-sm text-gray-500 font-medium flex items-center gap-1 shrink-0 ml-4"><ClockIcon className="w-4 h-4 text-amber-500" /> {task.dueTime}</span>
-                            </li>
-                        ))}
-                    </ul>
-                ) : (
-                    <div className="py-6 text-center text-gray-500 italic flex flex-col items-center gap-3">
-                        <CheckCircleIcon className="w-7 h-7 text-indigo-500" />
-                        <span className="font-semibold">All systems clear. Time for deep work!</span>
-                    </div>
-                )}
-            </section>
+                            </div>
+                            <p className="font-bold text-slate-800 leading-snug">{task.name}</p>
+                        </div>
+                    ))}
+                </div>
+            </div>
         </div>
-
-        {/* --- Charts Section --- */}
-        <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-white border border-gray-200 p-6 rounded-3xl shadow-xl">
-                <h2 className="text-xl font-bold text-gray-900 mb-4 border-b border-gray-100 pb-2 flex items-center gap-2"><ChartBarSquareIcon className="w-5 h-5 text-indigo-500" /> Quarterly Revenue Trends</h2>
-                <ChartTwo />
-            </div>
-            <div className="bg-white border border-gray-200 p-6 rounded-3xl shadow-xl">
-                <h2 className="text-xl font-bold text-gray-900 mb-4 border-b border-gray-100 pb-2 flex items-center gap-2"><UsersIcon className="w-5 h-5 text-purple-500" /> Lead to Client Conversion</h2>
-                <ChartThree />
-            </div>
-        </section>
       </div>
     </div>
   );

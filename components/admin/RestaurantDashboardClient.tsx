@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from 'react';
-// Simulating Link component behavior
+import dynamic from 'next/dynamic';
 import {
   TruckIcon,
   ClipboardDocumentCheckIcon,
@@ -16,31 +16,81 @@ import {
 } from '@heroicons/react/24/outline';
 import { useParams } from 'next/navigation';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+// Dynamic import for ApexCharts to support Next.js SSR
+const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
-// --- MOCK CHART COMPONENTS (FOR SINGLE-FILE MANDATE) ---
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
-const ChartTwo: React.FC<{ data: any }> = ({ data }) => (
-  <div className="flex flex-col items-center justify-center h-full min-h-[220px] bg-white rounded-xl p-4 border border-dashed border-red-200">
-    <span className="text-red-600 font-semibold text-sm">
-      [Placeholder: Daily Orders Volume Chart]
-    </span>
-     <pre className="mt-2 text-xs text-red-500/80 bg-gray-50 p-2 rounded w-full text-left">
-      {JSON.stringify(data, null, 2)}
-    </pre>
-  </div>
-);
+// --- FUNCTIONAL APEX CHART COMPONENTS ---
 
-const ChartThree: React.FC<{ data: any }> = ({ data }) => (
-  <div className="flex flex-col items-center justify-center h-full min-h-[220px] bg-white rounded-xl p-4 border border-dashed border-green-200">
-    <span className="text-green-600 font-semibold text-sm">
-      [Placeholder: Revenue Trends Analysis]
-    </span>
-     <pre className="mt-2 text-xs text-green-500/80 bg-gray-50 p-2 rounded w-full text-left">
-      {JSON.stringify(data, null, 2)}
-    </pre>
-  </div>
-);
+const OrderFlowChart: React.FC<{ data: any[] }> = ({ data }) => {
+  const series = [{
+    name: "Orders",
+    data: data?.map(d => d.count || d.value) || []
+  }];
+
+  const options: any = {
+    chart: {
+      type: 'line',
+      toolbar: { show: false },
+      animations: { enabled: true, easing: 'easeinout', speed: 800 },
+    },
+    stroke: { curve: 'stepline', width: 4 }, // Stepline is great for "rush" visualization
+    colors: ['#ef4444'], // red-500
+    markers: { size: 0 },
+    grid: { borderColor: '#f1f5f9', strokeDashArray: 4 },
+    xaxis: {
+      categories: data?.map(d => d.time || d.name) || [],
+      labels: { style: { colors: '#64748b' } }
+    },
+    yaxis: { labels: { style: { colors: '#64748b' } } },
+    tooltip: { theme: 'light' },
+    fill: {
+      type: 'gradient',
+      gradient: { shade: 'dark', gradientToColors: ['#f87171'], stops: [0, 100] }
+    }
+  };
+
+  return <Chart options={options} series={series} type="line" height={300} />;
+};
+
+const RevenueTrendChart: React.FC<{ data: any[] }> = ({ data }) => {
+  const series = [{
+    name: "Revenue ($)",
+    data: data?.map(d => d.amount || d.value) || []
+  }];
+
+  const options: any = {
+    chart: { type: 'bar', toolbar: { show: false } },
+    plotOptions: {
+      bar: {
+        borderRadius: 8,
+        columnWidth: '55%',
+        distributed: true,
+      }
+    },
+    colors: ['#22c55e', '#16a34a', '#15803d', '#166534'], // green shades
+    dataLabels: { enabled: false },
+    xaxis: {
+      categories: data?.map(d => d.day || d.name) || [],
+      labels: { style: { colors: '#64748b' } }
+    },
+    yaxis: {
+      labels: { 
+        style: { colors: '#64748b' },
+        formatter: (val: number) => `$${val}`
+      }
+    },
+    grid: { show: false },
+    legend: { show: false },
+    tooltip: { 
+      theme: 'light',
+      y: { formatter: (val: number) => `$${val.toLocaleString()}` }
+    }
+  };
+
+  return <Chart options={options} series={series} type="bar" height={300} />;
+};
 
 // --- TYPE DEFINITIONS ---
 
@@ -60,8 +110,8 @@ interface RestaurantDashboardData {
   };
   tasks: Task[];
   charts: {
-    dailyOrdersVolume: any;
-    revenueTrends: any;
+    dailyOrdersVolume: any[];
+    revenueTrends: any[];
   }
 }
 
@@ -73,7 +123,6 @@ export default function RestaurantDashboardClient() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch data from the API
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
@@ -81,15 +130,10 @@ export default function RestaurantDashboardClient() {
       try {
         const response = await fetch(`${apiBaseUrl}/admin/dashboard/restaurent/${companyId}`, {
           method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Credentials': 'include',
-          },
+          headers: { 'Content-Type': 'application/json' },
         });
         const result = await response.json();
-        if (!response.ok || !result.success) {
-          throw new Error(result.data?.message || 'Failed to fetch dashboard data');
-        }
+        if (!response.ok || !result.success) throw new Error(result.data?.message || 'Failed to fetch');
         setData(result.data);
       } catch (e: any) {
         setError(e.message);
@@ -98,7 +142,7 @@ export default function RestaurantDashboardClient() {
       }
     };
     loadData();
-  }, []);
+  }, [companyId]);
 
   const cards = data ? [
     { title: 'Total Orders', value: data.metrics.totalOrders, icon: ClipboardDocumentCheckIcon, accent: 'text-yellow-500 bg-yellow-100 border-yellow-500', link: '/admin/orders', description: 'Total served today.' },
@@ -107,135 +151,98 @@ export default function RestaurantDashboardClient() {
     { title: 'Revenue Today', value: `$${data.metrics.revenueToday.toLocaleString()}`, icon: CurrencyDollarIcon, accent: 'text-green-500 bg-green-100 border-green-500', link: '/admin/revenue', description: 'As of last update.' },
   ] : [];
 
-  // Component for visually appealing metric cards
-  const MetricCard: React.FC<{ card: (typeof cards)[0] }> = useCallback(({ card }) => (
-    <a
-      key={card.title}
-      href={card.link}
-      className={`relative p-6 rounded-2xl bg-white shadow-xl transition duration-300 hover:shadow-2xl transform group cursor-pointer border-l-4 ${card.accent.split(' ')[2]}`}
-    >
-      <div className="flex items-center justify-between mb-4">
-        <div className={`rounded-full p-2 ${card.accent.split(' ')[1]}`}>
-          <card.icon className={`w-7 h-7 ${card.accent.split(' ')[0]}`} />
-        </div>
-        <ArrowRightIcon className="w-5 h-5 text-gray-300 group-hover:text-gray-500 transition-colors" />
-      </div>
-      <p className="text-4xl font-extrabold text-gray-900 mt-1">{card.value}</p>
-      <h2 className="mt-2 text-lg font-semibold text-gray-700">{card.title}</h2>
-      <p className="mt-1 text-xs text-gray-500">{card.description}</p>
-    </a>
-  ), []);
-
-  // Component for the Actionable Task List
-  const TaskList: React.FC<{ tasks: Task[] }> = useCallback(({ tasks }) => (
-    <div className="bg-white p-6 rounded-2xl shadow-xl border border-gray-100">
-      <div className="flex justify-between items-center mb-6 border-b-2 border-red-300 pb-3">
-        <h3 className="text-2xl font-extrabold text-gray-900 flex items-center gap-2">
-          <FireIcon className="w-6 h-6 text-red-600" /> Rush Tasks
-        </h3>
-        <a href="/admin/tasks" className="text-sm text-red-600 font-semibold hover:text-red-800 flex items-center">
-          View Full Ticket Log <ArrowRightIcon className="w-4 h-4 ml-1" />
-        </a>
-      </div>
-      <ul className="space-y-3">
-        {tasks.map((t) => (
-          <li key={t.id} className="flex justify-between items-center p-4 bg-red-50 rounded-xl border-l-4 border-red-500 hover:bg-red-100 transition cursor-pointer shadow-sm">
-            <div className="flex flex-col">
-                <span className="text-base font-semibold text-gray-800">{t.name}</span>
-                <span className="mt-1 text-sm text-red-600 font-medium flex items-center gap-1">
-                    <ClockIcon className="w-4 h-4" /> DUE {t.dueTime}
-                </span>
-            </div>
-            <TicketIcon className="w-6 h-6 text-red-400" />
-          </li>
-        ))}
-      </ul>
-      {tasks.length === 0 && (
-         <div className="py-6 text-center text-lg text-gray-500 flex items-center justify-center gap-2">
-            <CheckCircleIcon className="w-5 h-5 text-green-500" />
-            Kitchen is running smoothly.
-         </div>
-      )}
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center bg-stone-50 text-red-600 font-bold">
+       <RocketLaunchIcon className="w-8 h-8 animate-bounce mr-3" /> Pre-heating the system...
     </div>
-  ), []);
+  );
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-pulse flex items-center gap-3 text-red-600">
-          <RocketLaunchIcon className="w-6 h-6" />
-          <span className="text-xl font-semibold">Pre-heating the system...</span>
-        </div>
+  if (error || !data) return (
+    <div className="min-h-screen flex items-center justify-center bg-red-50">
+      <div className="text-center p-8 bg-white rounded-2xl shadow-xl border border-red-200">
+          <ExclamationTriangleIcon className="w-12 h-12 mx-auto mb-4 text-red-500" />
+          <h2 className="font-bold text-xl text-gray-800">Connection Error</h2>
+          <p className="text-gray-500 mt-2">{error}</p>
       </div>
-    );
-  }
-
-  if (error || !data) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-red-50">
-        <div className="text-center p-8 bg-white rounded-xl shadow-lg border border-red-200">
-            <ExclamationTriangleIcon className="w-10 h-10 mx-auto mb-4 text-red-500" />
-            <h2 className="font-bold text-lg text-gray-800 mb-2">Could Not Load Dashboard</h2>
-            <p className="text-sm text-gray-500">{error || "An unknown error occurred."}</p>
-        </div>
-      </div>
-    );
-  }
+    </div>
+  );
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans">
+    <div className="min-h-screen bg-stone-50 font-sans pb-16">
       <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
         
-        <header className="mb-10 p-8 rounded-3xl shadow-xl" style={{ backgroundImage: 'linear-gradient(135deg, #44403c 0%, #1c1917 100%)' }}>
-          <div className="flex justify-between items-center">
-            <div>
-              <p className="text-xl text-yellow-400 font-semibold mb-1">Service Operations</p>
-              <h1 className="text-5xl font-extrabold tracking-tight text-white">
-                Restaurant Control Panel
-              </h1>
-              <p className="mt-2 text-gray-300">Monitor flow, optimize speed, and ensure customer satisfaction.</p>
+        <header className="mb-10 p-10 rounded-[2rem] shadow-2xl text-white" style={{ backgroundImage: 'linear-gradient(135deg, #44403c 0%, #1c1917 100%)' }}>
+          <div className="flex flex-col md:flex-row justify-between items-center gap-8">
+            <div className="text-center md:text-left">
+              <span className="bg-yellow-500/20 text-yellow-400 px-4 py-1 rounded-full text-sm font-bold uppercase tracking-widest">Live Kitchen Data</span>
+              <h1 className="text-5xl font-black mt-2 tracking-tight">Restaurant Control</h1>
+              <p className="mt-2 text-stone-400 text-lg">Operational oversight for {companyId}</p>
             </div>
-            <a
-              href="/admin/order/new"
-              className="flex items-center gap-2 px-6 py-3 rounded-full bg-red-600 text-white font-bold hover:bg-red-700 transition transform hover:scale-105 shadow-lg shadow-red-500/50"
-            >
-              <TicketIcon className="w-5 h-5" />
-              Start New Order
+            <a href="/admin/order/new" className="px-8 py-4 bg-red-600 rounded-2xl font-black text-lg hover:bg-red-700 transition transform hover:scale-105 shadow-xl shadow-red-900/40 flex items-center gap-3">
+              <TicketIcon className="w-6 h-6" /> START NEW ORDER
             </a>
           </div>
         </header>
 
         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           {cards.map((card) => (
-            <MetricCard key={card.title} card={card} />
+            <div key={card.title} className={`p-6 bg-white rounded-2xl shadow-lg border-l-8 ${card.accent.split(' ')[2]} transition-all hover:translate-y-[-4px]`}>
+              <div className={`w-12 h-12 rounded-xl ${card.accent.split(' ')[1]} flex items-center justify-center mb-4`}>
+                <card.icon className={`w-7 h-7 ${card.accent.split(' ')[0]}`} />
+              </div>
+              <p className="text-4xl font-black text-stone-900">{card.value}</p>
+              <h2 className="font-bold text-stone-500 mt-1">{card.title}</h2>
+            </div>
           ))}
         </section>
 
         <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
           <div className="lg:col-span-2 space-y-8">
-            <div className="bg-white p-6 rounded-2xl shadow-xl border border-gray-100">
-              <h3 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <ClipboardDocumentCheckIcon className="w-6 h-6 text-red-500" /> Daily Order Flow
-              </h3>
-              <div className="min-h-[300px]">
-                <ChartTwo data={data.charts.dailyOrdersVolume} />
+            <div className="bg-white p-8 rounded-3xl shadow-xl border border-stone-100">
+              <div className="flex justify-between items-center mb-8">
+                <h3 className="text-2xl font-black text-stone-800 flex items-center gap-3">
+                  <FireIcon className="w-8 h-8 text-red-500" /> Rush Hour Flow
+                </h3>
+                <span className="text-xs font-bold text-stone-400 uppercase tracking-widest">Real-time Volume</span>
               </div>
+              <OrderFlowChart data={data.charts.dailyOrdersVolume} />
             </div>
 
-            <div className="bg-white p-6 rounded-2xl shadow-xl border border-gray-100">
-              <h3 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <CurrencyDollarIcon className="w-6 h-6 text-green-500" /> Revenue & Sales Trends
+            <div className="bg-white p-8 rounded-3xl shadow-xl border border-stone-100">
+              <h3 className="text-2xl font-black text-stone-800 mb-8 flex items-center gap-3">
+                <CurrencyDollarIcon className="w-8 h-8 text-green-500" /> Revenue Performance
               </h3>
-              <div className="min-h-[300px]">
-                <ChartThree data={data.charts.revenueTrends} />
-              </div>
+              <RevenueTrendChart data={data.charts.revenueTrends} />
             </div>
           </div>
 
-          <div className="lg:col-span-1">
-            <TaskList tasks={data.tasks} />
-          </div>
+          <aside className="lg:col-span-1">
+            <div className="bg-white p-8 rounded-3xl shadow-xl border border-stone-100 sticky top-8">
+              <div className="flex justify-between items-center mb-6 border-b-4 border-red-500 pb-4">
+                <h3 className="text-2xl font-black text-stone-900">Rush Tasks</h3>
+                <span className="bg-red-100 text-red-600 text-xs font-black px-2 py-1 rounded-md">{data.tasks.length} Active</span>
+              </div>
+              
+              <div className="space-y-4">
+                {data.tasks.length > 0 ? data.tasks.map(t => (
+                  <div key={t.id} className="p-5 bg-red-50 rounded-2xl border-l-4 border-red-500 flex justify-between items-center group cursor-pointer hover:bg-red-100 transition">
+                    <div>
+                      <p className="font-black text-stone-800 group-hover:text-red-700">{t.name}</p>
+                      <p className="text-sm font-bold text-red-500 mt-1 flex items-center gap-1 uppercase tracking-tighter">
+                        <ClockIcon className="w-4 h-4" /> Due: {t.dueTime}
+                      </p>
+                    </div>
+                    <TicketIcon className="w-6 h-6 text-red-300" />
+                  </div>
+                )) : (
+                  <div className="text-center py-12">
+                    <CheckCircleIcon className="w-16 h-16 text-green-500 mx-auto opacity-20" />
+                    <p className="mt-4 font-bold text-stone-400">Kitchen is Clean</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </aside>
         </section>
       </div>
     </div>

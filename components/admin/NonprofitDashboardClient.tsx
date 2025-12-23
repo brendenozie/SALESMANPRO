@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useCallback } from 'react';
-// Simulating Link component behavior
+import dynamic from 'next/dynamic';
 import {
   GiftIcon,
   UsersIcon,
@@ -16,31 +16,82 @@ import {
 } from '@heroicons/react/24/outline';
 import { useParams } from 'next/navigation';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+// Dynamically import ApexCharts to ensure it only runs on the client
+const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
-// --- MOCK CHART COMPONENTS (FOR SINGLE-FILE MANDATE) ---
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
-const ChartTwo: React.FC<{ data: any }> = ({ data }) => (
-  <div className="flex flex-col items-center justify-center h-full min-h-[220px] bg-white rounded-xl p-4 border border-dashed border-orange-200">
-    <span className="text-orange-600 font-semibold text-sm">
-      [Placeholder: Monthly Donations Line Chart]
-    </span>
-    <pre className="mt-2 text-xs text-orange-500/80 bg-gray-50 p-2 rounded w-full text-left">
-      {JSON.stringify(data, null, 2)}
-    </pre>
-  </div>
-);
+// --- FUNCTIONAL APEX CHART COMPONENTS ---
 
-const ChartThree: React.FC<{ data: any }> = ({ data }) => (
-  <div className="flex flex-col items-center justify-center h-full min-h-[220px] bg-white rounded-xl p-4 border border-dashed border-blue-200">
-    <span className="text-blue-600 font-semibold text-sm">
-      [Placeholder: Volunteer Growth Bar Chart]
-    </span>
-     <pre className="mt-2 text-xs text-blue-500/80 bg-gray-50 p-2 rounded w-full text-left">
-      {JSON.stringify(data, null, 2)}
-    </pre>
-  </div>
-);
+const DonationTrendChart: React.FC<{ data: any[] }> = ({ data }) => {
+  const series = [{
+    name: "Donations ($)",
+    data: data?.map(d => d.amount || d.value) || []
+  }];
+
+  const options: any = {
+    chart: {
+      type: 'line',
+      toolbar: { show: false },
+      zoom: { enabled: false },
+      dropShadow: { enabled: true, top: 3, left: 2, blur: 4, opacity: 0.1 }
+    },
+    colors: ['#ea580c'], // orange-600
+    stroke: { curve: 'smooth', width: 4 },
+    markers: { size: 4, colors: ['#ea580c'], strokeWidth: 2, hover: { size: 7 } },
+    grid: { borderColor: '#f1f5f9', strokeDashArray: 4 },
+    xaxis: {
+      categories: data?.map(d => d.month || d.name) || [],
+      labels: { style: { colors: '#64748b', fontWeight: 500 } },
+      axisBorder: { show: false },
+    },
+    yaxis: {
+      labels: { 
+        style: { colors: '#64748b' },
+        formatter: (val: number) => `$${val.toLocaleString()}`
+      }
+    },
+    tooltip: { theme: 'light', y: { formatter: (val: number) => `$${val.toLocaleString()}` } }
+  };
+
+  return <Chart options={options} series={series} type="line" height={300} />;
+};
+
+const VolunteerGrowthChart: React.FC<{ data: any[] }> = ({ data }) => {
+  const series = [{
+    name: "New Volunteers",
+    data: data?.map(d => d.count || d.value) || []
+  }];
+
+  const options: any = {
+    chart: { type: 'bar', toolbar: { show: false } },
+    plotOptions: {
+      bar: {
+        borderRadius: 6,
+        columnWidth: '60%',
+        distributed: true,
+        dataLabels: { position: 'top' }
+      }
+    },
+    colors: ['#2563eb', '#3b82f6', '#60a5fa', '#93c5fd'], // blues
+    dataLabels: {
+      enabled: true,
+      offsetY: -20,
+      style: { fontSize: '12px', colors: ["#334155"] }
+    },
+    xaxis: {
+      categories: data?.map(d => d.period || d.name) || [],
+      labels: { style: { colors: '#64748b' } },
+      axisBorder: { show: false },
+    },
+    yaxis: { show: false },
+    grid: { show: false },
+    legend: { show: false },
+    tooltip: { theme: 'light' }
+  };
+
+  return <Chart options={options} series={series} type="bar" height={300} />;
+};
 
 // --- TYPE DEFINITIONS ---
 
@@ -60,8 +111,8 @@ interface NonprofitDashboardData {
   };
   tasks: Task[];
   charts: {
-    monthlyDonations: any;
-    volunteerGrowth: any;
+    monthlyDonations: any[];
+    volunteerGrowth: any[];
   }
 }
 
@@ -73,7 +124,6 @@ export default function NonprofitDashboardClient() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch data from the API
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
@@ -81,16 +131,10 @@ export default function NonprofitDashboardClient() {
       try {
         const response = await fetch(`${apiBaseUrl}/admin/dashboard/nonprofit/${companyId}`, {
           method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Credentials': 'include',
-          },
+          headers: { 'Content-Type': 'application/json' },
         });
-
         const result = await response.json();
-        if (!response.ok || !result.success) {
-          throw new Error(result.data?.message || 'Failed to fetch dashboard data');
-        }
+        if (!response.ok || !result.success) throw new Error(result.data?.message || 'Failed to fetch');
         setData(result.data);
       } catch (e: any) {
         setError(e.message);
@@ -99,7 +143,7 @@ export default function NonprofitDashboardClient() {
       }
     };
     loadData();
-  }, []);
+  }, [companyId]);
 
   const cards = data ? [
     { title: 'Total Donations', value: `$${data.metrics.totalDonations.toLocaleString()}`, icon: GiftIcon, color: 'text-orange-600 border-orange-400 bg-orange-50', link: '/admin/donations', description: 'Funds raised year-to-date.' },
@@ -108,134 +152,82 @@ export default function NonprofitDashboardClient() {
     { title: 'Upcoming Events', value: data.metrics.upcomingEvents, icon: CalendarDaysIcon, color: 'text-green-600 border-green-400 bg-green-50', link: '/admin/events', description: 'Scheduled this quarter.' },
   ] : [];
 
-  // Component for visually appealing metric cards
-  const MetricCard: React.FC<{ card: (typeof cards)[0] }> = useCallback(({ card }) => (
-    <a
-      key={card.title}
-      href={card.link}
-      className={`relative p-6 rounded-2xl bg-white shadow-xl transition duration-300 hover:shadow-2xl hover:scale-[1.02] transform group cursor-pointer border-t-8 ${card.color.split(' ')[1]}`}
-    >
-      <div className="flex items-center justify-between mb-4">
-        <div className={`rounded-full p-3 ${card.color.split(' ')[2]}`}>
-          <card.icon className={`w-7 h-7 ${card.color.split(' ')[0]}`} />
-        </div>
-        <ArrowRightIcon className="w-5 h-5 text-gray-300 group-hover:text-gray-500 transition-colors" />
-      </div>
-      <p className="text-4xl font-extrabold text-gray-900 mt-1">{card.value}</p>
-      <h2 className="mt-2 text-lg font-semibold text-gray-700">{card.title}</h2>
-      <p className="mt-1 text-xs text-gray-500">{card.description}</p>
-    </a>
-  ), []);
-
-  // Component for the Actionable Task List
-  const TaskList: React.FC<{ tasks: Task[] }> = useCallback(({ tasks }) => (
-    <div className="bg-white p-6 rounded-2xl shadow-xl border border-gray-100">
-      <div className="flex justify-between items-center mb-6 border-b border-gray-200 pb-3">
-        <h3 className="text-2xl font-extrabold text-gray-900 flex items-center gap-2">
-          <BoltIcon className="w-6 h-6 text-orange-500" /> Immediate Actions
-        </h3>
-        <a href="/admin/tasks" className="text-sm text-orange-600 font-semibold hover:text-orange-800 flex items-center">
-          View All <ArrowRightIcon className="w-4 h-4 ml-1" />
-        </a>
-      </div>
-      <ul className="space-y-4">
-        {tasks.map((t) => (
-          <li key={t.id} className="flex flex-col p-4 bg-gray-50 rounded-xl border-l-4 border-orange-400 hover:bg-orange-50/70 transition cursor-pointer shadow-sm">
-            <span className="text-base font-semibold text-gray-800">{t.name}</span>
-            <div className="mt-1 flex items-center gap-3 text-sm text-gray-500">
-              <CalendarDaysIcon className="w-4 h-4 text-gray-400" />
-              <span>{t.dueDate}</span>
-              <ClockIcon className="w-4 h-4 text-gray-400 ml-2" />
-              <span>{t.dueTime}</span>
-            </div>
-          </li>
-        ))}
-      </ul>
-      {tasks.length === 0 && (
-         <div className="py-6 text-center text-lg text-gray-500 flex items-center justify-center gap-2">
-            <HeartIcon className="w-5 h-5 text-green-500" />
-            Everything is up-to-date!
-         </div>
-      )}
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 text-orange-600 font-bold">
+       <RocketLaunchIcon className="w-6 h-6 animate-bounce mr-2" /> Loading Impact Console...
     </div>
-  ), []);
+  );
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-pulse flex items-center gap-3 text-orange-600">
-          <RocketLaunchIcon className="w-6 h-6" />
-          <span className="text-xl font-semibold">Loading Impact Console...</span>
-        </div>
-      </div>
-    );
-  }
-
-  if (error || !data) {
-     return (
-      <div className="min-h-screen flex items-center justify-center bg-red-50">
-        <div className="text-center p-8 bg-white rounded-xl shadow-lg border border-red-200">
-            <ExclamationTriangleIcon className="w-10 h-10 mx-auto mb-4 text-red-500" />
-            <h2 className="font-bold text-lg text-gray-800 mb-2">Could Not Load Dashboard</h2>
-            <p className="text-sm text-gray-500">{error || "An unknown error occurred."}</p>
-        </div>
-      </div>
-    );
-  }
+  if (error || !data) return (
+    <div className="min-h-screen flex items-center justify-center text-red-500">
+      <ExclamationTriangleIcon className="w-10 h-10 mr-2" /> {error || "Error loading dashboard"}
+    </div>
+  );
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans">
+    <div className="min-h-screen bg-gray-50 font-sans pb-12">
       <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
         
         <header className="mb-10 p-8 rounded-3xl shadow-xl" style={{ backgroundImage: 'linear-gradient(135deg, #1e3a8a 0%, #030712 100%)' }}>
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col md:flex-row justify-between items-center gap-6">
             <div>
               <p className="text-xl text-orange-400 font-semibold mb-1">Empowering Change</p>
-              <h1 className="text-5xl font-extrabold tracking-tight text-white">
-                Non-Profit Command Center
-              </h1>
-              <p className="mt-2 text-indigo-200">Track donations, coordinate volunteers, and drive your mission forward.</p>
+              <h1 className="text-5xl font-extrabold tracking-tight text-white">Impact Command Center</h1>
+              <p className="mt-2 text-indigo-200">Coordination hub for {companyId}</p>
             </div>
-            <a
-              href="/admin/donate/new"
-              className="flex items-center gap-2 px-6 py-3 rounded-full bg-orange-500 text-white font-bold hover:bg-orange-600 transition transform hover:scale-105 shadow-lg shadow-orange-500/50"
-            >
-              <HeartIcon className="w-5 h-5" />
-              Launch New Appeal
-            </a>
+            <button className="px-8 py-4 bg-orange-500 text-white font-bold rounded-full shadow-lg hover:bg-orange-600 transition-all flex items-center gap-2">
+              <HeartIcon className="w-5 h-5" /> Launch New Appeal
+            </button>
           </div>
         </header>
 
         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           {cards.map((card) => (
-            <MetricCard key={card.title} card={card} />
+            <div key={card.title} className={`p-6 rounded-2xl bg-white shadow-md border-t-8 ${card.color.split(' ')[1]} transition hover:scale-[1.02]`}>
+              <div className={`w-12 h-12 rounded-full ${card.color.split(' ')[2]} flex items-center justify-center mb-4`}>
+                <card.icon className={`w-6 h-6 ${card.color.split(' ')[0]}`} />
+              </div>
+              <p className="text-3xl font-black text-gray-900">{card.value}</p>
+              <h2 className="font-bold text-gray-600">{card.title}</h2>
+              <p className="text-xs text-gray-400 mt-1">{card.description}</p>
+            </div>
           ))}
         </section>
 
         <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
           <div className="lg:col-span-2 space-y-8">
             <div className="bg-white p-6 rounded-2xl shadow-xl border border-gray-100">
-              <h3 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <GiftIcon className="w-6 h-6 text-orange-500" /> Monthly Donation Trend
+              <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                <GiftIcon className="w-6 h-6 text-orange-500" /> Donation Trajectory
               </h3>
-              <div className="min-h-[300px]">
-                <ChartTwo data={data.charts.monthlyDonations} />
-              </div>
+              <DonationTrendChart data={data.charts.monthlyDonations} />
             </div>
 
             <div className="bg-white p-6 rounded-2xl shadow-xl border border-gray-100">
-              <h3 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                <UsersIcon className="w-6 h-6 text-blue-500" /> Volunteer & Outreach Growth
+              <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                <UsersIcon className="w-6 h-6 text-blue-500" /> Volunteer Enrollment
               </h3>
-              <div className="min-h-[300px]">
-                <ChartThree data={data.charts.volunteerGrowth} />
-              </div>
+              <VolunteerGrowthChart data={data.charts.volunteerGrowth} />
             </div>
           </div>
 
           <div className="lg:col-span-1">
-            <TaskList tasks={data.tasks} />
+            <div className="bg-white p-6 rounded-2xl shadow-xl border border-gray-100 sticky top-8">
+              <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+                <BoltIcon className="w-6 h-6 text-orange-500" /> Urgent Tasks
+              </h3>
+              <div className="space-y-4">
+                {data.tasks.map(t => (
+                  <div key={t.id} className="p-4 bg-gray-50 rounded-xl border-l-4 border-orange-500 hover:bg-orange-50 transition">
+                    <p className="font-bold text-gray-800">{t.name}</p>
+                    <div className="flex justify-between mt-2 text-xs text-gray-500">
+                      <span>{t.dueDate}</span>
+                      <span>{t.dueTime}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </section>
       </div>

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
+import dynamic from 'next/dynamic';
 import {
   UsersIcon,
   CalendarDaysIcon,
@@ -15,7 +16,58 @@ import {
 } from '@heroicons/react/24/outline';
 import { useParams } from 'next/navigation';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+// Dynamic import for ApexCharts to prevent SSR issues
+const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+
+// --- APEX CHART COMPONENT ---
+
+const PatientFlowChart: React.FC<{ data: any }> = ({ data }) => {
+  const series = [
+    {
+      name: "Patient Inflow",
+      data: data?.inflow || [30, 40, 35, 50, 49, 60, 70, 91, 125]
+    },
+    {
+      name: "Facility Capacity",
+      data: data?.capacity || [80, 80, 80, 80, 80, 80, 80, 80, 80]
+    }
+  ];
+
+  const options: any = {
+    chart: {
+      type: 'area',
+      toolbar: { show: false },
+      zoom: { enabled: false }
+    },
+    colors: ['#0d9488', '#94a3b8'], // teal-600 and slate-400
+    dataLabels: { enabled: false },
+    stroke: { curve: 'smooth', width: 3 },
+    fill: {
+      type: 'gradient',
+      gradient: {
+        shadeIntensity: 1,
+        opacityFrom: 0.45,
+        opacityTo: 0.05,
+        stops: [20, 100]
+      }
+    },
+    xaxis: {
+      categories: data?.labels || ['08:00', '10:00', '12:00', '14:00', '16:00', '18:00', '20:00', '22:00', '00:00'],
+      axisBorder: { show: false },
+      labels: { style: { colors: '#64748b' } }
+    },
+    yaxis: {
+      labels: { style: { colors: '#64748b' } }
+    },
+    grid: { borderColor: '#f1f5f9' },
+    tooltip: { theme: 'light' },
+    legend: { position: 'top', horizontalAlign: 'right' }
+  };
+
+  return <Chart options={options} series={series} type="area" height={350} />;
+};
 
 // --- TYPE DEFINITIONS ---
 interface DashboardCardProps {
@@ -51,6 +103,9 @@ interface DashboardData {
     };
     criticalAlerts: Alert[];
     recentActivities: Activity[];
+    charts: {
+        patientFlow: any;
+    };
 }
 
 // --- Reusable Card Component ---
@@ -78,52 +133,7 @@ const DashboardCard: React.FC<DashboardCardProps> = ({ icon: Icon, title, value,
     </motion.a>
 );
 
-// --- Sections Components ---
-const CriticalAlerts: React.FC<{ alerts: Alert[] }> = ({ alerts }) => (
-    <div className="bg-white p-6 rounded-2xl shadow-lg border border-red-200">
-        <h2 className="text-2xl font-bold text-red-600 mb-6 flex items-center gap-2">
-            <ExclamationTriangleIcon className="w-7 h-7" /> Critical Patient Alerts
-        </h2>
-        {alerts.length > 0 ? (
-            <ul className="space-y-4">
-                {alerts.map(alert => (
-                    <li key={alert.id} className="p-4 bg-red-50 rounded-lg border-l-4 border-red-500 flex items-center justify-between">
-                        <div>
-                            <p className="font-semibold text-red-800">{alert.taskName}</p>
-                            <p className="text-sm text-red-600">Due: {alert.dueTime}</p>
-                        </div>
-                        <ClockIcon className="w-5 h-5 text-red-500 animate-pulse" />
-                    </li>
-                ))}
-            </ul>
-        ) : (
-             <div className="text-center py-4 text-gray-500">No high-priority alerts.</div>
-        )}
-        <a href="/admin/alerts" className="mt-4 text-sm font-medium text-red-600 hover:text-red-800 flex items-center">
-            View Alert Center <ArrowRightIcon className="w-4 h-4 ml-1" />
-        </a>
-    </div>
-);
-
-const ActivityLog: React.FC<{ activities: Activity[] }> = ({ activities }) => (
-    <div className="bg-white p-6 rounded-2xl shadow-lg border border-gray-200">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6 border-b border-gray-100 pb-3">Recent System Activity</h2>
-        {activities.length > 0 ? (
-            <ul className="space-y-3 text-gray-700">
-            {activities.map(act => (
-                 <li key={act.id} className="flex items-center space-x-3 text-sm">
-                    <CalendarDaysIcon className="w-4 h-4 text-teal-500 flex-shrink-0" />
-                    <span className="truncate"><span className="font-medium">{act.type}:</span> {act.description} at {act.time}</span>
-                </li>
-            ))}
-            </ul>
-        ) : (
-            <div className="text-center py-4 text-gray-500">No recent activity.</div>
-        )}
-    </div>
-);
-
-// --- Main Dashboard Component ---
+// --- MAIN COMPONENT ---
 export default function HealthcareSystemOverview() {
   const { slug: companyId } = useParams();
   const [data, setData] = useState<DashboardData | null>(null);
@@ -152,44 +162,42 @@ export default function HealthcareSystemOverview() {
     }
   }, [companyId]);
   
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 text-teal-600 flex flex-col items-center justify-center p-8">
-        <ArrowPathIcon className="w-12 h-12 animate-spin mb-4" />
-        <p className="text-xl font-semibold">Loading Clinical Systems...</p>
-      </div>
-    );
-  }
+  if (isLoading) return (
+    <div className="min-h-screen bg-gray-50 text-teal-600 flex flex-col items-center justify-center p-8">
+      <ArrowPathIcon className="w-12 h-12 animate-spin mb-4" />
+      <p className="text-xl font-semibold">Syncing Clinical Records...</p>
+    </div>
+  );
 
-  if (error || !data) {
-    return (
-      <div className="min-h-screen bg-red-50 text-red-600 p-8 flex flex-col items-center justify-center">
-        <ExclamationTriangleIcon className="w-16 h-16 mb-4" />
-        <h2 className="text-2xl font-bold mb-2">Error Loading Dashboard</h2>
-        <p>{error || "An unknown error occurred."}</p>
-      </div>
-    );
-  }
+  if (error || !data) return (
+    <div className="min-h-screen bg-red-50 text-red-600 p-8 flex flex-col items-center justify-center text-center">
+      <ExclamationTriangleIcon className="w-16 h-16 mb-4" />
+      <h2 className="text-2xl font-bold mb-2">System Offline</h2>
+      <p>{error || "Verify your connection to the clinical API."}</p>
+    </div>
+  );
 
   const dashboardStats = [
-    { icon: UsersIcon, title: 'Total Active Patients', value: data.metrics.totalActivePatients.toLocaleString(), description: 'Currently registered and active.', accentColor: 'text-teal-600', link: `/admin/${companyId}/patients`, delay: 0.2 },
-    { icon: CalendarDaysIcon, title: 'Appointments Today', value: data.metrics.upcomingAppointments.toLocaleString(), description: 'Scheduled for today.', accentColor: 'text-blue-600', link: `/admin/${companyId}/appointments`, delay: 0.3 },
-    { icon: ClipboardDocumentListIcon, title: 'Unsigned Documents', value: data.metrics.unsignedDocuments.toLocaleString(), description: 'Prescriptions pending sign-off.', accentColor: 'text-orange-600', link: `/admin/${companyId}/documents`, delay: 0.4 },
-    { icon: AcademicCapIcon, title: 'Active Physicians', value: data.metrics.activePhysicians.toLocaleString(), description: 'Doctors currently on shift.', accentColor: 'text-indigo-600', link: `/admin/${companyId}/doctors`, delay: 0.5 },
+    { icon: UsersIcon, title: 'Active Patients', value: data.metrics.totalActivePatients.toLocaleString(), description: 'Total under care.', accentColor: 'text-teal-600', link: `/admin/${companyId}/patients`, delay: 0.1 },
+    { icon: CalendarDaysIcon, title: 'Daily Consults', value: data.metrics.upcomingAppointments.toLocaleString(), description: 'Scheduled today.', accentColor: 'text-blue-600', link: `/admin/${companyId}/appointments`, delay: 0.2 },
+    { icon: ClipboardDocumentListIcon, title: 'Pending Signatures', value: data.metrics.unsignedDocuments.toLocaleString(), description: 'Charts needing MD sign-off.', accentColor: 'text-orange-600', link: `/admin/${companyId}/documents`, delay: 0.3 },
+    { icon: AcademicCapIcon, title: 'Staff On-Call', value: data.metrics.activePhysicians.toLocaleString(), description: 'Physicians on shift.', accentColor: 'text-indigo-600', link: `/admin/${companyId}/doctors`, delay: 0.4 },
   ];
-
-  const financialStat = { icon: CurrencyDollarIcon, title: 'Today\'s Gross Revenue', value: `$${data.metrics.todaysRevenue.toLocaleString()}`, description: 'Billed and confirmed revenue.', accentColor: 'text-green-600', link: `/admin/${companyId}/billing`, delay: 0.6 };
 
   return (
     <div className="min-h-screen bg-gray-50 font-sans p-8">
       <div className="max-w-7xl mx-auto">
-        <motion.header className="mb-10 pb-4 border-b border-gray-200" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-          <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-900 tracking-tight">
-            Clinical <span className="text-teal-600">System Overview</span>
-          </h1>
-          <p className="text-lg text-gray-500 mt-2">
-            Monitoring facility operations.
-          </p>
+        <motion.header className="mb-10 pb-4 flex flex-col md:flex-row md:items-end justify-between border-b border-gray-200" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
+          <div>
+            <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-900 tracking-tight">
+              Clinical <span className="text-teal-600">Operations</span>
+            </h1>
+            <p className="text-lg text-gray-500 mt-2">Facility ID: {companyId}</p>
+          </div>
+          <div className="mt-4 md:mt-0 flex gap-3">
+             <button className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-semibold text-gray-600 hover:bg-gray-50 transition">Export Report</button>
+             <button className="px-4 py-2 bg-teal-600 rounded-lg text-sm font-semibold text-white hover:bg-teal-700 transition shadow-lg shadow-teal-600/20">+ Admit Patient</button>
+          </div>
         </motion.header>
 
         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
@@ -197,33 +205,59 @@ export default function HealthcareSystemOverview() {
         </section>
         
         <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <motion.div className="lg:col-span-1" initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.7, duration: 0.6 }}>
-                <CriticalAlerts alerts={data.criticalAlerts} />
+            <motion.div className="lg:col-span-1 space-y-6" initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 }}>
+                <div className="bg-white p-6 rounded-2xl shadow-lg border border-red-100">
+                    <h2 className="text-xl font-bold text-red-600 mb-4 flex items-center gap-2">
+                        <ExclamationTriangleIcon className="w-6 h-6" /> Critical Alerts
+                    </h2>
+                    <div className="space-y-3">
+                        {data.criticalAlerts.map(alert => (
+                            <div key={alert.id} className="p-3 bg-red-50 rounded-xl border-l-4 border-red-500 flex justify-between items-center">
+                                <div>
+                                    <p className="text-sm font-bold text-red-900">{alert.taskName}</p>
+                                    <p className="text-xs text-red-600">Due {alert.dueTime}</p>
+                                </div>
+                                <ClockIcon className="w-4 h-4 text-red-400 animate-pulse" />
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="p-6 rounded-2xl bg-white shadow-lg border-l-4 border-green-500">
+                    <div className="flex items-center justify-between mb-2">
+                        <CurrencyDollarIcon className="w-6 h-6 text-green-600" />
+                        <span className="text-xs font-bold text-gray-400 uppercase">Gross Revenue</span>
+                    </div>
+                    <p className="text-3xl font-black text-gray-900">${data.metrics.todaysRevenue.toLocaleString()}</p>
+                </div>
             </motion.div>
 
-            <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
-                <motion.a href={financialStat.link} className="md:col-span-1 p-6 rounded-2xl bg-white shadow-lg border-l-4 border-green-500 flex flex-col justify-center transition duration-300 hover:shadow-xl hover:ring-2 ring-green-500 group" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.8, duration: 0.6 }}>
-                    <div className="flex items-center justify-between">
-                        <CurrencyDollarIcon className="w-8 h-8 text-green-600" />
-                        <span className="text-sm font-medium text-gray-500">TODAY'S REVENUE</span>
+            <motion.div className="lg:col-span-2 bg-white rounded-2xl shadow-lg p-8 border border-gray-100" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}>
+                <div className="flex justify-between items-center mb-6">
+                    <div>
+                        <h2 className="text-2xl font-bold text-gray-900 tracking-tight">Facility Saturation</h2>
+                        <p className="text-sm text-gray-500">Real-time patient inflow vs. discharge capacity</p>
                     </div>
-                    <p className="text-4xl font-extrabold text-gray-900 mt-3">{financialStat.value}</p>
-                    <p className="text-xs text-gray-400 mt-1">{financialStat.description}</p>
-                    <div className="flex justify-end mt-4">
-                        <ArrowRightIcon className="w-5 h-5 text-gray-300 group-hover:text-green-600 transition-colors" />
+                    <div className="flex gap-4 text-xs font-bold uppercase">
+                        <span className="flex items-center gap-1"><span className="w-3 h-3 bg-teal-500 rounded-full"></span> Inflow</span>
+                        <span className="flex items-center gap-1"><span className="w-3 h-3 bg-gray-300 rounded-full"></span> Capacity</span>
                     </div>
-                </motion.a>
-
-                <motion.div className="md:col-span-1" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.9, duration: 0.6 }}>
-                    <ActivityLog activities={data.recentActivities} />
-                </motion.div>
-            </div>
+                </div>
+                <PatientFlowChart data={data.charts?.patientFlow || []} />
+            </motion.div>
         </section>
 
-        <motion.div className="mt-6 bg-white rounded-2xl shadow-lg p-8 border border-gray-200" initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.0, duration: 0.6 }}>
-            <h2 className="text-2xl font-bold text-gray-900 mb-6 border-b border-gray-100 pb-3">Patient Flow vs. Capacity</h2>
-            <div className="min-h-[300px] flex items-center justify-center bg-gray-50 rounded-xl border border-dashed border-teal-200 text-teal-600 font-semibold">
-                [Placeholder for Patient Inflow/Outflow Line Chart]
+        <motion.div className="mt-6 bg-white rounded-2xl shadow-lg p-6 border border-gray-100" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7 }}>
+            <h3 className="font-bold text-gray-800 mb-4">Shift Audit Log</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {data.recentActivities.map(act => (
+                    <div key={act.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl text-sm border border-gray-100">
+                        <div className="w-2 h-2 rounded-full bg-teal-400"></div>
+                        <span className="text-gray-500 font-medium w-16">{act.time}</span>
+                        <span className="text-gray-700 font-semibold">{act.type}:</span>
+                        <span className="text-gray-600 truncate">{act.description}</span>
+                    </div>
+                ))}
             </div>
         </motion.div>
       </div>
