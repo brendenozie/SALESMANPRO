@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
+import dynamic from 'next/dynamic';
 import {
   FilmIcon,
   DocumentTextIcon,
@@ -14,26 +15,74 @@ import {
   ClockIcon,
   ChartBarIcon,
   ExclamationCircleIcon,
-  ArrowPathIcon
+  ArrowPathIcon,
+  PlusIcon,
+  SignalIcon
 } from '@heroicons/react/24/outline';
 
 import { useParams } from 'next/navigation';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+// Dynamic import for ApexCharts to prevent SSR issues
+const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
+
+// --- APEX CHART COMPONENTS ---
+
+const ViewerTrendsChart: React.FC<{ data?: any }> = () => {
+  const series = [{
+    name: 'Viewers',
+    data: [310, 400, 280, 510, 420, 109, 100]
+  }];
+
+  const options: any = {
+    chart: { type: 'area', toolbar: { show: false }, background: 'transparent' },
+    colors: ['#22d3ee'], // cyan-400
+    stroke: { curve: 'smooth', width: 3 },
+    fill: {
+      type: 'gradient',
+      gradient: { shadeIntensity: 1, opacityFrom: 0.5, opacityTo: 0, stops: [0, 90, 100] }
+    },
+    dataLabels: { enabled: false },
+    grid: { borderColor: '#374151', strokeDashArray: 4 },
+    xaxis: {
+      categories: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+      labels: { style: { colors: '#9ca3af' } }
+    },
+    yaxis: { labels: { style: { colors: '#9ca3af' } } },
+    theme: { mode: 'dark' },
+    tooltip: { theme: 'dark' }
+  };
+
+  return <Chart options={options} series={series} type="area" height={250} />;
+};
+
+const CategoryDonutChart: React.FC = () => {
+  const series = [44, 32, 14, 10];
+  const options: any = {
+    chart: { type: 'donut' },
+    labels: ['Entertainment', 'Tech', 'Lifestyle', 'News'],
+    colors: ['#22d3ee', '#818cf8', '#f472b6', '#fbbf24'],
+    plotOptions: {
+      pie: {
+        donut: { size: '75%', labels: { show: true, total: { show: true, label: 'Media', color: '#fff' } } }
+      }
+    },
+    dataLabels: { enabled: false },
+    legend: { position: 'bottom', labels: { colors: '#9ca3af' } },
+    stroke: { show: false }
+  };
+
+  return <Chart options={options} series={series} type="donut" height={250} />;
+};
+
+// --- TYPES & INTERFACES ---
 
 interface Task {
   id: string;
   name: string;
   dueDate: string;
   dueTime: string;
-}
-
-interface Metric {
-    title: string;
-    value: string | number;
-    icon: React.ElementType;
-    link: string;
-    trend: number; // Percentage change
 }
 
 interface MediaDashboardData {
@@ -47,72 +96,32 @@ interface MediaDashboardData {
   tasks: Task[];
 }
 
-// --- Metric Card Component (Dark Theme) ---
-interface MetricCardProps extends Metric {
-    delay: number;
-}
+// --- SUB-COMPONENTS ---
 
-const MetricCard: React.FC<MetricCardProps> = ({ title, value, icon: Icon, trend, link, delay }) => {
+const MetricCard: React.FC<any> = ({ title, value, icon: Icon, trend, delay }) => {
   const isPositive = trend >= 0;
-  const trendColor = isPositive ? 'text-green-400' : 'text-red-400';
-  const TrendIcon = isPositive ? ArrowUpIcon : ArrowDownIcon;
-
   return (
-    <motion.a
-      href={link}
-      className="group bg-gray-800 p-6 rounded-2xl shadow-xl border border-gray-700 hover:border-cyan-500 transition-all duration-300 flex flex-col justify-between"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, delay }}
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.4, delay }}
+      className="bg-gray-800/50 backdrop-blur-md p-5 rounded-2xl border border-gray-700 hover:border-cyan-500/50 transition-all group"
     >
-        <div className="flex justify-between items-start">
-            <Icon className="w-8 h-8 text-cyan-400 group-hover:text-cyan-300 transition-colors" />
-            <div className={`flex items-center text-sm font-medium ${trendColor}`}>
-                <TrendIcon className="w-4 h-4 mr-1" />
-                {Math.abs(trend)}%
-            </div>
+      <div className="flex justify-between items-start mb-4">
+        <div className="p-2 bg-gray-900 rounded-lg group-hover:bg-cyan-500/10 transition-colors">
+          <Icon className="w-6 h-6 text-cyan-400" />
         </div>
-        <div className="mt-6">
-            <p className="text-sm font-medium text-gray-400 uppercase tracking-wider">{title}</p>
-            <p className="text-4xl font-extrabold text-white mt-1 group-hover:text-cyan-500 transition-colors">
-                {typeof value === 'number' ? value.toLocaleString() : value}
-            </p>
+        <div className={`flex items-center text-xs font-bold ${isPositive ? 'text-emerald-400' : 'text-rose-400'}`}>
+          {isPositive ? <ArrowUpIcon className="w-3 h-3 mr-1" /> : <ArrowDownIcon className="w-3 h-3 mr-1" />}
+          {Math.abs(trend)}%
         </div>
-    </motion.a>
+      </div>
+      <p className="text-2xl font-black text-white">{typeof value === 'number' ? value.toLocaleString() : value}</p>
+      <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-1">{title}</p>
+    </motion.div>
   );
 };
 
-// --- Mock Line Chart Component ---
-const ViewerTrendsChart: React.FC = () => {
-    const data = [120, 150, 140, 180, 160, 210];
-    const maxVal = Math.max(...data);
-
-    return (
-        <div className="relative h-64 p-4">
-            <h2 className="text-xl font-semibold text-white mb-4">Viewer Trends (Last 6 Weeks)</h2>
-            <div className="flex h-40 items-end justify-between border-b border-gray-700 pb-2">
-                {data.map((val, index) => (
-                    <motion.div
-                        key={index}
-                        className="w-1/6 h-full flex flex-col justify-end items-center px-1 group"
-                        initial={{ height: 0 }}
-                        animate={{ height: `${(val / maxVal) * 100}%` }}
-                        transition={{ duration: 0.8, delay: 1.2 + index * 0.1 }}
-                    >
-                        <div className="w-full bg-cyan-600 rounded-t-lg shadow-lg hover:bg-cyan-400 transition-colors duration-200 cursor-pointer relative">
-                            <span className="absolute -top-6 left-1/2 transform -translate-x-1/2 text-xs text-gray-400 group-hover:text-white transition-opacity hidden group-hover:block">{val}K</span>
-                        </div>
-                    </motion.div>
-                ))}
-            </div>
-            <div className="flex justify-between text-xs text-gray-500 pt-2">
-                {['Wk 1', 'Wk 2', 'Wk 3', 'Wk 4', 'Wk 5', 'Wk 6'].map((label, index) => <span key={index}>{label}</span>)}
-            </div>
-        </div>
-    );
-}
-
-// --- Main Dashboard Component ---
 export default function MediaDashboardClient() {
   const { slug: companyId } = useParams();
   const [data, setData] = useState<MediaDashboardData | null>(null);
@@ -121,21 +130,10 @@ export default function MediaDashboardClient() {
 
   useEffect(() => {
     const fetchData = async () => {
-      setIsLoading(true);
-      setError(null);
       try {
-        const response = await fetch(`${apiBaseUrl}/admin/dashboard/media?companyId=${companyId}`, {
-          headers: {
-            'Content-Type': 'application/json',
-            'Credentials': 'include'
-          }
-        });
+        const response = await fetch(`${apiBaseUrl}/admin/dashboard/media?companyId=${companyId}`);
         const result = await response.json();
-
-        if (!response.ok || !result.success) {
-          throw new Error(result.data?.message || "Failed to fetch dashboard data.");
-        }
-        
+        if (!response.ok) throw new Error("Connection failed");
         setData(result.data);
       } catch (err: any) {
         setError(err.message);
@@ -144,89 +142,99 @@ export default function MediaDashboardClient() {
       }
     };
     fetchData();
-  }, []);
+  }, [companyId]);
 
-  if (isLoading) {
-    return (
-        <div className="min-h-screen bg-gray-900 text-cyan-400 flex flex-col items-center justify-center">
-            <ArrowPathIcon className="w-12 h-12 animate-spin mb-4" />
-            <p className="text-xl font-semibold">Loading Production Hub...</p>
-        </div>
-    );
-  }
+  if (isLoading) return (
+    <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-center">
+      <div className="relative">
+        <div className="w-16 h-16 border-4 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin"></div>
+        <PlayCircleIcon className="w-8 h-8 text-cyan-500 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+      </div>
+      <p className="mt-4 text-cyan-500 font-bold tracking-tighter animate-pulse uppercase">Initializing Studio...</p>
+    </div>
+  );
 
-  if (error || !data) {
-    return (
-        <div className="min-h-screen bg-gray-900 text-red-400 flex flex-col items-center justify-center text-center p-4">
-            <ExclamationCircleIcon className="w-16 h-16 text-red-500 mb-4" />
-            <h2 className="text-2xl font-bold text-white mb-2">Failed to Load Dashboard</h2>
-            <p>{error || "An unknown error occurred."}</p>
-        </div>
-    );
-  }
-
-  const { totalVideos, totalArticles, activeSubscribers, revenueThisMonth, premieresScheduled } = data.metrics;
-  // const adminSlug = 'content-manager'; // Placeholder
-
-  const cards: Metric[] = [
-    { title: 'Total Videos', value: totalVideos, icon: FilmIcon, trend: 8.5, link: `/admin/${companyId}/videos` },
-    { title: 'Active Subscribers', value: activeSubscribers, icon: UserGroupIcon, trend: 12.3, link: `/admin/${companyId}/subscribers` },
-    { title: 'Monthly Revenue', value: `$${revenueThisMonth.toLocaleString()}`, icon: CurrencyDollarIcon, trend: 5.2, link: `/admin/${companyId}/revenue` },
-    { title: 'Scheduled Premieres', value: premieresScheduled, icon: PlayCircleIcon, trend: 0, link: `/admin/${companyId}/premieres` },
-    { title: 'Total Articles', value: totalArticles, icon: DocumentTextIcon, trend: -1.1, link: `/admin/${companyId}/articles` },
+  const metrics = [
+    { title: 'Videos', value: data?.metrics.totalVideos, icon: FilmIcon, trend: 8.5 },
+    { title: 'Subscribers', value: data?.metrics.activeSubscribers, icon: UserGroupIcon, trend: 12.3 },
+    { title: 'Revenue', value: `$${data?.metrics.revenueThisMonth.toLocaleString()}`, icon: CurrencyDollarIcon, trend: 5.2 },
+    { title: 'Scheduled', value: data?.metrics.premieresScheduled, icon: PlayCircleIcon, trend: 0 },
+    { title: 'Articles', value: data?.metrics.totalArticles, icon: DocumentTextIcon, trend: -1.1 },
   ];
 
   return (
-    <div className="min-h-screen bg-gray-900 font-inter py-10 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-screen-xl mx-auto">
-        <motion.h1 className="text-4xl sm:text-5xl font-extrabold text-white mb-2" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-            Content Production Hub
-        </motion.h1>
-        <motion.p className="text-lg text-gray-500 mb-10" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>
-            Real-time insights on media performance and editorial pipeline.
-        </motion.p>
-
-        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mb-10">
-          {cards.map((card, index) => <MetricCard key={card.title} {...card} delay={0.3 + index * 0.1} />)}
-        </section>
-
-        <section className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
-          <motion.div className="lg:col-span-2 bg-gray-800 p-6 rounded-2xl shadow-xl border border-gray-700" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.6, delay: 0.8 }}>
-            <ViewerTrendsChart />
-          </motion.div>
-          <motion.div className="bg-gray-800 p-6 rounded-2xl shadow-xl border border-gray-700" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, delay: 1.0 }}>
-            <div className="flex justify-between items-center mb-6 border-b border-gray-700 pb-3">
-              <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                <CalendarDaysIcon className='w-6 h-6 text-orange-400'/> Editorial Pipeline
-              </h2>
-              <a href={`/admin/${companyId}/tasks`} className="text-sm text-cyan-400 hover:text-cyan-300 transition-colors">View All</a>
-            </div>
-            {data.tasks.length > 0 ? (
-                <ul className="space-y-4">
-                {data.tasks.map((task) => (
-                    <li key={task.id} className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-3 bg-gray-700 rounded-lg hover:bg-gray-600 transition">
-                    <div className="text-gray-200 font-medium truncate mb-1 sm:mb-0">{task.name}</div>
-                    <span className="text-xs text-gray-400 flex items-center gap-1 flex-shrink-0">
-                        <ClockIcon className="w-3 h-3"/>
-                        {task.dueDate} @ {task.dueTime}
-                    </span>
-                    </li>
-                ))}
-                </ul>
-            ) : (
-                <div className="text-center text-gray-500 py-8">No urgent tasks in the pipeline.</div>
-            )}
-          </motion.div>
-        </section>
+    <div className="min-h-screen bg-[#0B0F1A] text-gray-100 py-10 px-6 font-sans">
+      <div className="max-w-7xl mx-auto">
         
-        <motion.div className="bg-gray-800 p-6 rounded-2xl shadow-xl border border-gray-700" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 1.2 }}>
-            <h2 className="text-xl font-bold text-white mb-6 border-b border-gray-700 pb-3 flex items-center gap-2">
-                <ChartBarIcon className='w-6 h-6 text-teal-400'/> Content Category Breakdown
-            </h2>
-            <div className="min-h-[200px] flex items-center justify-center bg-gray-700 rounded-lg border border-dashed border-gray-600 text-gray-500 font-semibold text-sm">
-                [Placeholder for Category Breakdown Pie/Donut Chart]
+        <header className="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+                <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span className="text-xs font-bold text-emerald-500 uppercase tracking-widest">Studio Live</span>
             </div>
-        </motion.div>
+            <h1 className="text-4xl font-black tracking-tight text-white">Production <span className="text-cyan-400">Hub</span></h1>
+          </div>
+          <div className="flex gap-3">
+            <button className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 px-5 py-2.5 rounded-xl font-bold text-sm transition border border-gray-700">
+                <SignalIcon className="w-4 h-4" /> Go Live
+            </button>
+            <button className="flex items-center gap-2 bg-cyan-500 hover:bg-cyan-400 px-5 py-2.5 rounded-xl font-bold text-sm text-gray-900 transition shadow-lg shadow-cyan-500/20">
+                <PlusIcon className="w-4 h-4" /> Upload Content
+            </button>
+          </div>
+        </header>
+
+        <section className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+          {metrics.map((m, i) => <MetricCard key={i} {...m} delay={i * 0.1} />)}
+        </section>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <div className="lg:col-span-2 bg-gray-800/40 border border-gray-700 p-6 rounded-3xl">
+                <div className="flex justify-between items-center mb-6">
+                    <h3 className="font-bold flex items-center gap-2"><ChartBarIcon className="w-5 h-5 text-cyan-400" /> Audience Retention</h3>
+                    <select className="bg-gray-900 border-none text-xs font-bold rounded-lg focus:ring-0">
+                        <option>Last 7 Days</option>
+                        <option>Last 30 Days</option>
+                    </select>
+                </div>
+                <ViewerTrendsChart />
+            </div>
+
+            <div className="bg-gray-800/40 border border-gray-700 p-6 rounded-3xl">
+                <h3 className="font-bold mb-6 flex items-center gap-2"><CalendarDaysIcon className="w-5 h-5 text-orange-400" /> Editorial Pipeline</h3>
+                <div className="space-y-3">
+                    {data?.tasks.map(task => (
+                        <div key={task.id} className="p-4 bg-gray-900/50 rounded-2xl border border-gray-700 hover:border-gray-500 transition-colors group cursor-pointer">
+                            <p className="text-sm font-bold text-gray-200 group-hover:text-cyan-400 transition-colors">{task.name}</p>
+                            <div className="flex justify-between items-center mt-3">
+                                <span className="text-[10px] font-black uppercase text-gray-500">{task.dueDate}</span>
+                                <span className="text-[10px] font-bold px-2 py-0.5 bg-gray-800 rounded-md text-cyan-400">{task.dueTime}</span>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+
+        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="bg-gray-800/40 border border-gray-700 p-6 rounded-3xl">
+                <h3 className="font-bold mb-6 flex items-center gap-2 text-white">
+                    <FilmIcon className="w-5 h-5 text-pink-500" /> Distribution
+                </h3>
+                <CategoryDonutChart />
+            </div>
+            
+            <div className="lg:col-span-2 bg-gradient-to-br from-cyan-900/20 to-transparent border border-cyan-500/20 p-8 rounded-[2rem] flex items-center justify-between">
+                <div>
+                    <h2 className="text-2xl font-black text-white mb-2">Ready to Premiere?</h2>
+                    <p className="text-gray-400 max-w-sm text-sm">You have 3 videos waiting in the queue. Scheduling a premiere can increase engagement by up to 40%.</p>
+                    <button className="mt-6 bg-white text-gray-900 px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-cyan-400 transition">Open Schedule</button>
+                </div>
+                <div className="hidden md:block">
+                    <PlayCircleIcon className="w-32 h-32 text-cyan-500/10" />
+                </div>
+            </div>
+        </section>
       </div>
     </div>
   );
