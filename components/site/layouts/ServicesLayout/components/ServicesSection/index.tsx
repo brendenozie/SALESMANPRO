@@ -222,26 +222,34 @@ export default function ServicesSpotlightDeck({ marketplaceListings, themeSettin
                                 <p className="text-gray-600 dark:text-gray-300 mb-8">{activeService.description || "Detailed description of service."}</p>
 
                                 {/* INSTRUCTIONAL DIAGRAM SECTION */}
-                                <div className="mb-8 p-6 rounded-2xl border bg-gray-50 dark:bg-gray-800 border-gray-100 dark:border-gray-700">
-                                    <h4 className="text-sm font-bold uppercase tracking-widest text-gray-400 mb-4 flex items-center gap-2">
-                                        <ArrowLongRightIcon className="w-4 h-4" /> **The Service Workflow**
+                                {/* --- IMPROVED INSTRUCTIONAL WORKFLOW --- */}
+                                <div className="mb-10 p-8 rounded-[2rem] bg-gradient-to-br from-gray-50 to-white dark:from-gray-800 dark:to-gray-900 border border-gray-100 dark:border-gray-700 shadow-sm">
+                                    <h4 className="text-xs font-bold uppercase tracking-[0.2em] text-indigo-500 mb-8 flex items-center gap-2">
+                                        <span className="w-8 h-[1px] bg-indigo-500"></span> How it works
                                     </h4>
-                                    <div className="relative w-full aspect-[2.5/1] bg-white dark:bg-gray-900 rounded-lg overflow-hidden flex items-center justify-center">
+                                    
+                                    <div className="relative flex justify-between items-start">
+                                        {/* Connecting Line */}
+                                        <div className="absolute top-5 left-0 w-full h-[2px] bg-gray-200 dark:bg-gray-700 -z-0" />
                                         
-                                        <Image
-                                            src={ activeService.images?.[0] || "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1400&q=80"}
-                                            alt="Service Workflow Diagram"
-                                            loader={loader}
-                                            fill
-                                            className="object-contain"
-                                        />
-
-
+                                        {[
+                                            { label: "Consult", icon: "💬" },
+                                            { label: "Plan", icon: "📋" },
+                                            { label: "Execute", icon: "⚡" },
+                                            { label: "Review", icon: "⭐" }
+                                        ].map((step, idx) => (
+                                            <div key={idx} className="relative z-10 flex flex-col items-center group">
+                                                <div className="w-10 h-10 rounded-full bg-white dark:bg-gray-800 border-2 border-indigo-500 flex items-center justify-center text-lg shadow-md group-hover:scale-110 transition-transform">
+                                                    {step.icon}
+                                                </div>
+                                                <span className="mt-3 text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
+                                                    {step.label}
+                                                </span>
+                                            </div>
+                                        ))}
                                     </div>
-                                    <p className="text-xs text-center text-gray-400 mt-2">
-                                        Clear milestones: <span className="font-semibold">Consult </span>→ Plan → Execute → Review.
-                                    </p>
                                 </div>
+                                
                                 
                                 <div className="flex flex-wrap gap-4 text-sm font-medium text-gray-700 dark:text-gray-200">
                                      {["Premium Quality", "Dedicated Team", "Satisfaction Guarantee"].map(feature => (

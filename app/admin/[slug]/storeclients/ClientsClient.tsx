@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useMemo, useCallback } from "react";
-// Import all necessary Chart.js components
 import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -18,21 +17,22 @@ import {
   ChartBarIcon,
   PencilSquareIcon,
   TrashIcon,
-  PlusCircleIcon,
+  PlusIcon,
+  MagnifyingGlassIcon,
+  EnvelopeIcon,
+  PhoneIcon,
   XMarkIcon,
   CheckCircleIcon,
   ExclamationTriangleIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon
 } from "@heroicons/react/24/outline";
 
-// Assuming Modal component is correctly located in "@/components/Modal"
 import Modal from "@/components/Modal"; 
 
-// Register Chart.js components
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-// -------------------------
-// Types & Props
-// -------------------------
+// --- Types ---
 export type Client = {
   id: string;
   name: string;
@@ -48,228 +48,35 @@ interface ClientsClientProps {
   clientsData: Client[];
 }
 
-// Only the fields our form actually edits or needs to send
-type ClientPayload = Omit<
-  Client,
-  "totalPurchases" | "lastPurchaseDate" | "averageOrderValue"
-> & {
-  // `id` is optional when creating a new client
-  id?: string;
-};
+type ClientPayload = Omit<Client, "totalPurchases" | "lastPurchaseDate" | "averageOrderValue"> & { id?: string };
 
-// ---------------------------------------------
-// I. HELPER COMPONENTS (Cards)
-// ---------------------------------------------
+// ---------------------------------------------------------
+// REUSABLE GLASS COMPONENTS
+// ---------------------------------------------------------
 
-interface SummaryCardProps {
-  title: string;
-  value: string | number;
-  icon: React.ElementType;
-  gradientClass: string;
-}
-const SummaryCard: React.FC<SummaryCardProps> = ({
-  title,
-  value,
-  icon: Icon,
-  gradientClass,
-}) => (
-  <div
-    className={`p-6 rounded-2xl shadow-2xl transform hover:scale-[1.02] transition-all duration-300 text-white flex flex-col justify-between h-40 ${gradientClass}`}
-  >
+const GlassCard = ({ children, className = "" }: { children: React.ReactNode, className?: string }) => (
+  <div className={`bg-gray-900/40 backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden shadow-2xl ${className}`}>
+    {children}
+  </div>
+);
+
+const StatBadge = ({ label, value, icon: Icon, colorClass }: any) => (
+  <GlassCard className="group p-6 hover:border-white/20 transition-all duration-500">
     <div className="flex justify-between items-start">
-      <h2 className="text-lg font-medium opacity-90 tracking-wide">{title}</h2>
-      <Icon className="h-8 w-8 opacity-70" />
+      <div>
+        <p className="text-gray-400 text-xs font-bold tracking-[0.15em] uppercase mb-1">{label}</p>
+        <h3 className="text-3xl font-black text-white tracking-tight">{value}</h3>
+      </div>
+      <div className={`p-3 rounded-2xl bg-gradient-to-br ${colorClass} shadow-lg shadow-black/50`}>
+        <Icon className="h-6 w-6 text-white" />
+      </div>
     </div>
-    <p className="text-4xl font-extrabold mt-4">{value}</p>
-  </div>
+  </GlassCard>
 );
 
-interface ClientCardProps {
-  client: Client;
-  onEdit: (client: Client) => void;
-  onDelete: (id: string) => void;
-}
-const ClientCard: React.FC<ClientCardProps> = ({ client, onEdit, onDelete }) => (
-  <div className="bg-gray-800 p-6 rounded-xl shadow-2xl border border-gray-700 hover:border-emerald-500 transition-all duration-300 flex flex-col justify-between transform hover:-translate-y-1">
-    
-    {/* Header and Details */}
-    <div className="pb-4 border-b border-gray-700/50">
-      <h3 className="text-2xl font-extrabold text-emerald-400 mb-1 truncate">{client.name}</h3>
-      <p className="text-sm text-gray-400 truncate">
-        <span className="font-semibold text-gray-300">Email:</span> {client.email}
-      </p>
-      <p className="text-sm text-gray-400">
-        <span className="font-semibold text-gray-300">Phone:</span> {client.phoneNumber}
-      </p>
-    </div>
-
-    {/* Financial Metrics */}
-    <div className="grid grid-cols-2 gap-4 mt-4 text-sm">
-      <div className="bg-gray-700/50 p-3 rounded-lg">
-        <span className="text-gray-400 block mb-1">Total Purchases</span>
-        <p className="text-lime-400 font-extrabold text-lg">${client.totalPurchases.toFixed(2)}</p>
-      </div>
-      <div className="bg-gray-700/50 p-3 rounded-lg">
-        <span className="text-gray-400 block mb-1">Avg. Order Value</span>
-        <p className="text-sky-400 font-extrabold text-lg">${client.averageOrderValue.toFixed(2)}</p>
-      </div>
-      <div className="col-span-2 text-center pt-2">
-        <span className="text-gray-400">Last Purchased:</span>
-        <p className={`font-semibold text-base mt-1 ${client.lastPurchaseDate ? 'text-blue-300' : 'text-red-400'}`}>
-          {client.lastPurchaseDate ?? "INACTIVE"}
-        </p>
-      </div>
-    </div>
-
-    {/* Actions */}
-    <div className="flex justify-between space-x-2 mt-6 pt-4 border-t border-gray-700/50">
-      <button
-        onClick={() => onEdit(client)}
-        className="flex items-center justify-center flex-grow px-3 py-2 bg-blue-600 rounded-lg text-white hover:bg-blue-700 transition duration-200 text-sm font-medium shadow-md"
-      >
-        <PencilSquareIcon className="h-4 w-4 mr-1" /> Edit Profile
-      </button>
-      <button
-        onClick={() => onDelete(client.id)}
-        className="p-2 bg-red-600/20 text-red-400 rounded-lg hover:bg-red-600 hover:text-white transition duration-200 shadow-md"
-      >
-        <TrashIcon className="h-5 w-5" />
-      </button>
-    </div>
-  </div>
-);
-
-// ---------------------------------------------
-// II. MODAL COMPONENTS
-// ---------------------------------------------
-
-interface AddEditModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  client?: Client | null;
-  onSave: (data: ClientPayload) => void;
-}
-
-const AddEditClientModal: React.FC<AddEditModalProps> = ({
-  isOpen,
-  onClose,
-  client,
-  onSave,
-}) => {
-  const [form, setForm] = useState<ClientPayload>({
-    id: client?.id ?? "",
-    name: client?.name ?? "",
-    email: client?.email ?? "",
-    phoneNumber: client?.phoneNumber ?? "",
-  });
-
-  React.useEffect(() => {
-    if (client) {
-      setForm({
-        id: client.id,
-        name: client.name,
-        email: client.email,
-        phoneNumber: client.phoneNumber,
-      });
-    } else {
-      setForm({ id: "", name: "", email: "", phoneNumber: "" });
-    }
-  }, [client, isOpen]);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
-  };
-
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Safely cast to ClientPayload before saving
-    onSave(form); 
-    onClose();
-  };
-
-  return (
-    <Modal 
-        isOpen={isOpen} 
-        onClose={onClose} 
-        title={client ? "Edit Client Profile" : "Add New Client"}
-        // contentClassName="sm:max-w-xl bg-gray-900 shadow-2xl rounded-xl border border-gray-700" 
-    >
-      <form onSubmit={submit} className="p-4 space-y-5">
-        {["name", "email", "phoneNumber"].map((field) => (
-          <div key={field}>
-            <label className="block text-gray-300 mb-2 capitalize font-medium">
-              {field.replace(/([A-Z])/g, " $1")}
-            </label>
-            <input
-              name={field}
-              type={field === 'email' ? 'email' : 'text'}
-              value={(form as any)[field]}
-              onChange={handleChange}
-              required
-              className="w-full p-3 bg-gray-700 text-white rounded-lg border border-gray-600 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition"
-            />
-          </div>
-        ))}
-        <div className="flex justify-end space-x-3 pt-2">
-          <button 
-            type="button" 
-            onClick={onClose} 
-            className="px-5 py-2 border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-700 transition"
-          >
-            <XMarkIcon className="h-5 w-5 mr-1 inline" /> Cancel
-          </button>
-          <button 
-            type="submit" 
-            className="px-5 py-2 bg-emerald-600 rounded-lg text-white font-semibold hover:bg-emerald-700 transition flex items-center shadow-lg"
-          >
-            <CheckCircleIcon className="h-5 w-5 mr-1" /> Save Details
-          </button>
-        </div>
-      </form>
-    </Modal>
-  );
-};
-
-interface DeleteModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onConfirm: () => void;
-  name: string;
-}
-const DeleteConfirmationModal: React.FC<DeleteModalProps> = ({
-  isOpen,
-  onClose,
-  onConfirm,
-  name,
-}) => (
-  <Modal 
-    isOpen={isOpen} 
-    onClose={onClose} 
-    title="Confirm Deletion"
-    // contentClassName="sm:max-w-md bg-gray-900 shadow-2xl rounded-xl border border-gray-700"
-  >
-    <div className="p-4 text-center space-y-6">
-      <ExclamationTriangleIcon className="h-16 w-16 text-red-500 mx-auto animate-pulse" />
-      <p className="text-xl text-gray-300 font-medium">
-        Are you sure you want to permanently delete client <strong className="text-red-400 block mt-1">{name}</strong>?
-      </p>
-      <p className="text-sm text-gray-500">This action cannot be undone and will remove all associated data.</p>
-      
-      <div className="flex justify-center space-x-4 pt-2">
-        <button onClick={onClose} className="px-5 py-2 bg-gray-700 text-gray-300 rounded-lg hover:bg-gray-600 transition">
-          Cancel
-        </button>
-        <button onClick={onConfirm} className="px-5 py-2 bg-red-600 rounded-lg text-white font-semibold hover:bg-red-700 transition flex items-center shadow-lg">
-          <TrashIcon className="h-5 w-5 mr-1" /> Confirm Delete
-        </button>
-      </div>
-    </div>
-  </Modal>
-);
-
-// ---------------------------------------------
-// III. MAIN COMPONENT
-// ---------------------------------------------
+// ---------------------------------------------------------
+// MAIN COMPONENT
+// ---------------------------------------------------------
 
 const ClientsClient: React.FC<ClientsClientProps> = ({ companyId, clientsData }) => {
   const [clients, setClients] = useState<Client[]>(clientsData);
@@ -282,203 +89,279 @@ const ClientsClient: React.FC<ClientsClientProps> = ({ companyId, clientsData })
   const [showDelete, setShowDelete] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  // Filtering & pagination
-  const filtered = useMemo(
-    () => clients.filter((c) => c.name.toLowerCase().includes(search.toLowerCase()) || c.email.toLowerCase().includes(search.toLowerCase()) ),
-    [clients, search]
+  // --- Logic: Filtering & Pagination ---
+  const filtered = useMemo(() => 
+    clients.filter(c => 
+        c.name.toLowerCase().includes(search.toLowerCase()) || 
+        c.email.toLowerCase().includes(search.toLowerCase()) ||
+        c.phoneNumber.includes(search)
+    ), [clients, search]
   );
+
   const totalPages = Math.ceil(filtered.length / perPage);
   const currentList = filtered.slice((page - 1) * perPage, page * perPage);
 
-  // Summaries
-  const totalSum = useMemo(() => clients.reduce((sum, c) => sum + c.totalPurchases, 0), [clients]);
-  const avgAOV = useMemo(() => (clients.length ? clients.reduce((s,c) => s + c.averageOrderValue, 0)/clients.length : 0), [clients]);
+  const stats = useMemo(() => ({
+    total: clients.length,
+    revenue: clients.reduce((sum, c) => sum + c.totalPurchases, 0),
+    avgAOV: clients.length ? (clients.reduce((s, c) => s + c.averageOrderValue, 0) / clients.length) : 0
+  }), [clients]);
 
-  // Chart
-  const chartOptions = {
-    responsive: true,
-    plugins: {
-        legend: { labels: { color: 'rgb(209, 213, 219)' } }, // Gray-300
-        title: { display: false },
-    },
-    scales: {
-        x: { ticks: { color: 'rgb(156, 163, 175)' }, grid: { color: 'rgba(255, 255, 255, 0.1)' } },
-        y: { ticks: { color: 'rgb(156, 163, 175)' }, grid: { color: 'rgba(255, 255, 255, 0.1)' } },
-    }
-  };
-
+  // --- Logic: Chart Config ---
   const chartData = {
-    labels: filtered.map((c) => c.name),
-    datasets: [
-        { 
-            label: "Total Purchases", 
-            data: filtered.map((c) => c.totalPurchases), 
-            backgroundColor: 'rgba(16, 185, 129, 0.8)', // Emerald
-            borderRadius: 4,
-        },
-        { 
-            label: "Avg Order Value", 
-            data: filtered.map((c) => c.averageOrderValue), 
-            backgroundColor: 'rgba(96, 165, 250, 0.8)', // Blue
-            borderRadius: 4,
-        },
-    ],
+    labels: currentList.map(c => c.name.split(' ')[0]), // Use first names for space
+    datasets: [{
+      label: 'Total Purchases',
+      data: currentList.map(c => c.totalPurchases),
+      backgroundColor: '#10b981',
+      borderRadius: 8,
+      barThickness: 12,
+    }]
   };
 
-  // -----------------------
-  // CRUD handlers (Mock implementation for client-side demo)
-  // -----------------------
+  // --- Logic: CRUD Handlers ---
   const handleSave = useCallback(async (data: ClientPayload) => {
-    // In a real app, this would be an API call (as in the original code)
-    // We'll mock the successful save here for the UI demo:
-    const mockId = data.id || `new-${Date.now()}`;
+    const mockId = data.id || `client-${Date.now()}`;
+    const existing = clients.find(c => c.id === data.id);
+    
     const mockClient: Client = {
       ...data,
       id: mockId,
-      totalPurchases: data.id ? clients.find(c => c.id === data.id)?.totalPurchases ?? 0 : 0,
-      averageOrderValue: data.id ? clients.find(c => c.id === data.id)?.averageOrderValue ?? 0 : 0,
-      lastPurchaseDate: data.id ? clients.find(c => c.id === data.id)?.lastPurchaseDate ?? null : null,
+      totalPurchases: existing?.totalPurchases ?? 0,
+      averageOrderValue: existing?.averageOrderValue ?? 0,
+      lastPurchaseDate: existing?.lastPurchaseDate ?? null,
     };
 
-    setClients((prev) =>
-      data.id
-        ? prev.map((c) => (c.id === mockId ? mockClient : c))
-        : [...prev, mockClient]
-    );
+    setClients(prev => data.id ? prev.map(c => c.id === data.id ? mockClient : c) : [mockClient, ...prev]);
   }, [clients]);
 
-  const handleDelete = useCallback(async (id: string) => {
-    // In a real app, this would be an API call
-    setClients((prev) => prev.filter((c) => c.id !== id));
-  }, []);
+  const handleDelete = useCallback(() => {
+    if (deleteId) {
+      setClients(prev => prev.filter(c => c.id !== deleteId));
+      setShowDelete(false);
+      setDeleteId(null);
+    }
+  }, [deleteId]);
 
   return (
-    <main className="container mx-auto p-4 sm:p-8 lg:p-12 bg-gray-950 min-h-screen text-gray-100">
-      
-      {/* Header & Main Action */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 border-b border-gray-800 pb-6">
-        <div className="mb-4 sm:mb-0">
-          <h1 className="text-5xl font-extrabold text-white leading-tight">Client Engagement Hub 🌐</h1>
-          <p className="text-gray-400 text-lg mt-1">Manage and track your valuable customer base efficiently.</p>
-        </div>
+    <main className="min-h-screen bg-[#030406] text-gray-200 p-4 sm:p-8 lg:p-12 relative overflow-hidden">
+      {/* Aesthetic Background Elements */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-500/5 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-600/5 rounded-full blur-[120px] pointer-events-none" />
+
+      <div className="max-w-7xl mx-auto relative z-10">
         
-        <button
-          onClick={() => { setEditClient(null); setShowAddEdit(true); }}
-          className="flex items-center bg-emerald-600 px-6 py-3 rounded-xl hover:bg-emerald-700 transition duration-300 font-semibold text-lg shadow-xl hover:shadow-2xl transform hover:scale-[1.03]"
-        >
-          <PlusCircleIcon className="h-6 w-6 mr-2" /> Add New Client
-        </button>
-      </div>
-
-      {/* Search Bar */}
-      <div className="mb-10 max-w-3xl mx-auto">
-        <input
-          type="text"
-          placeholder="Search by client name, email, or phone..."
-          value={search}
-          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          className="w-full p-4 bg-gray-800 text-white rounded-xl border border-gray-700 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 shadow-inner transition"
-        />
-      </div>
-
-      {/* Summaries Section */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-        <SummaryCard 
-          title="Total Active Clients" 
-          value={clients.length} 
-          icon={UsersIcon} 
-          gradientClass="bg-gradient-to-br from-blue-700 to-cyan-800" 
-        />
-        <SummaryCard 
-          title="All-Time Revenue" 
-          value={`$${totalSum.toLocaleString(undefined, { minimumFractionDigits: 2 })}`} 
-          icon={ShoppingBagIcon} 
-          gradientClass="bg-gradient-to-br from-green-600 to-teal-700" 
-        />
-        <SummaryCard 
-          title="Average Order Value" 
-          value={`$${avgAOV.toFixed(2)}`} 
-          icon={ChartBarIcon} 
-          gradientClass="bg-gradient-to-br from-purple-700 to-pink-800" 
-        />
-      </div>
-
-      {/* Data Visualization & List Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
-        {/* 📊 Chart Panel (Takes 1/3 width) */}
-        <div className="lg:col-span-1 bg-gray-900 p-6 rounded-2xl shadow-2xl border border-gray-800 h-full">
-          <h2 className="text-2xl font-bold text-white mb-6 border-b border-gray-700 pb-3">Purchase Analytics</h2>
-          {filtered.length > 0 ? (
-            <div className="max-h-96">
-                <Bar data={chartData} options={chartOptions} />
+        {/* HEADER SECTION */}
+        <header className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-8 mb-12">
+          <div className="space-y-2">
+            <h1 className="text-5xl lg:text-7xl font-black text-white tracking-tighter">
+              HUB<span className="text-emerald-500">.</span>
+            </h1>
+            <p className="text-gray-400 text-lg font-medium">Manage your client network.</p>
+          </div>
+          
+          <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
+            <div className="relative group flex-grow">
+              <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 group-focus-within:text-emerald-400 transition-colors" />
+              <input 
+                type="text" 
+                placeholder="Search clients..."
+                value={search}
+                onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                className="w-full lg:w-80 bg-white/5 border border-white/10 pl-12 pr-6 py-4 rounded-2xl focus:outline-none focus:ring-2 focus:ring-emerald-500/40 transition-all backdrop-blur-md"
+              />
             </div>
-          ) : (
-            <div className="text-center py-10 text-gray-500">No data to display.</div>
-          )}
+            <button 
+              onClick={() => { setEditClient(null); setShowAddEdit(true); }}
+              className="bg-emerald-500 hover:bg-emerald-400 text-[#030406] px-8 py-4 rounded-2xl font-bold flex items-center justify-center gap-2 transition-all transform active:scale-95 shadow-xl shadow-emerald-500/20"
+            >
+              <PlusIcon className="h-5 w-5 stroke-[3px]" /> New Client
+            </button>
+          </div>
+        </header>
+
+        {/* STATS SECTION */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          <StatBadge label="Total Clients" value={stats.total} icon={UsersIcon} colorClass="from-emerald-600 to-teal-500" />
+          <StatBadge label="Total Revenue" value={`$${stats.revenue.toLocaleString()}`} icon={ShoppingBagIcon} colorClass="from-blue-600 to-indigo-500" />
+          <StatBadge label="Avg Order" value={`$${stats.avgAOV.toFixed(0)}`} icon={ChartBarIcon} colorClass="from-purple-600 to-pink-500" />
         </div>
 
-        {/* 📋 Client List (Takes 2/3 width) */}
-        <div className="lg:col-span-2">
-          <h2 className="text-3xl font-bold text-white mb-6">Client Directory ({filtered.length})</h2>
-          {filtered.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {currentList.map((c) => (
-                <ClientCard
-                  key={c.id}
-                  client={c}
-                  onEdit={(c) => { setEditClient(c); setShowAddEdit(true); }}
-                  onDelete={(id) => { setDeleteId(id); setShowDelete(true); }}
-                />
+        {/* DATA GRID */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+          
+          {/* List - 8 Columns */}
+          <div className="lg:col-span-8">
+            <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+              Directory <span className="text-sm font-mono text-gray-500 bg-white/5 px-2 py-1 rounded-md">{filtered.length}</span>
+            </h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {currentList.map(client => (
+                <div key={client.id} className="group relative p-[1px] rounded-[2rem] bg-gradient-to-b from-white/10 to-transparent hover:from-emerald-500/50 transition-all duration-500">
+                  <div className="bg-[#0b0e14] rounded-[1.95rem] p-6 h-full flex flex-col">
+                    <div className="flex justify-between items-start mb-4">
+                      <div className="h-10 w-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 font-bold">
+                        {client.name.charAt(0)}
+                      </div>
+                      <div className="flex gap-1">
+                        <button onClick={() => { setEditClient(client); setShowAddEdit(true); }} className="p-2 text-gray-500 hover:text-white hover:bg-white/5 rounded-lg transition-all"><PencilSquareIcon className="h-5 w-5" /></button>
+                        <button onClick={() => { setDeleteId(client.id); setShowDelete(true); }} className="p-2 text-gray-500 hover:text-red-400 hover:bg-red-400/5 rounded-lg transition-all"><TrashIcon className="h-5 w-5" /></button>
+                      </div>
+                    </div>
+                    <h3 className="text-xl font-bold text-white mb-4 truncate">{client.name}</h3>
+                    <div className="space-y-2 mb-6 flex-grow">
+                      <div className="flex items-center gap-2 text-sm text-gray-400"><EnvelopeIcon className="h-4 w-4 text-emerald-500/50" /> {client.email}</div>
+                      <div className="flex items-center gap-2 text-sm text-gray-400"><PhoneIcon className="h-4 w-4 text-emerald-500/50" /> {client.phoneNumber}</div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 pt-4 border-t border-white/5">
+                      <div>
+                        <p className="text-[10px] uppercase font-bold text-gray-500 mb-1">Lifetime</p>
+                        <p className="text-emerald-400 font-mono font-bold">${client.totalPurchases.toFixed(0)}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-[10px] uppercase font-bold text-gray-500 mb-1">AOV</p>
+                        <p className="text-white font-mono font-bold">${client.averageOrderValue.toFixed(0)}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               ))}
             </div>
-          ) : (
-            <div className="bg-gray-800 p-12 rounded-2xl text-center border-2 border-dashed border-gray-700">
-              <XMarkIcon className="h-10 w-10 text-red-500 mx-auto mb-3" />
-              <p className="text-xl font-medium text-gray-400">No clients match your search criteria.</p>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-4 mt-12">
+                <button 
+                  disabled={page === 1}
+                  onClick={() => setPage(p => p - 1)}
+                  className="p-3 bg-white/5 border border-white/10 rounded-xl disabled:opacity-20 hover:bg-white/10 transition-all"
+                >
+                  <ChevronLeftIcon className="h-5 w-5" />
+                </button>
+                <div className="text-sm font-bold text-gray-400 uppercase tracking-widest">
+                  Page <span className="text-white">{page}</span> / {totalPages}
+                </div>
+                <button 
+                  disabled={page === totalPages}
+                  onClick={() => setPage(p => p + 1)}
+                  className="p-3 bg-white/5 border border-white/10 rounded-xl disabled:opacity-20 hover:bg-white/10 transition-all"
+                >
+                  <ChevronRightIcon className="h-5 w-5" />
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Sidebar - 4 Columns */}
+          <aside className="lg:col-span-4 space-y-8">
+            <GlassCard className="p-8">
+              <h3 className="text-lg font-bold text-white mb-6">Volume Analysis</h3>
+              <div className="h-64">
+                <Bar 
+                  data={chartData} 
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                      x: { grid: { display: false }, ticks: { color: '#4b5563', font: { size: 10 } } },
+                      y: { display: false }
+                    }
+                  }} 
+                />
+              </div>
+            </GlassCard>
+
+            <div className="bg-gradient-to-br from-emerald-500/10 to-blue-500/10 rounded-3xl p-8 border border-white/5">
+              <h4 className="text-white font-bold mb-2">Market Insights</h4>
+              <p className="text-sm text-gray-400 leading-relaxed">
+                Your highest engagement comes from the first half of your client list. Consider a re-engagement campaign for dormant users.
+              </p>
             </div>
-          )}
+          </aside>
         </div>
       </div>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex justify-center mt-10 space-x-3">
-          <button 
-            disabled={page === 1} 
-            onClick={() => setPage((p) => p - 1)} 
-            className="px-4 py-2 bg-gray-800 rounded-lg text-gray-300 disabled:opacity-50 hover:bg-gray-700 transition"
-          >
-            &larr; Previous Page
-          </button>
-          <span className="px-4 py-2 bg-emerald-600 rounded-lg text-white font-semibold">{page} / {totalPages}</span>
-          <button 
-            disabled={page === totalPages} 
-            onClick={() => setPage((p) => p + 1)} 
-            className="px-4 py-2 bg-gray-800 rounded-lg text-gray-300 disabled:opacity-50 hover:bg-gray-700 transition"
-          >
-            Next Page &rarr;
-          </button>
-        </div>
-      )}
-
-      {/* Modals */}
-      <AddEditClientModal
-        isOpen={showAddEdit}
-        onClose={() => { setShowAddEdit(false); setEditClient(null); }}
-        client={editClient}
-        onSave={handleSave}
+      {/* --- MODALS --- */}
+      <AddEditClientModal 
+        isOpen={showAddEdit} 
+        onClose={() => setShowAddEdit(false)} 
+        client={editClient} 
+        onSave={handleSave} 
       />
-      {deleteId && (
-        <DeleteConfirmationModal
-          isOpen={showDelete}
-          onClose={() => setShowDelete(false)}
-          onConfirm={() => { handleDelete(deleteId); setShowDelete(false); setDeleteId(null); }}
-          name={clients.find((c) => c.id === deleteId)?.name ?? "Unknown Client"}
-        />
-      )}
+      
+      <DeleteConfirmationModal 
+        isOpen={showDelete} 
+        onClose={() => setShowDelete(false)} 
+        onConfirm={handleDelete} 
+        name={clients.find(c => c.id === deleteId)?.name ?? ""} 
+      />
     </main>
   );
 };
+
+// ---------------------------------------------------------
+// RE-IMPLEMENTED MODAL SUB-COMPONENTS
+// ---------------------------------------------------------
+
+const AddEditClientModal = ({ isOpen, onClose, client, onSave }: any) => {
+  const [form, setForm] = useState<ClientPayload>({ id: "", name: "", email: "", phoneNumber: "" });
+
+  React.useEffect(() => {
+    if (client) setForm({ id: client.id, name: client.name, email: client.email, phoneNumber: client.phoneNumber });
+    else setForm({ id: "", name: "", email: "", phoneNumber: "" });
+  }, [client, isOpen]);
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSave(form);
+    onClose();
+  };
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title={client ? "Update Profile" : "New Client Entry"}>
+      <form onSubmit={submit} className="p-6 space-y-6 bg-[#0b0e14] text-white rounded-b-3xl">
+        {['name', 'email', 'phoneNumber'].map((key) => (
+          <div key={key}>
+            <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">{key}</label>
+            <input 
+              required
+              className="w-full bg-white/5 border border-white/10 rounded-xl p-4 focus:ring-2 focus:ring-emerald-500/40 focus:outline-none transition-all"
+              value={(form as any)[key]}
+              onChange={(e) => setForm({ ...form, [key]: e.target.value })}
+            />
+          </div>
+        ))}
+        <div className="flex gap-4 pt-4">
+          <button type="button" onClick={onClose} className="flex-1 px-6 py-4 border border-white/10 rounded-2xl font-bold hover:bg-white/5 transition-all text-gray-400">Cancel</button>
+          <button type="submit" className="flex-1 px-6 py-4 bg-emerald-500 text-black rounded-2xl font-bold hover:bg-emerald-400 transition-all flex items-center justify-center gap-2">
+            <CheckCircleIcon className="h-5 w-5" /> Save Client
+          </button>
+        </div>
+      </form>
+    </Modal>
+  );
+};
+
+const DeleteConfirmationModal = ({ isOpen, onClose, onConfirm, name }: any) => (
+  <Modal isOpen={isOpen} onClose={onClose} title="Danger Zone">
+    <div className="p-8 text-center bg-[#0b0e14] text-white rounded-b-3xl">
+      <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-500/20">
+        <ExclamationTriangleIcon className="h-10 w-10 text-red-500" />
+      </div>
+      <h3 className="text-xl font-bold mb-2 text-white">Remove Client?</h3>
+      <p className="text-gray-400 mb-8 leading-relaxed">
+        Are you sure you want to delete <span className="text-red-400 font-bold">{name}</span>? This action is permanent and cannot be reversed.
+      </p>
+      <div className="flex gap-4">
+        <button onClick={onClose} className="flex-1 px-6 py-4 bg-white/5 rounded-2xl font-bold text-gray-400 hover:bg-white/10">Keep Client</button>
+        <button onClick={onConfirm} className="flex-1 px-6 py-4 bg-red-600 rounded-2xl font-bold text-white hover:bg-red-500 shadow-lg shadow-red-600/20 flex items-center justify-center gap-2">
+          <TrashIcon className="h-5 w-5" /> Delete
+        </button>
+      </div>
+    </div>
+  </Modal>
+);
 
 export default ClientsClient;

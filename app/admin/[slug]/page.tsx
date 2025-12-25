@@ -450,6 +450,7 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
 
     // --- Business Category Dashboards ---
     const DashboardComponent = dashboardComponents[categoryKey];
+    
     let dashboardCategoryData: any = null;
 
     if (DashboardComponent) {
