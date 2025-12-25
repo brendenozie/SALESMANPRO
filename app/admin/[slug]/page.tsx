@@ -191,13 +191,25 @@ function getDashboardapiBaseUrl(categoryKey: string, companyId: string) {
     return null;
   }
   if (categoryKey === 'service provider') return `${apiBaseUrl}/admin/dashboard/serviceprovider/${companyId}`;
+  if (categoryKey === 'booking & appointments') return `${apiBaseUrl}/admin/dashboard/booking/${companyId}`;
+  if (categoryKey === 'consultant & coach') return `${apiBaseUrl}/admin/dashboard/coach/${companyId}`;
+  if (categoryKey === 'real estate') return `${apiBaseUrl}/admin/dashboard/realestate/${companyId}`;
+  if (categoryKey === 'automotive') return `${apiBaseUrl}/admin/dashboard/automotive/${companyId}`;
+  if (categoryKey === 'blog & content') return `${apiBaseUrl}/admin/dashboard/blog/${companyId}`;
+  if (categoryKey === 'event & ticketing') return `${apiBaseUrl}/admin/dashboard/event/${companyId}`;
+  if (categoryKey === 'finance & legal') return `${apiBaseUrl}/admin/dashboard/finance/${companyId}`;
+  if (categoryKey === 'fitness & wellness') return `${apiBaseUrl}/admin/dashboard/fitness/${companyId}`;
+  if (categoryKey === 'healthcare & clinics') return `${apiBaseUrl}/admin/dashboard/healthcare/${companyId}`;
+  if (categoryKey === 'media & entertainment') return `${apiBaseUrl}/admin/dashboard/media/${companyId}`;
+  if (categoryKey === 'nonprofit & community') return `${apiBaseUrl}/admin/dashboard/nonprofit/${companyId}`;
+  if (categoryKey === 'restaurant & food delivery') return `${apiBaseUrl}/admin/dashboard/restaurant/${companyId}`;
+  if (categoryKey === 'saas & web apps' || categoryKey === 'dashboards') return `${apiBaseUrl}/admin/dashboard/saas/${companyId}`;
+  if (categoryKey === 'travel & tourism') return `${apiBaseUrl}/admin/dashboard/travel/${companyId}`;
+  if (categoryKey === 'portfolio & personal branding') return `${apiBaseUrl}/admin/dashboard/portfolio/${companyId}`;
   if (
     [
-      'ecommerce', 'e-commerce', 'shoes store', 'directory & listings', 'marketplace',
-      'real estate', 'booking & appointments', 'portfolio & personal branding', 'blog & content',
-      'nonprofit & community', 'restaurant & food delivery', 'event & ticketing',
-      'healthcare & clinics', 'media & entertainment', 'finance & legal', 'automotive',
-      'travel & tourism', 'fitness & wellness', 'fashion shop', 'furniture shop'
+      'ecommerce', 'e-commerce', 'shoes store', 'directory & listings', 'marketplace',  
+      'fashion shop', 'furniture shop'
     ].includes(categoryKey)
   ) return `${apiBaseUrl}/admin/dashboard/ecommerce/${companyId}`;
   return null;
@@ -450,7 +462,7 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
 
     // --- Business Category Dashboards ---
     const DashboardComponent = dashboardComponents[categoryKey];
-    
+
     let dashboardCategoryData: any = null;
 
     if (DashboardComponent) {
@@ -465,6 +477,7 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
           isLoading = false;
           if (res.ok) {
             dashboardCategoryData = (await res.json()).data;
+            console.log("[AdminDashboardPage] Fetched dashboard data for category:", categoryKey, dashboardCategoryData);
             // Add runtime validation here for each dashboard type as needed!
           } else {
             error = `Failed to fetch dashboard data for category "${categoryKey}": ${res.statusText}`;

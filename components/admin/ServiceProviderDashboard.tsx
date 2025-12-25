@@ -170,13 +170,23 @@ const ClientEngagementDonut = ({ data }: { data: ServiceProviderDashboardData['c
 
 // --- MAIN DASHBOARD COMPONENT ---
 
-export default function ServiceProviderDashboard({ data = mockData }: { data?: ServiceProviderDashboardData }) {
+// export default function ServiceProviderDashboard({ data = mockData }: { data?: ServiceProviderDashboardData }) {
+type Props = ServiceProviderDashboardData & {
+  slug?: string;
+};
 
-    const stats = [
-        { title: 'New Bookings', value: data.stats.newBookings, icon: CalendarDaysIcon, color: 'text-cyan-400', bg: 'bg-cyan-900/40 border border-cyan-800/50', href: '/appointments' },
-        { title: 'Active Clients', value: data.stats.activeClients, icon: UsersIcon, color: 'text-green-400', bg: 'bg-green-900/40 border border-green-800/50', href: '/clients' },
-        { title: 'Feedback This Month', value: data.stats.feedbackReceived, icon: HeartIcon, color: 'text-pink-400', bg: 'bg-pink-900/40 border border-pink-800/50', href: '/feedback' },
-        { title: 'Hours This Month', value: data.stats.hoursWorked, icon: ClockIcon, color: 'text-yellow-400', bg: 'bg-yellow-900/40 border border-yellow-800/50', href: '/timesheet' },
+export default function ServiceProviderDashboard({
+  stats = mockData.stats,
+  alerts = mockData.alerts,
+  lists = mockData.lists,
+  charts = mockData.charts,
+}: Props) {
+
+    const statsCards  = [
+        { title: 'New Bookings', value: stats.newBookings, icon: CalendarDaysIcon, color: 'text-cyan-400', bg: 'bg-cyan-900/40 border border-cyan-800/50', href: '/appointments' },
+        { title: 'Active Clients', value: stats.activeClients, icon: UsersIcon, color: 'text-green-400', bg: 'bg-green-900/40 border border-green-800/50', href: '/clients' },
+        { title: 'Feedback This Month', value: stats.feedbackReceived, icon: HeartIcon, color: 'text-pink-400', bg: 'bg-pink-900/40 border border-pink-800/50', href: '/feedback' },
+        { title: 'Hours This Month', value: stats.hoursWorked, icon: ClockIcon, color: 'text-yellow-400', bg: 'bg-yellow-900/40 border border-yellow-800/50', href: '/timesheet' },
     ];
 
     return (
@@ -194,12 +204,12 @@ export default function ServiceProviderDashboard({ data = mockData }: { data?: S
                     </Link>
                 </motion.header>
                 
-                {data.alerts.pendingTasks > 0 && (
+                {alerts.pendingTasks > 0 && (
                  <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="p-4 sm:p-5 bg-amber-900/30 border border-amber-700/40 text-amber-300 rounded-xl shadow-md">
                     <div className="flex items-center gap-3">
                         <WrenchScrewdriverIcon className="w-6 h-6 text-amber-400 animate-pulse" />
                         <p className="text-sm sm:text-base">
-                            <b>Reminder:</b> {data.alerts.pendingTasks} pending task(s) need your attention.
+                            <b>Reminder:</b> {alerts.pendingTasks} pending task(s) need your attention.
                         </p>
                         <Link href="/tasks" className="ml-auto text-amber-400 hover:text-amber-300 font-semibold text-sm whitespace-nowrap">
                             View Tasks →
@@ -209,7 +219,7 @@ export default function ServiceProviderDashboard({ data = mockData }: { data?: S
                 )}
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {stats.map((stat, i) => (
+                    {statsCards.map((stat, i) => (
                         <motion.div
                             key={stat.title}
                             custom={i}
@@ -240,20 +250,20 @@ export default function ServiceProviderDashboard({ data = mockData }: { data?: S
                                 <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                                     <ChartBarIcon className="w-5 h-5 text-cyan-400" /> Daily Bookings
                                 </h3>
-                                <ServiceTrendsChart data={data.charts.serviceTrends} />
+                                <ServiceTrendsChart data={charts.serviceTrends} />
                             </motion.div>
 
                             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }} className="p-6 bg-gray-900/70 rounded-2xl shadow-xl border border-gray-800">
                                 <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
                                     <StarIcon className="w-5 h-5 text-pink-400" /> Booking Status
                                 </h3>
-                                <ClientEngagementDonut data={data.charts.clientEngagement} />
+                                <ClientEngagementDonut data={charts.clientEngagement} />
                             </motion.div>
                         </div>
                          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="p-6 bg-gray-900/70 rounded-2xl shadow-xl border border-gray-800">
                              <h3 className="text-lg font-semibold text-white mb-4">Upcoming Appointments</h3>
                              <div className="space-y-3">
-                                 {data.lists.upcomingBookings.map(booking => (
+                                 {lists.upcomingBookings.map(booking => (
                                      <div key={booking.id} className="p-3 bg-gray-800/50 rounded-lg flex items-center justify-between hover:bg-gray-800 transition-colors">
                                          <div>
                                              <p className="font-medium text-gray-200">{booking.title || 'Appointment'}</p>
@@ -270,7 +280,7 @@ export default function ServiceProviderDashboard({ data = mockData }: { data?: S
                      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5 }} className="lg:col-span-1 p-6 bg-gray-900/70 rounded-2xl shadow-xl border border-gray-800">
                          <h3 className="text-lg font-semibold text-white mb-4">Recent Feedback</h3>
                          <div className="space-y-4">
-                              {data.lists.recentFeedback.map(fb => (
+                              {lists.recentFeedback.map(fb => (
                                 <div key={fb.id} className="p-4 bg-gray-800/50 rounded-lg">
                                     <div className="flex items-center mb-2">
                                         <div className="flex text-yellow-400">

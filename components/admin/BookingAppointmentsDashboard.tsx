@@ -118,52 +118,113 @@ type ChartData = {
     monthlyConversion: Record<string, number>;
 }
 
-export default function BookingAppointmentsDashboard(): JSX.Element {
+type BookingDashboardData = {
+  stats: {
+    upcomingBookings: number;
+    totalClients: number;
+    completedSessions: number;
+    hoursThisWeek: number;
+  };
+  appointments: Appointment[];
+  charts: ChartData;
+};
+
+
+type Props = BookingDashboardData & {
+  slug?: string;
+};
+
+export default function BookingAppointmentsDashboard({
+  stats,
+  appointments,
+  charts,
+}: Props): JSX.Element {
+
   const { slug: companyId } = useParams();
 
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState<StatCardData[]>([]);
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [charts, setCharts] = useState<ChartData | null>(null);
+  // const [stats, setStats] = useState<StatCardData[]>([]);
+  // const [appointments, setAppointments] = useState<Appointment[]>([]);
+  // const [charts, setCharts] = useState<ChartData | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    let mounted = true;
-    const fetchDashboard = async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const response = await fetch(`${apiBaseUrl}/admin/dashboard/booking/${companyId}`, { method: 'GET', credentials: 'include' });
-        const result = await response.json();
+  const statCards: StatCardData[] = [
+  {
+    id: 's1',
+    label: 'Upcoming Bookings',
+    value: stats.upcomingBookings,
+    icon: <CalendarDaysIcon className="w-6 h-6" />,
+    change: '+0%',
+    trendColor: 'green',
+    accentColor: 'border-indigo-500',
+  },
+  {
+    id: 's2',
+    label: 'Total Clients',
+    value: stats.totalClients,
+    icon: <UsersIcon className="w-6 h-6" />,
+    change: '+0%',
+    trendColor: 'green',
+    accentColor: 'border-green-500',
+  },
+  {
+    id: 's3',
+    label: 'Completed Sessions',
+    value: stats.completedSessions,
+    icon: <ChartBarIcon className="w-6 h-6" />,
+    change: '+0%',
+    trendColor: 'green',
+    accentColor: 'border-cyan-500',
+  },
+  {
+    id: 's4',
+    label: 'Hours This Week',
+    value: stats.hoursThisWeek,
+    icon: <ClockIcon className="w-6 h-6" />,
+    change: '+0%',
+    trendColor: 'red',
+    accentColor: 'border-yellow-500',
+  },
+];
 
-        if (!response.ok || !result.success) {
-          throw new Error(result.data?.message || 'Failed to fetch dashboard data');
-        }
 
-        if (mounted) {
-          const { stats: apiStats, appointments: apiAppointments, charts: apiCharts } = result.data;
+  // useEffect(() => {
+  //   let mounted = true;
+  //   const fetchDashboard = async () => {
+  //     setLoading(true);
+  //     setError(null);
+  //     try {
+  //       const response = await fetch(`${apiBaseUrl}/admin/dashboard/booking/${companyId}`, { method: 'GET', credentials: 'include' });
+  //       const result = await response.json();
 
-          const formattedStats: StatCardData[] = [
-            { id: 's1', label: 'Upcoming Bookings', value: apiStats.upcomingBookings, icon: <CalendarDaysIcon className="w-6 h-6" />, change: '+12%', trendColor: 'green', accentColor: 'border-indigo-500' },
-            { id: 's2', label: 'Total Clients', value: apiStats.totalClients, icon: <UsersIcon className="w-6 h-6" />, change: '+4%', trendColor: 'green', accentColor: 'border-green-500' },
-            { id: 's3', label: 'Completed Sessions', value: apiStats.completedSessions, icon: <ChartBarIcon className="w-6 h-6" />, change: '+20%', trendColor: 'green', accentColor: 'border-cyan-500' },
-            { id: 's4', label: 'Hours This Week', value: apiStats.hoursThisWeek, icon: <ClockIcon className="w-6 h-6" />, change: '-3%', trendColor: 'red', accentColor: 'border-yellow-500' },
-          ];
+  //       if (!response.ok || !result.success) {
+  //         throw new Error(result.data?.message || 'Failed to fetch dashboard data');
+  //       }
+
+  //       if (mounted) {
+  //         const { stats: apiStats, appointments: apiAppointments, charts: apiCharts } = result.data;
+
+  //         const formattedStats: StatCardData[] = [
+  //           { id: 's1', label: 'Upcoming Bookings', value: apiStats.upcomingBookings, icon: <CalendarDaysIcon className="w-6 h-6" />, change: '+12%', trendColor: 'green', accentColor: 'border-indigo-500' },
+  //           { id: 's2', label: 'Total Clients', value: apiStats.totalClients, icon: <UsersIcon className="w-6 h-6" />, change: '+4%', trendColor: 'green', accentColor: 'border-green-500' },
+  //           { id: 's3', label: 'Completed Sessions', value: apiStats.completedSessions, icon: <ChartBarIcon className="w-6 h-6" />, change: '+20%', trendColor: 'green', accentColor: 'border-cyan-500' },
+  //           { id: 's4', label: 'Hours This Week', value: apiStats.hoursThisWeek, icon: <ClockIcon className="w-6 h-6" />, change: '-3%', trendColor: 'red', accentColor: 'border-yellow-500' },
+  //         ];
           
-          setStats(formattedStats);
-          setAppointments(apiAppointments);
-          setCharts(apiCharts);
-        }
-      } catch (e: any) {
-        if (mounted) setError(e.message);
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    };
+  //         // setStats(formattedStats);
+  //         // setAppointments(apiAppointments);
+  //         // setCharts(apiCharts);
+  //       }
+  //     } catch (e: any) {
+  //       if (mounted) setError(e.message);
+  //     } finally {
+  //       if (mounted) setLoading(false);
+  //     }
+  //   };
 
-    fetchDashboard();
-    return () => { mounted = false; };
-  }, [companyId]);
+  //   fetchDashboard();
+  //   return () => { mounted = false; };
+  // }, [companyId]);
 
   const getAppointmentProps = useCallback((type: AppointmentType) => {
     switch (type) {
@@ -175,8 +236,8 @@ export default function BookingAppointmentsDashboard(): JSX.Element {
     }
   }, []);
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center bg-gray-950 text-white">Loading Command Center...</div>;
-  if (error) return <div className="min-h-screen flex items-center justify-center text-red-500">{error}</div>;
+  // if (loading) return <div className="min-h-screen flex items-center justify-center bg-gray-950 text-white">Loading Command Center...</div>;
+  // if (error) return <div className="min-h-screen flex items-center justify-center text-red-500">{error}</div>;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white transition-colors duration-300">
@@ -186,18 +247,18 @@ export default function BookingAppointmentsDashboard(): JSX.Element {
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div>
               <h1 className="text-4xl font-extrabold text-white">Command Center</h1>
-              <p className="mt-1 text-indigo-100 text-lg">Operational overview for {companyId}</p>
+              <p className="mt-1 text-indigo-100 text-lg">Operational overview </p>
             </div>
             <div className="flex items-center gap-4">
-              <button className="bg-white text-indigo-600 px-6 py-3 rounded-xl font-bold shadow-lg hover:scale-105 transition-transform">
+              {/* <button className="bg-white text-indigo-600 px-6 py-3 rounded-xl font-bold shadow-lg hover:scale-105 transition-transform">
                 + New Booking
-              </button>
+              </button> */}
             </div>
           </div>
         </header>
 
         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-          {stats.map((s) => (
+          {statCards.map((s) => (
             <div key={s.id} className={`bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-xl border-t-4 ${s.accentColor}`}>
                <div className="flex justify-between items-start">
                   <div>
