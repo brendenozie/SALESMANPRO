@@ -387,13 +387,15 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
         try {
           isLoading = true;
           const res = await fetch(
-            `${apiBaseUrl}/dashboard/principal?userId=${encodeURIComponent(currentUserId)}`,
-            { cache: 'no-store' }
+            `${apiBaseUrl}/admin/dashboard/principle/${slug}?userId=${encodeURIComponent(currentUserId)}&companyId=${encodeURIComponent(companyId)}`,
+            { cache: 'no-store', headers: { cookie: cookiesHeader } }
           );
           isLoading = false;
           if (res.ok) {
             const data = await res.json();
-            const parsed = PrincipalDashboardSchema.safeParse(data);
+            // const parsed = PrincipalDashboardSchema.safeParse(data);
+            const parsed = PrincipalDashboardSchema.safeParse(data.data);
+
             if (!parsed.success) {
               error = 'Principal dashboard data is invalid!';
               logError(error, parsed.error);
@@ -433,7 +435,7 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
           isLoading = true;
           const res = await fetch(
             `${apiBaseUrl}/dashboard/tutor?userId=${encodeURIComponent(currentUserId)}`,
-            { cache: 'no-store' }
+            { cache: 'no-store', headers: { cookie: cookiesHeader } }
           );
           isLoading = false;
           if (res.ok) {

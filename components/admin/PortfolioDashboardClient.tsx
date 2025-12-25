@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import dynamic from 'next/dynamic'; // Required for ApexCharts in Next.js
+import type { ApexOptions } from 'apexcharts';
 // Simulating Link component behavior
 import {
   BriefcaseIcon,
@@ -10,7 +11,7 @@ import {
   LightBulbIcon,
   CalendarDaysIcon,
   ClockIcon,
-  ArrowRightIcon,
+  ArrowRightIcon, 
   CheckCircleIcon,
   RocketLaunchIcon,
   ExclamationTriangleIcon,
@@ -24,83 +25,40 @@ const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api
 
 // --- APEX CHART COMPONENTS ---
 
-const ProjectViewsChart: React.FC<{ data: any[] }> = ({ data }) => {
-  const series = [{
-    name: "Project Views",
-    data: data?.map(d => d.views) || []
-  }];
+const ProjectViewsChart: React.FC<{ data: { month: string; views: number }[] }> = ({ data }) => {
+  const series = [{ name: "Project Views", data: data.map(d => d.views) }];
 
-  const options: any = {
-    chart: {
-      type: 'area',
-      toolbar: { show: false },
-      background: 'transparent',
-      fontFamily: 'inherit',
-    },
-    colors: ['#06b6d4'], // cyan-500
+  const options: ApexOptions = {
+    chart: { type: 'area', toolbar: { show: false }, background: 'transparent' },
+    colors: ['#06b6d4'],
     stroke: { curve: 'smooth', width: 3 },
-    fill: {
-      type: 'gradient',
-      gradient: {
-        shadeIntensity: 1,
-        opacityFrom: 0.45,
-        opacityTo: 0.05,
-        stops: [20, 100]
-      }
-    },
-    dataLabels: { enabled: false },
-    grid: { borderColor: '#374151', strokeDashArray: 4 },
     xaxis: {
-      categories: data?.map(d => d.name) || [],
-      axisBorder: { show: false },
-      axisTicks: { show: false },
+      categories: data.map(d => d.month),
       labels: { style: { colors: '#9ca3af' } }
     },
-    yaxis: {
-      labels: { style: { colors: '#9ca3af' } }
-    },
-    tooltip: { theme: 'dark' },
+    tooltip: { theme: 'dark' }
   };
 
   return <Chart options={options} series={series} type="area" height={300} />;
 };
 
-const InquiriesTrendChart: React.FC<{ data: any[] }> = ({ data }) => {
-  const series = [{
-    name: "Inquiries",
-    data: data?.map(d => d.count) || []
-  }];
 
-  const options: any = {
-    chart: {
-      type: 'bar',
-      toolbar: { show: false },
-      background: 'transparent',
-    },
-    colors: ['#d946ef'], // fuchsia-500
-    plotOptions: {
-      bar: {
-        borderRadius: 6,
-        columnWidth: '45%',
-        distributed: true,
-      }
-    },
-    dataLabels: { enabled: false },
-    legend: { show: false },
-    grid: { borderColor: '#374151', strokeDashArray: 4 },
+const InquiriesTrendChart: React.FC<{ data: { month: string; count: number }[] }> = ({ data }) => {
+  const series = [{ name: "Inquiries", data: data.map(d => d.count) }];
+
+  const options: ApexOptions = {
+    chart: { type: 'bar', toolbar: { show: false }, background: 'transparent' },
+    colors: ['#d946ef'],
     xaxis: {
-      categories: data?.map(d => d.month) || [],
-      axisBorder: { show: false },
+      categories: data.map(d => d.month),
       labels: { style: { colors: '#9ca3af' } }
     },
-    yaxis: {
-      labels: { style: { colors: '#9ca3af' } }
-    },
-    tooltip: { theme: 'dark' },
+    tooltip: { theme: 'dark' }
   };
 
   return <Chart options={options} series={series} type="bar" height={300} />;
 };
+
 
 
 // --- TYPE DEFINITIONS ---
@@ -112,7 +70,7 @@ export interface Task {
   dueTime: string;
 }
 
-export interface DashboardData {
+export interface PortfolioDashboardData {
   metrics: {
     totalProjects: number;
     totalSkills: number;
@@ -122,55 +80,45 @@ export interface DashboardData {
   };
   tasks: Task[];
   charts: {
-    monthlyProjectViews: any;
-    inquiriesTrend: any;
-  }
+    monthlyProjectViews: { month: string; views: number }[];
+    inquiriesTrend: { month: string; count: number }[];
+  };
 }
+
 
 // --- MAIN COMPONENT ---
 
-export default function PortfolioDashboardClient() {
-  const { slug: companyId } = useParams();
+type Props = PortfolioDashboardData & {
+  slug?: string;
+};
 
-  const [data, setData] = useState<DashboardData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+export default function PortfolioDashboardClient({
+  metrics,
+  tasks,
+  charts,
+  slug: companyId,
+}: Props) {
 
-  // Fetch data from the API
-  useEffect(() => {
-    const loadData = async () => {
-        setLoading(true);
-        setError(null);
-        try {
-            const response = await fetch(`${apiBaseUrl}/admin/dashboard/portfolio/${companyId}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Credentials': 'include',
-                  },
-            });
-            const result = await response.json();
+  // 
+  // const { slug: companyId } = useParams();
 
-            if (!response.ok || !result.success) {
-                throw new Error(result.data?.message || 'Failed to fetch dashboard data');
-            }
-            setData(result.data);
-        } catch(e: any) {
-            setError(e.message);
-        } finally {
-            setLoading(false);
-        }
-    };
-    loadData();
-  }, []);
 
-  const cards = data ? [
-    { title: 'Total Projects', value: data.metrics.totalProjects, icon: BriefcaseIcon, accent: 'border-cyan-500 text-cyan-500', link: `/admin/${companyId}/projects`, description: 'Your body of work.' },
-    { title: 'Core Skills', value: data.metrics.totalSkills, icon: LightBulbIcon, accent: 'border-amber-500 text-amber-500', link: `/admin/${companyId}/skills`, description: 'Defined competencies.' },
-    { title: 'Client Testimonials', value: data.metrics.testimonials, icon: UserCircleIcon, accent: 'border-green-500 text-green-500', link: `/admin/${companyId}/testimonials`, description: 'Positive feedback score.' },
-    { title: 'Inquiries (MoM)', value: data.metrics.inquiriesThisMonth, icon: ChatBubbleLeftRightIcon, accent: 'border-fuchsia-500 text-fuchsia-500', link: `/admin/${companyId}/inquiries`, description: 'Leads generated this month.'},
-    { title: 'Upcoming Meetings', value: data.metrics.upcomingMeetings, icon: CalendarDaysIcon, accent: 'border-blue-500 text-blue-500', link: `/admin/${companyId}/calendar`, description: 'Scheduled this week.' },
-  ] : [];
+  // const cards = [
+  //   { title: 'Total Projects', value: metrics.totalProjects, icon: BriefcaseIcon, accent: 'border-cyan-500 text-cyan-500' },
+  //   { title: 'Core Skills', value: metrics.totalSkills, icon: LightBulbIcon, accent: 'border-amber-500 text-amber-500' },
+  //   { title: 'Client Testimonials', value: metrics.testimonials, icon: UserCircleIcon, accent: 'border-green-500 text-green-500' },
+  //   { title: 'Inquiries (MoM)', value: metrics.inquiriesThisMonth, icon: ChatBubbleLeftRightIcon, accent: 'border-fuchsia-500 text-fuchsia-500' },
+  //   { title: 'Upcoming Meetings', value: metrics.upcomingMeetings, icon: CalendarDaysIcon, accent: 'border-blue-500 text-blue-500' },
+  // ];
+
+  const cards = [
+    { title: 'Total Projects', value: metrics.totalProjects, icon: BriefcaseIcon, accent: 'border-cyan-500 text-cyan-500', link: `/admin/${companyId}/projects`, description: 'Your body of work.' },
+    { title: 'Core Skills', value: metrics.totalSkills, icon: LightBulbIcon, accent: 'border-amber-500 text-amber-500', link: `/admin/${companyId}/skills`, description: 'Defined competencies.' },
+    { title: 'Client Testimonials', value: metrics.testimonials, icon: UserCircleIcon, accent: 'border-green-500 text-green-500', link: `/admin/${companyId}/testimonials`, description: 'Positive feedback score.' },
+    { title: 'Inquiries (MoM)', value: metrics.inquiriesThisMonth, icon: ChatBubbleLeftRightIcon, accent: 'border-fuchsia-500 text-fuchsia-500', link: `/admin/${companyId}/inquiries`, description: 'Leads generated this month.'},
+    { title: 'Upcoming Meetings', value: metrics.upcomingMeetings, icon: CalendarDaysIcon, accent: 'border-blue-500 text-blue-500', link: `/admin/${companyId}/calendar`, description: 'Scheduled this week.' },
+  ];
+
 
   // Component for visually appealing metric cards
   const MetricCard: React.FC<{ card: (typeof cards)[0] }> = useCallback(({ card, }) => (
@@ -189,28 +137,28 @@ export default function PortfolioDashboardClient() {
     </a>
   ), []);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-900 text-gray-300">
-        <div className="animate-pulse flex items-center gap-3">
-          <RocketLaunchIcon className="w-6 h-6 text-cyan-400" />
-          <span className="text-xl font-semibold">Loading Personal Command Console...</span>
-        </div>
-      </div>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <div className="min-h-screen flex items-center justify-center bg-gray-900 text-gray-300">
+  //       <div className="animate-pulse flex items-center gap-3">
+  //         <RocketLaunchIcon className="w-6 h-6 text-cyan-400" />
+  //         <span className="text-xl font-semibold">Loading Personal Command Console...</span>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
-  if (error || !data) {
-     return (
-      <div className="min-h-screen flex items-center justify-center bg-red-900/10 text-red-400">
-        <div className="text-center p-8 bg-gray-800 rounded-xl shadow-lg">
-            <ExclamationTriangleIcon className="w-10 h-10 mx-auto mb-4 text-red-500" />
-            <h2 className="font-bold text-lg text-white mb-2">Could Not Load Dashboard</h2>
-            <p className="text-sm text-gray-400">{error || "An unknown error occurred."}</p>
-        </div>
-      </div>
-    );
-  }
+  // if (error || !data) {
+  //    return (
+  //     <div className="min-h-screen flex items-center justify-center bg-red-900/10 text-red-400">
+  //       <div className="text-center p-8 bg-gray-800 rounded-xl shadow-lg">
+  //           <ExclamationTriangleIcon className="w-10 h-10 mx-auto mb-4 text-red-500" />
+  //           <h2 className="font-bold text-lg text-white mb-2">Could Not Load Dashboard</h2>
+  //           <p className="text-sm text-gray-400">{error || "An unknown error occurred."}</p>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="min-h-screen bg-gray-900 text-white font-sans">
@@ -265,7 +213,7 @@ export default function PortfolioDashboardClient() {
               <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
                 <BriefcaseIcon className="w-6 h-6 text-cyan-400" /> Project Engagement
               </h3>
-              <ProjectViewsChart data={data.charts.monthlyProjectViews} />
+              <ProjectViewsChart data={charts.monthlyProjectViews} />
             </div>
 
             {/* Functional Apex Bar Chart */}
@@ -273,7 +221,7 @@ export default function PortfolioDashboardClient() {
               <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
                 <ChatBubbleLeftRightIcon className="w-6 h-6 text-fuchsia-400" /> Inquiries Trend
               </h3>
-              <InquiriesTrendChart data={data.charts.inquiriesTrend} />
+              <InquiriesTrendChart data={charts.inquiriesTrend} />
             </div>
             
           </div>
@@ -290,7 +238,7 @@ export default function PortfolioDashboardClient() {
               </div>
               
               <ul className="space-y-4">
-                {data.tasks.map((t) => (
+                {tasks.map((t) => (
                   <li
                     key={t.id}
                     className="flex flex-col p-4 bg-gray-700 rounded-xl border border-gray-600 hover:bg-gray-600 transition cursor-pointer"
@@ -306,7 +254,7 @@ export default function PortfolioDashboardClient() {
                 ))}
               </ul>
               
-              {data.tasks.length === 0 && (
+              {tasks.length === 0 && (
                  <div className="py-6 text-center text-gray-500">No urgent tasks due today. Focus on strategy!</div>
               )}
             </div>
