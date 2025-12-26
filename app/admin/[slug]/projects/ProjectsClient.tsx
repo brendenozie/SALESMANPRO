@@ -1,7 +1,7 @@
 // app/admin/projects/ProjectsClient.tsx
 "use client";
 
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import { Bar, Pie } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -17,6 +17,7 @@ import { Project } from "./page";
 import Modal from "@/components/Modal"; // Ensure this path is correct for your Modal component
 import { toast, Toaster } from 'react-hot-toast'; // For engaging notifications
 import { ArrowsUpDownIcon, CalendarDateRangeIcon, CheckCircleIcon, CurrencyDollarIcon, ListBulletIcon, MagnifyingGlassCircleIcon, PencilIcon, PlayCircleIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { motion, useInView, useSpring } from 'framer-motion';
 
 // Register Chart.js components
 ChartJS.register(
@@ -30,6 +31,30 @@ ChartJS.register(
 );
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+
+// CountUp Component for animated numbers
+const CountUp = ({ to, format }: { to: number; format?: (val: number) => string | number; }) => {
+  const ref = useRef<HTMLSpanElement>(null);
+  const inView = useInView(ref, { once: true });
+  const spring = useSpring(0, { damping: 50, stiffness: 200 });
+
+  useEffect(() => {
+    if (inView) {
+      spring.set(to);
+    }
+  }, [spring, to, inView]);
+
+  useEffect(() => {
+    const unsubscribe = spring.on("change", (latest) => {
+      if (ref.current) {
+        ref.current.textContent = format ? String(format(latest)) : Math.round(latest).toLocaleString();
+      }
+    });
+    return unsubscribe;
+  }, [spring, format]);
+
+  return <span ref={ref}>0</span>;
+};
 
 interface ClientProps {
   projectsData: Project[];
@@ -277,32 +302,50 @@ const ProjectsClient: React.FC<ClientProps> = ({ projectsData: initialProjectsDa
         {error && <p className="text-center text-red-500 mb-6 text-lg">Oops! Something went wrong: {error} 😟</p>}
 
         {/* Summary Section */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        <motion.div 
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12"
+          initial="hidden"
+          animate="visible"
+          variants={{
+            hidden: { opacity: 0 },
+            visible: {
+              opacity: 1,
+              transition: {
+                staggerChildren: 0.1
+              }
+            }
+          }}
+        >
           <SummaryCard
             title="Total Projects"
             value={totalProjects}
             icon={<ListBulletIcon />}
             bgColor="from-purple-600 to-purple-800"
+            index={0}
           />
           <SummaryCard
             title="Ongoing Projects"
             value={ongoingProjects}
             icon={<PlayCircleIcon />}
             bgColor="from-blue-600 to-blue-800"
+            index={1}
           />
           <SummaryCard
             title="Completed Projects"
             value={completedProjects}
             icon={<CheckCircleIcon />}
             bgColor="from-green-600 to-green-800"
+            index={2}
           />
           <SummaryCard
             title="Total Budget"
-            value={`$${totalBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+            value={totalBudget}
             icon={<CurrencyDollarIcon />}
             bgColor="from-yellow-600 to-yellow-800"
+            isCurrency={true}
+            index={3}
           />
-        </div>
+        </motion.div>
 
         {/* Chart Section */}
         <div className="bg-gray-800 p-8 rounded-xl shadow-xl flex flex-col items-center mb-12">
@@ -370,7 +413,12 @@ const ProjectsClient: React.FC<ClientProps> = ({ projectsData: initialProjectsDa
         {/* Projects List */}
         <section className="mb-12">
           {paginatedProjects.length === 0 && !loading && !error ? (
-            <div className="text-center py-20 bg-gray-800 rounded-xl shadow-lg">
+            <motion.div 
+              className="text-center py-20 bg-gray-800 rounded-xl shadow-lg"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
               <p className="text-2xl text-gray-400 font-medium">
                 No projects found. Time to create some! ✨
               </p>
@@ -381,18 +429,32 @@ const ProjectsClient: React.FC<ClientProps> = ({ projectsData: initialProjectsDa
               >
                 <PlusIcon className=" w-6 h-6"/> Add Your First Project
               </button>
-            </div>
+            </motion.div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {paginatedProjects.map((project) => (
+            <motion.div 
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+              initial="hidden"
+              animate="visible"
+              variants={{
+                hidden: { opacity: 0 },
+                visible: {
+                  opacity: 1,
+                  transition: {
+                    staggerChildren: 0.08
+                  }
+                }
+              }}
+            >
+              {paginatedProjects.map((project, index) => (
                 <ProjectCard
                   key={project.id}
                   project={project}
                   onEdit={openEditModal}
                   onDelete={handleDeleteProject}
+                  index={index}
                 />
               ))}
-            </div>
+            </motion.div>
           )}
         </section>
 
@@ -455,28 +517,65 @@ export default ProjectsClient;
 
 interface SummaryCardProps {
   title: string;
-  value: string | number;
+  value: number;
   icon: React.ReactNode;
   bgColor: string; // Tailwind gradient classes, e.g., "from-purple-600 to-purple-800"
+  isCurrency?: boolean;
+  index: number;
 }
 
-const SummaryCard: React.FC<SummaryCardProps> = ({ title, value, icon, bgColor }) => (
-  <div className={`relative p-6 rounded-xl shadow-lg text-white overflow-hidden transform hover:scale-105 transition-all duration-300 ease-in-out cursor-pointer bg-gradient-to-br ${bgColor}`}>
-    <div className="absolute top-4 right-4 text-4xl opacity-30  w-6 h-6">
+const cardVariants = {
+  hidden: { opacity: 0, y: 30, scale: 0.95 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      duration: 0.4,
+      ease: 'easeOut'
+    }
+  }
+};
+
+const SummaryCard: React.FC<SummaryCardProps> = ({ title, value, icon, bgColor, isCurrency = false, index }) => (
+  <motion.div 
+    className={`relative p-6 rounded-xl shadow-lg text-white overflow-hidden transform hover:scale-105 transition-all duration-300 ease-in-out cursor-pointer bg-gradient-to-br ${bgColor}`}
+    variants={cardVariants}
+  >
+    <div className="absolute top-4 right-4 text-4xl opacity-30 w-12 h-12">
       {icon}
     </div>
     <h2 className="text-xl font-semibold mb-2 opacity-90">{title}</h2>
-    <p className="text-4xl font-extrabold">{value}</p>
-  </div>
+    <p className="text-4xl font-extrabold">
+      {isCurrency && '$'}
+      <CountUp 
+        to={value} 
+        format={isCurrency ? (val: number) => val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : undefined}
+      />
+    </p>
+  </motion.div>
 );
 
 interface ProjectCardProps {
   project: Project;
   onEdit: (project: Project) => void;
   onDelete: (id: string) => void;
+  index: number;
 }
 
-const ProjectCard: React.FC<ProjectCardProps> = ({ project, onEdit, onDelete }) => {
+const projectCardVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.4,
+      ease: 'easeOut'
+    }
+  }
+};
+
+const ProjectCard: React.FC<ProjectCardProps> = ({ project, onEdit, onDelete, index }) => {
   const getStatusClasses = (status: Project['status']) => {
     switch (status) {
       case 'ONGOING':
@@ -495,7 +594,10 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, onEdit, onDelete }) 
   };
 
   return (
-    <div className="bg-gray-800 text-gray-200 p-7 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out relative flex flex-col justify-between border border-gray-700 hover:border-purple-500">
+    <motion.div 
+      className="bg-gray-800 text-gray-200 p-7 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out relative flex flex-col justify-between border border-gray-700 hover:border-purple-500"
+      variants={projectCardVariants}
+    >
       <div>
         <h3 className="text-3xl font-bold text-purple-400 mb-3 leading-tight">{project.name}</h3>
         <p className="text-md text-gray-300 mb-4 line-clamp-3">
@@ -523,22 +625,26 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, onEdit, onDelete }) 
         </div>
       </div>
       <div className="flex space-x-3 mt-6 pt-4 border-t border-gray-700">
-        <button
-          className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 transition-all flex items-center justify-center gap-2 font-medium transform hover:scale-105"
+        <motion.button
+          className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 transition-all flex items-center justify-center gap-2 font-medium"
           onClick={() => onEdit(project)}
           aria-label={`Edit project ${project.name}`}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
         >
           <PencilIcon className=" w-6 h-6"/> Edit
-        </button>
-        <button
-          className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg shadow-md hover:bg-red-700 transition-all flex items-center justify-center gap-2 font-medium transform hover:scale-105"
+        </motion.button>
+        <motion.button
+          className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg shadow-md hover:bg-red-700 transition-all flex items-center justify-center gap-2 font-medium"
           onClick={() => onDelete(project.id)}
           aria-label={`Delete project ${project.name}`}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
         >
           <TrashIcon className=" w-6 h-6"/> Delete
-        </button>
+        </motion.button>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
