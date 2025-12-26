@@ -4,7 +4,7 @@ import prisma from '@/server/db/prismadb';
 import { normalizeCategory } from '@/utils/normalizeCategory';
 import { cookies } from 'next/headers';
 
-import EcomDashboardClient, { DashboardData } from '@/components/admin/EcomDashboardClient';
+import EcomDashboardClient from '@/components/admin/EcomDashboardClient';
 import RealEstateDashboardClient from '@/components/admin/RealEstateDashboardClient';
 import CoachDashboardClient from '@/components/admin/CoachDashboardClient';
 import AutomotiveDashboardClient from '@/components/admin/AutomotiveDashboardClient';
@@ -19,7 +19,7 @@ import PortfolioDashboardClient from '@/components/admin/PortfolioDashboardClien
 import RestaurantDashboardClient from '@/components/admin/RestaurantDashboardClient';
 import SaaSDashboardClient from '@/components/admin/SaaSDashboardClient';
 import TravelDashboardClient from '@/components/admin/TravelDashboardClient';
-import ServiceProviderDashboard, { ServiceProviderDashboardData } from '@/components/admin/ServiceProviderDashboard';
+import ServiceProviderDashboard from '@/components/admin/ServiceProviderDashboard';
 import BookingAppointmentsDashboard from '@/components/admin/BookingAppointmentsDashboard';
 import TutorDashboard, { TutorDashboardData } from '@/components/admin/TutorDashboard';
 import StudentDashboard, { StudentDashboardData } from '@/components/admin/StudentDashboard';
@@ -196,13 +196,13 @@ function getDashboardapiBaseUrl(categoryKey: string, companyId: string) {
   if (categoryKey === 'real estate') return `${apiBaseUrl}/admin/dashboard/realestate/${companyId}`;
   if (categoryKey === 'automotive') return `${apiBaseUrl}/admin/dashboard/automotive/${companyId}`;
   if (categoryKey === 'blog & content') return `${apiBaseUrl}/admin/dashboard/blog/${companyId}`;
-  if (categoryKey === 'event & ticketing') return `${apiBaseUrl}/admin/dashboard/event/${companyId}`;
+  if (categoryKey === 'event & ticketing') return `${apiBaseUrl}/admin/dashboard/events/${companyId}`;
   if (categoryKey === 'finance & legal') return `${apiBaseUrl}/admin/dashboard/finance/${companyId}`;
   if (categoryKey === 'fitness & wellness') return `${apiBaseUrl}/admin/dashboard/fitness/${companyId}`;
   if (categoryKey === 'healthcare & clinics') return `${apiBaseUrl}/admin/dashboard/healthcare/${companyId}`;
   if (categoryKey === 'media & entertainment') return `${apiBaseUrl}/admin/dashboard/media/${companyId}`;
   if (categoryKey === 'nonprofit & community') return `${apiBaseUrl}/admin/dashboard/nonprofit/${companyId}`;
-  if (categoryKey === 'restaurant & food delivery') return `${apiBaseUrl}/admin/dashboard/restaurant/${companyId}`;
+  if (categoryKey === 'restaurant & food delivery') return `${apiBaseUrl}/admin/dashboard/restaurent/${companyId}`;
   if (categoryKey === 'saas & web apps' || categoryKey === 'dashboards') return `${apiBaseUrl}/admin/dashboard/saas/${companyId}`;
   if (categoryKey === 'travel & tourism') return `${apiBaseUrl}/admin/dashboard/travel/${companyId}`;
   if (categoryKey === 'portfolio & personal branding') return `${apiBaseUrl}/admin/dashboard/portfolio/${companyId}`;
