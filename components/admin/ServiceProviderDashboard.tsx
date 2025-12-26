@@ -180,13 +180,14 @@ export default function ServiceProviderDashboard({
   alerts = mockData.alerts,
   lists = mockData.lists,
   charts = mockData.charts,
+slug = 'default-service-provider',
 }: Props) {
 
     const statsCards  = [
-        { title: 'New Bookings', value: stats.newBookings, icon: CalendarDaysIcon, color: 'text-cyan-400', bg: 'bg-cyan-900/40 border border-cyan-800/50', href: '/appointments' },
-        { title: 'Active Clients', value: stats.activeClients, icon: UsersIcon, color: 'text-green-400', bg: 'bg-green-900/40 border border-green-800/50', href: '/clients' },
-        { title: 'Feedback This Month', value: stats.feedbackReceived, icon: HeartIcon, color: 'text-pink-400', bg: 'bg-pink-900/40 border border-pink-800/50', href: '/feedback' },
-        { title: 'Hours This Month', value: stats.hoursWorked, icon: ClockIcon, color: 'text-yellow-400', bg: 'bg-yellow-900/40 border border-yellow-800/50', href: '/timesheet' },
+        { title: 'New Bookings', value: stats.newBookings, icon: CalendarDaysIcon, color: 'text-cyan-400', bg: 'bg-cyan-900/40 border border-cyan-800/50', href: `/admin/${slug}/appointments` },
+        { title: 'Active Clients', value: stats.activeClients, icon: UsersIcon, color: 'text-green-400', bg: 'bg-green-900/40 border border-green-800/50', href: `/admin/${slug}/storeclients` },
+        { title: 'Feedback This Month', value: stats.feedbackReceived, icon: HeartIcon, color: 'text-pink-400', bg: 'bg-pink-900/40 border border-pink-800/50', href: `/admin/${slug}/feedback` },
+        { title: 'Hours This Month', value: stats.hoursWorked, icon: ClockIcon, color: 'text-yellow-400', bg: 'bg-yellow-900/40 border border-yellow-800/50', href: `/admin/${slug}/timesheet` },
     ];
 
     return (
@@ -199,7 +200,7 @@ export default function ServiceProviderDashboard({
                         <h1 className="text-4xl font-extrabold text-white tracking-tight mb-2">Welcome Back 👋</h1>
                         <p className="text-gray-400 text-lg">Here’s your service overview and performance summary.</p>
                     </div>
-                    <Link href="/profile" className="mt-4 sm:mt-0 inline-flex items-center px-5 py-2.5 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition-all shadow-lg hover:shadow-indigo-500/30">
+                    <Link href={`/admin/${slug}/settings`} className="mt-4 sm:mt-0 inline-flex items-center px-5 py-2.5 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition-all shadow-lg hover:shadow-indigo-500/30">
                         Manage Profile
                     </Link>
                 </motion.header>
@@ -211,7 +212,7 @@ export default function ServiceProviderDashboard({
                         <p className="text-sm sm:text-base">
                             <b>Reminder:</b> {alerts.pendingTasks} pending task(s) need your attention.
                         </p>
-                        <Link href="/tasks" className="ml-auto text-amber-400 hover:text-amber-300 font-semibold text-sm whitespace-nowrap">
+                        <Link href={`/admin/${slug}/tasks`} className="ml-auto text-amber-400 hover:text-amber-300 font-semibold text-sm whitespace-nowrap">
                             View Tasks →
                         </Link>
                     </div>

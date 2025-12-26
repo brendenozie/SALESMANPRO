@@ -197,7 +197,7 @@ function getDashboardapiBaseUrl(categoryKey: string, companyId: string) {
   if (categoryKey === 'automotive') return `${apiBaseUrl}/admin/dashboard/automotive/${companyId}`;
   if (categoryKey === 'blog & content') return `${apiBaseUrl}/admin/dashboard/blog/${companyId}`;
   if (categoryKey === 'event & ticketing') return `${apiBaseUrl}/admin/dashboard/events/${companyId}`;
-  if (categoryKey === 'finance & legal') return `${apiBaseUrl}/admin/dashboard/finance/${companyId}`;
+  if (categoryKey === 'finance & legal') return `${apiBaseUrl}/admin/dashboard/finance-legal/${companyId}`;
   if (categoryKey === 'fitness & wellness') return `${apiBaseUrl}/admin/dashboard/fitness/${companyId}`;
   if (categoryKey === 'healthcare & clinics') return `${apiBaseUrl}/admin/dashboard/healthcare/${companyId}`;
   if (categoryKey === 'media & entertainment') return `${apiBaseUrl}/admin/dashboard/media/${companyId}`;
