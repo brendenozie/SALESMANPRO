@@ -193,7 +193,7 @@ function getDashboardapiBaseUrl(categoryKey: string, companyId: string) {
   if (categoryKey === 'service provider') return `${apiBaseUrl}/admin/dashboard/serviceprovider/${companyId}`;
   if (categoryKey === 'booking & appointments') return `${apiBaseUrl}/admin/dashboard/booking/${companyId}`;
   if (categoryKey === 'consultant & coach') return `${apiBaseUrl}/admin/dashboard/coach/${companyId}`;
-  if (categoryKey === 'real estate') return `${apiBaseUrl}/admin/dashboard/realestate/${companyId}`;
+  if (categoryKey === 'real estate') return `${apiBaseUrl}/admin/dashboard/real-estate/${companyId}`;
   if (categoryKey === 'automotive') return `${apiBaseUrl}/admin/dashboard/automotive/${companyId}`;
   if (categoryKey === 'blog & content') return `${apiBaseUrl}/admin/dashboard/blog/${companyId}`;
   if (categoryKey === 'event & ticketing') return `${apiBaseUrl}/admin/dashboard/events/${companyId}`;

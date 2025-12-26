@@ -421,7 +421,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
     { label: "POS", href: `/admin/${adminSlug}/company-pos`, icon: CreditCardIcon }, // Changed icon for POS for better representation
     { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
-    { label: "Events", href: `/admin/${adminSlug}/company-events`, icon: CalendarIcon },    
+    // { label: "Events", href: `/admin/${adminSlug}/company-events`, icon: CalendarIcon },    
     {
       label:"Users",
       icon: UsersIcon,

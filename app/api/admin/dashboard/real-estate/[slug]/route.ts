@@ -36,7 +36,9 @@ export const GET = withApiHandler(
 
         // 4. Revenue This Month (from paid invoices)
         (() => {
-          const invoiceWhere: any = { companyId: companyId, status: 'PAID', invoiceDate: { gte: monthStart } };
+          const invoiceWhere: any = { companyId: companyId, status: 'PAID', 
+            // invoiceDate: { gte: monthStart } 
+          };
           return prisma.invoice.aggregate({
             _sum: { amount: true },
             where: invoiceWhere,
