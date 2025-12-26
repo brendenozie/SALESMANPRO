@@ -2,6 +2,7 @@
 
 import React from "react";
 import TeachersClient, { EducatorType, DepartmentOption, AcademicLevelOption } from "./TeachersClient";
+import { cookies } from "next/headers";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -174,6 +175,7 @@ const generateSampleEducatorsData = (companyId: string): {
  */
 export default async function TeachersManagementPage({ params }: PageProps) {
   const { slug : companyId } = await params;
+  const cookieHeader = (await cookies()).toString();
 
   let initialEducators: EducatorType[] = [];
   let allDepartments: DepartmentOption[] = [];
@@ -184,10 +186,13 @@ export default async function TeachersManagementPage({ params }: PageProps) {
     // Fetch all educators for this company
     const educatorsRes = await fetch(
       `${apiBaseUrl}/admin/educators?companyId=${encodeURIComponent(companyId)}`, // Corrected API path
-      { next: { revalidate: 60 } } // equivalent to SSR on every request
+      { next: { revalidate: 60 }  // equivalent to SSR on every request
+        , headers: { cookie: cookieHeader }
+      }
     );
     if (educatorsRes.ok) {
-      initialEducators = (await educatorsRes.json()) as EducatorType[];
+      const data = (await educatorsRes.json()).data.data;
+      initialEducators = data as EducatorType[];
     } else {
       console.error(
         `[TeachersManagementPage] Failed to fetch educators: ${educatorsRes.status} ${educatorsRes.statusText}`
@@ -198,10 +203,11 @@ export default async function TeachersManagementPage({ params }: PageProps) {
     // Fetch all departments for this company (or globally if not company-specific)
     const departmentsRes = await fetch( // Fetch departments via API instead of direct prisma call
       `${apiBaseUrl}/admin/departments?companyId=${encodeURIComponent(companyId)}`, // Assuming departments API exists
-      { next: { revalidate: 60 } }
+      { next: { revalidate: 60 }, headers: { cookie: cookieHeader } }
     );
     if (departmentsRes.ok) {
-      allDepartments = (await departmentsRes.json()) as DepartmentOption[];
+      const data = (await departmentsRes.json()).data.data;      
+      allDepartments = data as DepartmentOption[];
     } else {
       console.error(
         `[TeachersManagementPage] Failed to fetch departments: ${departmentsRes.status} ${departmentsRes.statusText}`
@@ -213,10 +219,11 @@ export default async function TeachersManagementPage({ params }: PageProps) {
     // NEW: Fetch all academic levels for this company
     const academicLevelsRes = await fetch(
       `${apiBaseUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`, // Corrected API path
-      { next: { revalidate: 60 } }
+      { next: { revalidate: 60 }, headers: { cookie: cookieHeader } }
     );
     if (academicLevelsRes.ok) {
-      allAcademicLevels = (await academicLevelsRes.json()) as AcademicLevelOption[];
+      const data = (await academicLevelsRes.json()).data;      
+      allAcademicLevels = data as AcademicLevelOption[];
     } else {
       console.error(
         `[TeachersManagementPage] Failed to fetch academic levels: ${academicLevelsRes.status} ${academicLevelsRes.statusText}`
@@ -230,7 +237,7 @@ export default async function TeachersManagementPage({ params }: PageProps) {
   }
 
   // If fetching failed or returned no data, use sample data
-  if (fetchError || initialEducators.length === 0 || allDepartments.length === 0 || allAcademicLevels.length === 0) {
+  if (fetchError || initialEducators.length === 0 && allDepartments.length === 0 && allAcademicLevels.length === 0) {
     console.log("[TeachersManagementPage] Using sample data for educators, departments, and academic levels.");
     const { sampleEducators, sampleDepartments, sampleAcademicLevels } = generateSampleEducatorsData(companyId);
     initialEducators = sampleEducators;

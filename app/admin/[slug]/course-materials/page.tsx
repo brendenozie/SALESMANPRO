@@ -143,11 +143,14 @@ export default async function GlobalCourseMaterialsManagementPage({ params }: Pa
     // Fetch all materials for this company
     // The API route /api/course-materials now supports filtering by companyId
     const materialsRes = await fetch(
-      `${apiBaseUrl}/course-materials?companyId=${encodeURIComponent(companyId)}`,
+      `${apiBaseUrl}/admin/course-materials?companyId=${encodeURIComponent(companyId)}`,
       { next: { revalidate: 60 }, headers: { cookie: cookieHeader } }
     );
     if (materialsRes.ok) {
-      initialMaterials = (await materialsRes.json()).data as CourseMaterialType[];
+      let data = (await materialsRes.json()).data;
+      
+      initialMaterials = data as CourseMaterialType[];
+      
     } else {
       console.error(
         `[GlobalCourseMaterialsManagementPage] Failed to fetch materials: ${materialsRes.status} ${materialsRes.statusText}`
@@ -157,11 +160,12 @@ export default async function GlobalCourseMaterialsManagementPage({ params }: Pa
 
     // Fetch all courses for this company (for filtering and linking)
     const coursesRes = await fetch(
-      `${apiBaseUrl}/courses?companyId=${encodeURIComponent(companyId)}`,
+      `${apiBaseUrl}/admin/courses?companyId=${encodeURIComponent(companyId)}`,
       { next: { revalidate: 60 }, headers: { cookie: cookieHeader } }
     );
     if (coursesRes.ok) {
       const fetchedCourses = (await coursesRes.json()).data as any[]; // Use 'any' for initial fetch, then map
+      
       allCourses = fetchedCourses.map(c => ({
         id: c.id,
         title: c.title,
@@ -177,11 +181,12 @@ export default async function GlobalCourseMaterialsManagementPage({ params }: Pa
 
     // Fetch all educators (for the "uploaded by" dropdown)
     const educatorsRes = await fetch(
-      `${apiBaseUrl}/educators?companyId=${encodeURIComponent(companyId)}`,
+      `${apiBaseUrl}/admin/educators?companyId=${encodeURIComponent(companyId)}`,
       { next: { revalidate: 60 }, headers: { cookie: cookieHeader } }
     );
     if (educatorsRes.ok) {
-      const fetchedEducators = (await educatorsRes.json()).data as any[];
+      const fetchedEducators = (await educatorsRes.json()).data.data as any[];
+      
       allEducators = fetchedEducators.map(e => ({
         id: e.id,
         name: e.name,
@@ -196,11 +201,13 @@ export default async function GlobalCourseMaterialsManagementPage({ params }: Pa
 
     // Fetch all academic levels (for filtering)
     const academicLevelsRes = await fetch(
-      `${apiBaseUrl}/academic-levels?companyId=${encodeURIComponent(companyId)}`,
+      `${apiBaseUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`,
       { next: { revalidate: 60 }, headers: { cookie: cookieHeader } }
     );
     if (academicLevelsRes.ok) {
-      allAcademicLevels = (await academicLevelsRes.json()).data as AcademicLevelOption[];
+      const data = (await academicLevelsRes.json()).data;
+      
+      allAcademicLevels = data as AcademicLevelOption[];
     } else {
       console.error(
         `[GlobalCourseMaterialsManagementPage] Failed to fetch academic levels: ${academicLevelsRes.status} ${academicLevelsRes.statusText}`
@@ -214,7 +221,7 @@ export default async function GlobalCourseMaterialsManagementPage({ params }: Pa
   }
 
   // If fetching failed or returned no data, use sample data
-  if (fetchError || initialMaterials.length === 0 || allCourses.length === 0 || allEducators.length === 0 || allAcademicLevels.length === 0) {
+  if (fetchError || initialMaterials.length === 0 && allCourses.length === 0 && allEducators.length === 0 && allAcademicLevels.length === 0) {
     console.log("[GlobalCourseMaterialsManagementPage] Using sample data for global course materials.");
     const { sampleMaterials, sampleCourses, sampleEducators, sampleAcademicLevels } = generateSampleGlobalMaterialsData(companyId);
     initialMaterials = sampleMaterials;

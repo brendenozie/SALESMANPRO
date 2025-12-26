@@ -109,7 +109,8 @@ export default function CoursesClient({ initialCourses, allEducators, allDepartm
       const academicLevelsRes = await fetch(`${apiBaseUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`);
 
       if (coursesRes.ok) {
-        const data: CourseType[] = await coursesRes.json();
+        const data: CourseType[] = (await coursesRes.json()).data;
+        
         setCourses(data);
       } else {
         const errorData = await coursesRes.json();
@@ -118,7 +119,7 @@ export default function CoursesClient({ initialCourses, allEducators, allDepartm
       }
 
       if (educatorsRes.ok) {
-        const fetchedEducators = (await educatorsRes.json()) as any[];
+        const fetchedEducators = (await educatorsRes.json()).data.data as any[];
         setEducators(fetchedEducators.map(e => ({ id: e.id, name: e.name, email: e.email })));
       } else {
         const errorData = await educatorsRes.json();
@@ -127,7 +128,8 @@ export default function CoursesClient({ initialCourses, allEducators, allDepartm
       }
 
       if (departmentsRes.ok) {
-        const data: DepartmentOption[] = await departmentsRes.json();
+        const data: DepartmentOption[] = (await departmentsRes.json()).data.data;
+        
         setDepartments(data);
       } else {
         const errorData = await departmentsRes.json();
@@ -136,7 +138,8 @@ export default function CoursesClient({ initialCourses, allEducators, allDepartm
       }
 
       if (academicLevelsRes.ok) {
-        const data: AcademicLevelOption[] = await academicLevelsRes.json();
+        const data: AcademicLevelOption[] = (await academicLevelsRes.json()).data;
+        
         setAcademicLevels(data);
       } else {
         const errorData = await academicLevelsRes.json();

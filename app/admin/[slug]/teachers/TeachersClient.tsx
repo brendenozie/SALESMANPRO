@@ -101,12 +101,12 @@ export default function TeachersClient({ initialEducators, allDepartments, allAc
     setIsLoading(true);
     setError(null);
     try {
-      const educatorsRes = await fetch(`${apiBaseUrl}/admin/educators?companyId=${encodeURIComponent(companyId)}`);
-      const departmentsRes = await fetch(`${apiBaseUrl}/admin/departments?companyId=${encodeURIComponent(companyId)}`); // Fetch departments here
-      const academicLevelsRes = await fetch(`${apiBaseUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`);
+      const educatorsRes = await fetch(`${apiBaseUrl}/admin/educators?companyId=${encodeURIComponent(companyId)}`,{ credentials: 'include', });
+      const departmentsRes = await fetch(`${apiBaseUrl}/admin/departments?companyId=${encodeURIComponent(companyId)}`,{ credentials: 'include', }); // Fetch departments here
+      const academicLevelsRes = await fetch(`${apiBaseUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`,{ credentials: 'include', }  );
 
       if (educatorsRes.ok) {
-        const data: EducatorType[] = await educatorsRes.json();
+        const data: EducatorType[] = (await educatorsRes.json()).data.data;
         setEducators(data);
       } else {
         const errorData = await educatorsRes.json();
@@ -115,7 +115,8 @@ export default function TeachersClient({ initialEducators, allDepartments, allAc
       }
 
       if (departmentsRes.ok) {
-        const data: DepartmentOption[] = await departmentsRes.json();
+        const data= (await departmentsRes.json()).data.data;
+        console.log(data);
         setDepartments(data);
       } else {
         const errorData = await departmentsRes.json();
@@ -124,7 +125,7 @@ export default function TeachersClient({ initialEducators, allDepartments, allAc
       }
 
       if (academicLevelsRes.ok) {
-        const data: AcademicLevelOption[] = await academicLevelsRes.json();
+        const data: AcademicLevelOption[] = (await academicLevelsRes.json()).data;
         setAcademicLevels(data);
       } else {
         const errorData = await academicLevelsRes.json();
@@ -180,6 +181,7 @@ export default function TeachersClient({ initialEducators, allDepartments, allAc
 
       const res = await fetch(url, {
         method: method,
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
@@ -209,6 +211,7 @@ export default function TeachersClient({ initialEducators, allDepartments, allAc
     try {
       const res = await fetch(`${apiBaseUrl}/admin/educators/${educatorId}`, { // Corrected API path
         method: 'DELETE',
+        credentials: 'include',
       });
 
       if (res.ok) {
@@ -349,7 +352,7 @@ export default function TeachersClient({ initialEducators, allDepartments, allAc
               className="block w-full py-2.5 px-4 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-base"
             >
               <option value="All">All Departments</option>
-              {departments.map(dept => (
+              {departments && departments.length > 0 && departments.map(dept => (
                 <option key={dept.id} value={dept.id}>{dept.name}</option>
               ))}
             </select>

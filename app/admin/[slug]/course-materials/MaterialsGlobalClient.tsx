@@ -104,13 +104,13 @@ export default function MaterialsGlobalClient({ initialMaterials, allCourses, al
     setIsLoading(true);
     setError(null);
     try {
-      const materialsRes = await fetch(`${apiBaseUrl}/course-materials?companyId=${encodeURIComponent(companyId)}`);
-      const coursesRes = await fetch(`${apiBaseUrl}/courses?companyId=${encodeURIComponent(companyId)}`);
-      const educatorsRes = await fetch(`${apiBaseUrl}/educators?companyId=${encodeURIComponent(companyId)}`);
-      const academicLevelsRes = await fetch(`${apiBaseUrl}/academic-levels?companyId=${encodeURIComponent(companyId)}`);
+      const materialsRes = await fetch(`${apiBaseUrl}/admin/course-materials?companyId=${encodeURIComponent(companyId)}`);
+      const coursesRes = await fetch(`${apiBaseUrl}/admin/courses?companyId=${encodeURIComponent(companyId)}`);
+      const educatorsRes = await fetch(`${apiBaseUrl}/admin/educators?companyId=${encodeURIComponent(companyId)}`);
+      const academicLevelsRes = await fetch(`${apiBaseUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`);
 
       if (materialsRes.ok) {
-        const data: CourseMaterialType[] = await materialsRes.json();
+        const data= (await materialsRes.json()).data as CourseMaterialType[];  
         setMaterials(data);
       } else {
         const errorData = await materialsRes.json();
@@ -119,7 +119,7 @@ export default function MaterialsGlobalClient({ initialMaterials, allCourses, al
       }
 
       if (coursesRes.ok) {
-        const fetchedCourses = (await coursesRes.json()) as any[];
+        const fetchedCourses = (await coursesRes.json()).data as any[];
         setCourses(fetchedCourses.map(c => ({
           id: c.id,
           title: c.title,
@@ -133,7 +133,7 @@ export default function MaterialsGlobalClient({ initialMaterials, allCourses, al
       }
 
       if (educatorsRes.ok) {
-        const fetchedEducators = (await educatorsRes.json()) as any[];
+        const fetchedEducators = (await educatorsRes.json()).data.data as any[];
         setEducators(fetchedEducators.map(e => ({ id: e.id, name: e.name, email: e.email })));
       } else {
         const errorData = await educatorsRes.json();
@@ -142,7 +142,7 @@ export default function MaterialsGlobalClient({ initialMaterials, allCourses, al
       }
 
       if (academicLevelsRes.ok) {
-        const data: AcademicLevelOption[] = await academicLevelsRes.json();
+        const data: AcademicLevelOption[] = (await academicLevelsRes.json()).data;
         setAcademicLevels(data);
       } else {
         const errorData = await academicLevelsRes.json();
@@ -195,7 +195,7 @@ export default function MaterialsGlobalClient({ initialMaterials, allCourses, al
     
     try {
 
-      const url = materialData.id ? `${apiBaseUrl}/course-materials/${materialData.id}` : `${apiBaseUrl}/course-materials`;
+      const url = materialData.id ? `${apiBaseUrl}/admin/course-materials/${materialData.id}` : `${apiBaseUrl}/admin/course-materials`;
 
       const payload = {
         ...materialData,
