@@ -2,6 +2,7 @@
 
 import React from "react";
 import ParentsClient, { ParentType } from "./ParentsClient"; // Import ParentType from client component
+import { cookies } from "next/headers";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -85,6 +86,7 @@ const generateSampleParentsData = (companyId: string): ParentType[] => {
  */
 export default async function ParentsManagementPage({ params }: PageProps) {
   const { slug : companyId } = await params;
+  const cookieHeader = (await cookies()).toString();
 
   let initialParents: ParentType[] = [];
   let fetchError: boolean = false;
@@ -93,10 +95,12 @@ export default async function ParentsManagementPage({ params }: PageProps) {
     // Fetch all parents for this company
     const parentsRes = await fetch(
       `${apiBaseUrl}/admin/parents?companyId=${encodeURIComponent(companyId)}`,
-      { next: { revalidate: 60 } } // equivalent to SSR on every request
+      { next: { revalidate: 60 }, headers: { cookie: cookieHeader }  } // equivalent to SSR on every request
     );
     if (parentsRes.ok) {
-      initialParents = (await parentsRes.json()) as ParentType[];
+      const data = (await parentsRes.json()).data;
+      console.log("Fetched parents data:", data);
+      initialParents = data as ParentType[];
     } else {
       console.error(
         `[ParentsManagementPage] Failed to fetch parents: ${parentsRes.status} ${parentsRes.statusText}`

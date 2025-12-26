@@ -64,9 +64,9 @@ export default function ParentsClient({ initialParents, companyId, apiBaseUrl }:
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaseUrl}/admin/parents?companyId=${encodeURIComponent(companyId)}`);
+      const res = await fetch(`${apiBaseUrl}/admin/parents?companyId=${encodeURIComponent(companyId)}`, { credentials: 'include' });
       if (res.ok) {
-        const data: ParentType[] = await res.json();
+        const data: ParentType[] = (await res.json()).data;
         setParents(data);
       } else {
         const errorData = await res.json();
@@ -116,6 +116,7 @@ export default function ParentsClient({ initialParents, companyId, apiBaseUrl }:
 
       const res = await fetch(url, {
         method: method,
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
@@ -144,6 +145,7 @@ export default function ParentsClient({ initialParents, companyId, apiBaseUrl }:
     setError(null);
     try {
       const res = await fetch(`${apiBaseUrl}/admin/parents/${parentId}`, {
+        credentials: 'include',
         method: 'DELETE',
       });
 

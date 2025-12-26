@@ -108,12 +108,12 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
     setIsLoading(true);
     setError(null);
     try {
-      const studentsRes = await fetch(`${apiBaseUrl}/admin/students?companyId=${encodeURIComponent(companyId)}`);
-      const parentsRes = await fetch(`${apiBaseUrl}/admin/parents?companyId=${encodeURIComponent(companyId)}`);
-      const academicLevelsRes = await fetch(`${apiBaseUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`);
+      const studentsRes = await fetch(`${apiBaseUrl}/admin/students?companyId=${encodeURIComponent(companyId)}`,{credentials: 'include'});
+      const parentsRes = await fetch(`${apiBaseUrl}/admin/parents?companyId=${encodeURIComponent(companyId)}`, {credentials: 'include'});
+      const academicLevelsRes = await fetch(`${apiBaseUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`, {credentials: 'include'});
 
       if (studentsRes.ok) {
-        const studentsData: StudentType[] = await studentsRes.json();
+        const studentsData: StudentType[] = (await studentsRes.json()).data;
         setStudents(studentsData);
       } else {
         const errorData = await studentsRes.json();
@@ -123,7 +123,7 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
       }
 
       if (parentsRes.ok) {
-        const parentsData: ParentOption[] = await parentsRes.json();
+        const parentsData: ParentOption[] = (await parentsRes.json()).data;
         setParents(parentsData);
       } else {
         const errorData = await parentsRes.json();
@@ -133,7 +133,7 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
       }
 
       if (academicLevelsRes.ok) {
-        const academicLevelsData: AcademicLevelOption[] = await academicLevelsRes.json();
+        const academicLevelsData: AcademicLevelOption[] = (await academicLevelsRes.json()).data;
         setAcademicLevels(academicLevelsData);
       } else {
         const errorData = await academicLevelsRes.json();
@@ -224,6 +224,7 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
 
       const res = await fetch(url, {
         method: method,
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
@@ -253,6 +254,7 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
     setError(null);
     try {
       const res = await fetch(`${apiBaseUrl}/admin/students/${studentId}`, {
+        credentials: 'include',
         method: 'DELETE',
       });
 

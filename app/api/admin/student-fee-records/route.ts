@@ -12,6 +12,8 @@ interface Context {
 // GET handler – fetch all student fee records
 async function getAllStudentFees(req: Request, context: Context) {
   
+  console.log('Fetching student fee records for company :', context);
+
   const companySlug = context.params?.id;
 
   const company = await prisma.company.findUnique({

@@ -646,25 +646,25 @@ const FeesClient: React.FC<FeesClientProps> = ({ initialFeeRecordsData, initialS
   const refreshData = async () => {
     setIsSubmitting(true);
     try {
-      const feesRes = await fetch(`${apiBaseUrl}/admin/student-fee-records`, { next: { revalidate: 60 } });
+      const feesRes = await fetch(`${apiBaseUrl}/admin/student-fee-records`, { next: { revalidate: 60 }, credentials: 'include' });
       if (feesRes.ok) {
-        const updatedFees: StudentFeeRecord[] = await feesRes.json();
+        const updatedFees: StudentFeeRecord[] = (await feesRes.json()).data;
         setFeeRecords(updatedFees);
       } else {
         console.error("[FeesClient] Failed to re-fetch fee records.");
       }
 
-      const studentsRes = await fetch(`${apiBaseUrl}/admin/students`, { next: { revalidate: 60 } });
+      const studentsRes = await fetch(`${apiBaseUrl}/admin/students`, { next: { revalidate: 60 }, credentials: 'include' });
       if (studentsRes.ok) {
-        const updatedStudents: Student[] = await studentsRes.json();
+        const updatedStudents: Student[] = (await studentsRes.json()).data;
         setStudents(updatedStudents);
       } else {
         console.error("[FeesClient] Failed to re-fetch students.");
       }
 
-      const feeItemsRes = await fetch(`${apiBaseUrl}/admin/fee-items`, { next: { revalidate: 60 } });
+      const feeItemsRes = await fetch(`${apiBaseUrl}/admin/fee-items`, { next: { revalidate: 60 }, credentials: 'include' });
       if (feeItemsRes.ok) {
-        const updatedFeeItems: FeeItem[] = await feeItemsRes.json();
+        const updatedFeeItems: FeeItem[] = (await feeItemsRes.json()).data;
         setFeeItems(updatedFeeItems);
       } else {
         console.error("[FeesClient] Failed to re-fetch fee items.");
@@ -697,12 +697,14 @@ const FeesClient: React.FC<FeesClientProps> = ({ initialFeeRecordsData, initialS
       if (editingFeeRecord) {
         response = await fetch(`${apiBaseUrl}/admin/student-fee-records/${editingFeeRecord.id}`, {
           method: 'PUT',
+          credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ dueDate: formData.dueDate, invoiceNumber: formData.invoiceNumber }),
         });
       } else {
         response = await fetch(`${apiBaseUrl}/admin/student-fee-records`, {
           method: 'POST',
+          credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             studentId: formData.studentId,
@@ -740,6 +742,7 @@ const FeesClient: React.FC<FeesClientProps> = ({ initialFeeRecordsData, initialS
     try {
       const response = await fetch(`${apiBaseUrl}/admin/student-fee-records/${recordId}/payments`, {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payment),
       });
@@ -770,7 +773,7 @@ const FeesClient: React.FC<FeesClientProps> = ({ initialFeeRecordsData, initialS
     const toastId = toast.loading('Deleting fee record...');
 
     try {
-      const response = await fetch(`${apiBaseUrl}/admin/student-fee-records/${recordToDelete.id}`, { method: 'DELETE' });
+      const response = await fetch(`${apiBaseUrl}/admin/student-fee-records/${recordToDelete.id}`, { method: 'DELETE', credentials: 'include' });
       if (!response.ok) throw new Error('Failed to delete fee record.');
       await refreshData();
       toast.success('Fee record deleted successfully!', { id: toastId });
@@ -791,6 +794,7 @@ const FeesClient: React.FC<FeesClientProps> = ({ initialFeeRecordsData, initialS
     try {
       const response = await fetch(`${apiBaseUrl}/admin/fee-actions/apply-batch`, {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(params),
       });

@@ -2,7 +2,7 @@
 
 import React from "react";
 import StudentsClient, { StudentType, ParentOption, AcademicLevelOption, StudentLevelStatusOption } from "./StudentsClient"; // Import StudentLevelStatusOption
-
+import { cookies } from "next/headers";
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface PageProps {
@@ -157,6 +157,7 @@ const generateSampleStudentsData = (companyId: string): {
  */
 export default async function StudentsManagementPage({ params }: PageProps) {
   const { slug : companyId } = await params;
+    const cookieHeader = (await cookies()).toString();
 
   let initialStudents: StudentType[] = [];
   let allParents: ParentOption[] = [];
@@ -173,10 +174,12 @@ export default async function StudentsManagementPage({ params }: PageProps) {
     // Fetch all students for this company
     const studentsRes = await fetch(
       `${apiBaseUrl}/admin/students?companyId=${encodeURIComponent(companyId)}`,
-      { next: { revalidate: 60 } } // equivalent to SSR on every request
+      { next: { revalidate: 60 }, headers: { cookie: cookieHeader } } // equivalent to SSR on every request
     );
     if (studentsRes.ok) {
-      initialStudents = (await studentsRes.json()) as StudentType[];
+      const data = (await studentsRes.json()).data;
+      
+      initialStudents = data as StudentType[];
     } else {
       console.error(
         `[StudentsManagementPage] Failed to fetch students: ${studentsRes.status} ${studentsRes.statusText}`
@@ -187,10 +190,12 @@ export default async function StudentsManagementPage({ params }: PageProps) {
     // Fetch all parents for this company (or globally if not company-specific)
     const parentsRes = await fetch(
       `${apiBaseUrl}/admin/parents?companyId=${encodeURIComponent(companyId)}`,
-      { next: { revalidate: 60 } }
+      { next: { revalidate: 60 }, headers: { cookie: cookieHeader }  }
     );
     if (parentsRes.ok) {
-      const parentsData = (await parentsRes.json()) as ParentOption[];
+      const data = (await parentsRes.json()).data;
+      
+      const parentsData = data as ParentOption[];
       allParents = parentsData.map(p => ({
         id: p.id,
         name: p.name,
@@ -208,10 +213,12 @@ export default async function StudentsManagementPage({ params }: PageProps) {
     // Fetch all academic levels for this company
     const academicLevelsRes = await fetch(
       `${apiBaseUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`,
-      { next: { revalidate: 60 } }
+      { next: { revalidate: 60 }, headers: { cookie: cookieHeader }  }
     );
     if (academicLevelsRes.ok) {
-      allAcademicLevels = (await academicLevelsRes.json()) as AcademicLevelOption[];
+      const data = (await academicLevelsRes.json()).data;
+      
+      allAcademicLevels = data as AcademicLevelOption[];
     } else {
       console.error(
         `[StudentsManagementPage] Failed to fetch academic levels: ${academicLevelsRes.status} ${academicLevelsRes.statusText}`

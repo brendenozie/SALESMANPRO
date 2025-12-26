@@ -219,7 +219,7 @@ const ExamFormModal: React.FC<ExamFormModalProps> = ({ examData, onClose, onSave
                 className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base bg-white"
               >
                 <option value="">-- Select Educator --</option>
-                {allEducators.map(educator => (
+                {allEducators.length > 0 && allEducators.map(educator => (
                   <option key={educator.id} value={educator.id}>{educator.name} ({educator.email})</option>
                 ))}
               </select>
@@ -369,6 +369,7 @@ export default function AdminExamsOverviewPage({ initialExams, allCourses, allEd
     try {
       const res = await fetch(`${apiBaseUrl}/admin/exams?companyId=${encodeURIComponent(companyId)}`, {
         next: { revalidate: 60 },
+        credentials: 'include', 
       });
       if (res.ok) {
         const data: ExamData[] = await res.json();
@@ -512,6 +513,7 @@ export default function AdminExamsOverviewPage({ initialExams, allCourses, allEd
     try {
       const res = await fetch(url, {
         method: method,
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(examData),
       });
@@ -540,6 +542,7 @@ export default function AdminExamsOverviewPage({ initialExams, allCourses, allEd
     setError(null);
     try {
       const res = await fetch(`${apiBaseUrl}/admin/exams/${examId}`, {
+        credentials: 'include',
         method: 'DELETE',
       });
 
@@ -562,6 +565,7 @@ export default function AdminExamsOverviewPage({ initialExams, allCourses, allEd
     try {
       const res = await fetch(`${apiBaseUrl}/admin/exams/${examId}`, {
         method: 'PATCH',
+        credentials: 'include', 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isPublished: !currentStatus }),
       });
@@ -716,7 +720,7 @@ export default function AdminExamsOverviewPage({ initialExams, allCourses, allEd
               className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             >
               <option value="All">All Educators</option>
-              {allEducators.map(educator => (
+              {allEducators.length > 0 && allEducators.map(educator => (
                 <option key={educator.id} value={educator.id}>{educator.name}</option>
               ))}
             </select>
