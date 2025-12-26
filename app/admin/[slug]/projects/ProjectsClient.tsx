@@ -45,12 +45,23 @@ const CountUp = ({ to, format }: { to: number; format?: (val: number) => string 
   }, [spring, to, inView]);
 
   useEffect(() => {
+    let rafId: number | null = null;
     const unsubscribe = spring.on("change", (latest) => {
-      if (ref.current) {
-        ref.current.textContent = format ? String(format(latest)) : Math.round(latest).toLocaleString();
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
       }
+      rafId = requestAnimationFrame(() => {
+        if (ref.current) {
+          ref.current.textContent = format ? String(format(latest)) : Math.round(latest).toLocaleString();
+        }
+      });
     });
-    return unsubscribe;
+    return () => {
+      unsubscribe();
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+      }
+    };
   }, [spring, format]);
 
   return <span ref={ref}>0</span>;
@@ -542,7 +553,7 @@ const SummaryCard: React.FC<SummaryCardProps> = ({ title, value, icon, bgColor, 
     className={`relative p-6 rounded-xl shadow-lg text-white overflow-hidden transform hover:scale-105 transition-all duration-300 ease-in-out cursor-pointer bg-gradient-to-br ${bgColor}`}
     variants={cardVariants}
   >
-    <div className="absolute top-4 right-4 text-4xl opacity-30 w-12 h-12">
+    <div className="absolute top-4 right-4 opacity-30 w-12 h-12">
       {icon}
     </div>
     <h2 className="text-xl font-semibold mb-2 opacity-90">{title}</h2>
