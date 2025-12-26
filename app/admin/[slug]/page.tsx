@@ -408,6 +408,7 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
                   type: a.type === 'info' ? 'info' : 'warning'
                 }))
               };
+              console.log("[AdminDashboardPage] Fetched principal dashboard data:", principalDashboardData);
             }
           } else {
             error = `Failed to fetch principal dashboard data: ${res.statusText}`;

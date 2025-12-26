@@ -42,7 +42,7 @@ interface DepartmentsPageProps {
 
 export default function DepartmentsPage({ initialDepartments, possibleHeads, companyId }: DepartmentsPageProps) {
 
-  const [departments, setDepartments] = useState<DepartmentData[]>(initialDepartments);
+  const [departments, setDepartments] = useState<DepartmentData[]>(initialDepartments || []);
   const [searchTerm, setSearchTerm] = useState('');
   const [showFormModal, setShowFormModal] = useState(false);
   const [editingDepartment, setEditingDepartment] = useState<DepartmentData | null>(null);
@@ -133,18 +133,18 @@ export default function DepartmentsPage({ initialDepartments, possibleHeads, com
 
 
   const filteredDepartments = useMemo(() => {
-    return departments.filter(dept =>
+    return departments && departments.length > 0 ? departments.filter(dept =>
       dept.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (dept.head?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (dept.description || '').toLowerCase().includes(searchTerm.toLowerCase())
-    ).sort((a, b) => a.name.localeCompare(b.name));
+    ).sort((a, b) => a.name.localeCompare(b.name)) : [];
   }, [departments, searchTerm]);
 
   const totalDepartments = departments.length;
   // These counts would ideally come from the API or be calculated on the backend
   // For now, using simplified counts based on the current `departments` state
-  const totalTeachersAcrossDepartments = departments.reduce((sum, dept) => sum + (dept.educatorCount || 0), 0);
-  const totalClassesAcrossDepartments = departments.reduce((sum, dept) => sum + (dept.courseCount || 0), 0);
+  const totalTeachersAcrossDepartments =  departments &&  departments.length > 0 ? departments.reduce((sum, dept) => sum + (dept.educatorCount || 0), 0) : 0  ;
+  const totalClassesAcrossDepartments =  departments && departments.length > 0 ? departments.reduce((sum, dept) => sum + (dept.courseCount || 0), 0) : 0 ;
 
 
   // Event handlers for CRUD operations via API
