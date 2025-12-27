@@ -393,7 +393,7 @@ export default function AdminExamsOverviewPage({ initialExams, allCourses, allEd
   // }, [initialExams, isLoading, error, fetchExams]);
 
 
-  const uniqueExamTypes = useMemo(() => Array.from(new Set(exams.map(e => e.type))).sort(), [exams]);
+  const uniqueExamTypes = useMemo(() => Array.from(exams && exams.length > 0 ? new Set(exams.map(e => e.type)) : []).sort(), [exams]);
   const uniqueStatuses = useMemo(() => {
     const statuses = new Set<string>();
     // Determine status based on current date vs exam date

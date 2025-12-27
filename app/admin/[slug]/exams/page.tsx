@@ -178,7 +178,9 @@ export default async function ExamsManagerPage({ params }: PageProps) {
       }
     });
     if (examsRes.ok) {
-      initialExams = (await examsRes.json()).data as ExamData[];
+      const data = (await examsRes.json()).data;
+      console.log("[ExamsManagerPage] Fetched exams:", data);
+      initialExams = data as ExamData[];
     } else {
       console.error(`[ExamsManagerPage] Failed to fetch exams: ${examsRes.status} ${examsRes.statusText}`);
       fetchError = true;
@@ -192,7 +194,8 @@ export default async function ExamsManagerPage({ params }: PageProps) {
       }
     });
     if (coursesRes.ok) {
-      allCourses = (await coursesRes.json()).data as CourseOption[];
+      const data = (await coursesRes.json()).data;
+      allCourses = data as CourseOption[];
     } else {
       console.error(`[ExamsManagerPage] Failed to fetch courses: ${coursesRes.status} ${coursesRes.statusText}`);
       fetchError = true;
@@ -206,7 +209,7 @@ export default async function ExamsManagerPage({ params }: PageProps) {
       }
     });
     if (educatorsRes.ok) {
-      allEducators = (await educatorsRes.json()).data as EducatorOption[];
+      allEducators = (await educatorsRes.json()).data.data as EducatorOption[];
     } else {
       console.error(`[ExamsManagerPage] Failed to fetch educators: ${educatorsRes.status} ${educatorsRes.statusText}`);
       fetchError = true;
@@ -220,7 +223,9 @@ export default async function ExamsManagerPage({ params }: PageProps) {
       }
     });
     if (academicLevelsRes.ok) {
-      allAcademicLevels = (await academicLevelsRes.json()).data as AcademicLevelOption[];
+      const data = (await academicLevelsRes.json()).data;
+      
+      allAcademicLevels = data as AcademicLevelOption[];
     } else {
       console.error(`[ExamsManagerPage] Failed to fetch academic levels: ${academicLevelsRes.status} ${academicLevelsRes.statusText}`);
       fetchError = true;

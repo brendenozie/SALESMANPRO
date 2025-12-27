@@ -101,7 +101,13 @@ async function getExams(request: Request) {
   }
 
   const exams = await prisma.exam.findMany({
-    where: whereClause,
+    where: {
+      ...whereClause,
+      OR: [
+      { courseId: null },
+      { course: null } // This checks for records where the relation is missing
+    ]
+    },
     include: {
       course: {
         select: {
