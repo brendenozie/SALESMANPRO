@@ -7,6 +7,7 @@ import AdminResultsOverviewPage, {
   CourseOption,
   EducatorOption,
 } from "./AdminResultsOverviewPage";
+import { cookies } from "next/headers";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -79,6 +80,7 @@ const generateSampleAdminResultsData = (companyId: string): {
 
 export default async function AdminResultsOverviewPageWrapper({ params }: PageProps) {
   const { slug : companyId } = await params;
+  const cookieHeader = (await cookies()).toString();
 
   let initialSubmissions: ExamSubmissionDataForAdmin[] = [];
   let allExams: ExamOption[] = [];
@@ -89,22 +91,35 @@ export default async function AdminResultsOverviewPageWrapper({ params }: PagePr
 
   try {
     // Fetch all submissions for the company
-    const submissionsRes = await fetch(`${apiBaseUrl}/exam-submissions?companyId=${encodeURIComponent(companyId)}`, {
+    const submissionsRes = await fetch(`${apiBaseUrl}/admin/exam-submissions?companyId=${encodeURIComponent(companyId)}`, {
       next: { revalidate: 60 },
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: cookieHeader,
+      },
     });
     if (submissionsRes.ok) {
-      initialSubmissions = (await submissionsRes.json()) as ExamSubmissionDataForAdmin[];
+      const data = (await submissionsRes.json()).data.data;
+      console.log("[AdminResultsOverviewPageWrapper] Fetched submissions data:", data);
+      initialSubmissions = data as ExamSubmissionDataForAdmin[];
+      // initialSubmissions = (await submissionsRes.json()) as ExamSubmissionDataForAdmin[];
     } else {
       console.error(`[AdminResultsOverviewPageWrapper] Failed to fetch submissions: ${submissionsRes.status} ${submissionsRes.statusText}`);
       fetchError = true;
     }
 
     // Fetch all exams (for filter dropdown)
-    const examsRes = await fetch(`${apiBaseUrl}/exams?companyId=${encodeURIComponent(companyId)}`, {
+    const examsRes = await fetch(`${apiBaseUrl}/admin/exams?companyId=${encodeURIComponent(companyId)}`, {
       next: { revalidate: 60 },
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: cookieHeader,
+      },
     });
     if (examsRes.ok) {
-      const fetchedExams = (await examsRes.json()) as any[];
+      const data = (await examsRes.json()).data.data;
+      console.log("[AdminResultsOverviewPageWrapper] Fetched exams data:", data);
+      const fetchedExams = data as any[];
       allExams = fetchedExams.map(e => ({
         id: e.id,
         title: e.title,
@@ -118,11 +133,17 @@ export default async function AdminResultsOverviewPageWrapper({ params }: PagePr
     }
 
     // Fetch all students (for filter dropdown)
-    const studentsRes = await fetch(`${apiBaseUrl}/students?companyId=${encodeURIComponent(companyId)}`, { // Assuming /api/students endpoint
+    const studentsRes = await fetch(`${apiBaseUrl}/admin/students?companyId=${encodeURIComponent(companyId)}`, { // Assuming /api/students endpoint
       next: { revalidate: 60 },
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: cookieHeader,
+      },
     });
     if (studentsRes.ok) {
-      const fetchedStudents = (await studentsRes.json()) as any[];
+      const data = (await studentsRes.json()).data;
+      console.log("[AdminResultsOverviewPageWrapper] Fetched students data:", data);
+      const fetchedStudents = data as any[];
       allStudents = fetchedStudents.map(s => ({
         id: s.id,
         name: s.name,
@@ -135,22 +156,43 @@ export default async function AdminResultsOverviewPageWrapper({ params }: PagePr
     }
 
     // Fetch all courses (for filter dropdown)
-    const coursesRes = await fetch(`${apiBaseUrl}/courses?companyId=${encodeURIComponent(companyId)}`, {
+    const coursesRes = await fetch(`${apiBaseUrl}/admin/courses?companyId=${encodeURIComponent(companyId)}`, {
       next: { revalidate: 60 },
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: cookieHeader,
+      },
     });
     if (coursesRes.ok) {
-      allCourses = (await coursesRes.json()) as CourseOption[];
+      const data = (await coursesRes.json()).data;
+      console.log("[AdminResultsOverviewPageWrapper] Fetched courses data:", data);
+      const fetchedCourses = data as any[];
+      allCourses = fetchedCourses.map(c => ({
+        id: c.id,
+        title: c.title,
+      }));
     } else {
       console.error(`[AdminResultsOverviewPageWrapper] Failed to fetch courses: ${coursesRes.status} ${coursesRes.statusText}`);
       fetchError = true;
     }
 
     // Fetch all educators (for filter dropdown)
-    const educatorsRes = await fetch(`${apiBaseUrl}/educators?companyId=${encodeURIComponent(companyId)}`, {
+    const educatorsRes = await fetch(`${apiBaseUrl}/admin/educators?companyId=${encodeURIComponent(companyId)}`, {
       next: { revalidate: 60 },
+      headers: {
+        "Content-Type": "application/json",
+        Cookie: cookieHeader,
+      },
     });
     if (educatorsRes.ok) {
-      allEducators = (await educatorsRes.json()) as EducatorOption[];
+      const data = (await educatorsRes.json()).data.data;
+      console.log("[AdminResultsOverviewPageWrapper] Fetched educators data:", data);
+      const fetchedEducators = data as any[];
+      allEducators = fetchedEducators.map(e => ({
+        id: e.id,
+        name: e.name,
+        email: e.email,
+      }));
     } else {
       console.error(`[AdminResultsOverviewPageWrapper] Failed to fetch educators: ${educatorsRes.status} ${educatorsRes.statusText}`);
       fetchError = true;
@@ -162,7 +204,7 @@ export default async function AdminResultsOverviewPageWrapper({ params }: PagePr
   }
 
   // If any fetch failed or returned empty, use sample data as fallback
-  if (fetchError || initialSubmissions.length === 0 || allExams.length === 0 || allStudents.length === 0 || allCourses.length === 0 || allEducators.length === 0) {
+  if (fetchError || initialSubmissions.length === 0 && allExams.length === 0  && allStudents.length === 0  && allCourses.length === 0  && allEducators.length === 0) {
     console.log("[AdminResultsOverviewPageWrapper] Using sample data as fallback for admin results.");
     const { sampleSubmissions, sampleExams, sampleStudents, sampleCourses, sampleEducators } = generateSampleAdminResultsData(companyId);
     initialSubmissions = sampleSubmissions;

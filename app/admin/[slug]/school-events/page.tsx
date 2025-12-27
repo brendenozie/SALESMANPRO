@@ -10,6 +10,7 @@ import AdminEventsPage, {
   ParentOption,
   OrganizerOption, // Renamed from AuthorOption for clarity in events context
 } from "./AdminEventsPage";
+import { cookies } from "next/headers";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -217,7 +218,8 @@ const generateSampleEventData = (companyId: string): {
 
 
 export default async function EventsManagerPage({ params }: PageProps) {
-  const { slug : companyId } = await params;
+  const { slug : companyId } = await params;  
+  const cookieHeaders = (await cookies()).toString();
 
   let initialEvents: EventData[] = [];
   let allAcademicLevels: AcademicLevelOption[] = [];
@@ -233,9 +235,12 @@ export default async function EventsManagerPage({ params }: PageProps) {
     // Fetch events
     const eventsRes = await fetch(`${apiBaseUrl}/admin/events?companyId=${encodeURIComponent(companyId)}`, {
       next: { revalidate: 60 },
+      headers: { cookie: cookieHeaders }
     });
     if (eventsRes.ok) {
-      initialEvents = (await eventsRes.json()) as EventData[];
+      const data = (await eventsRes.json()).data.data;
+      console.log("[EventsManagerPage] Fetched events data:", data);
+      initialEvents = data as EventData[];
     } else {
       console.error(`[EventsManagerPage] Failed to fetch events: ${eventsRes.status} ${eventsRes.statusText}`);
       fetchError = true;
@@ -244,9 +249,12 @@ export default async function EventsManagerPage({ params }: PageProps) {
     // Fetch all academic levels
     const academicLevelsRes = await fetch(`${apiBaseUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`, {
       next: { revalidate: 60 },
+      headers: { cookie: cookieHeaders }
     });
     if (academicLevelsRes.ok) {
-      allAcademicLevels = (await academicLevelsRes.json()) as AcademicLevelOption[];
+      const data = (await academicLevelsRes.json()).data;
+      console.log("[EventsManagerPage] Fetched academic levels data:", data);
+      allAcademicLevels = data as AcademicLevelOption[];
     } else {
       console.error(`[EventsManagerPage] Failed to fetch academic levels: ${academicLevelsRes.status} ${academicLevelsRes.statusText}`);
       fetchError = true;
@@ -255,9 +263,12 @@ export default async function EventsManagerPage({ params }: PageProps) {
     // Fetch all courses
     const coursesRes = await fetch(`${apiBaseUrl}/admin/courses?companyId=${encodeURIComponent(companyId)}`, {
       next: { revalidate: 60 },
+      headers: { cookie: cookieHeaders }
     });
     if (coursesRes.ok) {
-      allCourses = (await coursesRes.json()) as CourseOption[];
+      const data = (await coursesRes.json()).data;
+      console.log("[EventsManagerPage] Fetched courses data:", data);
+      allCourses = data as CourseOption[];
     } else {
       console.error(`[EventsManagerPage] Failed to fetch courses: ${coursesRes.status} ${coursesRes.statusText}`);
       fetchError = true;
@@ -266,9 +277,12 @@ export default async function EventsManagerPage({ params }: PageProps) {
     // Fetch all educators
     const educatorsRes = await fetch(`${apiBaseUrl}/admin/educators?companyId=${encodeURIComponent(companyId)}`, {
       next: { revalidate: 60 },
+      headers: { cookie: cookieHeaders }
     });
     if (educatorsRes.ok) {
-      const fetchedEducators = (await educatorsRes.json()) as any[];
+      const data = (await educatorsRes.json()).data.data;
+      console.log("[EventsManagerPage] Fetched educators data:", data);
+      const fetchedEducators = data as any[];      
       allEducators = fetchedEducators.map(e => ({ id: e.id, name: e.user?.name || 'N/A', email: e.user?.email || 'N/A' }));
     } else {
       console.error(`[EventsManagerPage] Failed to fetch educators: ${educatorsRes.status} ${educatorsRes.statusText}`);
@@ -278,9 +292,12 @@ export default async function EventsManagerPage({ params }: PageProps) {
     // Fetch all students
     const studentsRes = await fetch(`${apiBaseUrl}/admin/students?companyId=${encodeURIComponent(companyId)}`, {
       next: { revalidate: 60 },
+      headers: { cookie: cookieHeaders }
     });
     if (studentsRes.ok) {
-      const fetchedStudents = (await studentsRes.json()) as any[];
+      const data = (await studentsRes.json()).data;
+      console.log("[EventsManagerPage] Fetched students data:", data);
+      const fetchedStudents = data as any[];
       allStudents = fetchedStudents.map(s => ({ id: s.id, name: s.user?.name || 'N/A', email: s.user?.email || 'N/A' }));
     } else {
       console.error(`[EventsManagerPage] Failed to fetch students: ${studentsRes.status} ${studentsRes.statusText}`);
@@ -290,9 +307,13 @@ export default async function EventsManagerPage({ params }: PageProps) {
     // Fetch all departments (assuming a /api/departments endpoint exists)
     const departmentsRes = await fetch(`${apiBaseUrl}/admin/departments?companyId=${encodeURIComponent(companyId)}`, {
       next: { revalidate: 60 },
+      headers: { cookie: cookieHeaders }
     });
     if (departmentsRes.ok) {
-      allDepartments = (await departmentsRes.json()) as DepartmentOption[];
+      const data = (await departmentsRes.json()).data.data;
+      console.log("[EventsManagerPage] Fetched departments data:", data);
+      const fetchedDepartments = data as any[];
+      allDepartments = fetchedDepartments.map(d => ({ id: d.id, name: d.name || 'N/A' }));
     } else {
       console.error(`[EventsManagerPage] Failed to fetch departments: ${departmentsRes.status} ${departmentsRes.statusText}`);
       fetchError = true;
@@ -301,9 +322,12 @@ export default async function EventsManagerPage({ params }: PageProps) {
     // Fetch all parents (assuming a /api/parents endpoint exists)
     const parentsRes = await fetch(`${apiBaseUrl}/admin/parents?companyId=${encodeURIComponent(companyId)}`, {
       next: { revalidate: 60 },
+      headers: { cookie: cookieHeaders }
     });
     if (parentsRes.ok) {
-      const fetchedParents = (await parentsRes.json()) as any[];
+      const data = (await parentsRes.json()).data;
+      console.log("[EventsManagerPage] Fetched parents data:", data);
+      const fetchedParents = data as any[];
       allParents = fetchedParents.map(p => ({ id: p.id, name: p.user?.name || 'N/A', email: p.user?.email || 'N/A' }));
     } else {
       console.error(`[EventsManagerPage] Failed to fetch parents: ${parentsRes.status} ${parentsRes.statusText}`);
@@ -313,9 +337,12 @@ export default async function EventsManagerPage({ params }: PageProps) {
     // Fetch all users who can be organizers (e.g., Admins, Educators, Staff)
     const organizersRes = await fetch(`${apiBaseUrl}/admin/staff?companyId=${encodeURIComponent(companyId)}`, { // Assuming /api/users endpoint
       next: { revalidate: 60 },
+      headers: { cookie: cookieHeaders }
     });
     if (organizersRes.ok) {
-      const fetchedOrganizers = (await organizersRes.json()) as any[];
+      const data = (await organizersRes.json()).data;
+      console.log("[EventsManagerPage] Fetched organizers data:", data);
+      const fetchedOrganizers = data as any[];
       allOrganizers = fetchedOrganizers.map(u => ({ id: u.id, name: u.name || 'N/A', email: u.email || 'N/A' }));
     } else {
       console.error(`[EventsManagerPage] Failed to fetch organizers: ${organizersRes.status} ${organizersRes.statusText}`);
@@ -329,7 +356,7 @@ export default async function EventsManagerPage({ params }: PageProps) {
   }
 
   // If any fetch failed or returned empty, use sample data as fallback
-  if (fetchError || initialEvents.length === 0 || allAcademicLevels.length === 0 || allCourses.length === 0 || allEducators.length === 0 || allStudents.length === 0 || allDepartments.length === 0 || allParents.length === 0 || allOrganizers.length === 0) {
+  if (fetchError || initialEvents.length === 0 && allAcademicLevels.length === 0 && allCourses.length === 0 && allEducators.length === 0 || allStudents.length === 0 && allDepartments.length === 0 && allParents.length === 0 && allOrganizers.length === 0) {
     console.log("[EventsManagerPage] Using sample data as fallback for events.");
     const {
       sampleEvents,

@@ -137,9 +137,10 @@ export default function AdminEventsPage({
     try {
       const res = await fetch(`${apiBaseUrl}/events?companyId=${encodeURIComponent(companyId)}`, {
         next: { revalidate: 60 },
+        credentials: 'include',
       });
       if (res.ok) {
-        const data: EventData[] = await res.json();
+        const data: EventData[] = (await res.json()).data.data;
         setEvents(data.sort((a, b) => new Date(a.startDateTime).getTime() - new Date(b.startDateTime).getTime())); // Sort by upcoming
       } else {
         const errorData = await res.json();
@@ -246,6 +247,7 @@ export default function AdminEventsPage({
     try {
       const res = await fetch(url, {
         method: method,
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(eventData),
       });
@@ -275,6 +277,7 @@ export default function AdminEventsPage({
     try {
       const res = await fetch(`${apiBaseUrl}/events/${eventId}`, {
         method: 'DELETE',
+        credentials: 'include',
       });
 
       if (res.ok) {
@@ -296,6 +299,7 @@ export default function AdminEventsPage({
     try {
       const res = await fetch(`${apiBaseUrl}/events/${eventId}`, {
         method: 'PATCH',
+          credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ eventStatus: newStatus }),
       });

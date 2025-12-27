@@ -109,9 +109,10 @@ const SubmissionDetailsViewModal: React.FC<SubmissionDetailsViewModalProps> = ({
       setIsLoadingQuestions(true);
       setQuestionsError(null);
       try {
-        const res = await fetch(`${apiBaseUrl}/exam-questions?examId=${encodeURIComponent(examId)}`);
+        const res = await fetch(`${apiBaseUrl}/admin/exam-questions?examId=${encodeURIComponent(examId)}`,{credentials: 'include'});
         if (res.ok) {
-          const data = await res.json();
+          const data = (await res.json()).data;
+          console.log("[SubmissionDetailsViewModal] Fetched questions data:", data);
           setQuestions(data.sort((a: any, b: any) => a.order - b.order));
         } else {
           const errorData = await res.json();
@@ -254,11 +255,13 @@ export default function AdminResultsOverviewPage({
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaseUrl}/exam-submissions?companyId=${encodeURIComponent(companyId)}`, {
+      const res = await fetch(`${apiBaseUrl}/admin/exam-submissions?companyId=${encodeURIComponent(companyId)}`, {
+        credentials: 'include',
         next: { revalidate: 60 },
       });
       if (res.ok) {
-        const data: ExamSubmissionDataForAdmin[] = await res.json();
+        const data: any[] = (await res.json()).data.data;
+        console.log("[AdminResultsOverviewPage] Fetched submissions data:", data);
         setSubmissions(data.sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime())); // Sort by most recent
       } else {
         const errorData = await res.json();
