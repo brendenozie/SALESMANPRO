@@ -397,23 +397,24 @@ export default function AdminExamsOverviewPage({ initialExams, allCourses, allEd
   const uniqueStatuses = useMemo(() => {
     const statuses = new Set<string>();
     // Determine status based on current date vs exam date
-    exams.forEach(exam => {
-      const examDate = new Date(exam.date);
-      const now = new Date();
-      now.setHours(0, 0, 0, 0); // Normalize 'now' to start of day
+    exams && exams.length > 0 &&
+      exams.forEach(exam => {
+        const examDate = new Date(exam.date);
+        const now = new Date();
+        now.setHours(0, 0, 0, 0); // Normalize 'now' to start of day
 
-      if (examDate.getTime() < now.getTime()) {
-        statuses.add('Completed');
-      } else {
-        statuses.add('Upcoming');
-      }
-    });
+        if (examDate.getTime() < now.getTime()) {
+          statuses.add('Completed');
+        } else {
+          statuses.add('Upcoming');
+        }
+      }); 
     return Array.from(statuses).sort();
   }, [exams]);
 
 
   const filteredExams = useMemo(() => {
-    return exams.filter(exam => {
+    return exams && exams.length > 0 ? exams.filter(exam => {
       const matchesSearch = exam.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             exam.courseTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             exam.createdByEducatorName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -452,21 +453,21 @@ export default function AdminExamsOverviewPage({ initialExams, allCourses, allEd
         return dateB - dateA;
       }
       return 0; // Should not reach here if logic is sound
-    });
+    }) : [];
   }, [exams, searchTerm, filterCourse, filterEducator, filterType, filterStatus]);
 
 
   // Calculate overview stats
-  const totalExams = exams.length;
-  const upcomingExamsCount = exams.filter(e => new Date(e.date).getTime() >= new Date().setHours(0,0,0,0)).length;
-  const completedExamsCount = exams.filter(e => new Date(e.date).getTime() < new Date().setHours(0,0,0,0)).length;
-  const resultsPublishedCount = exams.filter(e => e.isPublished).length;
+  const totalExams = exams && exams.length > 0 ? exams.length : 0;
+  const upcomingExamsCount = exams && exams.length > 0 ? exams.filter(e => new Date(e.date).getTime() >= new Date().setHours(0,0,0,0)).length : 0;
+  const completedExamsCount = exams && exams.length > 0 ? exams.filter(e => new Date(e.date).getTime() < new Date().setHours(0,0,0,0)).length : 0;
+  const resultsPublishedCount = exams && exams.length > 0 ? exams.filter(e => e.isPublished).length : 0;
 
   // Calculate overall average score for completed exams where results are published
   // NOTE: This average score is a placeholder. In a real app, you'd fetch actual student scores
   // from ExamSubmission records and calculate the average.
   const overallSchoolExamAverage = useMemo(() => {
-    const gradedExamsWithScores = exams.filter(e => new Date(e.date).getTime() < new Date().setHours(0,0,0,0) && e.totalSubmissions > 0);
+    const gradedExamsWithScores = exams && exams.length > 0 ? exams.filter(e => new Date(e.date).getTime() < new Date().setHours(0,0,0,0) && e.totalSubmissions > 0) : [];
     if (gradedExamsWithScores.length === 0) return 'N/A';
 
     // This is a simplified average. A true average would sum up all student scores

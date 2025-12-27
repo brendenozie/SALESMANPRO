@@ -178,8 +178,7 @@ export default async function ExamsManagerPage({ params }: PageProps) {
       }
     });
     if (examsRes.ok) {
-      const data = (await examsRes.json()).data;
-      console.log("[ExamsManagerPage] Fetched exams:", data);
+      const data = (await examsRes.json()).data.data;
       initialExams = data as ExamData[];
     } else {
       console.error(`[ExamsManagerPage] Failed to fetch exams: ${examsRes.status} ${examsRes.statusText}`);
