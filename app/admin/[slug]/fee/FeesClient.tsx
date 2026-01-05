@@ -399,10 +399,14 @@ const FeesClient: React.FC<FeesClientProps> = ({ initialFeeRecordsData, initialS
           </div>
           
           <div className="flex gap-3">
-            <button onClick={() => {}} className="flex items-center px-4 py-2 rounded-xl border border-gray-700 hover:bg-gray-800 text-xs font-bold transition-all">
+            <button onClick={() => {
+              setShowApplyBatchFeeModal(true);
+            }} className="flex items-center px-4 py-2 rounded-xl border border-gray-700 hover:bg-gray-800 text-xs font-bold transition-all">
                <SparklesIcon className="h-4 w-4 mr-2 text-purple-400" /> Batch Apply
             </button>
-            <button onClick={() => {}} className="flex items-center px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-[0_0_20px_rgba(79,70,229,0.3)] transition-all">
+            <button onClick={() => {
+              handleAddFeeRecord();
+            }} className="flex items-center px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-[0_0_20px_rgba(79,70,229,0.3)] transition-all">
                <PlusCircleIcon className="h-4 w-4 mr-2" /> New Record
             </button>
           </div>
@@ -907,3 +911,4 @@ const DeleteConfirmationModal: React.FC<{
     </div>
   </Modal>
 );
+
