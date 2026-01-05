@@ -489,9 +489,6 @@ const FeesClient: React.FC<FeesClientProps> = ({ initialFeeRecordsData, initialS
                     onLogPayment={handleLogPayment}
                       onEditRecord={handleEditFeeRecord}
                       onDeleteRecord={handleDeleteFeeRecord}
-                    // onLogPayment={() => {}} 
-                    // onEditRecord={() => {}} 
-                    // onDeleteRecord={() => {}} 
                   />
                 ))}
               </tbody>
