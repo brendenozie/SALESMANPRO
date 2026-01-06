@@ -132,7 +132,10 @@ export const deleteFeeItem = async (id: string): Promise<boolean> => {
 
 export const getStudentFeeRecords = async (schoolId: string): Promise<StudentFeeRecord[]> => {
   const records = await prisma.studentFeeRecord.findMany({
-    // where: {  schoolId },
+    where: {  student: { 
+                companyId : schoolId 
+              } 
+            },
     include: {
       student: true, // Include student details if needed for display
     },

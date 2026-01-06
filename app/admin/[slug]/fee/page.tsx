@@ -45,7 +45,7 @@ export default async function FeesPage({ params }: PageProps) {
     }
 
     // Fetch Students (needed for the "Create New Fee Record" modal)
-    const studentsRes = await fetch(`${apiBaseUrl}/admin/students`, {
+    const studentsRes = await fetch(`${apiBaseUrl}/admin/students?companyId=${encodeURIComponent(schoolId)}`, {
       next: { revalidate: 60 },
       headers: {
         cookie: cookHeader,

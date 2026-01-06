@@ -12,7 +12,17 @@ import { verifyAuth } from '@/lib/verifyAuth';
 async function handleGetFeeItems(request: Request) {
   // 1. Authentication Check
   
+  // const user = await verifyAuth(request);
 
+  // if (!user) {
+  //   return formatResponse(false, null, 'Unauthorized', 401);
+  // }
+
+  // const schoolId = request.headers.get('x-school-id');
+
+  // if (!schoolId) {
+  //   return formatResponse(false, null, 'Missing school ID in headers.', 400);
+  // }
 
   // 2. Business Logic
   const feeItems = await getFeeItems();
