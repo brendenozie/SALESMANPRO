@@ -53,6 +53,7 @@ export type StudentType = {
   name: string;
   email: string;
   profilePicture?: string;
+  admissionNumber?: string;
   phone?: string;
   bio?: string;
   address?: string;
@@ -510,7 +511,7 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-blue-700">
                       <div className="flex items-center gap-1">
-                        <KeyIcon className="h-4 w-4 text-blue-500" /> {student.loginCode || 'N/A'}
+                        <KeyIcon className="h-4 w-4 text-blue-500" /> {student.admissionNumber || 'N/A'}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
