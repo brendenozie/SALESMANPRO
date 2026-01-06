@@ -2775,8 +2775,11 @@ model Classroom {
 
   classSchedules ClassSchedule[]
 
-  createdAt DateTime? @default(now())
-  updatedAt DateTime? @updatedAt
+  createdAt                        DateTime?                         @default(now())
+  updatedAt                        DateTime?                         @updatedAt
+  attendanceRecords                AttendanceRecord[]
+  educatorAcademicLevelAssignments EducatorAcademicLevelAssignment[]
+  courseEducatorAssignments        CourseEducatorAssignment[]
 
   @@index([companyId])
   @@index([academicLevelId])
@@ -2792,6 +2795,9 @@ model EducatorAcademicLevelAssignment {
 
   academicLevel   AcademicLevel @relation(fields: [academicLevelId], references: [id], onDelete: Cascade)
   academicLevelId String        @db.ObjectId
+
+  classRoomId String?    @db.ObjectId
+  classRoom   Classroom? @relation(fields: [classRoomId], references: [id])
 
   // Optional: You could add more fields here relevant to the assignment,
   // e.g., 'assignedDate', 'isActive', 'roleInLevel' (e.g., 'Lead Teacher', 'Assistant')
@@ -2876,6 +2882,9 @@ model CourseEducatorAssignment {
 
   educator   Educator @relation(fields: [educatorId], references: [id], onDelete: Cascade)
   educatorId String   @db.ObjectId
+
+  classRoomId String?    @db.ObjectId
+  classRoom   Classroom? @relation(fields: [classRoomId], references: [id])
 
   // Optional: You could add more fields here relevant to the assignment,
   // e.g., 'assignedDate', 'isActive', 'roleInLevel' (e.g., 'Lead Teacher', 'Assistant')
@@ -3341,6 +3350,9 @@ model AttendanceRecord {
 
   academicLevelId String?        @db.ObjectId // NEW: Optional: Link to a specific Academic Level if not tied to a ClassSchedule
   academicLevel   AcademicLevel? @relation(fields: [academicLevelId], references: [id])
+
+  classroomId String?    @db.ObjectId // NEW: Optional: Link to a specific Classroom if not tied to a ClassSchedule
+  classroom   Classroom? @relation(fields: [classroomId], references: [id])
 
   courseId String? @db.ObjectId // NEW: Optional: Link to a specific Course if not tied to a ClassSchedule
   course   Course? @relation(fields: [courseId], references: [id])

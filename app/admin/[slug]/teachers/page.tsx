@@ -6,6 +6,11 @@ import { cookies } from "next/headers";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
+export interface ClassroomOption {
+  id: string;
+  name: string;
+  academicLevelId?: string;
+}
 interface PageProps {
   params:Promise<{ slug: string }>
 }
@@ -15,6 +20,7 @@ const generateSampleEducatorsData = (companyId: string): {
   sampleEducators: EducatorType[];
   sampleDepartments: DepartmentOption[];
   sampleAcademicLevels: AcademicLevelOption[];
+  sampleClassrooms: ClassroomOption[];
 } => {
   const academicLevels: AcademicLevelOption[] = [
     { id: 'AL001', name: 'Playgroup', sortOrder: 1 },
@@ -25,6 +31,12 @@ const generateSampleEducatorsData = (companyId: string): {
     { id: 'AL006', name: 'Grade 9', sortOrder: 10 },
     { id: 'AL007', name: 'High School - Freshman', sortOrder: 11 },
     { id: 'AL008', name: 'University - Year 1', sortOrder: 15 },
+  ];
+
+  const classrooms: ClassroomOption[] = [
+    { id: 'CR001', name: 'Room 101', academicLevelId: 'AL004' },
+    { id: 'CR002', name: 'Science Lab A', academicLevelId: 'AL005' },
+    { id: 'CR003', name: 'Main Hall', academicLevelId: 'AL007' },
   ];
 
   const departments: DepartmentOption[] = [
@@ -53,6 +65,8 @@ const generateSampleEducatorsData = (companyId: string): {
         { id: 'AL004', name: 'Grade 7' },
         { id: 'AL005', name: 'Grade 8' },
       ],
+      academicLevelAssignments: [],
+      classRooms: [{ id: 'CR001', name: 'Room 101', academicLevelId: 'AL004' }],
       totalStudents: 120, // These are now calculated and returned by API, not direct model fields
       totalCoursesTaught: 5, // These are now calculated and returned by API, not direct model fields
       totalClassesScheduled: 15,
@@ -85,6 +99,8 @@ const generateSampleEducatorsData = (companyId: string): {
         { id: 'AL005', name: 'Grade 8' },
         { id: 'AL007', name: 'High School - Freshman' },
       ],
+      classRooms: [{ id: 'CR003', name: 'Main Hall', academicLevelId: 'AL007' }],
+      academicLevelAssignments: [],
       totalStudents: 100,
       totalCoursesTaught: 4,
       totalClassesScheduled: 12,
@@ -116,6 +132,8 @@ const generateSampleEducatorsData = (companyId: string): {
         { id: 'AL006', name: 'Grade 9' },
         { id: 'AL007', name: 'High School - Freshman' },
       ],
+      academicLevelAssignments: [],
+      classRooms: [{ id: 'CR002', name: 'Science Lab A', academicLevelId: 'AL005' }],
       totalStudents: 150,
       totalCoursesTaught: 6,
       totalClassesScheduled: 18,
@@ -147,6 +165,8 @@ const generateSampleEducatorsData = (companyId: string): {
         { id: 'AL005', name: 'Grade 8' },
         { id: 'AL007', name: 'High School - Freshman' },
       ],
+      academicLevelAssignments: [],
+      classRooms: [{ id: 'CR003', name: 'Main Hall', academicLevelId: 'AL007' }],
       totalStudents: 90,
       totalCoursesTaught: 3,
       totalClassesScheduled: 10,
@@ -163,7 +183,7 @@ const generateSampleEducatorsData = (companyId: string): {
     },
   ];
 
-  return { sampleEducators: educators, sampleDepartments: departments, sampleAcademicLevels: academicLevels };
+  return { sampleEducators: educators, sampleDepartments: departments, sampleAcademicLevels: academicLevels, sampleClassrooms: classrooms};
 };
 // --- End Helper function ---
 
@@ -180,6 +200,7 @@ export default async function TeachersManagementPage({ params }: PageProps) {
   let initialEducators: EducatorType[] = [];
   let allDepartments: DepartmentOption[] = [];
   let allAcademicLevels: AcademicLevelOption[] = [];
+  let allClassrooms: ClassroomOption[] = [];
   let fetchError: boolean = false;
 
   try {
@@ -192,6 +213,7 @@ export default async function TeachersManagementPage({ params }: PageProps) {
     );
     if (educatorsRes.ok) {
       const data = (await educatorsRes.json()).data.data;
+      console.log("[TeachersManagementPage] Fetched educators:", data);
       initialEducators = data as EducatorType[];
     } else {
       console.error(
@@ -215,7 +237,6 @@ export default async function TeachersManagementPage({ params }: PageProps) {
       fetchError = true;
     }
 
-
     // NEW: Fetch all academic levels for this company
     const academicLevelsRes = await fetch(
       `${apiBaseUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`, // Corrected API path
@@ -231,18 +252,34 @@ export default async function TeachersManagementPage({ params }: PageProps) {
       fetchError = true;
     }
 
+    const classroomsRes = await fetch(
+      `${apiBaseUrl}/admin/classrooms?companyId=${encodeURIComponent(companyId)}`,
+      { next: { revalidate: 60 }, headers: { cookie: cookieHeader } }
+    );
+    if (classroomsRes.ok) {
+      allClassrooms = (await classroomsRes.json()).data;
+    } else {
+      console.error(
+        `[TeachersManagementPage] Failed to fetch classrooms: ${classroomsRes.status} ${classroomsRes.statusText}`
+      );
+      // Not setting fetchError to true here, as classrooms are optional
+    }
+
   } catch (err: any) {
     console.error("[TeachersManagementPage] Error fetching initial data:", err.message);
     fetchError = true;
   }
 
+
+
   // If fetching failed or returned no data, use sample data
-  if (fetchError || initialEducators.length === 0 && allDepartments.length === 0 && allAcademicLevels.length === 0) {
-    console.log("[TeachersManagementPage] Using sample data for educators, departments, and academic levels.");
-    const { sampleEducators, sampleDepartments, sampleAcademicLevels } = generateSampleEducatorsData(companyId);
+  if (fetchError || initialEducators.length === 0 && allDepartments.length === 0 && allAcademicLevels.length === 0 && allClassrooms.length === 0) {
+    console.log("[TeachersManagementPage] Using sample data for educators, departments, academic levels, and classrooms.");
+    const { sampleEducators, sampleDepartments, sampleAcademicLevels, sampleClassrooms } = generateSampleEducatorsData(companyId);
     initialEducators = sampleEducators;
     allDepartments = sampleDepartments;
     allAcademicLevels = sampleAcademicLevels;
+    allClassrooms = sampleClassrooms;
   }
 
   return (
@@ -250,6 +287,7 @@ export default async function TeachersManagementPage({ params }: PageProps) {
       initialEducators={initialEducators}
       allDepartments={allDepartments}
       allAcademicLevels={allAcademicLevels} // Pass academic levels
+      allClassrooms={allClassrooms}
       companyId={companyId}
       apiBaseUrl={apiBaseUrl}
     />

@@ -14,8 +14,6 @@ interface Params {
 // =======================================================================
 async function getEducator(request: Request, { params }: Params) {
   
-
-
   const { id } = params;
 
   const educator = await prisma.educator.findUnique({
@@ -115,10 +113,8 @@ async function getEducator(request: Request, { params }: Params) {
 // =======================================================================
 // PATCH: Updates an existing Educator profile by ID
 // =======================================================================
-async function updateEducator(request: Request, { params }: Params) {
+async function updateEducatorv1(request: Request, { params }: Params) {
   
-
-
   const { id } = params;
   const body = await request.json();
   const { phone, bio, address, profilePicture, name, email, departmentId, academicLevelIds, ...rest } = body;
@@ -286,6 +282,113 @@ async function updateEducator(request: Request, { params }: Params) {
   };
 
   return formatResponse(true, { data: responseData }, null, 200);
+}
+// =======================================================================
+// PATCH: Updates an existing Educator profile by ID
+// =======================================================================
+async function updateEducator(request: Request, { params }: Params) {
+  const { id } = params;
+  const body = await request.json();
+  const { 
+    phone, 
+    bio, 
+    address, 
+    profilePicture, 
+    name, 
+    email, 
+    departmentId, 
+    assignments // Structured array from frontend
+  } = body;
+
+  const existingEducator = await prisma.educator.findUnique({
+    where: { id },
+    include: { user: true }
+  });
+
+  if (!existingEducator) {
+    return formatResponse(false, null, "Educator not found", 404);
+  }
+
+  const updatedEducator = await prisma.$transaction(async (tx) => {
+    // 1. Update Assignments (Delete and Recreate)
+    if (assignments !== undefined) {
+      await tx.educatorAcademicLevelAssignment.deleteMany({
+        where: { educatorId: id },
+      });
+
+      if (assignments.length > 0) {
+        await tx.educatorAcademicLevelAssignment.createMany({
+          data: assignments.map((asn: any) => ({
+            educatorId: id,
+            academicLevelId: asn.academicLevelId,
+            classRoomId: asn.classRoomId || null,
+          })),
+        });
+      }
+    }
+
+    // 2. Update Educator Profile
+    const educatorUpdateData: any = {};
+    if (phone !== undefined) educatorUpdateData.phone = phone;
+    if (bio !== undefined) educatorUpdateData.bio = bio;
+    if (address !== undefined) educatorUpdateData.address = address;
+    if (profilePicture !== undefined) educatorUpdateData.profilePicture = profilePicture;
+    if (departmentId !== undefined) educatorUpdateData.departmentId = departmentId;
+
+    const educatorRecord = await tx.educator.update({
+      where: { id },
+      data: educatorUpdateData,
+    });
+
+    // 3. Update User Record (Name/Email/Image)
+    if (name || email || profilePicture) {
+      const userUpdateData: any = {};
+      if (name) userUpdateData.name = name;
+      if (profilePicture) userUpdateData.image = profilePicture;
+      if (email && email !== existingEducator.user?.email) {
+        const emailConflict = await tx.user.findUnique({ where: { email } });
+        if (emailConflict) throw new Error("Email already in use.");
+        userUpdateData.email = email;
+      }
+
+      if (existingEducator.userId) {
+        await tx.user.update({
+          where: { id: existingEducator.userId },
+          data: userUpdateData,
+        });
+      }
+    }
+
+    return educatorRecord;
+  });
+
+  // Fetch final state for response (Standardized response object)
+  const final = await prisma.educator.findUnique({
+    where: { id: updatedEducator.id },
+    include: {
+      user: true,
+      Department: true,
+      academicLevelAssignments: {
+        include: { academicLevel: true, classRoom: true }
+      },
+      _count: {
+        select: {
+          classesScheduled: true,
+          Exam: true,
+          CourseMaterial: true,
+          AttendanceRecord: true,
+          createdDiscussionTopics: true,
+          uploadedMaterials: true,
+          assignmentSubmission: true,
+          examSubmission: true,
+          Grade: true,
+          CourseEducatorAssignment: true,
+        }
+      }
+    }
+  });
+
+  return formatResponse(true, { data: final }, "Teacher updated successfully", 200);
 }
 
 // =======================================================================

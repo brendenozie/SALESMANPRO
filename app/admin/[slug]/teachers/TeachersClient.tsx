@@ -19,22 +19,37 @@ import {
   DocumentTextIcon,
   KeyIcon,
   XMarkIcon,
-  TagIcon, // New icon for academic levels
-  ChatBubbleBottomCenterTextIcon, // For Discussion Topics
-  ClipboardDocumentCheckIcon, // For Assignment Submissions
-  ClipboardDocumentListIcon, // For Exam Submissions
-  ClipboardDocumentIcon, // For Grades Recorded
+  TagIcon,
+  ChatBubbleBottomCenterTextIcon,
+  ClipboardDocumentCheckIcon,
+  ClipboardDocumentListIcon,
+  ClipboardDocumentIcon,
 } from '@heroicons/react/24/outline';
 
-import EducatorFormModal from './EducatorFormModal'; // Import the new modal component
+import EducatorFormModal from './EducatorFormModal';
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
 
-// --- Type Definitions (matching API response) ---
+// --- Type Definitions ---
 export type AcademicLevelOption = {
   id: string;
   name: string;
-  sortOrder?: number; // Include for sorting if needed
+  sortOrder?: number;
+};
+
+export type ClassroomOption = {
+  id: string;
+  name: string;
+  academicLevelId?: string;
+};
+
+export type EducatorAcademicLevelAssignment = {
+  id: string;
+  academicLevelId: string;
+  academicLevel: AcademicLevelOption;
+  classRoom: ClassroomOption | null;
+  classRoomId: string | null;
+  roleInLevel?: string;
 };
 
 export type EducatorType = {
@@ -48,20 +63,22 @@ export type EducatorType = {
   bio?: string;
   address?: string;
   companyId: string;
-  departmentId?: string | null; // Can be null
+  departmentId?: string | null;
   departmentName?: string;
-  academicLevels: AcademicLevelOption[]; // Renamed from assignedAcademicLevels
-  totalStudents: number; // Now calculated in API response
-  totalCoursesTaught: number; // Now calculated in API response
+  academicLevels: AcademicLevelOption[];
+  academicLevelAssignments: EducatorAcademicLevelAssignment[]; 
+  classRooms?: ClassroomOption[]; 
+  totalStudents: number;
+  totalCoursesTaught: number;
   totalClassesScheduled: number;
   totalExamsCreated: number;
   totalMaterialsUploaded: number;
-  totalAttendanceRecords: number; // Added new calculated fields
-  totalDiscussionTopics: number; // Added new calculated fields
-  totalUploadedMaterials: number; // Added new calculated fields
-  totalAssignmentSubmissions: number; // Added new calculated fields
-  totalExamSubmissions: number; // Added new calculated fields
-  totalGradesRecorded: number; // Added new calculated fields
+  totalAttendanceRecords: number;
+  totalDiscussionTopics: number;
+  totalUploadedMaterials: number;
+  totalAssignmentSubmissions: number;
+  totalExamSubmissions: number;
+  totalGradesRecorded: number;
   createdAt: string;
   updatedAt: string;
 };
@@ -74,15 +91,24 @@ export type DepartmentOption = {
 interface TeachersClientProps {
   initialEducators: EducatorType[];
   allDepartments: DepartmentOption[];
-  allAcademicLevels: AcademicLevelOption[]; // Pass all academic levels
+  allAcademicLevels: AcademicLevelOption[];
+  allClassrooms: ClassroomOption[];
   companyId: string;
   apiBaseUrl: string;
 }
 
-export default function TeachersClient({ initialEducators, allDepartments, allAcademicLevels, companyId, apiBaseUrl }: TeachersClientProps) {
+export default function TeachersClient({ 
+  initialEducators, 
+  allDepartments, 
+  allAcademicLevels, 
+  allClassrooms, 
+  companyId, 
+  apiBaseUrl 
+}: TeachersClientProps) {
   const [educators, setEducators] = useState<EducatorType[]>(initialEducators);
   const [departments, setDepartments] = useState<DepartmentOption[]>(allDepartments);
-  const [academicLevels, setAcademicLevels] = useState<AcademicLevelOption[]>(allAcademicLevels); // State for academic levels
+  const [academicLevels, setAcademicLevels] = useState<AcademicLevelOption[]>(allAcademicLevels);
+  const [classrooms, setClassrooms] = useState<ClassroomOption[]>(allClassrooms);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterDepartment, setFilterDepartment] = useState('All');
   const [showFormModal, setShowFormModal] = useState(false);
@@ -96,132 +122,84 @@ export default function TeachersClient({ initialEducators, allDepartments, allAc
     day: 'numeric',
   });
 
-  // --- Data Fetching and Management ---
   const fetchEducatorsAndDependencies = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
-      const educatorsRes = await fetch(`${apiBaseUrl}/admin/educators?companyId=${encodeURIComponent(companyId)}`,{ credentials: 'include', });
-      const departmentsRes = await fetch(`${apiBaseUrl}/admin/departments?companyId=${encodeURIComponent(companyId)}`,{ credentials: 'include', }); // Fetch departments here
-      const academicLevelsRes = await fetch(`${apiBaseUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`,{ credentials: 'include', }  );
+      const query = `?companyId=${encodeURIComponent(companyId)}`;
+      const [educatorsRes, departmentsRes, levelsRes, roomsRes] = await Promise.all([
+        fetch(`${apiBaseUrl}/admin/educators${query}`, { credentials: 'include' }),
+        fetch(`${apiBaseUrl}/admin/departments${query}`, { credentials: 'include' }),
+        fetch(`${apiBaseUrl}/admin/academic-levels${query}`, { credentials: 'include' }),
+        fetch(`${apiBaseUrl}/admin/classrooms${query}`, { credentials: 'include' })
+      ]);
 
-      if (educatorsRes.ok) {
-        const data: EducatorType[] = (await educatorsRes.json()).data.data;
-        setEducators(data);
-      } else {
-        const errorData = await educatorsRes.json();
-        setError(errorData.message || "Failed to fetch educators.");
-        setEducators(initialEducators);
-      }
-
-      if (departmentsRes.ok) {
-        const data= (await departmentsRes.json()).data.data;
-        console.log(data);
-        setDepartments(data);
-      } else {
-        const errorData = await departmentsRes.json();
-        setError(errorData.message || "Failed to fetch departments.");
-        setDepartments(allDepartments);
-      }
-
-      if (academicLevelsRes.ok) {
-        const data: AcademicLevelOption[] = (await academicLevelsRes.json()).data;
-        setAcademicLevels(data);
-      } else {
-        const errorData = await academicLevelsRes.json();
-        setError(errorData.message || "Failed to fetch academic levels.");
-        setAcademicLevels(allAcademicLevels); // Fallback to initial data
-      }
+      if (educatorsRes.ok) setEducators((await educatorsRes.json()).data.data);
+      if (departmentsRes.ok) setDepartments((await departmentsRes.json()).data.data);
+      if (levelsRes.ok) setAcademicLevels((await levelsRes.json()).data);
+      if (roomsRes.ok) setClassrooms((await roomsRes.json()).data);
 
     } catch (err: any) {
       setError(err.message || "Network error fetching data.");
-      setEducators(initialEducators);
-      setDepartments(allDepartments);
-      setAcademicLevels(allAcademicLevels);
     } finally {
       setIsLoading(false);
     }
-  }, [apiBaseUrl, companyId, initialEducators, allDepartments, allAcademicLevels]);
+  }, [apiBaseUrl, companyId]);
 
   useEffect(() => {
-    // If initial data from server is empty, try fetching on client side
-    if (initialEducators.length === 0 || allDepartments.length === 0 || allAcademicLevels.length === 0) {
+    if (initialEducators.length === 0) {
       fetchEducatorsAndDependencies();
     }
-  }, [fetchEducatorsAndDependencies, initialEducators, allDepartments, allAcademicLevels]);
-
+  }, [fetchEducatorsAndDependencies, initialEducators.length]);
 
   const filteredEducators = useMemo(() => {
     return educators.filter(educator => {
-      const matchesSearch = (educator.name?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
-                            (educator.email?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
-                            (educator.departmentName?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
-                            (educator.loginCode?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
-                            educator.academicLevels.some(level => level.name.toLowerCase().includes(searchTerm.toLowerCase())); // Search by assigned academic level name
+      const matchesSearch = (educator.name?.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                            (educator.email?.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                            (educator.loginCode?.toLowerCase().includes(searchTerm.toLowerCase()));
       const matchesDepartment = filterDepartment === 'All' || educator.departmentId === filterDepartment;
       return matchesSearch && matchesDepartment;
-    }).sort((a, b) => (a.name || '').localeCompare(b.name || '')); // Sort alphabetically by name
+    }).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
   }, [educators, searchTerm, filterDepartment]);
 
-  // --- API Interaction Functions ---
-  // Updated onSave signature to match the new EducatorType and expected payload
-  const handleSaveEducator = async (educatorData: Omit<EducatorType, 'id' | 'userId' | 'loginCode' | 'totalStudents' | 'totalCoursesTaught' | 'totalClassesScheduled' | 'totalExamsCreated' | 'totalMaterialsUploaded' | 'totalAttendanceRecords' | 'totalDiscussionTopics' | 'totalUploadedMaterials' | 'totalAssignmentSubmissions' | 'totalExamSubmissions' | 'totalGradesRecorded' | 'createdAt' | 'updatedAt' | 'departmentName' | 'academicLevels'> & { id?: string; userId?: string; academicLevelIds?: string[] | null }) => {
+  const handleSaveEducator = async (educatorData: any) => {
     setIsLoading(true);
-    setError(null);
     const method = educatorData.id ? 'PATCH' : 'POST';
+    const url = educatorData.id ? `${apiBaseUrl}/admin/educators/${educatorData.id}` : `${apiBaseUrl}/admin/educators`;
+
     try {
-
-      const url = educatorData.id ? `${apiBaseUrl}/admin/educators/${educatorData.id}` : `${apiBaseUrl}/admin/educators`; // Corrected API path
-
-      const payload = {
-        ...educatorData,
-        companyId: companyId,
-        // academicLevelIds will be handled by the backend
-      };
-
       const res = await fetch(url, {
-        method: method,
+        method,
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ ...educatorData, companyId }),
       });
 
       if (res.ok) {
-        await fetchEducatorsAndDependencies(); // Re-fetch to get the latest data with calculated counts
+        await fetchEducatorsAndDependencies();
         setShowFormModal(false);
-        setEditingEducator(null);
       } else {
         const errorData = await res.json();
-        setError(errorData.message || `Failed to ${method === 'POST' ? 'add' : 'update'} educator.`);
+        setError(errorData.message || "Operation failed.");
       }
     } catch (err: any) {
-      setError(err.message || `Network error ${method === 'POST' ? 'adding' : 'updating'} educator.`);
+      setError(err.message);
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleDeleteEducator = async (educatorId: string) => {
-    if (!confirm("Are you sure you want to delete this educator? This action cannot be undone and may affect linked records.")) {
-      return;
-    }
-
+    if (!confirm("Are you sure?")) return;
     setIsLoading(true);
-    setError(null);
     try {
-      const res = await fetch(`${apiBaseUrl}/admin/educators/${educatorId}`, { // Corrected API path
+      const res = await fetch(`${apiBaseUrl}/admin/educators/${educatorId}`, {
         method: 'DELETE',
         credentials: 'include',
       });
-
-      if (res.ok) {
-        await fetchEducatorsAndDependencies();
-      } else {
-        const errorData = await res.json();
-        setError(errorData.message || "Failed to delete educator.");
-      }
+      if (res.ok) await fetchEducatorsAndDependencies();
     } catch (err: any) {
-      setError(err.message || "Network error deleting educator.");
+      setError(err.message);
     } finally {
       setIsLoading(false);
     }
@@ -235,7 +213,7 @@ export default function TeachersClient({ initialEducators, allDepartments, allAc
 
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-8 bg-gradient-to-br from-blue-50 to-purple-50 min-h-screen font-sans antialiased">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-8 bg-gradient-to-br from-blue-50 to-purple-50 min-h-screen font-sans">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl shadow-lg border border-gray-100">
         <div>
@@ -276,91 +254,61 @@ export default function TeachersClient({ initialEducators, allDepartments, allAc
       )}
 
       {/* Overview Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="p-5 rounded-xl shadow-md border border-gray-200 bg-blue-50 flex items-center gap-4">
-          <div className="p-3 bg-white rounded-full shadow-sm">
-            <UsersIcon className="h-8 w-8 text-blue-600" />
-          </div>
-          <div>
-            <p className="text-sm font-medium text-gray-600">Total Teachers</p>
-            <h2 className="text-3xl font-bold text-gray-800">{totalTeachers}</h2>
-          </div>
-        </div>
-        <div className="p-5 rounded-xl shadow-md border border-gray-200 bg-green-50 flex items-center gap-4">
-          <div className="p-3 bg-white rounded-full shadow-sm">
-            <BriefcaseIcon className="h-8 w-8 text-green-600" />
-          </div>
-          <div>
-            <p className="text-sm font-medium text-gray-600">Total Departments</p>
-            <h2 className="text-3xl font-bold text-gray-800">{totalDepartments}</h2>
-          </div>
-        </div>
-        <div className="p-5 rounded-xl shadow-md border border-gray-200 bg-yellow-50 flex items-center gap-4">
-          <div className="p-3 bg-white rounded-full shadow-sm">
-            <BookOpenIcon className="h-8 w-8 text-yellow-600" />
-          </div>
-          <div>
-            <p className="text-sm font-medium text-gray-600">Avg. Courses/Teacher</p>
-            <h2 className="text-3xl font-bold text-gray-800">{avgCoursesPerTeacher}</h2>
-          </div>
-        </div>
-        <div className="p-5 rounded-xl shadow-md border border-gray-200 bg-purple-50 flex items-center gap-4">
-          <div className="p-3 bg-white rounded-full shadow-sm">
-            <UsersIcon className="h-8 w-8 text-purple-600" />
-          </div>
-          <div>
-            <p className="text-sm font-medium text-gray-600">Avg. Students/Teacher</p>
-            <h2 className="text-3xl font-bold text-gray-800">{avgStudentsPerTeacher}</h2>
-          </div>
-        </div>
-      </div>
-
-      {/* Teachers List Section */}
-      <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-          <h3 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="p-5 rounded-xl shadow-md border border-gray-200 bg-blue-50 flex items-center gap-4">
+                <div className="p-3 bg-white rounded-full shadow-sm">
+                  <UsersIcon className="h-8 w-8 text-blue-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Total Teachers</p>
+                  <h2 className="text-3xl font-bold text-gray-800">{totalTeachers}</h2>
+                </div>
+              </div>
+              <div className="p-5 rounded-xl shadow-md border border-gray-200 bg-green-50 flex items-center gap-4">
+                <div className="p-3 bg-white rounded-full shadow-sm">
+                  <BriefcaseIcon className="h-8 w-8 text-green-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Total Departments</p>
+                  <h2 className="text-3xl font-bold text-gray-800">{totalDepartments}</h2>
+                </div>
+              </div>
+              <div className="p-5 rounded-xl shadow-md border border-gray-200 bg-yellow-50 flex items-center gap-4">
+                <div className="p-3 bg-white rounded-full shadow-sm">
+                  <BookOpenIcon className="h-8 w-8 text-yellow-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Avg. Courses/Teacher</p>
+                  <h2 className="text-3xl font-bold text-gray-800">{avgCoursesPerTeacher}</h2>
+                </div>
+              </div>
+              <div className="p-5 rounded-xl shadow-md border border-gray-200 bg-purple-50 flex items-center gap-4">
+                <div className="p-3 bg-white rounded-full shadow-sm">
+                  <UsersIcon className="h-8 w-8 text-purple-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Avg. Students/Teacher</p>
+                  <h2 className="text-3xl font-bold text-gray-800">{avgStudentsPerTeacher}</h2>
+                </div>
+              </div>
+            </div>
+      
+      {/* Search and Filters */}
+      <div className="bg-white rounded-xl shadow-md p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-xl font-semibold flex items-center gap-2">
             <UsersIcon className="h-6 w-6 text-indigo-500" /> All Teachers
           </h3>
           <button
             onClick={() => { setEditingEducator(null); setShowFormModal(true); }}
-            className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-lg shadow-md
-                         hover:bg-indigo-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 text-base font-medium"
+            className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
           >
             <UserPlusIcon className="h-5 w-5" /> Add New Teacher
           </button>
         </div>
 
-        {/* Search and Filter */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
-          <div className="relative flex-grow">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
-            </div>
-            <input
-              type="text"
-              placeholder="Search by name, email, department, academic level, or login code..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500
-                         focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-base"
-            />
-          </div>
-          <div className="flex-shrink-0">
-            <select
-              value={filterDepartment}
-              onChange={(e) => setFilterDepartment(e.target.value)}
-              className="block w-full py-2.5 px-4 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 text-base"
-            >
-              <option value="All">All Departments</option>
-              {departments && departments.length > 0 && departments.map(dept => (
-                <option key={dept.id} value={dept.id}>{dept.name}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        {/* Teachers Table */}
-        <div className="overflow-x-auto rounded-lg border border-gray-200 shadow-sm">
+        {/* List Table... (Omitted for brevity, use your existing table logic) */}
+         <div className="overflow-x-auto rounded-lg border border-gray-200 shadow-sm">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
@@ -425,7 +373,7 @@ export default function TeachersClient({ initialEducators, allDepartments, allAc
                       <div className="font-medium">{educator.departmentName || 'N/A'}</div>
                       <div className="text-xs text-gray-500 mt-1">Joined: {new Date(educator.createdAt).toLocaleDateString()}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {educator.academicLevels && educator.academicLevels.length > 0 ? (
                         <div className="flex flex-wrap gap-1">
                           {educator.academicLevels.map(level => (
@@ -436,6 +384,26 @@ export default function TeachersClient({ initialEducators, allDepartments, allAc
                         </div>
                       ) : (
                         <span className="text-gray-400">N/A</span>
+                      )}
+                    </td> */}
+                     {/* UPDATED: Academic Levels & Rooms Display */}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {educator.academicLevelAssignments && educator.academicLevelAssignments.length > 0 ? (
+                        <div className="flex flex-wrap gap-1 max-w-[200px]">
+                          {educator.academicLevelAssignments.map(asn => {
+                            const levelName = allAcademicLevels.find(l => l.id === asn.academicLevelId)?.name;
+                            const roomName = allClassrooms.find(r => r.id === asn.classRoomId)?.name;
+                            
+                            return (
+                              <span key={asn.id} className="inline-flex flex-col px-2 py-1 rounded-md text-[10px] font-medium bg-indigo-50 text-indigo-700 border border-indigo-100">
+                                <span className="font-bold">{levelName || 'Unknown Level'}</span>
+                                {roomName && <span className="text-gray-500 italic">Room: {roomName}</span>}
+                              </span>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <span className="text-gray-400">No Assignments</span>
                       )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -501,15 +469,16 @@ export default function TeachersClient({ initialEducators, allDepartments, allAc
         </div>
       </div>
 
-      {/* Modals */}
+      {/* MODAL UPDATE */}
       {showFormModal && (
         <EducatorFormModal
-          isOpen={showFormModal} // Pass isOpen prop
+          isOpen={showFormModal}
           educatorData={editingEducator}
           onClose={() => { setShowFormModal(false); setEditingEducator(null); }}
           onSave={handleSaveEducator}
           allDepartments={departments}
-          allAcademicLevels={academicLevels} // Pass all academic levels
+          allAcademicLevels={academicLevels}
+          allClassrooms={classrooms} // CRITICAL: Added this prop
           isLoading={isLoading}
           companyId={companyId}
         />
