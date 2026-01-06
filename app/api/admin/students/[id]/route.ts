@@ -4,6 +4,7 @@ import { EnrollmentStatus, StudentLevelStatus, ROLE } from "@prisma/client";
 
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { first } from "lodash";
 
 // GET /api/students/[id] – fetch a single student
 async function getStudent(req: Request, { params }: { params: { id: string } }) {
@@ -46,6 +47,8 @@ async function getStudent(req: Request, { params }: { params: { id: string } }) 
       userId: student.userId,
       loginCode: student.loginCode,
       name: student.user?.name,
+      firstName: student.firstName,
+      lastName: student.lastName,
       email: student.user?.email,
       profilePicture: student.profilePicture || student.user?.image,
       phone: student.phone,
@@ -86,7 +89,9 @@ async function updateStudent(req: Request) {
 
     const body = await req.json();
     const {
-      name,
+      // name,
+      firstName, 
+      lastName,
       email,
       phone,
       bio,
@@ -110,8 +115,8 @@ async function updateStudent(req: Request) {
       if (!existingStudent) throw new Error("Student not found");
 
       // Update user info if changed
-      if (name !== existingStudent.user?.name || email !== existingStudent.user?.email) {
-        await tx.user.update({ where: { id: existingStudent.userId }, data: { name, email } });
+      if ( email !== existingStudent.user?.email) {
+        await tx.user.update({ where: { id: existingStudent.userId }, data: { name:`${firstName} ${lastName}`, email } });
       }
 
       // Validate parentId if provided
@@ -129,6 +134,8 @@ async function updateStudent(req: Request) {
       // Update student
       const studentUpdateData = {
         phone: phone || null,
+        firstName: firstName || existingStudent.firstName,
+        lastName: lastName || existingStudent.lastName,
         bio: bio || null,
         address: address || null,
         profilePicture: profilePicture || null,

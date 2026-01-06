@@ -1,7 +1,7 @@
 // app/admin/[slug]/students/page.tsx
 
 import React from "react";
-import StudentsClient, { StudentType, ParentOption, AcademicLevelOption, StudentLevelStatusOption } from "./StudentsClient"; // Import StudentLevelStatusOption
+import StudentsClient, { StudentType, ParentOption, AcademicLevelOption, StudentLevelStatusOption, ClassRoomOption } from "./StudentsClient"; // Import StudentLevelStatusOption
 import { cookies } from "next/headers";
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -14,6 +14,7 @@ const generateSampleStudentsData = (companyId: string): {
   sampleStudents: StudentType[];
   sampleParents: ParentOption[];
   sampleAcademicLevels: AcademicLevelOption[];
+  sampleClassRooms: ClassRoomOption[];
 } => {
   const academicLevels: AcademicLevelOption[] = [
     { id: 'AL001', name: 'Playgroup', sortOrder: 1 },
@@ -47,6 +48,7 @@ const generateSampleStudentsData = (companyId: string): {
       address: '123 Nairobi St, Nairobi',
       companyId: companyId,
       academicLevels: [{ id: 'AL004', name: 'Grade 7' }],
+      classRooms: [{ id: 'CR001', name: 'Room A', academicLevelId: 'AL004' }],
       parentId: 'PAR001',
       parentName: 'Mercy Wanjiru',
       parentEmail: 'mercy.w@example.com',
@@ -74,6 +76,7 @@ const generateSampleStudentsData = (companyId: string): {
       address: '456 Mombasa Rd, Nairobi',
       companyId: companyId,
       academicLevels: [{ id: 'AL004', name: 'Grade 7' }],
+      classRooms: [{ id: 'CR002', name: 'Room B', academicLevelId: 'AL004' }],
       parentId: 'PAR002',
       parentName: 'David Otieno',
       parentEmail: 'david.o@example.com',
@@ -101,6 +104,7 @@ const generateSampleStudentsData = (companyId: string): {
       address: '789 Kisumu St, Nairobi',
       companyId: companyId,
       academicLevels: [{ id: 'AL006', name: 'Grade 9' }],
+      classRooms: [{ id: 'CR003', name: 'Room C', academicLevelId: 'AL006' }],
       parentId: 'PAR003',
       parentName: 'Elizabeth Kimani',
       parentEmail: 'elizabeth.k@example.com',
@@ -128,6 +132,7 @@ const generateSampleStudentsData = (companyId: string): {
       address: '101 Eldoret Ave, Nairobi',
       companyId: companyId,
       academicLevels: [{ id: 'AL005', name: 'Grade 8' }],
+      classRooms: [{ id: 'CR001', name: 'Room A', academicLevelId: 'AL005' }],
       parentId: 'PAR004',
       parentName: 'Ruth Njoroge',
       parentEmail: 'ruth.n@example.com',
@@ -145,7 +150,13 @@ const generateSampleStudentsData = (companyId: string): {
     },
   ];
 
-  return { sampleStudents, sampleParents, sampleAcademicLevels: academicLevels };
+  const sampleClassRooms: ClassRoomOption[] = [
+    { id: 'CR001', name: 'Classroom A', academicLevelId: 'Building 1' },
+    { id: 'CR002', name: 'Classroom B', academicLevelId: 'Building 2' },
+    { id: 'CR003', name: 'Classroom C', academicLevelId: 'Building 3' },
+  ];
+
+  return { sampleStudents, sampleParents, sampleAcademicLevels: academicLevels, sampleClassRooms };
 };
 // --- End Helper function ---
 
@@ -162,6 +173,8 @@ export default async function StudentsManagementPage({ params }: PageProps) {
   let initialStudents: StudentType[] = [];
   let allParents: ParentOption[] = [];
   let allAcademicLevels: AcademicLevelOption[] = [];
+  let allClassRooms: ClassRoomOption[] = [];
+
   // Define StudentLevelStatus options
   const allStudentLevelStatusOptions: StudentLevelStatusOption[] = [
     { value: 'JUNIOR', label: 'Junior' },
@@ -226,18 +239,33 @@ export default async function StudentsManagementPage({ params }: PageProps) {
       fetchError = true;
     }
 
+    // Fetch all classrooms for this company
+    const classRoomsRes = await fetch(
+      `${apiBaseUrl}/admin/classrooms?companyId=${encodeURIComponent(companyId)}`,
+      { next: { revalidate: 60 }, headers: { cookie: cookieHeader }  }
+    );
+    if (classRoomsRes.ok) {
+      const data = (await classRoomsRes.json()).data;
+      allClassRooms = data as ClassRoomOption[];
+    } else {
+      console.error(
+        `[StudentsManagementPage] Failed to fetch classrooms: ${classRoomsRes.status} ${classRoomsRes.statusText}`
+      );
+      fetchError = true;
+    }
   } catch (err: any) {
     console.error("[StudentsManagementPage] Error fetching initial data:", err.message);
     fetchError = true;
   }
 
   // If fetching failed or returned no data, use sample data
-  if (fetchError && initialStudents.length === 0 && allParents.length === 0 && allAcademicLevels.length === 0) {
-    console.log("[StudentsManagementPage] Using sample data for students, parents, and academic levels.");
-    const { sampleStudents, sampleParents, sampleAcademicLevels } = generateSampleStudentsData(companyId);
+  if (fetchError && initialStudents.length === 0 && allParents.length === 0 && allAcademicLevels.length === 0 && allClassRooms.length === 0) {
+    console.log("[StudentsManagementPage] Using sample data for students, parents, academic levels, and classrooms.");
+    const { sampleStudents, sampleParents, sampleAcademicLevels, sampleClassRooms } = generateSampleStudentsData(companyId);
     initialStudents = sampleStudents;
     allParents = sampleParents;
     allAcademicLevels = sampleAcademicLevels;
+    allClassRooms = sampleClassRooms;
   }
 
   return (
@@ -246,6 +274,7 @@ export default async function StudentsManagementPage({ params }: PageProps) {
       allParents={allParents}
       allAcademicLevels={allAcademicLevels}
       allStudentLevelStatusOptions={allStudentLevelStatusOptions} // Pass the new prop
+      allClassRooms={allClassRooms}
       companyId={companyId}
       apiBaseUrl={apiBaseUrl}
     />

@@ -15,6 +15,11 @@ export type AcademicLevelOption = {
   sortOrder?: number;
 };
 
+export type ClassRoomOption = {
+  id: string;
+  name: string; // e.g., "Room A", "Room B"
+};
+
 // NEW: Type for StudentLevelStatus
 export type StudentLevelStatusOption = {
   value: 'JUNIOR' | 'SENIOR' | 'SOPHOMORE' | 'FRESHMAN'; // Match your Prisma enum
@@ -26,6 +31,8 @@ export type StudentType = {
   userId: string;
   loginCode?: string;
   name: string;
+  firstName?: string;
+  lastName?: string;
   email: string;
   profilePicture?: string;
   phone?: string;
@@ -37,6 +44,7 @@ export type StudentType = {
   parentEmail?: string;
   parentPhone?: string;
   academicLevels: AcademicLevelOption[]; // CHANGED: Now an array of academic levels
+  classRooms: ClassRoomOption[]; // NEW: Now an array of class rooms
   levelStatus?: 'JUNIOR' | 'SENIOR' | 'SOPHOMORE' | 'FRESHMAN' | null; // ADDED: levelStatus field
   totalCourses: number;
   completedCourses: number;
@@ -84,6 +92,7 @@ interface StudentFormModalProps {
   initialData: StudentType | null;
   allParents: ParentOption[];
   allAcademicLevels: AcademicLevelOption[];
+  allClassRooms: ClassRoomOption[];
   allStudentLevelStatusOptions: StudentLevelStatusOption[];
   companyId: string;
   isLoading: boolean;
@@ -92,11 +101,13 @@ interface StudentFormModalProps {
 
 // ... rest of your StudentFormModal component
 
-const StudentFormModal: React.FC<StudentFormModalProps> = ({ isOpen, initialData, onClose, onSave, isLoading, companyId, allParents, allAcademicLevels, allStudentLevelStatusOptions }) => {
+const StudentFormModal: React.FC<StudentFormModalProps> = ({ isOpen, initialData, onClose, onSave, isLoading, companyId, allParents, allAcademicLevels, allClassRooms, allStudentLevelStatusOptions }) => {
   const [formData, setFormData] = useState({
     id: initialData?.id || '',
     userId: initialData?.userId || '',
     name: initialData?.name || '',
+    firstName: initialData?.firstName || '',
+    lastName: initialData?.lastName || '',
     email: initialData?.email || '',
     profilePicture: initialData?.profilePicture || '',
     phone: initialData?.phone || '',
@@ -104,6 +115,7 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({ isOpen, initialData
     address: initialData?.address || '',
     parentId: initialData?.parentId || '',
     academicLevelId: initialData?.academicLevels?.[0]?.id || '',
+    classRoomId: initialData?.classRooms?.[0]?.id || '',
     levelStatus: initialData?.levelStatus || '', // Initialize levelStatus
   });
 
@@ -113,6 +125,8 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({ isOpen, initialData
         id: initialData.id,
         userId: initialData.userId,
         name: initialData.name,
+        firstName: initialData.firstName || '',
+        lastName: initialData.lastName || '',
         email: initialData.email,
         profilePicture: initialData.profilePicture || '',
         phone: initialData.phone || '',
@@ -120,12 +134,13 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({ isOpen, initialData
         address: initialData.address || '',
         parentId: initialData.parentId || '',
         academicLevelId: initialData.academicLevels?.[0]?.id || '',
+        classRoomId: initialData.classRooms?.[0]?.id || '',
         levelStatus: initialData.levelStatus || '', // Update levelStatus from initialData
       });
     } else {
       setFormData({
-        id: '', userId: '', name: '', email: '', profilePicture: '',
-        phone: '', bio: '', address: '', parentId: '', academicLevelId: '', levelStatus: '' // Reset for new student
+        id: '', userId: '', name: '', firstName: '', lastName: '', email: '', profilePicture: '',
+        phone: '', bio: '', address: '', parentId: '', academicLevelId: '', classRoomId: '', levelStatus: '' // Reset for new student
       });
     }
   }, [initialData]);
@@ -148,6 +163,9 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({ isOpen, initialData
     }
     if (payload.academicLevelId === '') {
       payload.academicLevelId = null;
+    }
+    if (payload.classRoomId === '') {
+      payload.classRoomId = null;
     }
     // Set levelStatus to null if it's an empty string
     if (payload.levelStatus === '') {
@@ -193,11 +211,24 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({ isOpen, initialData
               <UserCircleIcon className="h-6 w-6 text-indigo-500" /> Personal Information
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
+              {/* <div>
                 <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Full Name <span className="text-red-500">*</span></label>
                 <input type="text" name="name" id="name" value={formData.name} onChange={handleChange} required
                   className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base" />
+              </div> */}
+
+              <div>
+                <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">First Name <span className="text-red-500">*</span></label>
+                <input type="text" name="firstName" id="firstName" value={formData.firstName} onChange={handleChange} required
+                  className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base" />
               </div>
+
+              <div>
+                <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">Last Name <span className="text-red-500">*</span></label>
+                <input type="text" name="lastName" id="lastName" value={formData.lastName} onChange={handleChange} required
+                  className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base" />
+              </div>
+
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">Email Address <span className="text-red-500">*</span></label>
                 <input type="email" name="email" id="email" value={formData.email} onChange={handleChange} required
@@ -271,6 +302,23 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({ isOpen, initialData
                         level.name.toLowerCase().includes('senior') || level.name.toLowerCase().includes('grade'))
                     ).sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0)).map(level => (
                       <option key={level.id} value={level.id}>{level.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className='md:col-span-2'>
+                <label htmlFor="classRoomId" className="block text-sm font-medium text-gray-700 mb-1">
+                  Classroom Assignment
+                </label>
+                <div className="relative mt-1">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <TagIcon className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <select name="classRoomId" id="classRoomId" value={formData.classRoomId} onChange={handleChange}
+                    className="block w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base bg-white">
+                    <option value="">-- Select Classroom (Optional) --</option>
+                    {allClassRooms.sort((a, b) => a.name.localeCompare(b.name)).map(classRoom => (
+                      <option key={classRoom.id} value={classRoom.id}>{classRoom.name}</option>
                     ))}
                   </select>
                 </div>

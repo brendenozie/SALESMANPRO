@@ -2647,8 +2647,8 @@ model Student {
   @@map("students")
 }
 
-// NEW JUNCTION MODEL: CourseAcademicLevel
-// This model represents the many-to-many relationship between Course and AcademicLevel.
+// NEW JUNCTION MODEL: StudentAcademicLevel
+// This model represents the many-to-many relationship between Student and AcademicLevel and Classroom.
 model StudentAcademicLevel {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
@@ -2658,7 +2658,14 @@ model StudentAcademicLevel {
   academicLevel   AcademicLevel @relation(fields: [academicLevelId], references: [id], onDelete: Cascade)
   academicLevelId String        @db.ObjectId
 
-  assignedAt DateTime @default(now())
+  classRoomId String?    @db.ObjectId
+  classRoom   Classroom? @relation(fields: [classRoomId], references: [id])
+
+  assignedAt  DateTime            @default(now())
+  year        String? // e.g., "2023-2024"
+  term        String? // e.g., "Fall", "Spring"
+  session     String? // e.g., "Morning", "Afternoon"
+  levelStatus StudentLevelStatus? // NEW FIELD: Junior/Senior role for the student
 
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
@@ -2780,6 +2787,7 @@ model Classroom {
   attendanceRecords                AttendanceRecord[]
   educatorAcademicLevelAssignments EducatorAcademicLevelAssignment[]
   courseEducatorAssignments        CourseEducatorAssignment[]
+  studentAcademicLevels            StudentAcademicLevel[]
 
   @@index([companyId])
   @@index([academicLevelId])

@@ -20,10 +20,21 @@ async function generateUniqueLoginCode(): Promise<string> {
   return code;
 }
 
+async function generateUniqueAdmissionNumber(): Promise<string> {
+  let number = '';
+  let isUnique = false;
+  while (!isUnique) {
+    number = 'ADM' + Math.floor(100000 + Math.random() * 900000).toString();
+    const existingStudent = await prisma.student.findUnique({
+      where: { admissionNumber: number },
+    });
+    if (!existingStudent) isUnique = true;
+  } 
+  return number;
+}
+
 async function handleGET(request: Request) {
   
-
-
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get('companyId');
 
@@ -85,14 +96,12 @@ async function handleGET(request: Request) {
 }
 
 async function handlePOST(request: Request) {
-  
-
-
+  // name,
   const body = await request.json();
-  const { email, name, companyId, phone, firstName, lastName, admissionNumber, bio, address, profilePicture, parentId, academicLevelId, levelStatus } = body;
+  const { email,  companyId, phone, firstName, lastName, bio, address, profilePicture, parentId, academicLevelId, levelStatus } = body;
 
-  if (!email || !name || !companyId) {
-    return formatResponse(false, null, "Email, Name, and Company ID are required", 400);
+  if (!email || !firstName || !lastName || !companyId) {
+    return formatResponse(false, null, "Email, First Name, Last Name, and Company ID are required", 400);
   }
 
   if (levelStatus && !Object.values(StudentLevelStatus).includes(levelStatus)) {
@@ -105,7 +114,7 @@ async function handlePOST(request: Request) {
     let user = await tx.user.findUnique({ where: { email } });
 
     if (!user) {
-      user = await tx.user.create({ data: { email, name, image: profilePicture, role } });
+      user = await tx.user.create({ data: { email, name: `${firstName} ${lastName}`, image: profilePicture, role } });
     } else {
       const existingStudent = await tx.student.findUnique({ where: { userId: user.id } });
       if (existingStudent) throw new Error("A student profile already exists for this user.");
@@ -126,6 +135,7 @@ async function handlePOST(request: Request) {
     }
 
     const loginCode = await generateUniqueLoginCode();
+    const admissionNumber = await generateUniqueAdmissionNumber();
 
     const newStudent = await tx.student.create({
       data: { userId: user.id, loginCode, companyId, parentId, firstName, lastName, admissionNumber, phone, bio, address, profilePicture, levelStatus },
