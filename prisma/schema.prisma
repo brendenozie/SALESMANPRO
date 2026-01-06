@@ -389,6 +389,7 @@ model Company {
   Delivery              Delivery[]
   subscriptionCompanies SubscriptionCompany[]
   feeItems              FeeItem[]
+  classrooms            Classroom[]
 
   @@index([userId])
 }
@@ -2750,12 +2751,35 @@ model AcademicLevel {
   CourseAcademicLevel  CourseAcademicLevel[]
   StudentAcademicLevel StudentAcademicLevel[]
 
-  createdAt DateTime? @default(now())
-  updatedAt DateTime? @updatedAt
+  createdAt  DateTime?   @default(now())
+  updatedAt  DateTime?   @updatedAt
+  classrooms Classroom[]
 
   @@unique([companyId, name]) // A company cannot have two academic levels with the same name
   @@index([companyId, sortOrder]) // For efficient querying and ordering
   @@index([companyId])
+}
+
+model Classroom {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  name        String // e.g., "Room 101", "Science Lab"
+  description String?
+  capacity    Int?
+
+  academicLevelId String?        @db.ObjectId
+  academicLevel   AcademicLevel? @relation(fields: [academicLevelId], references: [id])
+
+  company   Company? @relation(fields: [companyId], references: [id])
+  companyId String?  @db.ObjectId
+
+  classSchedules ClassSchedule[]
+
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+
+  @@index([companyId])
+  @@index([academicLevelId])
 }
 
 // NEW JUNCTION MODEL: EducatorAcademicLevelAssignment
@@ -3282,6 +3306,9 @@ model ClassSchedule {
   updatedAt DateTime? @updatedAt
 
   AttendanceRecord AttendanceRecord[]
+
+  classroom   Classroom? @relation(fields: [classroomId], references: [id])
+  classroomId String?    @db.ObjectId
 
   // Unique constraint: An educator can only have one class scheduled at a specific date and time within a company.
   // This helps prevent accidental double-booking for the same educator.
