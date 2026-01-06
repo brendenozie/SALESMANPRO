@@ -97,6 +97,15 @@ export const deleteStudent = async (id: string): Promise<boolean> => {
 };
 
 // --- FeeItem Operations ---
+export const getFeeItemsByCompany = async (
+  companyId: string
+): Promise<FeeItem[]> => {
+  return prisma.feeItem.findMany({
+    where: { companyId },
+    orderBy: { createdAt: "desc" },
+  });
+};
+
 export const getFeeItems = async (): Promise<FeeItem[]> => {
   return prisma.feeItem.findMany();
 };
@@ -182,41 +191,67 @@ export const createStudentFeeRecord = async (
   }
 
   // Find applicable FeeItems based on student's currentClass and academicLevel
+  if (!student.companyId) {
+    console.error(`Student ${studentId} does not have a companyId.`);
+    return null;
+  }
+
   const applicableFeeItems = await prisma.feeItem.findMany({
     where: {
+      companyId: student.companyId,
       OR: [
         { applicableTo: "ALL" },
         {
           applicableTo: "CLASS",
-          applicableValue: student.currentClass,
+          applicableRef: student.currentClass,
         },
         {
           applicableTo: "ACADEMIC_LEVEL",
-          applicableValue: student.academicLevel,
+          applicableRef: student.academicLevel,
         },
-        // Add logic for 'COURSE' if you track student courses
-        // {
-        //   applicableTo: "COURSE",
-        //   applicableValue: { in: student.enrolledCourses }, // Assuming student.enrolledCourses is an array
-        // },
       ],
-      // Filter by academicYear and term if the FeeItem itself is year/term specific
       AND: [
-        {
-          OR: [
-            { academicYear: null }, // Fee item applies to all years if null
-            { academicYear: academicYear },
-          ]
-        },
-        {
-          OR: [
-            { term: null }, // Fee item applies to all terms if null
-            { term: term },
-          ]
-        }
-      ]
+        { OR: [{ academicYear: null }, { academicYear }] },
+        { OR: [{ term: null }, { term }] },
+      ],
     },
   });
+
+  // const applicableFeeItems = await prisma.feeItem.findMany({
+  //   where: {
+  //     OR: [
+  //       { applicableTo: "ALL" },
+  //       {
+  //         applicableTo: "CLASS",
+  //         applicableValue: student.currentClass,
+  //       },
+  //       {
+  //         applicableTo: "ACADEMIC_LEVEL",
+  //         applicableValue: student.academicLevel,
+  //       },
+  //       // Add logic for 'COURSE' if you track student courses
+  //       // {
+  //       //   applicableTo: "COURSE",
+  //       //   applicableValue: { in: student.enrolledCourses }, // Assuming student.enrolledCourses is an array
+  //       // },
+  //     ],
+  //     // Filter by academicYear and term if the FeeItem itself is year/term specific
+  //     AND: [
+  //       {
+  //         OR: [
+  //           { academicYear: null }, // Fee item applies to all years if null
+  //           { academicYear: academicYear },
+  //         ]
+  //       },
+  //       {
+  //         OR: [
+  //           { term: null }, // Fee item applies to all terms if null
+  //           { term: term },
+  //         ]
+  //       }
+  //     ]
+  //   },
+  // });
 
   // Construct the appliedFeeItems array (snapshot)
   const appliedFeeItemsSnapshot = applicableFeeItems.map(item => ({

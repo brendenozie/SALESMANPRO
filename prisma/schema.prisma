@@ -388,6 +388,7 @@ model Company {
   // @@index([slug])
   Delivery              Delivery[]
   subscriptionCompanies SubscriptionCompany[]
+  feeItems              FeeItem[]
 
   @@index([userId])
 }
@@ -4028,22 +4029,43 @@ model Tag {
 
 //   @@map("studentFeeRecords") // Name of the collection in MongoDB
 // }
+enum FeeApplicability {
+  CLASS
+  COURSE
+  ACADEMIC_LEVEL
+  ALL
+}
 
 // FeeItem Model: Defines the templates for different fee components
 // These are the "rules" for what fees exist and to whom they apply.
 model FeeItem {
-  id              String  @id @default(auto()) @map("_id") @db.ObjectId
-  name            String  @unique // e.g., "Tuition Fee", "Science Lab Fee", "Sports Club Fee"
-  description     String?
-  defaultAmount   Float // The standard amount for this fee item
+  id            String  @id @default(auto()) @map("_id") @db.ObjectId
+  name          String // e.g., "Tuition Fee", "Science Lab Fee", "Sports Club Fee"
+  description   String?
+  defaultAmount Float // The standard amount for this fee item
+  currency      String  @default("USD") // Currency for the fee amount
+
+  companyId String  @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id])
+
   // How this fee applies (e.g., "Class", "Course", "AcademicLevel", "All")
   // This helps in determining which students a fee applies to.
-  applicableTo    String // Values like: "CLASS", "COURSE", "ACADEMIC_LEVEL", "ALL"
-  applicableValue String? // e.g., "Grade 10A", "Physics 101", "SENIOR". Null if applicableTo "ALL"
-  academicYear    String? // Optional: If this fee item is specific to a year (e.g., "2024/2025 Tuition")
-  term            String? // Optional: If this fee item is specific to a term (e.g., "Term 1 Lab Fee")
-  isMandatory     Boolean @default(true) // Whether this fee is mandatory for those it applies to
+  applicableTo FeeApplicability
 
+  // applicableTo    String // Values like: "CLASS", "COURSE", "ACADEMIC_LEVEL", "ALL"
+  // applicableValue String? // e.g., "Grade 10A", "Physics 101", "SENIOR". Null if applicableTo "ALL"
+  applicableRef String?
+  // e.g., if applicableTo is CLASS, this could be the class ID
+  // if applicableTo is COURSE, this could be the course ID
+  // if applicableTo is ACADEMIC_LEVEL, this could be the academic level ID
+
+  academicYear String? // Optional: If this fee item is specific to a year (e.g., "2024/2025 Tuition")
+  term         String? // Optional: If this fee item is specific to a term (e.g., "Term 1 Lab Fee")
+  isMandatory  Boolean  @default(true) // Whether this fee is mandatory for those it applies to
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([companyId, name])
   @@map("feeItems") // MongoDB collection name for fee items
 }
 
