@@ -40,17 +40,10 @@ async function getStudent(req: Request, { params }: { params: { id: string } }) 
           },
         },
       },
-      // orderBy: {
-      //   assignment
-      // }
     });
 
     if (!student) return formatResponse(false, null, "Student not found", 404);
 
-    // const academicLevels = student.StudentAcademicLevel.map(sal => ({
-    //   id: sal.academicLevel.id,
-    //   name: sal.academicLevel.name,
-    // }));
     const academicLevels = student.StudentAcademicLevel.map(sal => ({
         academicLevelId: sal.academicLevel.id,
         academicLevelName: sal.academicLevel.name,
@@ -99,7 +92,56 @@ async function getStudent(req: Request, { params }: { params: { id: string } }) 
 }
 
 // PATCH /api/students/[id] – update a student
-async function updateStudent(req: Request) {
+// ... imports same as above ...
+
+async function updateStudent(req: Request, { params }: { params: { id: string } }) {
+  const { id: studentId } = params;
+  const body = await req.json();
+
+  const updated = await prisma.$transaction(async tx => {
+    const existing = await tx.student.findUnique({ 
+        where: { id: studentId }, 
+        include: { user: true } 
+    });
+    if (!existing) throw new Error("Student not found");
+
+    // Update User
+    await tx.user.update({
+      where: { id: existing.userId },
+      data: { name: `${body.firstName} ${body.lastName}`, email: body.email }
+    });
+
+    // Update Student
+    const student = await tx.student.update({
+      where: { id: studentId },
+      data: {
+        firstName: body.firstName,
+        lastName: body.lastName,
+        phone: body.phone,
+        address: body.address,
+        parentId: body.parentId || null,
+        levelStatus: body.levelStatus
+      }
+    });
+
+    // Handle Academic Record Update/Upsert
+    if (body.academicLevelId) {
+      await tx.studentAcademicLevel.upsert({
+        where: { studentId_academicLevelId: { studentId, academicLevelId: body.academicLevelId } },
+        update: { classRoomId: body.classRoomId, year: body.year, term: body.term },
+        create: { studentId, academicLevelId: body.academicLevelId, classRoomId: body.classRoomId, year: body.year, term: body.term }
+      });
+    }
+
+    return student;
+  });
+
+  return formatResponse(true, updated, "Updated successfully");
+}
+
+// export const PATCH = withApiHandler(updateStudent);
+// GET and DELETE logic follow the same mapping pattern as the collection route
+async function updateStudentV1(req: Request) {
   
 
   try {
@@ -212,18 +254,6 @@ async function updateStudent(req: Request) {
           },
         });
       }
-
-      // if (academicLevelId !== undefined) {
-      //   if (!academicLevelId) {
-      //     await tx.studentAcademicLevel.deleteMany({ where: { studentId } });
-      //   } else {
-      //     const newLevel = await tx.academicLevel.findUnique({ where: { id: academicLevelId } });
-      //     if (!newLevel) throw new Error("Provided academicLevelId does not exist.");
-
-      //     await tx.studentAcademicLevel.deleteMany({ where: { studentId } });
-      //     await tx.studentAcademicLevel.create({ data: { studentId, academicLevelId } });
-      //   }
-      // }
 
       return updated;
     });
