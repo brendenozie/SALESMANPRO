@@ -144,6 +144,7 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
     // Clean data: convert empty strings to null for optional relations
     const payload = {
       ...formData,
+      id: initialData?.id || undefined,
       companyId,
       parentId: formData.parentId || null,
       academicLevelId: formData.academicLevelId || null,
