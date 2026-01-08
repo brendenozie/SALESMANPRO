@@ -23,7 +23,14 @@ async function getStudent(req: Request, { params }: { params: { id: string } }) 
             user: { select: { id: true, name: true, email: true, phone: true } },
           },
         },
-        StudentAcademicLevel: { include: { academicLevel: { select: { id: true, name: true } } } },
+        
+        StudentAcademicLevel: {
+          include: {
+            academicLevel: { select: { id: true, name: true } },
+            classRoom: { select: { id: true, name: true } },
+          },
+        },
+
         _count: {
           select: {
             enrolledCourses: true,
@@ -33,13 +40,26 @@ async function getStudent(req: Request, { params }: { params: { id: string } }) 
           },
         },
       },
+      // orderBy: {
+      //   assignment
+      // }
     });
 
     if (!student) return formatResponse(false, null, "Student not found", 404);
 
+    // const academicLevels = student.StudentAcademicLevel.map(sal => ({
+    //   id: sal.academicLevel.id,
+    //   name: sal.academicLevel.name,
+    // }));
     const academicLevels = student.StudentAcademicLevel.map(sal => ({
-      id: sal.academicLevel.id,
-      name: sal.academicLevel.name,
+        academicLevelId: sal.academicLevel.id,
+        academicLevelName: sal.academicLevel.name,
+        classRoomId: sal.classRoom?.id || null,
+        classRoomName: sal.classRoom?.name || null,
+        year: sal.year,
+        term: sal.term,
+        session: sal.session,
+        levelStatus: sal.levelStatus,
     }));
 
     const responseData = {
@@ -89,8 +109,7 @@ async function updateStudent(req: Request) {
 
     const body = await req.json();
     const {
-      // name,
-      firstName, 
+      firstName,
       lastName,
       email,
       phone,
@@ -99,9 +118,13 @@ async function updateStudent(req: Request) {
       profilePicture,
       parentId,
       academicLevelId,
+      classRoomId,
+      year,
+      term,
+      session,
       levelStatus,
-      ...rest
     } = body;
+
 
     if (levelStatus && !Object.values(StudentLevelStatus).includes(levelStatus)) {
       return formatResponse(false, null, "Invalid levelStatus provided", 400);
@@ -130,7 +153,7 @@ async function updateStudent(req: Request) {
       if (parentId !== undefined) {
         parentUpdateData = parentId === null || parentId === "" ? { disconnect: true } : { connect: { id: parentId } };
       }
-
+      
       // Update student
       const studentUpdateData = {
         phone: phone || null,
@@ -154,18 +177,53 @@ async function updateStudent(req: Request) {
         },
       });
 
-      // Handle academic level assignment
-      if (academicLevelId !== undefined) {
-        if (!academicLevelId) {
-          await tx.studentAcademicLevel.deleteMany({ where: { studentId } });
-        } else {
-          const newLevel = await tx.academicLevel.findUnique({ where: { id: academicLevelId } });
-          if (!newLevel) throw new Error("Provided academicLevelId does not exist.");
-
-          await tx.studentAcademicLevel.deleteMany({ where: { studentId } });
-          await tx.studentAcademicLevel.create({ data: { studentId, academicLevelId } });
-        }
+      if (classRoomId) {
+        const classroom = await tx.classroom.findUnique({
+          where: { id: classRoomId },
+        });
+        if (!classroom) throw new Error("Provided classRoomId does not exist.");
       }
+
+
+      // Handle academic level assignment
+      if (academicLevelId) {
+        await tx.studentAcademicLevel.upsert({
+          where: {
+            studentId_academicLevelId: {
+              studentId,
+              academicLevelId,
+            },
+          },
+          update: {
+            classRoomId: classRoomId || null,
+            year: year || null,
+            term: term || null,
+            session: session || null,
+            levelStatus: levelStatus || null,
+          },
+          create: {
+            studentId,
+            academicLevelId,
+            classRoomId: classRoomId || null,
+            year: year || null,
+            term: term || null,
+            session: session || null,
+            levelStatus: levelStatus || null,
+          },
+        });
+      }
+
+      // if (academicLevelId !== undefined) {
+      //   if (!academicLevelId) {
+      //     await tx.studentAcademicLevel.deleteMany({ where: { studentId } });
+      //   } else {
+      //     const newLevel = await tx.academicLevel.findUnique({ where: { id: academicLevelId } });
+      //     if (!newLevel) throw new Error("Provided academicLevelId does not exist.");
+
+      //     await tx.studentAcademicLevel.deleteMany({ where: { studentId } });
+      //     await tx.studentAcademicLevel.create({ data: { studentId, academicLevelId } });
+      //   }
+      // }
 
       return updated;
     });

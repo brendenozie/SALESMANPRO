@@ -21,9 +21,11 @@ import {
   UserGroupIcon,
   TagIcon,
   XMarkIcon,
+  ArrowPathIcon,
 } from '@heroicons/react/24/outline';
 
 import StudentFormModal from './StudentFormModal'; // Import the new modal component
+import PromoteStudentModal from './PromoteStudentModal';
 
 const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
 
@@ -62,9 +64,19 @@ export type StudentType = {
   parentName?: string;
   parentEmail?: string;
   parentPhone?: string;
-  academicLevels: AcademicLevelOption[];
-  classRooms: ClassRoomOption[];
-  levelStatus?: 'JUNIOR' | 'SENIOR' | 'SOPHOMORE' | 'FRESHMAN' |null; // ADDED: levelStatus field
+  academicRecords: {
+    academicLevelId: string;
+    academicLevelName: string;
+    classRoomId?: string | null;
+    classRoomName?: string | null;
+    year?: string | null;
+    term?: string | null;
+    session?: string | null;
+    levelStatus?: 'JUNIOR' | 'SENIOR' | null;
+  }[];
+  // academicLevels: AcademicLevelOption[];
+  // classRooms: ClassRoomOption[];
+  // levelStatus?: 'JUNIOR' | 'SENIOR' | 'SOPHOMORE' | 'FRESHMAN' |null; // ADDED: levelStatus field
   totalCourses: number;
   completedCourses: number;
   certificatesEarned: number;
@@ -104,15 +116,33 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
   const [filterClassRoom, setFilterClassRoom] = useState('All'); // NEW: Filter by classroom ID
   const [filterLevelStatus, setFilterLevelStatus] = useState('All'); // NEW: Filter by Junior/Senior status
   const [showFormModal, setShowFormModal] = useState(false);
+  const [showPromoteStudentModal, setShowPromoteStudentModal] = useState(false);
   const [editingStudent, setEditingStudent] = useState<StudentType | null>(null);
+  
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [isPromoteOpen, setIsPromoteOpen] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState<StudentType | null>(null);
+  const [isPromoting, setIsPromoting] = useState(false);
+
 
   const today = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
     month: 'long',
     day: 'numeric',
   });
+
+  const getCurrentAcademicRecord = (student: StudentType) => {
+    if (!student.academicRecords?.length) return null;
+
+    return [...student.academicRecords]
+      .sort((a, b) => {
+        if (!a.year || !b.year) return 0;
+        return Number(b.year) - Number(a.year);
+      })[0];
+  };
+
 
   // --- Data Fetching and Management ---
   const fetchStudentsAndParentsAndAcademicLevels = useCallback(async () => {
@@ -182,52 +212,119 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
     }
   }, [fetchStudentsAndParentsAndAcademicLevels, initialStudents, allParents, allAcademicLevels, allClassRooms]);
 
-
   const filteredStudents = useMemo(() => {
     return students.filter(student => {
+      const current = getCurrentAcademicRecord(student);
+
       const matchesSearch =
-        (student.name?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
-        (student.email?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
-        (student.loginCode?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
-        (student.phone?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
-        (student.address?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
-        (student.bio?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
-        (student.parentName?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
-        (student.parentEmail?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
-        (student.parentPhone?.toLowerCase().includes(searchTerm.toLowerCase()) || '');
+        student.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        student.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        student.loginCode?.toLowerCase().includes(searchTerm.toLowerCase());
 
-      // Check if any of the student's academic levels match the filter
-      const matchesAcademicLevel = filterAcademicLevel === 'All' ||  student.academicLevels?.some(al => al.id === filterAcademicLevel);
+      const matchesAcademicLevel =
+        filterAcademicLevel === 'All' ||
+        current?.academicLevelId === filterAcademicLevel;
 
-      const matchesClassRoom = filterClassRoom === 'All' || student.classRooms?.some(cr => cr.id === filterClassRoom);
+      const matchesClassRoom =
+        filterClassRoom === 'All' ||
+        current?.classRoomId === filterClassRoom;
 
-      // NEW: Check if student's levelStatus matches the filter
-      const matchesLevelStatus = filterLevelStatus === 'All' || student.levelStatus === filterLevelStatus;
+      const matchesLevelStatus =
+        filterLevelStatus === 'All' ||
+        current?.levelStatus === filterLevelStatus;
 
-      return matchesSearch && matchesAcademicLevel && matchesLevelStatus; // Combine all filters
-    }).sort((a, b) => (a.name || '').localeCompare(b.name || '')); // Sort alphabetically by name
-  }, [students, searchTerm, filterAcademicLevel, filterLevelStatus]); // Add filterLevelStatus to dependencies
+      return (
+        matchesSearch &&
+        matchesAcademicLevel &&
+        matchesClassRoom &&
+        matchesLevelStatus
+      );
+    });
+  }, [students, searchTerm, filterAcademicLevel, filterClassRoom, filterLevelStatus]);
+
+  const handlePromoteStudent = async (payload: {
+  studentId: string;
+  academicLevelId: string;
+  classRoomId?: string | null;
+  year: string;
+  term?: string | null;
+  session?: string | null;
+  action: 'PROMOTED' | 'RETAINED';
+  levelStatus?: 'JUNIOR' | 'SENIOR' | 'SOPHOMORE' | 'FRESHMAN' | undefined;
+}) => {
+  try {
+    setIsPromoting(true);
+
+    const res = await fetch('/api/students/promote', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      throw new Error('Failed to promote student');
+    }
+
+    // ✅ Refresh students list
+    await fetchStudentsAndParentsAndAcademicLevels();
+
+    // ✅ Close modal
+    setIsPromoteOpen(false);
+    setSelectedStudent(null);
+  } catch (error) {
+    console.error(error);
+    alert('Failed to promote student');
+  } finally {
+    setIsPromoting(false);
+  }
+};
+
+
+  // const filteredStudents = useMemo(() => {
+  //   return students.filter(student => {
+  //     const matchesSearch =
+  //       (student.name?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
+  //       (student.email?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
+  //       (student.loginCode?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
+  //       (student.phone?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
+  //       (student.address?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
+  //       (student.bio?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
+  //       (student.parentName?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
+  //       (student.parentEmail?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
+  //       (student.parentPhone?.toLowerCase().includes(searchTerm.toLowerCase()) || '');
+
+  //     // Check if any of the student's academic levels match the filter
+  //     const matchesAcademicLevel = filterAcademicLevel === 'All' ||  student.academicLevels?.some(al => al.id === filterAcademicLevel);
+
+  //     const matchesClassRoom = filterClassRoom === 'All' || student.classRooms?.some(cr => cr.id === filterClassRoom);
+
+  //     // NEW: Check if student's levelStatus matches the filter
+  //     const matchesLevelStatus = filterLevelStatus === 'All' || student.levelStatus === filterLevelStatus;
+
+  //     return matchesSearch && matchesAcademicLevel && matchesLevelStatus; // Combine all filters
+  //   }).sort((a, b) => (a.name || '').localeCompare(b.name || '')); // Sort alphabetically by name
+  // }, [students, searchTerm, filterAcademicLevel, filterLevelStatus]); // Add filterLevelStatus to dependencies
 
   // Helper function to get unique academic levels and count students per level (unchanged logic)
-  const getAcademicLevelStats = useMemo(() => {
-    const levels: { [levelId: string]: { name: string; count: number } } = {};
-    students.forEach(student => {
-      student.academicLevels.forEach(al => {
-        if (levels[al.id]) {
-          levels[al.id].count++;
-        } else {
-          levels[al.id] = { name: al.name, count: 1 };
-        }
-      });
-    });
-    return Object.entries(levels)
-      .map(([id, data]) => ({ id, name: data.name, count: data.count }))
-      .sort((a, b) => {
-        const levelA = academicLevels.find(al => al.id === a.id);
-        const levelB = academicLevels.find(al => al.id === b.id);
-        return (levelA?.sortOrder || 0) - (levelB?.sortOrder || 0);
-      });
-  }, [students, academicLevels]);
+  // const getAcademicLevelStats = useMemo(() => {
+  //   const levels: { [levelId: string]: { name: string; count: number } } = {};
+  //   students.forEach(student => {
+  //     student.academicLevels.forEach(al => {
+  //       if (levels[al.id]) {
+  //         levels[al.id].count++;
+  //       } else {
+  //         levels[al.id] = { name: al.name, count: 1 };
+  //       }
+  //     });
+  //   });
+  //   return Object.entries(levels)
+  //     .map(([id, data]) => ({ id, name: data.name, count: data.count }))
+  //     .sort((a, b) => {
+  //       const levelA = academicLevels.find(al => al.id === a.id);
+  //       const levelB = academicLevels.find(al => al.id === b.id);
+  //       return (levelA?.sortOrder || 0) - (levelB?.sortOrder || 0);
+  //     });
+  // }, [students, academicLevels]);
 
   // --- API Interaction Functions ---
   const handleSaveStudent = async (studentData: Omit<StudentType, 'id' | 'userId' | 'loginCode' | 'totalCourses' | 'completedCourses' | 'certificatesEarned' | 'averageProgress' | 'totalAssignmentSubmissions' | 'totalAttendanceRecords' | 'totalExamSubmissions' | 'createdAt' | 'updatedAt' | 'parentName' | 'parentEmail' | 'parentPhone' | 'academicLevels' | 'classRooms'> & { id?: string; userId?: string; parentId?: string | null; academicLevelId?: string | null }) => {
@@ -498,8 +595,13 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
                             height={40}
                             loader={loader}
                             onError={(e) => {
-                              (e.target as HTMLImageElement).onerror = null;
-                              (e.target as HTMLImageElement).src = `https://placehold.co/100x100/E0F2F7/0288D1?text=${student.name?.charAt(0) || '?'}`;
+                              const img = (e.currentTarget || e.target) as HTMLImageElement;
+                              try {
+                                img.onerror = null;
+                                img.src = `https://placehold.co/100x100/E0F2F7/0288D1?text=${student.name?.charAt(0) || '?'}`;
+                              } catch {
+                                /* noop */
+                              }
                             }}
                           />
                         </div>
@@ -509,51 +611,71 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
                         </div>
                       </div>
                     </td>
+
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-blue-700">
                       <div className="flex items-center gap-1">
                         <KeyIcon className="h-4 w-4 text-blue-500" /> {student.admissionNumber || 'N/A'}
                       </div>
                     </td>
+
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       <div className="font-medium flex items-center gap-1">
                         <TagIcon className="h-4 w-4 text-gray-500" />
-                        {/* Display all academic levels, or 'N/A' if none */}
-                        {student.academicLevels && student.academicLevels.length > 0
-                          ? student.academicLevels.map(al => (
-                              <span key={al.id} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 mr-1 mb-1">
-                                {al.name}
-                              </span>
-                            ))
+                        {student.academicRecords && student.academicRecords.length > 0
+                          ? (() => {
+                              const current = getCurrentAcademicRecord(student);
+                              return current ? (
+                                <span className="inline-flex px-2.5 py-0.5 rounded-full text-xs bg-indigo-100 text-indigo-800">
+                                  {current.academicLevelName} ({current.year})
+                                </span>
+                              ) : (
+                                'N/A'
+                              );
+                            })()
                           : 'N/A'}
                       </div>
                       <div className="text-xs text-gray-500 mt-1">Enrolled: {new Date(student.createdAt).toLocaleDateString()}</div>
                     </td>
+
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                       <div className="font-medium flex items-center gap-1">
                         <BookOpenIcon className="h-4 w-4 text-gray-500" />
-                        {/* Display all classrooms, or 'N/A' if none */}
-                        {student.classRooms && student.classRooms.length > 0
-                          ? student.classRooms.map(cr => (
-                              <span key={cr.id} className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 mr-1 mb-1">
-                                {cr.name}
-                              </span>
-                            ))
+                        {student.academicRecords && student.academicRecords.length > 0
+                          ? (() => {
+                              const current = getCurrentAcademicRecord(student);
+                              return current?.classRoomName ? (
+                                <span className="inline-flex px-2.5 py-0.5 rounded-full text-xs bg-green-100 text-green-800">
+                                  {current.classRoomName}
+                                </span>
+                              ) : (
+                                'N/A'
+                              );
+                            })()
                           : 'N/A'}
                       </div>
                     </td>
-                    {/* NEW: Student Level Status Cell */}
+
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      {student.levelStatus ? (
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          student.levelStatus === 'JUNIOR' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
-                        }`}>
-                          {student.levelStatus.charAt(0) + student.levelStatus.slice(1).toLowerCase()} {/* Displays "Junior" or "Senior" */}
-                        </span>
+                      {student.academicRecords && student.academicRecords.length > 0 ? (
+                        (() => {
+                          const current = getCurrentAcademicRecord(student);
+                          return current?.levelStatus ? (
+                            <span
+                              className={`inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                current.levelStatus === 'JUNIOR' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
+                              }`}
+                            >
+                              {current.levelStatus}
+                            </span>
+                          ) : (
+                            <span className="text-gray-500">N/A</span>
+                          );
+                        })()
                       ) : (
                         <span className="text-gray-500">N/A</span>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {student.parentName ? (
                         <>
                           <div className="flex items-center gap-1">
@@ -597,6 +719,21 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
                           <PencilIcon className="h-5 w-5" />
                         </button>
                         <button
+                          onClick={() => { setSelectedStudent(student); setShowPromoteStudentModal(true); }}
+                          className="text-emerald-600 bg-emerald-50 p-2 rounded-full hover:bg-emerald-100"
+                          title="Promote Student"
+                        >
+                          <AcademicCapIcon className="h-5 w-5" />
+                        </button>
+                        <button
+                          onClick={() => { setSelectedStudent(student); setShowPromoteStudentModal(true); }}
+                          className="text-amber-600 bg-amber-50 p-2 rounded-full hover:bg-amber-100"
+                          title="Repeat / Retain Student"
+                        >
+                          <ArrowPathIcon className="h-5 w-5" />
+                        </button>
+
+                        <button
                           onClick={() => handleDeleteStudent(student.id)}
                           className="text-red-600 hover:text-red-900 bg-red-50 p-2 rounded-full hover:bg-red-100 transition-colors duration-200"
                           title="Delete Student"
@@ -636,9 +773,25 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
           allStudentLevelStatusOptions={allStudentLevelStatusOptions} // Pass to modal
           companyId={companyId}
           isLoading={isLoading}
-          error={error}
+          // error={error}
         />
       )}
+
+      {showPromoteStudentModal &&(
+        <PromoteStudentModal
+          isOpen={isPromoteOpen}
+          student={selectedStudent}
+          onClose={() => {
+            setIsPromoteOpen(false);
+            setSelectedStudent(null);
+          }}
+          onPromote={handlePromoteStudent}
+          allAcademicLevels={allAcademicLevels}
+          allClassRooms={allClassRooms}
+          isLoading={isPromoting}
+        />
+
+        )}
     </div>
   );
 }

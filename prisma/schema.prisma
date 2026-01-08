@@ -2667,6 +2667,10 @@ model StudentAcademicLevel {
   session     String? // e.g., "Morning", "Afternoon"
   levelStatus StudentLevelStatus? // NEW FIELD: Junior/Senior role for the student
 
+  repeatReason     String?
+
+  isRepeat         Boolean  @default(false)
+
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
 
@@ -2674,6 +2678,7 @@ model StudentAcademicLevel {
   @@index([studentId])
   @@index([academicLevelId])
 }
+
 
 enum EducatorStatus {
   ACTIVE

@@ -43,9 +43,19 @@ export type StudentType = {
   parentName?: string;
   parentEmail?: string;
   parentPhone?: string;
-  academicLevels: AcademicLevelOption[]; // CHANGED: Now an array of academic levels
-  classRooms: ClassRoomOption[]; // NEW: Now an array of class rooms
-  levelStatus?: 'JUNIOR' | 'SENIOR' | 'SOPHOMORE' | 'FRESHMAN' | null; // ADDED: levelStatus field
+  academicRecords: {
+    academicLevelId: string;
+    academicLevelName: string;
+    classRoomId?: string | null;
+    classRoomName?: string | null;
+    year?: string | null;
+    term?: string | null | undefined;
+    session?: string | null | undefined;
+    levelStatus?: 'JUNIOR' | 'SENIOR' | 'JUNIOR' | 'SENIOR' | 'SOPHOMORE' | 'FRESHMAN' | null | undefined;
+  }[];
+  // academicLevels: AcademicLevelOption[]; // CHANGED: Now an array of academic levels
+  // classRooms: ClassRoomOption[]; // NEW: Now an array of class rooms
+  // levelStatus?: 'JUNIOR' | 'SENIOR' | 'SOPHOMORE' | 'FRESHMAN' | null; // ADDED: levelStatus field
   totalCourses: number;
   completedCourses: number;
   certificatesEarned: number;
@@ -87,7 +97,7 @@ interface StudentFormModalProps {
     userId?: string;
     parentId?: string | null;
     academicLevelId?: string | null;
-    levelStatus?: StudentType['levelStatus']; // Corrected type
+    levelStatus?: StudentType['academicRecords'][0]['levelStatus']; // Corrected type
   }) => Promise<void>;
   initialData: StudentType | null;
   allParents: ParentOption[];
@@ -101,11 +111,21 @@ interface StudentFormModalProps {
 
 // ... rest of your StudentFormModal component
 
+const getCurrentAcademicRecord = (student?: StudentType | null) => {
+  if (!student?.academicRecords?.length) return null;
+
+  return [...student.academicRecords].sort((a, b) => {
+    if (!a.year || !b.year) return 0;
+    return Number(b.year) - Number(a.year);
+  })[0];
+};
+
+
 const StudentFormModal: React.FC<StudentFormModalProps> = ({ isOpen, initialData, onClose, onSave, isLoading, companyId, allParents, allAcademicLevels, allClassRooms, allStudentLevelStatusOptions }) => {
+  
   const [formData, setFormData] = useState({
     id: initialData?.id || '',
     userId: initialData?.userId || '',
-    name: initialData?.name || '',
     firstName: initialData?.firstName || '',
     lastName: initialData?.lastName || '',
     email: initialData?.email || '',
@@ -114,17 +134,15 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({ isOpen, initialData
     bio: initialData?.bio || '',
     address: initialData?.address || '',
     parentId: initialData?.parentId || '',
-    academicLevelId: initialData?.academicLevels?.[0]?.id || '',
-    classRoomId: initialData?.classRooms?.[0]?.id || '',
-    levelStatus: initialData?.levelStatus || '', // Initialize levelStatus
   });
+
 
   useEffect(() => {
     if (initialData) {
       setFormData({
         id: initialData.id,
         userId: initialData.userId,
-        name: initialData.name,
+        // name: initialData.name,
         firstName: initialData.firstName || '',
         lastName: initialData.lastName || '',
         email: initialData.email,
@@ -133,14 +151,11 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({ isOpen, initialData
         bio: initialData.bio || '',
         address: initialData.address || '',
         parentId: initialData.parentId || '',
-        academicLevelId: initialData.academicLevels?.[0]?.id || '',
-        classRoomId: initialData.classRooms?.[0]?.id || '',
-        levelStatus: initialData.levelStatus || '', // Update levelStatus from initialData
       });
     } else {
       setFormData({
-        id: '', userId: '', name: '', firstName: '', lastName: '', email: '', profilePicture: '',
-        phone: '', bio: '', address: '', parentId: '', academicLevelId: '', classRoomId: '', levelStatus: '' // Reset for new student
+        id: '', userId: '',  firstName: '', lastName: '', email: '', profilePicture: '',
+        phone: '', bio: '', address: '', parentId: ''//, academicLevelId: '', classRoomId: '', levelStatus: '' // Reset for new student
       });
     }
   }, [initialData]);
@@ -158,19 +173,27 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({ isOpen, initialData
       companyId,
     };
 
-    if (payload.parentId === '') {
-      payload.parentId = null;
+    if (payload.parentId === '') payload.parentId = null;
+
+    if (!initialData) {
+      // Creating student
+      // payload.academicLevelId = formData.academicLevelId;
+      // payload.classRoomId = formData.classRoomId || null;
     }
-    if (payload.academicLevelId === '') {
-      payload.academicLevelId = null;
-    }
-    if (payload.classRoomId === '') {
-      payload.classRoomId = null;
-    }
-    // Set levelStatus to null if it's an empty string
-    if (payload.levelStatus === '') {
-      payload.levelStatus = null;
-    }
+
+    // if (payload.parentId === '') {
+    //   payload.parentId = null;
+    // }
+    // if (payload.academicLevelId === '') {
+    //   payload.academicLevelId = null;
+    // }
+    // if (payload.classRoomId === '') {
+    //   payload.classRoomId = null;
+    // }
+    // // Set levelStatus to null if it's an empty string
+    // if (payload.levelStatus === '') {
+    //   payload.levelStatus = null;
+    // }
 
     if (!initialData) {
       delete payload.id;
@@ -184,7 +207,7 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({ isOpen, initialData
 
   if (!isOpen) return null;
 
-  const defaultProfilePic = `https://placehold.co/100x100/E0F2F7/0288D1?text=${formData.name?.charAt(0) || '?'}`;
+  const defaultProfilePic = `https://placehold.co/100x100/E0F2F7/0288D1?text=${formData.firstName?.charAt(0) || '?'}`;
 
   // Filter academic levels for "Junior" and "Senior" categories
   const juniorAcademicLevels = allAcademicLevels.filter(level => level.name.toLowerCase().includes('junior') || level.name.toLowerCase().includes('playgroup') || level.name.toLowerCase().includes('kindergarten'));
@@ -211,11 +234,6 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({ isOpen, initialData
               <UserCircleIcon className="h-6 w-6 text-indigo-500" /> Personal Information
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Full Name <span className="text-red-500">*</span></label>
-                <input type="text" name="name" id="name" value={formData.name} onChange={handleChange} required
-                  className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base" />
-              </div> */}
 
               <div>
                 <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">First Name <span className="text-red-500">*</span></label>
@@ -266,16 +284,114 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({ isOpen, initialData
 
           <div className="bg-gray-50 p-6 rounded-xl border border-gray-100">
             <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-              <AcademicCapIcon className="h-6 w-6 text-blue-500" /> Academic & Contact
+              <AcademicCapIcon className="h-6 w-6 text-blue-500" /> Academic Overview & Contact
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="md:col-span-2">
                 <label htmlFor="academicLevelId" className="block text-sm font-medium text-gray-700 mb-1">
                   Student Role (Academic Level)
                 </label>
-                <p className="text-xs text-gray-500 mb-2">
-                  Assign "Junior" for playgroup/kindergarten, "Senior" for older children.
-                </p>
+                {!initialData ? (
+                    <p className="text-xs text-gray-500 mb-2">
+                      Assign "Junior" for playgroup/kindergarten, "Senior" for older children.
+                    </p>
+                  ) : (
+                    <p className="text-xs text-gray-500">
+                      To move a student to a new class or level, use the <strong>Promote</strong> action.
+                    </p>
+                  )
+                }
+                
+                
+                {!initialData && (
+                  <div className="md:col-span-2 border-t pt-4 mt-4">
+                    <h4 className="text-sm font-semibold text-gray-700 mb-2">
+                      Initial Academic Assignment
+                    </h4>
+
+                    {/* Academic Level */}
+                    <select
+                      name="academicLevelId"
+                      required
+                      onChange={handleChange}
+                      className="block w-full mb-3 px-4 py-2 border rounded-lg"
+                    >
+                      <option value="">-- Select Academic Level --</option>
+                      {allAcademicLevels.map(level => (
+                        <option key={level.id} value={level.id}>
+                          {level.name}
+                        </option>
+                      ))}
+                    </select>
+
+                    {/* Classroom */}
+                    <select
+                      name="classRoomId"
+                      onChange={handleChange}
+                      className="block w-full px-4 py-2 border rounded-lg"
+                    >
+                      <option value="">-- Select Classroom (Optional) --</option>
+                      {allClassRooms.map(room => (
+                        <option key={room.id} value={room.id}>
+                          {room.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {initialData && (() => {
+                  const current = getCurrentAcademicRecord(initialData);
+
+                  return (
+                    <div className="md:col-span-2 bg-gray-100 p-4 rounded-lg border">
+                      <h4 className="text-sm font-semibold text-gray-700 mb-2">
+                        Current Academic Placement
+                      </h4>
+
+                      {current ? (
+                        <div className="text-sm text-gray-800 space-y-1">
+                          <p>
+                            <strong>Level:</strong> {current.academicLevelName}
+                          </p>
+                          <p>
+                            <strong>Classroom:</strong> {current.classRoomName || 'N/A'}
+                          </p>
+                          <p>
+                            <strong>Year:</strong> {current.year || 'N/A'}
+                          </p>
+                          {current.levelStatus && (
+                            <p>
+                              <strong>Status:</strong> {current.levelStatus}
+                            </p>
+                          )}
+                        </div>
+                      ) : (
+                        <p className="text-sm text-gray-500">
+                          No academic record found
+                        </p>
+                      )}
+
+                      <p className="text-xs text-gray-500 mt-2">
+                        Academic changes must be done via the <strong>Promote</strong> action.
+                      </p>
+                    </div>
+                  );
+                })()}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                 <div className="relative mt-1">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <TagIcon className="h-5 w-5 text-gray-400" />
@@ -305,8 +421,7 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({ isOpen, initialData
                     ))}
                   </select>
                 </div>
-              </div>
-              <div className='md:col-span-2'>
+              
                 <label htmlFor="classRoomId" className="block text-sm font-medium text-gray-700 mb-1">
                   Classroom Assignment
                 </label>

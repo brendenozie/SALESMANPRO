@@ -43,21 +43,45 @@ async function handleGET(request: Request) {
 
   const students = await prisma.student.findMany({
     where: whereClause,
+    orderBy: { assignedAt: "asc" },
     include: {
       user: { select: { id: true, name: true, email: true, image: true, emailVerified: true, role: true } },
       parent: { select: { id: true, phone: true, user: { select: { id: true, name: true, email: true, phone: true } } } },
-      StudentAcademicLevel: { include: { academicLevel: { select: { id: true, name: true, sortOrder: true } } } },
+      StudentAcademicLevel: {
+  include: {
+    academicLevel: {
+      select: { id: true, name: true, sortOrder: true },
+    },
+    classRoom: {
+      select: { id: true, name: true },
+    },
+  },
+},
+
       _count: { select: { enrolledCourses: true, assignmentSubmission: true, AttendanceRecord: true, ExamSubmission: true } },
     },
     orderBy: { user: { name: 'asc' } },
   });
 
   const response = students.map((student) => {
+    // const academicLevels = student.StudentAcademicLevel.map(sal => ({
+    //   id: sal.academicLevel.id,
+    //   name: sal.academicLevel.name,
+    //   sortOrder: sal.academicLevel.sortOrder || 0,
+    // })).sort((a, b) => a.sortOrder - b.sortOrder);
+
     const academicLevels = student.StudentAcademicLevel.map(sal => ({
-      id: sal.academicLevel.id,
-      name: sal.academicLevel.name,
-      sortOrder: sal.academicLevel.sortOrder || 0,
-    })).sort((a, b) => a.sortOrder - b.sortOrder);
+        academicLevelId: sal.academicLevel.id,
+        academicLevelName: sal.academicLevel.name,
+        sortOrder: sal.academicLevel.sortOrder || 0,
+        classRoomId: sal.classRoom?.id || null,
+        classRoomName: sal.classRoom?.name || null,
+        year: sal.year,
+        term: sal.term,
+        session: sal.session,
+        levelStatus: sal.levelStatus,
+      })).sort((a, b) => a.sortOrder - b.sortOrder);
+
 
     return {
       id: student.id,
@@ -98,11 +122,13 @@ async function handleGET(request: Request) {
 async function handlePOST(request: Request) {
   // name,
   const body = await request.json();
-  const { email,  companyId, phone, firstName, lastName, bio, address, profilePicture, parentId, academicLevelId, levelStatus } = body;
+  const { email,  companyId, phone, firstName, lastName, bio, classRoomId, address, profilePicture, parentId, academicLevelId, levelStatus } = body;
 
   if (!email || !firstName || !lastName || !companyId) {
     return formatResponse(false, null, "Email, First Name, Last Name, and Company ID are required", 400);
   }
+
+  
 
   if (levelStatus && !Object.values(StudentLevelStatus).includes(levelStatus)) {
     return formatResponse(false, null, "Invalid levelStatus provided", 400);
@@ -134,6 +160,14 @@ async function handlePOST(request: Request) {
       if (!existingAcademicLevel) throw new Error("Provided academicLevelId does not exist.");
     }
 
+    if (classRoomId) {
+      const classroom = await tx.classroom.findUnique({
+        where: { id: classRoomId },
+      });
+      if (!classroom) throw new Error("Provided classRoomId does not exist.");
+    }
+
+
     const loginCode = await generateUniqueLoginCode();
     const admissionNumber = await generateUniqueAdmissionNumber();
 
@@ -148,7 +182,17 @@ async function handlePOST(request: Request) {
     });
 
     if (academicLevelId) {
-      await tx.studentAcademicLevel.create({ data: { studentId: newStudent.id, academicLevelId } });
+      await tx.studentAcademicLevel.create({
+          data: {
+            studentId: newStudent.id,
+            academicLevelId,
+            classRoomId: classRoomId || null,
+            year: year || null,
+            term: term || null,
+            session: session || null,
+            levelStatus: levelStatus || null,
+          },
+        });
     }
 
     return newStudent;
