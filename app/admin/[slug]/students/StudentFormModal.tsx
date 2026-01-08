@@ -309,8 +309,42 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({ isOpen, initialData
                       Initial Academic Assignment
                     </h4>
 
+                    <div className="relative mt-1">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <TagIcon className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <select 
+                        // name="academicLevelId" id="academicLevelId" value={formData.academicLevelId} onChange={handleChange}
+                        name="academicLevelId"
+                        required
+                        onChange={handleChange}
+                        className="block w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base bg-white">
+                        <option value="">-- Select Academic Level --</option>
+                        {juniorAcademicLevels.length > 0 && (
+                          <optgroup label="✨ Junior Levels ✨">
+                            {juniorAcademicLevels.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0)).map(level => (
+                              <option key={level.id} value={level.id}>{level.name}</option>
+                            ))}
+                          </optgroup>
+                        )}
+                        {seniorAcademicLevels.length > 0 && (
+                          <optgroup label="🚀 Senior Levels 🚀">
+                            {seniorAcademicLevels.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0)).map(level => (
+                              <option key={level.id} value={level.id}>{level.name}</option>
+                            ))}
+                          </optgroup>
+                        )}
+                        {allAcademicLevels.filter(level =>
+                          !(level.name.toLowerCase().includes('junior') || level.name.toLowerCase().includes('playgroup') || level.name.toLowerCase().includes('kindergarten') ||
+                            level.name.toLowerCase().includes('senior') || level.name.toLowerCase().includes('grade'))
+                        ).sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0)).map(level => (
+                          <option key={level.id} value={level.id}>{level.name}</option>
+                        ))}
+                      </select>
+                    </div>
+
                     {/* Academic Level */}
-                    <select
+                    {/* <select
                       name="academicLevelId"
                       required
                       onChange={handleChange}
@@ -322,10 +356,28 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({ isOpen, initialData
                           {level.name}
                         </option>
                       ))}
-                    </select>
+                    </select> */}
 
                     {/* Classroom */}
-                    <select
+                    <div className='relative mt-1'>
+                      <label htmlFor="classRoomId" className="block text-sm font-medium text-gray-700 mb-1">
+                        Classroom Assignment
+                      </label>
+                      <div className="relative mt-1">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                          <TagIcon className="h-5 w-5 text-gray-400" />
+                        </div>
+                        <select name="classRoomId" id="classRoomId" onChange={handleChange}
+                          className="block w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base bg-white">
+                          <option value="">-- Select Classroom (Optional) --</option>
+                          {allClassRooms.sort((a, b) => a.name.localeCompare(b.name)).map(classRoom => (
+                            <option key={classRoom.id} value={classRoom.id}>{classRoom.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* <select
                       name="classRoomId"
                       onChange={handleChange}
                       className="block w-full px-4 py-2 border rounded-lg"
@@ -337,14 +389,58 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({ isOpen, initialData
                         </option>
                       ))}
                     </select>
+                  </div> */}
+
+                  <div className="mt-2 text-xs text-gray-500">
+                    {/* level status */}
+                    <label htmlFor="levelStatus" className="block font-medium mb-1"> Student Level Status (Optional) </label>
+                    <select
+                      name="levelStatus"  
+                      onChange={handleChange}
+                      className="w-full px-3 py-2 border rounded-lg"
+                    >
+                      <option value="">-- Select Student Level Status (Optional) --</option>
+                      {allStudentLevelStatusOptions.map(option => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
                   </div>
+
+                      {/* NEW: Student Level Status dropdown */}
+              {/* <div>
+                <label htmlFor="levelStatus" className="block text-sm font-medium text-gray-700 mb-1">Student Level Status</label>
+                <div className="relative mt-1">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <AcademicCapIcon className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <select
+                    name="levelStatus"
+                    id="levelStatus"
+                    value={formData.levelStatus || ''} // Use '' for null/undefined to select default option
+                    onChange={handleChange}
+                    className="block w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base bg-white"
+                  >
+                    <option value="">-- Select Student Level Status (Optional) --</option>
+                    {allStudentLevelStatusOptions.map(option => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div> */}
+
+
+                </div>
                 )}
 
                 {initialData && (() => {
                   const current = getCurrentAcademicRecord(initialData);
 
                   return (
-                    <div className="md:col-span-2 bg-gray-100 p-4 rounded-lg border">
+                    <div className="md:col-span-2 bg-gray-100 p-4 rounded-lg border mt-2">
                       <h4 className="text-sm font-semibold text-gray-700 mb-2">
                         Current Academic Placement
                       </h4>
@@ -377,91 +473,10 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({ isOpen, initialData
                       </p>
                     </div>
                   );
-                })()}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                <div className="relative mt-1">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <TagIcon className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <select name="academicLevelId" id="academicLevelId" value={formData.academicLevelId} onChange={handleChange}
-                    className="block w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base bg-white">
-                    <option value="">-- Select Role --</option>
-                    {juniorAcademicLevels.length > 0 && (
-                      <optgroup label="✨ Junior Levels ✨">
-                        {juniorAcademicLevels.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0)).map(level => (
-                          <option key={level.id} value={level.id}>{level.name}</option>
-                        ))}
-                      </optgroup>
-                    )}
-                    {seniorAcademicLevels.length > 0 && (
-                      <optgroup label="🚀 Senior Levels 🚀">
-                        {seniorAcademicLevels.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0)).map(level => (
-                          <option key={level.id} value={level.id}>{level.name}</option>
-                        ))}
-                      </optgroup>
-                    )}
-                    {allAcademicLevels.filter(level =>
-                      !(level.name.toLowerCase().includes('junior') || level.name.toLowerCase().includes('playgroup') || level.name.toLowerCase().includes('kindergarten') ||
-                        level.name.toLowerCase().includes('senior') || level.name.toLowerCase().includes('grade'))
-                    ).sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0)).map(level => (
-                      <option key={level.id} value={level.id}>{level.name}</option>
-                    ))}
-                  </select>
-                </div>
+                })()}              
+              </div>
               
-                <label htmlFor="classRoomId" className="block text-sm font-medium text-gray-700 mb-1">
-                  Classroom Assignment
-                </label>
-                <div className="relative mt-1">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <TagIcon className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <select name="classRoomId" id="classRoomId" value={formData.classRoomId} onChange={handleChange}
-                    className="block w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base bg-white">
-                    <option value="">-- Select Classroom (Optional) --</option>
-                    {allClassRooms.sort((a, b) => a.name.localeCompare(b.name)).map(classRoom => (
-                      <option key={classRoom.id} value={classRoom.id}>{classRoom.name}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              {/* NEW: Student Level Status dropdown */}
-              <div>
-                <label htmlFor="levelStatus" className="block text-sm font-medium text-gray-700 mb-1">Student Level Status</label>
-                <div className="relative mt-1">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <AcademicCapIcon className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <select
-                    name="levelStatus"
-                    id="levelStatus"
-                    value={formData.levelStatus || ''} // Use '' for null/undefined to select default option
-                    onChange={handleChange}
-                    className="block w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base bg-white"
-                  >
-                    <option value="">-- Select Student Level Status (Optional) --</option>
-                    {allStudentLevelStatusOptions.map(option => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              <div>
+              <div className="md:col-span-2">
                 <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
                 <div className="relative mt-1">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
