@@ -52,7 +52,8 @@ export type StudentType = {
   id: string;
   userId: string;
   loginCode?: string;
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
   profilePicture?: string;
   admissionNumber?: string;
@@ -116,7 +117,7 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
   const [filterClassRoom, setFilterClassRoom] = useState('All'); // NEW: Filter by classroom ID
   const [filterLevelStatus, setFilterLevelStatus] = useState('All'); // NEW: Filter by Junior/Senior status
   const [showFormModal, setShowFormModal] = useState(false);
-  const [showPromoteStudentModal, setShowPromoteStudentModal] = useState(false);
+  // const [showPromoteStudentModal, setShowPromoteStudentModal] = useState(false);
   const [editingStudent, setEditingStudent] = useState<StudentType | null>(null);
   
   const [isLoading, setIsLoading] = useState(false);
@@ -217,9 +218,10 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
       const current = getCurrentAcademicRecord(student);
 
       const matchesSearch =
-        student.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        student.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        student.loginCode?.toLowerCase().includes(searchTerm.toLowerCase());
+        (student.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
+        (student.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
+        (student.email?.toLowerCase().includes(searchTerm.toLowerCase()) || '') ||
+        (student.loginCode?.toLowerCase().includes(searchTerm.toLowerCase()) || '');
 
       const matchesAcademicLevel =
         filterAcademicLevel === 'All' ||
@@ -243,6 +245,45 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
   }, [students, searchTerm, filterAcademicLevel, filterClassRoom, filterLevelStatus]);
 
   const handlePromoteStudent = async (payload: {
+  studentId: string;
+  academicLevelId: string;
+  classRoomId?: string | null;
+  year: string;
+  term?: string | null;
+  session?: string | null;
+  action: 'PROMOTED' | 'RETAINED';
+  // FIX: Include null in the type to match the Modal's expectations
+  levelStatus?: 'JUNIOR' | 'SENIOR' | 'SOPHOMORE' | 'FRESHMAN' | null | undefined;
+}) => {
+  try {
+    setIsPromoting(true);
+
+    const res = await fetch('/api/students/promote', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      const errorData = await res.json();
+      throw new Error(errorData.message || 'Failed to promote student');
+    }
+
+    // Refresh data using your existing refresh function
+    await fetchStudentsAndParentsAndAcademicLevels();
+
+    // Close modal
+    setIsPromoteOpen(false);
+    setSelectedStudent(null);
+  } catch (error: any) {
+    console.error(error);
+    alert(error.message || 'Failed to promote student');
+  } finally {
+    setIsPromoting(false);
+  }
+};
+
+  const handlePromoteStudentV1 = async (payload: {
   studentId: string;
   academicLevelId: string;
   classRoomId?: string | null;
@@ -589,8 +630,8 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
                         <div className="flex-shrink-0 h-10 w-10 relative">
                           <Image
                             className="h-10 w-10 rounded-full object-cover border border-gray-200"
-                            src={student.profilePicture || `https://placehold.co/100x100/E0F2F7/0288D1?text=${student.name?.charAt(0) || '?'}`}
-                            alt={student.name || 'Student Avatar'}
+                            src={student.profilePicture || `https://placehold.co/100x100/E0F2F7/0288D1?text=${student.firstName?.charAt(0) || '?'}`}
+                            alt={student.firstName || 'Student Avatar'}
                             width={40}
                             height={40}
                             loader={loader}
@@ -598,7 +639,7 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
                               const img = (e.currentTarget || e.target) as HTMLImageElement;
                               try {
                                 img.onerror = null;
-                                img.src = `https://placehold.co/100x100/E0F2F7/0288D1?text=${student.name?.charAt(0) || '?'}`;
+                                img.src = `https://placehold.co/100x100/E0F2F7/0288D1?text=${student.firstName?.charAt(0) || '?'}`;
                               } catch {
                                 /* noop */
                               }
@@ -606,7 +647,7 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
                           />
                         </div>
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">{student.name}</div>
+                          <div className="text-sm font-medium text-gray-900">{student.firstName} {student.lastName}</div>
                           <div className="text-xs text-gray-500">{student.email}</div>
                         </div>
                       </div>
@@ -719,14 +760,14 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
                           <PencilIcon className="h-5 w-5" />
                         </button>
                         <button
-                          onClick={() => { setSelectedStudent(student); setShowPromoteStudentModal(true); }}
+                          onClick={() => { setSelectedStudent(student); setIsPromoteOpen(true); }}
                           className="text-emerald-600 bg-emerald-50 p-2 rounded-full hover:bg-emerald-100"
                           title="Promote Student"
                         >
                           <AcademicCapIcon className="h-5 w-5" />
                         </button>
                         <button
-                          onClick={() => { setSelectedStudent(student); setShowPromoteStudentModal(true); }}
+                          onClick={() => { setSelectedStudent(student); setIsPromoteOpen(true); }}
                           className="text-amber-600 bg-amber-50 p-2 rounded-full hover:bg-amber-100"
                           title="Repeat / Retain Student"
                         >
@@ -777,7 +818,7 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
         />
       )}
 
-      {showPromoteStudentModal &&(
+      {isPromoteOpen &&(
         <PromoteStudentModal
           isOpen={isPromoteOpen}
           student={selectedStudent}
