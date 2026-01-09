@@ -10,15 +10,15 @@ async function promoteStudent(req: Request, { params }: { params: { id: string }
     const body = await req.json();
 
     const {
-      nextAcademicLevelId,
-      nextClassRoomId,
+      academicLevelId,
+      classRoomId,
       year,
       term,
       session,
       levelStatus,
     } = body;
 
-    if (!nextAcademicLevelId || !year) {
+    if (!academicLevelId || !year) {
       return formatResponse(false, null, "Next academic level and year are required", 400);
     }
 
@@ -29,14 +29,15 @@ async function promoteStudent(req: Request, { params }: { params: { id: string }
 
       // 2️⃣ Validate academic level
       const academicLevel = await tx.academicLevel.findUnique({
-        where: { id: nextAcademicLevelId },
+        where: { id: academicLevelId },
       });
       if (!academicLevel) throw new Error("Invalid academic level");
 
       // 3️⃣ Validate classroom (optional)
-      if (nextClassRoomId) {
-        const classroom = await tx.classroom.findUnique({
-          where: { id: nextClassRoomId },
+      let classroom = null;
+      if (classRoomId) {
+        classroom = await tx.classroom.findUnique({
+          where: { id: classRoomId },
         });
         if (!classroom) throw new Error("Invalid classroom");
       }
@@ -45,25 +46,25 @@ async function promoteStudent(req: Request, { params }: { params: { id: string }
       const exists = await tx.studentAcademicLevel.findFirst({
         where: {
           studentId,
-          academicLevelId: nextAcademicLevelId,
+          academicLevelId,
           year,
         },
       });
 
-      if (exists) {
-        throw new Error("Student already promoted to this level for the given year");
-      }
+      // if (exists) {
+      //   throw new Error("Student already promoted to this level for the given year");
+      // }
 
       // 5️⃣ Create promotion record
       const promotion = await tx.studentAcademicLevel.create({
         data: {
           studentId,
-          academicLevelId: nextAcademicLevelId,
-          classRoomId: nextClassRoomId || null,
+          academicLevelId,
+          classRoomId: classRoomId || null,
           year,
           term: term || null,
           session: session || null,
-          levelStatus: levelStatus || null,
+          levelStatus: levelStatus || StudentLevelStatus.JUNIOR,
         },
       });
 
@@ -72,7 +73,7 @@ async function promoteStudent(req: Request, { params }: { params: { id: string }
         where: { id: studentId },
         data: {
           academicLevel: levelStatus || student.academicLevel,
-          currentClass: null, // optional: deprecate this field
+          currentClass: `${academicLevel.name} - ${classroom ? classroom.name : "N/A"}` || student.currentClass, // optional: deprecate this field
         },
       });
 

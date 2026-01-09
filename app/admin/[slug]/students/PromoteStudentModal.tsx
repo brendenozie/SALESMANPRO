@@ -153,7 +153,7 @@ const PromoteStudentModal: React.FC<PromoteStudentModalProps> = ({
           {/* Target Academic Level */}
           <div className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Target Level</label>
+              <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Academic Level</label>
               <div className="relative">
                 <AcademicCapIcon className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
                 <select

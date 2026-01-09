@@ -128,7 +128,7 @@ async function updateStudent(req: Request, { params }: { params: { id: string } 
     if (body.academicLevelId) {
       await tx.studentAcademicLevel.upsert({
         where: { studentId_academicLevelId: { studentId, academicLevelId: body.academicLevelId } },
-        update: { classRoomId: body.classRoomId, year: body.year, term: body.term },
+        update: { classRoomId: body.classRoomId, year: body.year, term: body.term, academicLevelId: body.academicLevelId, },
         create: { studentId, academicLevelId: body.academicLevelId, classRoomId: body.classRoomId, year: body.year, term: body.term }
       });
     }
@@ -141,134 +141,134 @@ async function updateStudent(req: Request, { params }: { params: { id: string } 
 
 // export const PATCH = withApiHandler(updateStudent);
 // GET and DELETE logic follow the same mapping pattern as the collection route
-async function updateStudentV1(req: Request) {
+// async function updateStudentV1(req: Request) {
   
 
-  try {
-    const { pathname } = new URL(req.url);
-    const studentId = pathname.split("/").pop();
-    if (!studentId) return formatResponse(false, null, "Student ID is required", 400);
+//   try {
+//     const { pathname } = new URL(req.url);
+//     const studentId = pathname.split("/").pop();
+//     if (!studentId) return formatResponse(false, null, "Student ID is required", 400);
 
-    const body = await req.json();
-    const {
-      firstName,
-      lastName,
-      email,
-      phone,
-      bio,
-      address,
-      profilePicture,
-      parentId,
-      academicLevelId,
-      classRoomId,
-      year,
-      term,
-      session,
-      levelStatus,
-    } = body;
+//     const body = await req.json();
+//     const {
+//       firstName,
+//       lastName,
+//       email,
+//       phone,
+//       bio,
+//       address,
+//       profilePicture,
+//       parentId,
+//       academicLevelId,
+//       classRoomId,
+//       year,
+//       term,
+//       session,
+//       levelStatus,
+//     } = body;
 
 
-    if (levelStatus && !Object.values(StudentLevelStatus).includes(levelStatus)) {
-      return formatResponse(false, null, "Invalid levelStatus provided", 400);
-    }
+//     if (levelStatus && !Object.values(StudentLevelStatus).includes(levelStatus)) {
+//       return formatResponse(false, null, "Invalid levelStatus provided", 400);
+//     }
 
-    const updatedStudent = await prisma.$transaction(async tx => {
-      const existingStudent = await tx.student.findUnique({
-        where: { id: studentId },
-        include: { user: true, StudentAcademicLevel: { include: { academicLevel: true } } },
-      });
-      if (!existingStudent) throw new Error("Student not found");
+//     const updatedStudent = await prisma.$transaction(async tx => {
+//       const existingStudent = await tx.student.findUnique({
+//         where: { id: studentId },
+//         include: { user: true, StudentAcademicLevel: { include: { academicLevel: true } } },
+//       });
+//       if (!existingStudent) throw new Error("Student not found");
 
-      // Update user info if changed
-      if ( email !== existingStudent.user?.email) {
-        await tx.user.update({ where: { id: existingStudent.userId }, data: { name:`${firstName} ${lastName}`, email } });
-      }
+//       // Update user info if changed
+//       if ( email !== existingStudent.user?.email) {
+//         await tx.user.update({ where: { id: existingStudent.userId }, data: { name:`${firstName} ${lastName}`, email } });
+//       }
 
-      // Validate parentId if provided
-      if (parentId !== undefined && parentId !== null && parentId !== "") {
-        const parent = await tx.parent.findUnique({ where: { id: parentId } });
-        if (!parent) throw new Error("Provided parentId does not exist.");
-      }
+//       // Validate parentId if provided
+//       if (parentId !== undefined && parentId !== null && parentId !== "") {
+//         const parent = await tx.parent.findUnique({ where: { id: parentId } });
+//         if (!parent) throw new Error("Provided parentId does not exist.");
+//       }
 
-      // Prepare parent update
-      let parentUpdateData;
-      if (parentId !== undefined) {
-        parentUpdateData = parentId === null || parentId === "" ? { disconnect: true } : { connect: { id: parentId } };
-      }
+//       // Prepare parent update
+//       let parentUpdateData;
+//       if (parentId !== undefined) {
+//         parentUpdateData = parentId === null || parentId === "" ? { disconnect: true } : { connect: { id: parentId } };
+//       }
       
-      // Update student
-      const studentUpdateData = {
-        phone: phone || null,
-        firstName: firstName || existingStudent.firstName,
-        lastName: lastName || existingStudent.lastName,
-        bio: bio || null,
-        address: address || null,
-        profilePicture: profilePicture || null,
-        levelStatus: levelStatus || null,
-        ...(parentUpdateData ? { parent: parentUpdateData } : {}),
-      };
+//       // Update student
+//       const studentUpdateData = {
+//         phone: phone || null,
+//         firstName: firstName || existingStudent.firstName,
+//         lastName: lastName || existingStudent.lastName,
+//         bio: bio || null,
+//         address: address || null,
+//         profilePicture: profilePicture || null,
+//         levelStatus: levelStatus || null,
+//         ...(parentUpdateData ? { parent: parentUpdateData } : {}),
+//       };
 
-      const updated = await tx.student.update({
-        where: { id: studentId },
-        data: studentUpdateData,
-        include: {
-          user: { select: { id: true, name: true, email: true, image: true, role: true } },
-          parent: { select: { id: true, phone: true, user: { select: { id: true, name: true, email: true, phone: true } } } },
-          StudentAcademicLevel: { include: { academicLevel: true } },
-          _count: { select: { enrolledCourses: true, assignmentSubmission: true, AttendanceRecord: true, ExamSubmission: true } },
-        },
-      });
+//       const updated = await tx.student.update({
+//         where: { id: studentId },
+//         data: studentUpdateData,
+//         include: {
+//           user: { select: { id: true, name: true, email: true, image: true, role: true } },
+//           parent: { select: { id: true, phone: true, user: { select: { id: true, name: true, email: true, phone: true } } } },
+//           StudentAcademicLevel: { include: { academicLevel: true } },
+//           _count: { select: { enrolledCourses: true, assignmentSubmission: true, AttendanceRecord: true, ExamSubmission: true } },
+//         },
+//       });
 
-      if (classRoomId) {
-        const classroom = await tx.classroom.findUnique({
-          where: { id: classRoomId },
-        });
-        if (!classroom) throw new Error("Provided classRoomId does not exist.");
-      }
+//       if (classRoomId) {
+//         const classroom = await tx.classroom.findUnique({
+//           where: { id: classRoomId },
+//         });
+//         if (!classroom) throw new Error("Provided classRoomId does not exist.");
+//       }
 
 
-      // Handle academic level assignment
-      if (academicLevelId) {
-        await tx.studentAcademicLevel.upsert({
-          where: {
-            studentId_academicLevelId: {
-              studentId,
-              academicLevelId,
-            },
-          },
-          update: {
-            classRoomId: classRoomId || null,
-            year: year || null,
-            term: term || null,
-            session: session || null,
-            levelStatus: levelStatus || null,
-          },
-          create: {
-            studentId,
-            academicLevelId,
-            classRoomId: classRoomId || null,
-            year: year || null,
-            term: term || null,
-            session: session || null,
-            levelStatus: levelStatus || null,
-          },
-        });
-      }
+//       // Handle academic level assignment
+//       if (academicLevelId) {
+//         await tx.studentAcademicLevel.upsert({
+//           where: {
+//             studentId_academicLevelId: {
+//               studentId,
+//               academicLevelId,
+//             },
+//           },
+//           update: {
+//             classRoomId: classRoomId || null,
+//             year: year || null,
+//             term: term || null,
+//             session: session || null,
+//             levelStatus: levelStatus || null,
+//           },
+//           create: {
+//             studentId,
+//             academicLevelId,
+//             classRoomId: classRoomId || null,
+//             year: year || null,
+//             term: term || null,
+//             session: session || null,
+//             levelStatus: levelStatus || null,
+//           },
+//         });
+//       }
 
-      return updated;
-    });
+//       return updated;
+//     });
 
-    return formatResponse(true, updatedStudent, "Student updated successfully");
-  } catch (error: any) {
-    console.error("Error updating student:", error);
-    let status = 500;
-    if (error.message.includes("Student not found")) status = 404;
-    if (error.message.includes("parentId")) status = 400;
-    if (error.message.includes("academicLevelId")) status = 400;
-    if (error.message.includes("levelStatus")) status = 400;
-    return formatResponse(false, null, error.message, status);
-  }
-}
+//     return formatResponse(true, updatedStudent, "Student updated successfully");
+//   } catch (error: any) {
+//     console.error("Error updating student:", error);
+//     let status = 500;
+//     if (error.message.includes("Student not found")) status = 404;
+//     if (error.message.includes("parentId")) status = 400;
+//     if (error.message.includes("academicLevelId")) status = 400;
+//     if (error.message.includes("levelStatus")) status = 400;
+//     return formatResponse(false, null, error.message, status);
+//   }
+// }
 
 // DELETE /api/students/[id] – delete a student
 async function deleteStudent(req: Request) {

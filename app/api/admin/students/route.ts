@@ -108,7 +108,8 @@ async function handlePOST(request: Request) {
         firstName,
         lastName,
         phone: body.phone,
-        levelStatus: levelStatus as StudentLevelStatus
+        levelStatus: levelStatus as StudentLevelStatus,
+        // currentClass: classRoomId ? `Level ID: ${academicLevelId} - Class ID: ${classRoomId}` : `Level ID: ${academicLevelId} - No Classroom`,
       }
     });
 

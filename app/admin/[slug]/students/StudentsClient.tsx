@@ -252,14 +252,13 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
   term?: string | null;
   session?: string | null;
   action: 'PROMOTED' | 'RETAINED';
-  // FIX: Include null in the type to match the Modal's expectations
   levelStatus?: 'JUNIOR' | 'SENIOR' | 'SOPHOMORE' | 'FRESHMAN' | null | undefined;
 }) => {
   try {
     setIsPromoting(true);
 
-    const res = await fetch('/api/students/promote', {
-      method: 'PATCH',
+    const res = await fetch(`${apiBaseUrl}/admin/students/${payload.studentId}/promote`, {
+      method: 'POST',//'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
@@ -278,43 +277,6 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
   } catch (error: any) {
     console.error(error);
     alert(error.message || 'Failed to promote student');
-  } finally {
-    setIsPromoting(false);
-  }
-};
-
-  const handlePromoteStudentV1 = async (payload: {
-  studentId: string;
-  academicLevelId: string;
-  classRoomId?: string | null;
-  year: string;
-  term?: string | null;
-  session?: string | null;
-  action: 'PROMOTED' | 'RETAINED';
-  levelStatus?: 'JUNIOR' | 'SENIOR' | 'SOPHOMORE' | 'FRESHMAN' | undefined;
-}) => {
-  try {
-    setIsPromoting(true);
-
-    const res = await fetch('/api/students/promote', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-
-    if (!res.ok) {
-      throw new Error('Failed to promote student');
-    }
-
-    // ✅ Refresh students list
-    await fetchStudentsAndParentsAndAcademicLevels();
-
-    // ✅ Close modal
-    setIsPromoteOpen(false);
-    setSelectedStudent(null);
-  } catch (error) {
-    console.error(error);
-    alert('Failed to promote student');
   } finally {
     setIsPromoting(false);
   }
