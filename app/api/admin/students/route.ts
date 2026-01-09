@@ -35,6 +35,12 @@ async function handleGET(request: Request) {
       user: { select: { id: true, name: true, email: true, image: true, role: true } },
       parent: { select: { id: true, phone: true, user: { select: { id: true, name: true } } } },
       StudentAcademicLevel: {
+        orderBy: [
+        { year: 'desc' },
+        { term: 'desc' },
+        { createdAt: 'desc' },
+      ],
+      take: 1,
         include: {
           academicLevel: true,
           classRoom: true,

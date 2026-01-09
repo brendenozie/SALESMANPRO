@@ -219,6 +219,8 @@ export default function MaterialsGlobalClient({ initialMaterials, allCourses, al
       setError(err.message || `Network error ${method === 'POST' ? 'adding' : 'updating'} material.`);
     } finally {
       setIsLoading(false);
+      // setIsUploading(false);
+      // setUploadProgress(0);
     }
   };
 
@@ -524,6 +526,7 @@ export default function MaterialsGlobalClient({ initialMaterials, allCourses, al
       {/* Modals */}
       {showFormModal && (
         <MaterialFormModal
+          apiBaseUrl={apiBaseUrl}
           materialData={editingMaterial}
           onClose={() => { setShowFormModal(false); setEditingMaterial(null); }}
           onSave={handleSaveMaterial}

@@ -19,8 +19,8 @@ const CourseMaterialSchema = z.object({
   courseId: z.string().min(1, "Course ID is required"),
   title: z.string().min(1, "Title is required"),
   description: z.string().optional(),
-  fileUrl: z.string().url().optional(),
-  linkUrl: z.string().url().optional(),
+  fileUrl: z.string().optional(),
+  linkUrl: z.string().optional(),
   type: z.nativeEnum(CourseMaterialType),
   uploadedById: z.string().min(1, "Uploader ID is required"),
 });

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   XMarkIcon,
   DocumentTextIcon,
@@ -10,7 +10,8 @@ import {
   UserIcon,
   Bars3BottomLeftIcon,
   HashtagIcon,
-  BookOpenIcon, // New icon for course selection
+  BookOpenIcon,
+  CloudArrowUpIcon, // New icon for course selection
 } from '@heroicons/react/24/outline';
 
 // Assuming types are imported from MaterialsGlobalClient.tsx
@@ -44,6 +45,7 @@ export type CourseOption = { // New type for course selection in modal
 };
 
 interface MaterialFormModalProps {
+  apiBaseUrl: string;
   materialData?: CourseMaterialType | null;
   onClose: () => void;
   onSave: (data: Omit<CourseMaterialType, 'id' | 'courseTitle' | 'uploadedByName' | 'uploadedByEmail' | 'createdAt' | 'updatedAt'> & { id?: string }) => Promise<void>;
@@ -53,7 +55,67 @@ interface MaterialFormModalProps {
   allCourses: CourseOption[]; // NEW: All available courses for selection
 }
 
-const MaterialFormModal: React.FC<MaterialFormModalProps> = ({ materialData, onClose, onSave, isLoading, courseId, allEducators, allCourses }) => {
+
+////////////////////////////////////////////////////////////////////////////////
+// Upload helper for getting signed URLs and uploading files
+////////////////////////////////////////////////////////////////////////////////
+// utils/uploadFiles.ts
+export async function uploadFiles(
+  apiBaseUrl: string,
+  files: File[],
+  type: "image" | "video" | "book",
+  onProgress?: (progress: number, file: File) => void
+): Promise<{ url: string; key: string; contentType: string }[]> {
+  if (!files?.length) return [];
+
+  const uploads = files.map(async (file) => {
+    try {
+      // ✅ Step 1: Request a signed upload URL from your API
+      const res = await fetch(
+        `${apiBaseUrl}/upload-url?filename=${encodeURIComponent(file.name)}&type=${type}&contentType=${encodeURIComponent(file.type)}`
+      );
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Failed to get signed URL: ${text}`);
+      }
+
+      const { uploadUrl, publicUrl, key, contentType } = await res.json();
+
+      // ✅ Step 2: Upload directly to S3
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("PUT", uploadUrl);
+        xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
+
+        xhr.upload.onprogress = (event) => {
+          if (event.lengthComputable && onProgress) {
+            const progress = Math.round((event.loaded / event.total) * 100);
+            onProgress(progress, file);
+          }
+        };
+
+        xhr.onload = () => {
+          if (xhr.status === 200) resolve();
+          else reject(new Error(`Upload failed for ${file.name}: ${xhr.status}`));
+        };
+
+        xhr.onerror = () => reject(new Error(`Network error during upload for ${file.name}`));
+        xhr.send(file);
+      });
+
+      console.log(`✅ Uploaded: ${file.name} (${contentType}) → ${publicUrl}`);
+      return { url: publicUrl, key, contentType };
+    } catch (err) {
+      console.error("❌ Upload error:", err);
+      throw err;
+    }
+  });
+
+  return Promise.all(uploads);
+}
+
+const MaterialFormModal: React.FC<MaterialFormModalProps> = ({ apiBaseUrl, materialData, onClose, onSave, isLoading, courseId, allEducators, allCourses }) => {
   const [formData, setFormData] = useState({
     id: materialData?.id || '',
     courseId: materialData?.courseId || courseId || '', // Use materialData.courseId first, then prop courseId
@@ -63,7 +125,12 @@ const MaterialFormModal: React.FC<MaterialFormModalProps> = ({ materialData, onC
     linkUrl: materialData?.linkUrl || '',
     type: materialData?.type || 'DOCUMENT',
     uploadedById: materialData?.uploadedById || '',
-  });
+    });
+
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (materialData) {
@@ -89,41 +156,91 @@ const MaterialFormModal: React.FC<MaterialFormModalProps> = ({ materialData, onC
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setSelectedFile(e.target.files[0]);
+      setFormData(prev => ({ ...prev, linkUrl: '' })); // Clear link if file is chosen
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setIsUploading(true);
+    setUploadProgress(0);
+
+    try {
+
+      let finalFileUrl = formData.fileUrl;
+
+      // 1. Handle File Upload if a file was selected
+      if (selectedFile) {
+        // Map Material Type to Upload Helper Type
+        const uploadType = 
+          formData.type === 'IMAGE' ? 'image' : 
+          formData.type === 'VIDEO' ? 'video' : 'book';
+
+        const uploadResults = await uploadFiles(
+          apiBaseUrl, 
+          [selectedFile], 
+          uploadType, 
+          (progress) => setUploadProgress(progress)
+        );
+        
+        if (uploadResults.length > 0) {
+          finalFileUrl = uploadResults[0].url;
+        }
+      }
+
+      // 2. Validation
+      if (!formData.linkUrl && !finalFileUrl) {
+        alert("Please provide either a Link URL or upload a File.");
+        return;
+      }
 
     // Basic validation for fileUrl/linkUrl based on type
-    if (formData.type === 'DOCUMENT' || formData.type === 'IMAGE' || formData.type === 'AUDIO') {
-      if (!formData.fileUrl && !formData.linkUrl) {
-        alert("For selected material type, either File URL or Link URL is required.");
-        return;
-      }
-      if (formData.fileUrl && formData.linkUrl) {
-        alert("Cannot provide both File URL and Link URL for this material type.");
-        return;
-      }
-    } else if (formData.type === 'VIDEO' || formData.type === 'LINK') {
-      if (!formData.linkUrl && !formData.fileUrl) {
-        alert("For selected material type, Link URL is typically required.");
-        return;
-      }
-      if (formData.fileUrl && formData.linkUrl) {
-        alert("Cannot provide both File URL and Link URL for this material type.");
-        return;
-      }
-    }
+    // if (formData.type === 'DOCUMENT' || formData.type === 'IMAGE' || formData.type === 'AUDIO') {
+    //   if (!formData.fileUrl && !formData.linkUrl) {
+    //     alert("For selected material type, either File URL or Link URL is required.");
+    //     return;
+    //   }
+    //   if (formData.fileUrl && formData.linkUrl) {
+    //     alert("Cannot provide both File URL and Link URL for this material type.");
+    //     return;
+    //   }
+    // } else if (formData.type === 'VIDEO' || formData.type === 'LINK') {
+    //   if (!formData.linkUrl && !formData.fileUrl) {
+    //     alert("For selected material type, Link URL is typically required.");
+    //     return;
+    //   }
+    //   if (formData.fileUrl && formData.linkUrl) {
+    //     alert("Cannot provide both File URL and Link URL for this material type.");
+    //     return;
+    //   }
+    // }
 
     // Ensure courseId is selected for new materials
-    if (!formData.courseId) {
-      alert("Please select a Course for this material.");
-      return;
-    }
-    if (!formData.uploadedById) {
-      alert("Please select an Uploader for this material.");
-      return;
-    }
+      if (!formData.courseId) {
+        alert("Please select a Course for this material.");
+        return;
+      }
+      if (!formData.uploadedById) {
+        alert("Please select an Uploader for this material.");
+        return;
+      }      
 
-    await onSave({ ...formData }); // Pass all formData, including courseId
+      // 3. Save to Parent
+      await onSave({ 
+        ...formData, 
+        fileUrl: finalFileUrl 
+      });
+
+    } catch (err) {
+      alert("Error during upload/save. Please try again.");
+      console.error(err);
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(0);
+    }
   };
 
   const materialTypeOptions = [
@@ -199,7 +316,68 @@ const MaterialFormModal: React.FC<MaterialFormModalProps> = ({ materialData, onC
                   </select>
                 </div>
               </div>
-              <div className="md:col-span-2">
+ 
+              <div className="space-y-4">
+                {/* File Upload Logic */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Upload File</label>
+                  <div 
+                    onClick={() => fileInputRef.current?.click()}
+                    className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer hover:border-indigo-500 transition-colors"
+                  >
+                    <div className="space-y-1 text-center">
+                      <CloudArrowUpIcon className="mx-auto h-10 w-10 text-gray-400" />
+                      <div className="flex text-sm text-gray-600">
+                        <span className="text-indigo-600 font-medium">Click to upload</span>
+                        <p className="pl-1">or drag and drop</p>
+                      </div>
+                      <p className="text-xs text-gray-500">
+                        {selectedFile ? `Selected: ${selectedFile.name}` : "Images, Videos, PDFs up to 50MB"}
+                      </p>
+                    </div>
+                  </div>
+                  <input 
+                    type="file" 
+                    ref={fileInputRef} 
+                    onChange={handleFileChange} 
+                    className="hidden" 
+                    accept={formData.type === 'IMAGE' ? 'image/*' : formData.type === 'VIDEO' ? 'video/*' : '*/*'}
+                  />
+                </div>
+
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-gray-300"></span></div>
+                  <div className="relative flex justify-center text-xs uppercase"><span className="bg-blue-50 px-2 text-gray-500 font-bold">OR</span></div>
+                </div>
+
+                {/* External Link */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">External URL</label>
+                  <input 
+                    type="url" 
+                    name="linkUrl" 
+                    value={formData.linkUrl} 
+                    onChange={handleChange}
+                    placeholder="https://..."
+                    className="mt-1 block w-full border border-gray-300 rounded-lg px-4 py-2"
+                  />
+                </div>
+              </div>
+
+              {/* Progress Bar */}
+              {(isUploading && uploadProgress  > 0 || isLoading) && (
+                <div className="mt-4">
+                  <div className="flex justify-between text-xs mb-1">
+                    <span>Uploading...</span>
+                    <span>{uploadProgress}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="bg-indigo-600 h-2 rounded-full transition-all duration-300" style={{ width: `${uploadProgress}%` }}></div>
+                  </div>
+                </div>
+              )}
+
+              {/* <div className="md:col-span-2">
                 <label htmlFor="fileUrl" className="block text-sm font-medium text-gray-700 mb-1">File URL (for Documents, Images, Audio)</label>
                 <input type="url" name="fileUrl" id="fileUrl" value={formData.fileUrl} onChange={handleChange}
                   placeholder="https://example.com/document.pdf"
@@ -210,7 +388,7 @@ const MaterialFormModal: React.FC<MaterialFormModalProps> = ({ materialData, onC
                 <input type="url" name="linkUrl" id="linkUrl" value={formData.linkUrl} onChange={handleChange}
                   placeholder="https://www.youtube.com/watch?v=example"
                   className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base" />
-              </div>
+              </div> */}
             </div>
           </div>
 
@@ -252,9 +430,9 @@ const MaterialFormModal: React.FC<MaterialFormModalProps> = ({ materialData, onC
             <button
               type="submit"
               className="px-6 py-3 bg-indigo-600 border border-transparent rounded-lg text-base font-medium text-white shadow-md hover:bg-indigo-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 flex items-center justify-center gap-2"
-              disabled={isLoading}
+              disabled={isLoading || isUploading}
             >
-              {isLoading ? (
+              {(isUploading || isLoading) ? (
                 <>
                   <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
