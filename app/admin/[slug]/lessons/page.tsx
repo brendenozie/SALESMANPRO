@@ -2,6 +2,8 @@
 
 import React from "react";
 import WeeklyTimetable, { TimetableEntry, CourseOption, EducatorOption, AcademicLevelOption } from "./WeeklyTimetable";
+import { cookies } from "next/headers";
+import { ClassroomOption } from "../teachers/page";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -120,18 +122,20 @@ const generateSampleTimetableData = (companyId: string): {
 
 export default async function TimetableManagerPage({ params }: PageProps) {
   const { slug : companyId } = await params;
+  const cookieHeader = (await cookies()).toString();
 
   let initialTimetable: TimetableEntry[] = [];
   let allCourses: CourseOption[] = [];
   let allEducators: EducatorOption[] = [];
   let allAcademicLevels: AcademicLevelOption[] = [];
+  let allClassrooms: ClassroomOption[] = [];
   let fetchError: boolean = false;
 
   try {
     // Fetch timetable entries with related course and educator info
     const timetableRes = await fetch(
       `${apiBaseUrl}/admin/class-schedules?companyId=${encodeURIComponent(companyId)}`, // Corrected API path
-      { next: { revalidate: 60 } } // SSR on every request
+      { headers: { cookie: cookieHeader }, next: { revalidate: 60 } } // SSR on every request
     );
     if (timetableRes.ok) {
       initialTimetable = (await timetableRes.json()) as TimetableEntry[];
@@ -147,7 +151,7 @@ export default async function TimetableManagerPage({ params }: PageProps) {
     // Fetch all courses for dropdowns
     const coursesRes = await fetch(
       `${apiBaseUrl}/admin/courses?companyId=${encodeURIComponent(companyId)}`, // Corrected API path
-      { next: { revalidate: 60 } }
+      { headers: { cookie: cookieHeader }, next: { revalidate: 60 } }
     );
     if (coursesRes.ok) {
       const fetchedCourses = (await coursesRes.json()) as any[];
@@ -169,7 +173,7 @@ export default async function TimetableManagerPage({ params }: PageProps) {
     // Fetch all educators for dropdowns
     const educatorsRes = await fetch(
       `${apiBaseUrl}/admin/educators?companyId=${encodeURIComponent(companyId)}`, // Corrected API path
-      { next: { revalidate: 60 } }
+      { headers: { cookie: cookieHeader }, next: { revalidate: 60 } }
     );
     if (educatorsRes.ok) {
       const fetchedEducators = (await educatorsRes.json()) as any[];
@@ -190,7 +194,7 @@ export default async function TimetableManagerPage({ params }: PageProps) {
     // Fetch all academic levels (for display in course options)
     const academicLevelsRes = await fetch(
       `${apiBaseUrl}/admin/academic-levels?companyId=${encodeURIComponent(companyId)}`, // Corrected API path
-      { next: { revalidate: 60 } }
+      { headers: { cookie: cookieHeader }, next: { revalidate: 60 } }
     );
     if (academicLevelsRes.ok) {
       allAcademicLevels = (await academicLevelsRes.json()) as AcademicLevelOption[];
@@ -201,7 +205,19 @@ export default async function TimetableManagerPage({ params }: PageProps) {
       fetchError = true;
     }
 
-
+    // Fetch all classrooms (for display in timetable entries)
+    const classroomsRes = await fetch(
+      `${apiBaseUrl}/admin/classrooms?companyId=${encodeURIComponent(companyId)}`, // Corrected API path
+      { headers: { cookie: cookieHeader }, next: { revalidate: 60 } }
+    );
+    if (!classroomsRes.ok) {
+      console.error(
+        `[TimetableManagerPage] Failed to fetch classrooms: ${classroomsRes.status} ${classroomsRes.statusText}`
+      );
+      fetchError = true;
+    } else {
+      allClassrooms = (await classroomsRes.json()) as ClassroomOption[];
+    }
   } catch (err: any) {
     console.error("[TimetableManagerPage] Error fetching initial data →", err.message);
     fetchError = true;
@@ -223,6 +239,7 @@ export default async function TimetableManagerPage({ params }: PageProps) {
       allCourses={allCourses}
       allEducators={allEducators}
       allAcademicLevels={allAcademicLevels}
+      allClassrooms={allClassrooms}
       companyId={companyId}
     />
   );

@@ -17,6 +17,7 @@ import { CSS } from '@dnd-kit/utilities';
 import LessonFormModal from './LessonFormModal';
 import { TimetableGrid } from './TimetableGrid';
 import TimetableHeader from './Header';
+import { ClassroomOption } from '../teachers/page';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';;
 
@@ -199,14 +200,16 @@ interface WeeklyTimetableProps {
   allCourses: CourseOption[];
   allEducators: EducatorOption[];
   allAcademicLevels: AcademicLevelOption[];
+  allClassrooms: ClassroomOption[];
   companyId: string; // Pass companyId for API calls
 }
 
-export default function WeeklyTimetable({ initialTimetable, allCourses, allEducators, allAcademicLevels, companyId }: WeeklyTimetableProps) {
+export default function WeeklyTimetable({ initialTimetable, allCourses, allEducators, allAcademicLevels, allClassrooms, companyId }: WeeklyTimetableProps) {
   const [timetable, setTimetable] = useState<TimetableEntry[]>(initialTimetable);
 
   // Renamed selectedClassId to selectedAcademicLevelId for clarity
   const [selectedAcademicLevelId, setSelectedAcademicLevelId] = useState(allAcademicLevels[0]?.id || 'All');
+  const [selectedClassroomId, setSelectedClassroomId] = useState(allClassrooms[0]?.id || 'All');
   const [selectedCourseId, setSelectedCourseId] = useState('All');
   const [selectedEducatorId, setSelectedEducatorId] = useState('All');
   const [showFormModal, setShowFormModal] = useState(false);
@@ -230,7 +233,9 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
     setError(null);
     try {
       // Pass companyId to the API
-      const res = await fetch(`${apiBaseUrl}/admin/class-schedules?companyId=${encodeURIComponent(companyId)}`);
+      const res = await fetch(`${apiBaseUrl}/admin/class-schedules?companyId=${encodeURIComponent(companyId)}`, {
+        next: { revalidate: 60 },credentials: 'include',
+      });
       if (res.ok) {
         const data: TimetableEntry[] = await res.json();
         setTimetable(data); // Data from API should already be flattened and include course/educator details
@@ -313,13 +318,14 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
         try {
           const res = await fetch(`${apiBaseUrl}/admin/class-schedules/${draggedLesson.id}`, { // Corrected API path
             method: 'PATCH', // Use PATCH for updates
+            credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               courseId: draggedLesson.courseId,
               educatorId: draggedLesson.educatorId,
               dayOfWeek: targetDayOfWeek,
               startTime: apiStartTime, // Send HH:MM string
-              endTime: apiEndTime,   // Send HH:MM string
+              endTime: apiEndTime,  // Send HH:MM string
               topic: draggedLesson.topic,
               meetingLink: draggedLesson.meetingLink,
               companyId: draggedLesson.companyId, // Ensure companyId is sent for validation
@@ -358,6 +364,7 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
 
 
       const res = await fetch(url, {
+        credentials: 'include',
         method: method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -393,6 +400,7 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
     try {
       const res = await fetch(`${apiBaseUrl}/admin/class-schedules/${entryId}`, { // Corrected API path
         method: 'DELETE',
+        credentials: 'include',
       });
 
       if (res.ok) {
