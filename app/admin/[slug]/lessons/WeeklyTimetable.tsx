@@ -28,6 +28,7 @@ export type TimetableEntry = {
   courseTitle: string; // Flattened from course relation
   courseCode: string; // NEW: Flattened from course relation
   courseAcademicLevels: { id: string; name: string; sortOrder?: number }[]; // Flattened from course relation
+  courseClassrooms: { id: string; name: string; academicLevelId: string }[]; // NEW: Flattened from course relation
   educatorId: string;
   educatorName: string; // Flattened from educator relation
   educatorEmail: string; // Flattened from educator relation
@@ -79,6 +80,7 @@ const generateSampleTimetableData = (companyId: string): {
   sampleCourses: CourseOption[];
   sampleEducators: EducatorOption[];
   sampleAcademicLevels: AcademicLevelOption[];
+  sampleClassrooms: ClassroomOption[];
 } => {
   const academicLevels: AcademicLevelOption[] = [
     { id: 'AL001', name: 'Playgroup', sortOrder: 1 },
@@ -100,6 +102,12 @@ const generateSampleTimetableData = (companyId: string): {
     { id: 'CRS003', title: 'Elementary Math', code: 'MATH100', academicLevels: [{ id: 'AL003', name: 'Grade 1' }] },
   ];
 
+  const classRooms: ClassroomOption[] = [
+    { id: 'CLS001', name: 'Room 101', academicLevelId: 'AL003' },
+    { id: 'CLS002', name: 'Room 102', academicLevelId: 'AL006' },
+    { id: 'CLS003', name: 'Lab A', academicLevelId: 'AL007' },
+  ];
+
   const dummyDate = '1970-01-01T'; // For storing time components as Date objects
 
   const timetableEntries: TimetableEntry[] = [
@@ -109,6 +117,7 @@ const generateSampleTimetableData = (companyId: string): {
       courseTitle: 'Algebra I',
       courseCode: 'MATH101',
       courseAcademicLevels: [{ id: 'AL006', name: 'Grade 9' }],
+      courseClassrooms: [{ id: 'CLS002', name: 'Room 102', academicLevelId: 'AL006' }],
       educatorId: 'EDU001',
       educatorName: 'Mr. John Doe',
       educatorEmail: 'john.doe@school.com',
@@ -127,6 +136,7 @@ const generateSampleTimetableData = (companyId: string): {
       courseTitle: 'Literary Analysis',
       courseCode: 'ENG203',
       courseAcademicLevels: [{ id: 'AL007', name: 'High School - Freshman' }],
+      courseClassrooms: [{ id: 'CLS003', name: 'Lab A', academicLevelId: 'AL007' }],
       educatorId: 'EDU002',
       educatorName: 'Ms. Jane Smith',
       educatorEmail: 'jane.smith@school.com',
@@ -145,6 +155,7 @@ const generateSampleTimetableData = (companyId: string): {
       courseTitle: 'Algebra I',
       courseCode: 'MATH101',
       courseAcademicLevels: [{ id: 'AL006', name: 'Grade 9' }],
+      courseClassrooms: [{ id: 'CLS002', name: 'Room 102', academicLevelId: 'AL006' }],
       educatorId: 'EDU001',
       educatorName: 'Mr. John Doe',
       educatorEmail: 'john.doe@school.com',
@@ -163,6 +174,7 @@ const generateSampleTimetableData = (companyId: string): {
       courseTitle: 'Elementary Math',
       courseCode: 'MATH100',
       courseAcademicLevels: [{ id: 'AL003', name: 'Grade 1' }],
+      courseClassrooms: [{ id: 'CLS001', name: 'Room 101', academicLevelId: 'AL003' }],
       educatorId: 'EDU003',
       educatorName: 'Dr. Alex Lee',
       educatorEmail: 'alex.lee@school.com',
@@ -177,7 +189,7 @@ const generateSampleTimetableData = (companyId: string): {
     },
   ];
 
-  return { sampleTimetableEntries: timetableEntries, sampleCourses: courses, sampleEducators: educators, sampleAcademicLevels: academicLevels };
+  return { sampleTimetableEntries: timetableEntries, sampleCourses: courses, sampleEducators: educators, sampleAcademicLevels: academicLevels, sampleClassrooms: classRooms };
 };
 
 
@@ -258,12 +270,12 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
 
   useEffect(() => {
     // Initial fetch if no data provided from server or if sample data is needed
-    if (initialTimetable.length === 0 || allCourses.length === 0 || allEducators.length === 0 || allAcademicLevels.length === 0) {
+    if (initialTimetable.length === 0 || allCourses.length === 0 || allEducators.length === 0 || allAcademicLevels.length === 0 || allClassrooms.length === 0) {
       fetchTimetable();
     } else {
       setTimetable(initialTimetable);
     }
-  }, [fetchTimetable, initialTimetable, allCourses, allEducators, allAcademicLevels]);
+  }, [fetchTimetable, initialTimetable, allCourses, allEducators, allAcademicLevels, allClassrooms]);
 
 
   // DnD State
@@ -282,9 +294,14 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
       // Filter by academic level: check if any of the course's academic levels match the selected filter
       const matchesAcademicLevel = selectedAcademicLevelId === 'All' ||
                                    entry.courseAcademicLevels.some(al => al.id === selectedAcademicLevelId);
-      return matchesCourse && matchesEducator && matchesAcademicLevel;
+
+      const matchesClassroom = selectedClassroomId === 'All' ||
+                               allClassrooms.find(cr => cr.id === selectedClassroomId && 
+                                 entry.courseClassrooms.some(cl => cl.id === cr.id));
+
+      return matchesCourse && matchesEducator && matchesAcademicLevel && matchesClassroom;
     }),
-    [timetable, selectedCourseId, selectedEducatorId, selectedAcademicLevelId]
+    [timetable, selectedCourseId, selectedEducatorId, selectedAcademicLevelId, selectedClassroomId]
   );
 
   // DnD Handlers
@@ -323,6 +340,7 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
             body: JSON.stringify({
               courseId: draggedLesson.courseId,
               educatorId: draggedLesson.educatorId,
+              classroomId: draggedLesson.courseClassrooms[0]?.id || null, // Assuming first classroom for simplicity
               dayOfWeek: targetDayOfWeek,
               startTime: apiStartTime, // Send HH:MM string
               endTime: apiEndTime,  // Send HH:MM string
@@ -349,7 +367,7 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
   };
 
   // Modal Save Handler (for Add/Edit)
-  const handleSave = async (lessonData: Omit<TimetableEntry, 'courseTitle' | 'courseCode' | 'courseAcademicLevels' | 'educatorName' | 'educatorEmail' | 'createdAt' | 'updatedAt'>) => {
+  const handleSave = async (lessonData: Omit<TimetableEntry, 'courseTitle' | 'courseCode' | 'courseAcademicLevels' | 'courseClassrooms' | 'educatorName' | 'educatorEmail' | 'createdAt' | 'updatedAt'>) => {
     setIsLoading(true);
     setError(null);
 
@@ -425,12 +443,15 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
       <TimetableHeader
         today={today}
         selectedAcademicLevelId={selectedAcademicLevelId} // Renamed prop
+        selectedClassroomId={selectedClassroomId} // Added classroom filter
         selectedCourseId={selectedCourseId} // Added course filter
         selectedEducatorId={selectedEducatorId}
         onChangeAcademicLevel={setSelectedAcademicLevelId} // Renamed handler
+        onChangeClassroom={setSelectedClassroomId} // Added handler
         onChangeCourse={setSelectedCourseId} // Added handler
         onChangeEducator={setSelectedEducatorId}
         allAcademicLevels={allAcademicLevels}
+        allClassrooms={allClassrooms}
         allCourses={allCourses} // Pass all courses
         allEducators={allEducators}
         onAddLesson={() => {
@@ -500,6 +521,7 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
           onSave={handleSave}
           isLoading={isLoading}
           allCourses={allCourses}
+          allClassrooms={allClassrooms}
           allEducators={allEducators}
           companyId={companyId}
           selectedDayOfWeek={editingEntry?.dayOfWeek || newLessonDay} // Use newLessonDay for new entries

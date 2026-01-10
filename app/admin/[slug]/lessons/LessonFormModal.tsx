@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { XMarkIcon, BookOpenIcon, UsersIcon, CalendarDaysIcon, ClockIcon, LinkIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
+import { XMarkIcon, BookOpenIcon, UsersIcon, CalendarDaysIcon, ClockIcon, LinkIcon, DocumentTextIcon, BuildingLibraryIcon } from '@heroicons/react/24/outline';
 import { TimetableEntry, CourseOption, EducatorOption } from './WeeklyTimetable'; // Import types
+import { ClassroomOption } from '../teachers/page';
 
 interface LessonFormModalProps {
   isOpen: boolean; // Added isOpen prop for explicit modal control
@@ -9,6 +10,7 @@ interface LessonFormModalProps {
   onSave: (lessonData: Omit<TimetableEntry, 'courseTitle' | 'courseCode' | 'courseAcademicLevels' | 'educatorName' | 'educatorEmail' | 'createdAt' | 'updatedAt'> & { id?: string }) => Promise<void>;
   isLoading: boolean;
   allCourses: CourseOption[];
+  allClassrooms: ClassroomOption[];
   allEducators: EducatorOption[];
   companyId: string;
   selectedDayOfWeek: string;
@@ -34,12 +36,13 @@ export default function LessonFormModal({
   onSave,
   isLoading,
   allCourses,
+  allClassrooms,
   allEducators,
   companyId,
   selectedDayOfWeek,
   selectedTimeSlot,
 }: LessonFormModalProps) {
-  type LessonFormData = Omit<TimetableEntry, 'courseTitle' | 'courseCode' | 'courseAcademicLevels' | 'educatorName' | 'educatorEmail' | 'createdAt' | 'updatedAt'> & { id?: string };
+  type LessonFormData = Omit<TimetableEntry, 'courseTitle' | 'courseCode' | 'courseAcademicLevels' | 'courseClassrooms' | 'educatorName' | 'educatorEmail' | 'createdAt' | 'updatedAt'> & { id?: string; classroomId: string };
 
   const [formData, setFormData] = useState<LessonFormData>(() => {
     const defaultStartTimeISO = selectedTimeSlot ? `1970-01-01T${selectedTimeSlot}:00Z` : '1970-01-01T08:00:00Z';
@@ -50,6 +53,7 @@ export default function LessonFormModal({
       id: entryData.id,
       courseId: entryData.courseId,
       educatorId: entryData.educatorId,
+      classroomId: entryData.courseClassrooms && entryData.courseClassrooms.length > 0 ? entryData.courseClassrooms[0].id : '',
       dayOfWeek: entryData.dayOfWeek,
       startTime: (entryData.startTime && !isNaN(new Date(entryData.startTime).getTime())) ? entryData.startTime : defaultStartTimeISO,
       endTime: (entryData.endTime && !isNaN(new Date(entryData.endTime).getTime())) ? entryData.endTime : defaultEndTimeISO,
@@ -60,6 +64,7 @@ export default function LessonFormModal({
       id: '',
       courseId: '',
       educatorId: '',
+      classroomId: '',
       dayOfWeek: selectedDayOfWeek || 'Monday',
       startTime: defaultStartTimeISO,
       endTime: defaultEndTimeISO,
@@ -74,6 +79,7 @@ export default function LessonFormModal({
       setFormData({
         id: entryData.id || "",
         courseId: entryData.courseId,
+        classroomId: entryData.courseClassrooms && entryData.courseClassrooms.length > 0 ? entryData.courseClassrooms[0].id : '',
         educatorId: entryData.educatorId,
         dayOfWeek: entryData.dayOfWeek,
         startTime: (entryData.startTime && !isNaN(new Date(entryData.startTime).getTime())) ? entryData.startTime : '1970-01-01T08:00:00Z',
@@ -91,6 +97,7 @@ export default function LessonFormModal({
         id: '',
         courseId: '',
         educatorId: '',
+        classroomId: '',
         dayOfWeek: selectedDayOfWeek || 'Monday',
         startTime: defaultStartTimeISO,
         endTime: defaultEndTimeISO,
@@ -115,18 +122,20 @@ export default function LessonFormModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.courseId || !formData.educatorId || !formData.dayOfWeek || !formData.startTime || !formData.endTime) {
-      alert("Please fill in all required fields (Course, Educator, Day, Start Time, End Time).");
+    if (!formData.courseId || !formData.educatorId || !formData.classroomId || !formData.dayOfWeek || !formData.startTime || !formData.endTime) {
+      alert("Please fill in all required fields (Course, Educator, Classroom, Day, Start Time, End Time).");
       return;
     }
+
+    const selectedClassroom = allClassrooms.find(c => c.id === formData.classroomId);
 
     const payload = {
       id: formData.id,
       courseId: formData.courseId,
       educatorId: formData.educatorId,
+      classroomId: formData.classroomId,
       dayOfWeek: formData.dayOfWeek,
-      // startTime: formatTimeToHHMM(formData.startTime),
-      // endTime: formatTimeToHHMM(formData.endTime),
+      courseClassrooms: formData.classroomId && selectedClassroom && selectedClassroom.academicLevelId ? [{ id: selectedClassroom.id, name: selectedClassroom.name, academicLevelId: selectedClassroom.academicLevelId }] : [],
       startTime: makeISO(formatTimeToHHMM(formData.startTime)),
       endTime:   makeISO(formatTimeToHHMM(formData.endTime)),
       topic: formData.topic,
@@ -140,6 +149,7 @@ export default function LessonFormModal({
   if (!isOpen) return null;
 
   const selectedCourse = allCourses.find(c => c.id === formData.courseId);
+  const selectedClassroom = allClassrooms.find(c => c.id === formData.classroomId);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4 overflow-y-auto py-10">
@@ -195,6 +205,37 @@ export default function LessonFormModal({
             )}
           </div>
 
+          <div>
+            <label htmlFor="classroomId" className="text-sm font-semibold text-gray-700 flex items-center gap-1 mb-1">
+              <BuildingLibraryIcon className="h-4 w-4 text-gray-500" /> Classroom <span className="text-red-500">*</span>
+            </label>
+            <select
+              name="classroomId"
+              id="classroomId"
+              value={formData.classroomId}
+              onChange={handleChange}
+              required
+              className="mt-1 w-full rounded-lg border border-gray-300 py-2 px-3 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+            >
+              <option value="">Select classroom</option>
+              {allClassrooms.map((classroom) => (
+                <option key={classroom.id} value={classroom.id}>
+                  {classroom.name}
+                </option>
+              ))}
+            </select>
+            {/* {selectedClassroom && (
+              <div className="mt-2 flex flex-wrap gap-1">
+                <span className="text-xs font-medium text-gray-600">Level:</span>
+                <span
+                  className="inline-block text-xs px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700"
+                >
+                  {allAcademicLevels.find(level => level.id === selectedClassroom.academicLevelId)?.name || 'N/A'}
+                </span>
+              </div>
+            )} */}
+          </div>
+
           {/* Educator Select */}
           <div>
             <label htmlFor="educatorId" className="text-sm font-semibold text-gray-700 flex items-center gap-1 mb-1">
@@ -216,6 +257,7 @@ export default function LessonFormModal({
               ))}
             </select>
           </div>
+          
 
           {/* Day */}
           <div>

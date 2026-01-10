@@ -9,16 +9,20 @@ import {
   BookOpenIcon, // Added for Course filter icon
 } from '@heroicons/react/24/outline';
 import { AcademicLevelOption, CourseOption, EducatorOption } from './WeeklyTimetable'; // Import types
+import { ClassroomOption } from '../teachers/page';
 
 interface TimetableHeaderProps {
   today: string;
   selectedAcademicLevelId: string; // Renamed from selectedClassId
+  selectedClassroomId: string; // New prop for classroom filter
   selectedCourseId: string; // New prop for course filter
   selectedEducatorId: string;
   onChangeAcademicLevel: (value: string) => void; // Renamed from onChangeClass
+  onChangeClassroom: (value: string) => void; // New handler for classroom filter
   onChangeCourse: (value: string) => void; // New handler for course filter
   onChangeEducator: (value: string) => void;
   allAcademicLevels: AcademicLevelOption[]; // Use imported type
+  allClassrooms: ClassroomOption[]; // New prop for all classrooms
   allCourses: CourseOption[]; // New prop for all courses
   allEducators: EducatorOption[]; // Use imported type
   onAddLesson: () => void;
@@ -27,12 +31,15 @@ interface TimetableHeaderProps {
 export default function TimetableHeader({
   today,
   selectedAcademicLevelId, // Renamed
+  selectedClassroomId, // New
   selectedCourseId, // New
   selectedEducatorId,
   onChangeAcademicLevel, // Renamed
+  onChangeClassroom, // New
   onChangeCourse, // New
   onChangeEducator,
   allAcademicLevels,
+  allClassrooms, // New
   allCourses, // New
   allEducators,
   onAddLesson,
@@ -70,6 +77,23 @@ export default function TimetableHeader({
             {allAcademicLevels.map((level) => (
               <option key={level.id} value={level.id}>
                 {level.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Classroom Filter (NEW) */}
+        <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2 border border-gray-200 shadow-sm">
+          <AcademicCapIcon className="h-5 w-5 text-indigo-500" />
+          <select
+            value={selectedClassroomId}
+            onChange={(e) => onChangeClassroom(e.target.value)}
+            className="flex-1 bg-transparent text-sm text-gray-700 focus:outline-none"
+          >
+            <option value="All">All Classrooms</option>
+            {allClassrooms.map((classroom) => (
+              <option key={classroom.id} value={classroom.id}>
+                {classroom.name}
               </option>
             ))}
           </select>

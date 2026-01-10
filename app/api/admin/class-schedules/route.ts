@@ -12,6 +12,7 @@ export const GET = withApiHandler(async (request: Request, context) => {
   const companyId = searchParams.get("companyId");
   const courseId = searchParams.get("courseId");
   const educatorId = searchParams.get("educatorId");
+  const classroomId = searchParams.get("classroomId");
   const dayOfWeek = searchParams.get("dayOfWeek");
 
   if (!companyId) {
@@ -24,6 +25,15 @@ export const GET = withApiHandler(async (request: Request, context) => {
   const whereClause: any = { companyId };
   if (courseId) whereClause.courseId = courseId;
   if (educatorId) whereClause.educatorId = educatorId;
+  if (classroomId) whereClause.course = {
+    some: {
+      classrooms: {
+        some: {
+          id: classroomId
+        }
+      }
+    }
+  };
   if (dayOfWeek) {
     if (!VALID_DAYS_OF_WEEK.includes(dayOfWeek)) {
       return NextResponse.json(
@@ -50,6 +60,7 @@ export const GET = withApiHandler(async (request: Request, context) => {
       educator: {
         select: { id: true, user: { select: { name: true, email: true } } },
       },
+      classroom: { select: { id: true, name: true, academicLevelId: true } },
     },
     orderBy: [{ startTime: "asc" }],
   });
@@ -74,6 +85,7 @@ export const GET = withApiHandler(async (request: Request, context) => {
         courseTitle: schedule.course?.title || "N/A",
         courseCode: schedule.course?.code || "N/A",
         courseAcademicLevels: courseAcademicLevels || [],
+        courseClassrooms: schedule.classroom ? [{ id: schedule.classroom.id, name: schedule.classroom.name, academicLevelId: schedule.classroom.academicLevelId }] : [],
         educatorId: schedule.educatorId,
         educatorName: schedule.educator?.user?.name || "N/A",
         educatorEmail: schedule.educator?.user?.email || "N/A",
@@ -95,11 +107,11 @@ export const GET = withApiHandler(async (request: Request, context) => {
 // Creates a new class schedule
 export const POST = withApiHandler(async (request: Request) => {
   const body = await request.json();
-  const { courseId, educatorId, dayOfWeek, startTime, endTime, topic, meetingLink, companyId } = body;
+  const { courseId, educatorId, classroomId, dayOfWeek, startTime, endTime, topic, meetingLink, companyId } = body;
 
-  if (!courseId || !educatorId || !dayOfWeek || !startTime || !endTime || !companyId) {
+  if (!courseId || !educatorId || !classroomId || !dayOfWeek || !startTime || !endTime || !companyId) {
     return NextResponse.json(
-      { message: "Course ID, Educator ID, Day of Week, Start Time, End Time, and Company ID are required." },
+      { message: "Course ID, Educator ID, Classroom ID, Day of Week, Start Time, End Time, and Company ID are required." },
       { status: 400 }
     );
   }
@@ -115,6 +127,14 @@ export const POST = withApiHandler(async (request: Request) => {
   if (!existingCourse) {
     return NextResponse.json(
       { message: "Provided courseId does not exist or does not belong to this company." },
+      { status: 400 }
+    );
+  }
+
+  const existingClassroom = await prisma.classroom.findUnique({ where: { id: classroomId, companyId } });
+  if (!existingClassroom) {
+    return NextResponse.json(
+      { message: "Provided classroomId does not exist or does not belong to this company." },
       { status: 400 }
     );
   }
@@ -143,6 +163,7 @@ export const POST = withApiHandler(async (request: Request) => {
     data: {
       courseId,
       educatorId,
+      classroomId,
       dayOfWeek,
       startTime: parsedStartTime,
       endTime: parsedEndTime,
@@ -153,6 +174,7 @@ export const POST = withApiHandler(async (request: Request) => {
     include: {
       course: { select: { id: true, title: true, code: true, academicLevels: { include: { academicLevel: { select: { id: true, name: true, sortOrder: true } } } } } },
       educator: { select: { id: true, user: { select: { name: true, email: true } } } },
+      classroom: { select: { id: true, name: true, academicLevelId: true } }
     },
   });
 
@@ -167,6 +189,7 @@ export const POST = withApiHandler(async (request: Request) => {
         .filter(Boolean)
         .sort((a, b) => (a?.sortOrder || 0) - (b?.sortOrder || 0))
         .map((level) => ({ id: level!.id, name: level!.name })) || [],
+    courseClassrooms: newSchedule.classroom ? [{ id: newSchedule.classroom.id, name: newSchedule.classroom.name, academicLevelId: newSchedule.classroom.academicLevelId }] : [],
     educatorId: newSchedule.educatorId,
     educatorName: newSchedule.educator?.user?.name || "N/A",
     educatorEmail: newSchedule.educator?.user?.email || "N/A",

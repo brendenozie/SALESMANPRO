@@ -35,6 +35,7 @@ const getClassSchedule = async (_req: Request,  context: { params: { id: string 
       educator: {
         select: { id: true, user: { select: { name: true, email: true } } },
       },
+      classroom: { select: { id: true, name: true, academicLevelId: true } },
     },
   });
 
@@ -55,6 +56,7 @@ const getClassSchedule = async (_req: Request,  context: { params: { id: string 
     courseTitle: schedule.course?.title || "N/A",
     courseCode: schedule.course?.code || "N/A",
     courseAcademicLevels,
+    courseClassrooms: schedule.classroom ? [{ id: schedule.classroom.id, name: schedule.classroom.name, academicLevelId: schedule.classroom.academicLevelId }] : [],
     educatorId: schedule.educatorId,
     educatorName: schedule.educator?.user?.name || "N/A",
     educatorEmail: schedule.educator?.user?.email || "N/A",
@@ -75,7 +77,7 @@ const getClassSchedule = async (_req: Request,  context: { params: { id: string 
 const updateClassSchedule = async (req: Request,  context: { params: { id: string } , user?: any} ) => {
   const { id } = context.params;
   const body = await req.json();
-  const { courseId, educatorId, dayOfWeek, startTime, endTime, topic, meetingLink, companyId } =
+  const { courseId, educatorId, classroomId, dayOfWeek, startTime, endTime, topic, meetingLink, companyId } =
     body;
 
   const existingSchedule = await prisma.classSchedule.findUnique({ where: { id } });
@@ -109,6 +111,19 @@ const updateClassSchedule = async (req: Request,  context: { params: { id: strin
     if (!existingCourse) {
       return NextResponse.json(
         { message: "Provided courseId does not exist or does not belong to this company." },
+        { status: 400 }
+      );
+    }
+  }
+
+  // ✅ Validate classroomId
+  if (classroomId) {
+    const existingClassroom = await prisma.classroom.findUnique({
+      where: { id: classroomId, companyId: existingSchedule.companyId },
+    });
+    if (!existingClassroom) {
+      return NextResponse.json(
+        { message: "Provided classroomId does not exist or does not belong to this company." },
         { status: 400 }
       );
     }
@@ -154,6 +169,7 @@ const updateClassSchedule = async (req: Request,  context: { params: { id: strin
     data: {
       courseId: courseId || existingSchedule.courseId,
       educatorId: educatorId || existingSchedule.educatorId,
+      classroomId: classroomId || existingSchedule.classroomId,
       dayOfWeek: dayOfWeek || existingSchedule.dayOfWeek,
       startTime: startTime ? parsedStartTime : existingSchedule.startTime,
       endTime: endTime ? parsedEndTime : existingSchedule.endTime,
@@ -170,6 +186,7 @@ const updateClassSchedule = async (req: Request,  context: { params: { id: strin
         },
       },
       educator: { select: { id: true, user: { select: { name: true, email: true } } } },
+      classroom: { select: { id: true, name: true, academicLevelId: true } },
     },
   });
 

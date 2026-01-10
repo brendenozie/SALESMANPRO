@@ -18,6 +18,7 @@ export type TimetableEntry = {
   courseTitle: string;
   courseCode: string; // Added courseCode
   courseAcademicLevels: { id: string; name: string; sortOrder?: number }[];
+  courseClassrooms: { id: string; name: string; academicLevelId: string }[]; // Added courseClassrooms
   educatorId: string;
   educatorName: string;
   educatorEmail: string;
@@ -112,6 +113,22 @@ export default function SortableLessonCard({
         </div>
       )}
 
+      {/* Classrooms (NEW) */}
+      {entry.courseClassrooms && entry.courseClassrooms.length > 0 && (
+        <div className="mt-1 flex flex-wrap gap-1 text-[11px] font-medium text-green-700">
+          <UsersIcon className="h-4 w-4 mr-1 text-gray-500" /> {/* Classroom icon */}
+          {entry.courseClassrooms.map((classroom, index) => (
+            <span
+              key={classroom.id}
+              className="bg-green-50 px-2 py-0.5 rounded-full border border-green-100"
+            >
+              {classroom.name}
+              {index < entry.courseClassrooms.length - 1 ? ', ' : ''} {/* Add comma if not last */}
+            </span>
+          ))}
+        </div>
+      )}
+      
       {/* Topic */}
       {entry.topic && (
         <p className="text-xs mt-1 text-gray-500 line-clamp-2">📌 {entry.topic}</p>
