@@ -26,7 +26,7 @@ export type TimetableEntry = {
   educatorEmail: string; // Flattened from educator relation
   dayOfWeek: string; // e.g., "Monday", "Tuesday"
   startTime: string; // ISO string for time (e.g., "1970-01-01T08:00:00.000Z")
-  endTime: string;   // ISO string for time
+  endTime: string; // ISO string for time
   topic?: string | null;
   meetingLink?: string | null;
   companyId: string;
@@ -513,6 +513,7 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
           onSave={handleSave}
           isLoading={isLoading}
           allCourses={allCourses}
+          allAcademicLevels={allAcademicLevels}
           allClassrooms={allClassrooms}
           allEducators={allEducators}
           companyId={companyId}
@@ -522,6 +523,7 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
               ? formatTimeToHHMM(editingEntry.startTime)
               : newLessonTime // Use newLessonTime for new entries
           }
+          allEntries={timetable}
         />
       )}
     </div>

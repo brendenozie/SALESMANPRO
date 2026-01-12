@@ -146,7 +146,7 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
         <DragOverlay>
           {activeLesson ? (
             <div className="opacity-90 rotate-3 cursor-grabbing">
-               <SortableLessonCard entry={activeLesson} onClick={() => {}} onDelete={() => {}} />
+               <SortableLessonCard entry={activeLesson} onClick={() => {   }} onDelete={() => {}} />
             </div>
           ) : null}
         </DragOverlay>

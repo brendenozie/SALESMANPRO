@@ -148,6 +148,7 @@ export default async function TimetableManagerPage({ params }: PageProps) {
     );
     if (timetableRes.ok) {
       initialTimetable = (await timetableRes.json()) as any[];
+      console.log(`[TimetableManagerPage] Fetched timetable entries.`,initialTimetable);
       
     } else {
       console.error(
