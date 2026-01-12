@@ -2,39 +2,41 @@
 
 import React from 'react';
 import {
-  PencilIcon,
   TrashIcon,
-  UsersIcon,
-  LinkIcon,
-  BookOpenIcon, // Added for course code
-  TagIcon, // Changed from AcademicCapIcon for academic levels
+  BookOpenIcon,
+  MapPinIcon,
+  UserIcon,
 } from '@heroicons/react/24/outline';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-// Re-defining TimetableEntry here for self-containment, but ideally it would be imported from a shared types file.
-export type TimetableEntry = {
-  id: string;
-  courseId: string;
-  courseTitle: string;
-  courseCode: string; // Added courseCode
-  courseAcademicLevels: { id: string; name: string; sortOrder?: number }[];
-  courseClassrooms: { id: string; name: string; academicLevelId: string }[]; // Added courseClassrooms
-  educatorId: string;
-  educatorName: string;
-  educatorEmail: string;
-  dayOfWeek: string;
-  startTime: string;
-  endTime: string;
-  topic?: string | null;
-  meetingLink?: string | null;
-  companyId: string;
-  createdAt: string;
-  updatedAt: string;
-};
+import { TimetableEntry } from './WeeklyTimetable';
 
-const LESSON_COLORS = {
-  default: 'bg-blue-100 text-blue-800 border-blue-200',
-  // highlight: 'bg-indigo-100 text-indigo-800 border-indigo-200', // Not used in this component, but good to keep in mind for consistency
+// deterministic pastel colors based on string input
+const getCourseColor = (str: string) => {
+  const colors = [
+    'bg-red-100 border-red-200 text-red-900',
+    'bg-orange-100 border-orange-200 text-orange-900',
+    'bg-amber-100 border-amber-200 text-amber-900',
+    'bg-lime-100 border-lime-200 text-lime-900',
+    'bg-green-100 border-green-200 text-green-900',
+    'bg-emerald-100 border-emerald-200 text-emerald-900',
+    'bg-teal-100 border-teal-200 text-teal-900',
+    'bg-cyan-100 border-cyan-200 text-cyan-900',
+    'bg-sky-100 border-sky-200 text-sky-900',
+    'bg-blue-100 border-blue-200 text-blue-900',
+    'bg-indigo-100 border-indigo-200 text-indigo-900',
+    'bg-violet-100 border-violet-200 text-violet-900',
+    'bg-purple-100 border-purple-200 text-purple-900',
+    'bg-fuchsia-100 border-fuchsia-200 text-fuchsia-900',
+    'bg-pink-100 border-pink-200 text-pink-900',
+    'bg-rose-100 border-rose-200 text-rose-900',
+  ];
+  
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return colors[Math.abs(hash) % colors.length];
 };
 
 interface SortableLessonCardProps {
@@ -60,17 +62,11 @@ export default function SortableLessonCard({
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    zIndex: isDragging ? 50 : 1, // Bring dragged item to front
+    zIndex: isDragging ? 50 : 1,
     opacity: isDragging ? 0.7 : 1,
-    boxShadow: isDragging ? '0px 8px 20px rgba(0, 0, 0, 0.2)' : '0px 2px 5px rgba(0, 0, 0, 0.05)',
   };
 
-  const formatTime = (isoString: string) =>
-    new Date(isoString).toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true,
-    });
+  const colorClass = getCourseColor(entry.courseId);
 
   return (
     <div
@@ -78,108 +74,53 @@ export default function SortableLessonCard({
       {...attributes}
       {...listeners}
       style={style}
-      className={`group relative p-3 rounded-lg bg-white border border-gray-200 shadow-sm transition-shadow duration-200
-                  cursor-grab active:cursor-grabbing hover:shadow-md`}
+      // Added double click to edit as it's often more intuitive for "opening" something
+      onDoubleClick={(e) => { e.stopPropagation(); onClick(entry); }}
+      className={`group relative p-3 rounded-lg border shadow-sm transition-all duration-200
+                  cursor-grab active:cursor-grabbing hover:shadow-md select-none
+                  ${colorClass} ${isDragging ? 'shadow-xl ring-2 ring-indigo-400 rotate-2' : ''}`}
     >
-      {/* Course Title */}
-      <h3 className="font-semibold text-sm text-gray-800 truncate">{entry.courseTitle}</h3>
+      {/* Delete Button (visible on hover) */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onDelete(entry.id);
+        }}
+        className="absolute top-2 right-2 p-1 rounded-full bg-white/50 hover:bg-white text-gray-500 hover:text-red-600 
+                   opacity-0 group-hover:opacity-100 transition-opacity"
+        title="Delete Lesson"
+      >
+        <TrashIcon className="h-4 w-4" />
+      </button>
 
-      {/* Course Code (NEW) */}
-      {entry.courseCode && (
-        <p className="text-xs text-gray-700 mt-0.5 flex items-center">
-          <BookOpenIcon className="h-3 w-3 mr-1 text-gray-500" /> {entry.courseCode}
-        </p>
-      )}
-
-      {/* Educator */}
-      <p className="mt-1 flex items-center text-xs text-gray-600">
-        <UsersIcon className="h-4 w-4 mr-1 text-indigo-500" />
-        {entry.educatorName}
-      </p>
-
-      {/* Academic Levels */}
-      {entry.courseAcademicLevels && entry.courseAcademicLevels.length > 0 && (
-        <div className="mt-1 flex flex-wrap gap-1 text-[11px] font-medium text-indigo-700">
-          <TagIcon className="h-4 w-4 mr-1 text-gray-500" /> {/* Changed to TagIcon */}
-          {entry.courseAcademicLevels.map((level, index) => (
-            <span
-              key={level.id}
-              className="bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-100"
-            >
-              {level.name}
-              {index < entry.courseAcademicLevels.length - 1 ? ', ' : ''} {/* Add comma if not last */}
-            </span>
-          ))}
-        </div>
-      )}
-
-      {/* Classrooms (NEW) */}
-      {entry.courseClassrooms && entry.courseClassrooms.length > 0 && (
-        <div className="mt-1 flex flex-wrap gap-1 text-[11px] font-medium text-green-700">
-          <UsersIcon className="h-4 w-4 mr-1 text-gray-500" /> {/* Classroom icon */}
-          {entry.courseClassrooms.map((classroom, index) => (
-            <span
-              key={classroom.id}
-              className="bg-green-50 px-2 py-0.5 rounded-full border border-green-100"
-            >
-              {classroom.name}
-              {index < entry.courseClassrooms.length - 1 ? ', ' : ''} {/* Add comma if not last */}
-            </span>
-          ))}
-        </div>
-      )}
-      
-      {/* Topic */}
-      {entry.topic && (
-        <p className="text-xs mt-1 text-gray-500 line-clamp-2">📌 {entry.topic}</p>
-      )}
-
-      {/* Time */}
-      <div className="text-xs mt-2 text-gray-700 font-medium">
-        🕒 {formatTime(entry.startTime)} – {formatTime(entry.endTime)}
+      {/* Course Title & Code */}
+      <div className="pr-6"> {/* Padding for delete button */}
+        <h3 className="font-bold text-sm leading-tight">{entry.courseTitle}</h3>
+        {entry.courseCode && (
+          <div className="flex items-center gap-1 mt-1 opacity-80">
+            <BookOpenIcon className="h-3 w-3" />
+            <span className="text-xs font-medium">{entry.courseCode}</span>
+          </div>
+        )}
       </div>
 
-      {/* Actions (hover only on desktop, always visible on mobile) */}
-      <div
-        className="absolute inset-x-0 bottom-0 px-2 py-1 flex justify-end items-center gap-2 text-gray-600
-                   opacity-0 group-hover:opacity-100 transition-opacity sm:opacity-100 bg-white bg-opacity-90"
-      >
-        {/* Meeting link */}
-        {entry.meetingLink && (
-          <a
-            href={entry.meetingLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="p-1 rounded-full hover:bg-gray-100 hover:text-blue-600 transition-colors"
-            title="Join meeting"
-          >
-            <LinkIcon className="h-4 w-4" />
-          </a>
+      {/* Metadata (Time, Educator, Room) */}
+      <div className="mt-2 space-y-1 border-t border-black/5 pt-2">
+        <div className="flex items-center justify-between text-xs font-medium opacity-90">
+           <span>{new Date(entry.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', hour12: false})} - {new Date(entry.endTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', hour12: false})}</span>
+        </div>
+        
+        <div className="flex items-center gap-1.5 text-xs opacity-80 truncate">
+          <UserIcon className="h-3 w-3 flex-shrink-0" />
+          <span className="truncate">{entry.educatorName}</span>
+        </div>
+
+        {entry.courseClassrooms?.[0] && (
+          <div className="flex items-center gap-1.5 text-xs opacity-80 truncate">
+            <MapPinIcon className="h-3 w-3 flex-shrink-0" />
+            <span className="truncate">{entry.courseClassrooms[0].name}</span>
+          </div>
         )}
-
-        {/* Edit */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onClick(entry);
-          }}
-          title="Edit"
-          className="p-1 rounded-full hover:bg-indigo-50 hover:text-indigo-600 transition-colors"
-        >
-          <PencilIcon className="h-4 w-4" />
-        </button>
-
-        {/* Delete */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete(entry.id);
-          }}
-          title="Delete"
-          className="p-1 rounded-full hover:bg-red-50 hover:text-red-600 transition-colors"
-        >
-          <TrashIcon className="h-4 w-4" />
-        </button>
       </div>
     </div>
   );

@@ -147,7 +147,8 @@ export default async function TimetableManagerPage({ params }: PageProps) {
       { headers: { cookie: cookieHeader }, next: { revalidate: 60 } } // SSR on every request
     );
     if (timetableRes.ok) {
-      initialTimetable = (await timetableRes.json()) as TimetableEntry[];
+      initialTimetable = (await timetableRes.json()) as any[];
+      
     } else {
       console.error(
         "[TimetableManagerPage] Failed to fetch timetable →",
@@ -163,7 +164,8 @@ export default async function TimetableManagerPage({ params }: PageProps) {
       { headers: { cookie: cookieHeader }, next: { revalidate: 60 } }
     );
     if (coursesRes.ok) {
-      const fetchedCourses = (await coursesRes.json()) as any[];
+      const fetchedCourses = (await coursesRes.json()).data as any[];
+      
       allCourses = fetchedCourses.map(c => ({
         id: c.id,
         title: c.title,
@@ -185,7 +187,8 @@ export default async function TimetableManagerPage({ params }: PageProps) {
       { headers: { cookie: cookieHeader }, next: { revalidate: 60 } }
     );
     if (educatorsRes.ok) {
-      const fetchedEducators = (await educatorsRes.json()) as any[];
+      const fetchedEducators = (await educatorsRes.json()).data.data as any[];
+      
       allEducators = fetchedEducators.map(e => ({
         id: e.id,
         name: e.name,
@@ -206,7 +209,8 @@ export default async function TimetableManagerPage({ params }: PageProps) {
       { headers: { cookie: cookieHeader }, next: { revalidate: 60 } }
     );
     if (academicLevelsRes.ok) {
-      allAcademicLevels = (await academicLevelsRes.json()) as AcademicLevelOption[];
+      allAcademicLevels = (await academicLevelsRes.json()).data as any[];
+      
     } else {
       console.error(
         `[TimetableManagerPage] Failed to fetch academic levels: ${academicLevelsRes.status} ${academicLevelsRes.statusText}`
@@ -225,7 +229,7 @@ export default async function TimetableManagerPage({ params }: PageProps) {
       );
       fetchError = true;
     } else {
-      allClassrooms = (await classroomsRes.json()).data as ClassroomOption[];
+      allClassrooms = (await classroomsRes.json()).data as any[];
     }
   } catch (err: any) {
     console.error("[TimetableManagerPage] Error fetching initial data →", err.message);

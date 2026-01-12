@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useMemo } from 'react';
-import { ClockIcon, PlusCircleIcon } from '@heroicons/react/24/outline';
+import { ClockIcon, PlusIcon } from '@heroicons/react/24/outline';
 import { DndContext, DragOverlay, closestCenter, useSensor, useSensors, PointerSensor, KeyboardSensor } from '@dnd-kit/core';
 import { SortableContext, rectSortingStrategy, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
-import { TimetableEntry } from './WeeklyTimetable'; // Import TimetableEntry from WeeklyTimetable
-import SortableLessonCard from './SortableLessonCard'; // Import SortableLessonCard
+import { TimetableEntry } from './WeeklyTimetable';
+import SortableLessonCard from './SortableLessonCard';
 
 interface TimetableGridProps {
   timetable: TimetableEntry[];
@@ -21,7 +21,7 @@ interface TimetableGridProps {
 }
 
 export const TimetableGrid: React.FC<TimetableGridProps> = ({
-  timetable, // Full timetable data (for activeLesson lookup)
+  timetable,
   daysOfWeek,
   timeSlots,
   onClickLesson,
@@ -30,13 +30,11 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
   activeId,
   setActiveId,
   onDragEnd,
-  filteredLessons, // Already filtered data for display in cells
+  filteredLessons,
 }) => {
   const sensors = useSensors(
-    useSensor(PointerSensor),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    })
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }), // Prevent accidental drags
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
   const isToday = (dayName: string) => {
@@ -46,88 +44,96 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
 
   const activeLesson = activeId ? timetable.find(l => l.id === activeId) : null;
 
-  // Generate dates for the current week (Monday to Friday)
   const currentWeekDays = useMemo(() => {
     const today = new Date();
-    const dayOfWeek = today.getDay(); // 0 for Sunday, 1 for Monday
-    const diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); // Adjust to get Monday of current week
+    const dayOfWeek = today.getDay(); 
+    const diff = today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); 
     const monday = new Date(today.setDate(diff));
 
-    return daysOfWeek.map((dayName, index) => {
+    return daysOfWeek.map((_, index) => {
       const date = new Date(monday);
       date.setDate(monday.getDate() + index);
-      return date.toISOString().split('T')[0]; // YYYY-MM-DD
+      return date.toISOString().split('T')[0];
     });
-  }, [daysOfWeek]); // Recalculate if daysOfWeek changes
-
+  }, [daysOfWeek]);
 
   return (
     <div className="overflow-x-auto rounded-xl shadow-lg border border-gray-200 bg-white">
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragStart={({ active }) => setActiveId(active.id?.toString() ?? null)} onDragEnd={onDragEnd}>
         <div className="min-w-[900px] grid" style={{ gridTemplateColumns: `80px repeat(${daysOfWeek.length}, minmax(180px, 1fr))` }}>
-          {/* Headers */}
-          <div className="sticky top-0 z-10 bg-white border-r border-b border-gray-200" /> {/* Empty corner cell */}
+          
+          {/* Corner */}
+          <div className="sticky top-0 z-10 bg-white border-r border-b border-gray-200 p-2 flex items-center justify-center">
+             <ClockIcon className="h-5 w-5 text-gray-400" />
+          </div>
 
-          {daysOfWeek.map((day, index) => (
-            <div
-              key={day}
-              className={`bg-gray-50 border-b border-gray-200 p-3 text-center text-sm font-semibold text-gray-700
-                ${isToday(day) ? 'bg-yellow-50 border-l-4 border-yellow-400' : ''}
-                ${index === 0 ? 'rounded-tl-xl' : ''} ${index === daysOfWeek.length - 1 ? 'rounded-tr-xl' : ''}
-              `}
-            >
-              {day} <br />
-              <span className="text-xs font-normal text-gray-500">{new Date(currentWeekDays[index]).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
-            </div>
-          ))}
+          {/* Header Row */}
+          {daysOfWeek.map((day, index) => {
+            const isDayToday = isToday(day);
+            return (
+              <div
+                key={day}
+                className={`sticky top-0 z-10 border-b border-gray-200 p-3 text-center
+                  ${isDayToday ? 'bg-indigo-50 border-b-indigo-200' : 'bg-gray-50'}
+                  ${index === daysOfWeek.length - 1 ? 'rounded-tr-xl' : ''}
+                `}
+              >
+                <div className={`text-sm font-bold ${isDayToday ? 'text-indigo-700' : 'text-gray-700'}`}>
+                  {day}
+                </div>
+                <div className={`text-xs mt-1 ${isDayToday ? 'text-indigo-500 font-medium' : 'text-gray-500'}`}>
+                  {new Date(currentWeekDays[index]).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                </div>
+                {/* Visual indicator for today */}
+                {isDayToday && <div className="absolute bottom-0 left-0 w-full h-1 bg-indigo-500" />}
+              </div>
+            );
+          })}
 
-          {/* Time rows and Lesson Cells */}
+          {/* Grid Body */}
           {timeSlots.map(timeSlot => (
             <React.Fragment key={timeSlot}>
               {/* Time Label */}
-              <div className="p-2 text-right font-semibold text-gray-700 border-r border-gray-200 bg-gray-50 flex items-center justify-end">
-                <ClockIcon className="h-4 w-4 mr-1 text-gray-500" /> {timeSlot}
+              <div className="p-2 text-xs font-semibold text-gray-500 border-r border-gray-200 bg-gray-50/50 flex items-start justify-center pt-3">
+                {timeSlot}
               </div>
 
               {/* Lesson Cells */}
               {daysOfWeek.map(day => {
                 const cellId = `${day}-${timeSlot}`;
-                // Filter lessons that start exactly at this time slot on this day
                 const lessonsInCell = filteredLessons.filter(l =>
                   l.dayOfWeek === day &&
                   new Date(l.startTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }) === timeSlot
                 );
+                const isDayToday = isToday(day);
 
                 return (
                   <div
                     key={cellId}
-                    className="p-1 min-h-[100px] border border-gray-200 relative group" // Added group for hover effects
-                    data-dayOfWeek={day}
-                    data-time={timeSlot}
-                    // Clicking on the cell background should add a new lesson
+                    className={`p-1 min-h-[110px] border-b border-r border-gray-100 relative group transition-colors duration-200
+                      ${isDayToday ? 'bg-indigo-50/30' : 'bg-white hover:bg-gray-50'}
+                    `}
                     onClick={() => onAddLesson(day, timeSlot)}
                   >
                     <SortableContext items={lessonsInCell.map(l => l.id)} strategy={rectSortingStrategy}>
-                      <div className="flex flex-col gap-1 h-full">
-                        {lessonsInCell.length > 0 ? (
-                          lessonsInCell.map(lesson => (
-                            <SortableLessonCard
-                              key={lesson.id}
-                              entry={lesson}
-                              onClick={onClickLesson}
-                              onDelete={onDeleteLesson}
-                            />
-                          ))
-                        ) : (
-                          // Placeholder for empty cells, visible on hover
-                          <div
-                            className="absolute inset-0 flex items-center justify-center bg-gray-50 rounded-md border border-dashed border-gray-200
-                                       opacity-0 group-hover:opacity-100 transition-opacity duration-150 cursor-pointer"
-                            onClick={(e) => { e.stopPropagation(); onAddLesson(day, timeSlot); }} // Ensure click on plus icon adds lesson
-                          >
-                            <PlusCircleIcon className="h-6 w-6 text-gray-300 group-hover:text-indigo-400 transition-colors" />
-                          </div>
-                        )}
+                      <div className="flex flex-col gap-2 h-full">
+                        {lessonsInCell.map(lesson => (
+                          <SortableLessonCard
+                            key={lesson.id}
+                            entry={lesson}
+                            onClick={onClickLesson}
+                            onDelete={onDeleteLesson}
+                          />
+                        ))}
+                        
+                        {/* Empty State / Add Button */}
+                        <div
+                          className={`flex-1 flex items-center justify-center rounded-lg border-2 border-dashed border-transparent
+                                      ${lessonsInCell.length === 0 ? 'min-h-[60px]' : ''}
+                                      group-hover:border-indigo-200 group-hover:bg-indigo-50/50 transition-all cursor-pointer`}
+                        >
+                          <PlusIcon className="h-6 w-6 text-indigo-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </div>
                       </div>
                     </SortableContext>
                   </div>
@@ -139,11 +145,9 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
 
         <DragOverlay>
           {activeLesson ? (
-            <SortableLessonCard
-              entry={activeLesson}
-              onClick={() => {}} // No action on click when dragging
-              onDelete={() => {}} // No action on delete when dragging
-            />
+            <div className="opacity-90 rotate-3 cursor-grabbing">
+               <SortableLessonCard entry={activeLesson} onClick={() => {}} onDelete={() => {}} />
+            </div>
           ) : null}
         </DragOverlay>
       </DndContext>

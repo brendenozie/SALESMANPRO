@@ -2,18 +2,10 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
-  PencilIcon,
-  TrashIcon,
-  AcademicCapIcon, // For course level
-  UsersIcon, // For educator
-  LinkIcon, // For meeting link
-  XMarkIcon, // For academic levels
-  TagIcon, // For academic levels in card
-  BookOpenIcon, // For course code
+  XMarkIcon, // For course code
 } from '@heroicons/react/24/outline';
 import { useSensor, useSensors, PointerSensor, KeyboardSensor } from '@dnd-kit/core';
-import { sortableKeyboardCoordinates, useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
+import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import LessonFormModal from './LessonFormModal';
 import { TimetableGrid } from './TimetableGrid';
 import TimetableHeader from './Header';
@@ -220,8 +212,8 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
   const [timetable, setTimetable] = useState<TimetableEntry[]>(initialTimetable);
 
   // Renamed selectedClassId to selectedAcademicLevelId for clarity
-  const [selectedAcademicLevelId, setSelectedAcademicLevelId] = useState(allAcademicLevels[0]?.id || 'All');
-  const [selectedClassroomId, setSelectedClassroomId] = useState(allClassrooms[0]?.id || 'All');
+  const [selectedAcademicLevelId, setSelectedAcademicLevelId] = useState('All'); // allAcademicLevels[0]?.id ||
+  const [selectedClassroomId, setSelectedClassroomId] = useState('All');// allClassrooms[0]?.id || 
   const [selectedCourseId, setSelectedCourseId] = useState('All');
   const [selectedEducatorId, setSelectedEducatorId] = useState('All');
   const [showFormModal, setShowFormModal] = useState(false);
