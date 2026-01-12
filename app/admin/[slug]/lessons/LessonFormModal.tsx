@@ -29,6 +29,39 @@ import { ClassroomOption } from '../teachers/page';
 /* Types & Helpers                                                    */
 /* ------------------------------------------------------------------ */
 
+
+
+  const getValidationConflicts = (
+    allEntries: TimetableEntry[],
+    currentForm: { 
+      id?: string, 
+      educatorId: string, 
+      classroomId: string, 
+      dayOfWeek: string, 
+      startTime: string, 
+      endTime: string 
+    }
+  ) => {
+    const newStart = new Date(currentForm.startTime).getTime();
+    const newEnd = new Date(currentForm.endTime).getTime();
+
+    const teacherConflict = allEntries.find(ex => 
+      ex.id !== currentForm.id &&
+      ex.dayOfWeek === currentForm.dayOfWeek &&
+      ex.educatorId === currentForm.educatorId &&
+      (newStart < new Date(ex.endTime).getTime() && newEnd > new Date(ex.startTime).getTime())
+    );
+
+    const roomConflict = allEntries.find(ex => 
+      ex.id !== currentForm.id &&
+      ex.dayOfWeek === currentForm.dayOfWeek &&
+      ex.courseClassrooms.some(r => r.id === currentForm.classroomId) &&
+      (newStart < new Date(ex.endTime).getTime() && newEnd > new Date(ex.startTime).getTime())
+    );
+
+    return { teacherConflict, roomConflict };
+  };
+
 interface LessonFormModalProps {
   isOpen: boolean;
   entryData: TimetableEntry | null;
@@ -60,9 +93,12 @@ const formatTimeToHHMM = (iso: string): string => {
   return `${d.getUTCHours().toString().padStart(2, '0')}:${d.getUTCMinutes().toString().padStart(2, '0')}`;
 };
 
-/* ------------------------------------------------------------------ */
-/* Component                                                          */
-/* ------------------------------------------------------------------ */
+const calculateEndTime = (startTime: string | null): string => {
+  if (!startTime) return '1970-01-01T08:45:00Z';
+  const [h, m] = startTime.split(':').map(Number);
+  const end = new Date(Date.UTC(1970, 0, 1, h, m + 45));
+  return end.toISOString();
+};
 
 export default function LessonFormModal({
   isOpen,
@@ -80,18 +116,41 @@ export default function LessonFormModal({
   allEntries,
 }: LessonFormModalProps) {
   
+  // console.log(entryData);
+
   const [formData, setFormData] = useState({
     id: '',
-    courseId: '',
-    educatorId: '',
-    academicLevelId: '',
-    classroomId: '',
+    courseId: entryData?.courseId || '',
+    educatorId: entryData?.educatorId || '',
+    academicLevelId: entryData?.courseAcademicLevels?.[0]?.id || '',
+    classroomId: entryData?.courseClassrooms?.[0]?.id || '',
     dayOfWeek: selectedDayOfWeek || 'Monday',
     startTime: selectedTimeSlot ? `1970-01-01T${selectedTimeSlot}:00Z` : '1970-01-01T08:00:00Z',
-    endTime: '1970-01-01T08:45:00Z',
-    topic: '',
-    meetingLink: '',
+    endTime: calculateEndTime(selectedTimeSlot),
+    topic: entryData?.topic || '',
+    meetingLink: entryData?.meetingLink || '',
   });
+
+  // Inside LessonFormModal component
+  // const [formData, setFormData] = useState({
+  //   educatorId: entryData?.educatorId || '',
+  //   classroomId: entryData?.courseClassrooms[0]?.id || '',
+  //   dayOfWeek: selectedDayOfWeek,
+  //   startTime: selectedTimeSlot, // Ensure this is converted to ISO for the checker
+  //   endTime: calculateEndTime(selectedTimeSlot), // Helper to add duration
+  // });
+
+  // Real-time conflict calculation
+  const conflicts = useMemo(() => {
+    return getValidationConflicts(allEntries, {
+      ...formData,
+      // Convert HH:mm back to dummy ISO for comparison
+      startTime: `1970-01-01T${formData.startTime}:00.000Z`,
+      endTime: `1970-01-01T${formData.endTime}:00.000Z`,
+    });
+  }, [formData, allEntries, entryData]);
+
+  const isSaveDisabled = !!conflicts.teacherConflict || !!conflicts.roomConflict || isLoading;
 
   const [error, setError] = useState<string | null>(null);
 
@@ -282,12 +341,17 @@ export default function LessonFormModal({
                   value={formData.classroomId} 
                   onChange={e => setFormData(p => ({ ...p, classroomId: e.target.value }))}
                   disabled={!formData.academicLevelId}
-                  className="w-full bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-2xl py-4 px-5 transition-all outline-none font-medium text-slate-700 disabled:opacity-50"
+                  className={`w-full bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-2xl py-4 px-5 transition-all outline-none font-medium text-slate-700 disabled:opacity-50 p-2  ${conflicts.roomConflict ? 'border-red-500 ring-1 ring-red-500' : ''}`}
                   required
                 >
                   <option value="">Select Classroom</option>
                   {filteredClassrooms.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
+                {conflicts.roomConflict && (
+                    <p className="text-xs text-red-600 font-medium">
+                      ⚠️ Room is occupied by "{conflicts.roomConflict.courseTitle}"
+                    </p>
+                  )}
               </div>
             </section>
 
@@ -312,13 +376,19 @@ export default function LessonFormModal({
                 <select 
                   value={formData.educatorId} 
                   onChange={e => setFormData(p => ({ ...p, educatorId: e.target.value }))}
-                  className="w-full bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-2xl py-4 px-5 transition-all outline-none font-medium text-slate-700"
+                  className={`w-full bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-2xl py-4 px-5 transition-all outline-none font-medium text-slate-700 p-2 ${conflicts.teacherConflict ? 'border-red-500 ring-1 ring-red-500' : ''}`}
                   required
                 >
                   <option value="">Select Educator</option>
                   {allEducators.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
                 </select>
+                {conflicts.teacherConflict && (
+                  <p className="text-xs text-red-600 font-medium">
+                    ⚠️ Teacher is already teaching "{conflicts.teacherConflict.courseTitle}"
+                  </p>
+                )}
               </div>
+
             </section>
 
             {/* Step 3: Timing (Full Days Included) */}
@@ -390,7 +460,7 @@ export default function LessonFormModal({
               </button>
               <button 
                 type="submit"
-                disabled={isLoading || !!conflict}
+                disabled={isSaveDisabled}
                 className={`flex-[2] py-4 px-6 rounded-2xl font-bold text-white shadow-xl shadow-indigo-100 transition-all active:scale-[0.98] 
                   ${conflict ? 'bg-slate-300 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700'}`}
               >

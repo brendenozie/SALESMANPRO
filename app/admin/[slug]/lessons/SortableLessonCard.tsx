@@ -84,7 +84,8 @@ export default function SortableLessonCard({
       {...listeners}
       style={style}
       // Added double click to edit as it's often more intuitive for "opening" something
-      onDoubleClick={(e) => { e.stopPropagation(); onClick(entry); }}
+      // onDoubleClick={(e) => { e.stopPropagation(); onClick(entry); }}
+      onClick={() => onClick(entry)}
       className={`group relative p-3 rounded-lg border shadow-sm transition-all duration-200
                   cursor-grab active:cursor-grabbing hover:shadow-md select-none
                   ${colorClass} ${isDragging ? 'shadow-xl ring-2 ring-indigo-400 rotate-2' : ''}`}

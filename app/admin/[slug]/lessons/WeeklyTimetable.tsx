@@ -210,6 +210,40 @@ interface WeeklyTimetableProps {
   companyId: string; // Pass companyId for API calls
 }
 
+const getUTCTimeString = (isoString: string): string => {
+  const date = new Date(isoString);
+  if (isNaN(date.getTime())) return '';
+  
+  const hours = date.getUTCHours().toString().padStart(2, '0');
+  const minutes = date.getUTCMinutes().toString().padStart(2, '0');
+  return `${hours}:${minutes}`;
+};
+
+const checkConflict = (
+  entries: TimetableEntry[],
+  newLesson: { id?: string; educatorId: string; dayOfWeek: string; startTime: string; endTime: string }
+) => {
+  // Convert ISO strings to numeric timestamps for easier comparison
+  const newStart = new Date(newLesson.startTime).getTime();
+  const newEnd = new Date(newLesson.endTime).getTime();
+
+  return entries.find((existing) => {
+    // 1. Skip the lesson itself if we are editing an existing one
+    if (existing.id === newLesson.id) return false;
+
+    // 2. Check if it's the same educator on the same day
+    if (existing.educatorId === newLesson.educatorId && existing.dayOfWeek === newLesson.dayOfWeek) {
+      const existingStart = new Date(existing.startTime).getTime();
+      const existingEnd = new Date(existing.endTime).getTime();
+
+      // 3. Overlap check logic
+      const isOverlapping = newStart < existingEnd && newEnd > existingStart;
+      return isOverlapping;
+    }
+    return false;
+  });
+};
+
 export default function WeeklyTimetable({ initialTimetable, allCourses, allEducators, allAcademicLevels, allClassrooms, companyId }: WeeklyTimetableProps) {
   const [timetable, setTimetable] = useState<TimetableEntry[]>(initialTimetable);
 
@@ -301,7 +335,7 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
   // DnD Handlers
   const handleDragStart = ({ active }: any) => setActiveId(active.id);
 
-  const handleDragEnd = async ({ active, over }: any) => {
+  const handleDragEndV1 = async ({ active, over }: any) => {
     if (over && active.id !== over.id) {
       const draggedLesson = timetable.find(l => l.id === active.id);
       const targetDayOfWeek = over.data.current?.dayOfWeek; // Get dayOfWeek from drop target
@@ -359,11 +393,126 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
     }
     setActiveId(null);
   };
+  // const handleDragEnd = async ({ active, over }: any) => {
+  const handleDragEnd = async ({ active, over }: any) => {
+  if (over && active.id !== over.id) {
+    const draggedLesson = timetable.find(l => l.id === active.id);
+    const targetDayOfWeek = over.data.current?.dayOfWeek; 
+    const targetTime = over.data.current?.time;
+
+    if (draggedLesson && targetDayOfWeek && targetTime) {
+      // Calculate duration and new UTC dates
+      const durationMs = new Date(draggedLesson.endTime).getTime() - new Date(draggedLesson.startTime).getTime();
+      const [hours, minutes] = targetTime.split(':').map(Number);
+      const newStartTotalMs = Date.UTC(1970, 0, 1, hours, minutes, 0, 0);
+      
+      const proposedStart = new Date(newStartTotalMs).toISOString();
+      const proposedEnd = new Date(newStartTotalMs + durationMs).toISOString();
+
+      // --- NEW CONFLICT CHECK ---
+      const conflict = checkConflict(timetable, {
+        id: draggedLesson.id,
+        educatorId: draggedLesson.educatorId,
+        dayOfWeek: targetDayOfWeek,
+        startTime: proposedStart,
+        endTime: proposedEnd
+      });
+
+      if (conflict) {
+        alert(`Conflict! ${draggedLesson.educatorName} is already teaching "${conflict.courseTitle}" at this time.`);
+        setActiveId(null);
+        return; // Stop the execution
+      }
+      // --- END CONFLICT CHECK ---
+
+      // ... proceed with API call as before
+      const apiStartTime = getUTCTimeString(proposedStart);
+      const apiEndTime = getUTCTimeString(proposedEnd);
+      
+      // (Your existing fetch logic here)
+//     }
+//   }
+//   setActiveId(null);
+// // };
+//   if (over && active.id !== over.id) {
+//     const draggedLesson = timetable.find(l => l.id === active.id);
+//     const targetDayOfWeek = over.data.current?.dayOfWeek; 
+//     const targetTime = over.data.current?.time; // e.g., "09:00"
+
+//     if (draggedLesson && targetDayOfWeek && targetTime) {
+//       // 1. Calculate the original duration in milliseconds
+//       const start = new Date(draggedLesson.startTime).getTime();
+//       const end = new Date(draggedLesson.endTime).getTime();
+//       const durationMs = end - start;
+
+//       // 2. Parse the target time (HH:mm)
+//       const [hours, minutes] = targetTime.split(':').map(Number);
+
+//       // 3. Create a new UTC Start Date using the 1970-01-01 base
+//       // Use Date.UTC to ensure we are not affected by local timezone
+//       const newStartTotalMs = Date.UTC(1970, 0, 1, hours, minutes, 0, 0);
+//       const newStartDate = new Date(newStartTotalMs);
+
+//       // 4. Calculate the new UTC End Date
+//       const newEndDate = new Date(newStartDate.getTime() + durationMs);
+
+      // 5. Format back to HH:mm for the API
+      // const apiStartTime = getUTCTimeString(newStartDate.toISOString());
+      // const apiEndTime = getUTCTimeString(newEndDate.toISOString());
+
+      setIsLoading(true);
+      setError(null);
+      try {
+        const res = await fetch(`${apiBaseUrl}/admin/class-schedules/${draggedLesson.id}`, {
+          method: 'PATCH',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            courseId: draggedLesson.courseId,
+            educatorId: draggedLesson.educatorId,
+            dayOfWeek: targetDayOfWeek,
+            startTime: apiStartTime, // Now a clean "09:00" UTC string
+            endTime: apiEndTime,     // Calculated based on duration
+            companyId: companyId,
+            // Preserve classroom if it exists
+            classroomId: draggedLesson.courseClassrooms[0]?.id || null,
+          }),
+        });
+
+        if (res.ok) {
+          await fetchTimetable(); 
+        } else {
+          const errorData = await res.json();
+          setError(errorData.message || "Failed to move timetable entry.");
+        }
+      } catch (err: any) {
+        setError(err.message || "Network error moving timetable entry.");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  }
+  setActiveId(null);
+};
 
   // Modal Save Handler (for Add/Edit)
   const handleSave = async (lessonData: Omit<TimetableEntry, 'courseTitle' | 'courseCode' | 'courseAcademicLevels' | 'courseClassrooms' | 'educatorName' | 'educatorEmail' | 'createdAt' | 'updatedAt'>) => {
     setIsLoading(true);
     setError(null);
+
+    // Check for conflicts before sending to database
+    const conflict = checkConflict(timetable, {
+      id: lessonData.id,
+      educatorId: lessonData.educatorId,
+      dayOfWeek: lessonData.dayOfWeek,
+      startTime: lessonData.startTime,
+      endTime: lessonData.endTime
+    });
+
+    if (conflict) {
+      setError(`Teacher Conflict: This educator is busy with ${conflict.courseTitle} on ${conflict.dayOfWeek}.`);
+      return;
+    }
 
     const method = lessonData.id ? 'PATCH' : 'POST'; // Use PATCH for existing, POST for new
 
@@ -487,6 +636,7 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
         daysOfWeek={daysOfWeekOrder}
         timeSlots={defaultTimeSlots}
         onClickLesson={(entry: TimetableEntry) => {
+          console.log("Editing entry:", entry);
           setEditingEntry(entry);
           setShowFormModal(true);
         }}

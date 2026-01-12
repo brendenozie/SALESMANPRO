@@ -20,6 +20,119 @@ interface TimetableGridProps {
   filteredLessons: TimetableEntry[];
 }
 
+import { useDroppable } from '@dnd-kit/core';
+
+interface DroppableCellProps {
+  day: string;
+  time: string;
+  activeLesson: TimetableEntry | null;
+  allLessons: TimetableEntry[];
+  children: React.ReactNode;
+  onAdd: () => void;
+}
+
+const DroppableCell: React.FC<DroppableCellProps> = ({ 
+  day, time, activeLesson, allLessons, children, onAdd 
+}) => {
+  const { setNodeRef, isOver } = useDroppable({
+    id: `${day}-${time}`,
+    data: { dayOfWeek: day, time: time },
+  });
+
+  // Calculate if there's a conflict ONLY if we are hovering over this specific cell
+  const hasConflict = React.useMemo(() => {
+  if (!isOver || !activeLesson) return false;
+
+  const durationMs = new Date(activeLesson.endTime).getTime() - new Date(activeLesson.startTime).getTime();
+  const [hours, minutes] = time.split(':').map(Number);
+  const proposedStart = Date.UTC(1970, 0, 1, hours, minutes, 0, 0);
+  const proposedEnd = proposedStart + durationMs;
+
+  // Get classroom IDs for the lesson being dragged
+  const activeClassroomIds = activeLesson.courseClassrooms.map(c => c.id);
+
+  return allLessons.some(existing => {
+    // 1. Skip if it's the same lesson
+    if (existing.id === activeLesson.id) return false;
+    
+    // 2. Only check if it's the same day
+    if (existing.dayOfWeek !== day) return false;
+
+    // 3. Check for Time Overlap
+    const exStart = new Date(existing.startTime).getTime();
+    const exEnd = new Date(existing.endTime).getTime();
+    const isOverlapping = proposedStart < exEnd && proposedEnd > exStart;
+
+    if (!isOverlapping) return false;
+
+    // 4. Check Educator Conflict
+    const isTeacherBusy = existing.educatorId === activeLesson.educatorId;
+
+    // 5. Check Classroom Conflict 
+    // (Check if any classroom ID in 'existing' is present in 'activeClassroomIds')
+    const isRoomBusy = existing.courseClassrooms.some(room => 
+      activeClassroomIds.includes(room.id)
+    );
+
+    return isTeacherBusy || isRoomBusy;
+  });
+}, [isOver, activeLesson, allLessons, day, time]);
+
+  // const hasConflictv1 = React.useMemo(() => {
+  //   if (!isOver || !activeLesson) return false;
+
+  //   const durationMs = new Date(activeLesson.endTime).getTime() - new Date(activeLesson.startTime).getTime();
+  //   const [hours, minutes] = time.split(':').map(Number);
+  //   const proposedStart = Date.UTC(1970, 0, 1, hours, minutes, 0, 0);
+  //   const proposedEnd = proposedStart + durationMs;
+
+  //   return allLessons.some(existing => {
+  //     if (existing.id === activeLesson.id) return false;
+  //     if (existing.educatorId !== activeLesson.educatorId) return false; // Match educator
+  //     if (existing.dayOfWeek !== day) return false;
+
+  //     const exStart = new Date(existing.startTime).getTime();
+  //     const exEnd = new Date(existing.endTime).getTime();
+  //     return proposedStart < exEnd && proposedEnd > exStart;
+  //   });
+  // }, [isOver, activeLesson, allLessons, day, time]);
+
+  return (
+    <div
+      ref={setNodeRef}
+      onClick={onAdd}
+      className={`p-1 min-h-[110px] border-b border-r border-gray-100 relative transition-colors duration-200
+        ${isOver && hasConflict ? 'bg-red-200 ring-2 ring-red-500 z-10' : ''}
+        ${isOver && !hasConflict ? 'bg-green-100 ring-2 ring-green-500 z-10' : ''}
+        ${!isOver ? 'bg-white hover:bg-gray-50' : ''}
+      `}
+    >
+      {/* Visual "X" or Warning Icon if conflict */}
+      {/* {isOver && hasConflict && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <span className="text-red-600 font-bold text-xs bg-white/80 px-2 py-1 rounded shadow-sm">
+            Teacher Busy
+          </span>
+        </div>
+      )} */}
+      {/* // Inside DroppableCell return statement */}
+      {isOver && hasConflict && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
+          <div className="bg-white/90 border border-red-500 p-2 rounded shadow-lg flex flex-col items-center">
+            <span className="text-red-700 font-bold text-[10px] uppercase tracking-wider">
+              Conflict Detected
+            </span>
+            <span className="text-gray-600 text-[9px] text-center">
+              Teacher or Room is already occupied
+            </span>
+          </div>
+        </div>
+      )}
+      {children}
+    </div>
+  );
+};
+
 const getUTCTimeString = (isoString: string): string => {
   const date = new Date(isoString);
   if (isNaN(date.getTime())) return '';
@@ -51,7 +164,8 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
     return todayName === dayName;
   };
 
-  const activeLesson = activeId ? timetable.find(l => l.id === activeId) : null;
+  const activeLesson = activeId ? (timetable.find(l => l.id === activeId) ?? null) : null;
+  
 
   const currentWeekDays = useMemo(() => {
     const today = new Date();
@@ -138,36 +252,79 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
                 const isDayToday = isToday(day);
 
                 return (
-                  <div
-                    key={cellId}
-                    className={`p-1 min-h-[110px] border-b border-r border-gray-100 relative group transition-colors duration-200
-                      ${isDayToday ? 'bg-indigo-50/30' : 'bg-white hover:bg-gray-50'}
-                    `}
-                    onClick={() => onAddLesson(day, timeSlot)}
+                  <DroppableCell
+                    key={`${day}-${timeSlot}`}
+                    day={day}
+                    time={timeSlot}
+                    activeLesson={activeLesson}
+                    allLessons={timetable} // All lessons to check for global teacher conflicts
+                    // onAdd={() => onAddLesson(day, timeSlot)}
+                    onAdd={() => {}}
                   >
-                    <SortableContext items={lessonsInCell.map(l => l.id)} strategy={rectSortingStrategy}>
-                      <div className="flex flex-col gap-2 h-full">
-                        {lessonsInCell.map(lesson => (
-                          <SortableLessonCard
-                            key={lesson.id}
-                            entry={lesson}
-                            onClick={onClickLesson}
-                            onDelete={onDeleteLesson}
-                          />
-                        ))}
-                        
-                        {/* Empty State / Add Button */}
-                        <div
-                          className={`flex-1 flex items-center justify-center rounded-lg border-2 border-dashed border-transparent
-                                      ${lessonsInCell.length === 0 ? 'min-h-[60px]' : ''}
-                                      group-hover:border-indigo-200 group-hover:bg-indigo-50/50 transition-all cursor-pointer`}
+                     <div
+                        key={cellId}
+                        className={`p-1 min-h-[110px] border-b border-r border-gray-100 relative group transition-colors duration-200
+                          ${isDayToday ? 'bg-indigo-50/30' : 'bg-white hover:bg-gray-50'}
+                        `}
                         >
-                          <PlusIcon className="h-6 w-6 text-indigo-300 opacity-0 group-hover:opacity-100 transition-opacity" />
-                        </div>
+                          <SortableContext items={lessonsInCell.map(l => l.id)} strategy={rectSortingStrategy}>
+                            <div className="flex flex-col gap-2 h-full">
+                              {lessonsInCell.map(lesson => (
+                                <SortableLessonCard 
+                                  key={lesson.id} 
+                                  entry={lesson} 
+                                  onClick={(lesson) => {
+                                    onClickLesson(lesson);
+                                  }}
+                                  onDelete={() => onDeleteLesson(lesson.id)}
+                                />
+                              ))}
+                              {/* Empty State / Add Button */}
+                              <div
+                                className={`flex-1 flex items-center justify-center rounded-lg border-2 border-dashed border-transparent
+                                            ${lessonsInCell.length === 0 ? 'min-h-[60px]' : ''}
+                                            group-hover:border-indigo-200 group-hover:bg-indigo-50/50 transition-all cursor-pointer`}
+                                onClick={() => onAddLesson(day, timeSlot)}
+                              >
+                                <PlusIcon className="h-6 w-6 text-indigo-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+                              </div>
+                            </div>
+                          </SortableContext>
                       </div>
-                    </SortableContext>
-                  </div>
-                );
+                  </DroppableCell>
+  );
+
+                // return (
+                //   <div
+                //     key={cellId}
+                //     className={`p-1 min-h-[110px] border-b border-r border-gray-100 relative group transition-colors duration-200
+                //       ${isDayToday ? 'bg-indigo-50/30' : 'bg-white hover:bg-gray-50'}
+                //     `}
+                //     onClick={() => onAddLesson(day, timeSlot)}
+                //   >
+                //     <SortableContext items={lessonsInCell.map(l => l.id)} strategy={rectSortingStrategy}>
+                //       <div className="flex flex-col gap-2 h-full">
+                //         {lessonsInCell.map(lesson => (
+                //           <SortableLessonCard
+                //             key={lesson.id}
+                //             entry={lesson}
+                //             onClick={onClickLesson}
+                //             onDelete={onDeleteLesson}
+                //           />
+                //         ))}
+                        
+                        // {/* Empty State / Add Button */}
+                        // <div
+                        //   className={`flex-1 flex items-center justify-center rounded-lg border-2 border-dashed border-transparent
+                        //               ${lessonsInCell.length === 0 ? 'min-h-[60px]' : ''}
+                        //               group-hover:border-indigo-200 group-hover:bg-indigo-50/50 transition-all cursor-pointer`}
+                        // >
+                        //   <PlusIcon className="h-6 w-6 text-indigo-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+                        // </div>
+                //       </div>
+                //     </SortableContext>
+                //   </div>
+                // );
               })}
             </React.Fragment>
           ))}
