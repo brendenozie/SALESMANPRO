@@ -78,24 +78,6 @@ const DroppableCell: React.FC<DroppableCellProps> = ({
   });
 }, [isOver, activeLesson, allLessons, day, time]);
 
-  // const hasConflictv1 = React.useMemo(() => {
-  //   if (!isOver || !activeLesson) return false;
-
-  //   const durationMs = new Date(activeLesson.endTime).getTime() - new Date(activeLesson.startTime).getTime();
-  //   const [hours, minutes] = time.split(':').map(Number);
-  //   const proposedStart = Date.UTC(1970, 0, 1, hours, minutes, 0, 0);
-  //   const proposedEnd = proposedStart + durationMs;
-
-  //   return allLessons.some(existing => {
-  //     if (existing.id === activeLesson.id) return false;
-  //     if (existing.educatorId !== activeLesson.educatorId) return false; // Match educator
-  //     if (existing.dayOfWeek !== day) return false;
-
-  //     const exStart = new Date(existing.startTime).getTime();
-  //     const exEnd = new Date(existing.endTime).getTime();
-  //     return proposedStart < exEnd && proposedEnd > exStart;
-  //   });
-  // }, [isOver, activeLesson, allLessons, day, time]);
 
   return (
     <div
@@ -108,13 +90,6 @@ const DroppableCell: React.FC<DroppableCellProps> = ({
       `}
     >
       {/* Visual "X" or Warning Icon if conflict */}
-      {/* {isOver && hasConflict && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <span className="text-red-600 font-bold text-xs bg-white/80 px-2 py-1 rounded shadow-sm">
-            Teacher Busy
-          </span>
-        </div>
-      )} */}
       {/* // Inside DroppableCell return statement */}
       {isOver && hasConflict && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
@@ -232,23 +207,7 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
                   
                   return l.dayOfWeek === day && startHour === slotHour;
                 });
-
-                // const lessonsInCell = filteredLessons.filter(l => {
-                //   // 1. Match the Day
-                //   const dayMatches = l.dayOfWeek === day;
-                  
-                //   // 2. Match the Time (Using UTC to avoid timezone shifts)
-                //   const startTimeStr = getUTCTimeString(l.startTime);
-                //   const timeMatches = startTimeStr === timeSlot;
-
-                //   return dayMatches && timeMatches;
-                // });
-
-                // const cellId = `${day}-${timeSlot}`;
-                // const lessonsInCell = filteredLessons.filter(l =>
-                //   l.dayOfWeek === day &&
-                //   new Date(l.startTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }) === timeSlot
-                // );
+                
                 const isDayToday = isToday(day);
 
                 return (
@@ -263,7 +222,7 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
                   >
                      <div
                         key={cellId}
-                        className={`p-1 min-h-[110px] border-b border-r border-gray-100 relative group transition-colors duration-200
+                        className={`p-1 min-h-[110px] h-full border-b border-r border-gray-100 relative group transition-colors duration-200
                           ${isDayToday ? 'bg-indigo-50/30' : 'bg-white hover:bg-gray-50'}
                         `}
                         >
@@ -294,37 +253,6 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
                   </DroppableCell>
   );
 
-                // return (
-                //   <div
-                //     key={cellId}
-                //     className={`p-1 min-h-[110px] border-b border-r border-gray-100 relative group transition-colors duration-200
-                //       ${isDayToday ? 'bg-indigo-50/30' : 'bg-white hover:bg-gray-50'}
-                //     `}
-                //     onClick={() => onAddLesson(day, timeSlot)}
-                //   >
-                //     <SortableContext items={lessonsInCell.map(l => l.id)} strategy={rectSortingStrategy}>
-                //       <div className="flex flex-col gap-2 h-full">
-                //         {lessonsInCell.map(lesson => (
-                //           <SortableLessonCard
-                //             key={lesson.id}
-                //             entry={lesson}
-                //             onClick={onClickLesson}
-                //             onDelete={onDeleteLesson}
-                //           />
-                //         ))}
-                        
-                        // {/* Empty State / Add Button */}
-                        // <div
-                        //   className={`flex-1 flex items-center justify-center rounded-lg border-2 border-dashed border-transparent
-                        //               ${lessonsInCell.length === 0 ? 'min-h-[60px]' : ''}
-                        //               group-hover:border-indigo-200 group-hover:bg-indigo-50/50 transition-all cursor-pointer`}
-                        // >
-                        //   <PlusIcon className="h-6 w-6 text-indigo-300 opacity-0 group-hover:opacity-100 transition-opacity" />
-                        // </div>
-                //       </div>
-                //     </SortableContext>
-                //   </div>
-                // );
               })}
             </React.Fragment>
           ))}
