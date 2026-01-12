@@ -190,13 +190,15 @@ const formatTimeToHHMM = (isoString: string): string => {
   const date = new Date(isoString);
   if (isNaN(date.getTime())) {
     console.warn("Invalid date string passed to formatTimeToHHMM:", isoString);
-    return '00:00'; // Return a default valid time or handle error appropriately
+    return '08:00'; // Return a default valid time or handle error appropriately
   }
   // Use UTC methods to ensure no timezone conversion
   const hours = date.getUTCHours().toString().padStart(2, '0');
   const minutes = date.getUTCMinutes().toString().padStart(2, '0');
   return `${hours}:${minutes}`;
 };
+
+
 
 // --- Main WeeklyTimetable Component ---
 interface WeeklyTimetableProps {
@@ -313,7 +315,7 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
 
         // Ensure targetTime is in HH:MM format for new Date() constructor with dummy date
         const [hours, minutes] = targetTime.split(':').map(Number);
-        const newStartDate = new Date('1970-01-01T00:00:00Z'); // Use UTC to avoid timezone issues
+        const newStartDate = new Date('1970-01-01T08:00:00Z'); // Use UTC to avoid timezone issues
         newStartDate.setUTCHours(hours, minutes, 0, 0);
 
         const newEndTimeObj = new Date(newStartDate.getTime() + originalDurationMs);

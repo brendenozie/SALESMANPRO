@@ -45,6 +45,15 @@ interface SortableLessonCardProps {
   onDelete: (id: string) => void;
 }
 
+const getUTCTimeString = (isoString: string): string => {
+  const date = new Date(isoString);
+  if (isNaN(date.getTime())) return '';
+  
+  const hours = date.getUTCHours().toString().padStart(2, '0');
+  const minutes = date.getUTCMinutes().toString().padStart(2, '0');
+  return `${hours}:${minutes}`;
+};
+
 export default function SortableLessonCard({
   entry,
   onClick,
@@ -107,7 +116,12 @@ export default function SortableLessonCard({
       {/* Metadata (Time, Educator, Room) */}
       <div className="mt-2 space-y-1 border-t border-black/5 pt-2">
         <div className="flex items-center justify-between text-xs font-medium opacity-90">
-           <span>{new Date(entry.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', hour12: false})} - {new Date(entry.endTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', hour12: false})}</span>
+          <span>
+            {
+              `${getUTCTimeString(entry.startTime)} - ${getUTCTimeString(entry.endTime)}`
+            }
+          </span>
+           {/* <span>{new Date(entry.startTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', hour12: false})} - {new Date(entry.endTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', hour12: false})}</span> */}
         </div>
         
         <div className="flex items-center gap-1.5 text-xs opacity-80 truncate">

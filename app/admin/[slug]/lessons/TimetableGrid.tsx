@@ -20,6 +20,15 @@ interface TimetableGridProps {
   filteredLessons: TimetableEntry[];
 }
 
+const getUTCTimeString = (isoString: string): string => {
+  const date = new Date(isoString);
+  if (isNaN(date.getTime())) return '';
+  
+  const hours = date.getUTCHours().toString().padStart(2, '0');
+  const minutes = date.getUTCMinutes().toString().padStart(2, '0');
+  return `${hours}:${minutes}`;
+};
+
 export const TimetableGrid: React.FC<TimetableGridProps> = ({
   timetable,
   daysOfWeek,
@@ -100,11 +109,32 @@ export const TimetableGrid: React.FC<TimetableGridProps> = ({
 
               {/* Lesson Cells */}
               {daysOfWeek.map(day => {
+                // Inside {daysOfWeek.map(day => { ... })}
                 const cellId = `${day}-${timeSlot}`;
-                const lessonsInCell = filteredLessons.filter(l =>
-                  l.dayOfWeek === day &&
-                  new Date(l.startTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }) === timeSlot
-                );
+
+                const lessonsInCell = filteredLessons.filter(l => {
+                  const startHour = new Date(l.startTime).getUTCHours().toString().padStart(2, '0');
+                  const slotHour = timeSlot.split(':')[0]; // Gets "08" from "08:00"
+                  
+                  return l.dayOfWeek === day && startHour === slotHour;
+                });
+
+                // const lessonsInCell = filteredLessons.filter(l => {
+                //   // 1. Match the Day
+                //   const dayMatches = l.dayOfWeek === day;
+                  
+                //   // 2. Match the Time (Using UTC to avoid timezone shifts)
+                //   const startTimeStr = getUTCTimeString(l.startTime);
+                //   const timeMatches = startTimeStr === timeSlot;
+
+                //   return dayMatches && timeMatches;
+                // });
+
+                // const cellId = `${day}-${timeSlot}`;
+                // const lessonsInCell = filteredLessons.filter(l =>
+                //   l.dayOfWeek === day &&
+                //   new Date(l.startTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }) === timeSlot
+                // );
                 const isDayToday = isToday(day);
 
                 return (
