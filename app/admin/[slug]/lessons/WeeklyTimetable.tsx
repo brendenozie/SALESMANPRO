@@ -19,8 +19,12 @@ export type TimetableEntry = {
   courseId: string;
   courseTitle: string; // Flattened from course relation
   courseCode: string; // NEW: Flattened from course relation
-  courseAcademicLevels: { id: string; name: string; sortOrder?: number }[]; // Flattened from course relation
-  courseClassrooms: { id: string; name: string; academicLevelId: string }[]; // NEW: Flattened from course relation
+  academicLevelId: string;
+  academicLevel: { id: string; name: string }; // NEW: Flattened from academicLevel relation
+  // courseAcademicLevels: { id: string; name: string; sortOrder?: number }[]; // Flattened from course relation
+  // courseClassrooms: { id: string; name: string; academicLevelId: string }[]; // NEW: Flattened from course relation
+  classroomId: string;
+  classroom: { id: string; name: string; academicLevelId: string } | null; // NEW: Flattened from course relation
   educatorId: string;
   educatorName: string; // Flattened from educator relation
   educatorEmail: string; // Flattened from educator relation
@@ -108,8 +112,12 @@ const generateSampleTimetableData = (companyId: string): {
       courseId: 'CRS001',
       courseTitle: 'Algebra I',
       courseCode: 'MATH101',
-      courseAcademicLevels: [{ id: 'AL006', name: 'Grade 9' }],
-      courseClassrooms: [{ id: 'CLS002', name: 'Room 102', academicLevelId: 'AL006' }],
+      // courseAcademicLevels: [{ id: 'AL006', name: 'Grade 9' }],
+      academicLevel: { id: 'AL006', name: 'Grade 9' },
+      academicLevelId: 'AL006',
+      // courseClassrooms: [{ id: 'CLS002', name: 'Room 102', academicLevelId: 'AL006' }],
+      classroomId: 'CLS002',
+      classroom: { id: 'CLS002', name: 'Room 102', academicLevelId: 'AL006' },
       educatorId: 'EDU001',
       educatorName: 'Mr. John Doe',
       educatorEmail: 'john.doe@school.com',
@@ -127,8 +135,12 @@ const generateSampleTimetableData = (companyId: string): {
       courseId: 'CRS002',
       courseTitle: 'Literary Analysis',
       courseCode: 'ENG203',
-      courseAcademicLevels: [{ id: 'AL007', name: 'High School - Freshman' }],
-      courseClassrooms: [{ id: 'CLS003', name: 'Lab A', academicLevelId: 'AL007' }],
+      // courseAcademicLevels: [{ id: 'AL007', name: 'High School - Freshman' }],
+      academicLevel: { id: 'AL007', name: 'High School - Freshman' },
+      academicLevelId: 'AL007',
+      // courseClassrooms: [{ id: 'CLS003', name: 'Lab A', academicLevelId: 'AL007' }],
+      classroomId: 'CLS003',
+      classroom: { id: 'CLS003', name: 'Lab A', academicLevelId: 'AL007' },
       educatorId: 'EDU002',
       educatorName: 'Ms. Jane Smith',
       educatorEmail: 'jane.smith@school.com',
@@ -146,8 +158,12 @@ const generateSampleTimetableData = (companyId: string): {
       courseId: 'CRS001',
       courseTitle: 'Algebra I',
       courseCode: 'MATH101',
-      courseAcademicLevels: [{ id: 'AL006', name: 'Grade 9' }],
-      courseClassrooms: [{ id: 'CLS002', name: 'Room 102', academicLevelId: 'AL006' }],
+      // courseAcademicLevels: [{ id: 'AL006', name: 'Grade 9' }],
+      academicLevel: { id: 'AL006', name: 'Grade 9' },
+      academicLevelId: 'AL006',
+      // courseClassrooms: [{ id: 'CLS002', name: 'Room 102', academicLevelId: 'AL006' }],
+      classroomId: 'CLS002',
+      classroom: { id: 'CLS002', name: 'Room 102', academicLevelId: 'AL006' },
       educatorId: 'EDU001',
       educatorName: 'Mr. John Doe',
       educatorEmail: 'john.doe@school.com',
@@ -165,8 +181,12 @@ const generateSampleTimetableData = (companyId: string): {
       courseId: 'CRS003',
       courseTitle: 'Elementary Math',
       courseCode: 'MATH100',
-      courseAcademicLevels: [{ id: 'AL003', name: 'Grade 1' }],
-      courseClassrooms: [{ id: 'CLS001', name: 'Room 101', academicLevelId: 'AL003' }],
+      // courseAcademicLevels: [{ id: 'AL003', name: 'Grade 1' }],
+      academicLevel: { id: 'AL003', name: 'Grade 1' },
+      academicLevelId: 'AL003',
+      // courseClassrooms: [{ id: 'CLS001', name: 'Room 101', academicLevelId: 'AL003' }],
+      classroomId: 'CLS001',
+      classroom: { id: 'CLS001', name: 'Room 101', academicLevelId: 'AL003' },
       educatorId: 'EDU003',
       educatorName: 'Dr. Alex Lee',
       educatorEmail: 'alex.lee@school.com',
@@ -321,11 +341,15 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
       const matchesEducator = selectedEducatorId === 'All' || entry.educatorId === selectedEducatorId;
       // Filter by academic level: check if any of the course's academic levels match the selected filter
       const matchesAcademicLevel = selectedAcademicLevelId === 'All' ||
-                                   entry.courseAcademicLevels.some(al => al.id === selectedAcademicLevelId);
+        entry.academicLevelId === selectedAcademicLevelId;
+      // Filter by classroom: check if any of the course's classrooms match the selected filter
+
+      // const matchesClassroom = selectedClassroomId === 'All' ||
+      //                          allClassrooms.find(cr => cr.id === selectedClassroomId && 
+      //                            entry.courseClassrooms.some(cl => cl.id === cr.id));
 
       const matchesClassroom = selectedClassroomId === 'All' ||
-                               allClassrooms.find(cr => cr.id === selectedClassroomId && 
-                                 entry.courseClassrooms.some(cl => cl.id === cr.id));
+                               (entry.classroom && entry.classroom.id === selectedClassroomId);
 
       return matchesCourse && matchesEducator && matchesAcademicLevel && matchesClassroom;
     }),
@@ -333,66 +357,7 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
   );
 
   // DnD Handlers
-  const handleDragStart = ({ active }: any) => setActiveId(active.id);
-
-  const handleDragEndV1 = async ({ active, over }: any) => {
-    if (over && active.id !== over.id) {
-      const draggedLesson = timetable.find(l => l.id === active.id);
-      const targetDayOfWeek = over.data.current?.dayOfWeek; // Get dayOfWeek from drop target
-      const targetTime = over.data.current?.time; // Get time from drop target
-
-      if (draggedLesson && targetDayOfWeek && targetTime) {
-        // Calculate new end time based on new start time and original duration
-        const originalStartTimeObj = new Date(draggedLesson.startTime);
-        const originalEndTimeObj = new Date(draggedLesson.endTime);
-        const originalDurationMs = originalEndTimeObj.getTime() - originalStartTimeObj.getTime();
-
-        // Ensure targetTime is in HH:MM format for new Date() constructor with dummy date
-        const [hours, minutes] = targetTime.split(':').map(Number);
-        const newStartDate = new Date('1970-01-01T08:00:00Z'); // Use UTC to avoid timezone issues
-        newStartDate.setUTCHours(hours, minutes, 0, 0);
-
-        const newEndTimeObj = new Date(newStartDate.getTime() + originalDurationMs);
-
-        // API expects HH:MM strings for startTime and endTime
-        const apiStartTime = newStartDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
-        const apiEndTime = newEndTimeObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
-
-        setIsLoading(true);
-        setError(null);
-        try {
-          const res = await fetch(`${apiBaseUrl}/admin/class-schedules/${draggedLesson.id}`, { // Corrected API path
-            method: 'PATCH', // Use PATCH for updates
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              courseId: draggedLesson.courseId,
-              educatorId: draggedLesson.educatorId,
-              classroomId: draggedLesson.courseClassrooms[0]?.id || null, // Assuming first classroom for simplicity
-              dayOfWeek: targetDayOfWeek,
-              startTime: apiStartTime, // Send HH:MM string
-              endTime: apiEndTime,  // Send HH:MM string
-              topic: draggedLesson.topic,
-              meetingLink: draggedLesson.meetingLink,
-              companyId: draggedLesson.companyId, // Ensure companyId is sent for validation
-            }),
-          });
-
-          if (res.ok) {
-            await fetchTimetable(); // Re-fetch to update UI with actual data
-          } else {
-            const errorData = await res.json();
-            setError(errorData.message || "Failed to move timetable entry.");
-          }
-        } catch (err: any) {
-          setError(err.message || "Network error moving timetable entry.");
-        } finally {
-          setIsLoading(false);
-        }
-      }
-    }
-    setActiveId(null);
-  };
+ 
   // const handleDragEnd = async ({ active, over }: any) => {
   const handleDragEnd = async ({ active, over }: any) => {
   if (over && active.id !== over.id) {
@@ -475,7 +440,7 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
             endTime: apiEndTime,     // Calculated based on duration
             companyId: companyId,
             // Preserve classroom if it exists
-            classroomId: draggedLesson.courseClassrooms[0]?.id || null,
+            classroomId: draggedLesson.classroomId || null,
           }),
         });
 

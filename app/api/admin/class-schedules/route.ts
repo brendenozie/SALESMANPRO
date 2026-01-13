@@ -47,21 +47,31 @@ export const GET = withApiHandler(async (request: Request, context) => {
   const classSchedules = await prisma.classSchedule.findMany({
     where: whereClause,
     include: {
-      course: {
-        select: {
-          id: true,
-          title: true,
-          code: true,
-          academicLevels: {
-            include: { academicLevel: { select: { id: true, name: true, sortOrder: true } } },
-          },
+        course: {
+          select: { id: true, title: true, code: true }
         },
+        educator: {
+          select: { id: true, user: { select: { name: true, email: true } } }
+        },
+        classroom: { select: { id: true, name: true, academicLevelId: true } },
+        academicLevel: { select: { id: true, name: true } }, // ✅ ADD THIS
       },
-      educator: {
-        select: { id: true, user: { select: { name: true, email: true } } },
-      },
-      classroom: { select: { id: true, name: true, academicLevelId: true } },
-    },
+    // include: {
+    //   course: {
+    //     select: {
+    //       id: true,
+    //       title: true,
+    //       code: true,
+    //       academicLevels: {
+    //         include: { academicLevel: { select: { id: true, name: true, sortOrder: true } } },
+    //       },
+    //     },
+    //   },
+    //   educator: {
+    //     select: { id: true, user: { select: { name: true, email: true } } },
+    //   },
+    //   classroom: { select: { id: true, name: true, academicLevelId: true } },
+    // },
     orderBy: [{ startTime: "asc" }],
   });
 
@@ -73,31 +83,61 @@ export const GET = withApiHandler(async (request: Request, context) => {
   const response = classSchedules
     .sort((a, b) => dayOrder[a.dayOfWeek] - dayOrder[b.dayOfWeek])
     .map((schedule) => {
-      const courseAcademicLevels = schedule.course?.academicLevels
-        .map((cal) => cal.academicLevel)
-        .filter(Boolean)
-        .sort((a, b) => (a?.sortOrder || 0) - (b?.sortOrder || 0))
-        .map((level) => ({ id: level!.id, name: level!.name }));
+      // const courseAcademicLevels = schedule.course?.academicLevels
+      //   .map((cal) => cal.academicLevel)
+      //   .filter(Boolean)
+      //   .sort((a, b) => (a?.sortOrder || 0) - (b?.sortOrder || 0))
+      //   .map((level) => ({ id: level!.id, name: level!.name }));
 
-      return {
-        id: schedule.id,
-        courseId: schedule.courseId,
-        courseTitle: schedule.course?.title || "N/A",
-        courseCode: schedule.course?.code || "N/A",
-        courseAcademicLevels: courseAcademicLevels || [],
-        courseClassrooms: schedule.classroom ? [{ id: schedule.classroom.id, name: schedule.classroom.name, academicLevelId: schedule.classroom.academicLevelId }] : [],
-        educatorId: schedule.educatorId,
-        educatorName: schedule.educator?.user?.name || "N/A",
-        educatorEmail: schedule.educator?.user?.email || "N/A",
-        dayOfWeek: schedule.dayOfWeek,
-        startTime: schedule.startTime,
-        endTime: schedule.endTime,
-        topic: schedule.topic,
-        meetingLink: schedule.meetingLink,
-        companyId: schedule.companyId,
-        createdAt: schedule.createdAt,
-        updatedAt: schedule.updatedAt,
-      };
+        return {
+          id: schedule.id,
+          courseId: schedule.courseId,
+          courseTitle: schedule.course?.title || "N/A",
+          courseCode: schedule.course?.code || "N/A",
+
+          academicLevel: schedule.academicLevel
+            ? { id: schedule.academicLevel.id, name: schedule.academicLevel.name }
+            : null,
+
+          classroom: schedule.classroom
+            ? {
+                id: schedule.classroom.id,
+                name: schedule.classroom.name,
+                academicLevelId: schedule.classroom.academicLevelId,
+              }
+            : null,
+
+          educatorId: schedule.educatorId,
+          educatorName: schedule.educator?.user?.name || "N/A",
+          educatorEmail: schedule.educator?.user?.email || "N/A",
+
+          dayOfWeek: schedule.dayOfWeek,
+          startTime: schedule.startTime,
+          endTime: schedule.endTime,
+          topic: schedule.topic,
+          meetingLink: schedule.meetingLink,
+        };
+
+
+      // return {
+      //   id: schedule.id,
+      //   courseId: schedule.courseId,
+      //   courseTitle: schedule.course?.title || "N/A",
+      //   courseCode: schedule.course?.code || "N/A",
+      //   courseAcademicLevels: courseAcademicLevels || [],
+      //   courseClassrooms: schedule.classroom ? [{ id: schedule.classroom.id, name: schedule.classroom.name, academicLevelId: schedule.classroom.academicLevelId }] : [],
+      //   educatorId: schedule.educatorId,
+      //   educatorName: schedule.educator?.user?.name || "N/A",
+      //   educatorEmail: schedule.educator?.user?.email || "N/A",
+      //   dayOfWeek: schedule.dayOfWeek,
+      //   startTime: schedule.startTime,
+      //   endTime: schedule.endTime,
+      //   topic: schedule.topic,
+      //   meetingLink: schedule.meetingLink,
+      //   companyId: schedule.companyId,
+      //   createdAt: schedule.createdAt,
+      //   updatedAt: schedule.updatedAt,
+      // };
     });
 
   return NextResponse.json(response, { status: 200 });
@@ -107,11 +147,11 @@ export const GET = withApiHandler(async (request: Request, context) => {
 // Creates a new class schedule
 export const POST = withApiHandler(async (request: Request) => {
   const body = await request.json();
-  const { courseId, educatorId, classroomId, dayOfWeek, startTime, endTime, topic, meetingLink, companyId } = body;
+  const { courseId, educatorId, classroomId, academicLevelId, dayOfWeek, startTime, endTime, topic, meetingLink, companyId } = body;
 
-  if (!courseId || !educatorId || !classroomId || !dayOfWeek || !startTime || !endTime || !companyId) {
+  if (!courseId || !educatorId || !classroomId || !academicLevelId || !dayOfWeek || !startTime || !endTime || !companyId) {
     return NextResponse.json(
-      { message: "Course ID, Educator ID, Classroom ID, Day of Week, Start Time, End Time, and Company ID are required." },
+      { message: "Course ID, Educator ID, Classroom ID, Academic Level ID, Day of Week, Start Time, End Time, and Company ID are required." },
       { status: 400 }
     );
   }
@@ -131,6 +171,15 @@ export const POST = withApiHandler(async (request: Request) => {
     );
   }
 
+  if (academicLevelId) {
+    const level = await prisma.academicLevel.findUnique({
+      where: { id: academicLevelId }
+    });
+    if (!level) {
+      return NextResponse.json({ message: "Invalid academic level" }, { status: 400 });
+    }
+  }
+
   const existingClassroom = await prisma.classroom.findUnique({ where: { id: classroomId, companyId } });
   if (!existingClassroom) {
     return NextResponse.json(
@@ -146,6 +195,8 @@ export const POST = withApiHandler(async (request: Request) => {
       { status: 400 }
     );
   }
+
+
 
   const parsedStartTime = new Date(`1970-01-01T${startTime}:00Z`);
   const parsedEndTime = new Date(`1970-01-01T${endTime}:00Z`);
@@ -170,11 +221,13 @@ export const POST = withApiHandler(async (request: Request) => {
       topic,
       meetingLink,
       companyId,
+      academicLevelId,
     },
     include: {
-      course: { select: { id: true, title: true, code: true, academicLevels: { include: { academicLevel: { select: { id: true, name: true, sortOrder: true } } } } } },
+      course: { select: { id: true, title: true, code: true,} },
       educator: { select: { id: true, user: { select: { name: true, email: true } } } },
-      classroom: { select: { id: true, name: true, academicLevelId: true } }
+      classroom: { select: { id: true, name: true, academicLevelId: true } },
+      academicLevel: { select: { id: true, name: true } },
     },
   });
 
@@ -183,12 +236,8 @@ export const POST = withApiHandler(async (request: Request) => {
     courseId: newSchedule.courseId,
     courseTitle: newSchedule.course?.title || "N/A",
     courseCode: newSchedule.course?.code || "N/A",
-    courseAcademicLevels:
-      newSchedule.course?.academicLevels
-        .map((cal) => cal.academicLevel)
-        .filter(Boolean)
-        .sort((a, b) => (a?.sortOrder || 0) - (b?.sortOrder || 0))
-        .map((level) => ({ id: level!.id, name: level!.name })) || [],
+    academicLevelId: newSchedule.academicLevelId,
+    academicLevelName: newSchedule.academicLevel?.name || "N/A",
     courseClassrooms: newSchedule.classroom ? [{ id: newSchedule.classroom.id, name: newSchedule.classroom.name, academicLevelId: newSchedule.classroom.academicLevelId }] : [],
     educatorId: newSchedule.educatorId,
     educatorName: newSchedule.educator?.user?.name || "N/A",

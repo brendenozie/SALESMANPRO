@@ -55,7 +55,7 @@ import { ClassroomOption } from '../teachers/page';
     const roomConflict = allEntries.find(ex => 
       ex.id !== currentForm.id &&
       ex.dayOfWeek === currentForm.dayOfWeek &&
-      ex.courseClassrooms.some(r => r.id === currentForm.classroomId) &&
+      ex.classroom?.id === currentForm.classroomId &&
       (newStart < new Date(ex.endTime).getTime() && newEnd > new Date(ex.startTime).getTime())
     );
 
@@ -116,29 +116,18 @@ export default function LessonFormModal({
   allEntries,
 }: LessonFormModalProps) {
   
-  // console.log(entryData);
-
   const [formData, setFormData] = useState({
     id: '',
     courseId: entryData?.courseId || '',
     educatorId: entryData?.educatorId || '',
-    academicLevelId: entryData?.courseAcademicLevels?.[0]?.id || '',
-    classroomId: entryData?.courseClassrooms?.[0]?.id || '',
+    academicLevelId: entryData?.academicLevelId || entryData?.academicLevel?.id || '',
+    classroomId: entryData?.classroomId || entryData?.classroom?.id || '',
     dayOfWeek: selectedDayOfWeek || 'Monday',
     startTime: selectedTimeSlot ? `1970-01-01T${selectedTimeSlot}:00Z` : '1970-01-01T08:00:00Z',
     endTime: calculateEndTime(selectedTimeSlot),
     topic: entryData?.topic || '',
     meetingLink: entryData?.meetingLink || '',
   });
-
-  // Inside LessonFormModal component
-  // const [formData, setFormData] = useState({
-  //   educatorId: entryData?.educatorId || '',
-  //   classroomId: entryData?.courseClassrooms[0]?.id || '',
-  //   dayOfWeek: selectedDayOfWeek,
-  //   startTime: selectedTimeSlot, // Ensure this is converted to ISO for the checker
-  //   endTime: calculateEndTime(selectedTimeSlot), // Helper to add duration
-  // });
 
   // Real-time conflict calculation
   const conflicts = useMemo(() => {
@@ -154,39 +143,58 @@ export default function LessonFormModal({
 
   const [error, setError] = useState<string | null>(null);
 
-  // Sync state on open/data change
   useEffect(() => {
-    if (!isOpen) return;
-    if (entryData) {
-      setFormData({
-        id: entryData.id,
-        courseId: entryData.courseId,
-        educatorId: entryData.educatorId,
-        academicLevelId: entryData.courseAcademicLevels?.[0]?.id || '',
-        classroomId: entryData.courseClassrooms?.[0]?.id || '',
-        dayOfWeek: entryData.dayOfWeek,
-        startTime: entryData.startTime,
-        endTime: entryData.endTime,
-        topic: entryData.topic || '',
-        meetingLink: entryData.meetingLink || '',
-      });
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        id: '',
-        courseId: '',
-        educatorId: '',
-        academicLevelId: '',
-        classroomId: '',
-        dayOfWeek: selectedDayOfWeek || 'Monday',
-        startTime: selectedTimeSlot ? `1970-01-01T${selectedTimeSlot}:00Z` : '1970-01-01T08:00:00Z',
-        endTime: '1970-01-01T08:45:00Z',
-        topic: '',
-        meetingLink: '',
-      }));
-    }
-    setError(null);
-  }, [isOpen, entryData, selectedDayOfWeek, selectedTimeSlot]);
+  if (!isOpen || !entryData) return;
+
+  setFormData(prev => ({
+    ...prev,
+    id: entryData.id,
+    academicLevelId: entryData.academicLevelId || entryData.academicLevel?.id || '',
+    classroomId: entryData.classroomId || entryData.classroom?.id || '',
+    dayOfWeek: entryData.dayOfWeek,
+    startTime: entryData.startTime,
+    endTime: entryData.endTime,
+    topic: entryData.topic || '',
+    meetingLink: entryData.meetingLink || '',
+  }));
+}, [isOpen, entryData]);
+
+
+
+
+  // Sync state on open/data change
+  // useEffect(() => {
+  //   if (!isOpen) return;
+  //   if (entryData) {
+  //     setFormData({
+  //       id: entryData.id,
+  //       courseId: entryData.courseId,
+  //       educatorId: entryData.educatorId,
+  //       academicLevelId: entryData.courseAcademicLevels?.[0]?.id || '',
+  //       classroomId: entryData.courseClassrooms?.[0]?.id || '',
+  //       dayOfWeek: entryData.dayOfWeek,
+  //       startTime: entryData.startTime,
+  //       endTime: entryData.endTime,
+  //       topic: entryData.topic || '',
+  //       meetingLink: entryData.meetingLink || '',
+  //     });
+  //   } else {
+  //     setFormData(prev => ({
+  //       ...prev,
+  //       id: '',
+  //       courseId: '',
+  //       educatorId: '',
+  //       academicLevelId: '',
+  //       classroomId: '',
+  //       dayOfWeek: selectedDayOfWeek || 'Monday',
+  //       startTime: selectedTimeSlot ? `1970-01-01T${selectedTimeSlot}:00Z` : '1970-01-01T08:00:00Z',
+  //       endTime: '1970-01-01T08:45:00Z',
+  //       topic: '',
+  //       meetingLink: '',
+  //     }));
+  //   }
+  //   setError(null);
+  // }, [isOpen, entryData, selectedDayOfWeek, selectedTimeSlot]);
 
   /* --- Cascading Filters --- */
   const filteredClassrooms = useMemo(() => 
@@ -200,6 +208,34 @@ export default function LessonFormModal({
       course.academicLevels?.some(l => l.id === formData.academicLevelId)
     );
   }, [formData.academicLevelId, allCourses]);
+
+
+  useEffect(() => {
+  if (!entryData) return;
+  if (!formData.academicLevelId) return;
+
+  const classroomId = entryData.classroomId || entryData.classroom?.id || '';
+  const courseId = entryData.courseId;
+
+  // Only set if option exists
+  if (
+    filteredClassrooms.some(c => c.id === classroomId) &&
+    filteredCourses.some(c => c.id === courseId)
+  ) {
+    setFormData(prev => ({
+      ...prev,
+      classroomId,
+      courseId,
+      educatorId: entryData.educatorId,
+    }));
+  }
+}, [
+  entryData,
+  formData.academicLevelId,
+  filteredClassrooms,
+  filteredCourses,
+]);
+
 
   const handleLevelChange = (levelId: string) => {
     setFormData(prev => ({ ...prev, academicLevelId: levelId, classroomId: '', courseId: '', educatorId: '' }));
@@ -221,7 +257,7 @@ export default function LessonFormModal({
       const overlaps = start < eEnd && end > eStart;
       if (!overlaps) return false;
 
-      const classroomConflict = formData.classroomId && entry.courseClassrooms?.some(c => c.id === formData.classroomId);
+      const classroomConflict = formData.classroomId && (entry.classroomId === formData.classroomId || entry.classroom?.id === formData.classroomId);
       const educatorConflict = formData.educatorId && entry.educatorId === formData.educatorId;
 
       return classroomConflict || educatorConflict;
@@ -229,10 +265,10 @@ export default function LessonFormModal({
 
     if (!conflictingEntry) return null;
 
-    if (formData.classroomId && conflictingEntry.courseClassrooms?.some(c => c.id === formData.classroomId)) {
+    if (formData.classroomId && (conflictingEntry.classroomId === formData.classroomId || conflictingEntry.classroom?.id === formData.classroomId)) {
       return {
         kind: 'CLASSROOM',
-        classroomName: conflictingEntry.courseClassrooms[0]?.name ?? 'Classroom',
+        classroomName: conflictingEntry.classroom?.name ?? 'Classroom',
         courseTitle: conflictingEntry.courseTitle,
       };
     }
@@ -325,6 +361,7 @@ export default function LessonFormModal({
               <div className="space-y-2">
                 <FormLabel icon={<AcademicCapIcon className="w-4 h-4"/>} label="Academic Level" required />
                 <select 
+                
                   value={formData.academicLevelId} 
                   onChange={e => handleLevelChange(e.target.value)}
                   className="w-full bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-2xl py-4 px-5 transition-all outline-none font-medium text-slate-700 appearance-none"
@@ -340,7 +377,8 @@ export default function LessonFormModal({
                 <select 
                   value={formData.classroomId} 
                   onChange={e => setFormData(p => ({ ...p, classroomId: e.target.value }))}
-                  disabled={!formData.academicLevelId}
+                  // disabled={!formData.academicLevelId}
+                  disabled={!filteredClassrooms.length || !formData.academicLevelId}
                   className={`w-full bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-2xl py-4 px-5 transition-all outline-none font-medium text-slate-700 disabled:opacity-50 p-2  ${conflicts.roomConflict ? 'border-red-500 ring-1 ring-red-500' : ''}`}
                   required
                 >
@@ -362,7 +400,8 @@ export default function LessonFormModal({
                 <select 
                   value={formData.courseId} 
                   onChange={e => setFormData(p => ({ ...p, courseId: e.target.value }))}
-                  disabled={!formData.academicLevelId}
+                  // disabled={}
+                  disabled={!filteredCourses.length || !formData.academicLevelId}
                   className="w-full bg-slate-50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-2xl py-4 px-5 transition-all outline-none font-medium text-slate-700"
                   required
                 >

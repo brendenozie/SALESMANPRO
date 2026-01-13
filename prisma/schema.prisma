@@ -2762,9 +2762,10 @@ model AcademicLevel {
   CourseAcademicLevel  CourseAcademicLevel[]
   StudentAcademicLevel StudentAcademicLevel[]
 
-  createdAt  DateTime?   @default(now())
-  updatedAt  DateTime?   @updatedAt
-  classrooms Classroom[]
+  createdAt      DateTime?       @default(now())
+  updatedAt      DateTime?       @updatedAt
+  classrooms     Classroom[]
+  classSchedules ClassSchedule[]
 
   @@unique([companyId, name]) // A company cannot have two academic levels with the same name
   @@index([companyId, sortOrder]) // For efficient querying and ordering
@@ -3330,6 +3331,9 @@ model ClassSchedule {
 
   classroom   Classroom? @relation(fields: [classroomId], references: [id])
   classroomId String?    @db.ObjectId
+
+  academicLevelId String?        @db.ObjectId
+  academicLevel   AcademicLevel? @relation(fields: [academicLevelId], references: [id])
 
   // Unique constraint: An educator can only have one class scheduled at a specific date and time within a company.
   // This helps prevent accidental double-booking for the same educator.

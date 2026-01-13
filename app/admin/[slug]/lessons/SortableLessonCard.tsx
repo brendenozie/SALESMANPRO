@@ -130,10 +130,10 @@ export default function SortableLessonCard({
           <span className="truncate">{entry.educatorName}</span>
         </div>
 
-        {entry.courseClassrooms?.[0] && (
+        {entry.classroom && (
           <div className="flex items-center gap-1.5 text-xs opacity-80 truncate">
             <MapPinIcon className="h-3 w-3 flex-shrink-0" />
-            <span className="truncate">{entry.courseClassrooms[0].name}</span>
+            <span className="truncate">{entry.classroom.name}</span>
           </div>
         )}
       </div>

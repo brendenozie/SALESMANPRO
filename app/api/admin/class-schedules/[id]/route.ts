@@ -25,17 +25,13 @@ const getClassSchedule = async (_req: Request,  context: { params: { id: string 
           id: true,
           title: true,
           code: true,
-          academicLevels: {
-            include: {
-              academicLevel: { select: { id: true, name: true, sortOrder: true } },
-            },
-          },
         },
       },
       educator: {
         select: { id: true, user: { select: { name: true, email: true } } },
       },
       classroom: { select: { id: true, name: true, academicLevelId: true } },
+      academicLevel: { select: { id: true, name: true } },
     },
   });
 
@@ -43,19 +39,21 @@ const getClassSchedule = async (_req: Request,  context: { params: { id: string 
     return NextResponse.json({ message: "Class schedule not found" }, { status: 404 });
   }
 
-  const courseAcademicLevels =
-    schedule.course?.academicLevels
-      .map((cal) => cal.academicLevel)
-      .filter(Boolean)
-      .sort((a, b) => (a?.sortOrder || 0) - (b?.sortOrder || 0))
-      .map((level) => ({ id: level!.id, name: level!.name })) || [];
+  // const courseAcademicLevels =
+  //   schedule.course?.academicLevels
+  //     .map((cal) => cal.academicLevel)
+  //     .filter(Boolean)
+  //     .sort((a, b) => (a?.sortOrder || 0) - (b?.sortOrder || 0))
+  //     .map((level) => ({ id: level!.id, name: level!.name })) || [];
 
   const responseData = {
     id: schedule.id,
     courseId: schedule.courseId,
     courseTitle: schedule.course?.title || "N/A",
     courseCode: schedule.course?.code || "N/A",
-    courseAcademicLevels,
+    // courseAcademicLevels,
+    academicLevel: schedule.academicLevel,
+    academicLevelId: schedule.academicLevelId,
     courseClassrooms: schedule.classroom ? [{ id: schedule.classroom.id, name: schedule.classroom.name, academicLevelId: schedule.classroom.academicLevelId }] : [],
     educatorId: schedule.educatorId,
     educatorName: schedule.educator?.user?.name || "N/A",
@@ -77,7 +75,7 @@ const getClassSchedule = async (_req: Request,  context: { params: { id: string 
 const updateClassSchedule = async (req: Request,  context: { params: { id: string } , user?: any} ) => {
   const { id } = context.params;
   const body = await req.json();
-  const { courseId, educatorId, classroomId, dayOfWeek, startTime, endTime, topic, meetingLink, companyId } =
+  const { courseId, educatorId, classroomId, academicLevelId, dayOfWeek, startTime, endTime, topic, meetingLink, companyId } =
     body;
 
   const existingSchedule = await prisma.classSchedule.findUnique({ where: { id } });
@@ -113,6 +111,16 @@ const updateClassSchedule = async (req: Request,  context: { params: { id: strin
         { message: "Provided courseId does not exist or does not belong to this company." },
         { status: 400 }
       );
+    }
+  }
+
+  // ✅ Validate academicLevelId
+  if (academicLevelId) {
+    const level = await prisma.academicLevel.findUnique({
+      where: { id: academicLevelId }
+    });
+    if (!level) {
+      return NextResponse.json({ message: "Invalid academic level" }, { status: 400 });
     }
   }
 
@@ -170,6 +178,7 @@ const updateClassSchedule = async (req: Request,  context: { params: { id: strin
       courseId: courseId || existingSchedule.courseId,
       educatorId: educatorId || existingSchedule.educatorId,
       classroomId: classroomId || existingSchedule.classroomId,
+      academicLevelId: academicLevelId || existingSchedule.academicLevelId,
       dayOfWeek: dayOfWeek || existingSchedule.dayOfWeek,
       startTime: startTime ? parsedStartTime : existingSchedule.startTime,
       endTime: endTime ? parsedEndTime : existingSchedule.endTime,
@@ -182,11 +191,11 @@ const updateClassSchedule = async (req: Request,  context: { params: { id: strin
           id: true,
           title: true,
           code: true,
-          academicLevels: { include: { academicLevel: { select: { id: true, name: true, sortOrder: true } } } },
         },
       },
       educator: { select: { id: true, user: { select: { name: true, email: true } } } },
       classroom: { select: { id: true, name: true, academicLevelId: true } },
+      academicLevel: { select: { id: true, name: true } },
     },
   });
 
