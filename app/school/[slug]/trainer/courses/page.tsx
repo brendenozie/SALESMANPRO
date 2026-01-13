@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { BookOpenIcon, AcademicCapIcon,HomeIcon,
@@ -10,14 +12,16 @@ import { BookOpenIcon, AcademicCapIcon,HomeIcon,
   XMarkIcon,
   Bars3BottomLeftIcon,  UserGroupIcon} from "@heroicons/react/24/outline";
 import ChartBarIcon from "@heroicons/react/24/solid/ChartBarIcon";
+import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";  
 
 
 const coursesData = [
-  { id: 1, name: "Mathematics", students: 30, assignments: 5 },
-  { id: 2, name: "Physics", students: 25, assignments: 3 },
-  { id: 3, name: "Computer Science", students: 40, assignments: 8 },
-  { id: 4, name: "Chemistry", students: 20, assignments: 4 },
-  { id: 5, name: "Biology", students: 35, assignments: 6 },
+  { id: 1, name: "DIT 506 DESKTOP PHOTOGRAPHY", students: 30, assignments: 5 },
+  { id: 2, name: "DIT 304 COMPUTER PRINCIPLES", students: 25, assignments: 3 },
+  { id: 3, name: "DIT 501 FUNDAMENTAL ORGANIZATION", students: 40, assignments: 8 },
+  { id: 4, name: "DIT 502 ECOMMERCE", students: 20, assignments: 4 },
+  // { id: 5, name: "Biology", students: 35, assignments: 6 },
 ];
 
 export default function StudentCourses() {
@@ -26,13 +30,23 @@ const [attendance, setAttendance] = useState<any>({});
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
 
-  const [lectureTitle, setLectureTitle] = useState("");
-  const [lectureDescription, setLectureDescription] = useState("http://xzy93ad.com/lecture");
-  const [startTime, setStartTime] = useState("");
 
-  const handleStartLecture = () => {
-    alert(`Lecture "${lectureTitle}"http://xzy93ad.com/lecture has started!`);
+  const days = Array.from({ length: 30 }, (_, i) => i + 1);
+  const today = new Date().getDate();
+
+  const markAttendance = (day:any) => {
+    setAttendance((prev:any) => ({
+      ...prev,
+      [day]: prev[day] === "present" ? "absent" : "present",
+    }));
   };
+
+  const handleClick = () => {
+    //navigate to initiate lecture page
+    window.location.href = "/lecturer/initiatelecture";
+    
+  }
+
 
   return (
       <div className={`${darkMode ? "dark" : ""}`}>
@@ -95,42 +109,35 @@ const [attendance, setAttendance] = useState<any>({});
               </header>
     
               <main>
-                <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 dark:bg-gray-900 p-6">
-                  <motion.div
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6 }}
-                    className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-lg w-full max-w-lg"
-                  >
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white text-center mb-6">
-                      Initiate a Lecture
-                    </h1>
-                    <div className="space-y-4">
-                      <input
-                        type="text"
-                        placeholder="Lecture Title"
-                        value={lectureTitle}
-                        onChange={(e) => setLectureTitle(e.target.value)}
-                        className="w-full p-3 rounded-lg border dark:border-gray-600"
-                      />
-                      <input
-                        placeholder="http://xzy93ad.com/lecture"
-                        value={lectureDescription}
-                        onChange={(e) => setLectureDescription(e.target.value)}
-                        className="w-full p-3 rounded-lg border dark:border-gray-600"
-                      />
-                      <input
-                        type="datetime-local"
-                        value={startTime}
-                        onChange={(e) => setStartTime(e.target.value)}
-                        className="w-full p-3 rounded-lg border dark:border-gray-600"
-                      />
-                      <button onClick={handleStartLecture} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white p-3 rounded-lg">
-                        Start Lecture
-                      </button>
+                <div className="min-h-screen flex flex-col items-center bg-gradient-to-br from-purple-50 to-purple-100 p-6">
+                    <motion.h1 
+                      initial={{ opacity: 0, y: -20 }} 
+                      animate={{ opacity: 1, y: 0 }} 
+                      className="text-3xl font-bold text-gray-900 mb-6 flex items-center"
+                    >
+                      <BookOpenIcon className="w-8 h-8 text-purple-500 mr-2" /> Your Courses
+                    </motion.h1>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-5xl">
+                      {courses.map((course) => (
+                        <motion.div
+                          key={course.id}
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.98 }}
+                          className="bg-white shadow-xl p-6 rounded-xl flex flex-col items-start space-y-4 transition-all"
+                        >
+                          <div className="flex justify-between items-center w-full">
+                            <h2 className="text-xl font-semibold text-gray-800">{course.name}</h2>
+                            <UserGroupIcon className="w-6 h-6 text-purple-500" />
+                          </div>
+                          <p className="text-gray-600">Enrolled Students: {course.students}</p>
+                          <p className="text-gray-600">Pending Assignments: {course.assignments}</p>
+                          <button onClick={() => {handleClick()}} className="bg-purple-500 text-white px-4 py-2 rounded-lg mt-4 hover:bg-purple-600 transition">
+                            Initiate Course
+                          </button>
+                        </motion.div>
+                      ))}
                     </div>
-                  </motion.div>
-                </div>
+                  </div>
               </main>
             </div>
           </div>

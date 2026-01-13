@@ -28,6 +28,7 @@ const fallback = "Other";
 
 function getMenuItemsFor(userRole: Role, categoryType: CategoryType, allCategoryMenus: MenuMap): MenuItem[] {
   const defaultFallbackMenu = allCategoryMenus.Other || [];
+  console.log("Determining menu for role:", userRole, "and category:", categoryType);
   switch (userRole) {
     case 'JUNIOR':
     case 'SENIOR':
@@ -38,6 +39,8 @@ function getMenuItemsFor(userRole: Role, categoryType: CategoryType, allCategory
         return allCategoryMenus.Principal ?? allCategoryMenus.Educator ?? defaultFallbackMenu;
       }
       return allCategoryMenus.Educator ?? allCategoryMenus.Tutor ?? defaultFallbackMenu;
+    case 'TUTOR':
+      return allCategoryMenus.Tutor ?? defaultFallbackMenu;
     default:
       return allCategoryMenus[categoryType] ?? defaultFallbackMenu;
   }
@@ -50,6 +53,10 @@ export default function AdminLayout({ children, params }: {
 }) {
   const { storeFormData, userRole, userId } = useStoreContext();
   const pathname = usePathname();
+
+  console.log("Current pathname:", pathname);
+  console.log("User role from context:", userRole);
+  console.log("Store form data:", storeFormData);
 
   // 1. This is the core logic.
   // It checks if the current URL path ends with '/pos'.
@@ -68,7 +75,7 @@ export default function AdminLayout({ children, params }: {
   // This early return for specific roles might still be needed if they have a
   // unique layout that is NOT the standard admin layout but also NOT the POS layout.
   // If these roles should see the standard admin layout on non-POS pages, you can remove this block.
-  if (userRole === 'JUNIOR' || userRole === 'STUDENT' || userRole === 'EDUCATOR' || userRole === 'SENIOR') {
+  if (userRole === 'JUNIOR' || userRole === 'SENIOR') {
     return (
       <main className="flex-1 pt-20 lg:pt-0 overflow-auto">
         {children}
