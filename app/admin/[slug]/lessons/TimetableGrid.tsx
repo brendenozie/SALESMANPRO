@@ -49,7 +49,7 @@ const DroppableCell: React.FC<DroppableCellProps> = ({
   const proposedEnd = proposedStart + durationMs;
 
   // Get classroom IDs for the lesson being dragged
-  const activeClassroomIds = activeLesson.courseClassrooms.map(c => c.id);
+  const activeClassroomIds = activeLesson.classroom ? [activeLesson.classroom.id] : [];
 
   return allLessons.some(existing => {
     // 1. Skip if it's the same lesson
@@ -70,9 +70,7 @@ const DroppableCell: React.FC<DroppableCellProps> = ({
 
     // 5. Check Classroom Conflict 
     // (Check if any classroom ID in 'existing' is present in 'activeClassroomIds')
-    const isRoomBusy = existing.courseClassrooms.some(room => 
-      activeClassroomIds.includes(room.id)
-    );
+    const isRoomBusy = existing.classroom ? activeClassroomIds.includes(existing.classroom.id) : false;
 
     return isTeacherBusy || isRoomBusy;
   });

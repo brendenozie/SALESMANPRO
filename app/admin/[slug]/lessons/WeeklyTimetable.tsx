@@ -341,7 +341,7 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
       const matchesEducator = selectedEducatorId === 'All' || entry.educatorId === selectedEducatorId;
       // Filter by academic level: check if any of the course's academic levels match the selected filter
       const matchesAcademicLevel = selectedAcademicLevelId === 'All' ||
-        entry.academicLevelId === selectedAcademicLevelId;
+        entry.academicLevelId === selectedAcademicLevelId || entry.academicLevel.id === selectedAcademicLevelId;
       // Filter by classroom: check if any of the course's classrooms match the selected filter
 
       // const matchesClassroom = selectedClassroomId === 'All' ||
