@@ -59,7 +59,7 @@ const FeesClient = ({
   const [editingRecord, setEditingRecord] = useState<any>(null);
   const [loggingPaymentRecord, setLoggingPaymentRecord] = useState<any>(null);
 
-  console.log('Rendering FeesClient with schoolId:', initialFeeRecordsData, schoolId);
+  // console.log('Rendering FeesClient with schoolId:', initialFeeRecordsData, schoolId);
 
   // Financial Summary
   const stats = useMemo(() => {
@@ -150,47 +150,7 @@ const FeesClient = ({
       setIsSubmitting(false);
     }
   };
-
-
-  const handleAddEditFeeRecordSavev1 = async (data: {
-    studentId?: string;
-    academicYear?: string;
-    term?: string;
-    dueDate?: string | null;
-    invoiceNumber?: string | null;
-  }) => {
-    setIsSubmitting(true);
-    const toastId = toast.loading("Saving fee record...");
-
-    try {
-      const res = await fetch(
-        editingRecord
-          ? `${apiBaseUrl}/admin/fees/${editingRecord.id}`
-          : `${apiBaseUrl}/admin/fees`,
-        {
-          method: editingRecord ? "PUT" : "POST",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            ...data,
-            schoolId,
-          }),
-        }
-      );
-
-      if (!res.ok) throw new Error();
-
-      await refresh();
-      toast.success("Fee record saved successfully", { id: toastId });
-      setShowRecordModal(false);
-      setEditingRecord(null);
-    } catch {
-      toast.error("Failed to save fee record", { id: toastId });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
+  
   const handleLogPaymentSave = async (data: {
     amount: number;
     date: string;

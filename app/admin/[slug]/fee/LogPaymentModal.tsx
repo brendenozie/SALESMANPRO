@@ -7,6 +7,7 @@ const LogPaymentModal: React.FC<any> = ({ isOpen, onClose, feeRecord, onSavePaym
   const [paymentAmount, setPaymentAmount] = React.useState<number>(0);
   const [paymentMethod, setPaymentMethod] = React.useState<string>("");
   const [receiptNumber, setReceiptNumber] = React.useState<string>("");
+  
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSavePayment({
