@@ -63,8 +63,8 @@ const FeesClient = ({
 
   // Financial Summary
   const stats = useMemo(() => {
-    const totalDue = feeRecords.reduce((acc: number, curr: any) => acc + (curr.calculatedTotalFeesDue || 0), 0);
-    const totalPaid = feeRecords.reduce((acc: number, curr: any) => acc + (curr.amountPaid || 0), 0);
+    const totalDue = feeRecords && feeRecords.length > 0 ? feeRecords.reduce((acc: number, curr: any) => acc + (curr.calculatedTotalFeesDue || 0), 0) : 0;
+    const totalPaid = feeRecords && feeRecords.length > 0 ? feeRecords.reduce((acc: number, curr: any) => acc + (curr.amountPaid || 0), 0) : 0;
     const balance = totalDue - totalPaid;
     return { totalDue, totalPaid, balance };
   }, [feeRecords]);
@@ -113,6 +113,46 @@ const FeesClient = ({
   };
 
   const handleAddEditFeeRecordSave = async (data: {
+    studentId?: string;
+    studentIds?: string[];
+    academicYear: string;
+    term: string;
+    dueDate?: string | null;
+    invoiceNumber?: string | null;
+    feeItemIds: string[];
+  }) => {
+    setIsSubmitting(true);
+    const toastId = toast.loading("Saving fee record...");
+
+    try {
+      const res = await fetch(`${apiBaseUrl}/admin/fees`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...data,
+          schoolId,
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err?.message || "Request failed");
+      }
+
+      await refresh();
+      toast.success("Fee record created successfully", { id: toastId });
+      setShowRecordModal(false);
+      setEditingRecord(null);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to save fee record", { id: toastId });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+
+  const handleAddEditFeeRecordSavev1 = async (data: {
     studentId?: string;
     academicYear?: string;
     term?: string;
@@ -322,8 +362,7 @@ const FeesClient = ({
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-800/50">
-                    {feeRecords.map((record: any) => (
-                      console.log('Rendering FeeRecordRow for record:', record),
+                    {feeRecords && feeRecords.length > 0 && feeRecords.map((record: any) => (
                       <FeeRecordRow key={record.id} record={record} onLogPayment={() => setLoggingPaymentRecord(record)} onEditRecord={() => setEditingRecord(record)} onDeleteRecord={() => {}} />
                     ))}
                   </tbody>
@@ -350,6 +389,7 @@ const FeesClient = ({
         isOpen={showRecordModal}
         onClose={() => setShowRecordModal(false)}
         students={initialStudentsData}
+        feeItems={initialFeeItemsData}
         feeRecord={editingRecord}
         allAcademicLevels={allAcademicLevels}
         allClassrooms={allClassrooms}

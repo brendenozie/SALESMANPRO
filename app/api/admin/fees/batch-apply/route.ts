@@ -1,4 +1,5 @@
-import { withApiHandler } from '@/lib/hooks/withApiHandler';
+
+
 import { formatResponse } from '@/lib/formatResponse';
 import { getStudentsByTarget, batchApplySpecificFees } from '@/lib/data';
 
@@ -6,7 +7,7 @@ export async function POST(request: Request) {
   const body = await request.json();
   const { 
     feeItemIds,     // Array of IDs from the checkboxes
-    targetType,     // "ALL" | "LEVEL" | "CLASS"
+    targetType,     // "ALL" | "ACADEMIC_LEVEL" | "CLASS"
     targetValue,    // The ID of the Class or Level
     academicYear, 
     term, 
@@ -14,7 +15,7 @@ export async function POST(request: Request) {
   } = body;
 
   // 1. Resolve which students are affected
-  const students = await getStudentsByTarget(schoolId, targetType, targetValue);
+  const students = await getStudentsByTarget(schoolId, targetType, targetValue, academicYear, term);
 
   if (!students.length) {
     return formatResponse(false, null, 'No students found for this selection.', 404);

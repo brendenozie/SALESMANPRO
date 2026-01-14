@@ -443,13 +443,29 @@ export const applyFeeItemsToStudentsInBatch = async (params: BatchApplyFeeParams
     studentsToTarget = await prisma.student.findMany();
   } else if (targetType === "CLASS" && targetValue) {
     studentsToTarget = await prisma.student.findMany({
-      where: { currentClass: targetValue },
+      where: { 
+        StudentAcademicLevel: {
+          some: {
+            classRoomId: targetValue, // ✅ Classroom._id
+            year: academicYear,   
+            term: term, 
+          },
+        },
+      },
     });
   } else if (targetType === "ACADEMIC_LEVEL" && targetValue) {
     // Ensure targetValue matches StudentLevelStatus enum values
     if (Object.values(StudentLevelStatus).includes(targetValue as StudentLevelStatus)) {
       studentsToTarget = await prisma.student.findMany({
-        where: { academicLevel: targetValue as StudentLevelStatus },
+        where: { 
+          StudentAcademicLevel: {
+            some: {
+              academicLevelId: targetValue, // ✅ AcademicLevel._id
+              year: academicYear,   
+              term: term, 
+            },
+          },
+        },
       });
     } else {
       console.warn(`Invalid academic level provided: ${targetValue}`);
@@ -592,7 +608,9 @@ process.on('beforeExit', async () => {
 export const getStudentsByTarget = async (
   schoolId: string,
   targetType: "ALL" | "ACADEMIC_LEVEL" | "CLASS",
-  targetValue?: string
+  targetValue?: string,
+  academicYear?: string,
+  term?: string
 ): Promise<Student[]> => {
   switch (targetType) {
     case "ALL":
@@ -601,6 +619,7 @@ export const getStudentsByTarget = async (
           companyId: schoolId,
         },
       });
+
 
     case "ACADEMIC_LEVEL":
       if (!targetValue) return [];
@@ -611,6 +630,8 @@ export const getStudentsByTarget = async (
           StudentAcademicLevel: {
             some: {
               academicLevelId: targetValue, // ✅ AcademicLevel._id
+              year: academicYear,   
+              term: term, 
             },
           },
         },
@@ -633,6 +654,8 @@ export const getStudentsByTarget = async (
           StudentAcademicLevel: {
             some: {
               classRoomId: targetValue, // ✅ Classroom._id
+              year: academicYear,   
+              term: term, 
             },
           },
         },
