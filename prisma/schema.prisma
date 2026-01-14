@@ -391,6 +391,28 @@ model Company {
   feeItems              FeeItem[]
   classrooms            Classroom[]
 
+  // Library Management relations
+  libraryBooks     LibraryBook[]
+  libraryIssuances LibraryIssuance[]
+
+  // Transport Management relations
+  transportVehicles TransportVehicle[]
+  transportRoutes   TransportRoute[]
+
+  // Hostel Management relations
+  hostelBlocks HostelBlock[]
+
+  // Staff Management (HR) relations
+  staffLeaves   StaffLeave[]
+  staffPayrolls StaffPayroll[]
+
+  // Fee Management relations
+  feeStructures FeeStructure[]
+
+  // Inventory & Assets relations
+  assets          Asset[]
+  inventoryAudits InventoryAudit[]
+
   @@index([userId])
 }
 
@@ -1399,6 +1421,23 @@ model User {
   InventoryLog          InventoryLog[]
   subscriptionCompanies SubscriptionCompany[]
   addresses             Address[]
+
+  // Library Management relations
+  libraryIssuances    LibraryIssuance[]    @relation("LibraryIssuances")
+  libraryReservations LibraryReservation[] @relation("LibraryReservations")
+
+  // Transport Management relations
+  transportAssignments TransportAssignment[] @relation("TransportAssignments")
+
+  // Hostel Management relations
+  hostelAllocations         HostelAllocation[]         @relation("HostelAllocations")
+  hostelMaintenanceRequests HostelMaintenanceRequest[] @relation("HostelMaintenanceRequests")
+
+  // Staff Management (HR) relations
+  staffLeaves                StaffLeave[]             @relation("StaffLeaves")
+  staffPayrolls              StaffPayroll[]           @relation("StaffPayrolls")
+  employeePerformanceReviews StaffPerformanceReview[] @relation("EmployeePerformanceReviews")
+  reviewerPerformanceReviews StaffPerformanceReview[] @relation("ReviewerPerformanceReviews")
 
   @@index([companyId])
   // @@index([settingsId])
@@ -5582,4 +5621,587 @@ model Idempotency {
   response  Json?
 
   @@index([createdAt], name: "idempotency_createdAt_idx")
+}
+
+// ============================================================
+// LIBRARY MANAGEMENT ENUMS
+// ============================================================
+
+enum LibraryBookStatus {
+  AVAILABLE
+  ISSUED
+  RESERVED
+  MAINTENANCE
+  LOST
+  DAMAGED
+}
+
+enum LibraryIssuanceStatus {
+  ACTIVE
+  RETURNED
+  OVERDUE
+  LOST
+}
+
+enum LibraryFineStatus {
+  PENDING
+  PAID
+  WAIVED
+}
+
+enum LibraryReservationStatus {
+  PENDING
+  ACTIVE
+  FULFILLED
+  CANCELLED
+  EXPIRED
+}
+
+// ============================================================
+// TRANSPORT MANAGEMENT ENUMS
+// ============================================================
+
+enum TransportVehicleStatus {
+  ACTIVE
+  MAINTENANCE
+  INACTIVE
+  RETIRED
+}
+
+enum TransportVehicleType {
+  BUS
+  VAN
+  CAR
+  TRUCK
+  OTHER
+}
+
+enum TransportMaintenanceStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+// ============================================================
+// HOSTEL MANAGEMENT ENUMS
+// ============================================================
+
+enum HostelBlockType {
+  BOYS
+  GIRLS
+  MIXED
+  STAFF
+}
+
+enum HostelRoomType {
+  SINGLE
+  DOUBLE
+  TRIPLE
+  QUAD
+  DORMITORY
+}
+
+enum HostelAllocationStatus {
+  ACTIVE
+  VACATED
+  TRANSFERRED
+  SUSPENDED
+}
+
+enum HostelMaintenanceRequestStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum HostelMaintenanceRequestPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+// ============================================================
+// STAFF MANAGEMENT (HR) ENUMS
+// ============================================================
+
+enum StaffLeaveType {
+  ANNUAL
+  SICK
+  MATERNITY
+  PATERNITY
+  UNPAID
+  COMPASSIONATE
+  STUDY
+  OTHER
+}
+
+enum StaffLeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum StaffPayrollStatus {
+  DRAFT
+  PENDING
+  PAID
+  FAILED
+  CANCELLED
+}
+
+enum StaffPerformanceRating {
+  EXCELLENT
+  VERY_GOOD
+  GOOD
+  SATISFACTORY
+  NEEDS_IMPROVEMENT
+  UNSATISFACTORY
+}
+
+// ============================================================
+// INVENTORY & ASSETS ENUMS
+// ============================================================
+
+enum AssetStatus {
+  ACTIVE
+  IN_USE
+  MAINTENANCE
+  RETIRED
+  DISPOSED
+  LOST
+}
+
+enum AssetCategory {
+  FURNITURE
+  ELECTRONICS
+  EQUIPMENT
+  VEHICLE
+  PROPERTY
+  OTHER
+}
+
+enum AssetTrackingAction {
+  PURCHASED
+  ASSIGNED
+  TRANSFERRED
+  RETURNED
+  MAINTENANCE
+  DISPOSED
+  AUDIT
+}
+
+enum InventoryAuditStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+// ============================================================
+// LIBRARY MANAGEMENT MODELS
+// ============================================================
+
+model LibraryBook {
+  id           String               @id @default(auto()) @map("_id") @db.ObjectId
+  title        String
+  author       String
+  isbn         String?              @unique
+  publisher    String?
+  category     String
+  status       LibraryBookStatus    @default(AVAILABLE)
+  location     String? // Shelf/Section location
+  companyId    String               @db.ObjectId
+  company      Company              @relation(fields: [companyId], references: [id])
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+  issuances    LibraryIssuance[]
+  reservations LibraryReservation[]
+
+  @@index([companyId])
+  @@index([status])
+  @@index([category])
+}
+
+model LibraryIssuance {
+  id         String                @id @default(auto()) @map("_id") @db.ObjectId
+  bookId     String                @db.ObjectId
+  book       LibraryBook           @relation(fields: [bookId], references: [id])
+  userId     String                @db.ObjectId // Member who borrowed the book
+  user       User                  @relation("LibraryIssuances", fields: [userId], references: [id])
+  companyId  String                @db.ObjectId
+  company    Company               @relation(fields: [companyId], references: [id])
+  issuedDate DateTime              @default(now())
+  dueDate    DateTime
+  returnDate DateTime?
+  status     LibraryIssuanceStatus @default(ACTIVE)
+  createdAt  DateTime              @default(now())
+  updatedAt  DateTime              @updatedAt
+  fines      LibraryFine[]
+
+  @@index([bookId])
+  @@index([userId])
+  @@index([companyId])
+  @@index([status])
+}
+
+model LibraryFine {
+  id         String            @id @default(auto()) @map("_id") @db.ObjectId
+  issuanceId String            @db.ObjectId
+  issuance   LibraryIssuance   @relation(fields: [issuanceId], references: [id])
+  amount     Float
+  reason     String?
+  status     LibraryFineStatus @default(PENDING)
+  paidDate   DateTime?
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  @@index([issuanceId])
+  @@index([status])
+}
+
+model LibraryReservation {
+  id              String                   @id @default(auto()) @map("_id") @db.ObjectId
+  bookId          String                   @db.ObjectId
+  book            LibraryBook              @relation(fields: [bookId], references: [id])
+  userId          String                   @db.ObjectId
+  user            User                     @relation("LibraryReservations", fields: [userId], references: [id])
+  reservationDate DateTime                 @default(now())
+  expiryDate      DateTime
+  status          LibraryReservationStatus @default(PENDING)
+  createdAt       DateTime                 @default(now())
+  updatedAt       DateTime                 @updatedAt
+
+  @@index([bookId])
+  @@index([userId])
+  @@index([status])
+}
+
+// ============================================================
+// TRANSPORT MANAGEMENT MODELS
+// ============================================================
+
+model TransportVehicle {
+  id           String                 @id @default(auto()) @map("_id") @db.ObjectId
+  registration String                 @unique
+  make         String
+  model        String
+  type         TransportVehicleType
+  status       TransportVehicleStatus @default(ACTIVE)
+  capacity     Int // Number of passengers
+  companyId    String                 @db.ObjectId
+  company      Company                @relation(fields: [companyId], references: [id])
+  createdAt    DateTime               @default(now())
+  updatedAt    DateTime               @updatedAt
+  routes       TransportRoute[]
+  maintenances TransportMaintenance[]
+  fuelLogs     TransportFuelLog[]
+
+  @@index([companyId])
+  @@index([status])
+  @@index([type])
+}
+
+model TransportRoute {
+  id          String                @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  startPoint  String
+  endPoint    String
+  stops       Json? // Array of stop locations
+  companyId   String                @db.ObjectId
+  company     Company               @relation(fields: [companyId], references: [id])
+  vehicleId   String?               @db.ObjectId // Default vehicle for this route
+  vehicle     TransportVehicle?     @relation(fields: [vehicleId], references: [id])
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+  assignments TransportAssignment[]
+
+  @@index([companyId])
+  @@index([vehicleId])
+}
+
+model TransportMaintenance {
+  id            String                     @id @default(auto()) @map("_id") @db.ObjectId
+  vehicleId     String                     @db.ObjectId
+  vehicle       TransportVehicle           @relation(fields: [vehicleId], references: [id])
+  description   String
+  scheduledDate DateTime
+  completedDate DateTime?
+  cost          Float?
+  status        TransportMaintenanceStatus @default(SCHEDULED)
+  notes         String?
+  createdAt     DateTime                   @default(now())
+  updatedAt     DateTime                   @updatedAt
+
+  @@index([vehicleId])
+  @@index([status])
+  @@index([scheduledDate])
+}
+
+model TransportFuelLog {
+  id        String           @id @default(auto()) @map("_id") @db.ObjectId
+  vehicleId String           @db.ObjectId
+  vehicle   TransportVehicle @relation(fields: [vehicleId], references: [id])
+  date      DateTime         @default(now())
+  quantity  Float // Liters
+  cost      Float
+  odometer  Float? // Reading at time of refueling
+  notes     String?
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  @@index([vehicleId])
+  @@index([date])
+}
+
+model TransportAssignment {
+  id        String         @id @default(auto()) @map("_id") @db.ObjectId
+  routeId   String         @db.ObjectId
+  route     TransportRoute @relation(fields: [routeId], references: [id])
+  userId    String         @db.ObjectId // Student or staff member
+  user      User           @relation("TransportAssignments", fields: [userId], references: [id])
+  startDate DateTime       @default(now())
+  endDate   DateTime?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@index([routeId])
+  @@index([userId])
+}
+
+// ============================================================
+// HOSTEL MANAGEMENT MODELS
+// ============================================================
+
+model HostelBlock {
+  id        String          @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  type      HostelBlockType
+  companyId String          @db.ObjectId
+  company   Company         @relation(fields: [companyId], references: [id])
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+  rooms     HostelRoom[]
+
+  @@index([companyId])
+  @@index([type])
+}
+
+model HostelRoom {
+  id                  String                     @id @default(auto()) @map("_id") @db.ObjectId
+  blockId             String                     @db.ObjectId
+  block               HostelBlock                @relation(fields: [blockId], references: [id])
+  roomNumber          String
+  capacity            Int
+  type                HostelRoomType
+  floor               Int?
+  createdAt           DateTime                   @default(now())
+  updatedAt           DateTime                   @updatedAt
+  allocations         HostelAllocation[]
+  maintenanceRequests HostelMaintenanceRequest[]
+
+  @@unique([blockId, roomNumber])
+  @@index([blockId])
+  @@index([type])
+}
+
+model HostelAllocation {
+  id        String                 @id @default(auto()) @map("_id") @db.ObjectId
+  roomId    String                 @db.ObjectId
+  room      HostelRoom             @relation(fields: [roomId], references: [id])
+  userId    String                 @db.ObjectId // Student allocated to this room
+  user      User                   @relation("HostelAllocations", fields: [userId], references: [id])
+  startDate DateTime               @default(now())
+  endDate   DateTime?
+  status    HostelAllocationStatus @default(ACTIVE)
+  createdAt DateTime               @default(now())
+  updatedAt DateTime               @updatedAt
+
+  @@index([roomId])
+  @@index([userId])
+  @@index([status])
+}
+
+model HostelMaintenanceRequest {
+  id           String                           @id @default(auto()) @map("_id") @db.ObjectId
+  roomId       String                           @db.ObjectId
+  room         HostelRoom                       @relation(fields: [roomId], references: [id])
+  reportedBy   String                           @db.ObjectId // User who reported
+  reporter     User                             @relation("HostelMaintenanceRequests", fields: [reportedBy], references: [id])
+  description  String
+  priority     HostelMaintenanceRequestPriority @default(MEDIUM)
+  status       HostelMaintenanceRequestStatus   @default(PENDING)
+  resolvedDate DateTime?
+  notes        String?
+  createdAt    DateTime                         @default(now())
+  updatedAt    DateTime                         @updatedAt
+
+  @@index([roomId])
+  @@index([reportedBy])
+  @@index([status])
+  @@index([priority])
+}
+
+// ============================================================
+// STAFF MANAGEMENT (HR) MODELS
+// ============================================================
+
+model StaffLeave {
+  id           String           @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String           @db.ObjectId
+  user         User             @relation("StaffLeaves", fields: [userId], references: [id])
+  companyId    String           @db.ObjectId
+  company      Company          @relation(fields: [companyId], references: [id])
+  leaveType    StaffLeaveType
+  startDate    DateTime
+  endDate      DateTime
+  reason       String?
+  status       StaffLeaveStatus @default(PENDING)
+  approvedBy   String?          @db.ObjectId
+  approvedDate DateTime?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  @@index([userId])
+  @@index([companyId])
+  @@index([status])
+}
+
+model StaffPayroll {
+  id          String             @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String             @db.ObjectId
+  user        User               @relation("StaffPayrolls", fields: [userId], references: [id])
+  companyId   String             @db.ObjectId
+  company     Company            @relation(fields: [companyId], references: [id])
+  month       Int // 1-12
+  year        Int
+  basicSalary Float
+  allowances  Float              @default(0)
+  deductions  Float              @default(0)
+  netSalary   Float
+  status      StaffPayrollStatus @default(DRAFT)
+  paymentDate DateTime?
+  notes       String?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  @@unique([userId, month, year])
+  @@index([userId])
+  @@index([companyId])
+  @@index([status])
+}
+
+model StaffPerformanceReview {
+  id           String                 @id @default(auto()) @map("_id") @db.ObjectId
+  employeeId   String                 @db.ObjectId // User being reviewed
+  employee     User                   @relation("EmployeePerformanceReviews", fields: [employeeId], references: [id])
+  reviewerId   String                 @db.ObjectId // User conducting the review
+  reviewer     User                   @relation("ReviewerPerformanceReviews", fields: [reviewerId], references: [id])
+  reviewDate   DateTime               @default(now())
+  reviewPeriod String // e.g., "Q1 2024", "Annual 2024"
+  rating       StaffPerformanceRating
+  strengths    String?
+  weaknesses   String?
+  comments     String?
+  goals        String? // Future goals
+  createdAt    DateTime               @default(now())
+  updatedAt    DateTime               @updatedAt
+
+  @@index([employeeId])
+  @@index([reviewerId])
+}
+
+// ============================================================
+// FEE MANAGEMENT MODELS
+// ============================================================
+
+model FeeStructure {
+  id        String             @id @default(auto()) @map("_id") @db.ObjectId
+  companyId String             @db.ObjectId
+  company   Company            @relation(fields: [companyId], references: [id])
+  name      String
+  year      String // Academic year, e.g., "2024/2025"
+  term      String? // e.g., "Term 1", "Semester 1", or null for annual
+  amount    Float // Total amount for this structure
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+  items     FeeStructureItem[]
+
+  @@unique([companyId, name, year, term])
+  @@index([companyId])
+}
+
+model FeeStructureItem {
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  feeStructureId String       @db.ObjectId
+  feeStructure   FeeStructure @relation(fields: [feeStructureId], references: [id])
+  name           String // e.g., "Tuition", "Lab Fee", "Sports Fee"
+  amount         Float
+  isOptional     Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([feeStructureId])
+}
+
+// ============================================================
+// INVENTORY & ASSETS MODELS
+// ============================================================
+
+model Asset {
+  id            String          @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  category      AssetCategory
+  purchaseDate  DateTime
+  purchaseValue Float
+  currentValue  Float?
+  status        AssetStatus     @default(ACTIVE)
+  companyId     String          @db.ObjectId
+  company       Company         @relation(fields: [companyId], references: [id])
+  serialNumber  String?
+  location      String?
+  notes         String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  tracking      AssetTracking[]
+
+  @@index([companyId])
+  @@index([category])
+  @@index([status])
+}
+
+model AssetTracking {
+  id          String              @id @default(auto()) @map("_id") @db.ObjectId
+  assetId     String              @db.ObjectId
+  asset       Asset               @relation(fields: [assetId], references: [id])
+  action      AssetTrackingAction
+  date        DateTime            @default(now())
+  performedBy String? // User ID or name
+  notes       String?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  @@index([assetId])
+  @@index([action])
+  @@index([date])
+}
+
+model InventoryAudit {
+  id          String               @id @default(auto()) @map("_id") @db.ObjectId
+  companyId   String               @db.ObjectId
+  company     Company              @relation(fields: [companyId], references: [id])
+  auditDate   DateTime
+  conductedBy String // User ID or name
+  status      InventoryAuditStatus @default(SCHEDULED)
+  findings    String? // Summary of findings
+  notes       String?
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+
+  @@index([companyId])
+  @@index([status])
+  @@index([auditDate])
 }
