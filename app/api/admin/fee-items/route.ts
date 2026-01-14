@@ -35,15 +35,25 @@ async function handlePostFeeItem(request: Request) {
     defaultAmount,
     currency = "USD",
     applicableTo,
-    applicableRef,
-    academicYear,
-    term,
+    academicLevelIds = [],
+    classroomIds = [],
     isMandatory = true,
     companyId,
+    academicYear,
+    term,
   } = body;
 
   if (!name || defaultAmount === undefined || !applicableTo || !companyId) {
     return formatResponse(false, null, "Missing required fields", 400);
+  }
+
+  // 🔐 Validation rules
+  if (applicableTo === "ACADEMIC_LEVEL" && academicLevelIds.length === 0) {
+    return formatResponse(false, null, "Select at least one academic level", 400);
+  }
+
+  if (applicableTo === "CLASS" && classroomIds.length === 0) {
+    return formatResponse(false, null, "Select at least one classroom", 400);
   }
 
   try {
@@ -53,12 +63,15 @@ async function handlePostFeeItem(request: Request) {
       defaultAmount,
       currency,
       applicableTo,
-      applicableRef,
-      academicYear,
-      term,
+      academicLevelIds:
+        applicableTo !== "ALL" ? academicLevelIds : [],
+      classroomIds:
+        applicableTo === "CLASS" ? classroomIds : [],
       isMandatory,
       companyId,
-    } as any);
+      academicYear,
+      term,
+    });
 
     return formatResponse(true, item, null, 201);
   } catch (error: any) {
@@ -73,6 +86,54 @@ async function handlePostFeeItem(request: Request) {
     throw error;
   }
 }
+
+// async function handlePostFeeItemV1(request: Request) {
+//   const body = await request.json();
+
+//   const {
+//     name,
+//     description,
+//     defaultAmount,
+//     currency = "USD",
+//     applicableTo,
+//     applicableRef,
+//     academicYear,
+//     term,
+//     isMandatory = true,
+//     companyId,
+//   } = body;
+
+//   if (!name || defaultAmount === undefined || !applicableTo || !companyId) {
+//     return formatResponse(false, null, "Missing required fields", 400);
+//   }
+
+//   try {
+//     const item = await createFeeItem({
+//       name,
+//       description,
+//       defaultAmount,
+//       currency,
+//       applicableTo,
+//       applicableRef,
+//       academicYear,
+//       term,
+//       isMandatory,
+//       companyId,
+//     } as any);
+
+//     return formatResponse(true, item, null, 201);
+//   } catch (error: any) {
+//     if (error.code === "P2002") {
+//       return formatResponse(
+//         false,
+//         null,
+//         "Fee item with this name already exists",
+//         409
+//       );
+//     }
+//     throw error;
+//   }
+// }
 
 export const GET = withApiHandler(handleGetFeeItems);
 export const POST = withApiHandler(handlePostFeeItem);

@@ -28,6 +28,8 @@ import {
   ArcElement,
 } from "chart.js";
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement);
 
 // Internal Sub-Components
@@ -49,7 +51,8 @@ const FeesClient = ({
   const [feeRecords, setFeeRecords] = useState(initialFeeRecordsData);
   const [searchTerm, setSearchTerm] = useState("");
   const [isRefreshing, setIsRefreshing] = useState(false);
-  
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   // Modals
   const [showBatchModal, setShowBatchModal] = useState(false);
   const [showRecordModal, setShowRecordModal] = useState(false);
@@ -72,6 +75,122 @@ const FeesClient = ({
       borderWidth: 0,
       hoverOffset: 20,
     }]
+  };
+  
+  const handleApplyBatchSave = async (data: {
+    feeItemIds: string[];
+    targetType: "ALL" | "LEVEL" | "CLASS";
+    targetValue?: string;
+    academicYear: string;
+    term: string;
+  }) => {
+    setIsSubmitting(true);
+    const toastId = toast.loading("Applying fees to students...");
+
+    try {
+      const res = await fetch(`${apiBaseUrl}/admin/fees/batch-apply`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...data,
+          schoolId,
+        }),
+      });
+
+      if (!res.ok) throw new Error();
+
+      await refresh();
+      toast.success("Batch fees applied successfully", { id: toastId });
+      setShowBatchModal(false);
+    } catch {
+      toast.error("Failed to apply batch fees", { id: toastId });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleAddEditFeeRecordSave = async (data: {
+    studentId?: string;
+    academicYear?: string;
+    term?: string;
+    dueDate?: string | null;
+    invoiceNumber?: string | null;
+  }) => {
+    setIsSubmitting(true);
+    const toastId = toast.loading("Saving fee record...");
+
+    try {
+      const res = await fetch(
+        editingRecord
+          ? `${apiBaseUrl}/admin/fees/${editingRecord.id}`
+          : `${apiBaseUrl}/admin/fees`,
+        {
+          method: editingRecord ? "PUT" : "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...data,
+            schoolId,
+          }),
+        }
+      );
+
+      if (!res.ok) throw new Error();
+
+      await refresh();
+      toast.success("Fee record saved successfully", { id: toastId });
+      setShowRecordModal(false);
+      setEditingRecord(null);
+    } catch {
+      toast.error("Failed to save fee record", { id: toastId });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleLogPaymentSave = async (data: {
+    amount: number;
+    date: string;
+    method: string;
+    receiptNumber?: string;
+  }) => {
+    if (!loggingPaymentRecord) return;
+
+    setIsSubmitting(true);
+    const toastId = toast.loading("Logging payment...");
+
+    try {
+      const res = await fetch(
+        `${apiBaseUrl}/admin/fees/${loggingPaymentRecord.id}/payments`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        }
+      );
+
+      if (!res.ok) throw new Error();
+
+      await refresh();
+      toast.success("Payment logged successfully", { id: toastId });
+      setLoggingPaymentRecord(null);
+    } catch {
+      toast.error("Failed to log payment", { id: toastId });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const refresh = async () => {
+    setIsRefreshing(true);
+    const res = await fetch(`${apiBaseUrl}/admin/fees?schoolId=${schoolId}`, { credentials: "include" });
+    if (res.ok) {
+      const data = (await res.json()).data;
+      setFeeRecords(data);
+    }
+    setIsRefreshing(false);
   };
 
   return (
@@ -213,7 +332,37 @@ const FeesClient = ({
       </div>
 
       {/* Logic-specific Modals */}
-      <ApplyBatchFeeModal 
+
+      <ApplyBatchFeeModal
+        isOpen={showBatchModal}
+        onClose={() => setShowBatchModal(false)}
+        feeItems={initialFeeItemsData}
+        academicLevels={allAcademicLevels}
+        classrooms={allClassrooms}
+        onApply={handleApplyBatchSave}
+        isSubmitting={isSubmitting}
+      />
+
+      <AddEditFeeRecordModal
+        isOpen={showRecordModal}
+        onClose={() => setShowRecordModal(false)}
+        students={initialStudentsData}
+        feeRecord={editingRecord}
+        allAcademicLevels={allAcademicLevels}
+        allClassrooms={allClassrooms}
+        onSave={handleAddEditFeeRecordSave}
+        isSubmitting={isSubmitting}
+      />
+
+      <LogPaymentModal
+        isOpen={!!loggingPaymentRecord}
+        onClose={() => setLoggingPaymentRecord(null)}
+        feeRecord={loggingPaymentRecord}
+        onSavePayment={handleLogPaymentSave}
+        isSubmitting={isSubmitting}
+      />
+
+      {/* <ApplyBatchFeeModal 
         isOpen={showBatchModal}
         onClose={() => setShowBatchModal(false)}
         feeItems={initialFeeItemsData}
@@ -223,10 +372,16 @@ const FeesClient = ({
         isSubmitting={false}        
       />
       
-      <AddEditFeeRecordModal
+      <AddEditFeeRecordModal 
         isOpen={showRecordModal}
         onClose={() => setShowRecordModal(false)}
         students={initialStudentsData}
+        feeRecord={editingRecord}
+        feeItems={initialFeeItemsData}
+        allAcademicLevels={allAcademicLevels}
+        allClassrooms={allClassrooms}
+        onSave={() => {}}
+        isSubmitting={false}
       />
 
       <LogPaymentModal
@@ -235,7 +390,7 @@ const FeesClient = ({
         feeRecord={loggingPaymentRecord}
         onSavePayment={() => {}}
         isSubmitting={false}
-      />
+      /> */}
       
     </main>
   );

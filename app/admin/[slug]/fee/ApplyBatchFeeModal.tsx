@@ -32,7 +32,7 @@ const ApplyBatchFeeModal: React.FC<Props> = ({
 }) => {
   // State for batch logic
   const [selectedFeeIds, setSelectedFeeIds] = useState<string[]>([]);
-  const [targetType, setTargetType] = useState<"ALL" | "LEVEL" | "CLASS">("ALL");
+  const [targetType, setTargetType] = useState<"ALL" | "ACADEMIC_LEVEL" | "CLASS">("ALL");
   const [targetValue, setTargetValue] = useState("");
   const [academicYear, setAcademicYear] = useState("2024/2025");
   const [term, setTerm] = useState("Term 1");
@@ -117,8 +117,8 @@ const ApplyBatchFeeModal: React.FC<Props> = ({
                       onChange={(e) => setTargetValue(e.target.value)}
                       className="w-full bg-slate-950 border border-white/10 rounded-2xl p-4 text-white focus:ring-2 focus:ring-indigo-500 outline-none"
                     >
-                      <option value="">Select {targetType === "LEVEL" ? "Academic Level" : "Classroom"}...</option>
-                      {(targetType === "LEVEL" ? academicLevels : classrooms).map((item: any) => (
+                      <option value="">Select {targetType === "ACADEMIC_LEVEL" ? "Academic Level" : "Classroom"}...</option>
+                      {(targetType === "ACADEMIC_LEVEL" ? academicLevels : classrooms).map((item: any) => (
                         <option key={item.id} value={item.id}>{item.name}</option>
                       ))}
                     </select>

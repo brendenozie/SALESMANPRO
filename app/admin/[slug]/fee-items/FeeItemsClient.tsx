@@ -144,9 +144,13 @@ const FeeItemsClient: React.FC<Props> = ({ initialFeeItems, schoolId, allAcademi
                         <span className="px-2 py-0.5 rounded-md bg-slate-800 text-slate-400 text-[10px] font-bold uppercase">
                           {item.applicableTo}
                         </span>
-                        {item.applicableRef && (
-                          <span className="text-xs text-slate-500">→ {item.applicableRef}</span>
-                        )}
+                        <span className="text-slate-500 text-xs">
+                          {/* {item.applicableToId ? (
+                            allAcademicLevels.find(level => level.id === item.applicableToId)?.name ||
+                            allClassrooms.find(cls => cls.id === item.applicableToId)?.name || 
+                            "Specific Group"
+                          ) : "All Students"} */}
+                        </span>
                       </div>
                     </td>
                     <td className="px-8 py-5 text-right">

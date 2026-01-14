@@ -12,8 +12,6 @@ import { verifyAuth } from '@/lib/verifyAuth';
 async function handleGetFeeRecords(request: Request) {
   // Authentication is handled by withApiHandler, but we check success here
   
-
-
   const { searchParams } = new URL(request.url);
   const schoolId = searchParams.get('schoolId');
 
@@ -33,12 +31,11 @@ async function handlePostFeeRecord(request: Request) {
   // Authentication is handled by withApiHandler, but we check success here
   
 
-
   const body = await request.json();
-  const { studentName, studentClass, term, academicYear, totalFeesDue, amountPaid, dueDate, schoolId } = body;
+  const { studentName, studentClass, term, academicYear, totalFeesDue, amountPaid, dueDate, companyId } = body;
 
   // Basic validation
-  if (!studentName || !studentClass || !term || !academicYear || totalFeesDue === undefined || amountPaid === undefined || !schoolId) {
+  if (!studentName || !studentClass || !term || !academicYear || totalFeesDue === undefined || amountPaid === undefined || !companyId) {
     return formatResponse(false, null, 'Missing required fields for new fee record.', 400);
   }
 

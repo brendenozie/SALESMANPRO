@@ -8,6 +8,27 @@ const prisma = new PrismaClient();
 // Re-export types from Prisma Client for consistency and direct use in frontend
 export type { Student, FeeItem, StudentLevelStatus };
 
+// export interface FeeItem {
+//   id: string;
+//   companyId: string;
+
+//   name: string;
+//   description?: string;
+//   defaultAmount: number;
+//   currency: string;
+
+//   applicableTo: "ALL" | "LEVEL" | "CLASS";
+
+//   academicLevelIds: string[];
+//   classroomIds: string[];
+
+//   isMandatory: boolean;
+
+//   createdAt: string;
+//   updatedAt: string;
+// }
+
+
 // Define the extended StudentFeeRecord type to include calculated fields
 // This type is used on the frontend and in API responses
 export type StudentFeeRecord = Omit<PrismaStudentFeeRecord, 'appliedFeeItems' | 'payments'> & {
@@ -114,18 +135,71 @@ export const getFeeItemById = async (id: string): Promise<FeeItem | null> => {
   return prisma.feeItem.findUnique({ where: { id } });
 };
 
-export const createFeeItem = async (data: Omit<FeeItem, 'id'>): Promise<FeeItem> => {
-  return prisma.feeItem.create({ data });
-};
+// export const createFeeItem = async (data: Omit<FeeItem, 'id'>): Promise<FeeItem> => {
+//   return prisma.feeItem.create({ data });
+// };
 
-export const updateFeeItem = async (id: string, data: Partial<Omit<FeeItem, 'id'>>): Promise<FeeItem | null> => {
-  try {
-    return prisma.feeItem.update({ where: { id }, data });
-  } catch (error) {
-    console.error("Error updating fee item:", error);
-    return null;
-  }
-};
+export async function createFeeItem(data: {
+  name: string;
+  description?: string;
+  defaultAmount: number;
+  currency: string;
+  applicableTo: "ALL" | "ACADEMIC_LEVEL" | "CLASS";
+  academicLevelIds?: string[];
+  classroomIds?: string[];
+  isMandatory?: boolean;
+  companyId: string;
+  academicYear?: string;
+  term?: string;
+}) {
+  return prisma.feeItem.create({
+    data: {
+      name: data.name,
+      description: data.description,
+      defaultAmount: data.defaultAmount,
+      currency: data.currency,
+      applicableTo: data.applicableTo,
+      academicLevelIds: data.academicLevelIds ?? [],
+      classroomIds: data.classroomIds ?? [],
+      isMandatory: data.isMandatory ?? true,
+      companyId: data.companyId,
+      academicYear: data.academicYear,
+      term: data.term,
+    },
+  });
+}
+
+
+// export const updateFeeItem = async (id: string, data: Partial<Omit<FeeItem, 'id'>>): Promise<FeeItem | null> => {
+//   try {
+//     return prisma.feeItem.update({ where: { id }, data });
+//   } catch (error) {
+//     console.error("Error updating fee item:", error);
+//     return null;
+//   }
+// };
+
+export async function updateFeeItem(
+  id: string,
+  data: Partial<FeeItem>
+) {
+  return prisma.feeItem.update({
+    where: { id },
+    data: {
+      name: data.name,
+      description: data.description,
+      defaultAmount: data.defaultAmount,
+      currency: data.currency,
+      applicableTo: data.applicableTo,
+      academicLevelIds: data.academicLevelIds ?? [],
+      classroomIds: data.classroomIds ?? [],
+      isMandatory: data.isMandatory,
+      academicYear: data.academicYear,
+      term: data.term,
+    },
+  });
+}
+
 
 export const deleteFeeItem = async (id: string): Promise<boolean> => {
   try {
@@ -203,12 +277,17 @@ export const createStudentFeeRecord = async (
         { applicableTo: "ALL" },
         {
           applicableTo: "CLASS",
-          applicableRef: student.currentClass,
+          classroomIds: { has: student.currentClass },
         },
         {
           applicableTo: "ACADEMIC_LEVEL",
-          applicableRef: student.academicLevel,
+          academicLevelIds: { has: student.academicLevel },
         },
+        // Add logic for 'COURSE' if you track student courses
+        // {
+        //   applicableTo: "COURSE",
+        //   applicableValue: { in: student.enrolledCourses }, // Assuming student.enrolledCourses is an array
+        // },
       ],
       AND: [
         { OR: [{ academicYear: null }, { academicYear }] },

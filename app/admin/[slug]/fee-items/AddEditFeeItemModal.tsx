@@ -22,12 +22,6 @@ interface Props {
   isSubmitting: boolean;
 }
 
-// Your FeeItem (or backend) should support something like:
-
-// applicableTo: "ALL" | "LEVEL" | "CLASS";
-// academicLevelIds?: string[];
-// classroomIds?: string[];
-
 const AddEditFeeItemModal: React.FC<Props> = ({
   isOpen,
   feeItem,
@@ -41,8 +35,11 @@ const AddEditFeeItemModal: React.FC<Props> = ({
   const [formData, setFormData] = useState<Partial<FeeItem>>({
     name: "",
     defaultAmount: 0,
-    currency: "USD",
+    currency: "KES",
     applicableTo: "ALL" as any,
+    academicYear: new Date().getFullYear().toString(),
+    term: "",
+
   });
 
   const [selectedLevelIds, setSelectedLevelIds] = useState<string[]>([]);
@@ -60,7 +57,7 @@ const [selectedClassroomIds, setSelectedClassroomIds] = useState<string[]>([]);
     setSelectedLevelIds((feeItem as any).academicLevelIds || []);
     setSelectedClassroomIds((feeItem as any).classroomIds || []);
   } else {
-    setFormData({ name: "", defaultAmount: 0, currency: "USD", applicableTo: "ALL" as any });
+    setFormData({ name: "", defaultAmount: 0, currency: "KES", applicableTo: "ALL" as any });
     setSelectedLevelIds([]);
     setSelectedClassroomIds([]);
   }
@@ -85,6 +82,7 @@ const [selectedClassroomIds, setSelectedClassroomIds] = useState<string[]>([]);
 
     onSave({
       ...formData,
+      companyId: schoolId,
       academicLevelIds:
         formData.applicableTo !== "ALL" ? selectedLevelIds : [],
       classroomIds:
@@ -157,6 +155,33 @@ const [selectedClassroomIds, setSelectedClassroomIds] = useState<string[]>([]);
               </div>
 
               <div className="grid grid-cols-2 gap-4">
+                {/* Academic Year */}
+                <div className="space-y-2">
+                  <label className="text-[11px] font-bold uppercase tracking-widest text-slate-500 ml-1">Academic Year</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g., 2024"
+                    className="w-full bg-slate-950/40 border border-white/5 rounded-2xl py-4 px-5 text-white placeholder:text-slate-600 focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500/40 outline-none transition-all"
+                    value={formData.academicYear || new Date().getFullYear().toString()}
+                    onChange={(e) => setFormData({ ...formData, academicYear: e.target.value })}
+                  />
+                </div>
+                {/* Term */}
+                <div className="space-y-2">
+                  <label className="text-[11px] font-bold uppercase tracking-widest text-slate-500 ml-1">Term</label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g., Term 1"
+                    className="w-full bg-slate-950/40 border border-white/5 rounded-2xl py-4 px-5 text-white placeholder:text-slate-600 focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500/40 outline-none transition-all"
+                    value={formData.term || ''}
+                    onChange={(e) => setFormData({ ...formData, term: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
                 {/* Amount */}
                 <div className="space-y-2">
                   <label className="text-[11px] font-bold uppercase tracking-widest text-slate-500 ml-1">Default Amount</label>
@@ -192,7 +217,7 @@ const [selectedClassroomIds, setSelectedClassroomIds] = useState<string[]>([]);
               <div className="space-y-2">
                 <label className="text-[11px] font-bold uppercase tracking-widest text-slate-500 ml-1">Target Audience</label>
                 <div className="flex p-1.5 bg-slate-950/60 border border-white/5 rounded-2xl gap-1">
-                  {['ALL', 'LEVEL', 'CLASS'].map((type) => (
+                  {['ALL', 'ACADEMIC_LEVEL', 'CLASS'].map((type) => (
                     <button
                       key={type}
                       type="button"
@@ -209,89 +234,89 @@ const [selectedClassroomIds, setSelectedClassroomIds] = useState<string[]>([]);
                 </div>
               </div>
 
-              {(formData.applicableTo === "LEVEL" || formData.applicableTo === "CLASS") && (
-  <div className="space-y-3">
-    <label className="text-[11px] font-bold uppercase tracking-widest text-slate-500 ml-1">
-      Academic Levels
-    </label>
+            {(formData.applicableTo === "ACADEMIC_LEVEL" || formData.applicableTo === "CLASS") && (
+                <div className="space-y-3">
+                  <label className="text-[11px] font-bold uppercase tracking-widest text-slate-500 ml-1">
+                    Academic Levels
+                  </label>
 
-    <div className="grid grid-cols-2 gap-2">
-      {allAcademicLevels
-        .sort((a, b) => a.sortOrder - b.sortOrder)
-        .map(level => {
-          const active = selectedLevelIds.includes(level.id);
-          return (
-            <button
-              key={level.id}
-              type="button"
-              onClick={() => {
-                const updated = active
-                  ? selectedLevelIds.filter(id => id !== level.id)
-                  : [...selectedLevelIds, level.id];
+                  <div className="grid grid-cols-2 gap-2">
+                    {allAcademicLevels
+                      .sort((a, b) => a.sortOrder - b.sortOrder)
+                      .map(level => {
+                        const active = selectedLevelIds.includes(level.id);
+                        return (
+                          <button
+                            key={level.id}
+                            type="button"
+                            onClick={() => {
+                              const updated = active
+                                ? selectedLevelIds.filter(id => id !== level.id)
+                                : [...selectedLevelIds, level.id];
 
-                setSelectedLevelIds(updated);
-                setFormData({ ...formData, academicLevelIds: updated });
+                              setSelectedLevelIds(updated);
+                              setFormData({ ...formData, academicLevelIds: updated });
 
-                // reset classrooms if level changes
-                if (!active) {
-                  setSelectedClassroomIds([]);
-                  setFormData(f => ({ ...f, classroomIds: [] }));
-                }
-              }}
-              className={`py-3 rounded-xl text-xs font-bold transition-all border ${
-                active
-                  ? "bg-indigo-600 text-white border-indigo-500 shadow-lg"
-                  : "bg-slate-900/40 text-slate-400 border-white/5 hover:bg-white/5"
-              }`}
-            >
-              {level.name}
-            </button>
-          );
-        })}
-    </div>
-  </div>
-)}
+                              // reset classrooms if level changes
+                              if (!active) {
+                                setSelectedClassroomIds([]);
+                                setFormData(f => ({ ...f, classroomIds: [] }));
+                              }
+                            }}
+                            className={`py-3 rounded-xl text-xs font-bold transition-all border ${
+                              active
+                                ? "bg-indigo-600 text-white border-indigo-500 shadow-lg"
+                                : "bg-slate-900/40 text-slate-400 border-white/5 hover:bg-white/5"
+                            }`}
+                          >
+                            {level.name}
+                          </button>
+                        );
+                      })}
+                  </div>
+                </div>
+            )}
 
-{formData.applicableTo === "CLASS" && selectedLevelIds.length > 0 && (
-  <div className="space-y-3">
-    <label className="text-[11px] font-bold uppercase tracking-widest text-slate-500 ml-1">
-      Classrooms
-    </label>
+            {formData.applicableTo === "CLASS" && selectedLevelIds.length > 0 && (
+              <div className="space-y-3">
+                <label className="text-[11px] font-bold uppercase tracking-widest text-slate-500 ml-1">
+                  Classrooms
+                </label>
 
-    <div className="grid grid-cols-2 gap-2">
-      {filteredClassrooms.map(room => {
-        const active = selectedClassroomIds.includes(room.id);
-        return (
-          <button
-            key={room.id}
-            type="button"
-            onClick={() => {
-              const updated = active
-                ? selectedClassroomIds.filter(id => id !== room.id)
-                : [...selectedClassroomIds, room.id];
+                <div className="grid grid-cols-2 gap-2">
+                  {filteredClassrooms.map(room => {
+                    const active = selectedClassroomIds.includes(room.id);
+                    return (
+                      <button
+                        key={room.id}
+                        type="button"
+                        onClick={() => {
+                          const updated = active
+                            ? selectedClassroomIds.filter(id => id !== room.id)
+                            : [...selectedClassroomIds, room.id];
 
-              setSelectedClassroomIds(updated);
-              setFormData({ ...formData, classroomIds: updated });
-            }}
-            className={`py-3 rounded-xl text-xs font-bold transition-all border ${
-              active
-                ? "bg-emerald-600 text-white border-emerald-500 shadow-lg"
-                : "bg-slate-900/40 text-slate-400 border-white/5 hover:bg-white/5"
-            }`}
-          >
-            {room.name}
-          </button>
-        );
-      })}
-    </div>
+                          setSelectedClassroomIds(updated);
+                          setFormData({ ...formData, classroomIds: updated });
+                        }}
+                        className={`py-3 rounded-xl text-xs font-bold transition-all border ${
+                          active
+                            ? "bg-emerald-600 text-white border-emerald-500 shadow-lg"
+                            : "bg-slate-900/40 text-slate-400 border-white/5 hover:bg-white/5"
+                        }`}
+                      >
+                        {room.name}
+                      </button>
+                    );
+                  })}
+                </div>
 
-    {filteredClassrooms.length === 0 && (
-      <p className="text-xs text-slate-500 italic">
-        No classrooms found for selected level(s)
-      </p>
-    )}
-  </div>
-)}
+                {filteredClassrooms.length === 0 && (
+                  <p className="text-xs text-slate-500 italic">
+                    No classrooms found for selected level(s)
+                  </p>
+                )}
+              </div>
+            )}
 
 
               {/* Action Buttons */}
