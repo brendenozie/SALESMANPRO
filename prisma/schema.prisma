@@ -5820,7 +5820,7 @@ model LibraryBook {
   status       LibraryBookStatus    @default(AVAILABLE)
   location     String? // Shelf/Section location
   companyId    String               @db.ObjectId
-  company      Company              @relation(fields: [companyId], references: [id])
+  company      Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
   createdAt    DateTime             @default(now())
   updatedAt    DateTime             @updatedAt
   issuances    LibraryIssuance[]
@@ -5898,7 +5898,7 @@ model TransportVehicle {
   status       TransportVehicleStatus @default(ACTIVE)
   capacity     Int // Number of passengers
   companyId    String                 @db.ObjectId
-  company      Company                @relation(fields: [companyId], references: [id])
+  company      Company                @relation(fields: [companyId], references: [id], onDelete: Cascade)
   createdAt    DateTime               @default(now())
   updatedAt    DateTime               @updatedAt
   routes       TransportRoute[]
@@ -5917,7 +5917,7 @@ model TransportRoute {
   endPoint    String
   stops       Json? // Array of stop locations
   companyId   String                @db.ObjectId
-  company     Company               @relation(fields: [companyId], references: [id])
+  company     Company               @relation(fields: [companyId], references: [id], onDelete: Cascade)
   vehicleId   String?               @db.ObjectId // Default vehicle for this route
   vehicle     TransportVehicle?     @relation(fields: [vehicleId], references: [id])
   createdAt   DateTime              @default(now())
@@ -5986,7 +5986,7 @@ model HostelBlock {
   name      String
   type      HostelBlockType
   companyId String          @db.ObjectId
-  company   Company         @relation(fields: [companyId], references: [id])
+  company   Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
   createdAt DateTime        @default(now())
   updatedAt DateTime        @updatedAt
   rooms     HostelRoom[]
@@ -6167,7 +6167,7 @@ model Asset {
   currentValue  Float?
   status        AssetStatus     @default(ACTIVE)
   companyId     String          @db.ObjectId
-  company       Company         @relation(fields: [companyId], references: [id])
+  company       Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
   serialNumber  String?
   location      String?
   notes         String?
