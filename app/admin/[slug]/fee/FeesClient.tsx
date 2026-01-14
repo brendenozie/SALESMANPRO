@@ -59,8 +59,6 @@ const FeesClient = ({
   const [editingRecord, setEditingRecord] = useState<any>(null);
   const [loggingPaymentRecord, setLoggingPaymentRecord] = useState<any>(null);
 
-  // console.log('Rendering FeesClient with schoolId:', initialFeeRecordsData, schoolId);
-
   // Financial Summary
   const stats = useMemo(() => {
     const totalDue = feeRecords && feeRecords.length > 0 ? feeRecords.reduce((acc: number, curr: any) => acc + (curr.calculatedTotalFeesDue || 0), 0) : 0;
@@ -330,6 +328,39 @@ const FeesClient = ({
               </div>
             </motion.div>
           )}
+
+          {/* ITEMS TAB */}
+          {activeTab === "items" && (
+            <motion.div
+              key="items"
+              initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
+              className="space-y-8"
+            >
+              <div className="text-center text-slate-500">
+                <Squares2X2Icon className="h-12 w-12 mx-auto mb-4" />
+                <h2 className="text-2xl font-bold mb-2">Fee Item Catalog</h2>
+                <p className="max-w-md mx-auto">Manage the list of fee items that can be applied to student records.</p>
+              </div>
+              {!initialFeeItemsData || initialFeeItemsData.length === 0 ? (
+              <div className="bg-slate-900/40 border border-slate-800 rounded-[2.5rem] p-8 text-center text-slate-500">
+                <p>No fee items have been created yet.</p>
+              </div>
+              ) : (
+                initialFeeItemsData.map((item: any) => (
+                  <div key={item.id} className="bg-slate-900/40 border border-slate-800 rounded-[2.5rem] p-6 flex justify-between items-center">
+                    <div>
+                      <h3 className="text-lg font-bold">{item.name}</h3>
+                      <p className="text-sm text-slate-400">{item.description}</p>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-xl font-bold">${item.defaultAmount.toLocaleString()}</span>
+                    </div>
+                  </div>
+                ))
+              )}
+            </motion.div>
+          )}
+
         </AnimatePresence>
       </div>
 
