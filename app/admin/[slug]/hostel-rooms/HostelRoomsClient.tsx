@@ -11,15 +11,14 @@ import {
   SparklesIcon
 } from "@heroicons/react/24/outline";
 
-const HostelRoomsClient = () => {
-  const [activeWing, setActiveWing] = useState("North Wing");
+interface Props {
+  initialRooms: any[];
+  schoolId: string;
+}
 
-  const rooms = [
-    { id: '101', type: 'Double', floor: '1st', occupancy: 2, max: 2, status: 'Full', amenities: ['AC', 'Attached Bath'] },
-    { id: '102', type: 'Single', floor: '1st', occupancy: 0, max: 1, status: 'Available', amenities: ['Non-AC'] },
-    { id: '103', type: 'Double', floor: '1st', occupancy: 1, max: 2, status: 'Partial', amenities: ['AC', 'Balcony'] },
-    { id: '201', type: 'Suite', floor: '2nd', occupancy: 4, max: 4, status: 'Full', amenities: ['AC', 'Kitchenette'] },
-  ];
+const HostelRoomsClient = ({ initialRooms, schoolId }: Props) => {
+  const [activeWing, setActiveWing] = useState("North Wing");
+  const [rooms, setRooms] = useState(initialRooms);
 
   return (
     <main className="min-h-screen bg-[#05070A] text-slate-200 p-8 font-sans">

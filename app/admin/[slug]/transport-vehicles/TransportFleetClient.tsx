@@ -14,14 +14,14 @@ import {
   GlobeAltIcon
 } from "@heroicons/react/24/outline";
 
-const TransportFleetClient = () => {
-  const [activeFilter, setActiveFilter] = useState('all');
+interface Props {
+  initialVehicles: any[];
+  schoolId: string;
+}
 
-  const fleet = [
-    { id: 'BUS-101', plate: 'K-TX 2024', driver: 'Robert Fox', route: 'North Circuit', status: 'Active', fuel: 82, occupancy: '42/50', health: 'Optimal' },
-    { id: 'BUS-202', plate: 'K-AX 2026', driver: 'Jane Cooper', route: 'Downtown Express', status: 'In Service', fuel: 15, occupancy: '12/32', health: 'Warning' },
-    { id: 'VAN-05', plate: 'K-MS 9912', driver: 'Cody Fisher', route: 'Staff Shuttle', status: 'Maintenance', fuel: 100, occupancy: '0/12', health: 'Repair' },
-  ];
+const TransportFleetClient = ({ initialVehicles, schoolId }: Props) => {
+  const [activeFilter, setActiveFilter] = useState('all');
+  const [fleet, setFleet] = useState(initialVehicles);
 
   return (
     <main className="min-h-screen bg-[#05070A] text-slate-200 p-8 font-sans">
