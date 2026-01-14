@@ -4106,7 +4106,11 @@ model FeeItem {
 
   // How this fee applies (e.g., "Class", "Course", "AcademicLevel", "All")
   // This helps in determining which students a fee applies to.
-  applicableTo FeeApplicability
+  applicableTo     FeeApplicability
+  // applicableTo: "ALL" | "LEVEL" | "CLASS";
+  academicLevelIds String[] // If applicableTo is "ACADEMIC_LEVEL", list of academic level IDs
+  courseIds        String[] // If applicableTo is "COURSE", list of course IDs
+  classroomIds     String[] // If applicableTo is "CLASS", list of classroom IDs
 
   // applicableTo    String // Values like: "CLASS", "COURSE", "ACADEMIC_LEVEL", "ALL"
   // applicableValue String? // e.g., "Grade 10A", "Physics 101", "SENIOR". Null if applicableTo "ALL"

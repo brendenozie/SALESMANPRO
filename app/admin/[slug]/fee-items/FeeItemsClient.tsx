@@ -26,7 +26,7 @@ interface Props {
   schoolId: string;
 }
 
-const FeeItemsClient: React.FC<Props> = ({ initialFeeItems, schoolId }) => {
+const FeeItemsClient: React.FC<Props> = ({ initialFeeItems, schoolId, allAcademicLevels, allClassrooms }) => {
   const [feeItems, setFeeItems] = useState(initialFeeItems);
   const [search, setSearch] = useState("");
   const [editingItem, setEditingItem] = useState<FeeItem | null>(null);
@@ -183,7 +183,9 @@ const FeeItemsClient: React.FC<Props> = ({ initialFeeItems, schoolId }) => {
       </div>
 
       {/* Modals */}
-      <AddEditFeeItemModal isOpen={showModal} feeItem={editingItem} onClose={() => setShowModal(false)} onSave={handleSave} isSubmitting={isSubmitting} />
+      <AddEditFeeItemModal isOpen={showModal} feeItem={editingItem} 
+      schoolId={schoolId} allAcademicLevels={allAcademicLevels} allClassrooms={allClassrooms}
+      onClose={() => setShowModal(false)} onSave={handleSave} isSubmitting={isSubmitting} />
       <DeleteFeeItemModal isOpen={!!deletingItem} itemName={deletingItem?.name} onClose={() => setDeletingItem(null)} onConfirm={() => {}} isSubmitting={isSubmitting} />
     </main>
   );

@@ -1,33 +1,14 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
-import { Bar, Pie } from "react-chartjs-2";
-import toast, { Toaster } from "react-hot-toast";
-import {
-  BanknotesIcon,
-  PencilSquareIcon,
-  TrashIcon,
-  PlusCircleIcon,
-  XMarkIcon,
-  CheckCircleIcon,
-  ExclamationTriangleIcon,
-  MagnifyingGlassIcon,
-  UserGroupIcon,
-  ClipboardDocumentCheckIcon,
-  SparklesIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-} from "@heroicons/react/24/outline";
+import React, { useState, useEffect } from "react";
+import toast from "react-hot-toast";
 
-import Modal from "@/components/Modal";
-import { Student, FeeItem } from "@/lib/data";
 import "@/lib/chartConfig";
 import { AnimatePresence, motion } from "framer-motion";
 
 
 const AddEditFeeRecordModal: React.FC<any> = ({ isOpen, onClose, feeRecord, students, onSave, isSubmitting }) => {
-  // ... state logic remains the same ...
-  
+    
   const [selectedStudentId, setSelectedStudentId] = useState<string>('');
   const [academicYear, setAcademicYear] = useState<string>('');
   const [term, setTerm] = useState<string>('');

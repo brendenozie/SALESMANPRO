@@ -410,8 +410,295 @@ export const applyFeeItemsToStudentsInBatch = async (params: BatchApplyFeeParams
   return { created: createdCount, existing: existingCount, failed: failedCount };
 };
 
+// lib/data.ts updates
+
+export type BatchApplySpecificParams = {
+  schoolId: string;
+  studentIds: string[];
+  feeItemIds: string[];
+  academicYear: string;
+  term: string;
+};
+
+
+export const batchApplySpecificFees = async (params: BatchApplySpecificParams) => {
+  const { schoolId, studentIds, feeItemIds, academicYear, term } = params;
+
+  // 1. Fetch FeeItem templates to get the price/name snapshot
+  const feeTemplates = await prisma.feeItem.findMany({
+    where: { 
+      id: { in: feeItemIds },
+      companyId: schoolId 
+    }
+  });
+
+  // Map to the JSON structure expected by your StudentFeeRecord schema
+  const feeSnapshots = feeTemplates.map(item => ({
+    feeItemId: item.id,
+    name: item.name,
+    amount: item.defaultAmount,
+    description: item.description,
+    isMandatory: item.isMandatory,
+  }));
+
+  const results = { created: 0, updated: 0, failed: 0 };
+
+  // 2. Iterate and Upsert
+  for (const studentId of studentIds) {
+    try {
+      const existingRecord = await prisma.studentFeeRecord.findUnique({
+        where: {
+          studentId_academicYear_term: { studentId, academicYear, term }
+        }
+      });
+
+      if (existingRecord) {
+        // APPEND LOGIC: Filter out items already applied to avoid double-charging
+        const currentItems = (existingRecord.appliedFeeItems as any[]) || [];
+        const newItemsToAdd = feeSnapshots.filter(
+          snap => !currentItems.some(curr => curr.feeItemId === snap.feeItemId)
+        );
+
+        if (newItemsToAdd.length > 0) {
+          const updatedItems = [...currentItems, ...newItemsToAdd];
+          
+          // Recalculate status based on new total
+          const totalAmount = updatedItems.reduce((sum, item) => sum + item.amount, 0);
+          const { paymentStatus } = calculateFeeStatusAndBalance(totalAmount, existingRecord.amountPaid);
+
+          await prisma.studentFeeRecord.update({
+            where: { id: existingRecord.id },
+            data: {
+              appliedFeeItems: updatedItems,
+              paymentStatus
+            }
+          });
+          results.updated++;
+        }
+      } else {
+        // CREATE LOGIC: New record
+        const totalAmount = feeSnapshots.reduce((sum, item) => sum + item.amount, 0);
+        const { paymentStatus } = calculateFeeStatusAndBalance(totalAmount, 0);
+
+        await prisma.studentFeeRecord.create({
+          data: {
+            studentId,
+            academicYear,
+            term,
+            amountPaid: 0,
+            paymentStatus,
+            appliedFeeItems: feeSnapshots,
+            payments: []
+          }
+        });
+        results.created++;
+      }
+    } catch (error) {
+      console.error(`Error processing batch for student ${studentId}:`, error);
+      results.failed++;
+    }
+  }
+  return results;
+};
 
 // Disconnect Prisma Client when the process exits
 process.on('beforeExit', async () => {
   await prisma.$disconnect();
 });
+
+
+// import { Student } from "@prisma/client";
+// import prisma from "@/server/db/prismadb";
+
+export const getStudentsByTarget = async (
+  schoolId: string,
+  targetType: "ALL" | "LEVEL" | "CLASS",
+  targetValue?: string
+): Promise<Student[]> => {
+  switch (targetType) {
+    case "ALL":
+      return prisma.student.findMany({
+        where: {
+          companyId: schoolId,
+        },
+      });
+
+    case "LEVEL":
+      if (!targetValue) return [];
+
+      return prisma.student.findMany({
+        where: {
+          companyId: schoolId,
+          StudentAcademicLevel: {
+            some: {
+              academicLevelId: targetValue, // ✅ AcademicLevel._id
+            },
+          },
+        },
+        include: {
+          StudentAcademicLevel: {
+            include: {
+              academicLevel: true,
+              classRoom: true,
+            },
+          },
+        },
+      });
+
+    case "CLASS":
+      if (!targetValue) return [];
+
+      return prisma.student.findMany({
+        where: {
+          companyId: schoolId,
+          StudentAcademicLevel: {
+            some: {
+              classRoomId: targetValue, // ✅ Classroom._id
+            },
+          },
+        },
+        include: {
+          StudentAcademicLevel: {
+            include: {
+              academicLevel: true,
+              classRoom: true,
+            },
+          },
+        },
+      });
+
+    default:
+      return [];
+  }
+};
+
+
+// export const getStudentsByTarget = async (
+//   schoolId: string,
+//   targetType: "ALL" | "LEVEL" | "CLASS",
+//   targetValue?: string
+// ): Promise<Student[]> => {
+//   if (targetType === "ALL") {
+//     return prisma.student.findMany({
+//       where: { companyId: schoolId }
+//     });
+//   } else if (targetType === "LEVEL" && targetValue) {
+//     return prisma.student.findMany({
+//       where: { companyId: schoolId,
+//         StudentAcademicLevel: {
+          
+//         } 
+//         // academicLevel: targetValue 
+//       }
+//     });
+//   } else if (targetType === "CLASS" && targetValue) {
+//     return prisma.student.findMany({
+//       where: { companyId: schoolId, currentClass: targetValue }
+//     });
+//   } else {
+//     return [];
+//   }
+// };
+
+
+// ... keep your existing imports and types ...
+
+// --- NEW: Targeted Student Fetching ---
+// export const getStudentsByTarget = async (
+//   schoolId: string,
+//   targetType: "ALL" | "LEVEL" | "CLASS",
+//   targetValue?: string
+// ): Promise<Student[]> => {
+//   const where: any = { companyId: schoolId };
+
+//   if (targetType === "CLASS" && targetValue) {
+//     where.currentClass = targetValue;
+//   } else if (targetType === "LEVEL" && targetValue) {
+//     where.academicLevel = targetValue as StudentLevelStatus;
+//   }
+
+//   return prisma.student.findMany({ where });
+// };
+
+
+
+// export const batchApplySpecificFees = async (params: BatchApplySpecificParams) => {
+//   const { schoolId, studentIds, feeItemIds, academicYear, term } = params;
+
+//   // 1. Fetch the actual FeeItem templates to get current prices/names
+//   const feeTemplates = await prisma.feeItem.findMany({
+//     where: { 
+//       id: { in: feeItemIds },
+//       companyId: schoolId 
+//     }
+//   });
+
+//   const feeSnapshots = feeTemplates.map(item => ({
+//     feeItemId: item.id,
+//     name: item.name,
+//     amount: item.defaultAmount,
+//     description: item.description || null,
+//     isMandatory: item.isMandatory,
+//   }));
+
+//   const results = { created: 0, updated: 0, failed: 0 };
+
+//   // 2. Process students in a transaction for safety
+//   await Promise.all(studentIds.map(async (studentId) => {
+//     try {
+//       // Find existing record for this specific period
+//       const existingRecord = await prisma.studentFeeRecord.findUnique({
+//         where: {
+//           studentId_academicYear_term: { studentId, academicYear, term }
+//         }
+//       });
+
+//       if (existingRecord) {
+//         // UPDATE: Append new fees to existing ones, avoiding duplicates
+//         const currentFees = (existingRecord.appliedFeeItems as any[]) || [];
+        
+//         // Filter out fees the student already has
+//         const newFees = feeSnapshots.filter(
+//           sf => !currentFees.some(cf => cf.feeItemId === sf.feeItemId)
+//         );
+
+//         if (newFees.length > 0) {
+//           const updatedFees = [...currentFees, ...newFees];
+//           const newTotal = updatedFees.reduce((sum, f) => sum + f.amount, 0);
+//           const { paymentStatus } = calculateFeeStatusAndBalance(newTotal, existingRecord.amountPaid);
+
+//           await prisma.studentFeeRecord.update({
+//             where: { id: existingRecord.id },
+//             data: {
+//               appliedFeeItems: updatedFees,
+//               paymentStatus
+//             }
+//           });
+//           results.updated++;
+//         }
+//       } else {
+//         // CREATE: New record from scratch
+//         const total = feeSnapshots.reduce((sum, f) => sum + f.amount, 0);
+//         const { paymentStatus } = calculateFeeStatusAndBalance(total, 0);
+
+//         await prisma.studentFeeRecord.create({
+//           data: {
+//             studentId,
+//             academicYear,
+//             term,
+//             amountPaid: 0,
+//             paymentStatus,
+//             appliedFeeItems: feeSnapshots,
+//             payments: []
+//           }
+//         });
+//         results.created++;
+//       }
+//     } catch (error) {
+//       console.error(`Batch Error for Student ${studentId}:`, error);
+//       results.failed++;
+//     }
+//   }));
+
+//   return results;
+// };

@@ -35,6 +35,7 @@ import SummaryCard from "./SummaryCard"; // Reusable stat card
 import FeeRecordRow from "./FeeRecordRow";
 import ApplyBatchFeeModal from "./ApplyBatchFeeModal";
 import AddEditFeeRecordModal from "./AddEditFeeRecordModal";
+import LogPaymentModal from "./LogPaymentModal";
 
 const FeesClient = ({ 
   initialFeeRecordsData, 
@@ -52,6 +53,8 @@ const FeesClient = ({
   // Modals
   const [showBatchModal, setShowBatchModal] = useState(false);
   const [showRecordModal, setShowRecordModal] = useState(false);
+  const [editingRecord, setEditingRecord] = useState<any>(null);
+  const [loggingPaymentRecord, setLoggingPaymentRecord] = useState<any>(null);
 
   // Financial Summary
   const stats = useMemo(() => {
@@ -199,7 +202,7 @@ const FeesClient = ({
                   </thead>
                   <tbody className="divide-y divide-slate-800/50">
                     {feeRecords.map((record: any) => (
-                      <FeeRecordRow key={record.id} record={record} />
+                      <FeeRecordRow key={record.id} record={record} onLogPayment={() => setLoggingPaymentRecord(record)} onEditRecord={() => setEditingRecord(record)} onDeleteRecord={() => {}} />
                     ))}
                   </tbody>
                 </table>
@@ -225,6 +228,15 @@ const FeesClient = ({
         onClose={() => setShowRecordModal(false)}
         students={initialStudentsData}
       />
+
+      <LogPaymentModal
+        isOpen={!!loggingPaymentRecord}
+        onClose={() => setLoggingPaymentRecord(null)}
+        feeRecord={loggingPaymentRecord}
+        onSavePayment={() => {}}
+        isSubmitting={false}
+      />
+      
     </main>
   );
 };

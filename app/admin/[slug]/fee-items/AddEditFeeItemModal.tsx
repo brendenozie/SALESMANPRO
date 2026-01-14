@@ -14,14 +14,26 @@ import { FeeItem } from "@/lib/data";
 interface Props {
   isOpen: boolean;
   feeItem: FeeItem | null;
+  schoolId: string;
+  allAcademicLevels: any[];
+  allClassrooms: any[];
   onClose: () => void;
   onSave: (data: Partial<FeeItem>) => void;
   isSubmitting: boolean;
 }
 
+// Your FeeItem (or backend) should support something like:
+
+// applicableTo: "ALL" | "LEVEL" | "CLASS";
+// academicLevelIds?: string[];
+// classroomIds?: string[];
+
 const AddEditFeeItemModal: React.FC<Props> = ({
   isOpen,
   feeItem,
+  schoolId,
+  allAcademicLevels,
+  allClassrooms,
   onClose,
   onSave,
   isSubmitting,
@@ -33,18 +45,53 @@ const AddEditFeeItemModal: React.FC<Props> = ({
     applicableTo: "ALL" as any,
   });
 
+  const [selectedLevelIds, setSelectedLevelIds] = useState<string[]>([]);
+const [selectedClassroomIds, setSelectedClassroomIds] = useState<string[]>([]);
+
+
+  const filteredClassrooms = allClassrooms.filter(c =>
+    selectedLevelIds.includes(c.academicLevelId)
+  );
+
+
   useEffect(() => {
-    if (feeItem) {
-      setFormData(feeItem);
-    } else {
-      setFormData({ name: "", defaultAmount: 0, currency: "USD", applicableTo: "ALL" as any });
-    }
-  }, [feeItem, isOpen]);
+  if (feeItem) {
+    setFormData(feeItem);
+    setSelectedLevelIds((feeItem as any).academicLevelIds || []);
+    setSelectedClassroomIds((feeItem as any).classroomIds || []);
+  } else {
+    setFormData({ name: "", defaultAmount: 0, currency: "USD", applicableTo: "ALL" as any });
+    setSelectedLevelIds([]);
+    setSelectedClassroomIds([]);
+  }
+}, [feeItem, isOpen]);
+
+
+  // useEffect(() => {
+  //   if (feeItem) {
+  //     setFormData(feeItem);
+  //   } else {
+  //     setFormData({ name: "", defaultAmount: 0, currency: "USD", applicableTo: "ALL" as any });
+  //   }
+  // }, [feeItem, isOpen]);
+
+  // const handleSubmit = (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   onSave(formData);
+  // };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(formData);
+
+    onSave({
+      ...formData,
+      academicLevelIds:
+        formData.applicableTo !== "ALL" ? selectedLevelIds : [],
+      classroomIds:
+        formData.applicableTo === "CLASS" ? selectedClassroomIds : [],
+    });
   };
+
 
   return (
     <AnimatePresence>
@@ -133,6 +180,7 @@ const AddEditFeeItemModal: React.FC<Props> = ({
                     value={formData.currency}
                     onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
                   >
+                    <option value="KES">KES (KSh)</option>
                     <option value="USD">USD ($)</option>
                     <option value="EUR">EUR (€)</option>
                     <option value="NGN">NGN (₦)</option>
@@ -160,6 +208,91 @@ const AddEditFeeItemModal: React.FC<Props> = ({
                   ))}
                 </div>
               </div>
+
+              {(formData.applicableTo === "LEVEL" || formData.applicableTo === "CLASS") && (
+  <div className="space-y-3">
+    <label className="text-[11px] font-bold uppercase tracking-widest text-slate-500 ml-1">
+      Academic Levels
+    </label>
+
+    <div className="grid grid-cols-2 gap-2">
+      {allAcademicLevels
+        .sort((a, b) => a.sortOrder - b.sortOrder)
+        .map(level => {
+          const active = selectedLevelIds.includes(level.id);
+          return (
+            <button
+              key={level.id}
+              type="button"
+              onClick={() => {
+                const updated = active
+                  ? selectedLevelIds.filter(id => id !== level.id)
+                  : [...selectedLevelIds, level.id];
+
+                setSelectedLevelIds(updated);
+                setFormData({ ...formData, academicLevelIds: updated });
+
+                // reset classrooms if level changes
+                if (!active) {
+                  setSelectedClassroomIds([]);
+                  setFormData(f => ({ ...f, classroomIds: [] }));
+                }
+              }}
+              className={`py-3 rounded-xl text-xs font-bold transition-all border ${
+                active
+                  ? "bg-indigo-600 text-white border-indigo-500 shadow-lg"
+                  : "bg-slate-900/40 text-slate-400 border-white/5 hover:bg-white/5"
+              }`}
+            >
+              {level.name}
+            </button>
+          );
+        })}
+    </div>
+  </div>
+)}
+
+{formData.applicableTo === "CLASS" && selectedLevelIds.length > 0 && (
+  <div className="space-y-3">
+    <label className="text-[11px] font-bold uppercase tracking-widest text-slate-500 ml-1">
+      Classrooms
+    </label>
+
+    <div className="grid grid-cols-2 gap-2">
+      {filteredClassrooms.map(room => {
+        const active = selectedClassroomIds.includes(room.id);
+        return (
+          <button
+            key={room.id}
+            type="button"
+            onClick={() => {
+              const updated = active
+                ? selectedClassroomIds.filter(id => id !== room.id)
+                : [...selectedClassroomIds, room.id];
+
+              setSelectedClassroomIds(updated);
+              setFormData({ ...formData, classroomIds: updated });
+            }}
+            className={`py-3 rounded-xl text-xs font-bold transition-all border ${
+              active
+                ? "bg-emerald-600 text-white border-emerald-500 shadow-lg"
+                : "bg-slate-900/40 text-slate-400 border-white/5 hover:bg-white/5"
+            }`}
+          >
+            {room.name}
+          </button>
+        );
+      })}
+    </div>
+
+    {filteredClassrooms.length === 0 && (
+      <p className="text-xs text-slate-500 italic">
+        No classrooms found for selected level(s)
+      </p>
+    )}
+  </div>
+)}
+
 
               {/* Action Buttons */}
               <div className="flex gap-4 pt-4">

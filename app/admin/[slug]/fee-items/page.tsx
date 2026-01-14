@@ -69,6 +69,12 @@ export default async function FeeItemsPage({ params }: PageProps) {
     console.error("[FeeItemsPage] Failed to load fee items", err);
   }
 
+  console.log("Fetched fee items:", initialFeeItems);
+  console.log("Fetched academic levels:", allAcademicLevels);
+  console.log("Fetched classrooms:", allClassrooms);
+  console.log("Using schoolId:", schoolId);
+  console.log("Using cookieHeader:", cookieHeader);
+  
   return (
     <FeeItemsClient
       initialFeeItems={initialFeeItems}
