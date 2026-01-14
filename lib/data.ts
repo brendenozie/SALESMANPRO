@@ -591,7 +591,7 @@ process.on('beforeExit', async () => {
 
 export const getStudentsByTarget = async (
   schoolId: string,
-  targetType: "ALL" | "LEVEL" | "CLASS",
+  targetType: "ALL" | "ACADEMIC_LEVEL" | "CLASS",
   targetValue?: string
 ): Promise<Student[]> => {
   switch (targetType) {
@@ -602,7 +602,7 @@ export const getStudentsByTarget = async (
         },
       });
 
-    case "LEVEL":
+    case "ACADEMIC_LEVEL":
       if (!targetValue) return [];
 
       return prisma.student.findMany({

@@ -21,13 +21,19 @@ export default async function FeesPage({ params }: { params: Promise<{ slug: str
 
   const [initialFeeRecords, initialStudents, initialFeeItems, allAcademicLevels, allClassrooms] = 
     await Promise.all([
-      fetchData(`/admin/student-fee-records?schoolId=${schoolId}`),
+      fetchData(`/admin/student-fee-records?companyId=${schoolId}`),
       fetchData(`/admin/students?companyId=${schoolId}`),
       fetchData(`/admin/fee-items?companyId=${schoolId}`),
       fetchData(`/admin/academic-levels?companyId=${schoolId}`),
       fetchData(`/admin/classrooms?companyId=${schoolId}`),
     ]);
 
+  console.log('Initial Fee Records:', initialFeeRecords);
+  console.log('Initial Students:', initialStudents);
+  console.log('Initial Fee Items:', initialFeeItems);
+  console.log('All Academic Levels:', allAcademicLevels);
+  console.log('All Classrooms:', allClassrooms);
+  
   return (
     <FeesClient
       initialFeeRecordsData={initialFeeRecords}

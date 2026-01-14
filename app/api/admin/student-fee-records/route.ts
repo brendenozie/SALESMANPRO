@@ -6,7 +6,7 @@ import prisma from '@/server/db/prismadb';
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
 
 interface Context {
-  params?: { id?: string };
+  params?: any;
 }
 
 // GET handler – fetch all student fee records
@@ -14,19 +14,16 @@ async function getAllStudentFees(req: Request, context: Context) {
   
   console.log('Fetching student fee records for company :', context);
 
-  const companySlug = context.params?.id;
-
-  const company = await prisma.company.findUnique({
-    where: { slug: companySlug }
-  });
-
-  if (!company) {
-    return formatResponse(false, null, 'Company not found.', 404);
+  // const companySlug = req.params?.slug;
+  const { searchParams } = new URL(req.url);
+  const companyId = searchParams.get('companyId');
+  
+  if (!companyId) {
+    return formatResponse(false, null, 'Company slug is required.', 400);
   }
 
-
   try {
-    const records = await getStudentFeeRecords(company.id);
+    const records = await getStudentFeeRecords(companyId);
     return formatResponse(true, records, 'Fetched student fee records successfully.');
   } catch (error: any) {
     console.error('Error fetching student fee records:', error);

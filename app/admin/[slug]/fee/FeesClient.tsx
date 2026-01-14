@@ -59,6 +59,8 @@ const FeesClient = ({
   const [editingRecord, setEditingRecord] = useState<any>(null);
   const [loggingPaymentRecord, setLoggingPaymentRecord] = useState<any>(null);
 
+  console.log('Rendering FeesClient with schoolId:', initialFeeRecordsData, schoolId);
+
   // Financial Summary
   const stats = useMemo(() => {
     const totalDue = feeRecords.reduce((acc: number, curr: any) => acc + (curr.calculatedTotalFeesDue || 0), 0);
@@ -79,7 +81,7 @@ const FeesClient = ({
   
   const handleApplyBatchSave = async (data: {
     feeItemIds: string[];
-    targetType: "ALL" | "LEVEL" | "CLASS";
+    targetType: "ALL" | "ACADEMIC_LEVEL" | "CLASS";
     targetValue?: string;
     academicYear: string;
     term: string;
@@ -321,6 +323,7 @@ const FeesClient = ({
                   </thead>
                   <tbody className="divide-y divide-slate-800/50">
                     {feeRecords.map((record: any) => (
+                      console.log('Rendering FeeRecordRow for record:', record),
                       <FeeRecordRow key={record.id} record={record} onLogPayment={() => setLoggingPaymentRecord(record)} onEditRecord={() => setEditingRecord(record)} onDeleteRecord={() => {}} />
                     ))}
                   </tbody>

@@ -34,7 +34,7 @@ const ApplyBatchFeeModal: React.FC<Props> = ({
   const [selectedFeeIds, setSelectedFeeIds] = useState<string[]>([]);
   const [targetType, setTargetType] = useState<"ALL" | "ACADEMIC_LEVEL" | "CLASS">("ALL");
   const [targetValue, setTargetValue] = useState("");
-  const [academicYear, setAcademicYear] = useState("2024/2025");
+  const [academicYear, setAcademicYear] = useState(`${new Date().getFullYear()}`);
   const [term, setTerm] = useState("Term 1");
 
   const toggleFee = (id: string) => {
@@ -93,7 +93,7 @@ const ApplyBatchFeeModal: React.FC<Props> = ({
                   <UserGroupIcon className="h-4 w-4" /> 1. Select Audience
                 </label>
                 <div className="grid grid-cols-3 gap-3">
-                  {["ALL", "LEVEL", "CLASS"].map((t) => (
+                  {["ALL", "ACADEMIC_LEVEL", "CLASS"].map((t) => (
                     <button
                       key={t}
                       type="button"
@@ -104,7 +104,7 @@ const ApplyBatchFeeModal: React.FC<Props> = ({
                         : "bg-slate-950/50 border-white/5 text-slate-500 hover:border-white/20"
                       }`}
                     >
-                      {t === "ALL" ? "All Students" : t === "LEVEL" ? "By Level" : "By Class"}
+                      {t === "ALL" ? "All Students" : t === "ACADEMIC_LEVEL" ? "By Level" : "By Class"}
                     </button>
                   ))}
                 </div>
