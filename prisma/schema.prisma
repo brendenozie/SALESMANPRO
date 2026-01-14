@@ -1435,9 +1435,14 @@ model User {
 
   // Staff Management (HR) relations
   staffLeaves                StaffLeave[]             @relation("StaffLeaves")
+  approvedLeaves             StaffLeave[]             @relation("ApprovedLeaves")
   staffPayrolls              StaffPayroll[]           @relation("StaffPayrolls")
   employeePerformanceReviews StaffPerformanceReview[] @relation("EmployeePerformanceReviews")
   reviewerPerformanceReviews StaffPerformanceReview[] @relation("ReviewerPerformanceReviews")
+
+  // Asset and Inventory relations
+  assetTrackingPerformer  AssetTracking[]  @relation("AssetTrackingPerformer")
+  inventoryAuditConductor InventoryAudit[] @relation("InventoryAuditConductor")
 
   @@index([companyId])
   // @@index([settingsId])
@@ -5829,11 +5834,11 @@ model LibraryBook {
 model LibraryIssuance {
   id         String                @id @default(auto()) @map("_id") @db.ObjectId
   bookId     String                @db.ObjectId
-  book       LibraryBook           @relation(fields: [bookId], references: [id])
+  book       LibraryBook           @relation(fields: [bookId], references: [id], onDelete: Restrict)
   userId     String                @db.ObjectId // Member who borrowed the book
-  user       User                  @relation("LibraryIssuances", fields: [userId], references: [id])
+  user       User                  @relation("LibraryIssuances", fields: [userId], references: [id], onDelete: Cascade)
   companyId  String                @db.ObjectId
-  company    Company               @relation(fields: [companyId], references: [id])
+  company    Company               @relation(fields: [companyId], references: [id], onDelete: Cascade)
   issuedDate DateTime              @default(now())
   dueDate    DateTime
   returnDate DateTime?
@@ -5851,7 +5856,7 @@ model LibraryIssuance {
 model LibraryFine {
   id         String            @id @default(auto()) @map("_id") @db.ObjectId
   issuanceId String            @db.ObjectId
-  issuance   LibraryIssuance   @relation(fields: [issuanceId], references: [id])
+  issuance   LibraryIssuance   @relation(fields: [issuanceId], references: [id], onDelete: Cascade)
   amount     Float
   reason     String?
   status     LibraryFineStatus @default(PENDING)
@@ -5866,9 +5871,9 @@ model LibraryFine {
 model LibraryReservation {
   id              String                   @id @default(auto()) @map("_id") @db.ObjectId
   bookId          String                   @db.ObjectId
-  book            LibraryBook              @relation(fields: [bookId], references: [id])
+  book            LibraryBook              @relation(fields: [bookId], references: [id], onDelete: Cascade)
   userId          String                   @db.ObjectId
-  user            User                     @relation("LibraryReservations", fields: [userId], references: [id])
+  user            User                     @relation("LibraryReservations", fields: [userId], references: [id], onDelete: Cascade)
   reservationDate DateTime                 @default(now())
   expiryDate      DateTime
   status          LibraryReservationStatus @default(PENDING)
@@ -5926,7 +5931,7 @@ model TransportRoute {
 model TransportMaintenance {
   id            String                     @id @default(auto()) @map("_id") @db.ObjectId
   vehicleId     String                     @db.ObjectId
-  vehicle       TransportVehicle           @relation(fields: [vehicleId], references: [id])
+  vehicle       TransportVehicle           @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
   description   String
   scheduledDate DateTime
   completedDate DateTime?
@@ -5944,7 +5949,7 @@ model TransportMaintenance {
 model TransportFuelLog {
   id        String           @id @default(auto()) @map("_id") @db.ObjectId
   vehicleId String           @db.ObjectId
-  vehicle   TransportVehicle @relation(fields: [vehicleId], references: [id])
+  vehicle   TransportVehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
   date      DateTime         @default(now())
   quantity  Float // Liters
   cost      Float
@@ -5960,9 +5965,9 @@ model TransportFuelLog {
 model TransportAssignment {
   id        String         @id @default(auto()) @map("_id") @db.ObjectId
   routeId   String         @db.ObjectId
-  route     TransportRoute @relation(fields: [routeId], references: [id])
+  route     TransportRoute @relation(fields: [routeId], references: [id], onDelete: Cascade)
   userId    String         @db.ObjectId // Student or staff member
-  user      User           @relation("TransportAssignments", fields: [userId], references: [id])
+  user      User           @relation("TransportAssignments", fields: [userId], references: [id], onDelete: Cascade)
   startDate DateTime       @default(now())
   endDate   DateTime?
   createdAt DateTime       @default(now())
@@ -5993,7 +5998,7 @@ model HostelBlock {
 model HostelRoom {
   id                  String                     @id @default(auto()) @map("_id") @db.ObjectId
   blockId             String                     @db.ObjectId
-  block               HostelBlock                @relation(fields: [blockId], references: [id])
+  block               HostelBlock                @relation(fields: [blockId], references: [id], onDelete: Cascade)
   roomNumber          String
   capacity            Int
   type                HostelRoomType
@@ -6011,9 +6016,9 @@ model HostelRoom {
 model HostelAllocation {
   id        String                 @id @default(auto()) @map("_id") @db.ObjectId
   roomId    String                 @db.ObjectId
-  room      HostelRoom             @relation(fields: [roomId], references: [id])
+  room      HostelRoom             @relation(fields: [roomId], references: [id], onDelete: Cascade)
   userId    String                 @db.ObjectId // Student allocated to this room
-  user      User                   @relation("HostelAllocations", fields: [userId], references: [id])
+  user      User                   @relation("HostelAllocations", fields: [userId], references: [id], onDelete: Cascade)
   startDate DateTime               @default(now())
   endDate   DateTime?
   status    HostelAllocationStatus @default(ACTIVE)
@@ -6028,9 +6033,9 @@ model HostelAllocation {
 model HostelMaintenanceRequest {
   id           String                           @id @default(auto()) @map("_id") @db.ObjectId
   roomId       String                           @db.ObjectId
-  room         HostelRoom                       @relation(fields: [roomId], references: [id])
+  room         HostelRoom                       @relation(fields: [roomId], references: [id], onDelete: Cascade)
   reportedBy   String                           @db.ObjectId // User who reported
-  reporter     User                             @relation("HostelMaintenanceRequests", fields: [reportedBy], references: [id])
+  reporter     User                             @relation("HostelMaintenanceRequests", fields: [reportedBy], references: [id], onDelete: Cascade)
   description  String
   priority     HostelMaintenanceRequestPriority @default(MEDIUM)
   status       HostelMaintenanceRequestStatus   @default(PENDING)
@@ -6052,15 +6057,16 @@ model HostelMaintenanceRequest {
 model StaffLeave {
   id           String           @id @default(auto()) @map("_id") @db.ObjectId
   userId       String           @db.ObjectId
-  user         User             @relation("StaffLeaves", fields: [userId], references: [id])
+  user         User             @relation("StaffLeaves", fields: [userId], references: [id], onDelete: Cascade)
   companyId    String           @db.ObjectId
-  company      Company          @relation(fields: [companyId], references: [id])
+  company      Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
   leaveType    StaffLeaveType
   startDate    DateTime
   endDate      DateTime
   reason       String?
   status       StaffLeaveStatus @default(PENDING)
   approvedBy   String?          @db.ObjectId
+  approver     User?            @relation("ApprovedLeaves", fields: [approvedBy], references: [id], onDelete: SetNull)
   approvedDate DateTime?
   createdAt    DateTime         @default(now())
   updatedAt    DateTime         @updatedAt
@@ -6068,6 +6074,7 @@ model StaffLeave {
   @@index([userId])
   @@index([companyId])
   @@index([status])
+  @@index([approvedBy])
 }
 
 model StaffPayroll {
@@ -6137,7 +6144,7 @@ model FeeStructure {
 model FeeStructureItem {
   id             String       @id @default(auto()) @map("_id") @db.ObjectId
   feeStructureId String       @db.ObjectId
-  feeStructure   FeeStructure @relation(fields: [feeStructureId], references: [id])
+  feeStructure   FeeStructure @relation(fields: [feeStructureId], references: [id], onDelete: Cascade)
   name           String // e.g., "Tuition", "Lab Fee", "Sports Fee"
   amount         Float
   isOptional     Boolean      @default(false)
@@ -6176,10 +6183,11 @@ model Asset {
 model AssetTracking {
   id          String              @id @default(auto()) @map("_id") @db.ObjectId
   assetId     String              @db.ObjectId
-  asset       Asset               @relation(fields: [assetId], references: [id])
+  asset       Asset               @relation(fields: [assetId], references: [id], onDelete: Cascade)
   action      AssetTrackingAction
   date        DateTime            @default(now())
-  performedBy String? // User ID or name
+  performedBy String?             @db.ObjectId // User ID who performed the action
+  performer   User?               @relation("AssetTrackingPerformer", fields: [performedBy], references: [id], onDelete: SetNull)
   notes       String?
   createdAt   DateTime            @default(now())
   updatedAt   DateTime            @updatedAt
@@ -6187,14 +6195,16 @@ model AssetTracking {
   @@index([assetId])
   @@index([action])
   @@index([date])
+  @@index([performedBy])
 }
 
 model InventoryAudit {
   id          String               @id @default(auto()) @map("_id") @db.ObjectId
   companyId   String               @db.ObjectId
-  company     Company              @relation(fields: [companyId], references: [id])
+  company     Company              @relation(fields: [companyId], references: [id], onDelete: Cascade)
   auditDate   DateTime
-  conductedBy String // User ID or name
+  conductedBy String               @db.ObjectId // User ID
+  conductor   User                 @relation("InventoryAuditConductor", fields: [conductedBy], references: [id], onDelete: Restrict)
   status      InventoryAuditStatus @default(SCHEDULED)
   findings    String? // Summary of findings
   notes       String?
@@ -6204,4 +6214,5 @@ model InventoryAudit {
   @@index([companyId])
   @@index([status])
   @@index([auditDate])
+  @@index([conductedBy])
 }
