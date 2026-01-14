@@ -6080,9 +6080,9 @@ model StaffLeave {
 model StaffPayroll {
   id          String             @id @default(auto()) @map("_id") @db.ObjectId
   userId      String             @db.ObjectId
-  user        User               @relation("StaffPayrolls", fields: [userId], references: [id])
+  user        User               @relation("StaffPayrolls", fields: [userId], references: [id], onDelete: Cascade)
   companyId   String             @db.ObjectId
-  company     Company            @relation(fields: [companyId], references: [id])
+  company     Company            @relation(fields: [companyId], references: [id], onDelete: Restrict)
   month       Int // 1-12
   year        Int
   basicSalary Float
@@ -6104,9 +6104,9 @@ model StaffPayroll {
 model StaffPerformanceReview {
   id           String                 @id @default(auto()) @map("_id") @db.ObjectId
   employeeId   String                 @db.ObjectId // User being reviewed
-  employee     User                   @relation("EmployeePerformanceReviews", fields: [employeeId], references: [id])
+  employee     User                   @relation("EmployeePerformanceReviews", fields: [employeeId], references: [id], onDelete: Cascade)
   reviewerId   String                 @db.ObjectId // User conducting the review
-  reviewer     User                   @relation("ReviewerPerformanceReviews", fields: [reviewerId], references: [id])
+  reviewer     User                   @relation("ReviewerPerformanceReviews", fields: [reviewerId], references: [id], onDelete: Restrict)
   reviewDate   DateTime               @default(now())
   reviewPeriod String // e.g., "Q1 2024", "Annual 2024"
   rating       StaffPerformanceRating
@@ -6128,7 +6128,7 @@ model StaffPerformanceReview {
 model FeeStructure {
   id        String             @id @default(auto()) @map("_id") @db.ObjectId
   companyId String             @db.ObjectId
-  company   Company            @relation(fields: [companyId], references: [id])
+  company   Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
   name      String
   year      String // Academic year, e.g., "2024/2025"
   term      String? // e.g., "Term 1", "Semester 1", or null for annual
