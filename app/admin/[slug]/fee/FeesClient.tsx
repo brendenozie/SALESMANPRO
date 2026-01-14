@@ -187,7 +187,7 @@ const FeesClient = ({
 
   const refresh = async () => {
     setIsRefreshing(true);
-    const res = await fetch(`${apiBaseUrl}/admin/fees?schoolId=${schoolId}`, { credentials: "include" });
+    const res = await fetch(`${apiBaseUrl}/admin/student-fee-records?companyId=${schoolId}`, { credentials: "include" });
     if (res.ok) {
       const data = (await res.json()).data;
       setFeeRecords(data);

@@ -386,6 +386,26 @@ export const updateStudentFeeRecord = async (id: string, data: Partial<Omit<Pris
   }
 };
 
+export async function generateInvoiceNumber(
+  academicYear: string,
+  term: string
+): Promise<string> {
+  const year = academicYear.replace("/", "").slice(-4); // "2026"
+  const termCode = term.replace(/\s+/g, "").toUpperCase(); // "TERM1"
+
+  // Count existing invoices for this year + term
+  const count = await prisma.studentFeeRecord.count({
+    where: {
+      academicYear,
+      term,
+    },
+  });
+
+  const sequence = String(count + 1).padStart(6, "0");
+
+  return `INV-${year}-${termCode}-${sequence}`;
+}
+
 export const addPaymentToStudentFeeRecord = async (
   recordId: string,
   payment: { amount: number; date: string; method: string; receiptNumber?: string }
@@ -393,7 +413,17 @@ export const addPaymentToStudentFeeRecord = async (
   const record = await prisma.studentFeeRecord.findUnique({ where: { id: recordId } });
   if (!record) return null;
 
-  const newPaymentEntry = { ...payment, paymentId: uuidv4() };
+  const invoiceNumber = record.invoiceNumber || await generateInvoiceNumber(record.academicYear, record.term);
+
+  // Update invoiceNumber if it was previously null
+  if (!record.invoiceNumber) {
+    await prisma.studentFeeRecord.update({
+      where: { id: recordId },
+      data: { invoiceNumber },
+    });
+  }
+
+  const newPaymentEntry = { ...payment, invoiceNumber, paymentId: uuidv4() };
   // Ensure payments is treated as an array of JSON objects
   const existingPayments = (record.payments || []) as any[]; // Cast to any[] for array methods
   const updatedPayments = [...existingPayments, newPaymentEntry];

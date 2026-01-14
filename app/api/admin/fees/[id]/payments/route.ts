@@ -1,10 +1,13 @@
 import { withApiHandler } from '@/lib/hooks/withApiHandler';
 import { formatResponse } from '@/lib/formatResponse';
 import { addPaymentToStudentFeeRecord } from '@/lib/data';
+ import prisma from "@/server/db/prismadb";
 
 interface Context {
   params: { id: string }; 
 }
+
+
 
 async function handlePostPayment(request: Request, context: Context) {
   const { id } = context.params;

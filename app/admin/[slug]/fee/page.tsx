@@ -27,12 +27,6 @@ export default async function FeesPage({ params }: { params: Promise<{ slug: str
       fetchData(`/admin/academic-levels?companyId=${schoolId}`),
       fetchData(`/admin/classrooms?companyId=${schoolId}`),
     ]);
-
-  // console.log('Initial Fee Records:', initialFeeRecords);
-  // console.log('Initial Students:', initialStudents);
-  // console.log('Initial Fee Items:', initialFeeItems);
-  // console.log('All Academic Levels:', allAcademicLevels);
-  // console.log('All Classrooms:', allClassrooms);
   
   return (
     <FeesClient

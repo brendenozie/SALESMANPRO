@@ -1,19 +1,18 @@
 "use client";
 import React from "react";
-import { BanknotesIcon, PencilSquareIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { AnimatePresence, motion } from "framer-motion";
 
 const LogPaymentModal: React.FC<any> = ({ isOpen, onClose, feeRecord, onSavePayment, isSubmitting }) => {
   const [paymentAmount, setPaymentAmount] = React.useState<number>(0);
   const [paymentMethod, setPaymentMethod] = React.useState<string>("");
-  const [receiptNumber, setReceiptNumber] = React.useState<string>("");
+  // const [receiptNumber, setReceiptNumber] = React.useState<string>("");
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSavePayment({
       amount: paymentAmount,
       method: paymentMethod,
-      receiptNumber
+      // receiptNumber
     });
   };
 
@@ -52,7 +51,9 @@ const LogPaymentModal: React.FC<any> = ({ isOpen, onClose, feeRecord, onSavePaym
 
             <form onSubmit={handleSubmit} className="p-8 space-y-4">
               <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold">$</span>
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 font-bold">$
+                  {/* Current Amount: ${feeRecord?.calculatedBalanceDue.toLocaleString()} */}
+                </span>
                 <input type="number" step="0.01" value={paymentAmount} onChange={e => setPaymentAmount(parseFloat(e.target.value))} 
                   className="w-full bg-slate-950 border border-white/10 rounded-2xl p-4 pl-8 text-white focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="0.00" />
               </div>
@@ -65,8 +66,8 @@ const LogPaymentModal: React.FC<any> = ({ isOpen, onClose, feeRecord, onSavePaym
                 <option value="M-Pesa">M-Pesa</option>
               </select>
 
-              <input type="text" placeholder="Receipt Number" value={receiptNumber} onChange={e => setReceiptNumber(e.target.value)}
-                className="w-full bg-slate-950 border border-white/10 rounded-2xl p-4 text-white" />
+              {/* <input type="text" placeholder="Receipt Number" value={receiptNumber} onChange={e => setReceiptNumber(e.target.value)}
+                className="w-full bg-slate-950 border border-white/10 rounded-2xl p-4 text-white" /> */}
 
               <button type="submit" disabled={isSubmitting} className="w-full py-5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-lg shadow-emerald-500/20 transition-all mt-4">
                 {isSubmitting ? "Processing..." : "Confirm Transaction"}
