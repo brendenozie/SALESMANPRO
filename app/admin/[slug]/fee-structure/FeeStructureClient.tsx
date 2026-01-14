@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { 
   BanknotesIcon, 
   ReceiptPercentIcon, 
@@ -12,12 +12,13 @@ import {
   IdentificationIcon
 } from "@heroicons/react/24/outline";
 
-const FeeStructureClient = () => {
-  const structures = [
-    { id: 'FEE-2026-SR', grade: 'Senior Secondary', total: 4500, components: ['Tuition', 'Lab', 'Sports'], status: 'Active' },
-    { id: 'FEE-2026-JR', grade: 'Junior Secondary', total: 3800, components: ['Tuition', 'Arts', 'Library'], status: 'Active' },
-    { id: 'FEE-2026-PR', grade: 'Primary School', total: 2500, components: ['Tuition', 'Meals', 'Transport'], status: 'Draft' },
-  ];
+interface Props {
+  initialStructures: any[];
+  schoolId: string;
+}
+
+const FeeStructureClient = ({ initialStructures, schoolId }: Props) => {
+  const [structures, setStructures] = useState(initialStructures);
 
   return (
     <main className="min-h-screen bg-[#05070A] text-slate-200 p-8 font-sans">

@@ -7,14 +7,14 @@ interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
-export default async function LibraryMembersPage({ params }: PageProps) {
+export default async function HostelRoomsPage({ params }: PageProps) {
   const { slug: schoolId } = await params;
   const cookieHeader = (await cookies()).toString();
 
-  let initialMembers = [];  
+  let initialRooms = [];  
   try {
     const res = await fetch(
-      `${apiBaseUrl}/admin/library/members?companyId=${schoolId}`,
+      `${apiBaseUrl}/admin/hostel/rooms?companyId=${schoolId}`,
       {
         headers: { cookie: cookieHeader },
         next: { revalidate: 60 },
@@ -22,16 +22,16 @@ export default async function LibraryMembersPage({ params }: PageProps) {
     );
 
     if (res.ok) {
-      initialMembers = (await res.json()).data;
+      initialRooms = (await res.json()).data;
     }
   } catch (err) {
-    console.error("[LibraryMembersPage] Failed to load members", err);
+    console.error("[HostelRoomsPage] Failed to load rooms", err);
   }
 
   return (
     <HostelRoomsClient
-      // initialMembers={initialMembers}
-      // schoolId={schoolId}
+      initialRooms={initialRooms}
+      schoolId={schoolId}
     />
   );
 }

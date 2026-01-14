@@ -7,14 +7,14 @@ interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
-export default async function LibraryMembersPage({ params }: PageProps) {
+export default async function TransportVehiclesPage({ params }: PageProps) {
   const { slug: schoolId } = await params;
   const cookieHeader = (await cookies()).toString();
 
-  let initialMembers = [];  
+  let initialVehicles = [];  
   try {
     const res = await fetch(
-      `${apiBaseUrl}/admin/library/members?companyId=${schoolId}`,
+      `${apiBaseUrl}/admin/transport/vehicles?companyId=${schoolId}`,
       {
         headers: { cookie: cookieHeader },
         next: { revalidate: 60 },
@@ -22,16 +22,16 @@ export default async function LibraryMembersPage({ params }: PageProps) {
     );
 
     if (res.ok) {
-      initialMembers = (await res.json()).data;
+      initialVehicles = (await res.json()).data;
     }
   } catch (err) {
-    console.error("[LibraryMembersPage] Failed to load members", err);
+    console.error("[TransportVehiclesPage] Failed to load vehicles", err);
   }
 
   return (
     <TransportFleetClient
-      // initialMembers={initialMembers}
-      // schoolId={schoolId}
+      initialVehicles={initialVehicles}
+      schoolId={schoolId}
     />
   );
 }
