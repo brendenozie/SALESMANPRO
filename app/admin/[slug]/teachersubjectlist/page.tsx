@@ -1,6 +1,8 @@
 // app/admin/[slug]/teacher-classes/page.tsx
 import React from "react";
 import TeachersSubjectListPage from "./TeachersSubjectListPage";
+import { cookies } from "next/headers";
+import { getAuthSession } from "@/lib/auth";
 
 // Define shared types for the API and client component
 // In a real project, these would be in a separate `types.ts` file
@@ -164,7 +166,11 @@ const generateSampleTeacherClassesData = (companyId: string, teacherUserId: stri
  */
 export default async function TeachersSubjectPage({ params }: Props) {
 
-  const teacherUserId = (await params).slug || MOCK_CURRENT_TEACHER_USER_ID; // In a real app, get this from auth context
+  // const teacherUserId = (await params).slug || MOCK_CURRENT_TEACHER_USER_ID; // In a real app, get this from auth context
+  const cookiesStore = (await cookies()).toString()
+  const session = await getAuthSession();
+
+  const teacherUserId = session?.user?.id || MOCK_CURRENT_TEACHER_USER_ID;
 
   let pageData: TeacherClassesPageData | null = null;
   let fetchError: boolean = false;
@@ -173,11 +179,11 @@ export default async function TeachersSubjectPage({ params }: Props) {
     // Call the new API route
     const res = await fetch(
       `${apiBaseUrl}/teacher/teacher-assigned-subjects?teacherUserId=${encodeURIComponent(teacherUserId)}`,
-      { next: { revalidate: 60 } } // equivalent to SSR on every request
+      { headers: { cookie:cookiesStore  }, next: { revalidate: 60 } } // equivalent to SSR on every request
     );
 
     if (res.ok) {
-      pageData = (await res.json()) as TeacherClassesPageData;
+      pageData = (await res.json()).data as TeacherClassesPageData;
     } else {
       console.error(`[TeachersClassPage] Failed to fetch teacher classes: ${res.status} ${res.statusText}`);
       fetchError = true;
