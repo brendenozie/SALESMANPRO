@@ -490,12 +490,13 @@ export default function AdminAnnouncementsPage({
     try {
       const res = await fetch(`${apiBaseUrl}/announcements?companyId=${encodeURIComponent(companyId)}`, {
         next: { revalidate: 60 },
+        credentials: 'include'
       });
       if (res.ok) {
-        const data: AnnouncementData[] = await res.json();
+        const data: AnnouncementData[] = (await res.json()).data;
         setAnnouncements(data.sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()));
       } else {
-        const errorData = await res.json();
+        const errorData = (await res.json()).data;
         setError(errorData.message || "Failed to fetch announcements.");
       }
     } catch (err: any) {
@@ -561,6 +562,7 @@ export default function AdminAnnouncementsPage({
     try {
       const res = await fetch(url, {
         method: method,
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...announcementData,
@@ -595,12 +597,13 @@ export default function AdminAnnouncementsPage({
     try {
       const res = await fetch(`${apiBaseUrl}/announcements/${announcementId}`, {
         method: 'DELETE',
+        credentials: 'include'
       });
 
       if (res.ok) {
         await fetchAnnouncements();
       } else {
-        const errorData = await res.json();
+        const errorData = (await res.json()).data;
         setError(errorData.message || "Failed to delete announcement.");
       }
     } catch (err: any) {
@@ -616,6 +619,7 @@ export default function AdminAnnouncementsPage({
     try {
       const res = await fetch(`${apiBaseUrl}/announcements/${announcementId}`, {
         method: 'PATCH',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),
       });
@@ -623,7 +627,7 @@ export default function AdminAnnouncementsPage({
       if (res.ok) {
         await fetchAnnouncements();
       } else {
-        const errorData = await res.json();
+        const errorData = (await res.json()).data;
         setError(errorData.message || "Failed to update announcement status.");
       }
     } catch (err: any) {

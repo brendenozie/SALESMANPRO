@@ -2,6 +2,7 @@
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { getAuthSession } from "@/lib/auth";
 
 async function getClassTeacherAcademicLevelsv1(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -107,7 +108,13 @@ async function getClassTeacherAcademicLevelsv1(req: Request) {
 
 async function getClassTeacherAcademicLevels(req: Request) {
   const { searchParams } = new URL(req.url);
-  const teacherId = searchParams.get("teacherId");
+  // const teacherId = searchParams.get("teacherId");
+  // get user from session
+  const session = await getAuthSession();
+  const teacherId = session?.user?.id;
+
+  const classId = searchParams.get("classId");
+  const academicLevelId = searchParams.get("academicLevelId");
 
   if (!teacherId) {
     // FIX: Changed null to {} to avoid the payload TypeError

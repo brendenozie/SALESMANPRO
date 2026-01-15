@@ -10,6 +10,7 @@ import AdminAnnouncementsPage, {
   ParentOption,
   AuthorOption
 } from "./AdminAnnouncementsPage";
+import { cookies } from "next/headers";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -202,6 +203,7 @@ const generateSampleAnnouncementData = (companyId: string): {
 
 export default async function AnnouncementsManagerPage({ params }: PageProps) {
   const { slug : companyId, academicLevelId, classId } = await params;
+  const cookiesStore = (await cookies()).toString();
 
   let initialAnnouncements: AnnouncementData[] = [];
   let allAcademicLevels: AcademicLevelOption[] = [];
@@ -217,9 +219,10 @@ export default async function AnnouncementsManagerPage({ params }: PageProps) {
     // Fetch announcements
     const announcementsRes = await fetch(`${apiBaseUrl}/announcements?companyId=${encodeURIComponent(companyId)}&academicLevelId=${encodeURIComponent(academicLevelId)}&classId=${encodeURIComponent(classId)}`, {
       next: { revalidate: 60 },
+      headers: { cookie: cookiesStore },
     });
     if (announcementsRes.ok) {
-      initialAnnouncements = (await announcementsRes.json()) as AnnouncementData[];
+      initialAnnouncements = (await announcementsRes.json()).data as AnnouncementData[];
     } else {
       console.error(`[AnnouncementsManagerPage] Failed to fetch announcements: ${announcementsRes.status} ${announcementsRes.statusText}`);
       fetchError = true;
@@ -227,10 +230,10 @@ export default async function AnnouncementsManagerPage({ params }: PageProps) {
 
     // Fetch all academic levels
     const academicLevelsRes = await fetch(`${apiBaseUrl}/academic-levels?companyId=${encodeURIComponent(companyId)}&academicLevelId=${encodeURIComponent(academicLevelId)}&classId=${encodeURIComponent(classId)}`, {
-      next: { revalidate: 60 },
+      headers: { cookie: cookiesStore }, next: { revalidate: 60 },
     });
     if (academicLevelsRes.ok) {
-      allAcademicLevels = (await academicLevelsRes.json()) as AcademicLevelOption[];
+      allAcademicLevels = (await academicLevelsRes.json()).data as AcademicLevelOption[];
     } else {
       console.error(`[AnnouncementsManagerPage] Failed to fetch academic levels: ${academicLevelsRes.status} ${academicLevelsRes.statusText}`);
       fetchError = true;
@@ -238,10 +241,10 @@ export default async function AnnouncementsManagerPage({ params }: PageProps) {
 
     // Fetch all courses
     const coursesRes = await fetch(`${apiBaseUrl}/courses?companyId=${encodeURIComponent(companyId)}&academicLevelId=${encodeURIComponent(academicLevelId)}&classId=${encodeURIComponent(classId)}`, {
-      next: { revalidate: 60 },
+      headers: { cookie: cookiesStore }, next: { revalidate: 60 },
     });
     if (coursesRes.ok) {
-      allCourses = (await coursesRes.json()) as CourseOption[];
+      allCourses = (await coursesRes.json()).data as CourseOption[];
     } else {
       console.error(`[AnnouncementsManagerPage] Failed to fetch courses: ${coursesRes.status} ${coursesRes.statusText}`);
       fetchError = true;
@@ -249,10 +252,10 @@ export default async function AnnouncementsManagerPage({ params }: PageProps) {
 
     // Fetch all educators
     const educatorsRes = await fetch(`${apiBaseUrl}/educators?companyId=${encodeURIComponent(companyId)}&academicLevelId=${encodeURIComponent(academicLevelId)}&classId=${encodeURIComponent(classId)}`, {
-      next: { revalidate: 60 },
+      headers: { cookie: cookiesStore },next: { revalidate: 60 },
     });
     if (educatorsRes.ok) {
-      const fetchedEducators = (await educatorsRes.json()) as any[];
+      const fetchedEducators = (await educatorsRes.json()).data as any[];
       allEducators = fetchedEducators.map(e => ({ id: e.id, name: e.user?.name || 'N/A', email: e.user?.email || 'N/A' }));
     } else {
       console.error(`[AnnouncementsManagerPage] Failed to fetch educators: ${educatorsRes.status} ${educatorsRes.statusText}`);
@@ -261,10 +264,10 @@ export default async function AnnouncementsManagerPage({ params }: PageProps) {
 
     // Fetch all students
     const studentsRes = await fetch(`${apiBaseUrl}/students?companyId=${encodeURIComponent(companyId)}&academicLevelId=${encodeURIComponent(academicLevelId)}&classId=${encodeURIComponent(classId)}`, {
-      next: { revalidate: 60 },
+      headers: { cookie: cookiesStore },next: { revalidate: 60 },
     });
     if (studentsRes.ok) {
-      const fetchedStudents = (await studentsRes.json()) as any[];
+      const fetchedStudents = (await studentsRes.json()).data as any[];
       allStudents = fetchedStudents.map(s => ({ id: s.id, name: s.user?.name || 'N/A', email: s.user?.email || 'N/A' }));
     } else {
       console.error(`[AnnouncementsManagerPage] Failed to fetch students: ${studentsRes.status} ${studentsRes.statusText}`);
@@ -273,10 +276,10 @@ export default async function AnnouncementsManagerPage({ params }: PageProps) {
 
     // Fetch all departments (assuming a /api/departments endpoint exists)
     const departmentsRes = await fetch(`${apiBaseUrl}/departments?companyId=${encodeURIComponent(companyId)}&academicLevelId=${encodeURIComponent(academicLevelId)}&classId=${encodeURIComponent(classId)}`, {
-      next: { revalidate: 60 },
+      headers: { cookie: cookiesStore },next: { revalidate: 60 },
     });
     if (departmentsRes.ok) {
-      allDepartments = (await departmentsRes.json()) as DepartmentOption[];
+      allDepartments = (await departmentsRes.json()).data as DepartmentOption[];
     } else {
       console.error(`[AnnouncementsManagerPage] Failed to fetch departments: ${departmentsRes.status} ${departmentsRes.statusText}`);
       fetchError = true;
@@ -284,10 +287,10 @@ export default async function AnnouncementsManagerPage({ params }: PageProps) {
 
     // Fetch all parents (assuming a /api/parents endpoint exists)
     const parentsRes = await fetch(`${apiBaseUrl}/parents?companyId=${encodeURIComponent(companyId)}&academicLevelId=${encodeURIComponent(academicLevelId)}&classId=${encodeURIComponent(classId)}`, {
-      next: { revalidate: 60 },
+      headers: { cookie: cookiesStore },next: { revalidate: 60 },
     });
     if (parentsRes.ok) {
-      const fetchedParents = (await parentsRes.json()) as any[];
+      const fetchedParents = (await parentsRes.json()).data as any[];
       allParents = fetchedParents.map(p => ({ id: p.id, name: p.user?.name || 'N/A', email: p.user?.email || 'N/A' }));
     } else {
       console.error(`[AnnouncementsManagerPage] Failed to fetch parents: ${parentsRes.status} ${parentsRes.statusText}`);
@@ -298,10 +301,10 @@ export default async function AnnouncementsManagerPage({ params }: PageProps) {
     // This might be a combined endpoint or separate calls depending on your User roles.
     // For simplicity, we'll fetch all users and assume some can be authors.
     const authorsRes = await fetch(`${apiBaseUrl}/users?companyId=${encodeURIComponent(companyId)}&academicLevelId=${encodeURIComponent(academicLevelId)}&classId=${encodeURIComponent(classId)}`, { // Assuming /api/users endpoint
-      next: { revalidate: 60 },
+      headers: { cookie: cookiesStore },next: { revalidate: 60 },
     });
     if (authorsRes.ok) {
-      const fetchedAuthors = (await authorsRes.json()) as any[];
+      const fetchedAuthors = (await authorsRes.json()).data as any[];
       allAuthors = fetchedAuthors.map(u => ({ id: u.id, name: u.name || 'N/A', email: u.email || 'N/A' }));
     } else {
       console.error(`[AnnouncementsManagerPage] Failed to fetch authors: ${authorsRes.status} ${authorsRes.statusText}`);
