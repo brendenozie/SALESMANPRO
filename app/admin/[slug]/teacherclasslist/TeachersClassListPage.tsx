@@ -68,6 +68,10 @@ export default function ClassTeacherAcademicLevelsPage({
 
   // --- Action Handlers for Academic Levels ---
   
+  const handleClassSchedule = (academicLevelId: string, classId: string) => {
+    router.push(`/admin/${teacherId}/teacherclasslist/${academicLevelId}/${classId}/class-schedule`);
+  };
+  
   const handleManageAcademicLevelEvents = (academicLevelId: string, classId: string) => {
     router.push(`/admin/${teacherId}/teacherclasslist/${academicLevelId}/${classId}/class-event`);
   };
@@ -188,6 +192,12 @@ export default function ClassTeacherAcademicLevelsPage({
                           className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                         >
                           <ClipboardDocumentCheckIcon className={`h-5 w-5 text-green-500`} /> Take Attendance
+                        </button>
+                        <button
+                          onClick={() => { handleClassSchedule(level.id, (level.classroom?.id || '')); setOpenDropdownId(null); }}
+                          className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                        >
+                          <MagnifyingGlassIcon className={`h-5 w-5 text-blue-500`} /> View Schedule
                         </button>
                         <button
                           onClick={() => { handleManageAcademicLevelEvents(level.id, (level.classroom?.id || '')); setOpenDropdownId(null); }}
