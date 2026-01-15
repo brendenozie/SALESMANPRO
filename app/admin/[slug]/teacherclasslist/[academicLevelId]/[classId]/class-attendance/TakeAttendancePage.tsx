@@ -77,7 +77,7 @@ export default function TakeAttendancePage({ academicLevelId, educatorId }: Take
     setError(null);
     try {
       const url = `${API_BASE_URL}/teacher/academic-levels/${academicLevelId}/attendance?date=${encodeURIComponent(attendanceDate)}&educatorId=${encodeURIComponent(educatorId)}`;
-      const response = await fetch(url);
+      const response = await fetch(url,{ method: 'GET', credentials: 'include' });
 
       if (!response.ok) {
         const errorData = (await response.json()).data;
@@ -147,6 +147,7 @@ export default function TakeAttendancePage({ academicLevelId, educatorId }: Take
       const url = `${API_BASE_URL}/teacher/academic-levels/${academicLevelId}/attendance`;
       const response = await fetch(url, {
         method: 'POST',
+          credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },

@@ -141,6 +141,7 @@ export default function AddClassEventPage({
       // Updated API call to match the new backend endpoint
       const res = await fetch(`${apiBaseUrl}/teacher/class-events?academicLevelId=${encodeURIComponent(classId)}&teacherId=${encodeURIComponent(teacherId)}`, {
         next: { revalidate: 60 },
+        credentials: 'include',
       });
 
       if (res.ok) {
@@ -250,6 +251,7 @@ export default function AddClassEventPage({
     try {
       const res = await fetch(url, {
         method: method,
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...eventData,
@@ -285,6 +287,7 @@ export default function AddClassEventPage({
     setError(null);
     try {
       const res = await fetch(`${apiBaseUrl}/teacher/events/${eventId}`, {
+        credentials: 'include',
         method: 'DELETE',
       });
 
@@ -307,6 +310,7 @@ export default function AddClassEventPage({
     try {
       const res = await fetch(`${apiBaseUrl}/teacher/events/${eventId}`, {
         method: 'PATCH',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ eventStatus: newStatus }),
       });

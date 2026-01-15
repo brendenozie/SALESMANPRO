@@ -1,7 +1,7 @@
 // app/admin/[slug]/events/page.tsx
 import React from "react";
 import AddClassEventPage, { AcademicLevelOption, CourseOption, EducatorOption, StudentOption, DepartmentOption, ParentOption, OrganizerOption, EventData } from "./AddClassEventPage";
-
+import { cookies } from "next/headers";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -215,6 +215,7 @@ const generateSampleEventData = (companyId: string): {
 export default async function EventsManagerPage({ params }: PageProps) {
 
   const { slug: teacherId, classId: academicLevelId } = await params;
+  const cookieStore = (await cookies()).toString();
   
   let initialEvents: EventData[] = [];
   let allAcademicLevels: AcademicLevelOption[] = []; // Still useful for the form's audience targeting
@@ -233,9 +234,10 @@ export default async function EventsManagerPage({ params }: PageProps) {
     // Fetch events relevant to this academic level
     const eventsRes = await fetch(`${apiBaseUrl}/teacher/class-events?academicLevelId=${encodeURIComponent(academicLevelId)}&teacherId=${encodeURIComponent(teacherId)}`, {
       next: { revalidate: 60 },
+      headers: { cookie: cookieStore }, 
     });
     if (eventsRes.ok) {
-      initialEvents = (await eventsRes.json()) as EventData[];
+      initialEvents = (await eventsRes.json()).data as EventData[];
     } else {
       console.error(`[EventsManagerPage] Failed to fetch events: ${eventsRes.status} ${eventsRes.statusText}`);
       fetchError = true;
@@ -249,11 +251,12 @@ export default async function EventsManagerPage({ params }: PageProps) {
     
     const academicLevelsRes = await fetch(`${apiBaseUrl}/teacher/academic-levels?teacherId=${encodeURIComponent(teacherId)}`, {
       next: { revalidate: 60 },
+      headers: { cookie: cookieStore }, 
     });
     
     if (academicLevelsRes.ok) {
       // Parse the full JSON response first
-      const responseData = await academicLevelsRes.json();
+      const responseData = (await academicLevelsRes.json()).data;
     
       // Then access the 'assignedAcademicLevels' property
       allAcademicLevels = responseData.assignedAcademicLevels as AcademicLevelOption[];
@@ -266,9 +269,10 @@ export default async function EventsManagerPage({ params }: PageProps) {
     // Fetch all courses/subjects for the specified academic level (classId)
     const coursesRes = await fetch(`${apiBaseUrl}/teacher/class-subjects?academicLevelId=${encodeURIComponent(academicLevelId)}&teacherId=${encodeURIComponent(teacherId)}`, {
       next: { revalidate: 60 },
+      headers: { cookie: cookieStore }, 
     });
     if (coursesRes.ok) {
-      allCourses = (await coursesRes.json()) as CourseOption[];
+      allCourses = (await coursesRes.json()).data as CourseOption[];
     } else {
       console.error(`[EventsManagerPage] Failed to fetch courses: ${coursesRes.status} ${coursesRes.statusText}`);
       fetchError = true;
@@ -277,9 +281,10 @@ export default async function EventsManagerPage({ params }: PageProps) {
     // Fetch all educators associated with the specific academic level
     const educatorsRes = await fetch(`${apiBaseUrl}/teacher/class-educators?academicLevelId=${encodeURIComponent(academicLevelId)}&teacherId=${encodeURIComponent(teacherId)}`, {
       next: { revalidate: 60 },
+      headers: { cookie: cookieStore },
     });
     if (educatorsRes.ok) {
-      allEducators = (await educatorsRes.json()) as EducatorOption[];
+      allEducators = (await educatorsRes.json()).data as EducatorOption[];
       // Organizers list should include all educators who can organize events
       // For simplicity, assuming all fetched educators can be organizers
       allOrganizers = allEducators;
@@ -291,9 +296,10 @@ export default async function EventsManagerPage({ params }: PageProps) {
     // Fetch all students for the specific academic level
     const studentsRes = await fetch(`${apiBaseUrl}/teacher/academic-levels/${academicLevelId}/students?teacherId=${encodeURIComponent(teacherId)}`, {
       next: { revalidate: 60 },
+      headers: { cookie: cookieStore },
     });
     if (studentsRes.ok) {
-      allStudents = (await studentsRes.json()) as StudentOption[];
+      allStudents = (await studentsRes.json()).data as StudentOption[];
     } else {
       console.error(`[EventsManagerPage] Failed to fetch students: ${studentsRes.status} ${studentsRes.statusText}`);
       fetchError = true;
@@ -302,9 +308,10 @@ export default async function EventsManagerPage({ params }: PageProps) {
     // Fetch all departments for the company
     const departmentsRes = await fetch(`${apiBaseUrl}/teacher/class-departments?teacherId=${encodeURIComponent(teacherId)}`, {
       next: { revalidate: 60 },
+      headers: { cookie: cookieStore },
     });
     if (departmentsRes.ok) {
-      allDepartments = (await departmentsRes.json()) as DepartmentOption[];
+      allDepartments = (await departmentsRes.json()).data as DepartmentOption[];
     } else {
       console.error(`[EventsManagerPage] Failed to fetch departments: ${departmentsRes.status} ${departmentsRes.statusText}`);
       fetchError = true;
@@ -313,9 +320,10 @@ export default async function EventsManagerPage({ params }: PageProps) {
     // Fetch all parents for the company
     const parentsRes = await fetch(`${apiBaseUrl}/teacher/class-parents?teacherId=${encodeURIComponent(teacherId)}`, {
       next: { revalidate: 60 },
+      headers: { cookie: cookieStore },
     });
     if (parentsRes.ok) {
-      allParents = (await parentsRes.json()) as ParentOption[];
+      allParents = (await parentsRes.json()).data as ParentOption[];
     } else {
       console.error(`[EventsManagerPage] Failed to fetch parents: ${parentsRes.status} ${parentsRes.statusText}`);
       fetchError = true;
@@ -328,7 +336,7 @@ export default async function EventsManagerPage({ params }: PageProps) {
 
   // If any fetch failed or returned empty, use sample data as fallback
   // This fallback logic is robust.
-  if (fetchError && initialEvents.length === 0 && allAcademicLevels.length === 0 && allCourses.length === 0
+  if (fetchError || initialEvents.length === 0 && allAcademicLevels.length === 0 && allCourses.length === 0
     && allEducators.length === 0 && allStudents.length === 0 && allDepartments.length === 0 && allParents.length === 0
     && allOrganizers.length === 0) {
 

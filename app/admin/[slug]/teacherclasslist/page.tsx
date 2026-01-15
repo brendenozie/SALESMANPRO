@@ -5,6 +5,7 @@
 import React from "react";
 import ClassTeacherAcademicLevelsPage from "./TeachersClassListPage";
 import { getAuthSession } from "@/lib/auth";
+import { cookies } from "next/headers";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -183,6 +184,7 @@ const generateSampleClassTeacherAcademicLevelsData = (): ClassTeacherAcademicLev
 export default async function ClassTeacherAcademicLevelsPageServer({ params }: Props) {
   const { slug } = await params;
   const session = await getAuthSession();
+  const cookieStore = (await cookies()).toString();
 
   const teacherId = session?.user?.id || slug || MOCK_CURRENT_TEACHER_USER_ID;
 
@@ -192,7 +194,7 @@ export default async function ClassTeacherAcademicLevelsPageServer({ params }: P
   try {
     const res = await fetch(
       `${apiBaseUrl}/teacher/academic-levels?teacherId=${encodeURIComponent(teacherId)}`, // Updated API path
-      { next: { revalidate: 60 } } // equivalent to SSR on every request
+      { next: { revalidate: 60 }, headers: { cookie: cookieStore } } // equivalent to SSR on every request
     );
 
     if (res.ok) {

@@ -206,4 +206,4 @@ async function getClassTeacherAcademicLevels(req: Request) {
     return formatResponse(false, {}, error.message || "Internal Server Error", 500);
   }
 }
-export const GET = withApiHandler(getClassTeacherAcademicLevels, { requireAuth: false });
+export const GET = withApiHandler(getClassTeacherAcademicLevels, { requireAuth: true });
