@@ -40,20 +40,24 @@ const generateSampleStudentsData = (companyId: string): {
       id: 'STU001',
       userId: 'USER001',
       loginCode: '100001',
-      name: 'Jane Wanjiru',
+      firstName: 'Jane',
+      lastName: 'Wanjiru',
       email: 'jane.w@school.com',
       profilePicture: 'https://placehold.co/100x100/FFD1DC/FF69B4?text=JW',
       phone: '+254711223344',
       bio: 'Enthusiastic learner with a passion for science.',
       address: '123 Nairobi St, Nairobi',
       companyId: companyId,
-      academicLevels: [{ id: 'AL004', name: 'Grade 7' }],
-      classRooms: [{ id: 'CR001', name: 'Room A', academicLevelId: 'AL004' }],
+      academicRecords: [
+        {
+          academicLevelId: 'AL002', classRoomId: 'CR001', term: 'Term 1',
+          academicLevelName: "Grade 1", classRoomName: "Room A"
+        }
+      ],
       parentId: 'PAR001',
       parentName: 'Mercy Wanjiru',
       parentEmail: 'mercy.w@example.com',
       parentPhone: '+254711223344',
-      levelStatus: 'JUNIOR', // ADDED: Sample levelStatus
       totalCourses: 3,
       completedCourses: 1,
       certificatesEarned: 0,
@@ -68,20 +72,24 @@ const generateSampleStudentsData = (companyId: string): {
       id: 'STU002',
       userId: 'USER002',
       loginCode: '100002',
-      name: 'Kevin Otieno',
+      firstName: 'Kevin',
+      lastName: 'Otieno',
       email: 'kevin.o@school.com',
       profilePicture: 'https://placehold.co/100x100/C8E6C9/4CAF50?text=KO',
       phone: '+254722334455',
       bio: 'Loves mathematics and coding.',
       address: '456 Mombasa Rd, Nairobi',
       companyId: companyId,
-      academicLevels: [{ id: 'AL004', name: 'Grade 7' }],
-      classRooms: [{ id: 'CR002', name: 'Room B', academicLevelId: 'AL004' }],
+      academicRecords: [
+        {
+          academicLevelId: 'AL002', classRoomId: 'CR002', term: 'Term 1',
+          academicLevelName: "Grade 1", classRoomName: "Room B"
+        }
+      ],
       parentId: 'PAR002',
       parentName: 'David Otieno',
       parentEmail: 'david.o@example.com',
       parentPhone: '+254722334455',
-      levelStatus: 'SENIOR', // ADDED: Sample levelStatus
       totalCourses: 2,
       completedCourses: 0,
       certificatesEarned: 0,
@@ -96,20 +104,24 @@ const generateSampleStudentsData = (companyId: string): {
       id: 'STU003',
       userId: 'USER003',
       loginCode: '100003',
-      name: 'Sarah Kimani',
+      firstName: 'Sarah',
+      lastName: 'Kimani',
       email: 'sarah.k@school.com',
       profilePicture: 'https://placehold.co/100x100/B3E5FC/2196F3?text=SK',
       phone: '+254733445566',
       bio: 'Aspiring artist with a keen interest in history.',
       address: '789 Kisumu St, Nairobi',
       companyId: companyId,
-      academicLevels: [{ id: 'AL006', name: 'Grade 9' }],
-      classRooms: [{ id: 'CR003', name: 'Room C', academicLevelId: 'AL006' }],
+      academicRecords: [
+        {
+          academicLevelId: 'AL006', classRoomId: 'CR003', term: 'Term 1',
+          academicLevelName: "Grade 9", classRoomName: "Room C"
+        }
+      ],
       parentId: 'PAR003',
       parentName: 'Elizabeth Kimani',
       parentEmail: 'elizabeth.k@example.com',
       parentPhone: '+254733445566',
-      levelStatus: 'SENIOR', // ADDED: Sample levelStatus
       totalCourses: 4,
       completedCourses: 2,
       certificatesEarned: 1,
@@ -124,20 +136,24 @@ const generateSampleStudentsData = (companyId: string): {
       id: 'STU004',
       userId: 'USER004',
       loginCode: '100004',
-      name: 'Michael Njoroge',
+      firstName: 'Michael',
+      lastName: 'Njoroge',
       email: 'michael.n@school.com',
       profilePicture: 'https://placehold.co/100x100/CFD8DC/607D8B?text=MN',
       phone: '+254744556677',
       bio: 'Strong in physics and problem-solving.',
       address: '101 Eldoret Ave, Nairobi',
       companyId: companyId,
-      academicLevels: [{ id: 'AL005', name: 'Grade 8' }],
-      classRooms: [{ id: 'CR001', name: 'Room A', academicLevelId: 'AL005' }],
+      academicRecords: [
+        {
+          academicLevelId: 'AL005', classRoomId: 'CR001', term: 'Term 1',
+          academicLevelName: "Grade 8", classRoomName: "Room A"
+        }
+      ],
       parentId: 'PAR004',
       parentName: 'Ruth Njoroge',
       parentEmail: 'ruth.n@example.com',
       parentPhone: '+254744556677',
-      levelStatus: 'JUNIOR', // ADDED: Sample levelStatus
       totalCourses: 3,
       completedCourses: 3,
       certificatesEarned: 2,
@@ -151,9 +167,9 @@ const generateSampleStudentsData = (companyId: string): {
   ];
 
   const sampleClassRooms: ClassRoomOption[] = [
-    { id: 'CR001', name: 'Classroom A', academicLevelId: 'Building 1' },
-    { id: 'CR002', name: 'Classroom B', academicLevelId: 'Building 2' },
-    { id: 'CR003', name: 'Classroom C', academicLevelId: 'Building 3' },
+    { id: 'CR001', name: 'Classroom A', academicLevelId: 'AL002' },
+    { id: 'CR002', name: 'Classroom B', academicLevelId: 'AL002' },
+    { id: 'CR003', name: 'Classroom C', academicLevelId: 'AL002' },
   ];
 
   return { sampleStudents, sampleParents, sampleAcademicLevels: academicLevels, sampleClassRooms };

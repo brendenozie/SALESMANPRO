@@ -145,10 +145,10 @@ export default function AddClassEventPage({
       });
 
       if (res.ok) {
-        const data: EventData[] = await res.json();
+        const data: EventData[] = (await res.json()).data;
         setEvents(data.sort((a, b) => new Date(a.startDateTime).getTime() - new Date(b.startDateTime).getTime())); // Sort by upcoming
       } else {
-        const errorData = await res.json();
+        const errorData = (await res.json()).data;
         setError(errorData.message || "Failed to fetch events.");
       }
     } catch (err: any) {
@@ -267,7 +267,7 @@ export default function AddClassEventPage({
         setShowFormModal(false);
         setEditingEvent(null);
       } else {
-        const errorData = await res.json();
+        const errorData = (await res.json()).data ;
         setError(errorData.message || `Failed to ${method === 'POST' ? 'create' : 'update'} event.`);
       }
     } catch (err: any) {
@@ -294,7 +294,7 @@ export default function AddClassEventPage({
       if (res.ok) {
         await fetchEvents();
       } else {
-        const errorData = await res.json();
+        const errorData = (await res.json()).data;
         setError(errorData.message || "Failed to delete event.");
       }
     } catch (err: any) {
@@ -318,7 +318,7 @@ export default function AddClassEventPage({
       if (res.ok) {
         await fetchEvents();
       } else {
-        const errorData = await res.json();
+        const errorData = (await res.json()).data;
         setError(errorData.message || "Failed to update event status.");
       }
     } catch (err: any) {

@@ -264,7 +264,7 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
     });
 
     if (!res.ok) {
-      const errorData = await res.json();
+      const errorData =( await res.json()).data;
       throw new Error(errorData.message || 'Failed to promote student');
     }
 
@@ -359,7 +359,7 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
         setShowFormModal(false);
         setEditingStudent(null);
       } else {
-        const errorData = await res.json();
+        const errorData = (await res.json()).data || {} ;
         setError(errorData.message || `Failed to ${method === 'POST' ? 'add' : 'update'} student.`);
       }
     } catch (err: any) {
@@ -385,7 +385,7 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
       if (res.ok) {
         await fetchStudentsAndParentsAndAcademicLevels();
       } else {
-        const errorData = await res.json();
+        const errorData = ( await res.json()).data || {} ;
         setError(errorData.message || "Failed to delete student.");
       }
     } catch (err: any) {
