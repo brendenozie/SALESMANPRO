@@ -232,7 +232,7 @@ const StudentFormModal: React.FC<StudentFormModalProps> = ({
               <AcademicCapIcon className="h-5 w-5 text-indigo-600" /> Academic Placement
             </h3>
             
-            {!initialData ? (
+            {(initialData?.academicRecords[0]?.academicLevelId == null || initialData?.academicRecords[0]?.classRoomId == null) ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="md:col-span-2">
                   <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Academic Level *</label>

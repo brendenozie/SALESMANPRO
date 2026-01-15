@@ -1,6 +1,8 @@
 // app/admin/[slug]/teacher-schedule/page.tsx
 import React from "react";
 import TeachersSchedulePageClient from "./TeachersSchedulePageClient";
+import { cookies } from "next/headers";
+import { getAuthSession } from "@/lib/auth";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -50,8 +52,13 @@ export interface TeacherSchedulePageData {
 }
 
 export default async function TeachersScheduleServerPage({ params }: PageProps) {
+  const cookieStore = (await cookies()).toString();
+
   const { slug : companyId } = await params;
-  const educatorId = companyId || MOCK_CURRENT_EDUCATOR_ID;
+  // const educatorId = companyId || MOCK_CURRENT_EDUCATOR_ID;
+
+  const session = await getAuthSession();
+  const educatorId = session?.user?.id || MOCK_CURRENT_EDUCATOR_ID;
 
   let schedulePageData: TeacherSchedulePageData | null = null;
   let fetchError: string | null = null;
@@ -59,14 +66,14 @@ export default async function TeachersScheduleServerPage({ params }: PageProps) 
   try {
     const res = await fetch(
       `${apiBaseUrl}/teacher/schedule?educatorId=${encodeURIComponent(educatorId)}`,
-      { next: { revalidate: 60 } } // Ensure fresh data
+      { headers: { cookie: cookieStore }, next: { revalidate: 60 } } // Ensure fresh data
     );
 
     if (res.ok) {
-      schedulePageData = (await res.json()) as TeacherSchedulePageData;
+      schedulePageData = (await res.json()).data as TeacherSchedulePageData;
       // schedulePageData.companyId = companyId; // Ensure companyId is passed down
     } else {
-      const errorData = await res.json();
+      const errorData = (await res.json()).data;
       fetchError = errorData.message || `Failed to fetch teacher schedule: ${res.status} ${res.statusText}`;
       console.error("[TeachersScheduleServerPage] Fetch error:", fetchError);
     }
