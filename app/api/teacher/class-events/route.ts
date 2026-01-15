@@ -24,6 +24,7 @@ async function getEvents(request: Request) {
     const isRegistrationRequired = searchParams.get('isRegistrationRequired');
     const isPaid = searchParams.get('isPaid');
     const academicLevelId = searchParams.get('academicLevelId');
+    const classId = searchParams.get('classId');
     const courseId = searchParams.get('courseId');
 
     const whereClause: any = {};
@@ -79,7 +80,8 @@ async function getEvents(request: Request) {
 
     if (academicLevelId) whereClause.targetAcademicLevelIds = { has: academicLevelId };
     if (courseId) whereClause.targetCourseIds = { has: courseId };
-
+    if (classId) whereClause.targetClassIds = { has: classId };
+    
     const events = await prisma.event.findMany({
       where: whereClause,
       include: {

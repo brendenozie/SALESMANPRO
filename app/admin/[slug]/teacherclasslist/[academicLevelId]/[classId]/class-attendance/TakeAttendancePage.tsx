@@ -45,12 +45,13 @@ interface TakeAttendancePageData {
 
 interface TakeAttendancePageProps {
   academicLevelId: string;
+  classId: string;
   educatorId: string;
 }
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
-export default function TakeAttendancePage({ academicLevelId, educatorId }: TakeAttendancePageProps) {
+export default function TakeAttendancePage({ academicLevelId, classId, educatorId }: TakeAttendancePageProps) {
   const [academicLevelData, setAcademicLevelData] = useState<TakeAttendancePageData | null>(null);
   const [attendanceDate, setAttendanceDate] = useState(new Date().toISOString().split('T')[0]);
   const [studentAttendance, setStudentAttendance] = useState<{ [studentId: string]: { status: AttendanceStatus; reason: string } }>({});
@@ -76,7 +77,7 @@ export default function TakeAttendancePage({ academicLevelId, educatorId }: Take
     setLoading(true);
     setError(null);
     try {
-      const url = `${API_BASE_URL}/teacher/academic-levels/${academicLevelId}/attendance?date=${encodeURIComponent(attendanceDate)}&educatorId=${encodeURIComponent(educatorId)}`;
+      const url = `${API_BASE_URL}/teacher/academic-levels/${academicLevelId}/attendance?date=${encodeURIComponent(attendanceDate)}&educatorId=${encodeURIComponent(educatorId)}&classId=${encodeURIComponent(classId)}`;
       const response = await fetch(url,{ method: 'GET', credentials: 'include' });
 
       if (!response.ok) {
@@ -87,7 +88,10 @@ export default function TakeAttendancePage({ academicLevelId, educatorId }: Take
       const data: TakeAttendancePageData = (await response.json()).data;
       setAcademicLevelData(data);
 
+      console .log("Fetched attendance data:", data);
+
       const initialAttendance: { [studentId: string]: { status: AttendanceStatus; reason: string } } = {};
+      
       data.students.forEach(student => {
         initialAttendance[student.id] = {
           status: student.currentStatus,
@@ -102,13 +106,13 @@ export default function TakeAttendancePage({ academicLevelId, educatorId }: Take
     } finally {
       setLoading(false);
     }
-  }, [academicLevelId, attendanceDate, educatorId]);
+  }, [academicLevelId, attendanceDate, educatorId, classId]);
 
   useEffect(() => {
     if (academicLevelId && educatorId) {
       fetchAttendanceData();
     }
-  }, [fetchAttendanceData, academicLevelId, educatorId]);
+  }, [fetchAttendanceData, academicLevelId, educatorId, classId]);
 
   const handleAttendanceChange = (studentId: string, status: AttendanceStatus) => {
     setStudentAttendance(prev => ({
@@ -144,7 +148,7 @@ export default function TakeAttendancePage({ academicLevelId, educatorId }: Take
         }
       });
 
-      const url = `${API_BASE_URL}/teacher/academic-levels/${academicLevelId}/attendance`;
+      const url = `${API_BASE_URL}/teacher/academic-levels/${academicLevelId}/attendance?classId=${encodeURIComponent(classId)}&educatorId=${encodeURIComponent(educatorId)}`;
       const response = await fetch(url, {
         method: 'POST',
           credentials: 'include',
@@ -155,6 +159,7 @@ export default function TakeAttendancePage({ academicLevelId, educatorId }: Take
           date: attendanceDate,
           educatorId,
           attendanceRecords: attendanceRecordsPayload,
+          classId,
         }),
       });
 
@@ -434,7 +439,7 @@ export default function TakeAttendancePage({ academicLevelId, educatorId }: Take
                     value={studentAttendance[student.id]?.reason || ''}
                     onChange={(e) => handleReasonChange(student.id, e.target.value)}
                     placeholder="Add a reason (optional)"
-                    className="w-full p-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-[${accentColor}] focus:border-transparent transition-all duration-200"
+                    className="w-full p-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all duration-200"
                   />
                 </div>
               </motion.div>
@@ -465,8 +470,8 @@ export default function TakeAttendancePage({ academicLevelId, educatorId }: Take
             <button
               onClick={handleSaveAttendance}
               disabled={isSaving}
-              className={`inline-flex items-center gap-3 px-10 py-4 bg-[${primaryColor}] text-white rounded-xl shadow-xl font-bold text-lg
-                          hover:opacity-90 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[${primaryColor}]
+              className={`inline-flex items-center gap-3 px-10 py-4 text-white rounded-xl shadow-xl font-bold text-lg bg-blue-950
+                          hover:opacity-90 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-600
                           ${isSaving ? 'opacity-60 cursor-not-allowed' : ''}`}
             >
               {isSaving ? (

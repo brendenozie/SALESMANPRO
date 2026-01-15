@@ -3,15 +3,21 @@
 import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
+import { getAuthSession } from "@/lib/auth";
 
 // ======================== GET ========================
 async function getAttendance(req: Request, { params }: { params: { academicLevelId: string } }) {
   const { academicLevelId } = params;
   const { searchParams } = new URL(req.url);
   const dateStr = searchParams.get("date");
-  const educatorUserId = searchParams.get("educatorId");
+  // const educatorUserId = searchParams.get("educatorId");
+  const classId = searchParams.get("classId"); // Not used currently, but may be in future
+  //get user id from session
+  const session = await getAuthSession();
+  const educatorUserId = session?.user?.id;
 
   // 1. Validate ID Lengths to prevent "Malformed ObjectID" crashes
+  // || !educatorUserId || educatorUserId.length !== 24
   if (!academicLevelId || academicLevelId.length !== 24 || !educatorUserId || educatorUserId.length !== 24) {
     return formatResponse(false, {}, "Invalid ID format. IDs must be 24 characters.", 400);
   }
@@ -36,7 +42,7 @@ async function getAttendance(req: Request, { params }: { params: { academicLevel
 
     // 3. Verify Assignment
     const assignment = await prisma.educatorAcademicLevelAssignment.findFirst({
-      where: { educatorId: recordingEducator.id, academicLevelId },
+      where: { educatorId: recordingEducator.id, academicLevelId, classRoomId: classId },
     });
 
     if (!assignment) {
@@ -44,8 +50,10 @@ async function getAttendance(req: Request, { params }: { params: { academicLevel
     }
 
     // 4. PREVENT CRASH: Fetch Mapping records first without "including" the student
+
+    console.log("Fetching student mappings for academicLevelId:", academicLevelId, "and classId:", classId);
     const studentMappings = await prisma.studentAcademicLevel.findMany({
-      where: { academicLevelId },
+      where: { academicLevelId, classRoomId: classId },
       select: { studentId: true },
     });
 
@@ -60,7 +68,7 @@ async function getAttendance(req: Request, { params }: { params: { academicLevel
           where: { 
             date: attendanceDate, 
             academicLevelId, 
-            classScheduleId: null 
+            classroomId: classId 
           },
           select: { status: true },
           orderBy: { createdAt: "desc" },
@@ -109,7 +117,7 @@ async function postAttendance(req: Request, { params }: { params: { academicLeve
   
   try {
     const body = await req.json();
-    const { date: dateStr, educatorId, attendanceRecords } = body;
+    const { date: dateStr, educatorId, attendanceRecords, classId } = body;
 
     if (!academicLevelId || academicLevelId.length !== 24 || !educatorId || educatorId.length !== 24) {
         return formatResponse(false, {}, "Invalid ID format", 400);
@@ -144,23 +152,25 @@ async function postAttendance(req: Request, { params }: { params: { academicLeve
             where: {
               // Note: This requires a unique index on these fields in your schema
               // If you don't have one, keep the findFirst/update logic
-              academicLevelId_classScheduleId_studentId_date: {
+              academicLevelId_classroomId_studentId_date: {
                 studentId,
                 date: attendanceDate,
                 academicLevelId,
-                classScheduleId: "none", // Assuming you use a placeholder for null in unique indexes
+                classroomId: classId, // Assuming you use a placeholder for null in unique indexes
               }
             },
             update: {
               status: (recordData as any).status,
               reason: (recordData as any).reason,
               recordedById: educator.id,
+              classroomId: classId,
             },
             create: {
               studentId,
               date: attendanceDate,
               status: (recordData as any).status,
               academicLevelId,
+              classroomId: classId,
               recordedById: educator.id,
               reason: (recordData as any).reason,
               companyId: companyIdToSet,
@@ -168,19 +178,20 @@ async function postAttendance(req: Request, { params }: { params: { academicLeve
           }).catch(async () => {
              // Fallback for if your schema doesn't have the unique index for upsert
              const existing = await tx.attendanceRecord.findFirst({
-                where: { studentId, date: attendanceDate, academicLevelId, classScheduleId: null }
+                where: { studentId, date: attendanceDate, academicLevelId, classroomId: classId }
              });
              if (existing) {
                 return tx.attendanceRecord.update({
                     where: { id: existing.id },
-                    data: { status: (recordData as any).status, recordedById: educator.id }
+                    data: { status: (recordData as any).status, recordedById: educator.id, classroomId: classId }
                 });
              } else {
                 return tx.attendanceRecord.create({
                     data: { 
                         studentId, date: attendanceDate, academicLevelId, 
                         status: (recordData as any).status, recordedById: educator.id,
-                        companyId: companyIdToSet
+                        companyId: companyIdToSet,
+                        classroomId: classId
                     }
                 });
              }

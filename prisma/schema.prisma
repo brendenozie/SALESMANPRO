@@ -3431,7 +3431,7 @@ model AttendanceRecord {
   Company   Company? @relation(fields: [companyId], references: [id])
   companyId String?  @db.ObjectId
 
-  @@unique([academicLevelId, classScheduleId, studentId, date])
+  @@unique([academicLevelId, classroomId, studentId, date])
   @@index([studentId, date])
   @@index([classScheduleId])
   @@index([academicLevelId]) // NEW INDEX

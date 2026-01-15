@@ -65,6 +65,8 @@ interface AdminAnnouncementsPageProps {
   allParents: ParentOption[];
   allAuthors: AuthorOption[];
   companyId: string;
+  academicLevelId: string;
+  classId: string;
 }
 
 // --- Announcement Form Modal Component ---
@@ -83,6 +85,8 @@ type AnnouncementFormModalProps = {
   allDepartments: DepartmentOption[];
   allParents: ParentOption[];
   allAuthors: AuthorOption[];
+  academicLevelId: string;
+  classId: string;
 };
 
 const AnnouncementFormModal: React.FC<AnnouncementFormModalProps> = ({
@@ -460,6 +464,8 @@ export default function AdminAnnouncementsPage({
   allParents,
   allAuthors,
   companyId,
+  academicLevelId,
+  classId,
 }: AdminAnnouncementsPageProps) {
   const [announcements, setAnnouncements] = useState<AnnouncementData[]>(initialAnnouncements);
   const [searchTerm, setSearchTerm] = useState('');
@@ -941,6 +947,8 @@ export default function AdminAnnouncementsPage({
           allDepartments={allDepartments}
           allParents={allParents}
           allAuthors={allAuthors}
+          academicLevelId={academicLevelId}
+          classId={classId}
         />
       )}
     </div>

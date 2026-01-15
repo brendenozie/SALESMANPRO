@@ -68,24 +68,24 @@ export default function ClassTeacherAcademicLevelsPage({
 
   // --- Action Handlers for Academic Levels ---
   
-  const handleManageAcademicLevelEvents = (academicLevelId: string) => {
-    router.push(`/admin/${teacherId}/teacherclasslist/${academicLevelId}/class-event`);
+  const handleManageAcademicLevelEvents = (academicLevelId: string, classId: string) => {
+    router.push(`/admin/${teacherId}/teacherclasslist/${academicLevelId}/${classId}/class-event`);
   };
 
-  const handleSendAcademicLevelAnnouncement = (academicLevelId: string) => {
-    router.push(`/admin/${teacherId}/teacherclasslist/${academicLevelId}/class-announcements`);
+  const handleSendAcademicLevelAnnouncement = (academicLevelId: string, classId: string) => {
+    router.push(`/admin/${teacherId}/teacherclasslist/${academicLevelId}/${classId}/class-announcements`);
   };
 
-  const handleViewAcademicLevelReports = (academicLevelId: string) => {
-    router.push(`/admin/${teacherId}/teacherclasslist/${academicLevelId}/class-reports`);
+  const handleViewAcademicLevelReports = (academicLevelId: string, classId: string) => {
+    router.push(`/admin/${teacherId}/teacherclasslist/${academicLevelId}/${classId}/class-reports`);
   };
 
-  const handleTakeAcademicLevelAttendance = (academicLevelId: string) => {
-    router.push(`/admin/${teacherId}/teacherclasslist/${academicLevelId}/class-attendance`);
+  const handleTakeAcademicLevelAttendance = (academicLevelId: string, classId: string) => {
+    router.push(`/admin/${teacherId}/teacherclasslist/${academicLevelId}/${classId}/class-attendance`);
   };
 
-  const handleManageStudentsInLevel = (academicLevelId: string) => {
-    router.push(`/admin/${teacherId}/teacherclasslist/${academicLevelId}/manage-students`);
+  const handleManageStudentsInLevel = (academicLevelId: string, classId: string) => {
+    router.push(`/admin/${teacherId}/teacherclasslist/${academicLevelId}/${classId}/manage-students`);
   };
 
   // Framer Motion Variants
@@ -184,32 +184,32 @@ export default function ClassTeacherAcademicLevelsPage({
                         className="absolute right-0 mt-2 w-64 bg-white rounded-md shadow-lg py-1 z-20 border border-gray-200 origin-top-right"
                       >
                         <button
-                          onClick={() => { handleTakeAcademicLevelAttendance(level.id); setOpenDropdownId(null); }}
+                          onClick={() => { handleTakeAcademicLevelAttendance(level.id, (level.classroom?.id || '')); setOpenDropdownId(null); }}
                           className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                         >
                           <ClipboardDocumentCheckIcon className={`h-5 w-5 text-green-500`} /> Take Attendance
                         </button>
                         <button
-                          onClick={() => { handleManageAcademicLevelEvents(level.id); setOpenDropdownId(null); }}
+                          onClick={() => { handleManageAcademicLevelEvents(level.id, (level.classroom?.id || '')); setOpenDropdownId(null); }}
                           className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                         >
                           <CalendarDaysIcon className={`h-5 w-5 text-purple-500`} /> Manage Events
                         </button>
                         <button
-                          onClick={() => { handleSendAcademicLevelAnnouncement(level.id); setOpenDropdownId(null); }}
+                          onClick={() => { handleSendAcademicLevelAnnouncement(level.id, (level.classroom?.id || '')); setOpenDropdownId(null); }}
                           className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                         >
                           <MegaphoneIcon className={`h-5 w-5 text-orange-500`} /> Send Announcement
                         </button>
                         <button
-                          onClick={() => { handleViewAcademicLevelReports(level.id); setOpenDropdownId(null); }}
+                          onClick={() => { handleViewAcademicLevelReports(level.id, (level.classroom?.id || '')); setOpenDropdownId(null); }}
                           className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                         >
                           <ChartBarIcon className={`h-5 w-5 text-teal-500`} /> View Reports
                         </button>
                         <div className="border-t border-gray-100 my-1"></div> {/* Separator */}
                         <button
-                          onClick={() => { handleManageStudentsInLevel(level.id); setOpenDropdownId(null); }}
+                          onClick={() => { handleManageStudentsInLevel(level.id, (level.classroom?.id || '')); setOpenDropdownId(null); }}
                           className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                         >
                           <UsersIcon className="h-5 w-5 text-gray-500" /> Manage Students

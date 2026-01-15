@@ -2,12 +2,14 @@
 import React from "react";
 import AddClassEventPage, { AcademicLevelOption, CourseOption, EducatorOption, StudentOption, DepartmentOption, ParentOption, OrganizerOption, EventData } from "./AddClassEventPage";
 import { cookies } from "next/headers";
+import { getAuthSession } from "@/lib/auth";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 interface PageProps {
   params: Promise<{
-    slug: string; // teacherId
+    // slug: string; // teacherId
+    academicLevelId: string; // The ID of the academic level
     classId: string; // The ID of the academic level/class
   }>;
 }
@@ -214,9 +216,11 @@ const generateSampleEventData = (companyId: string): {
 
 export default async function EventsManagerPage({ params }: PageProps) {
 
-  const { slug: teacherId, classId: academicLevelId } = await params;
+  const { academicLevelId, classId } = await params;
   const cookieStore = (await cookies()).toString();
-  
+  // get teacherId from session
+  const session = await getAuthSession();
+
   let initialEvents: EventData[] = [];
   let allAcademicLevels: AcademicLevelOption[] = []; // Still useful for the form's audience targeting
   let allCourses: CourseOption[] = [];
@@ -227,8 +231,15 @@ export default async function EventsManagerPage({ params }: PageProps) {
   let allOrganizers: OrganizerOption[] = []; // This will be the list of all possible organizers
   let fetchError: boolean = false;
 
-  console.log(`Educator ID (teacherId): ${teacherId}`);
+  const educatorId = session?.user?.id;
+  if (!educatorId) {
+    throw new Error("User not authenticated");
+  }
+
+  console.log(`Educator ID (teacherId): ${educatorId}`);
   console.log(`Academic Level ID (classId): ${academicLevelId}`);
+  console.log(`Class ID (classId): ${classId}`);
+  const teacherId = educatorId; // For clarity in this context
 
   try {
     // Fetch events relevant to this academic level
@@ -364,6 +375,18 @@ export default async function EventsManagerPage({ params }: PageProps) {
     allParents = sampleParents;
     allOrganizers = sampleOrganizers;
   }
+
+  console.log(`[EventsManagerPage] Rendering with ${initialEvents.length} events, ${allAcademicLevels.length} academic levels, ${allCourses.length} courses, ${allEducators.length} educators, ${allStudents.length} students, ${allDepartments.length} departments, ${allParents.length} parents, and ${allOrganizers.length} organizers.`);
+  console.log(`[EventsManagerPage] Teacher ID: ${teacherId}, Academic Level ID: ${academicLevelId}`);
+  console.log(initialEvents);
+  console.log(allAcademicLevels);
+  console.log(allCourses);
+  console.log(allEducators);
+  console.log(allStudents);
+  console.log(allDepartments);
+  console.log(allParents);
+  console.log(allOrganizers);
+  console.log("---------------------------------------------------");
 
   return (
     <AddClassEventPage

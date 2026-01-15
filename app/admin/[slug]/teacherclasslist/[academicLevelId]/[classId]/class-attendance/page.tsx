@@ -1,6 +1,7 @@
 // app/admin/[companyId]/academic-levels/[academicLevelId]/attendance/page.tsx
 import React from "react";
 import TakeAttendancePage from "./TakeAttendancePage";
+import { getAuthSession } from "@/lib/auth";
 
 // Define the API base URL
 // Ensure this matches where your Next.js API routes are served
@@ -8,7 +9,8 @@ const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api
 
 interface Props {
   params: Promise<{
-    slug: string; // teacherId
+    // slug: string; // teacherId
+    academicLevelId: string;
     classId: string; // The ID of the academic level/class
   }>;
 }
@@ -20,16 +22,20 @@ interface Props {
  * an authenticated session (e.g., using NextAuth.js's getServerSession).
  */
 export default async function AcademicLevelAttendancePage({ params }: Props) {
-  const { slug, classId } =  await params;
+  const { academicLevelId, classId } =  await params;
 
   // TODO: Replace with actual educatorId from your authentication system.
   // For demonstration, we use a placeholder.
-  const educatorId = slug; //"EDUCATOR_ID_PLACEHOLDER"; // Example: "60c72b2f9b1e8b001c8e4d1b"
+  // const educatorId = slug; //"EDUCATOR_ID_PLACEHOLDER"; // Example: "60c72b2f9b1e8b001c8e4d1b"
+  //GET educatorId from session
+  const session = await getAuthSession();
+  const educatorId = session?.user?.id || "EDUCATOR_ID_PLACEHOLDER";
   
   return (
     <TakeAttendancePage
-      academicLevelId={classId}
+      academicLevelId={academicLevelId}
       educatorId={educatorId}
+      classId={classId}
     />
   );
 }
