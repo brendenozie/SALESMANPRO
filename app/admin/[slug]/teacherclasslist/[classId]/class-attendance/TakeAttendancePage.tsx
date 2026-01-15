@@ -80,11 +80,11 @@ export default function TakeAttendancePage({ academicLevelId, educatorId }: Take
       const response = await fetch(url);
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = (await response.json()).data;
         throw new Error(errorData.message || `Failed to fetch attendance data: ${response.statusText}`);
       }
 
-      const data: TakeAttendancePageData = await response.json();
+      const data: TakeAttendancePageData = (await response.json()).data;
       setAcademicLevelData(data);
 
       const initialAttendance: { [studentId: string]: { status: AttendanceStatus; reason: string } } = {};
@@ -158,7 +158,7 @@ export default function TakeAttendancePage({ academicLevelId, educatorId }: Take
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = (await response.json()).data;
         throw new Error(errorData.message || `Failed to save attendance: ${response.statusText}`);
       }
 

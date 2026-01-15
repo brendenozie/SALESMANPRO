@@ -180,11 +180,34 @@ export default function Header() {
     window.location.href = authUrl.toString();
   };
 
-  const handleUserAction = () => {
-    if (!user) return handleGoogleSignIn();
-    if (user.role?.toLowerCase() === 'admin') router.push('/dashboards');
-    else router.push(`/profile`);
+  const handleCodeSignIn = () => {
+    const authUrl = new URL('https://auth.salesmanpro.site/signin/code');
+    authUrl.searchParams.set('callbackUrl', `${window.location.origin}/site/${slug}`);
+    window.location.href = authUrl.toString();
   };
+
+  const handleCourseLogin = () => {
+    router.push(`/site/${slug}/courses/login`);
+  };
+
+  const handleUserActionv1 = () => {
+      if (!user) return handleGoogleSignIn();
+      if (user.role?.toLowerCase() === 'admin') router.push('/dashboards');
+      else router.push(`/profile`);
+    };
+
+    const handleUserAction = () => {
+      if (!user) {
+        handleCourseLogin(); // 👉 go to your login page
+        return;
+      }
+
+        if (user.role?.toLowerCase() === 'admin') {
+          router.push('/dashboards');
+        } else {
+          router.push('/profile');
+        }
+    };
 
   // ---------- Navigation helpers ----------
   const goToCourse = (slugOrPath: string) => {
@@ -443,7 +466,7 @@ export default function Header() {
               <button
                 onClick={() => {
                   if (user) router.push(`/profile`);
-                  else handleGoogleSignIn();
+                  else handleCourseLogin();
                 }}
                 className="p-2 rounded-full hover:bg-gray-100"
                 aria-label="Profile"
@@ -560,13 +583,13 @@ export default function Header() {
               ) : (
                 <>
                   <button
-                    onClick={() => { setMobileMenuOpen(false); handleGoogleSignIn(); }}
+                    onClick={() => { setMobileMenuOpen(false); handleCourseLogin(); }}
                     className="w-full text-left px-3 py-2 rounded-md border border-gray-200 text-gray-700"
                   >
                     Log In
                   </button>
                   <button
-                    onClick={() => { setMobileMenuOpen(false); handleGoogleSignUp(); }}
+                    onClick={() => { setMobileMenuOpen(false); handleCourseLogin(); }}
                     className="w-full text-left px-3 py-2 mt-2 rounded-md bg-[var(--primary-color)] text-white"
                     style={{ backgroundColor: primaryColor }}
                   >

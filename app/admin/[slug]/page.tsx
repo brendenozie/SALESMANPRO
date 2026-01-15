@@ -366,7 +366,7 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
         studentDashboardData = getFallbackDashboardData('student') as StudentDashboardData;
       }
       if (isLoading) return <LoadingDashboard />;
-      if (error) return <ErrorDashboard error={error} />;
+      // if (error) return <ErrorDashboard error={error} />;
       return (
         <StudentDashboard
           {...studentDashboardData}
@@ -421,7 +421,7 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
           principalDashboardData = getFallbackDashboardData('principal') as PrincipalDashboardData;
         }
         if (isLoading) return <LoadingDashboard />;
-        if (error) return <ErrorDashboard error={error} />;
+        // if (error) return <ErrorDashboard error={error} />;
         return (
           <PrincipalDashboard
             {...principalDashboardData}
@@ -452,7 +452,7 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
           tutorDashboardData = getFallbackDashboardData('tutor') as TutorDashboardData;
         }
         if (isLoading) return <LoadingDashboard />;
-        if (error) return <ErrorDashboard error={error} />;
+        // if (error) return <ErrorDashboard error={error} />;
         return (
           <TutorDashboard
             {...tutorDashboardData}
@@ -492,7 +492,7 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
         }
       }
       if (isLoading) return <LoadingDashboard />;
-      if (error) return <ErrorDashboard error={error} />;
+      // if (error) return <ErrorDashboard error={error} />;
       return (
         <DashboardComponent
           {...(dashboardCategoryData ? { ...dashboardCategoryData, slug: companyId } : {})}

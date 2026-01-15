@@ -56,12 +56,31 @@ export interface AssignedAcademicLevel {
   id: string;
   name: string;
   description?: string;
+
+  classroom?: {
+    id: string;
+    name: string;
+  } | null;
+
   roleInLevel?: string;
   studentsCount: number;
   students?: StudentInAcademicLevel[];
+
   academicLevelEvents: AcademicLevelEvent[];
   academicLevelAnnouncements: AcademicLevelAnnouncement[];
 }
+
+
+// export interface AssignedAcademicLevel {
+//   id: string;
+//   name: string;
+//   description?: string;
+//   roleInLevel?: string;
+//   studentsCount: number;
+//   students?: StudentInAcademicLevel[];
+//   academicLevelEvents: AcademicLevelEvent[];
+//   academicLevelAnnouncements: AcademicLevelAnnouncement[];
+// }
 
 // Define types used by the client component
 // type AcademicLevelEvent = {
@@ -177,7 +196,7 @@ export default async function ClassTeacherAcademicLevelsPageServer({ params }: P
     );
 
     if (res.ok) {
-      pageData = (await res.json()) as ClassTeacherAcademicLevelsPageData; // Cast to the new type
+      pageData = (await res.json()).data as ClassTeacherAcademicLevelsPageData; // Cast to the new type
     } else {
       console.error(`[ClassTeacherAcademicLevelsPageServer] Failed to fetch data: ${res.status} ${res.statusText}`);
       fetchError = true;

@@ -224,6 +224,12 @@ export default function ClassTeacherAcademicLevelsPage({
                 <h3 className="text-xl font-bold text-gray-900 mb-2 flex items-center gap-2">
                   <AcademicCapIcon className={`h-6 w-6`} style={{ color: primaryColor }} /> {level.name}
                 </h3>
+                {level.classroom && (
+                  <div className="flex items-center gap-2 text-sm text-gray-700">
+                    <UsersIcon className="h-5 w-5 text-gray-500" />
+                    <span>Classroom: {level.classroom.name}</span>
+                  </div>
+                )}
                 <p className="text-sm text-gray-600 mb-3">{level.description || 'No description provided.'}</p>
 
                 <div className="space-y-2 text-sm text-gray-700">
