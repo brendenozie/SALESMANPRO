@@ -182,7 +182,7 @@ export default function TeachersSubjectListPage({
     cls.academicLevel.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     cls.schedules.some(s =>
       s.day.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      s.classroom?.name.toLowerCase().includes(searchTerm.toLowerCase())
+      s.classroom?.name.toLowerCase().includes(searchTerm.toLowerCase()) 
     )
   );
 
@@ -197,41 +197,50 @@ export default function TeachersSubjectListPage({
   //   router.push(`/admin/${teacherUserId}/teachersubjectlist/${courseId}/course-event`);
   // };
 
-  const handleTakeAttendance = (courseId: string) => {
-    router.push(`/admin/${teacherUserId}/teachersubjectlist/${courseId}/take-course-attendance`);
+  const handleTakeAttendance = (courseId: string, schedule: ScheduleInfo) => {
+    router.push(
+      `/admin/${teacherUserId}/teachersubjectlist/${courseId}/attendance?scheduleId=${schedule.id}&classroomId=${schedule.classroom?.id}`
+    );
   };
 
-  // Renamed to be more specific to course-level grades
-  const handleViewCourseGrades = (courseId: string) => {
-    router.push(`/admin/${teacherUserId}/teachersubjectlist/${courseId}/course-grades`);
+  const handleSendMessage = (courseId: string, schedule: ScheduleInfo) => {
+    router.push(
+      `/admin/${teacherUserId}/teachersubjectlist/${courseId}/send-message?scheduleId=${schedule.id}&classroomId=${schedule.classroom?.id}`
+    );
   };
 
-  const handleManageAssignments = (courseId: string) => {
+  const handleViewCourseGrades = (courseId: string, schedule: ScheduleInfo) => {
+    router.push(
+      `/admin/${teacherUserId}/teachersubjectlist/${courseId}/grades?scheduleId=${schedule.id}&classroomId=${schedule.classroom?.id}`
+    );
+  };
+
+
+  const handleManageAssignments = (courseId: string, schedule: ScheduleInfo) => {
     router.push(`/admin/${teacherUserId}/teachersubjectlist/${courseId}/manage-course-assignments`);
   };
 
-  const handleUploadResources = (courseId: string) => {
+  const handleUploadResources = (courseId: string, schedule: ScheduleInfo) => {
     router.push(`/admin/${teacherUserId}/teachersubjectlist/${courseId}/upload-course-resources`);
   };
 
-  const handleViewClassSchedule = (courseId: string) => {
+  const handleViewClassSchedule = (courseId: string, schedule: ScheduleInfo) => {
     router.push(`/admin/${teacherUserId}/teachersubjectlist/${courseId}/course-schedule`);
   };
 
-  const handleAddClassEvent = (courseId: string) => {
+  const handleAddClassEvent = (courseId: string, classRoomId: string) => {
     router.push(`/admin/${teacherUserId}/teachersubjectlist/${courseId}/course-event`);
   };
 
-  const handleSendMessage = (courseId: string) => {
-    router.push(`/admin/${teacherUserId}/teachersubjectlist/${courseId}/send-message`);
-  };
-
   // UPDATED: Link to the academic-level specific report page
-  const handleGenerateReports = (academicLevelId: string, courseId: string) => {    
+  const handleGenerateReports = (academicLevelId: string, classRoomId: string, courseId: string) => {    
     router.push(`/admin/${teacherUserId}/teachersubjectlist/${courseId}/course-reports`);
     // router.push(`/admin/${teacherUserId}/teacher/${teacherInfo.id}/academic-levels/${academicLevelId}/reports?courseId=${courseId}`);
   };
 
+  const getNextSchedule = (cls: TeacherAssignedCourse) => {
+    return cls.schedules[0];
+  };
 
   const handleDeleteClassRequest = (courseId: string, courseTitle: string) => {
     if (window.confirm(`Are you sure you want to request deletion of "${courseTitle}"? This will send a request to the admin.`)) {
@@ -340,49 +349,54 @@ export default function TeachersSubjectListPage({
                         className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg py-1 z-20 border border-gray-200 origin-top-right"
                       >
                         <button
-                          onClick={() => { handleTakeAttendance(cls.id); setOpenDropdownId(null); }}
+                        onClick={() => {
+                                  const next = getNextSchedule(cls);
+                                  if (next) handleTakeAttendance(cls.id, next);
+                                  setOpenDropdownId(null);
+                                }}
+                          // onClick={() => { handleTakeAttendance(cls.id, ); setOpenDropdownId(null); }}
                           className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                         >
                           <ClipboardDocumentCheckIcon className={`h-5 w-5 text-[${accentColor}]`} /> Take Attendance
                         </button>
                         <button
-                          onClick={() => { handleViewCourseGrades(cls.id); setOpenDropdownId(null); }}
+                          // onClick={() => { handleViewCourseGrades(cls.id, cls.schedules); setOpenDropdownId(null); }}
                           className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                         >
                           <ChartBarIcon className={`h-5 w-5 text-blue-500`} /> View Course Grades
                         </button>
                         <button
-                          onClick={() => { handleManageAssignments(cls.id); setOpenDropdownId(null); }}
+                          // onClick={() => { handleManageAssignments(cls.id, cls.classroomId); setOpenDropdownId(null); }}
                           className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                         >
                           <ClipboardDocumentListIcon className={`h-5 w-5 text-green-500`} /> Manage Assignments
                         </button>
                         <button
-                          onClick={() => { handleUploadResources(cls.id); setOpenDropdownId(null); }}
+                          // onClick={() => { handleUploadResources(cls.id, cls.classroomId); setOpenDropdownId(null); }}
                           className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                         >
                           <CloudArrowUpIcon className={`h-5 w-5 text-purple-500`} /> Upload Resources
                         </button>
                         <button
-                          onClick={() => { handleViewClassSchedule(cls.id); setOpenDropdownId(null); }}
+                          // onClick={() => { handleViewClassSchedule(cls.id, cls.classroomId); setOpenDropdownId(null); }}
                           className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                         >
                           <ClockIcon className={`h-5 w-5 text-indigo-500`} /> View Class Schedule
                         </button>
                         <button
-                          onClick={() => { handleAddClassEvent(cls.id); setOpenDropdownId(null); }}
+                          // onClick={() => { handleAddClassEvent(cls.id); setOpenDropdownId(null); }}
                           className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                         >
                           <PlusIcon className={`h-5 w-5 text-orange-500`} /> Add Class Event
                         </button>
                         <button
-                          onClick={() => { handleSendMessage(cls.id); setOpenDropdownId(null); }}
+                          // onClick={() => { handleSendMessage(cls.id, cls.classroomId); setOpenDropdownId(null); }}
                           className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                         >
                           <ChatBubbleBottomCenterTextIcon className={`h-5 w-5 text-pink-500`} /> Send Message
                         </button>
                         <button
-                          onClick={() => { handleGenerateReports(cls.academicLevel.id, cls.id); setOpenDropdownId(null); }} // Pass academicLevel.id and course.id
+                          // onClick={() => { handleGenerateReports(cls.academicLevel.id, cls.classroomId, cls.id); setOpenDropdownId(null); }} // Pass academicLevel.id, classroomId and course.id
                           className="flex items-center gap-2 w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
                         >
                           <ChartBarIcon className={`h-5 w-5 text-teal-500`} /> Generate Academic Level Report
@@ -424,32 +438,82 @@ export default function TeachersSubjectListPage({
                         </div>
                       ) : (
                         cls.schedules.map((s) => (
-                          <div key={s.id} className="flex items-start gap-2 text-sm text-gray-700">
-                            <ClockIcon className="h-4 w-4 text-gray-500 mt-0.5" />
-                            <div className="flex flex-col">
-                              <span className="font-medium">
-                                {s.day} · {s.startTime} – {s.endTime}
-                              </span>
-                              {s.classroom && (
-                                <span className="flex items-center gap-1 text-gray-500">
-                                  <MapPinIcon className="h-4 w-4" />
-                                  {s.classroom.name}
+                          <div
+                            key={s.id}
+                            className="flex items-start justify-between gap-2 text-sm text-gray-700 border rounded-lg p-2"
+                          >
+                            <div className="flex gap-2">
+                              <ClockIcon className="h-4 w-4 text-gray-500 mt-0.5" />
+                              <div className="flex flex-col">
+                                <span className="font-medium">
+                                  {s.day} · {s.startTime} – {s.endTime}
                                 </span>
+
+                                {s.classroom && (
+                                  <span className="flex items-center gap-1 text-gray-500">
+                                    <MapPinIcon className="h-4 w-4" />
+                                    {s.classroom.name}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="flex gap-1">
+                              <button
+                                onClick={() => handleTakeAttendance(cls.id, s)}
+                                className="text-xs px-2 py-1 bg-indigo-50 text-indigo-600 rounded"
+                              >
+                                Attendance
+                              </button>
+
+                              <button
+                                onClick={() => handleSendMessage(cls.id, s)}
+                                className="text-xs px-2 py-1 bg-pink-50 text-pink-600 rounded"
+                              >
+                                Message
+                              </button>
+
+                              {s.meetingLink && (
+                                <a
+                                  href={s.meetingLink}
+                                  target="_blank"
+                                  className="text-xs px-2 py-1 bg-green-50 text-green-600 rounded flex items-center gap-1"
+                                >
+                                  <VideoCameraIcon className="h-3 w-3" />
+                                  Join
+                                </a>
                               )}
                             </div>
-                            {s.meetingLink && (
-                              <a
-                                href={s.meetingLink}
-                                target="_blank"
-                                className="inline-flex items-center gap-1 text-xs text-indigo-600 mt-1"
-                              >
-                                <VideoCameraIcon className="h-4 w-4" />
-                                Join
-                              </a>
-                            )}
-
                           </div>
                         ))
+
+                        // cls.schedules.map((s) => (
+                        //   <div key={s.id} className="flex items-start gap-2 text-sm text-gray-700">
+                        //     <ClockIcon className="h-4 w-4 text-gray-500 mt-0.5" />
+                        //     <div className="flex flex-col">
+                        //       <span className="font-medium">
+                        //         {s.day} · {s.startTime} – {s.endTime}
+                        //       </span>
+                        //       {s.classroom && (
+                        //         <span className="flex items-center gap-1 text-gray-500">
+                        //           <MapPinIcon className="h-4 w-4" />
+                        //           {s.classroom.name}
+                        //         </span>
+                        //       )}
+                        //     </div>
+                        //     {s.meetingLink && (
+                        //       <a
+                        //         href={s.meetingLink}
+                        //         target="_blank"
+                        //         className="inline-flex items-center gap-1 text-xs text-indigo-600 mt-1"
+                        //       >
+                        //         <VideoCameraIcon className="h-4 w-4" />
+                        //         Join
+                        //       </a>
+                        //     )}
+
+                        //   </div>
+                        // ))
                       )}
                     </div>
 
