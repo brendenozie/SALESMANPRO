@@ -1,224 +1,352 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeftIcon,
-  UserCircleIcon, // For student avatar placeholder
-  ChatBubbleBottomCenterTextIcon, // For direct message
-  PencilIcon, // For add/edit note
-  MagnifyingGlassIcon, // For search
-  EnvelopeIcon, // For email parent
-  IdentificationIcon, // For student ID
-  ArrowRightIcon, // For view details
-  UsersIcon, // Generic users icon
+  ChatBubbleLeftRightIcon,
+  PencilSquareIcon,
+  MagnifyingGlassIcon,
+  EnvelopeOpenIcon,
+  IdentificationIcon,
+  ArrowUpRightIcon,
+  UserGroupIcon,
+  SparklesIcon,
+  EllipsisVerticalIcon,
+  XMarkIcon,
+  SquaresPlusIcon,
+  CheckIcon,
+  DocumentArrowDownIcon,
 } from '@heroicons/react/24/outline';
 import { useRouter } from "next/navigation";
-import Link from 'next/link';
 
+// --- Types remain same as original ---
 export type StudentRosterStudent = {
-  id: string; // Student ID
-  userId: string; // User ID associated with the student
-  name: string; // Student's name (from User model)
-  email: string; // Student's email (from User model)
-  profilePicture: string | null; // Student's profile picture (from Student model)
+  id: string;
+  userId: string;
+  name: string;
+  email: string;
+  profilePicture: string | null;
   parentId: string | null;
-  parentEmail: string | null; // Parent's email (from Parent.User model)
-  studentGrade: string | null; // From Student model
-  
+  parentEmail: string | null;
+  studentGrade: string | null;
 };
 
 interface StudentRosterPageProps {
   students: StudentRosterStudent[];
-  companyId: string; // Passed from server component for dynamic links
+  companyId: string;
 }
 
-export default function StudentRosterPage({
-  students,
-  companyId,
-}: StudentRosterPageProps) {
-  
+export default function StudentRosterPage({ students, companyId }: StudentRosterPageProps) {
   const router = useRouter();
-
-  const primaryColor = "#fd2121";
-  const accentColor = "#FFC107";
-
+  
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const filteredStudents = students?.filter((student: StudentRosterStudent) =>
-    student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    student.id.toLowerCase().includes(searchTerm.toLowerCase()) // Search by Student ID
-  );
+  const filteredStudents = useMemo(() => {
+    return students?.filter((s) =>
+      s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      s.id.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [students, searchTerm]);
 
-  // --- Placeholder Functions for Student Management ---
-  const handleViewStudentProfile = (studentId: string) => {
-    router.push(`/admin/${companyId}/students/${studentId}/profile`); // Navigate to student profile page
+  // --- Selection Logic ---
+  const toggleSelection = (id: string) => {
+    setSelectedIds(prev => 
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
   };
 
-  const handleSendMessageToStudent = (studentId: string, studentName: string, studentEmail?: string) => {
-    console.log(`Sending message to Student ID: ${studentId} (${studentName})`);
-    // In a real app, open a messaging interface pre-populated for this student
-    alert(`Functionality: Send Message to "${studentName}" (Email: ${studentEmail || 'N/A'})`);
+  const selectAll = () => {
+    if (selectedIds.length === filteredStudents.length) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(filteredStudents.map(s => s.id));
+    }
   };
 
-  const handleSendMessageToParent = (studentId: string, studentName: string, parentEmail?: string) => {
-    console.log(`Sending message to Parent of Student ID: ${studentId} (${studentName})`);
-    // In a real app, open a messaging interface pre-populated for this student's parent
-    alert(`Functionality: Send Message to Parent of "${studentName}" (Email: ${parentEmail || 'N/A'})`);
+  const cancelSelection = () => {
+    setSelectedIds([]);
+    setIsSelectionMode(false);
   };
 
-  const handleAddEditStudentNote = (studentId: string, studentName: string) => {
-    console.log(`Adding/Editing note for Student ID: ${studentId} (${studentName})`);
-    // In a real app, open a modal for adding/editing notes for this student
-    alert(`Functionality: Add/Edit Note for "${studentName}"`);
-  };
+  const primaryColor = "#fd2121"; // Red
+  const accentColor = "#FFC107";  // Gold
 
-  // Framer Motion Variants
-  const containerVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        staggerChildren: 0.08,
-        delayChildren: 0.1,
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-    },
-  };
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-8 bg-gray-50 min-h-screen font-sans">
-      {/* Header */}
-      <motion.div
-        className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-gray-200"
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
-      >
-        <motion.div variants={itemVariants} className="flex items-center gap-4">
-          <button
-            onClick={() => router.back()} // Use router.back() for consistent navigation
-            className={`p-2 rounded-full text-gray-600 hover:bg-gray-200 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[${accentColor}]`}
-            aria-label="Back to Class List"
-          >
-            <ArrowLeftIcon className="h-6 w-6" />
-          </button>
-          <div>
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
-              Student Roster 
-              {/* <span style={{ color: primaryColor }}>{academicLevelInfo.name}</span> */}
-            </h1>
-            <p className="text-sm text-gray-600 mt-1">
-              Currently viewing 
-              {/* {academicLevelInfo.studentsCount} students in {academicLevelInfo.name}. */}
-            </p>
-          </div>
-        </motion.div>
-      </motion.div>
-
-      {/* Search Bar */}
-      <motion.div variants={itemVariants} className="max-w-xl mx-auto relative">
-        <input
-          type="text"
-          placeholder="Search students by name or ID..."
-          className={`w-full p-3 pl-10 rounded-full border border-gray-300 shadow-sm
-                      focus:outline-none focus:ring-2 focus:ring-[${accentColor}] focus:border-transparent
-                      text-gray-900 placeholder-gray-500 bg-white`}
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-        <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-      </motion.div>
-
-      {/* Student List Grid */}
-      <motion.div
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
-      >
-        {filteredStudents && filteredStudents.length > 0 ? (
-          filteredStudents.map((student: StudentRosterStudent) => (
-            <motion.div
-              key={student.id}
-              className="bg-white rounded-xl shadow-md border border-gray-200 p-6 flex flex-col items-center text-center
-                          hover:shadow-lg transform hover:-translate-y-1 transition-all duration-200 ease-in-out"
-              variants={itemVariants}
+    <div className="min-h-screen bg-[#FDFDFD] pb-20">
+      {/* 1. Glassmorphism Header */}
+      <header className="sticky top-0 z-30 bg-white/70 backdrop-blur-xl border-b border-gray-100 px-6 py-4">
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
+          <div className="flex items-center gap-4">
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => router.back()}
+              className="p-2.5 bg-white shadow-sm border border-gray-100 rounded-xl text-gray-500 hover:text-red-500 transition-colors"
             >
-              {student.profilePicture ? (
-                <img
-                  src={student.profilePicture}
-                  alt={student.name}
-                  className="w-24 h-24 rounded-full object-cover mb-4 border-4 border-gray-100 shadow-sm"
-                  onError={(e) => {
-                    e.currentTarget.onerror = null;
-                    e.currentTarget.src = `https://placehold.co/100x100/${primaryColor.replace('#', '')}/FFFFFF?text=${student.name.split(' ').map((n: string) => n[0]).join('')}`;
-                  }}
-                />
-              ) : (
-                <UserCircleIcon className={`w-24 h-24 text-gray-300 mb-4`} />
-              )}
-
-              <h3 className="text-xl font-bold text-gray-900 mb-1">{student.name}</h3>
-              <p className="text-sm text-gray-600 flex items-center gap-1">
-                <IdentificationIcon className="h-4 w-4 text-gray-400" /> {student.studentGrade ? `${student.studentGrade} | ` : ''} {student.id}
+              <ArrowLeftIcon className="h-5 w-5" />
+            </motion.button>
+            <div>
+              <h1 className="text-2xl font-black text-slate-900 flex items-center gap-2">
+                Student Roster
+                <SparklesIcon className="h-5 w-5 text-amber-400" />
+              </h1>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                {selectedIds.length > 0 ? `${selectedIds.length} Selected` : `${students.length} Total`}
               </p>
+            </div>
+            <button 
+              onClick={() => {
+                setIsSelectionMode(!isSelectionMode);
+                if (isSelectionMode) setSelectedIds([]);
+              }}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all
+                ${isSelectionMode ? 'bg-red-50 text-red-600' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+            >
+              {isSelectionMode ? <XMarkIcon className="h-4 w-4" /> : <SquaresPlusIcon className="h-4 w-4" />}
+              {isSelectionMode ? 'Cancel' : 'Select Multiple'}
+            </button>
+          </div>
+          
+          <div className="hidden md:flex items-center gap-3">
+            <div className="flex -space-x-3">
+              {students.slice(0, 5).map((s, i) => (
+                <div key={i} className="w-8 h-8 rounded-full border-2 border-white bg-slate-200" />
+              ))}
+              {students.length > 5 && (
+                <div className="w-8 h-8 rounded-full border-2 border-white bg-slate-800 text-[10px] text-white flex items-center justify-center font-bold">
+                  +{students.length - 5}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </header>
 
-              <div className="mt-6 w-full space-y-3">
-                <button
-                  onClick={() => handleViewStudentProfile(student.id)}
-                  className={`w-full flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 text-gray-800 rounded-md text-sm font-medium
-                              hover:bg-gray-200 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[${accentColor}]`}
-                >
-                  View Profile <ArrowRightIcon className="h-4 w-4" />
-                </button>
-                <button
-                  onClick={() => handleSendMessageToStudent(student.id, student.name, student.email)}
-                  className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-md text-sm font-medium
-                              bg-[${accentColor}] text-gray-900
-                              hover:opacity-90 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[${accentColor}]`}
-                  style={{ backgroundColor: accentColor }} // Apply accent color dynamically
-                >
-                  <ChatBubbleBottomCenterTextIcon className="h-4 w-4" /> Message Student
-                </button>
-                {student.parentEmail && (
-                  <button
-                    onClick={() => handleSendMessageToParent(student.id, student.name, student.parentEmail || '')}
-                    className={`w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-md text-sm font-medium
-                                hover:bg-blue-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400`}
-                  >
-                    <EnvelopeIcon className="h-4 w-4" /> Message Parent
-                  </button>
-                )}
-                <button
-                  onClick={() => handleAddEditStudentNote(student.id, student.name)}
-                  className={`w-full flex items-center justify-center gap-2 px-4 py-2 bg-green-500 text-white rounded-md text-sm font-medium
-                              hover:bg-green-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-400`}
-                >
-                  <PencilIcon className="h-4 w-4" /> Add/Edit Note
-                </button>
-              </div>
+      <main className="max-w-7xl mx-auto px-6 pt-10">
+        {/* Bulk Action: Select All (Visible only in Selection Mode) */}
+        <AnimatePresence>
+          {isSelectionMode && (
+            <motion.div 
+              initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+              className="flex justify-between items-center mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-100"
+            >
+              <span className="text-sm font-bold text-slate-600">Quick Actions</span>
+              <button onClick={selectAll} className="text-sm font-black text-red-500 hover:text-red-600">
+                {selectedIds.length === filteredStudents.length ? 'Deselect All' : 'Select All Filtered'}
+              </button>
             </motion.div>
-          ))
-        ) : (
-          <motion.div
-            className="col-span-full p-8 text-center text-gray-500 bg-white rounded-xl shadow-md border border-gray-200"
-            variants={itemVariants}
+          )}
+        </AnimatePresence>
+
+        {/* 2. Floating Modern Search */}
+        <div className="relative max-w-2xl mx-auto mb-16">
+          <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none">
+            <MagnifyingGlassIcon className="h-5 w-5 text-slate-400" />
+          </div>
+          <input
+            type="text"
+            placeholder="Search by student name, ID or grade..."
+            className="w-full pl-14 pr-6 py-5 bg-white shadow-2xl shadow-slate-200/50 border-none rounded-[2rem] text-slate-700 placeholder-slate-400 focus:ring-2 focus:ring-red-500/20 transition-all text-lg font-medium"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+
+        {/* 3. Student Grid */}
+        <motion.div 
+          layout
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8"
+        >
+          <AnimatePresence mode='popLayout'>
+            {filteredStudents?.map((student, idx) => {
+              const isSelected = selectedIds.includes(student.id);
+
+              return (
+              <motion.div
+                key={student.id}
+                layout
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ delay: idx * 0.05 }}
+                onClick={() => isSelectionMode && toggleSelection(student.id)}
+                className={`relative bg-white rounded-[2.5rem] border transition-all duration-300 overflow-hidden
+                    ${isSelected ? 'border-red-500 ring-4 ring-red-500/10 shadow-xl shadow-red-500/10' : 'border-slate-100 shadow-sm'}
+                    ${isSelectionMode ? 'cursor-pointer active:scale-95' : ''}`}
+                // className="group relative bg-white rounded-[2.5rem] border border-slate-100 p-6 hover:shadow-2xl hover:shadow-slate-200/60 transition-all duration-500"
+              >
+                {/* Selection Overlay Checkmark */}
+                {isSelectionMode && (
+                  <div className="absolute top-4 right-4 z-20">
+                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all
+                      ${isSelected ? 'bg-red-500 border-red-500' : 'bg-white border-slate-200'}`}>
+                      {isSelected && <CheckIcon className="h-4 w-4 text-white stroke-[4]" />}
+                    </div>
+                  </div>
+                )}
+
+                {/* Background Decor */}
+                <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                   <EllipsisVerticalIcon className="h-6 w-6 text-slate-300" />
+                </div>
+                
+
+                {/* Profile Section */}
+                <div className={`p-6 ${isSelectionMode ? 'pointer-events-none' : ''}`}>
+                  <div className="flex flex-col items-center" >
+                    <div className="relative mb-4">
+                      <div className="absolute inset-0 bg-red-500 rounded-full blur-xl opacity-0 group-hover:opacity-20 transition-opacity" />
+                      <div className="w-24 h-24 rounded-[2rem] overflow-hidden border-4 border-slate-50 relative z-10 shadow-inner">
+                        {student.profilePicture ? (
+                          <img src={student.profilePicture} alt={student.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full bg-slate-100 flex items-center justify-center text-slate-400">
+                            <span className="text-2xl font-black">{student.name.charAt(0)}</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md border border-slate-50">
+                        <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse" />
+                      </div>
+                    </div>
+
+                    <h3 className="text-lg font-black text-slate-800 text-center leading-tight">
+                      {student.name}
+                    </h3>
+                    
+                    <div className="flex items-center gap-2 mt-2 px-3 py-1 bg-slate-50 rounded-full border border-slate-100">
+                      <IdentificationIcon className="h-3.5 w-3.5 text-slate-400" />
+                      <span className="text-[10px] font-bold text-slate-500 tracking-tight">
+                        {student.studentGrade || 'N/A'} • {student.id.slice(0, 8)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* 4. Action Hub (Redesigned) */}
+                  <div className="mt-8 space-y-2">
+                    <button
+                      onClick={() => router.push(`/admin/${companyId}/students/${student.id}/profile`)}
+                      className="w-full py-3 bg-slate-900 text-white rounded-2xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-slate-800 transition-all shadow-lg shadow-slate-200 group/btn"
+                    >
+                      View Insights
+                      <ArrowUpRightIcon className="h-3.5 w-3.5 group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5 transition-transform" />
+                    </button>
+
+                    <div className="grid grid-cols-3 gap-2 pt-2">
+                      <ActionButton 
+                        icon={<ChatBubbleLeftRightIcon className="h-5 w-5" />} 
+                        onClick={() => alert(`Message ${student.name}`)}
+                        label="Chat"
+                      />
+                      <ActionButton 
+                        icon={<EnvelopeOpenIcon className="h-5 w-5" />} 
+                        onClick={() => alert(`Parent: ${student.parentEmail}`)}
+                        label="Parent"
+                        disabled={!student.parentEmail}
+                      />
+                      <ActionButton 
+                        icon={<PencilSquareIcon className="h-5 w-5" />} 
+                        onClick={() => alert(`Notes for ${student.name}`)}
+                        label="Note"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            )})}
+          </AnimatePresence>
+        </motion.div>
+
+        {/* Empty State */}
+        {filteredStudents.length === 0 && (
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }}
+            className="flex flex-col items-center justify-center py-40"
           >
-            <UsersIcon className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-            <p className="text-lg">No students found in this class or matching your search.</p>
-            <p className="text-sm mt-2">Please ensure the correct class is selected or adjust your search term.</p>
+            <div className="p-10 bg-slate-50 rounded-full mb-6">
+              <UserGroupIcon className="h-20 w-20 text-slate-200" />
+            </div>
+            <h2 className="text-2xl font-bold text-slate-400">No students matching "{searchTerm}"</h2>
+            <p className="text-slate-400 mt-1">Try searching by ID or grade level</p>
           </motion.div>
         )}
-      </motion.div>
+      </main>
+       {/* --- FLOATING ACTION DOCK --- */}
+        <AnimatePresence>
+          {selectedIds.length > 0 && (
+            <motion.div
+              initial={{ y: 100, x: '-50%', opacity: 0 }}
+              animate={{ y: 0, x: '-50%', opacity: 1 }}
+              exit={{ y: 100, x: '-50%', opacity: 0 }}
+              className="fixed bottom-8 left-1/2 z-50 w-[90%] max-w-2xl"
+            >
+              <div className="bg-slate-900/90 backdrop-blur-xl border border-white/10 p-4 rounded-[2rem] shadow-2xl flex items-center justify-between">
+                <div className="pl-4">
+                  <p className="text-white font-black text-lg leading-none">{selectedIds.length}</p>
+                  <p className="text-slate-400 text-[10px] font-bold uppercase tracking-tighter">Students Selected</p>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <DockButton 
+                    icon={<ChatBubbleLeftRightIcon className="h-5 w-5" />} 
+                    label="Message" 
+                    onClick={() => alert('Bulk Message Sent')}
+                  />
+                  <DockButton 
+                    icon={<DocumentArrowDownIcon className="h-5 w-5" />} 
+                    label="PDF Export" 
+                    onClick={() => alert('Generating PDF Report...')}
+                  />
+                  <div className="w-px h-8 bg-white/10 mx-2" />
+                  <button 
+                    onClick={cancelSelection}
+                    className="p-3 bg-white/10 hover:bg-white/20 text-white rounded-2xl transition-colors"
+                  >
+                    <XMarkIcon className="h-5 w-5" />
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
     </div>
+  );
+}
+
+// Sub-component for small icon buttons
+function ActionButton({ icon, onClick, label, disabled = false }: { icon: any, onClick: () => void, label: string, disabled?: boolean }) {
+  return (
+    <div className="flex flex-col items-center gap-1">
+      <button
+        disabled={disabled}
+        onClick={onClick}
+        className={`w-full aspect-square rounded-2xl flex items-center justify-center transition-all
+          ${disabled 
+            ? 'bg-slate-50 text-slate-200 cursor-not-allowed' 
+            : 'bg-white border border-slate-100 text-slate-600 hover:text-red-500 hover:border-red-100 hover:shadow-md'
+          }`}
+      >
+        {icon}
+      </button>
+      <span className="text-[9px] font-black uppercase text-slate-400 tracking-tighter">{label}</span>
+    </div>
+  );
+}
+
+
+function DockButton({ icon, label, onClick }: { icon: any, label: string, onClick: () => void }) {
+  return (
+    <button 
+      onClick={onClick}
+      className="flex items-center gap-2 px-4 py-2 bg-white hover:bg-red-50 text-slate-900 hover:text-red-600 rounded-2xl transition-all font-bold text-sm"
+    >
+      {icon}
+      <span className="hidden sm:inline">{label}</span>
+    </button>
   );
 }
