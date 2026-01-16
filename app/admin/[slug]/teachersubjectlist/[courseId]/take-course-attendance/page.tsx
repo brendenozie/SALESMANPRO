@@ -1,6 +1,8 @@
 // app/admin/[slug]/teacher-classes/[courseId]/take-attendance/page.tsx
 import React from "react";
 import TakeAttendancePageClient from "./TakeAttendancePageClient"; // Renamed client component
+import { getAuthSession } from "@/lib/auth";
+import { cookies } from "next/headers";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -10,7 +12,7 @@ const MOCK_CURRENT_EDUCATOR_ID = "clx023j0d00003b6033877d9c"; // Example: Educat
 
 interface PageProps {
   params: Promise<{
-    slug: string; // companyId
+    // slug: string; // companyId
     courseId: string;
   }>;
 }
@@ -39,9 +41,13 @@ export interface AttendancePageData {
 }
 
 export default async function TakeAttendanceServerPage({ params }: PageProps) {
-  const { slug: companyId, courseId } = await params;
-  const educatorId = companyId || MOCK_CURRENT_EDUCATOR_ID; // In a real app, get this from auth context
+  const { courseId } = await params; // slug: companyId, 
+  // const educatorId = companyId || MOCK_CURRENT_EDUCATOR_ID; // In a real app, get this from auth context
+  const cookiesStore = (await cookies()).toString()
+  const session = await getAuthSession();
 
+  const educatorId = session?.user?.id || MOCK_CURRENT_EDUCATOR_ID;
+  const companyId = "clx022z7f00002b60g6r4q6v9"; // Example company ID session?.user?.companyId || 
   let attendancePageData: AttendancePageData | null = null;
   let fetchError: string | null = null;
 
@@ -50,11 +56,13 @@ export default async function TakeAttendanceServerPage({ params }: PageProps) {
 
     const res = await fetch(
       `${apiBaseUrl}/teacher/courses/${courseId}/attendance-data?educatorId=${encodeURIComponent(educatorId)}&companyId=${encodeURIComponent(companyId)}&date=${encodeURIComponent(today)}`,
-      { next: { revalidate: 60 } } // Ensure fresh data
+      { 
+        headers: { 'Cookie': cookiesStore || '' },
+        next: { revalidate: 60 } } // Ensure fresh data
     );
 
     if (res.ok) {
-      const data = await res.json();
+      const data = (await res.json()).data || {};
       attendancePageData = {
         course: data.course,
         students: data.students,
@@ -63,7 +71,7 @@ export default async function TakeAttendanceServerPage({ params }: PageProps) {
         companyId: companyId,
       };
     } else {
-      const errorData = await res.json();
+      const errorData = (await res.json()).data || {};
       fetchError = errorData.message || `Failed to fetch attendance data: ${res.status} ${res.statusText}`;
       console.error("[TakeAttendanceServerPage] Fetch error:", fetchError);
     }

@@ -20,11 +20,13 @@ import {
   ClipboardDocumentCheckIcon, // For Take Attendance
   ChartBarIcon, // For Consolidated Grades/Reports
   CloudArrowUpIcon, // For Upload Resources
-  PlusIcon, // For Add Class Event
+  PlusIcon,
+  VideoCameraIcon, // For Add Class Event
 } from '@heroicons/react/24/outline';
 
 import { useRouter } from "next/navigation";
 import Link from 'next/link'; // Import Link for navigation
+import { TodaysClasses } from './TodaysClasses';
 
 // Re-import types from the parent page (or a shared types file)
 interface TeacherInfo {
@@ -68,18 +70,72 @@ interface EventSummary {
 }
 
 interface TeacherAssignedCourse {
-  id: string; // Course ID
+  id: string;
   title: string;
   description: string | null;
-  schedule: string; // Combined string, e.g., "Mon, Wed, Fri | 9:00 AM - 9:45 AM"
+  schedule: string;
   room: string;
   studentsEnrolled: number;
-  academicLevel: AcademicLevelInfo; // The primary academic level this course is associated with
-  students: StudentInCourse[]; // Simplified for summary, might not need full list here
+  academicLevel: AcademicLevelInfo;
+  students: StudentInCourse[];
   assignments: AssignmentSummary[];
   resources: ResourceSummary[];
   events: EventSummary[];
 }
+
+
+interface ScheduleInfo {
+  id: string;
+  day: string;
+  startTime: string;
+  endTime: string;
+  classroom: {
+    id: string;
+    name: string;
+  } | null;
+  academicLevel?: {
+    id: string;
+    name: string;
+  } | null;
+  topic?: string | null;
+  meetingLink?: string | null;
+}
+
+interface TeacherAssignedCourse {
+  id: string;
+  title: string;
+  description: string | null;
+  studentsEnrolled: number;
+  academicLevel: AcademicLevelInfo;
+  schedules: ScheduleInfo[];
+  students: StudentInCourse[];
+  assignments: AssignmentSummary[];
+  resources: ResourceSummary[];
+  events: EventSummary[];
+}
+
+const groupByDay = (schedules: ScheduleInfo[]) => {
+  return schedules.reduce<Record<string, ScheduleInfo[]>>((acc, s) => {
+    if (!acc[s.day]) acc[s.day] = [];
+    acc[s.day].push(s);
+    return acc;
+  }, {});
+};
+
+
+// interface TeacherAssignedCourse {
+//   id: string; // Course ID
+//   title: string;
+//   description: string | null;
+//   schedule: string; // Combined string, e.g., "Mon, Wed, Fri | 9:00 AM - 9:45 AM"
+//   room: string;
+//   studentsEnrolled: number;
+//   academicLevel: AcademicLevelInfo; // The primary academic level this course is associated with
+//   students: StudentInCourse[]; // Simplified for summary, might not need full list here
+//   assignments: AssignmentSummary[];
+//   resources: ResourceSummary[];
+//   events: EventSummary[];
+// }
 
 
 // Define props for the client component
@@ -114,11 +170,22 @@ export default function TeachersSubjectListPage({
   });
 
   // Filter classes based on search term
+  // const filteredClasses = teacherClasses.filter(cls =>
+  //   cls.title.toLowerCase().includes(searchTerm.toLowerCase()) || // Search by course title
+  //   cls.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //   cls.academicLevel.name.toLowerCase().includes(searchTerm.toLowerCase()) // Search by academic level name
+  // );
+
   const filteredClasses = teacherClasses.filter(cls =>
-    cls.title.toLowerCase().includes(searchTerm.toLowerCase()) || // Search by course title
+    cls.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     cls.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    cls.academicLevel.name.toLowerCase().includes(searchTerm.toLowerCase()) // Search by academic level name
+    cls.academicLevel.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    cls.schedules.some(s =>
+      s.day.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      s.classroom?.name.toLowerCase().includes(searchTerm.toLowerCase())
+    )
   );
+
 
   // --- Placeholder Functions for Class Management ---
   // Note: These functions now use `Link` or `router.push` for navigation,
@@ -232,9 +299,13 @@ export default function TeachersSubjectListPage({
         <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
       </motion.div>
 
+      <div className="sticky top-0 z-20 bg-gray-50">
+        <TodaysClasses teacherClasses={teacherClasses} />
+      </div>
+
       {/* Courses List */}
       <motion.div
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+        className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6"
         initial="hidden"
         animate="visible"
         variants={containerVariants}
@@ -332,6 +403,11 @@ export default function TeachersSubjectListPage({
               <div>
                 <h3 className="text-xl font-bold text-gray-900 mb-2 flex items-center gap-2">
                   <BookOpenIcon className={`h-6 w-6`} style={{ color: primaryColor }} /> {cls.title} {/* Display Course title */}
+                  {cls.schedules.length > 0 && (
+                    <span className="inline-block text-xs font-medium text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">
+                      {cls.schedules.length} Sessions / Week
+                    </span>
+                  )}
                 </h3>
                 <p className="text-sm text-gray-600 mb-3">{cls.description}</p>
 
@@ -340,14 +416,53 @@ export default function TeachersSubjectListPage({
                     <UsersIcon className="h-5 w-5 text-gray-500" />
                     <span>{cls.academicLevel.name} | {cls.studentsEnrolled} Students</span> {/* Display Academic Level Name */}
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="mt-3 space-y-2">
+                      {cls.schedules.length === 0 ? (
+                        <div className="flex items-center gap-2 text-gray-500">
+                          <ClockIcon className="h-5 w-5" />
+                          <span>No schedule assigned</span>
+                        </div>
+                      ) : (
+                        cls.schedules.map((s) => (
+                          <div key={s.id} className="flex items-start gap-2 text-sm text-gray-700">
+                            <ClockIcon className="h-4 w-4 text-gray-500 mt-0.5" />
+                            <div className="flex flex-col">
+                              <span className="font-medium">
+                                {s.day} · {s.startTime} – {s.endTime}
+                              </span>
+                              {s.classroom && (
+                                <span className="flex items-center gap-1 text-gray-500">
+                                  <MapPinIcon className="h-4 w-4" />
+                                  {s.classroom.name}
+                                </span>
+                              )}
+                            </div>
+                            {s.meetingLink && (
+                              <a
+                                href={s.meetingLink}
+                                target="_blank"
+                                className="inline-flex items-center gap-1 text-xs text-indigo-600 mt-1"
+                              >
+                                <VideoCameraIcon className="h-4 w-4" />
+                                Join
+                              </a>
+                            )}
+
+                          </div>
+                        ))
+                      )}
+                    </div>
+
+                    
+
+                  {/* <div className="flex items-center gap-2">
                     <ClockIcon className="h-5 w-5 text-gray-500" />
                     <span>{cls.schedule}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <MapPinIcon className="h-5 w-5 text-gray-500" />
                     <span>{cls.room}</span>
-                  </div>
+                  </div> */}
                 </div>
               </div>
               

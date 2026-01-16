@@ -48,19 +48,93 @@ interface EventSummary {
 }
 
 // Represents a course assigned to a teacher
+interface AcademicLevelInfo {
+  id: string;
+  name: string;
+  description: string | null;
+}
+
+interface StudentInCourse {
+  studentId: string;
+  name: string;
+  email: string;
+  parentEmail: string | null;
+}
+
+interface AssignmentSummary {
+  id: string;
+  title: string;
+  dueDate: string; // ISO string
+  status: string; // e.g., 'pending', 'completed'
+}
+
+interface ResourceSummary {
+  id: string;
+  name: string;
+  type: string; // e.g., 'PDF', 'Video'
+}
+
+interface EventSummary {
+  id: string;
+  name: string;
+  date: string; // ISO string
+  time: string; // e.g., '3:00 PM'
+}
+
 interface TeacherAssignedCourse {
-  id: string; // Course ID
+  id: string;
   title: string;
   description: string | null;
-  schedule: string; // Combined string, e.g., "Mon, Wed, Fri | 9:00 AM - 9:45 AM"
+  schedule: string;
   room: string;
   studentsEnrolled: number;
-  academicLevel: AcademicLevelInfo; // The primary academic level this course is associated with
-  students: StudentInCourse[]; // Simplified for summary, might not need full list here
+  academicLevel: AcademicLevelInfo;
+  students: StudentInCourse[];
   assignments: AssignmentSummary[];
   resources: ResourceSummary[];
   events: EventSummary[];
 }
+
+
+interface ScheduleInfo {
+  id: string;
+  day: string;
+  startTime: string;
+  endTime: string;
+  classroom: {
+    id: string;
+    name: string;
+  } | null;
+  academicLevel?: {
+    id: string;
+    name: string;
+  } | null;
+  topic?: string | null;
+  meetingLink?: string | null;
+}
+
+interface TeacherAssignedCourse {
+  id: string;
+  title: string;
+  description: string | null;
+  studentsEnrolled: number;
+  academicLevel: AcademicLevelInfo;
+  schedules: ScheduleInfo[];
+  students: StudentInCourse[];
+  assignments: AssignmentSummary[];
+  resources: ResourceSummary[];
+  events: EventSummary[];
+}
+
+const groupByDay = (schedules: ScheduleInfo[]) => {
+  return schedules.reduce<Record<string, ScheduleInfo[]>>((acc, s) => {
+    if (!acc[s.day]) acc[s.day] = [];
+    acc[s.day].push(s);
+    return acc;
+  }, {});
+};
+
+
 
 // Data structure for the entire page
 interface TeacherClassesPageData {
@@ -118,6 +192,7 @@ const generateSampleTeacherClassesData = (companyId: string, teacherUserId: stri
       assignments: [{ id: 'A001', title: 'Algebra Worksheet 1', dueDate: '2025-07-10T00:00:00Z', status: 'pending' }],
       resources: [{ id: 'R001', name: 'Math Syllabus', type: 'PDF' }],
       events: [{ id: 'E001', name: 'Math Club Meeting', date: '2025-07-15T00:00:00Z', time: '3:00 PM' }],
+      schedules: []
     },
     {
       id: 'COURSE002', // This is a Course ID
@@ -135,6 +210,7 @@ const generateSampleTeacherClassesData = (companyId: string, teacherUserId: stri
       assignments: [{ id: 'A002', title: 'Essay Outline', dueDate: '2025-07-12T00:00:00Z', status: 'completed' }],
       resources: [{ id: 'R002', name: 'Grammar Guide', type: 'Doc' }],
       events: [{ id: 'E002', name: 'Poetry Reading', date: '2025-07-20T00:00:00Z', time: '2:00 PM' }],
+      schedules: []
     },
     {
       id: 'COURSE003',
@@ -148,7 +224,7 @@ const generateSampleTeacherClassesData = (companyId: string, teacherUserId: stri
         { studentId: 'S007', name: 'Olivia Davis', email: 'olivia.d@example.com', parentEmail: 'parent.olivia@example.com' },
         { studentId: 'S008', name: 'Liam Wilson', email: 'liam.w@example.com', parentEmail: 'parent.liam@example.com' },
       ],
-      assignments: [], resources: [], events: [],
+      assignments: [], resources: [], events: [], schedules: []
     },
   ];
 
@@ -203,8 +279,8 @@ export default async function TeachersSubjectPage({ params }: Props) {
     <TeachersSubjectListPage
       teacherInfo={pageData.teacherInfo}
       themeSettings={pageData.themeSettings}
-      teacherClasses={pageData.teacherClasses}
+      // teacherClasses={pageData.teacherClasses}
       teacherUserId={teacherUserId} 
-    />
+      teacherClasses={pageData.teacherClasses}    />
   );
 }

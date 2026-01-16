@@ -69,18 +69,21 @@ export default function TakeAttendancePageClient({
       try {
         const res = await fetch(
           `${apiBaseUrl}/teacher/courses/${course.id}/attendance-data?educatorId=${encodeURIComponent(educatorId)}&companyId=${encodeURIComponent(companyId)}&date=${encodeURIComponent(attendanceDate)}`,
-          { next: { revalidate: 60 } }
+          { 
+            next: { revalidate: 60 },
+            credentials: 'include'
+        }
         );
 
         if (res.ok) {
-          const data = await res.json();
+          const data = (  await res.json()).data || {};
           const fetchedAttendance: { [studentId: string]: AttendanceStatus } = {};
           data.students.forEach((student: StudentAttendanceData) => {
             fetchedAttendance[student.studentId] = (data.existingAttendance[student.studentId] as AttendanceStatus) || 'PRESENT';
           });
           setStudentAttendance(fetchedAttendance);
         } else {
-          const errorData = await res.json();
+          const errorData = (await res.json()).data || {};
           showStatus('error', errorData.message || 'Failed to load attendance for this date.');
           // If fetch fails, revert to default 'PRESENT' for all or keep current state
           const defaultAttendance: { [studentId: string]: AttendanceStatus } = {};
@@ -134,13 +137,14 @@ export default function TakeAttendancePageClient({
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify(payload),
       });
 
       if (res.ok) {
         showStatus('success', `Attendance saved successfully for ${course.title} on ${attendanceDate}!`);
       } else {
-        const errorData = await res.json();
+        const errorData = (await res.json()).data || {};
         showStatus('error', errorData.message || 'Failed to save attendance.');
       }
     } catch (err: any) {
