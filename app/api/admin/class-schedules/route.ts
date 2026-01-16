@@ -16,19 +16,13 @@ export const GET = withApiHandler(async (request: Request, context) => {
   const classroomId = searchParams.get("classroomId");
   const dayOfWeek = searchParams.get("dayOfWeek");
 
-  // if (!companyId) {
-  //   return NextResponse.json(
-  //     { message: "Company ID is required to fetch class schedules." },
-  //     { status: 400 }
-  //   );
-  // }
 
   const whereClause: any = {  };
   if (companyId) whereClause.companyId = companyId;
   if (courseId) whereClause.courseId = courseId;
   if (educatorId) whereClause.educatorId = educatorId;
-  if (academicLevelId) whereClause.academicLevelId = academicLevelId;
-  if (classroomId) whereClause.classroomId = classroomId;
+  // if (academicLevelId) whereClause.academicLevelId = academicLevelId;
+  if (classroomId) { whereClause.classroomId = classroomId; }else{ whereClause.academicLevelId = academicLevelId; }
   
   if (dayOfWeek) {
     if (!VALID_DAYS_OF_WEEK.includes(dayOfWeek)) {

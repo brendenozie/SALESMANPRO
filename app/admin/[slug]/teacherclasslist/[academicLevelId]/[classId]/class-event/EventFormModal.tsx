@@ -62,6 +62,66 @@ type EventFormModalProps = {
   allOrganizers: OrganizerOption[];
 };
 
+////////////////////////////////////////////////////////////////////////////////
+// Upload helper for getting signed URLs and uploading files
+////////////////////////////////////////////////////////////////////////////////
+// utils/uploadFiles.ts
+export async function uploadFiles(
+  apiBaseUrl: string,
+  files: File[],
+  type: "image" | "video" | "book",
+  onProgress?: (progress: number, file: File) => void
+): Promise<{ url: string; key: string; contentType: string }[]> {
+  if (!files?.length) return [];
+
+  const uploads = files.map(async (file) => {
+    try {
+      // ✅ Step 1: Request a signed upload URL from your API
+      const res = await fetch(
+        `${apiBaseUrl}/upload-url?filename=${encodeURIComponent(file.name)}&type=${type}&contentType=${encodeURIComponent(file.type)}`
+      );
+
+      if (!res.ok) {
+        const text = await res.text();
+        throw new Error(`Failed to get signed URL: ${text}`);
+      }
+
+      const { uploadUrl, publicUrl, key, contentType } = await res.json();
+
+      // ✅ Step 2: Upload directly to S3
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("PUT", uploadUrl);
+        xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
+
+        xhr.upload.onprogress = (event) => {
+          if (event.lengthComputable && onProgress) {
+            const progress = Math.round((event.loaded / event.total) * 100);
+            onProgress(progress, file);
+          }
+        };
+
+        xhr.onload = () => {
+          if (xhr.status === 200) resolve();
+          else reject(new Error(`Upload failed for ${file.name}: ${xhr.status}`));
+        };
+
+        xhr.onerror = () => reject(new Error(`Network error during upload for ${file.name}`));
+        xhr.send(file);
+      });
+
+      console.log(`✅ Uploaded: ${file.name} (${contentType}) → ${publicUrl}`);
+      return { url: publicUrl, key, contentType };
+    } catch (err) {
+      console.error("❌ Upload error:", err);
+      throw err;
+    }
+  });
+
+  return Promise.all(uploads);
+}
+
+
 export default function EventFormModal({
   eventData,
   onClose,
@@ -79,6 +139,12 @@ export default function EventFormModal({
   allParents,
   allOrganizers,
 }:EventFormModalProps) {
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
+
+
   const [formData, setFormData] = useState<Omit<EventData, 'organizerName' | 'organizerEmail' | 'companyName' | 'createdAt' | 'updatedAt'>>(
     eventData ? {
       ...eventData,
@@ -160,6 +226,19 @@ export default function EventFormModal({
     }
   }, [eventData, currentEducatorId, currentCompanyId]);
 
+  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.[0]) {
+      setImageFile(e.target.files[0]);
+      setFormData(prev => ({ ...prev, imageUrl: null }));
+    }
+  };
+
+  const handleVideoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.[0]) {
+      setVideoFile(e.target.files[0]);
+      setFormData(prev => ({ ...prev, videoUrl: null }));
+    }
+  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -179,7 +258,129 @@ export default function EventFormModal({
     setFormData(prev => ({ ...prev, [name]: selectedValues }));
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    
+    e.preventDefault();
+    resetError(); // Clear any previous errors
+
+    // Basic client-side validation
+    if (!formData.title || !formData.startDateTime || !formData.eventType || !formData.eventStatus || !formData.organizerId || !formData.audience) {
+      alert("Please fill all required fields: Title, Start Date/Time, Event Type, Event Status, Organizer, and Audience.");
+      return;
+    }
+
+    // Validate date/time fields
+    const startDt = new Date(formData.startDateTime);
+    if (isNaN(startDt.getTime())) {
+      alert("Invalid Start Date/Time format.");
+      return;
+    }
+    if (formData.endDateTime) {
+      const endDt = new Date(formData.endDateTime);
+      if (isNaN(endDt.getTime())) {
+        alert("Invalid End Date/Time format.");
+        return;
+      }
+      if (endDt <= startDt) {
+        alert("End Date/Time must be after Start Date/Time.");
+        return;
+      }
+    }
+
+    // Validate price for paid events
+    if (formData.isPaid && (formData.price === null || isNaN(formData.price) || (formData.price as number) < 0)) {
+      alert("Please enter a valid non-negative price for paid events.");
+      return;
+    }
+    if (!formData.isPaid) {
+      formData.price = null; // Ensure price is null if not paid
+    }
+
+    // Validate audience-specific selections
+    switch (formData.audience) {
+      case 'ACADEMIC_LEVEL':
+        if (formData.targetAcademicLevelIds.length === 0) {
+          alert("Please select at least one Academic Level for this audience type.");
+          return;
+        }
+        break;
+      case 'COURSE':
+        if (formData.targetCourseIds.length === 0) {
+          alert("Please select at least one Course for this audience type.");
+          return;
+        }
+        break;
+      case 'EDUCATOR':
+        if (formData.targetEducatorIds.length === 0) {
+          alert("Please select at least one Educator for this audience type.");
+          return;
+        }
+        break;
+      case 'STUDENT':
+        if (formData.targetStudentIds.length === 0) {
+          alert("Please select at least one Student for this audience type.");
+          return;
+        }
+        break;
+      case 'DEPARTMENT':
+        if (formData.targetDepartmentIds.length === 0) {
+          alert("Please select at least one Department for this audience type.");
+          return;
+        }
+        break;
+      case 'PARENT':
+        if (formData.targetParentIds.length === 0) {
+          alert("Please select at least one Parent for this audience type.");
+          return;
+        }
+        break;
+      // For 'ALL' and 'STAFF', no specific target IDs are required here
+    }
+
+    try {
+      setIsUploading(true);
+      setUploadProgress(0);
+
+      let finalImageUrl = formData.imageUrl;
+      let finalVideoUrl = formData.videoUrl;
+
+      if (imageFile) {
+        const [res] = await uploadFiles(
+          process.env.NEXT_PUBLIC_API_URL!,
+          [imageFile],
+          "image",
+          (p) => setUploadProgress(p)
+        );
+        finalImageUrl = res.url;
+      }
+
+      if (videoFile) {
+        const [res] = await uploadFiles(
+          process.env.NEXT_PUBLIC_API_URL!,
+          [videoFile],
+          "video",
+          (p) => setUploadProgress(p)
+        );
+        finalVideoUrl = res.url;
+      }
+
+      onSave({
+        ...formData,
+        imageUrl: finalImageUrl,
+        videoUrl: finalVideoUrl,
+      });
+    } catch (err) {
+      console.error(err);
+      alert("Upload failed. Please try again.");
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(0);
+    }
+  };
+
+
+  const handleSubmitV1 = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     resetError(); // Clear any previous errors
 
@@ -331,17 +532,57 @@ export default function EventFormModal({
                 className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base" />
             </div>
 
-            <div>
+            {/* <div>
               <label htmlFor="imageUrl" className="block text-sm font-medium text-gray-700 mb-1">Image URL (Optional)</label>
               <input type="url" name="imageUrl" id="imageUrl" value={formData.imageUrl || ''} onChange={handleChange} placeholder="https://example.com/event.jpg"
                 className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base" />
+            </div> */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Event Image
+              </label>
+
+              <input type="file" accept="image/*" onChange={handleImageFileChange} />
+
+              <p className="text-xs mt-1 text-gray-500">
+                {imageFile ? `Selected: ${imageFile.name}` : formData.imageUrl || "Upload or paste URL below"}
+              </p>
+
+              <input
+                type="url"
+                name="imageUrl"
+                value={formData.imageUrl || ''}
+                onChange={handleChange}
+                placeholder="https://example.com/image.jpg"
+                className="mt-2 block w-full border px-3 py-2 rounded-lg"
+              />
             </div>
 
             <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Event Video
+              </label>
+
+              <input type="file" accept="video/*" onChange={handleVideoFileChange} />
+
+              <p className="text-xs mt-1 text-gray-500">
+                {videoFile ? `Selected: ${videoFile.name}` : formData.videoUrl || "Upload or paste URL below"}
+              </p>
+
+              <input
+                type="url"
+                name="videoUrl"
+                value={formData.videoUrl || ''}
+                onChange={handleChange}
+                placeholder="https://example.com/video.mp4"
+                className="mt-2 block w-full border px-3 py-2 rounded-lg"
+              />
+            </div>
+            {/* <div>
               <label htmlFor="videoUrl" className="block text-sm font-medium text-gray-700 mb-1">Video URL (Optional)</label>
               <input type="url" name="videoUrl" id="videoUrl" value={formData.videoUrl || ''} onChange={handleChange} placeholder="https://example.com/event.mp4"
                 className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base" />
-            </div>
+            </div> */}
 
             <div>
               <label htmlFor="eventType" className="block text-sm font-medium text-gray-700 mb-1">Event Type <span className="text-red-500">*</span></label>
@@ -527,21 +768,36 @@ export default function EventFormModal({
             </div>
           </div>
 
+          {(isUploading || uploadProgress > 0) && (
+            <div className="mt-4">
+              <div className="flex justify-between text-xs mb-1">
+                <span>Uploading...</span>
+                <span>{uploadProgress}%</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div
+                  className="bg-indigo-600 h-2 rounded-full"
+                  style={{ width: `${uploadProgress}%` }}
+                />
+              </div>
+            </div>
+          )}
+
           <div className="flex justify-end gap-3 pt-6 border-t border-gray-200">
             <button
               type="button"
               onClick={onClose}
               className="px-6 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-              disabled={isLoading}
+              disabled={isUploading || isLoading}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className={`inline-flex justify-center py-2 px-6 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-              disabled={isLoading}
+              className={`inline-flex justify-center py-2 px-6 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${(isUploading || isLoading) ? 'opacity-50 cursor-not-allowed' : ''}`}
+              disabled={isUploading || isLoading}
             >
-              {isLoading ? (
+              {(isUploading || isLoading) ? (
                 <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>

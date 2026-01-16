@@ -63,20 +63,6 @@ const [selectedClassroomIds, setSelectedClassroomIds] = useState<string[]>([]);
   }
 }, [feeItem, isOpen]);
 
-
-  // useEffect(() => {
-  //   if (feeItem) {
-  //     setFormData(feeItem);
-  //   } else {
-  //     setFormData({ name: "", defaultAmount: 0, currency: "USD", applicableTo: "ALL" as any });
-  //   }
-  // }, [feeItem, isOpen]);
-
-  // const handleSubmit = (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   onSave(formData);
-  // };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -110,7 +96,8 @@ const [selectedClassroomIds, setSelectedClassroomIds] = useState<string[]>([]);
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="relative w-full max-w-lg overflow-hidden rounded-[2.5rem] bg-slate-900/80 border border-white/10 p-8 shadow-2xl backdrop-blur-2xl"
+            className="relative w-full max-w-lg overflow-hidden rounded-[2.5rem] bg-slate-900/80 
+            border border-white/10 p-8 shadow-2xl backdrop-blur-2xl max-h-[90vh] overflow-y-auto"
           >
             {/* Background Glow Ornament */}
             <div className="absolute -top-24 -right-24 w-48 h-48 bg-indigo-500/20 blur-[60px] rounded-full pointer-events-none" />
