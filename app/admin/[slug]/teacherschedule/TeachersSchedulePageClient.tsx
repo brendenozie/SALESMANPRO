@@ -1,4 +1,3 @@
-// app/admin/[slug]/teacher-schedule/TeachersSchedulePageClient.tsx
 'use client';
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
@@ -6,289 +5,297 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   CalendarDaysIcon,
   ClockIcon,
-  BookOpenIcon, // For classes
-  MapPinIcon, // For location
-  UsersIcon, // For meetings
-  BriefcaseIcon, // For prep/office hours
+  BookOpenIcon,
+  MapPinIcon,
+  UsersIcon,
+  BriefcaseIcon,
   ArrowLeftIcon,
   ArrowRightIcon,
-  LinkIcon, // For online meeting links
-  SparklesIcon, // For general events
-  CheckCircleIcon, // Success message icon
-  ExclamationCircleIcon, // Error message icon
+  LinkIcon,
+  SparklesIcon,
+  CheckCircleIcon,
+  ExclamationCircleIcon,
+  PrinterIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  VideoCameraIcon
 } from '@heroicons/react/24/outline';
 
-// Import types from the server component file
 import type { ClassScheduleItem, EventScheduleItem, TeacherInfo } from './page';
-
-// Mocking context data for demonstration purposes (replace with actual context in your app)
-const useMockThemeSettings = () => ({
-  primaryColor: "#4F46E5", // Indigo-600
-  accentColor: "#818CF8", // Indigo-300
-});
-
-interface TeachersSchedulePageClientProps {
-  educator: TeacherInfo;
-  initialSchedule: ClassScheduleItem[];
-  initialEvents: EventScheduleItem[];
-  companyId: string;
-}
 
 export default function TeachersSchedulePageClient({
   educator,
   initialSchedule,
   initialEvents,
-  companyId, // Not directly used on this page, but good to pass down
-}: TeachersSchedulePageClientProps) {
-  const { primaryColor, accentColor } = useMockThemeSettings();
-
-  const [schedule, setSchedule] = useState<ClassScheduleItem[]>(initialSchedule);
-  const [events, setEvents] = useState<EventScheduleItem[]>(initialEvents);
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]); // Default to today
+}: { educator: TeacherInfo; initialSchedule: ClassScheduleItem[]; initialEvents: EventScheduleItem[]; companyId: string }) {
+  
+  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
   const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
-  // Update state when initial props change
-  useEffect(() => {
-    setSchedule(initialSchedule);
-    setEvents(initialEvents);
-  }, [initialSchedule, initialEvents]);
-
-  const showStatus = useCallback((type: 'success' | 'error', message: string) => {
-    setStatusMessage({ type, message });
-    setTimeout(() => setStatusMessage(null), 3000);
-  }, []);
-
-  const getEventIcon = useCallback((type: string) => {
-    switch (type) {
-      case 'class': return <BookOpenIcon className="h-5 w-5 text-indigo-600" />;
-      case 'MEETING': return <UsersIcon className="h-5 w-5 text-teal-600" />;
-      case 'WORKSHOP': return <BriefcaseIcon className="h-5 w-5 text-purple-600" />;
-      case 'BREAK': return <ClockIcon className="h-5 w-5 text-gray-500" />; // Assuming a 'BREAK' event type
-      default: return <SparklesIcon className="h-5 w-5 text-gray-500" />; // For other event types
-    }
-  }, []);
-
-  const getFormattedDate = useCallback((dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
-  }, []);
-
-  const changeDateByDays = useCallback((days: number) => {
-    const currentDate = new Date(selectedDate);
-    currentDate.setDate(currentDate.getDate() + days);
-    setSelectedDate(currentDate.toISOString().split('T')[0]);
+  // Helper to get a week's worth of dates for the "Week Strip"
+  const weekStrip = useMemo(() => {
+    const start = new Date(selectedDate);
+    const dayOfWeek = start.getDay();
+    const diff = start.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1); // Adjust to Monday
+    const monday = new Date(start.setDate(diff));
+    
+    return Array.from({ length: 7 }).map((_, i) => {
+      const d = new Date(monday);
+      d.setDate(monday.getDate() + i);
+      return d;
+    });
   }, [selectedDate]);
 
-  // Combine recurring schedule and specific events for the selected day
   const currentDayScheduleAndEvents = useMemo(() => {
-    const selectedDayName = new Date(selectedDate).toLocaleDateString('en-US', { weekday: 'long' });
-    const selectedDateISO = selectedDate; // YYYY-MM-DD
+    const selectedDateObj = new Date(selectedDate);
+    const selectedDayName = selectedDateObj.toLocaleDateString('en-US', { weekday: 'long' });
+    const selectedDateISO = selectedDate;
 
-    const dayItems: { time: string; event: string; type: string; location?: string | null; meetingLink?: string | null; }[] = [];
+    const dayItems: any[] = [];
 
-    // Add recurring classes for the selected day
-    schedule.forEach(item => {
+    initialSchedule.forEach(item => {
       if (item.day === selectedDayName) {
-        dayItems.push({
-          time: `${item.startTime} - ${item.endTime}`,
-          event: item.title, // Course title
-          type: item.type, // 'class'
-          location: item.topic, // Using topic as location for recurring classes
-          meetingLink: item.meetingLink,
-        });
+        dayItems.push({ ...item, category: 'class', timeSort: item.startTime });
       }
     });
 
-    // Add specific events for the selected date
-    events.forEach(item => {
+    initialEvents.forEach(item => {
       if (item.date === selectedDateISO) {
-        dayItems.push({
-          time: `${item.startTime} - ${item.endTime}`,
-          event: item.title,
-          type: item.type, // EventType
-          location: item.location,
-          meetingLink: item.onlineMeetingLink,
-        });
+        dayItems.push({ ...item, category: item.type, timeSort: item.startTime });
       }
     });
 
-    // Sort by start time
-    return dayItems.sort((a, b) => {
-      const timeA = a.time.split(' - ')[0];
-      const timeB = b.time.split(' - ')[0];
-      return timeA.localeCompare(timeB);
-    });
-  }, [selectedDate, schedule, events]);
+    return dayItems.sort((a, b) => a.timeSort.localeCompare(b.timeSort));
+  }, [selectedDate, initialSchedule, initialEvents]);
 
-
-  const todayDisplay = new Date().toLocaleDateString('en-US', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-  });
+  const getEventStyles = (type: string) => {
+    switch (type.toUpperCase()) {
+      case 'CLASS': return { icon: <BookOpenIcon />, color: 'bg-indigo-600', light: 'bg-indigo-50', text: 'text-indigo-700' };
+      case 'MEETING': return { icon: <UsersIcon />, color: 'bg-emerald-500', light: 'bg-emerald-50', text: 'text-emerald-700' };
+      case 'WORKSHOP': return { icon: <BriefcaseIcon />, color: 'bg-amber-500', light: 'bg-amber-50', text: 'text-amber-700' };
+      default: return { icon: <SparklesIcon />, color: 'bg-slate-500', light: 'bg-slate-50', text: 'text-slate-700' };
+    }
+  };
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-8 bg-gray-50 min-h-screen font-sans">
-      {/* Header */}
-      <motion.div
-        className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-gray-200"
-        initial="hidden"
-        animate="visible"
-        transition={{ staggerChildren: 0.08, delayChildren: 0.1 }}
-      >
-        <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="flex items-center gap-4">
-          <button
-            onClick={() => window.history.back()}
-            className={`p-2 rounded-full text-gray-600 hover:bg-gray-200 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[${accentColor}]`}
-            aria-label="Back"
-          >
-            <ArrowLeftIcon className="h-6 w-6" />
-          </button>
+    <div className="min-h-screen bg-[#F8FAFC] p-4 lg:p-8 font-sans">
+      <div className="max-w-5xl mx-auto space-y-6">
+        
+        {/* Header Section */}
+        <header className="flex flex-col md:flex-row md:items-end justify-between gap-6 print:hidden">
           <div>
-            <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
-              My Schedule <span style={{ color: primaryColor }}>({educator.name})</span>
-            </h1>
-            <p className="text-sm text-gray-600 mt-1">
-              Your daily and weekly timetable overview as a {educator.role}.
-            </p>
-          </div>
-        </motion.div>
-        <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="bg-white text-gray-700 px-4 py-2 rounded-lg shadow-sm border border-gray-200 text-sm font-medium flex items-center gap-2">
-          <CalendarDaysIcon className="h-5 w-5 text-gray-500" />
-          <span>{todayDisplay}</span>
-        </motion.div>
-      </motion.div>
-
-      {/* Status Message */}
-      <AnimatePresence>
-        {statusMessage && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className={`mb-6 p-3 rounded-md flex items-center gap-2 ${
-              statusMessage.type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-            }`}
-          >
-            {statusMessage.type === 'success' ? (
-              <CheckCircleIcon className="h-5 w-5" />
-            ) : (
-              <ExclamationCircleIcon className="h-5 w-5" />
-            )}
-            {statusMessage.message}
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Date Navigation & Current Day */}
-      <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
-        <div className="flex items-center justify-between mb-6">
-          <button
-            onClick={() => changeDateByDays(-1)}
-            className={`p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[${accentColor}]`}
-            title="Previous Day"
-          >
-            <ArrowLeftIcon className="h-5 w-5 text-gray-600" />
-          </button>
-          <div className="flex flex-col items-center">
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-800">
-              {getFormattedDate(selectedDate)}
-            </h2>
-            <input
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="mt-2 text-center text-sm text-blue-600 border border-gray-300 rounded-md py-1 px-2 focus:ring-indigo-500 focus:border-indigo-500"
-            />
-          </div>
-          <button
-            onClick={() => changeDateByDays(1)}
-            className={`p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[${accentColor}]`}
-            title="Next Day"
-          >
-            <ArrowRightIcon className="h-5 w-5 text-gray-600" />
-          </button>
-        </div>
-
-        {/* Daily Schedule Table */}
-        <div className="overflow-x-auto">
-          {currentDayScheduleAndEvents.length > 0 ? (
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Event</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Details</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {currentDayScheduleAndEvents.map((slot, index) => (
-                  <motion.tr key={index} variants={{ hidden: { opacity: 0, x: -20 }, visible: { opacity: 1, x: 0 } }} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 flex items-center gap-2">
-                      <ClockIcon className="h-4 w-4 text-gray-500" /> {slot.time}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      <div className="flex items-center gap-2">
-                        {getEventIcon(slot.type)} {slot.event}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <div className="flex flex-col gap-1">
-                        {slot.location && (
-                          <span className="flex items-center gap-1">
-                            <MapPinIcon className="h-4 w-4 text-gray-400" /> {slot.location}
-                          </span>
-                        )}
-                        {slot.meetingLink && (
-                          <a href={slot.meetingLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline flex items-center gap-1">
-                            <LinkIcon className="h-4 w-4" /> Join Online
-                          </a>
-                        )}
-                        {/* {slot.type === 'class' && slot.topic && (
-                          <span className="text-gray-600 italic">Topic: {slot.topic}</span>
-                        )} */}
-                      </div>
-                    </td>
-                  </motion.tr>
-                ))}
-              </tbody>
-            </table>
-          ) : (
-            <div className="p-8 text-center text-gray-500">
-              <CalendarDaysIcon className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-              <p className="text-lg">No schedule found for {getFormattedDate(selectedDate)}.</p>
-              <p className="text-sm mt-2">Check other dates or contact your administrator.</p>
+            <div className="flex items-center gap-2 text-indigo-600 font-bold text-sm uppercase tracking-widest mb-2">
+                <div className="h-2 w-2 rounded-full bg-indigo-600 animate-pulse" />
+                Live Schedule
             </div>
-          )}
-        </div>
-      </motion.div>
+            <h1 className="text-4xl font-black text-slate-900 tracking-tight">
+              {educator.name.split(' ')[0]}&apos;s <span className="text-slate-400">Planner</span>
+            </h1>
+          </div>
 
-      {/* Quick Stats (Optional - for overall view) */}
-      <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div className="p-5 rounded-xl shadow-md border border-gray-200 bg-white flex items-center gap-4">
-          <div className={`p-3 rounded-full bg-[${primaryColor}10]`}>
-            <BookOpenIcon className={`h-7 w-7 text-[${primaryColor}]`} />
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => window.print()}
+              className="p-3 bg-white border border-slate-200 rounded-2xl text-slate-600 hover:bg-slate-50 transition-all shadow-sm"
+            >
+              <PrinterIcon className="h-5 w-5" />
+            </button>
+            <div className="h-12 w-[1px] bg-slate-200 mx-2 hidden md:block" />
+            <div className="text-right hidden md:block">
+                <p className="text-xs font-black text-slate-400 uppercase tracking-tighter">Current Role</p>
+                <p className="text-sm font-bold text-slate-700">{educator.role}</p>
+            </div>
           </div>
-          <div>
-            <p className="text-sm font-medium text-gray-600">Total Classes</p>
-            <h2 className="text-3xl font-bold text-gray-800">
-              {schedule.length}
-            </h2>
-          </div>
+        </header>
+
+        {/* Date Navigator Strip */}
+        <div className="bg-white p-2 rounded-[2rem] shadow-sm border border-slate-200 flex items-center justify-between print:hidden">
+           <button 
+             onClick={() => {
+                const d = new Date(selectedDate);
+                d.setDate(d.getDate() - 7);
+                setSelectedDate(d.toISOString().split('T')[0]);
+             }}
+             className="p-3 hover:bg-slate-50 rounded-2xl transition-colors text-slate-400"
+            >
+             <ChevronLeftIcon className="h-5 w-5" />
+           </button>
+
+           <div className="flex flex-1 justify-around px-2">
+             {weekStrip.map((date) => {
+               const iso = date.toISOString().split('T')[0];
+               const isActive = iso === selectedDate;
+               return (
+                 <button
+                   key={iso}
+                   onClick={() => setSelectedDate(iso)}
+                   className={`flex flex-col items-center p-3 min-w-[60px] rounded-2xl transition-all ${
+                     isActive ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'hover:bg-slate-50 text-slate-500'
+                   }`}
+                 >
+                   <span className="text-[10px] font-black uppercase tracking-widest opacity-70">
+                     {date.toLocaleDateString('en-US', { weekday: 'short' })}
+                   </span>
+                   <span className="text-lg font-bold">{date.getDate()}</span>
+                 </button>
+               );
+             })}
+           </div>
+
+           <button 
+             onClick={() => {
+                const d = new Date(selectedDate);
+                d.setDate(d.getDate() + 7);
+                setSelectedDate(d.toISOString().split('T')[0]);
+             }}
+             className="p-3 hover:bg-slate-50 rounded-2xl transition-colors text-slate-400"
+            >
+             <ChevronRightIcon className="h-5 w-5" />
+           </button>
         </div>
-        <div className="p-5 rounded-xl shadow-md border border-gray-200 bg-white flex items-center gap-4">
-          <div className={`p-3 rounded-full bg-[${accentColor}10]`}>
-            <UsersIcon className={`h-7 w-7 text-[${accentColor}]`} />
-          </div>
-          <div>
-            <p className="text-sm font-medium text-gray-600">Total Events/Meetings</p>
-            <h2 className="text-3xl font-bold text-gray-800">
-              {events.length}
-            </h2>
-          </div>
+
+        {/* Main Timeline Body */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            {/* Timeline Column */}
+            <div className="lg:col-span-8 space-y-4">
+                <div className="flex items-center justify-between px-4">
+                    <h3 className="text-lg font-bold text-slate-800">
+                        {new Date(selectedDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+                    </h3>
+                    <input 
+                        type="date" 
+                        value={selectedDate}
+                        onChange={(e) => setSelectedDate(e.target.value)}
+                        className="text-xs font-bold text-indigo-600 bg-indigo-50 border-none rounded-lg px-3 py-1 focus:ring-0 cursor-pointer"
+                    />
+                </div>
+
+                <div className="relative pl-8 space-y-6 before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-[2px] before:bg-slate-200">
+                    <AnimatePresence mode="wait">
+                        {currentDayScheduleAndEvents.length > 0 ? (
+                            currentDayScheduleAndEvents.map((item, idx) => {
+                                const style = getEventStyles(item.category);
+                                return (
+                                    <motion.div 
+                                        key={`${item.id}-${idx}`}
+                                        initial={{ opacity: 0, x: -10 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        className="relative"
+                                    >
+                                        {/* Timeline Dot */}
+                                        <div className={`absolute -left-[26px] top-1.5 h-4 w-4 rounded-full border-4 border-white shadow-sm ${style.color}`} />
+                                        
+                                        <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm hover:shadow-md transition-all group">
+                                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                                <div className="space-y-1">
+                                                    <div className="flex items-center gap-2 text-xs font-black text-slate-400 uppercase tracking-tighter">
+                                                        <ClockIcon className="h-3.5 w-3.5" />
+                                                        {item.startTime} — {item.endTime}
+                                                    </div>
+                                                    <h4 className="text-xl font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
+                                                        {item.title}
+                                                    </h4>
+                                                    <div className="flex flex-wrap gap-3 mt-2">
+                                                        <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${style.light} ${style.text}`}>
+                                                            {React.cloneElement(style.icon as React.ReactElement, { className: 'h-3 w-3' })}
+                                                            {item.category}
+                                                        </span>
+                                                        {item.location && (
+                                                            <span className="inline-flex items-center gap-1 text-slate-400 text-[11px] font-medium">
+                                                                <MapPinIcon className="h-3.5 w-3.5" />
+                                                                {item.location}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+
+                                                {(item.meetingLink || item.onlineMeetingLink) && (
+                                                    <a 
+                                                        href={item.meetingLink || item.onlineMeetingLink}
+                                                        target="_blank"
+                                                        className="flex items-center justify-center gap-2 px-6 py-3 bg-slate-900 text-white text-xs font-bold uppercase tracking-widest rounded-2xl hover:bg-indigo-600 transition-all shadow-lg shadow-slate-200"
+                                                    >
+                                                        <VideoCameraIcon className="h-4 w-4" />
+                                                        Join Session
+                                                    </a>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                );
+                            })
+                        ) : (
+                            <div className="bg-slate-50 rounded-[2rem] border-2 border-dashed border-slate-200 p-12 text-center">
+                                <div className="bg-white h-16 w-16 rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-sm">
+                                    <SparklesIcon className="h-8 w-8 text-slate-300" />
+                                </div>
+                                <h4 className="text-lg font-bold text-slate-900">Clear Skies!</h4>
+                                <p className="text-slate-500 text-sm max-w-[240px] mx-auto mt-1">No scheduled classes or events for this date. Use this time for deep work.</p>
+                            </div>
+                        )}
+                    </AnimatePresence>
+                </div>
+            </div>
+
+            {/* Sidebar Stats Column */}
+            <div className="lg:col-span-4 space-y-6">
+                <div className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm">
+                    <h5 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-6">Daily Snapshot</h5>
+                    <div className="space-y-4">
+                        <StatRow 
+                            label="Total Sessions" 
+                            value={currentDayScheduleAndEvents.length} 
+                            icon={<CalendarDaysIcon className="h-5 w-5 text-indigo-600" />} 
+                        />
+                        <StatRow 
+                            label="Classes" 
+                            value={currentDayScheduleAndEvents.filter(e => e.category === 'class').length} 
+                            icon={<BookOpenIcon className="h-5 w-5 text-emerald-600" />} 
+                        />
+                        <StatRow 
+                            label="Meetings" 
+                            value={currentDayScheduleAndEvents.filter(e => e.category !== 'class').length} 
+                            icon={<UsersIcon className="h-5 w-5 text-amber-600" />} 
+                        />
+                    </div>
+                </div>
+
+                <div className="bg-indigo-900 rounded-[2rem] p-6 text-white relative overflow-hidden group">
+                    <div className="relative z-10">
+                        <p className="text-indigo-300 text-[10px] font-black uppercase tracking-widest mb-1">Coming Up Next</p>
+                        {currentDayScheduleAndEvents[0] ? (
+                            <>
+                                <h6 className="text-lg font-bold leading-tight mb-4">{currentDayScheduleAndEvents[0].title}</h6>
+                                <div className="text-xs font-medium text-indigo-200 flex items-center gap-2">
+                                    <ClockIcon className="h-4 w-4" />
+                                    Starts at {currentDayScheduleAndEvents[0].startTime}
+                                </div>
+                            </>
+                        ) : (
+                            <p className="text-sm font-bold">Nothing else today</p>
+                        )}
+                    </div>
+                    <SparklesIcon className="absolute -right-4 -bottom-4 h-24 w-24 text-white/5 group-hover:rotate-12 transition-transform duration-500" />
+                </div>
+            </div>
+
         </div>
-        {/* You can add more stats here, e.g., total teaching hours, upcoming exams etc. */}
-      </motion.div>
+      </div>
     </div>
   );
+}
+
+function StatRow({ label, value, icon }: { label: string; value: number | string; icon: React.ReactNode }) {
+    return (
+        <div className="flex items-center justify-between p-3 rounded-2xl hover:bg-slate-50 transition-colors">
+            <div className="flex items-center gap-3">
+                <div className="p-2 bg-slate-50 rounded-xl">
+                    {icon}
+                </div>
+                <span className="text-sm font-bold text-slate-600">{label}</span>
+            </div>
+            <span className="text-xl font-black text-slate-900">{value}</span>
+        </div>
+    );
 }
