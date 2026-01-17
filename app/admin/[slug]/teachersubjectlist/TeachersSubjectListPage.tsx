@@ -15,7 +15,8 @@ import {
   CalendarIcon,
   DocumentChartBarIcon,
   ChevronRightIcon,
-  SparklesIcon
+  SparklesIcon,
+  CalendarDaysIcon
 } from '@heroicons/react/24/outline';
 import { useRouter } from "next/navigation";
 
@@ -201,6 +202,12 @@ function ClassroomCard({ hub, onAction }: any) {
             </button>
             <button onClick={() => onAction('course-schedule')} className="text-[11px] font-black uppercase text-slate-400 hover:text-indigo-600 transition-colors flex items-center gap-1">
               <CalendarIcon className="h-4 w-4" /> Schedule
+            </button>
+            <button onClick={() => onAction('class-resources')} className="text-[11px] font-black uppercase text-slate-400 hover:text-indigo-600 transition-colors flex items-center gap-1">
+              <MapPinIcon className="h-4 w-4" /> Resources
+            </button>
+            <button onClick={() => onAction('course-events')} className="text-[11px] font-black uppercase text-slate-400 hover:text-indigo-600 transition-colors flex items-center gap-1">
+              <CalendarDaysIcon className="h-4 w-4" /> Events
             </button>
          </div>
       </div>
