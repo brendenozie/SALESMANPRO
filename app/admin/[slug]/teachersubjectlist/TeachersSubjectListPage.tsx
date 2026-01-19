@@ -198,26 +198,26 @@ function CourseCommanderCard({ course, teacherUserId, today }: any) {
           <QuickAction 
             icon={IdentificationIcon} 
             label="Roster" 
-            onClick={() => handleAction('manage-course-roster')} 
+            onClick={() => handleAction('student-course-roster')} 
             color="emerald"
           />
           <QuickAction 
             icon={PresentationChartLineIcon} 
             label="Reports" 
-            onClick={() => handleAction('manage-course-reports')} 
+            onClick={() => handleAction('course-reports')} 
             color="violet"
-          />
-          <QuickAction 
-            icon={PresentationChartLineIcon} 
-            label="View Hub" 
-            onClick={() => handleAction('manage-course-resources')} 
-            color="rose"
           />
           <QuickAction 
             icon={ClipboardDocumentCheckIcon} 
             label="Schedule" 
-            onClick={() => handleAction('manage-course-schedule')} 
+            onClick={() => handleAction('course-schedule')} 
             color="lime"
+          />
+          <QuickAction 
+            icon={PresentationChartLineIcon} 
+            label="Class Events" 
+            onClick={() => handleAction('course-event')} 
+            color="rose"
           />
           <QuickAction 
             icon={ChatBubbleLeftRightIcon} 

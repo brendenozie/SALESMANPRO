@@ -1,15 +1,21 @@
 // app/admin/[slug]/teacher-classes/course-reports/page.tsx
 import React from "react";
 import CourseReportsPageClient from "./CourseReportsPageClient";
+import { getAuthSession } from "@/lib/auth";
+import { cookies } from "next/headers";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 const MOCK_CURRENT_EDUCATOR_ID = "clx023j0d00003b6033877d9c"; // Example: Educator User ID
 
+// interface PageProps {
+//   params: Promise<{
+//     slug: string; // educatorId
+//   }>;
+// }
 interface PageProps {
-  params: Promise<{
-    slug: string; // educatorId
-  }>;
+  params: { courseId: string; slug: string };
+  searchParams: { classroomId?: string; scheduleId?: string };
 }
 
 // Define types for data fetched by the server component
@@ -54,9 +60,17 @@ export interface CourseReportsPageData {
   companyId: string; // This will now come directly from the API response
 }
 
-export default async function CourseReportsServerPage({ params }: PageProps) {
+export default async function CourseReportsServerPage({ params, searchParams }: PageProps) {
   // As clarified, params.slug is the educatorId
-  const educatorId = (await params).slug || MOCK_CURRENT_EDUCATOR_ID;
+  // const educatorId = (await params).slug || MOCK_CURRENT_EDUCATOR_ID;
+  
+  const cookiesStore = (await cookies()).toString();
+  const session = await getAuthSession();
+  const educatorId = session?.user?.id || MOCK_CURRENT_EDUCATOR_ID;
+  // const companyId = params.slug;
+
+  const { slug: companyId, courseId } = params;
+  const { classroomId, scheduleId } = searchParams;
 
   let reportsPageData: CourseReportsPageData | null = null;
   let fetchError: string | null = null;
@@ -64,19 +78,19 @@ export default async function CourseReportsServerPage({ params }: PageProps) {
   try {
     const res = await fetch(
       `${apiBaseUrl}/teacher/courses-for-reports?educatorId=${encodeURIComponent(educatorId)}`,
-      { next: { revalidate: 60 } } // Ensure fresh data
+      { next: { revalidate: 60 }, headers: { cookie: cookiesStore } } // Ensure fresh data
     );
 
     if (res.ok) {
       // Destructure both courses and companyId from the API response
-      const { courses, companyId: fetchedCompanyId } = await res.json();
+      const { courses, companyId: fetchedCompanyId } = (await res.json()).data;
       reportsPageData = {
         courses: courses,
         educatorId: educatorId,
         companyId: fetchedCompanyId, // Assign the companyId fetched from the API
       };
     } else {
-      const errorData = await res.json();
+      const errorData = (await res.json()).data;
       fetchError = errorData.message || `Failed to fetch courses: ${res.status} ${res.statusText}`;
       console.error("[CourseReportsServerPage] Fetch error:", fetchError);
     }

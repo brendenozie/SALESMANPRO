@@ -1,6 +1,9 @@
 // app/admin/[slug]/teacher-classes/[courseId]/send-message/page.tsx
 import React from "react";
 import SendMessagePageClient from "./SendMessagePageClient";
+import { getAuthSession } from "@/lib/auth";
+import { cookies } from "next/headers";
+
 
 export interface CourseInfo {
   id: string;
@@ -16,38 +19,47 @@ export interface EnrolledStudent {
 }
 
 interface PageProps {
-  params: Promise<{
-    slug: string;
-    courseId: string;
-  }>;
+  params: { courseId: string; slug: string };
+  searchParams: { classroomId?: string; scheduleId?: string };
 }
+
+const MOCK_CURRENT_EDUCATOR_ID = "clx023j0d00003b6033877d9c"; // Example: Educator ID
+
 
 // ✅ Adjust this to your actual backend URL or use .env
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
-export default async function SendMessagePage({ params }: PageProps) {
-  const { slug, courseId } = await params;
+export default async function SendMessagePage({ params, searchParams }: PageProps) {
+  // const { slug, courseId } = await params;
+  
+    const cookiesStore = (await cookies()).toString();
+    const session = await getAuthSession();
+    const educatorId = session?.user?.id || MOCK_CURRENT_EDUCATOR_ID;
+    // const companyId = params.slug;
+  
+    const { slug: companyId, courseId } = params;
+    const { classroomId, scheduleId } = searchParams;
 
   try {
     // Fetch course info
-    const courseRes = await fetch(`${apiBaseUrl}/teacher/courses/${courseId}`, {
-      cache: "no-store",
+    const courseRes = await fetch(`${apiBaseUrl}/teacher/courses/${courseId}?classroomId=${classroomId}&scheduleId=${scheduleId}`, {
+      cache: "no-store", headers: { cookie: cookiesStore }
     });
     if (!courseRes.ok) throw new Error("Failed to fetch course info");
-    const course: CourseInfo = await courseRes.json();
+    const course: CourseInfo = (await courseRes.json()).data;
 
     // Fetch enrolled students
     const studentsRes = await fetch(
-      `${apiBaseUrl}/teacher/courses/${courseId}/students`,
-      { cache: "no-store" }
+      `${apiBaseUrl}/teacher/courses/${courseId}/students?classroomId=${classroomId}&scheduleId=${scheduleId}`,
+      { cache: "no-store", headers: { cookie: cookiesStore } }
     );
     if (!studentsRes.ok) throw new Error("Failed to fetch enrolled students");
-    const enrolledStudents: EnrolledStudent[] = await studentsRes.json();
+    const enrolledStudents: EnrolledStudent[] = (await studentsRes.json()).data;
 
     // Fetch educator & company info (you can customize how you get these)
     // In a real app, you might get these from session or auth context
-    const educatorUserId = "mock-educator-id"; // Replace with real value
-    const companyId = slug; // Using slug as company identifier
+    const educatorUserId = session?.user?.id || MOCK_CURRENT_EDUCATOR_ID;
+    // const companyId = slug; // Using slug as company identifier
 
     return (
       <SendMessagePageClient
@@ -68,7 +80,7 @@ export default async function SendMessagePage({ params }: PageProps) {
           Please try again later or contact support if this issue persists.
         </p>
         <a
-          href={`/admin/${slug}/teacher-classes`}
+          // href={`/admin/${slug}/teacher-classes`}
           className="px-4 py-2 bg-indigo-600 text-white rounded-md shadow hover:bg-indigo-700 transition"
         >
           Back to Classes

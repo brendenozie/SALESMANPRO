@@ -74,7 +74,7 @@ export default function ConsolidatedGradesPageClient({
   }, []);
 
   const filteredStudents = useMemo(() => {
-    return students.filter(student =>
+    return students?.filter(student =>
       student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       student.studentId.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -124,8 +124,8 @@ export default function ConsolidatedGradesPageClient({
     link.click();
     document.body.removeChild(link);
 
-    showStatus('success', `Grades exported successfully for ${course.title}!`);
-  }, [students, assessments, studentGrades, calculateAverage, course.title, showStatus, filteredStudents]);
+    showStatus('success', `Grades exported successfully for ${course?.title}!`);
+  }, [students, assessments, studentGrades, calculateAverage, course?.title, showStatus, filteredStudents]);
 
   // CORRECTED: Add assessmentType to the arguments
   const handleEditGradeClick = useCallback((studentId: string, assessmentId: string, assessmentType: string, currentRecord: GradeRecord | null) => {
@@ -185,6 +185,7 @@ export default function ConsolidatedGradesPageClient({
       // For now, keeping the current path as per the original code.
       const res = await fetch(`${apiBaseUrl}/teacher/grades`, { // Verify this endpoint is correct for POST
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -222,7 +223,7 @@ export default function ConsolidatedGradesPageClient({
       setNewGradeStatus('');
       setNewGradeComments('');
     }
-  }, [editingGrade, newGradeValue, newGradeStatus, newGradeComments, course.id, course.academicLevelId, educatorId, companyId, assessments, showStatus, loading]);
+  }, [editingGrade, newGradeValue, newGradeStatus, newGradeComments, course?.id, course?.academicLevelId, educatorId, companyId, assessments, showStatus, loading]);
 
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -263,10 +264,10 @@ export default function ConsolidatedGradesPageClient({
           </button>
           <div>
             <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
-              Consolidated Grades <span style={{ color: primaryColor }}>{course.title}</span>
+              Consolidated Grades <span style={{ color: primaryColor }}>{course?.title}</span>
             </h1>
             <p className="text-sm text-gray-600 mt-1">
-              Overview of student performance across all assessments for {course.academicLevelName}.
+              Overview of student performance across all assessments for {course?.academicLevelName}.
             </p>
           </div>
         </motion.div>
@@ -336,7 +337,7 @@ export default function ConsolidatedGradesPageClient({
         animate="visible"
         variants={containerVariants}
       >
-        {filteredStudents.length > 0 && assessments.length > 0 ? (
+        {filteredStudents?.length > 0 && assessments.length > 0 ? (
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
@@ -356,7 +357,7 @@ export default function ConsolidatedGradesPageClient({
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {filteredStudents.map((student: StudentGradeData) => (
+              {filteredStudents?.map((student: StudentGradeData) => (
                 <tr key={student.studentId} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 sticky left-0 bg-white z-10">
                     <div className="flex items-center">

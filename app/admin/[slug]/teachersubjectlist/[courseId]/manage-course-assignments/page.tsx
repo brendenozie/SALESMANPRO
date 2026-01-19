@@ -1,6 +1,8 @@
 // app/admin/[slug]/teacher-classes/[courseId]/manage-assignments/page.tsx
 import React from "react";
 import ManageAssignmentsPageClient from "./ManageAssignmentsPageClient"; // Renamed client component
+import { getAuthSession } from "@/lib/auth";
+import { cookies } from "next/headers";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -9,10 +11,8 @@ const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api
 const MOCK_CURRENT_EDUCATOR_ID = "clx023j0d00003b6033877d9c"; // Example: Educator ID
 
 interface PageProps {
-  params: Promise<{
-    slug: string; // companyId
-    courseId: string;
-  }>;
+  params: { courseId: string; slug: string };
+  searchParams: { classroomId?: string; scheduleId?: string };
 }
 
 // Define types for data fetched by the server component
@@ -41,22 +41,28 @@ export interface ManageAssignmentsPageData {
   companyId: string; // Pass company ID to client for API calls
 }
 
-export default async function ManageAssignmentsServerPage({ params }: PageProps) {
-  const { slug: companyId, courseId } = await params;
-  // const courseId = params.courseId;
-  const educatorId = MOCK_CURRENT_EDUCATOR_ID; // In a real app, get this from auth context
+export default async function ManageAssignmentsServerPage({ params, searchParams }: PageProps) {
+
+  const cookiesStore = (await cookies()).toString();
+  const session = await getAuthSession();
+  const educatorId = session?.user?.id || MOCK_CURRENT_EDUCATOR_ID;
+  // const companyId = params.slug;
+
+  const { slug: companyId, courseId } = params;
+  const { classroomId, scheduleId } = searchParams;
+  // const educatorId = MOCK_CURRENT_EDUCATOR_ID; // In a real app, get this from auth context
 
   let assignmentsPageData: ManageAssignmentsPageData | null = null;
   let fetchError: string | null = null;
 
   try {
     const res = await fetch(
-      `${apiBaseUrl}/teacher/courses/${courseId}/assignments?educatorId=${encodeURIComponent(educatorId)}&companyId=${encodeURIComponent(companyId)}`,
-      { next: { revalidate: 60 } } // Ensure fresh data
+      `${apiBaseUrl}/teacher/courses/${courseId}/assignments?educatorId=${encodeURIComponent(educatorId)}&classroomId=${encodeURIComponent(classroomId || "")}&scheduleId=${encodeURIComponent(scheduleId || "")}`,
+      { next: { revalidate: 60 }, headers: { 'Cookie': cookiesStore || '' } }
     );
 
     if (res.ok) {
-      assignmentsPageData = (await res.json()) as ManageAssignmentsPageData;
+      assignmentsPageData = (await res.json()).data as ManageAssignmentsPageData;
       // Also pass down educatorId and companyId for client-side API calls
       assignmentsPageData.educatorId = educatorId;
       assignmentsPageData.companyId = companyId;

@@ -2,16 +2,22 @@
 
 import React from "react";
 import ConsolidatedGradesPageClient from "./ConsolidatedGradesPageClient";
+import { getAuthSession } from "@/lib/auth";
+import { cookies } from "next/headers";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 const MOCK_CURRENT_EDUCATOR_ID = "clx023j0d00003b6033877d9c"; // Example: Educator ID
 
+// interface PageProps {
+//   params: Promise<{
+//     slug: string; // companyId
+//     courseId: string;
+//   }>;
+// }
 interface PageProps {
-  params: Promise<{
-    slug: string; // companyId
-    courseId: string;
-  }>;
+  params: { courseId: string; slug: string };
+  searchParams: { classroomId?: string; scheduleId?: string };
 }
 
 export interface StudentGradeData {
@@ -56,18 +62,24 @@ export interface ConsolidatedGradesPageData {
   companyId: string;
 }
 
-export default async function ConsolidatedGradesServerPage({ params }: PageProps) {
+export default async function ConsolidatedGradesServerPage({ params, searchParams }: PageProps) {
 
-  const courseId = (await params).courseId;
-  const educatorId = (await params).slug || MOCK_CURRENT_EDUCATOR_ID;
+  const { courseId } = params;
+  const { classroomId, scheduleId } = searchParams;
+
+  const session = await getAuthSession();
+  const cookiesStore = (await cookies()).toString();
+
+  // const courseId = (await params).courseId;
+  const educatorId = session?.user?.id || MOCK_CURRENT_EDUCATOR_ID;
 
   let gradesPageData: ConsolidatedGradesPageData | null = null;
   let fetchError: string | null = null;
 
   try {
     const res = await fetch(
-      `${apiBaseUrl}/teacher/courses/${courseId}/grades-data?educatorId=${encodeURIComponent(educatorId)}`,
-      { next: { revalidate: 60 } }
+      `${apiBaseUrl}/teacher/courses/${courseId}/grades-data?educatorId=${encodeURIComponent(educatorId)}&classroomId=${encodeURIComponent(classroomId || "")}&scheduleId=${encodeURIComponent(scheduleId || "")}`,
+      { next: { revalidate: 60 }, headers: { 'Cookie': cookiesStore || '' } }
     );
 
     if (res.ok) {

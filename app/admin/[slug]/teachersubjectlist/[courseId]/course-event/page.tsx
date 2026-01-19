@@ -1,6 +1,8 @@
 // app/admin/[slug]/teacher-classes/[courseId]/manage-events/page.tsx
 import React from "react";
 import ManageEventsPageClient from "./ManageEventsPageClient";
+import { getAuthSession } from "@/lib/auth";
+import { cookies } from "next/headers";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -8,11 +10,15 @@ const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api
 // For this example, we'll use a hardcoded mock ID.
 const MOCK_CURRENT_EDUCATOR_ID = "clx023j0d00003b6033877d9c"; // Example: Educator ID
 
+// interface PageProps {
+//   params: Promise<{
+//     slug: string; // companyId
+//     courseId: string;
+//   }>;
+// }
 interface PageProps {
-  params: Promise<{
-    slug: string; // companyId
-    courseId: string;
-  }>;
+  params: { courseId: string; slug: string };
+  searchParams: { classroomId?: string; scheduleId?: string };
 }
 
 // Define types for data fetched by the server component
@@ -60,22 +66,32 @@ export interface ManageEventsPageData {
   companyId: string; // Pass company ID to client for API calls
 }
 
-export default async function ManageEventsServerPage({ params }: PageProps) {
+export default async function ManageEventsServerPage({ params, searchParams }: PageProps) {
   // const { slug } = await params;
-  const courseId = (await params).courseId;
-  const educatorId = (await params).slug || MOCK_CURRENT_EDUCATOR_ID; // In a real app, get this from auth context
+  // const courseId = params.courseId;
+  // const educatorId = params.slug || MOCK_CURRENT_EDUCATOR_ID; // In a real app, get this from auth context
+  // const cookiesStore = (await cookies()).toString();
+  
+    const cookiesStore = (await cookies()).toString();
+    const session = await getAuthSession();
+    const educatorId = session?.user?.id || MOCK_CURRENT_EDUCATOR_ID;
+    // const companyId = params.slug;
+  
+    const { slug: companyId, courseId } = params;
+    const { classroomId, scheduleId } = searchParams;
+
 
   let eventsPageData: ManageEventsPageData | null = null;
   let fetchError: string | null = null;
 
   try {
     const res = await fetch(
-      `${apiBaseUrl}/teacher/courses/${courseId}/events?educatorId=${encodeURIComponent(educatorId)}`,
-      { next: { revalidate: 60 } } // Ensure fresh data
+      `${apiBaseUrl}/teacher/courses/${courseId}/events?educatorId=${encodeURIComponent(educatorId)}&companyId=${encodeURIComponent(companyId)}&classroomId=${encodeURIComponent(classroomId || "")}&scheduleId=${encodeURIComponent(scheduleId || "")}`,
+      { next: { revalidate: 60 }, headers: { cookie: cookiesStore } } // Ensure fresh data
     );
 
     if (res.ok) {
-      eventsPageData = (await res.json()) as ManageEventsPageData;
+      eventsPageData = (await res.json()).data as ManageEventsPageData;
       // Also pass down educatorId and companyId for client-side API calls
       eventsPageData.educatorId = educatorId;
       // eventsPageData.companyId = companyId;
