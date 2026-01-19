@@ -211,19 +211,19 @@ function CourseCommanderCard({ course, teacherUserId, today }: any) {
             icon={PresentationChartLineIcon} 
             label="View Hub" 
             onClick={() => handleAction('manage-course-resources')} 
-            color=""
+            color="rose"
           />
           <QuickAction 
             icon={ClipboardDocumentCheckIcon} 
             label="Schedule" 
             onClick={() => handleAction('manage-course-schedule')} 
-            color=""
+            color="lime"
           />
           <QuickAction 
             icon={ChatBubbleLeftRightIcon} 
             label="Chat" 
             onClick={() => handleAction('send-message')} 
-            color=""
+            color="cyan"
           />
         </div>
       </div>
@@ -242,14 +242,15 @@ function CourseCommanderCard({ course, teacherUserId, today }: any) {
 
 function QuickAction({ icon: Icon, label, onClick, color }: any) {
   const themes: any = {
-    indigo: 'group-hover:bg-indigo-500/20 group-hover:text-indigo-400 border-indigo-500/0',
-    fuchsia: 'group-hover:bg-fuchsia-500/20 group-hover:text-fuchsia-400 border-fuchsia-500/0',
-    amber: 'group-hover:bg-amber-500/20 group-hover:text-amber-400 border-amber-500/0',
-    emerald: 'group-hover:bg-emerald-500/20 group-hover:text-emerald-400 border-emerald-500/0',
-    magenta: 'group-hover:bg-magenta-500/20 group-hover:text-magenta-400 border-magenta-500/0',
-    hotpink: 'group-hover:bg-hotpink-500/20 group-hover:text-hotpink-400 border-hotpink-500/0',
-    sunset: 'group-hover:bg-sunset-500/20 group-hover:text-sunset-400 border-sunset-500/0',
-    violet: 'group-hover:bg-violet-500/20 group-hover:text-violet-400 border-violet-500/0',
+    indigo: 'group-hover:bg-white/10 group-hover:text-indigo-400 border-indigo-500/0',
+    fuchsia: 'group-hover:bg-white/10 group-hover:text-fuchsia-400 border-fuchsia-500/0',
+    amber: 'group-hover:bg-white/10 group-hover:text-amber-400 border-amber-500/0',
+    emerald: 'group-hover:bg-white/10 group-hover:text-emerald-400 border-emerald-500/0',
+    violet: 'group-hover:bg-white/10 group-hover:text-violet-400 border-violet-500/0',
+    rose: 'group-hover:bg-white/10 group-hover:text-rose-400 border-white/10',
+    sky: 'group-hover:bg-white/10 group-hover:text-sky-400 border-white/10',
+    lime: 'group-hover:bg-white/10 group-hover:text-lime-400 border-white/10',
+    cyan: 'group-hover:bg-white/10 group-hover:text-cyan-400 border-white/10',
     "": 'group-hover:bg-white/10 group-hover:text-white border-white/10',
   };
 

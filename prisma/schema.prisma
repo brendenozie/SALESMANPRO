@@ -2986,7 +2986,7 @@ model CourseAcademicLevel {
   @@index([companyId])
 }
 
-// Course Enrollment Model (No changes needed, it's well-structured)
+// Course Enrollment Model 
 model CourseEnrollment {
   id        String  @id @default(auto()) @map("_id") @db.ObjectId
   studentId String  @db.ObjectId
