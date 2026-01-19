@@ -10,12 +10,22 @@ const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api
 // For this example, we'll use a hardcoded mock ID.
 const MOCK_CURRENT_EDUCATOR_ID = "clx023j0d00003b6033877d9c"; // Example: Educator ID
 
+// interface PageProps {
+//   params: Promise<{
+//     // slug: string; // companyId
+//     courseId: string;
+//   }>;
+// }
 interface PageProps {
-  params: Promise<{
-    // slug: string; // companyId
+  params: {
     courseId: string;
-  }>;
+  };
+  searchParams: {
+    classroomId?: string;
+    scheduleId?: string;
+  };
 }
+
 
 // Define types for data fetched by the server component
 export interface StudentAttendanceData {
@@ -40,14 +50,18 @@ export interface AttendancePageData {
   companyId: string; // Pass company ID to client for API calls
 }
 
-export default async function TakeAttendanceServerPage({ params }: PageProps) {
-  const { courseId } = await params; // slug: companyId, 
+export default async function TakeAttendanceServerPage({ params, searchParams }: PageProps) {
+  // const { courseId } = await params; // slug: companyId, 
+  const { courseId } = params;
+  const { classroomId, scheduleId } = searchParams;
+  
   // const educatorId = companyId || MOCK_CURRENT_EDUCATOR_ID; // In a real app, get this from auth context
   const cookiesStore = (await cookies()).toString()
   const session = await getAuthSession();
 
   const educatorId = session?.user?.id || MOCK_CURRENT_EDUCATOR_ID;
-  const companyId = "clx022z7f00002b60g6r4q6v9"; // Example company ID session?.user?.companyId || 
+  const companyId = '683581bba1bdf6ca3624b530'; // Example company ID session?.user?.companyId ||  683581bba1bdf6ca3624b530
+
   let attendancePageData: AttendancePageData | null = null;
   let fetchError: string | null = null;
 
@@ -55,7 +69,7 @@ export default async function TakeAttendanceServerPage({ params }: PageProps) {
     const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD for initial fetch
 
     const res = await fetch(
-      `${apiBaseUrl}/teacher/courses/${courseId}/attendance-data?educatorId=${encodeURIComponent(educatorId)}&companyId=${encodeURIComponent(companyId)}&date=${encodeURIComponent(today)}`,
+      `${apiBaseUrl}/teacher/courses/${courseId}/attendance-data?educatorId=${encodeURIComponent(educatorId)}&companyId=${encodeURIComponent(companyId)}&date=${encodeURIComponent(today)}&${classroomId ? `classroomId=${encodeURIComponent(classroomId)}&` : ''}${scheduleId ? `scheduleId=${encodeURIComponent(scheduleId)}&` : ''}`,
       { 
         headers: { 'Cookie': cookiesStore || '' },
         next: { revalidate: 60 } } // Ensure fresh data
@@ -63,6 +77,7 @@ export default async function TakeAttendanceServerPage({ params }: PageProps) {
 
     if (res.ok) {
       const data = (await res.json()).data || {};
+      console.log("[TakeAttendanceServerPage] Fetched data:", data);
       attendancePageData = {
         course: data.course,
         students: data.students,
