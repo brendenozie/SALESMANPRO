@@ -29,7 +29,6 @@ interface TakeAttendancePageClientProps {
   students: StudentAttendanceData[];
   initialAttendance: { [studentId: string]: string }; // Initial attendance for the current date
   educatorId: string;
-  companyId: string;
 }
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
@@ -39,7 +38,6 @@ export default function TakeAttendancePageClient({
   students,
   initialAttendance,
   educatorId,
-  companyId,
 }: TakeAttendancePageClientProps) {
   const router = useRouter();
   const { primaryColor, accentColor } = useMockThemeSettings(); // Replace with actual context in your app
@@ -68,7 +66,7 @@ export default function TakeAttendancePageClient({
       setStatusMessage(null);
       try {
         const res = await fetch(
-          `${apiBaseUrl}/teacher/courses/${course.id}/attendance-data?educatorId=${encodeURIComponent(educatorId)}&companyId=${encodeURIComponent(companyId)}&date=${encodeURIComponent(attendanceDate)}`,
+          `${apiBaseUrl}/teacher/courses/${course.id}/attendance-data?educatorId=${encodeURIComponent(educatorId)}&date=${encodeURIComponent(attendanceDate)}`,
           { 
             next: { revalidate: 60 },
             credentials: 'include'
@@ -105,7 +103,7 @@ export default function TakeAttendancePageClient({
     };
 
     fetchAttendanceForDate();
-  }, [attendanceDate, course.id, educatorId, companyId, students]); // Re-fetch when date changes
+  }, [attendanceDate, course.id, educatorId, students]); // Re-fetch when date changes
 
   const showStatus = useCallback((type: 'success' | 'error', message: string) => {
     setStatusMessage({ type, message });
@@ -128,7 +126,6 @@ export default function TakeAttendancePageClient({
         academicLevelId: course.academicLevelId, // Pass the academic level associated with the course
         attendanceDate: attendanceDate,
         educatorId: educatorId,
-        companyId: companyId,
         attendance: studentAttendance,
       };
 
@@ -152,7 +149,7 @@ export default function TakeAttendancePageClient({
     } finally {
       setLoading(false);
     }
-  }, [course, attendanceDate, educatorId, companyId, studentAttendance, showStatus]);
+  }, [course, attendanceDate, educatorId, studentAttendance, showStatus]);
 
   const handleBulkAttendanceChange = useCallback((status: AttendanceStatus) => {
     const updatedAttendance: { [studentId: string]: AttendanceStatus } = {};

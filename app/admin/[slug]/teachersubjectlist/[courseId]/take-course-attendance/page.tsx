@@ -47,7 +47,6 @@ export interface AttendancePageData {
   students: StudentAttendanceData[];
   existingAttendance: { [studentId: string]: string }; // Status string like 'Present', 'Absent'
   educatorId: string; // Pass educator ID to client for API calls
-  companyId: string; // Pass company ID to client for API calls
 }
 
 export default async function TakeAttendanceServerPage({ params, searchParams }: PageProps) {
@@ -60,7 +59,6 @@ export default async function TakeAttendanceServerPage({ params, searchParams }:
   const session = await getAuthSession();
 
   const educatorId = session?.user?.id || MOCK_CURRENT_EDUCATOR_ID;
-  const companyId = '683581bba1bdf6ca3624b530'; // Example company ID session?.user?.companyId ||  683581bba1bdf6ca3624b530
 
   let attendancePageData: AttendancePageData | null = null;
   let fetchError: string | null = null;
@@ -69,7 +67,7 @@ export default async function TakeAttendanceServerPage({ params, searchParams }:
     const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD for initial fetch
 
     const res = await fetch(
-      `${apiBaseUrl}/teacher/courses/${courseId}/attendance-data?educatorId=${encodeURIComponent(educatorId)}&companyId=${encodeURIComponent(companyId)}&date=${encodeURIComponent(today)}&${classroomId ? `classroomId=${encodeURIComponent(classroomId)}&` : ''}${scheduleId ? `scheduleId=${encodeURIComponent(scheduleId)}&` : ''}`,
+      `${apiBaseUrl}/teacher/courses/${courseId}/attendance-data?educatorId=${encodeURIComponent(educatorId)}&date=${encodeURIComponent(today)}&${classroomId ? `classroomId=${encodeURIComponent(classroomId)}&` : ''}${scheduleId ? `scheduleId=${encodeURIComponent(scheduleId)}&` : ''}`,
       { 
         headers: { 'Cookie': cookiesStore || '' },
         next: { revalidate: 60 } } // Ensure fresh data
@@ -83,7 +81,6 @@ export default async function TakeAttendanceServerPage({ params, searchParams }:
         students: data.students,
         existingAttendance: data.existingAttendance,
         educatorId: educatorId,
-        companyId: companyId,
       };
     } else {
       const errorData = (await res.json()).data || {};
@@ -118,7 +115,6 @@ export default async function TakeAttendanceServerPage({ params, searchParams }:
       students={attendancePageData.students}
       initialAttendance={attendancePageData.existingAttendance}
       educatorId={attendancePageData.educatorId}
-      companyId={attendancePageData.companyId}
     />
   );
 }
