@@ -207,6 +207,7 @@ export default function ManageEventsPageClient({
     try {
       const res = await fetch(`${apiBaseUrl}/teacher/events`, {
         method: 'POST', // Use POST for upsert
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -257,6 +258,7 @@ export default function ManageEventsPageClient({
     try {
       const res = await fetch(`${apiBaseUrl}/teacher/events/${eventToDelete.id}?educatorId=${encodeURIComponent(educatorId)}&companyId=${encodeURIComponent(companyId)}`, {
         method: 'DELETE',
+        credentials: 'include',
       });
 
       if (res.ok) {

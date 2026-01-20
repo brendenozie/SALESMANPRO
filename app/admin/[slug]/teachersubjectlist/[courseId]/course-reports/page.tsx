@@ -1,125 +1,118 @@
-// app/admin/[slug]/teacher-classes/course-reports/page.tsx
 import React from "react";
-import CourseReportsPageClient from "./CourseReportsPageClient";
+import CourseEducatorDashboard from "./CourseReportsPageClient"; // Rename this to match your new client
 import { getAuthSession } from "@/lib/auth";
 import { cookies } from "next/headers";
+import { notFound } from "next/navigation";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
-const MOCK_CURRENT_EDUCATOR_ID = "clx023j0d00003b6033877d9c"; // Example: Educator User ID
-
-// interface PageProps {
-//   params: Promise<{
-//     slug: string; // educatorId
-//   }>;
-// }
 interface PageProps {
-  params: { courseId: string; slug: string };
-  searchParams: { classroomId?: string; scheduleId?: string };
+  params: { slug: string }; // slug is companyId
+  searchParams: { 
+    courseId?: string; 
+    classroomId?: string; 
+    scheduleId?: string 
+  };
 }
 
-// Define types for data fetched by the server component
-export interface CourseOption {
-  id: string;
-  title: string;
-  academicLevelName: string;
-}
-
-export interface StudentReportData {
+// Updated Types for Subject-Specific Analytics
+export interface StudentSubjectReport {
   studentId: string;
-  studentUserId: string;
-  studentName: string;
-  studentEmail: string;
-  enrollmentProgress: number;
-  enrollmentGrade: number | null;
-  assignmentSummary: {
-    totalAssignments: number;
-    submittedCount: number;
-    averageGrade: number | null;
+  name: string;
+  email: string;
+  image: string | null;
+  admissionNumber: string;
+  stats: {
+    assignments: {
+      completed: number;
+      total: number;
+      average: string;
+    };
+    exams: {
+      completed: number;
+      total: number;
+      average: string;
+    };
+    attendance: {
+      present: number;
+      total: number;
+      percentage: string;
+    };
   };
-  attendanceSummary: {
-    totalRecords: number;
-    present: number;
-    absent: number;
-    tardy: number;
-  };
-}
-
-export interface CourseReportDetails {
-  course: {
-    id: string;
-    title: string;
-    academicLevelName: string;
-  };
-  studentReports: StudentReportData[];
-}
-
-export interface CourseReportsPageData {
-  courses: CourseOption[];
-  educatorId: string;
-  companyId: string; // This will now come directly from the API response
 }
 
 export default async function CourseReportsServerPage({ params, searchParams }: PageProps) {
-  // As clarified, params.slug is the educatorId
-  // const educatorId = (await params).slug || MOCK_CURRENT_EDUCATOR_ID;
-  
-  const cookiesStore = (await cookies()).toString();
   const session = await getAuthSession();
-  const educatorId = session?.user?.id || MOCK_CURRENT_EDUCATOR_ID;
-  // const companyId = params.slug;
+  const cookieStore = (await cookies()).toString();
 
-  const { slug: companyId, courseId } = params;
-  const { classroomId, scheduleId } = searchParams;
+  // Redirect if not logged in
+  if (!session?.user?.id) return notFound();
 
-  let reportsPageData: CourseReportsPageData | null = null;
+  const educatorId = session.user.id;
+  const { slug: companyId } = params;
+  
+  // These usually come from the URL query or a previous selection
+  const { courseId, classroomId, scheduleId } = searchParams;
+
+  let initialCourses = [];
   let fetchError: string | null = null;
 
   try {
+    // 1. Fetch available courses for this educator to populate selection dropdowns
     const res = await fetch(
-      `${apiBaseUrl}/teacher/courses-for-reports?educatorId=${encodeURIComponent(educatorId)}`,
-      { next: { revalidate: 60 }, headers: { cookie: cookiesStore } } // Ensure fresh data
+      `${apiBaseUrl}/teacher/courses-for-reports?educatorId=${encodeURIComponent(educatorId)}&companyId=${encodeURIComponent(companyId)}&classroomId=${encodeURIComponent(classroomId || "")}&scheduleId=${encodeURIComponent(scheduleId || "")}`,
+      { 
+        next: { revalidate: 60 }, 
+        headers: { cookie: cookieStore } 
+      }
     );
 
     if (res.ok) {
-      // Destructure both courses and companyId from the API response
-      const { courses, companyId: fetchedCompanyId } = (await res.json()).data;
-      reportsPageData = {
-        courses: courses,
-        educatorId: educatorId,
-        companyId: fetchedCompanyId, // Assign the companyId fetched from the API
-      };
+      const result = await res.json();
+      initialCourses = result.data.courses;
     } else {
-      const errorData = (await res.json()).data;
-      fetchError = errorData.message || `Failed to fetch courses: ${res.status} ${res.statusText}`;
-      console.error("[CourseReportsServerPage] Fetch error:", fetchError);
+      fetchError = "Failed to load educator course list.";
     }
   } catch (err: any) {
-    fetchError = `Network or server error: ${err.message}`;
-    console.error("[CourseReportsServerPage] Catch error:", err);
+    fetchError = "Network error while connecting to academic services.";
   }
 
-  if (fetchError || !reportsPageData) {
+  // Error State UI
+  if (fetchError) {
     return (
-      <div className="p-8 text-center bg-red-50 min-h-screen flex flex-col items-center justify-center">
-        <h2 className="text-2xl font-bold text-red-700 mb-4">Error Loading Reports Page</h2>
-        <p className="text-red-600 mb-6">{fetchError || "Could not load courses for reporting."}</p>
-        <button
-          onClick={() => window.history.back()}
-          className="inline-flex items-center gap-2 px-6 py-3 bg-red-200 text-red-800 rounded-md shadow-sm
-                       hover:bg-red-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-400"
-        >
-          Go Back
-        </button>
+      <div className="p-12 text-center bg-white min-h-screen flex flex-col items-center justify-center">
+        <div className="bg-rose-50 p-8 rounded-[3rem] border border-rose-100 max-w-md">
+          <h2 className="text-2xl font-black text-rose-900 mb-2">Sync Error</h2>
+          <p className="text-rose-600/80 font-medium mb-6">{fetchError}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="w-full py-4 bg-rose-600 text-white rounded-2xl font-bold shadow-lg shadow-rose-200 hover:bg-rose-700 transition-all"
+          >
+            Retry Connection
+          </button>
+        </div>
       </div>
     );
   }
 
+  // 2. Prepare Context for the Client Component
+  // We pass these down so the Client knows exactly which report to fetch
+  const pageContext = {
+    companyId,
+    educatorId,
+    courseId: courseId || (initialCourses.length > 0 ? initialCourses[0].id : null),
+    classroomId: classroomId || "General",
+    scheduleId: scheduleId || "",
+    courseTitle: initialCourses.find((c: any) => c.id === courseId)?.title || "Subject Report",
+    educatorName: session.user.name || "Educator"
+  };
+
   return (
-    <CourseReportsPageClient
-      initialCourses={reportsPageData.courses}
-      educatorId={reportsPageData.educatorId}
-      companyId={reportsPageData.companyId}
-    />
+    <div className="min-h-screen bg-[#FDFDFF]">
+      <CourseEducatorDashboard 
+        context={pageContext} 
+        availableCourses={initialCourses} 
+      />
+    </div>
   );
 }

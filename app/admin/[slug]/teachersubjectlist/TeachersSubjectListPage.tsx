@@ -177,60 +177,67 @@ function CourseCommanderCard({ course, teacherUserId, today }: any) {
 
         {/* Action Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <QuickAction 
-            icon={IdentificationIcon} 
-            label="Attendance" 
-            onClick={() => handleAction('take-course-attendance')} 
-            color="indigo"
-          />
-          <QuickAction 
-            icon={PresentationChartLineIcon} 
-            label="Grades" 
-            onClick={() => handleAction('course-grades')} 
-            color="fuchsia"
-          />
-          <QuickAction 
-            icon={ClipboardDocumentCheckIcon} 
-            label="Assignments" 
-            onClick={() => handleAction('manage-course-assignments')} 
-            color="amber"
-          />
-          <QuickAction 
-            icon={IdentificationIcon} 
-            label="Roster" 
-            onClick={() => handleAction('student-course-roster')} 
-            color="emerald"
-          />
-          <QuickAction 
-            icon={PresentationChartLineIcon} 
-            label="Reports" 
-            onClick={() => handleAction('course-reports')} 
-            color="violet"
-          />
-          <QuickAction 
-            icon={ClipboardDocumentCheckIcon} 
-            label="Schedule" 
-            onClick={() => handleAction('course-schedule')} 
-            color="lime"
-          />
-          <QuickAction 
-            icon={PresentationChartLineIcon} 
-            label="Class Events" 
-            onClick={() => handleAction('course-event')} 
-            color="rose"
-          />
-          <QuickAction 
-            icon={ChatBubbleLeftRightIcon} 
-            label="Chat" 
-            onClick={() => handleAction('send-message')} 
-            color="cyan"
-          />
+          {activeSchedule ?
+            <>
+              <div className='min-h-[11rem] col-span-2 sm:col-span-4 grid grid-cols-2 sm:grid-cols-4 gap-3'>
+                <QuickAction 
+                  icon={IdentificationIcon} 
+                  label="Attendance" 
+                  onClick={() => handleAction('take-course-attendance')} 
+                  color="indigo"
+                />
+                <QuickAction 
+                  icon={PresentationChartLineIcon} 
+                  label="Grades" 
+                  onClick={() => handleAction('course-grades')} 
+                  color="fuchsia"
+                />
+                <QuickAction 
+                  icon={ClipboardDocumentCheckIcon} 
+                  label="Assignments" 
+                  onClick={() => handleAction('manage-course-assignments')} 
+                  color="amber"
+                />
+                <QuickAction 
+                  icon={IdentificationIcon} 
+                  label="Roster" 
+                  onClick={() => handleAction('student-course-roster')} 
+                  color="emerald"
+                />
+                <QuickAction 
+                  icon={PresentationChartLineIcon} 
+                  label="Reports" 
+                  onClick={() => handleAction('course-reports')} 
+                  color="violet"
+                />
+                <QuickAction 
+                  icon={ClipboardDocumentCheckIcon} 
+                  label="Schedule" 
+                  onClick={() => handleAction('course-schedule')} 
+                  color="lime"
+                />
+                <QuickAction 
+                  icon={PresentationChartLineIcon} 
+                  label="Class Events" 
+                  onClick={() => handleAction('course-event')} 
+                  color="rose"
+                />
+                <QuickAction 
+                  icon={ChatBubbleLeftRightIcon} 
+                  label="Chat" 
+                  onClick={() => handleAction('send-message')} 
+                  color="cyan"
+                />
+              </div>
+            </>
+          : <div className="col-span-4 text-center text-slate-400 italic min-h-[11rem]">No classroom schedules available.</div>
+    }
         </div>
       </div>
 
       {/* Footer / Link to Hub */}
       <button 
-        onClick={() => handleAction('class-resources')}
+        onClick={() => handleAction('course-resources')}
         className="w-full py-5 bg-white/5 hover:bg-indigo-500 transition-all duration-500 group/btn flex items-center justify-center gap-2 border-t border-white/5"
       >
         <span className="text-xs font-black uppercase tracking-widest group-hover/btn:text-white transition-colors">Enter Learning Hub</span>
