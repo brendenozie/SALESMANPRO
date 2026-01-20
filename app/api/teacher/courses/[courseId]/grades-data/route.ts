@@ -33,8 +33,9 @@ export const GET = withApiHandler(async (request: Request, { params }: { params:
     if (!educatorProfile) return formatResponse(false, null, "Educator not found", 403);
 
     // 1. Fetch Course details
+    // companyId: educatorProfile.companyId ?? undefined 
     const course = await prisma.course.findUnique({
-      where: { id: courseId, companyId: educatorProfile.companyId ?? undefined },
+      where: { id: courseId, },
       select: {
         id: true,
         title: true,
@@ -50,7 +51,7 @@ export const GET = withApiHandler(async (request: Request, { params }: { params:
       where: { 
         classRoomId: classroomId,
         student: { 
-          companyId: educatorProfile.companyId,
+          // companyId: educatorProfile.companyId,
           user: { isNot: {} } // Protection against orphaned records
         } 
       },

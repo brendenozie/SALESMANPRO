@@ -50,13 +50,13 @@ async function getAssignments(request: Request, { params }: { params: { courseId
     const assignments = await prisma.courseAssignment.findMany({
       where: {
         courseId,
-        companyId: educator.companyId,
-        OR: [
-          { type: 'HOMEWORK' },
-          { type: 'PROJECT' },
-          { type: 'QUIZ' },
-          { type: 'OTHER' },
-        ],
+        // companyId: educator.companyId,
+        // OR: [
+        //   { type: 'HOMEWORK' },
+        //   { type: 'PROJECT' },
+        //   { type: 'QUIZ' },
+        //   { type: 'OTHER' },
+        // ],
       },
       include: { _count: { select: { submissions: true } } },
       orderBy: { publishedAt: 'asc' },
@@ -105,12 +105,38 @@ async function postAssignment(request: Request) {
   if (isNaN(parsedDueDate.getTime())) return formatResponse(false, null, 'Invalid due date format', 400);
 
   try {
+
+  //   title       
+  // description 
+
+  // dueDate 
+  // type    
+
+  // createdById 
+  // createdBy   
+
+  // maxGrade 
+  // courseId 
+
+  // submissions 
+
+  // status
+
+  // publishedAt 
+
+  // company   Company? 
+  // companyId String?  
+
+  // createdAt DateTime? @default(now())
+  // updatedAt DateTime? @updatedAt
+  // Grade     Grade[]
+
     const assignmentData = {
       title,
       description,
       dueDate: parsedDueDate,
-      maxScore: maxPoints,
-      examType,
+      maxGrade: maxPoints,
+      type: examType,
       courseId,
       createdById: educatorId,
       companyId,
