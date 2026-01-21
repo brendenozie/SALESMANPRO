@@ -2837,6 +2837,7 @@ model Classroom {
   educatorAcademicLevelAssignments EducatorAcademicLevelAssignment[]
   courseEducatorAssignments        CourseEducatorAssignment[]
   studentAcademicLevels            StudentAcademicLevel[]
+  exams                            Exam[]
 
   @@index([companyId])
   @@index([academicLevelId])
@@ -3471,6 +3472,9 @@ model Exam {
   // Link to Company for multi-tenancy
   company   Company @relation(fields: [companyId], references: [id])
   companyId String  @db.ObjectId
+
+  classroomId String?    @db.ObjectId
+  classroom   Classroom? @relation(fields: [classroomId], references: [id])
 
   grades Grade[] // Grades associated with this exam
 

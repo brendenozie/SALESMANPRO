@@ -228,14 +228,15 @@ export default function ManageAssignmentsPageClient({
                 </div>
               </div>
 
-              <div className='mt-6 flex flex-col gap-3'>
+              <div className='mt-6 flex flex-col gap-3'>    
                 <button 
                   onClick={() => router.push(`/admin/${companyId}/teacher-classes/${course.id}/assignments/${assignment.id}/edit`)}
-                  className="mt-5 w-full flex items-center justify-center gap-2 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-sm font-semibold rounded-xl transition-colors"
+                  className="w-full flex items-center justify-center gap-2 py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-700 text-sm font-semibold rounded-xl transition-colors"
                 >
                   <EllipsisVerticalIcon className="h-4 w-4" />
-                  Manage Assignment
+                  Manage Examination
                 </button>
+
                 <button
                   onClick={() => router.push(`/admin/${companyId}/teacher-classes/${course.id}/assignments/${assignment.id}/submissions`)}
                   className="mt-5 w-full flex items-center justify-center gap-2 py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-700 text-sm font-semibold rounded-xl transition-colors"
@@ -247,6 +248,7 @@ export default function ManageAssignmentsPageClient({
                   </span>
                 </button>
               </div>
+ 
             </motion.div>
           ))}
 

@@ -197,10 +197,12 @@ const SubmissionDetailsViewModal: React.FC<SubmissionDetailsViewModalProps> = ({
       setIsLoadingQuestions(true);
       setQuestionsError(null);
       try {
-        const res = await fetch(`${apiBaseUrl}/exam-questions?examId=${encodeURIComponent(examDetails.id)}`);
+        const res = await fetch(`${apiBaseUrl}/exam-questions?examId=${encodeURIComponent(examDetails.id)}`, {
+          next: { revalidate: 60 },
+        });
         if (res.ok) {
           const data = await res.json();
-          setQuestions(data.sort((a: any, b: any) => a.order - b.order));
+          setQuestions(data.data.sort((a: any, b: any) => a.order - b.order));
         } else {
           const errorData = await res.json();
           setQuestionsError(errorData.message || "Failed to load questions for review.");

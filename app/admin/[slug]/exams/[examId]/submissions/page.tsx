@@ -1,6 +1,7 @@
 // app/admin/[slug]/exams/[examId]/submissions/page.tsx
 import React from "react";
 import ExamSubmissionsManagerPage, { ExamDetailsForSubmissions, ExamSubmissionData } from "./ExamSubmissionsManagerPage";
+import { cookies } from "next/headers";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -107,6 +108,7 @@ const generateSampleSubmissionData = (examId: string, companyId: string): {
 
 export default async function ExamSubmissionsPage({ params }: PageProps) {
   const { slug: companyId, examId } = await params;
+  const cookieHeader = (await cookies()).toString();
 
   let initialExamDetails: ExamDetailsForSubmissions | null = null;
   let initialSubmissions: ExamSubmissionData[] = [];
@@ -115,10 +117,13 @@ export default async function ExamSubmissionsPage({ params }: PageProps) {
   try {
     // Fetch exam details
     const examRes = await fetch(`${apiBaseUrl}/exams/${examId}`, {
+      headers: {
+        cookie: cookieHeader,
+      },
       next: { revalidate: 60 },
     });
     if (examRes.ok) {
-      const examData = await examRes.json();
+      const examData = (await examRes.json()).data;
       initialExamDetails = {
         id: examData.id,
         title: examData.title,
@@ -136,9 +141,12 @@ export default async function ExamSubmissionsPage({ params }: PageProps) {
     // Fetch exam submissions
     const submissionsRes = await fetch(`${apiBaseUrl}/exam-submissions?examId=${encodeURIComponent(examId)}`, {
       next: { revalidate: 60 },
+      headers: {
+        cookie: cookieHeader,
+      },
     });
     if (submissionsRes.ok) {
-      initialSubmissions = (await submissionsRes.json()) as ExamSubmissionData[];
+      initialSubmissions = (await submissionsRes.json()).data as ExamSubmissionData[];
     } else {
       console.error(`[ExamSubmissionsPage] Failed to fetch exam submissions for ${examId}: ${submissionsRes.status} ${submissionsRes.statusText}`);
       fetchError = true;

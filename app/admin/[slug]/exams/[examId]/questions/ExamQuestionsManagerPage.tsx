@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   PlusCircleIcon,
   PencilIcon,
@@ -15,6 +15,7 @@ import {
   XMarkIcon,
   ClipboardDocumentCheckIcon,
   ClockIcon,
+  CloudArrowUpIcon,
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 
@@ -141,6 +142,41 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question, onEdit, onDelete 
   );
 };
 
+// --- Upload Helper ---
+export async function uploadFiles(
+  apiBaseUrl: string,
+  files: File[],
+  type: "image" | "video" | "book",
+  onProgress?: (progress: number, file: File) => void
+): Promise<{ url: string; key: string; contentType: string }[]> {
+  if (!files?.length) return [];
+
+  const uploads = files.map(async (file) => {
+    const res = await fetch(
+      `${apiBaseUrl}/upload-url?filename=${encodeURIComponent(file.name)}&type=${type}&contentType=${encodeURIComponent(file.type)}`
+    );
+
+    if (!res.ok) throw new Error(`Failed to get signed URL`);
+    const { uploadUrl, publicUrl, key, contentType } = await res.json();
+
+    await new Promise<void>((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open("PUT", uploadUrl);
+      xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable && onProgress) onProgress(Math.round((e.loaded / e.total) * 100), file);
+      };
+      xhr.onload = () => xhr.status === 200 ? resolve() : reject();
+      xhr.onerror = () => reject();
+      xhr.send(file);
+    });
+
+    return { url: publicUrl, key, contentType };
+  });
+
+  return Promise.all(uploads);
+}
+
 // --- Question Form Modal Component ---
 type QuestionFormModalProps = {
   examId: string;
@@ -172,6 +208,15 @@ const QuestionFormModal: React.FC<QuestionFormModalProps> = ({ examId, questionD
   );
   const [newOption, setNewOption] = useState(''); // For adding new options to MCQ
 
+   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.[0]) setSelectedFile(e.target.files[0]);
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -192,7 +237,7 @@ const QuestionFormModal: React.FC<QuestionFormModalProps> = ({ examId, questionD
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     resetError();
 
@@ -222,8 +267,33 @@ const QuestionFormModal: React.FC<QuestionFormModalProps> = ({ examId, questionD
         // return;
     }
 
-    onSave(formData);
+    // const handleSubmit = async (e: React.FormEvent) => {
+    // e.preventDefault();
+    let finalImageUrl = formData.imageUrl;
+    let finalVideoUrl = formData.videoUrl;
+
+    if (selectedFile) {
+      setIsUploading(true);
+      try {
+        const type = selectedFile.type.startsWith('video/') ? 'video' : 'image';
+        const [uploadResult] = await uploadFiles(apiBaseUrl, [selectedFile], type, (p) => setUploadProgress(p));
+        
+        if (type === 'image') finalImageUrl = uploadResult.url;
+        else finalVideoUrl = uploadResult.url;
+      } catch (err) {
+        alert("Upload failed");
+        setIsUploading(false);
+        return;
+      }
+      setIsUploading(false);
+    }
+
+    onSave({ ...formData, imageUrl: finalImageUrl, videoUrl: finalVideoUrl });
+
   };
+
+  //   onSave(formData);
+  // };
 
   const isEdit = !!questionData;
 
@@ -294,6 +364,22 @@ const QuestionFormModal: React.FC<QuestionFormModalProps> = ({ examId, questionD
               <label htmlFor="videoUrl" className="block text-sm font-medium text-gray-700 mb-1">Video URL (Optional)</label>
               <input type="url" name="videoUrl" id="videoUrl" value={formData.videoUrl || ''} onChange={handleChange} placeholder="https://example.com/video.mp4"
                 className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base" />
+            </div>
+
+            {/* Upload Section */}
+            <div className="md:col-span-2">
+              <div className="border-2 border-dashed rounded-xl p-6 text-center cursor-pointer hover:bg-gray-50" onClick={() => fileInputRef.current?.click()}>
+                <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileChange} accept="image/*,video/*" />
+                <CloudArrowUpIcon className="h-10 w-10 mx-auto text-gray-400" />
+                <p className="text-sm text-gray-600">{selectedFile ? `Selected: ${selectedFile.name}` : "Upload Image or Video (Optional)"}</p>
+              </div>
+
+              {( isUploading || isLoading ) && (
+                <div className="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
+                    <div className="bg-indigo-600 h-full transition-all" style={{ width: `${uploadProgress}%` }} />
+                </div>
+              )}
+
             </div>
           </div>
 
@@ -382,7 +468,6 @@ const QuestionFormModal: React.FC<QuestionFormModalProps> = ({ examId, questionD
                 className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base"></textarea>
             </div>
           )}
-
 
           {/* Action Buttons */}
           <div className="flex justify-end gap-3 pt-6 border-t border-gray-100 mt-6">

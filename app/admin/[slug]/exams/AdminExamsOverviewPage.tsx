@@ -17,9 +17,11 @@ import {
   MapPinIcon, // For location
   CheckCircleIcon, // For published results
   GlobeAltIcon, // For online exams
-  XMarkIcon, // For closing modals/errors
+  XMarkIcon,
+  FolderOpenIcon, // For closing modals/errors
 } from '@heroicons/react/24/outline';
 import Link from 'next/link'; // For linking to exam questions page
+import { ClassRoomOption } from '../students/StudentsClient';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -30,7 +32,10 @@ export type ExamData = {
   description: string | null;
   courseId: string;
   courseTitle: string;
+  course:{ id: string; title: string; academicLevels: { id: string; name: string; sortOrder?: number }[] };
   courseAcademicLevels: { id: string; name: string; sortOrder?: number }[];
+  classroomId: string | null;
+  classroom: { id: string; name: string; academicLevelId: string } | null;
   date: string; // YYYY-MM-DD
   startTime: string | null; // HH:MM
   endTime: string | null; // HH:MM
@@ -75,6 +80,7 @@ interface AdminExamsOverviewPageProps {
   allCourses: CourseOption[];
   allEducators: EducatorOption[];
   allAcademicLevels: AcademicLevelOption[]; // Passed but not directly used in this component's logic, mainly for CourseOption types
+  allClassRooms: ClassRoomOption[];
   companyId: string;
 }
 
@@ -85,20 +91,28 @@ type ExamFormModalProps = {
   onSave: (data: Omit<ExamData, 'courseTitle' | 'courseAcademicLevels' | 'createdByEducatorName' | 'createdByEducatorEmail' | 'totalQuestions' | 'totalSubmissions' | 'createdAt' | 'updatedAt'>) => void;
   allCourses: CourseOption[];
   allEducators: EducatorOption[];
+  allClassRooms: ClassRoomOption[];
   companyId: string;
   isLoading: boolean;
   error: string | null;
   resetError: () => void;
 };
 
-const ExamFormModal: React.FC<ExamFormModalProps> = ({ examData, onClose, onSave, allCourses, allEducators, companyId, isLoading, error, resetError }) => {
+const ExamFormModal: React.FC<ExamFormModalProps> = ({ examData, onClose, onSave, allCourses, allEducators, allClassRooms, companyId, isLoading, error, resetError }) => {
   const [formData, setFormData] = useState<Omit<ExamData, 'courseTitle' | 'courseAcademicLevels' | 'createdByEducatorName' | 'createdByEducatorEmail' | 'totalQuestions' | 'totalSubmissions' | 'createdAt' | 'updatedAt'>>(
-    examData || {
+    examData ? {
+      ...examData,
+      courseId: examData.courseId || examData.course.id,
+      classroomId: examData.classroomId || (examData.classroom ? examData.classroom.id : null),
+    } : {
       id: '',
       title: '',
       description: null,
       courseId: '',
       date: new Date().toISOString().split('T')[0], // YYYY-MM-DD
+      course:{ id: '', title: '', academicLevels: [] },
+      classroomId: null,
+      classroom: null,
       startTime: null,
       endTime: null,
       location: null,
@@ -259,6 +273,18 @@ const ExamFormModal: React.FC<ExamFormModalProps> = ({ examData, onClose, onSave
                 className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base" />
             </div>
 
+            <div className='md:col-span-2'>
+              <label htmlFor="classroomId" className="block text-sm font-medium text-gray-700 mb-1">Class Room <span className="text-gray-500">(Optional)</span></label>
+              <select name="classroomId" id="classroomId" value={formData.classroomId || ''} onChange={handleChange} required
+                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base bg-white"
+              >
+                <option value="">-- Select Class Room --</option>
+                {allClassRooms.length > 0 && allClassRooms.map(classRoom => (
+                  <option key={classRoom.id} value={classRoom.id}>{classRoom.name}</option>
+                ))}
+              </select>
+            </div>
+
             <div className="md:col-span-2">
               <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">Location</label>
               <input type="text" name="location" id="location" value={formData.location || ''} onChange={handleChange} placeholder="e.g., School Hall A / Online"
@@ -268,6 +294,12 @@ const ExamFormModal: React.FC<ExamFormModalProps> = ({ examData, onClose, onSave
             <div>
               <label htmlFor="totalPoints" className="block text-sm font-medium text-gray-700 mb-1">Total Points <span className="text-red-500">*</span></label>
               <input type="number" name="totalPoints" id="totalPoints" value={formData.totalPoints} onChange={handleChange} min="0" required
+                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base" />
+            </div>
+
+            <div className='md:col-span-2'>
+              <label htmlFor="durationMinutes" className="block text-sm font-medium text-gray-700 mb-1">Duration (minutes)</label>
+              <input type="number" name="durationMinutes" id="durationMinutes" value={formData.durationMinutes || ''} onChange={handleChange} min="1"
                 className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base" />
             </div>
 
@@ -286,11 +318,6 @@ const ExamFormModal: React.FC<ExamFormModalProps> = ({ examData, onClose, onSave
 
             {formData.isOnline && (
               <>
-                <div>
-                  <label htmlFor="durationMinutes" className="block text-sm font-medium text-gray-700 mb-1">Duration (minutes)</label>
-                  <input type="number" name="durationMinutes" id="durationMinutes" value={formData.durationMinutes || ''} onChange={handleChange} min="1"
-                    className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base" />
-                </div>
                 <div>
                   <label htmlFor="autoGrade" className="block text-sm font-medium text-gray-700 mb-1">Auto-Grade?</label>
                   <div className="flex items-center h-full">
@@ -344,10 +371,11 @@ const ExamFormModal: React.FC<ExamFormModalProps> = ({ examData, onClose, onSave
 
 
 // --- Main AdminExamsOverviewPage Component ---
-export default function AdminExamsOverviewPage({ initialExams, allCourses, allEducators, companyId }: AdminExamsOverviewPageProps) {
+export default function AdminExamsOverviewPage({ initialExams, allCourses, allEducators, allClassRooms, companyId }: AdminExamsOverviewPageProps) {
   const [exams, setExams] = useState<ExamData[]>(initialExams);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCourse, setFilterCourse] = useState('All'); // Changed from filterClass
+  const [filterClass, setFilterClass] = useState('All');
   const [filterEducator, setFilterEducator] = useState('All'); // Changed from filterTeacher
   const [filterType, setFilterType] = useState('All');
   const [filterStatus, setFilterStatus] = useState('All'); // Upcoming, Completed
@@ -421,6 +449,7 @@ export default function AdminExamsOverviewPage({ initialExams, allCourses, allEd
                             (exam.location || '').toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchesCourse = filterCourse === 'All' || exam.courseId === filterCourse;
+      const matchesClass = filterClass === 'All' || exam.classroomId === filterClass;
       const matchesEducator = filterEducator === 'All' || exam.createdByEducatorId === filterEducator;
       const matchesType = filterType === 'All' || exam.type === filterType;
 
@@ -431,7 +460,7 @@ export default function AdminExamsOverviewPage({ initialExams, allCourses, allEd
       const currentExamStatus = examDate.getTime() < now.getTime() ? 'Completed' : 'Upcoming';
       const matchesStatus = filterStatus === 'All' || currentExamStatus === filterStatus;
 
-      return matchesSearch && matchesCourse && matchesEducator && matchesType && matchesStatus;
+      return matchesSearch && matchesCourse && matchesClass && matchesEducator && matchesType && matchesStatus;
     }).sort((a, b) => {
       // Sort upcoming exams first by date (ascending), then completed exams by date (descending)
       const dateA = new Date(a.date).getTime();
@@ -454,7 +483,7 @@ export default function AdminExamsOverviewPage({ initialExams, allCourses, allEd
       }
       return 0; // Should not reach here if logic is sound
     }) : [];
-  }, [exams, searchTerm, filterCourse, filterEducator, filterType, filterStatus]);
+  }, [exams, searchTerm, filterCourse, filterClass, filterEducator, filterType, filterStatus]);
 
 
   // Calculate overview stats
@@ -716,6 +745,18 @@ export default function AdminExamsOverviewPage({ initialExams, allCourses, allEd
           </div>
           <div className="flex-shrink-0">
             <select
+              value={filterClass}
+              onChange={(e) => setFilterClass(e.target.value)}
+              className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            >
+              <option value="All">All Classes</option>
+              {allClassRooms.map(classRoom => (
+                <option key={classRoom.id} value={classRoom.id}>{classRoom.name}</option>
+              ))}
+            </select>
+          </div>
+          <div className="flex-shrink-0">
+            <select
               value={filterEducator}
               onChange={(e) => setFilterEducator(e.target.value)}
               className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
@@ -765,6 +806,7 @@ export default function AdminExamsOverviewPage({ initialExams, allCourses, allEd
                 <tr>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Exam Name</th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Course (Educator)</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Classroom</th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date & Time</th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
@@ -783,6 +825,9 @@ export default function AdminExamsOverviewPage({ initialExams, allCourses, allEd
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {exam.courseTitle} <br />
                       <span className="text-xs text-gray-400">({exam.createdByEducatorName})</span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {exam.classroom ? exam.classroom.name : 'N/A'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {new Date(exam.date).toLocaleDateString()} <br />
@@ -818,12 +863,20 @@ export default function AdminExamsOverviewPage({ initialExams, allCourses, allEd
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center justify-end space-x-2">
                         {exam.isOnline && (
+                          <div className="flex flex-col items-center">
                             <Link href={`/admin/${companyId}/exams/${exam.id}/questions`}
                                 className="text-blue-600 hover:text-blue-900 flex items-center"
                                 title="Manage Questions"
                             >
                                 <BookOpenIcon className="h-4 w-4" />
                             </Link>
+                            <Link href={`/admin/${companyId}/exams/${exam.id}/submissions`}
+                                className="text-teal-600 hover:text-teal-900 flex items-center mt-1"
+                                title="View Submissions"
+                            >
+                                <FolderOpenIcon className="h-4 w-4" />
+                            </Link>
+                          </div>
                         )}
                         <button
                           onClick={() => { setEditingExam(exam); setShowFormModal(true); setError(null); }}
@@ -856,6 +909,7 @@ export default function AdminExamsOverviewPage({ initialExams, allCourses, allEd
           onClose={() => { setShowFormModal(false); setEditingExam(null); setError(null); }}
           onSave={handleSaveExam}
           allCourses={allCourses}
+          allClassRooms={allClassRooms}
           allEducators={allEducators}
           companyId={companyId}
           isLoading={isLoading}

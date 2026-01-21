@@ -371,9 +371,14 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
         { label: "Courses", href: `/admin/${adminSlug}/courses` },
         { label: "Course Materials", href: `/admin/${adminSlug}/course-materials` },        
         { label: "TimeTable", href: `/admin/${adminSlug}/lessons` },
-        { label: "Assignments", href: `/admin/${adminSlug}/assignments` },
-        { label: "FEE Items", href: `/admin/${adminSlug}/fee-items` },          
-        { label: "FEE", href: `/admin/${adminSlug}/fee` },     
+      ],
+    },
+    {
+      label: "Assignments",
+      icon: ClipboardDocumentListIcon,
+      subItems: [
+        { label: "All Assignments", href: `/admin/${adminSlug}/assignments` },
+        // { label: "Submissions", href: `/admin/${adminSlug}/assignments-submissions` },
       ],
     },
     {
@@ -381,7 +386,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       icon: AcademicCapIcon,
       subItems: [
         { label: "Exams", href: `/admin/${adminSlug}/exams` },
-        { label: "Results", href: `/admin/${adminSlug}/results` },
+        // { label: "Results", href: `/admin/${adminSlug}/results` },
         { label: "Grades & Report Card", href: `/admin/${adminSlug}/grading-report-card` },
       ],
     },    
@@ -452,7 +457,9 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
       label: "FEE Management", icon: BanknotesIcon,
       subItems: [
         { label: "FEE Dashboard", href: `/admin/${adminSlug}/fee-dashboard` },
-        { label: "FEE Structure", href: `/admin/${adminSlug}/fee-structure` },
+        { label: "FEE Structure", href: `/admin/${adminSlug}/fee-structure` },        
+        { label: "FEE Items", href: `/admin/${adminSlug}/fee-items` },          
+        { label: "FEE", href: `/admin/${adminSlug}/fee` },     
         { label: "Transactions", href: `/admin/${adminSlug}/fee-transactions` },
         { label: "Invoices", href: `/admin/${adminSlug}/fee-invoices` },
         { label: "Expenses", href: `/admin/${adminSlug}/fee-expenses` },

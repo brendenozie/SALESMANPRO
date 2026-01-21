@@ -44,6 +44,8 @@ function transformExamResponse(exam: any) {
     courseId: exam.courseId,
     courseTitle: exam.course?.title || 'N/A',
     courseAcademicLevels: courseAcademicLevels || [],
+    classroomId: exam.classroomId || (exam.classroom ? exam.classroom.id : null),
+    classroom: exam.classroom ? { id: exam.classroom.id, name: exam.classroom.name, academicLevelId: exam.classroom.academicLevelId } : null,
     date: exam.date.toISOString().split('T')[0], // YYYY-MM-DD
     startTime: formatISOToHHMM(exam.startTime),
     endTime: formatISOToHHMM(exam.endTime),
@@ -88,6 +90,9 @@ async function getExam(request: Request, { params }: Params) {
           },
         },
       },
+      classroom: {
+        select: { id: true, name: true, academicLevelId: true }
+      },
       createdByEducator: {
         select: { id: true, user: { select: { name: true, email: true } } },
       },
@@ -115,7 +120,7 @@ async function updateExam(request: Request, { params }: Params) {
   const body = await request.json();
   const {
     title, description, courseId, date, startTime, endTime, location, notes, type,
-    totalPoints, isPublished, createdByEducatorId, isOnline, durationMinutes, autoGrade,
+    totalPoints, isPublished, createdByEducatorId, isOnline, durationMinutes, autoGrade, classroomId,
     companyId, // Ignored
     ...rest
   } = body;
@@ -138,6 +143,7 @@ async function updateExam(request: Request, { params }: Params) {
   if (description !== undefined) updateData.description = description;
   if (location !== undefined) updateData.location = location;
   if (notes !== undefined) updateData.notes = notes;
+  if (classroomId !== undefined) updateData.classroomId = classroomId;
   if (totalPoints !== undefined) updateData.totalPoints = totalPoints;
   if (isPublished !== undefined) updateData.isPublished = isPublished;
   if (isOnline !== undefined) updateData.isOnline = isOnline;
@@ -210,6 +216,7 @@ async function updateExam(request: Request, { params }: Params) {
       include: {
         course: { select: { id: true, title: true, academicLevels: { include: { academicLevel: { select: { id: true, name: true, sortOrder: true } } } } } },
         createdByEducator: { select: { id: true, user: { select: { name: true, email: true } } } },
+        classroom: { select: { id: true, name: true, academicLevelId: true } },
         _count: { select: { questions: true, submissions: true } },
       },
     });

@@ -39,6 +39,8 @@ function transformExamResponse(exam: any) {
     courseId: exam.courseId,
     courseTitle: exam.course?.title || 'N/A',
     courseAcademicLevels: courseAcademicLevels || [],
+    classroomId: exam.classroomId || (exam.classroom ? exam.classroom.id : null),
+    classroom: exam.classroom ? { id: exam.classroom.id, name: exam.classroom.name, academicLevelId: exam.classroom.academicLevelId } : null,
     date: exam.date.toISOString().split('T')[0], // YYYY-MM-DD
     startTime: formatISOToHHMM(exam.startTime), // HH:MM
     endTime: formatISOToHHMM(exam.endTime),     // HH:MM
@@ -78,11 +80,11 @@ async function getExams(request: Request) {
 
   const whereClause: any = {};
 
-  if (!companyId) {
-    return formatResponse(false, null, "Company ID is required to fetch exams.", 400);
+  if (companyId) {
+    // return formatResponse(false, null, "Company ID is required to fetch exams.", 400);
+    whereClause.companyId = companyId;
   }
-  whereClause.companyId = companyId;
-
+  
   if (courseId) {
     whereClause.courseId = courseId;
   }
@@ -103,10 +105,10 @@ async function getExams(request: Request) {
   const exams = await prisma.exam.findMany({
     where: {
       ...whereClause,
-      OR: [
-      { courseId: null },
-      { course: null } // This checks for records where the relation is missing
-    ]
+    //   OR: [
+    //   { courseId: null },
+    //   { course: null } // This checks for records where the relation is missing
+    // ]
     },
     include: {
       course: {
@@ -115,6 +117,9 @@ async function getExams(request: Request) {
           title: true,
           academicLevels: { include: { academicLevel: { select: { id: true, name: true, sortOrder: true } } } },
         },
+      },
+      classroom: {
+        select: { id: true, name: true, academicLevelId: true }
       },
       createdByEducator: {
         select: { id: true, user: { select: { name: true, email: true } } },
@@ -136,13 +141,11 @@ async function getExams(request: Request) {
 // =======================================================================
 async function createExam(request: Request) {
   
-
-
   const body = await request.json();
   const {
     companyId, title, description, courseId, date, startTime, endTime, location,
     notes, type, totalPoints, isPublished, createdByEducatorId, isOnline,
-    durationMinutes, autoGrade,
+    durationMinutes, autoGrade, classroomId,
   } = body;
 
   // Basic validation
@@ -192,6 +195,7 @@ async function createExam(request: Request) {
         title,
         description,
         courseId,
+        classroomId: classroomId || null,
         date: parsedDate,
         startTime: parsedStartTime,
         endTime: parsedEndTime,

@@ -187,16 +187,22 @@ function CourseCommanderCard({ course, teacherUserId, today }: any) {
                   color="indigo"
                 />
                 <QuickAction 
-                  icon={PresentationChartLineIcon} 
-                  label="Grades" 
-                  onClick={() => handleAction('course-grades')} 
-                  color="fuchsia"
-                />
-                <QuickAction 
                   icon={ClipboardDocumentCheckIcon} 
                   label="Assignments" 
                   onClick={() => handleAction('manage-course-assignments')} 
                   color="amber"
+                />
+                <QuickAction 
+                  icon={VideoCameraIcon} 
+                  label="Exams"
+                  onClick={() => handleAction('manage-course-exams')} 
+                  color="sky"
+                />                
+                <QuickAction 
+                  icon={PresentationChartLineIcon} 
+                  label="Grades" 
+                  onClick={() => handleAction('course-grades')} 
+                  color="fuchsia"
                 />
                 <QuickAction 
                   icon={IdentificationIcon} 

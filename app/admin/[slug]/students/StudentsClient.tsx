@@ -22,6 +22,7 @@ import {
   TagIcon,
   XMarkIcon,
   ArrowPathIcon,
+  IdentificationIcon,
 } from '@heroicons/react/24/outline';
 
 import StudentFormModal from './StudentFormModal'; // Import the new modal component
@@ -573,6 +574,7 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
               <tr>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider rounded-tl-lg">Student</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Admission #</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Login Code</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Academic Level(s)</th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Classroom</th> {/* NEW COLUMN */}
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student Level</th> {/* NEW COLUMN */}
@@ -618,6 +620,12 @@ export default function StudentsClient({ initialStudents, allParents, allAcademi
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-blue-700">
                       <div className="flex items-center gap-1">
                         <KeyIcon className="h-4 w-4 text-blue-500" /> {student.admissionNumber || 'N/A'}
+                      </div>
+                    </td>
+
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <div className="flex items-center gap-1">
+                        <IdentificationIcon className="h-4 w-4 text-gray-500" /> {student.loginCode || 'N/A'}
                       </div>
                     </td>
 

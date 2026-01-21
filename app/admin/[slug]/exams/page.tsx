@@ -2,6 +2,7 @@
 import React from "react";
 import AdminExamsOverviewPage, { ExamData, CourseOption, EducatorOption, AcademicLevelOption } from "./AdminExamsOverviewPage";
 import { cookies } from "next/headers";
+import { ClassRoomOption } from "../students/StudentsClient";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -15,6 +16,7 @@ const generateSampleExamData = (companyId: string): {
   sampleCourses: CourseOption[];
   sampleEducators: EducatorOption[];
   sampleAcademicLevels: AcademicLevelOption[];
+  sampleClassRooms: ClassRoomOption[];
 } => {
   const academicLevels: AcademicLevelOption[] = [
     { id: 'AL001', name: 'Grade 7', sortOrder: 7 },
@@ -23,6 +25,13 @@ const generateSampleExamData = (companyId: string): {
     { id: 'AL004', name: 'Grade 10', sortOrder: 10 },
     { id: 'AL005', name: 'Grade 11', sortOrder: 11 },
     { id: 'AL006', name: 'Grade 12', sortOrder: 12 },
+  ];
+
+  const classRooms: ClassRoomOption[] = [
+    { id: 'CRM001', name: 'Room A101', academicLevelId: 'AL003', },
+    { id: 'CRM002', name: 'Room B202', academicLevelId: 'AL004' },
+    { id: 'CRM003', name: 'Lab 1', academicLevelId: 'AL005' },
+    { id: 'CRM004', name: 'Auditorium', academicLevelId: '' },
   ];
 
   const educators: EducatorOption[] = [
@@ -48,9 +57,12 @@ const generateSampleExamData = (companyId: string): {
       id: 'EXM001',
       title: 'Mathematics Midterm Exam',
       description: 'Covers Chapters 1-5.',
+      course:{ id: 'CRS003', title: 'Algebra', academicLevels: [{ id: 'AL003', name: 'Grade 9' }] },
       courseId: 'CRS003',
       courseTitle: 'Algebra',
       courseAcademicLevels: [{ id: 'AL003', name: 'Grade 9' }],
+      classroomId: 'CRM001',
+      classroom: { id: 'CRM001', name: 'Room A101', academicLevelId: 'AL003' },
       date: '2025-07-07',
       startTime: `${dummyTime}09:00:00.000Z`,
       endTime: `${dummyTime}10:30:00.000Z`,
@@ -75,9 +87,12 @@ const generateSampleExamData = (companyId: string): {
       id: 'EXM002',
       title: 'English Essay Final Draft',
       description: 'Submission deadline via LMS.',
+      course:{ id: 'CRS002', title: 'English Language', academicLevels: [{ id: 'AL002', name: 'Grade 8' }] },
       courseId: 'CRS002',
       courseTitle: 'English Language',
       courseAcademicLevels: [{ id: 'AL002', name: 'Grade 8' }],
+      classroomId: null,
+      classroom: null,
       date: '2025-07-05',
       startTime: `${dummyTime}16:00:00.000Z`,
       endTime: null, // No specific end time for submission
@@ -102,8 +117,11 @@ const generateSampleExamData = (companyId: string): {
       id: 'EXM003',
       title: 'Science Unit 2 Test',
       description: 'Covering cell biology and photosynthesis.',
+      course:{ id: 'CRS005', title: 'Science', academicLevels: [{ id: 'AL002', name: 'Grade 8' }] },
       courseId: 'CRS005',
       courseTitle: 'Science',
+      classroomId: 'CRM002',
+      classroom: { id: 'CRM002', name: 'Lab 2', academicLevelId: 'AL002' },
       courseAcademicLevels: [{ id: 'AL002', name: 'Grade 8' }],
       date: '2025-06-25', // Past date
       startTime: `${dummyTime}11:00:00.000Z`,
@@ -129,8 +147,11 @@ const generateSampleExamData = (companyId: string): {
       id: 'EXM004',
       title: 'Physics Final Exam',
       description: 'Comprehensive exam covering all topics.',
+      course:{ id: 'CRS006', title: 'Physics', academicLevels: [{ id: 'AL005', name: 'Grade 11' }] },
       courseId: 'CRS006',
       courseTitle: 'Physics',
+      classroomId: 'CRM003',
+      classroom: { id: 'CRM003', name: 'Lab 1', academicLevelId: 'AL005' },
       courseAcademicLevels: [{ id: 'AL005', name: 'Grade 11' }],
       date: '2025-07-18',
       startTime: `${dummyTime}10:00:00.000Z`,
@@ -154,7 +175,7 @@ const generateSampleExamData = (companyId: string): {
     },
   ];
 
-  return { sampleExams: exams, sampleCourses: courses, sampleEducators: educators, sampleAcademicLevels: academicLevels };
+  return { sampleExams: exams, sampleCourses: courses, sampleEducators: educators, sampleAcademicLevels: academicLevels, sampleClassRooms: classRooms };
 };
 
 
@@ -167,6 +188,7 @@ export default async function ExamsManagerPage({ params }: PageProps) {
   let allCourses: CourseOption[] = [];
   let allEducators: EducatorOption[] = [];
   let allAcademicLevels: AcademicLevelOption[] = [];
+  let allClassRooms: ClassRoomOption[] = [];
   let fetchError: boolean = false;
 
   try {
@@ -180,6 +202,7 @@ export default async function ExamsManagerPage({ params }: PageProps) {
     if (examsRes.ok) {
       const data = (await examsRes.json()).data.data;
       initialExams = data as ExamData[];
+      console.log(initialExams);  
     } else {
       console.error(`[ExamsManagerPage] Failed to fetch exams: ${examsRes.status} ${examsRes.statusText}`);
       fetchError = true;
@@ -195,6 +218,7 @@ export default async function ExamsManagerPage({ params }: PageProps) {
     if (coursesRes.ok) {
       const data = (await coursesRes.json()).data;
       allCourses = data as CourseOption[];
+      console.log(allCourses);
     } else {
       console.error(`[ExamsManagerPage] Failed to fetch courses: ${coursesRes.status} ${coursesRes.statusText}`);
       fetchError = true;
@@ -230,19 +254,35 @@ export default async function ExamsManagerPage({ params }: PageProps) {
       fetchError = true;
     }
 
+    // Fetch all classrooms for this company
+    const classRoomsRes = await fetch(
+      `${apiBaseUrl}/admin/classrooms?companyId=${encodeURIComponent(companyId)}`,
+      { next: { revalidate: 60 }, headers: { Cookie: cookieHeader }  }
+    );
+    if (classRoomsRes.ok) {
+      const data = (await classRoomsRes.json()).data;
+      allClassRooms = data as ClassRoomOption[];
+    } else {
+      console.error(
+        `[StudentsManagementPage] Failed to fetch classrooms: ${classRoomsRes.status} ${classRoomsRes.statusText}`
+      );
+      fetchError = true;
+    }
+        
   } catch (err: any) {
     console.error("[ExamsManagerPage] Error fetching initial data →", err.message);
     fetchError = true;
   }
 
   // If any fetch failed or returned empty, use sample data as fallback
-  if (fetchError && initialExams.length === 0 && allCourses.length === 0 && allEducators.length === 0 && allAcademicLevels.length === 0) {
+  if (fetchError && initialExams.length === 0 && allCourses.length === 0 && allEducators.length === 0 && allAcademicLevels.length === 0 && allClassRooms.length === 0) {
     console.log("[ExamsManagerPage] Using sample data as fallback.");
-    const { sampleExams, sampleCourses, sampleEducators, sampleAcademicLevels } = generateSampleExamData(companyId);
+    const { sampleExams, sampleCourses, sampleEducators, sampleAcademicLevels, sampleClassRooms } = generateSampleExamData(companyId);
     initialExams = sampleExams;
     allCourses = sampleCourses;
     allEducators = sampleEducators;
     allAcademicLevels = sampleAcademicLevels;
+    allClassRooms = sampleClassRooms;
   }
 
   return (
@@ -251,6 +291,7 @@ export default async function ExamsManagerPage({ params }: PageProps) {
       allCourses={allCourses}
       allEducators={allEducators}
       allAcademicLevels={allAcademicLevels}
+      allClassRooms={allClassRooms}
       companyId={companyId}
     />
   );
