@@ -2838,6 +2838,7 @@ model Classroom {
   courseEducatorAssignments        CourseEducatorAssignment[]
   studentAcademicLevels            StudentAcademicLevel[]
   exams                            Exam[]
+  courseAssignments                CourseAssignment[]
 
   @@index([companyId])
   @@index([academicLevelId])
@@ -3063,11 +3064,22 @@ model CourseAssignment {
   createdById String   @db.ObjectId
   createdBy   Educator @relation(fields: [createdById], references: [id])
 
+  isPublished Boolean @default(false) // If results are visible to students
+
   maxGrade Float? // NEW: Added maxGrade to match API. Using Float for flexibility (e.g., 100.0, 85.5)
   courseId String @db.ObjectId
   course   Course @relation(fields: [courseId], references: [id])
 
+  classroomId String?    @db.ObjectId
+  classroom   Classroom? @relation(fields: [classroomId], references: [id])
+
   submissions AssignmentSubmission[] // Relation to AssignmentSubmission (or Submission) model
+
+  // Fields for online exams
+  isOnline        Boolean        @default(false) // Whether this is an online exam
+  durationMinutes Int? // Duration of the exam once started (in minutes)
+  autoGrade       Boolean        @default(false) // Whether the exam can be automatically graded (e.g., for MCQs)
+  questions       ExamQuestion[] // Relation to ExamQuestion model
 
   status AssignmentStatus @default(Draft)
 
@@ -3124,11 +3136,12 @@ model AssignmentSubmission {
   courseId String @db.ObjectId
   course   Course @relation(fields: [courseId], references: [id])
 
-  grade             Float?
-  gradedAt          DateTime?
+  grade    Float?
+  gradedAt DateTime?
+
   submissionContent String?
   submissionUrl     String? // Link to file storage or online document
-  submittedAt       DateTime  @default(now())
+  submittedAt       DateTime @default(now())
 
   comments     String?
   reviewedById String?   @db.ObjectId // Educator who reviewed it
@@ -3551,9 +3564,11 @@ model ExamQuestion {
   points        Float        @default(1)
   order         Int // Order of the question in the exam
 
-  createdAt   DateTime?    @default(now())
-  updatedAt   DateTime?    @updatedAt
-  examAnswers ExamAnswer[]
+  createdAt          DateTime?         @default(now())
+  updatedAt          DateTime?         @updatedAt
+  examAnswers        ExamAnswer[]
+  courseAssignment   CourseAssignment? @relation(fields: [courseAssignmentId], references: [id])
+  courseAssignmentId String?           @db.ObjectId
 
   @@index([examId])
   @@index([order])
