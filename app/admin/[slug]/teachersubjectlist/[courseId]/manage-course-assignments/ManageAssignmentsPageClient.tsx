@@ -324,14 +324,14 @@ export default function ManageCourseAssignmentsPageClient({
 
               <div className='mt-6 flex flex-col gap-3'>
                 <button 
-                  onClick={() => router.push(`/admin/teachersubjectlist/${courseId}/manage-course-assignments/${assignment.id}/questions`)}
+                  onClick={() => router.push(`/admin/${scheduleId}/teachersubjectlist/${courseId}/manage-course-assignments/${assignment.id}/questions`)}
                   className="mt-5 w-full flex items-center justify-center gap-2 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-sm font-semibold rounded-xl transition-colors"
                 >
                   <EllipsisVerticalIcon className="h-4 w-4" />
                   Manage Questions
                 </button>
                 <button
-                  onClick={() => router.push(`/admin/teachersubjectlist/${courseId}/manage-course-assignments/${assignment.id}/submissions`)}
+                  onClick={() => router.push(`/admin/${scheduleId}/teachersubjectlist/${courseId}/manage-course-assignments/${assignment.id}/submissions`)}
                   className="mt-5 w-full flex items-center justify-center gap-2 py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-700 text-sm font-semibold rounded-xl transition-colors"
                 >
                   <InboxArrowDownIcon className="h-4 w-4" />
