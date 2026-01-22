@@ -130,12 +130,6 @@ export default function AssignmentSubmissionsManager({ assignment, initialSubmis
                     >
                       <ArrowDownTrayIcon className="h-5 w-5" />
                     </a>
-                    {/* <button 
-                      className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg"
-                      title="Grade Assignment"
-                    >
-                      <PencilSquareIcon className="h-5 w-5" />
-                    </button> */}
                     <button 
                       onClick={() => openGradingSidebar(sub)}
                       className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg"
