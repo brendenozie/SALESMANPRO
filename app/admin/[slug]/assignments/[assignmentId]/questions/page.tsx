@@ -1,5 +1,6 @@
 import React from "react";
 import AssignmentQuestionsManagerPage from "./AssignmentQuestionsManagerPage";
+import { cookies } from "next/headers";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -12,6 +13,7 @@ interface PageProps {
 
 export default async function AssignmentQuestionsPage({ params }: PageProps) {
   const { slug: companyId, assignmentId } = await params;
+  const cookieHeader = (await cookies()).toString();
 
   let initialAssignmentDetails = null;
   let initialQuestions = [];
@@ -20,20 +22,26 @@ export default async function AssignmentQuestionsPage({ params }: PageProps) {
     // Fetch assignment details (title, course, etc.)
     const assignmentRes = await fetch(`${apiBaseUrl}/admin/assignments/${assignmentId}`, {
       next: { revalidate: 60 },
+      headers: {
+        cookie: cookieHeader,
+      },
     });
     
     if (assignmentRes.ok) {
-      const result = await assignmentRes.json();
+      const result = (await assignmentRes.json());
       initialAssignmentDetails = result.data;
     }
 
     // Fetch assignment questions
     const questionsRes = await fetch(`${apiBaseUrl}/admin/assignment-questions?assignmentId=${assignmentId}`, {
       next: { revalidate: 0 },
+      headers: {
+        cookie: cookieHeader,
+      },
     });
     
     if (questionsRes.ok) {
-      const result = await questionsRes.json();
+      const result = (await questionsRes.json());
       initialQuestions = result.data || [];
     }
   } catch (err) {

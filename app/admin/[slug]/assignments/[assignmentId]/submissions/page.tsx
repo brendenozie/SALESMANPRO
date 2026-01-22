@@ -13,44 +13,71 @@ interface PageProps {
 
 export default async function AssignmentSubmissionsPage({ params }: PageProps) {
   const { slug: companyId, assignmentId } = await params;
-  const cookieHeader = (await cookies()).toString();
+  const cookieStore = await cookies();
+  const cookieHeader = cookieStore.toString();
 
-  // Logic to fetch assignment metadata and current submissions
-  // Fallback to sample data if API is not yet connected
+  // --- Fallback Data Definitions ---
   const sampleAssignment = {
     id: assignmentId,
-    title: "Quarterly Marketing Report",
-    dueDate: "2025-12-01T23:59:00Z",
-    totalPoints: 50,
+    title: "Quarterly Marketing Report (Sample)",
+    dueDate: new Date().toISOString(),
+    totalPoints: 100,
+    courseTitle: "Marketing 101"
   };
 
   const sampleSubmissions = [
     {
-      id: "SUB-101",
+      id: "sample-1",
       studentName: "Marcus Aurelius",
-      studentEmail: "marcus@philosophy.edu",
-      submittedAt: "2025-11-30T10:00:00Z",
+      studentEmail: "marcus@stoic.com",
+      submittedAt: new Date().toISOString(),
       status: "Submitted",
-      fileUrl: "https://example.com/files/report1.pdf",
+      fileUrl: "#",
       score: null,
       feedback: "",
-    },
-    {
-      id: "SUB-102",
-      studentName: "Seneca the Younger",
-      studentEmail: "seneca@stoic.com",
-      submittedAt: "2025-12-02T09:00:00Z", // Late
-      status: "Late",
-      fileUrl: "https://example.com/files/report2.pdf",
-      score: 45,
-      feedback: "Excellent analysis, but points deducted for tardiness.",
     }
   ];
 
+  let assignmentData = null;
+  let submissionsData = [];
+  let useFallback = false;
+
+  try {
+    // Parallel fetching for better performance
+    const [assignmentRes, submissionsRes] = await Promise.all([
+      fetch(`${apiBaseUrl}/admin/assignments/${assignmentId}`, {
+        next: { revalidate: 60 },
+        headers: { cookie: cookieHeader },
+      }),
+      fetch(`${apiBaseUrl}/admin/assignment-submissions?assignmentId=${assignmentId}`, {
+        cache: 'no-store', // Submissions change frequently
+        headers: { cookie: cookieHeader },
+      })
+    ]);
+
+    if (assignmentRes.ok && submissionsRes.ok) {
+      const assignmentJson = await assignmentRes.json();
+      const submissionsJson = await submissionsRes.json();
+      
+      assignmentData = assignmentJson.data;
+      submissionsData = submissionsJson.data || [];
+    } else {
+      console.error("API Error: One or more requests failed");
+      useFallback = true;
+    }
+  } catch (err) {
+    console.error("Network Error fetching submissions:", err);
+    useFallback = true;
+  }
+
+  // Determine final data to pass
+  const finalAssignment = useFallback || !assignmentData ? sampleAssignment : assignmentData;
+  const finalSubmissions = useFallback ? sampleSubmissions : submissionsData;
+
   return (
     <AssignmentSubmissionsManager 
-      assignment={sampleAssignment}
-      initialSubmissions={sampleSubmissions}
+      assignment={finalAssignment}
+      initialSubmissions={finalSubmissions}
       companyId={companyId}
     />
   );
