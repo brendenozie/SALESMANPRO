@@ -9,11 +9,25 @@ import {
   PencilSquareIcon 
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
+import GradingSidebar from './GradingSidebar';
 
 export default function AssignmentSubmissionsManager({ assignment, initialSubmissions, companyId }: any) {
   const [submissions, setSubmissions] = useState(initialSubmissions);
   const [filter, setFilter] = useState('All');
   const [search, setSearch] = useState('');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [selectedSub, setSelectedSub] = useState<any>(null);
+
+  const openGradingSidebar = (submission: any) => {
+    setSelectedSub(submission);
+    setIsSidebarOpen(true);
+  };
+
+  const handleRefreshData = (updatedSub: any) => {
+    setSubmissions((prev: any) => 
+      prev.map((s: any) => s.id === updatedSub.id ? { ...s, ...updatedSub } : s)
+    );
+  };
 
   const filtered = submissions.filter((s: any) => {
     const matchesSearch = s.studentName.toLowerCase().includes(search.toLowerCase());
@@ -116,7 +130,14 @@ export default function AssignmentSubmissionsManager({ assignment, initialSubmis
                     >
                       <ArrowDownTrayIcon className="h-5 w-5" />
                     </a>
+                    {/* <button 
+                      className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                      title="Grade Assignment"
+                    >
+                      <PencilSquareIcon className="h-5 w-5" />
+                    </button> */}
                     <button 
+                      onClick={() => openGradingSidebar(sub)}
                       className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg"
                       title="Grade Assignment"
                     >
@@ -129,6 +150,14 @@ export default function AssignmentSubmissionsManager({ assignment, initialSubmis
           </tbody>
         </table>
       </div>
+      {/* Add the Sidebar Component at the bottom of the return */}
+      <GradingSidebar 
+        isOpen={isSidebarOpen} 
+        onClose={() => setIsSidebarOpen(false)} 
+        submission={selectedSub}
+        totalPoints={assignment.totalPoints}
+        onSuccess={handleRefreshData}
+      />
     </div>
   );
 }
