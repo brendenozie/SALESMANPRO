@@ -22,24 +22,22 @@ import Link from 'next/link';
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
 // --- Type Definitions (Aligned with ExamQuestion API Response) ---
-export type ExamQuestionData = {
+// Update the Question Data Type
+export type AssignmentQuestionData = {
   id: string;
-  examId: string;
-  examTitle: string;
-  examCourseTitle: string;
+  assignmentId: string;
   questionText: string;
-  imageUrl: string | null;
-  videoUrl: string | null;
-  questionType: 'MULTIPLE_CHOICE' | 'TRUE_FALSE' | 'SHORT_ANSWER' | 'ESSAY' | 'FILL_IN_THE_BLANK' | 'MATCHING' | 'NUMERIC';
-  options: string[]; // Array of strings for MCQs, etc.
-  correctAnswer: string | null; // Stores correct answer for auto-grading
+  questionType: 'multiple_choice' | 'short_answer' | 'essay' | 'true_false' | 'fill_in_the_blank' | 'matching' | 'numeric';
+  imageUrl?: string | null;
+  videoUrl?: string | null;
+  hint?: string | null;
+  options: string[];
+  correctAnswer?: string | null;
   points: number;
   order: number;
-  createdAt: string;
-  updatedAt: string;
 };
 
-export type ExamDetailsForQuestions = {
+export type AssignmentDetailsForQuestions = {
   id: string;
   title: string;
   courseTitle: string;
@@ -49,29 +47,29 @@ export type ExamDetailsForQuestions = {
   companyId: string;
 };
 
-interface ExamQuestionsManagerPageProps {
-  examDetails: ExamDetailsForQuestions;
-  initialQuestions: ExamQuestionData[];
+interface AssignmentQuestionsManagerPageProps {
+  assignmentDetails: AssignmentDetailsForQuestions;
+  initialQuestions: AssignmentQuestionData[];
   companyId: string;
 }
 
 // --- Question Card Component ---
 interface QuestionCardProps {
-  question: ExamQuestionData;
-  onEdit: (question: ExamQuestionData) => void;
+  question: AssignmentQuestionData;
+  onEdit: (question: AssignmentQuestionData) => void;
   onDelete: (id: string) => void;
 }
 
 const QuestionCard: React.FC<QuestionCardProps> = ({ question, onEdit, onDelete }) => {
-  const getQuestionTypeIcon = (type: ExamQuestionData['questionType']) => {
+  const getQuestionTypeIcon = (type: AssignmentQuestionData['questionType']) => {
     switch (type) {
-      case 'MULTIPLE_CHOICE': return <ListBulletIcon className="h-4 w-4 text-blue-500" />;
-      case 'TRUE_FALSE': return <CheckCircleIcon className="h-4 w-4 text-green-500" />;
-      case 'SHORT_ANSWER': return <DocumentTextIcon className="h-4 w-4 text-purple-500" />;
-      case 'ESSAY': return <DocumentTextIcon className="h-4 w-4 text-red-500" />;
-      case 'FILL_IN_THE_BLANK': return <ClipboardDocumentCheckIcon className="h-4 w-4 text-yellow-500" />;
-      case 'MATCHING': return <ListBulletIcon className="h-4 w-4 text-orange-500" />;
-      case 'NUMERIC': return <ClockIcon className="h-4 w-4 text-pink-500" />; // Using ClockIcon as a generic number icon
+      case 'multiple_choice': return <ListBulletIcon className="h-4 w-4 text-blue-500" />;
+      case 'true_false': return <CheckCircleIcon className="h-4 w-4 text-green-500" />;
+      case 'short_answer': return <DocumentTextIcon className="h-4 w-4 text-purple-500" />;
+      case 'essay': return <DocumentTextIcon className="h-4 w-4 text-red-500" />;
+      case 'fill_in_the_blank': return <ClipboardDocumentCheckIcon className="h-4 w-4 text-yellow-500" />;
+      case 'matching': return <ListBulletIcon className="h-4 w-4 text-orange-500" />;
+      case 'numeric': return <ClockIcon className="h-4 w-4 text-pink-500" />; // Using ClockIcon as a generic number icon
       default: return <QuestionMarkCircleIcon className="h-4 w-4 text-gray-500" />;
     }
   };
@@ -132,7 +130,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ question, onEdit, onDelete 
         </div>
       )}
 
-      {question.correctAnswer && question.questionType !== 'MULTIPLE_CHOICE' && (
+      {question.correctAnswer && question.questionType !== 'multiple_choice' && (
         <div className="text-sm text-gray-700">
           <p className="font-semibold">Correct Answer:</p>
           <p className="px-3 py-1 bg-green-50 rounded-md text-green-800 text-sm">{question.correctAnswer}</p>
@@ -179,27 +177,27 @@ export async function uploadFiles(
 
 // --- Question Form Modal Component ---
 type QuestionFormModalProps = {
-  examId: string;
-  questionData: ExamQuestionData | null; // Null for new question
+  assignmentId: string;
+  questionData: AssignmentQuestionData | null; // Null for new question
   onClose: () => void;
-  onSave: (data: Omit<ExamQuestionData, 'examTitle' | 'examCourseTitle' | 'createdAt' | 'updatedAt'>) => void;
+  onSave: (data: Omit<AssignmentQuestionData, 'examTitle' | 'examCourseTitle' | 'createdAt' | 'updatedAt'>) => void;
   isLoading: boolean;
   error: string | null;
   resetError: () => void;
   nextOrder: number; // For pre-filling order for new questions
 };
 
-const VALID_QUESTION_TYPES = ["MULTIPLE_CHOICE", "TRUE_FALSE", "SHORT_ANSWER", "ESSAY", "FILL_IN_THE_BLANK", "MATCHING", "NUMERIC"];
+const VALID_QUESTION_TYPES = ["multiple_choice", "true_false", "short_answer", "essay", "fill_in_the_blank", "matching", "numeric"];
 
-const QuestionFormModal: React.FC<QuestionFormModalProps> = ({ examId, questionData, onClose, onSave, isLoading, error, resetError, nextOrder }) => {
-  const [formData, setFormData] = useState<Omit<ExamQuestionData, 'examTitle' | 'examCourseTitle' | 'createdAt' | 'updatedAt'>>(
+const QuestionFormModal: React.FC<QuestionFormModalProps> = ({ assignmentId, questionData, onClose, onSave, isLoading, error, resetError, nextOrder }) => {
+  const [formData, setFormData] = useState<Omit<AssignmentQuestionData, 'examTitle' | 'examCourseTitle' | 'createdAt' | 'updatedAt'>>(
     questionData || {
       id: '',
-      examId: examId,
+      assignmentId: assignmentId,
       questionText: '',
       imageUrl: null,
       videoUrl: null,
-      questionType: 'MULTIPLE_CHOICE', // Default type
+      questionType: 'multiple_choice', // Default type
       options: [],
       correctAnswer: null,
       points: 1,
@@ -247,7 +245,7 @@ const QuestionFormModal: React.FC<QuestionFormModalProps> = ({ examId, questionD
       return;
     }
 
-    if (formData.questionType === 'MULTIPLE_CHOICE') {
+    if (formData.questionType === 'multiple_choice') {
       if (formData.options.length === 0) {
         alert("Multiple Choice questions require at least one option.");
         return;
@@ -256,10 +254,10 @@ const QuestionFormModal: React.FC<QuestionFormModalProps> = ({ examId, questionD
         alert("Please select a correct answer for Multiple Choice questions.");
         return;
       }
-    } else if (formData.questionType === 'TRUE_FALSE' && !formData.correctAnswer) {
+    } else if (formData.questionType === 'true_false' && !formData.correctAnswer) {
         alert("Please select True or False for the correct answer.");
         return;
-    } else if (['SHORT_ANSWER', 'ESSAY', 'FILL_IN_THE_BLANK', 'NUMERIC', 'MATCHING'].includes(formData.questionType) && !formData.correctAnswer) {
+    } else if (['short_answer', 'essay', 'fill_in_the_blank', 'numeric', 'matching'].includes(formData.questionType) && !formData.correctAnswer) {
         // For these types, a correct answer is generally expected for auto-grading or reference
         // You might make this optional based on whether autoGrade is true for the exam
         // For now, let's make it required for simplicity, or add a note.
@@ -384,7 +382,7 @@ const QuestionFormModal: React.FC<QuestionFormModalProps> = ({ examId, questionD
           </div>
 
           {/* Conditional Fields based on Question Type */}
-          {formData.questionType === 'MULTIPLE_CHOICE' && (
+          {formData.questionType === 'multiple_choice' && (
             <div className="bg-gray-50 p-6 rounded-xl border border-gray-100 space-y-4">
               <h3 className="text-lg font-semibold text-gray-800">Options & Correct Answer</h3>
               <div className="flex gap-2">
@@ -427,7 +425,7 @@ const QuestionFormModal: React.FC<QuestionFormModalProps> = ({ examId, questionD
             </div>
           )}
 
-          {formData.questionType === 'TRUE_FALSE' && (
+          {formData.questionType === 'true_false' && (
             <div className="bg-gray-50 p-6 rounded-xl border border-gray-100 space-y-4">
               <h3 className="text-lg font-semibold text-gray-800">Correct Answer</h3>
               <div className="flex space-x-4">
@@ -502,11 +500,11 @@ const QuestionFormModal: React.FC<QuestionFormModalProps> = ({ examId, questionD
 };
 
 
-// --- Main ExamQuestionsManagerPage Component ---
-export default function ExamQuestionsManagerPage({ examDetails, initialQuestions, companyId }: ExamQuestionsManagerPageProps) {
-  const [questions, setQuestions] = useState<ExamQuestionData[]>(initialQuestions);
+// --- Main AssignmentQuestionsManagerPage Component ---
+export default function AssignmentQuestionsManagerPage({ assignmentDetails, initialQuestions, companyId }: AssignmentQuestionsManagerPageProps) {
+  const [questions, setQuestions] = useState<AssignmentQuestionData[]>(initialQuestions);
   const [showFormModal, setShowFormModal] = useState(false);
-  const [editingQuestion, setEditingQuestion] = useState<ExamQuestionData | null>(null);
+  const [editingQuestion, setEditingQuestion] = useState<AssignmentQuestionData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -522,22 +520,22 @@ export default function ExamQuestionsManagerPage({ examDetails, initialQuestions
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaseUrl}/admin/exam-questions?examId=${encodeURIComponent(examDetails.id)}`, {
+      const res = await fetch(`${apiBaseUrl}/admin/assignment-questions?assignmentId=${encodeURIComponent(assignmentDetails.id)}`, {
         next: { revalidate: 60 },
       });
       if (res.ok) {
-        const data: ExamQuestionData[] = await res.json();
+        const data: AssignmentQuestionData[] = await res.json();
         setQuestions(data.sort((a,b) => a.order - b.order)); // Ensure questions are sorted by order
       } else {
         const errorData = await res.json();
-        setError(errorData.message || "Failed to fetch exam questions.");
+        setError(errorData.message || "Failed to fetch assignment questions.");
       }
     } catch (err: any) {
-      setError(err.message || "Network error fetching exam questions.");
+      setError(err.message || "Network error fetching assignment questions.");
     } finally {
       setIsLoading(false);
     }
-  }, [examDetails.id]);
+  }, [assignmentDetails.id]);
 
   useEffect(() => {
     // Only fetch if initial data is empty (meaning server fetch failed or was empty)
@@ -548,12 +546,12 @@ export default function ExamQuestionsManagerPage({ examDetails, initialQuestions
 
 
   // API Call handlers
-  const handleSaveQuestion = async (questionData: Omit<ExamQuestionData, 'examTitle' | 'examCourseTitle' | 'createdAt' | 'updatedAt'>) => {
+  const handleSaveQuestion = async (questionData: Omit<AssignmentQuestionData, 'assignmentTitle' | 'assignmentCourseTitle' | 'createdAt' | 'updatedAt'>) => {
     setIsLoading(true);
     setError(null);
 
     const method = questionData.id ? 'PATCH' : 'POST';
-    const url = questionData.id ? `${apiBaseUrl}/admin/exam-questions/${questionData.id}` : `${apiBaseUrl}/admin/exam-questions`;
+    const url = questionData.id ? `${apiBaseUrl}/admin/assignment-questions/${questionData.id}` : `${apiBaseUrl}/admin/assignment-questions`;
 
     try {
       const res = await fetch(url, {
@@ -585,7 +583,7 @@ export default function ExamQuestionsManagerPage({ examDetails, initialQuestions
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaseUrl}/admin/exam-questions/${questionId}`, {
+      const res = await fetch(`${apiBaseUrl}/admin/assignment-questions/${questionId}`, {
         method: 'DELETE',
       });
 
@@ -607,15 +605,15 @@ export default function ExamQuestionsManagerPage({ examDetails, initialQuestions
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
-          <Link href={`/admin/${companyId}/exams`} className="flex items-center text-indigo-600 hover:text-indigo-800 transition-colors mb-2">
-            <ChevronLeftIcon className="h-5 w-5 mr-1" /> Back to Exams
+          <Link href={`/admin/${companyId}/assignments`} className="flex items-center text-indigo-600 hover:text-indigo-800 transition-colors mb-2">
+            <ChevronLeftIcon className="h-5 w-5 mr-1" /> Back to Assignments
           </Link>
           <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
-            Questions for: <span className="text-purple-700">{examDetails.title}</span>
+            Questions for: <span className="text-purple-700">{assignmentDetails.title}</span>
             <span className="ml-2 text-teal-600 text-base sm:text-xl">📝</span>
           </h1>
           <p className="text-sm text-gray-600 mt-1">
-            Course: {examDetails.courseTitle} | {examDetails.isOnline ? `Online Exam (${examDetails.durationMinutes || 'N/A'} mins)` : 'Offline Exam'} | Auto-Grade: {examDetails.autoGrade ? 'Yes' : 'No'}
+            Course: {assignmentDetails.courseTitle} | {assignmentDetails.isOnline ? `Online Assignment (${assignmentDetails.durationMinutes || 'N/A'} mins)` : 'Offline Assignment'} | Auto-Grade: {assignmentDetails.autoGrade ? 'Yes' : 'No'}
           </p>
         </div>
         <button
@@ -669,7 +667,7 @@ export default function ExamQuestionsManagerPage({ examDetails, initialQuestions
       {/* Question Form Modal */}
       {showFormModal && (
         <QuestionFormModal
-          examId={examDetails.id}
+          assignmentId={assignmentDetails.id}
           questionData={editingQuestion}
           onClose={() => { setShowFormModal(false); setEditingQuestion(null); setError(null); }}
           onSave={handleSaveQuestion}

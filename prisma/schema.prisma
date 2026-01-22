@@ -3082,10 +3082,9 @@ model CourseAssignment {
   submissions AssignmentSubmission[] // Relation to AssignmentSubmission (or Submission) model
 
   // Fields for online exams
-  isOnline        Boolean        @default(false) // Whether this is an online exam
+  isOnline        Boolean @default(false) // Whether this is an online exam
   durationMinutes Int? // Duration of the exam once started (in minutes)
-  autoGrade       Boolean        @default(false) // Whether the exam can be automatically graded (e.g., for MCQs)
-  questions       ExamQuestion[] // Relation to ExamQuestion model
+  autoGrade       Boolean @default(false) // Whether the exam can be automatically graded (e.g., for MCQs)
 
   status AssignmentStatus @default(Draft)
 
@@ -3112,15 +3111,16 @@ model CourseAssignmentQuestion {
   assignment   CourseAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade) // CRITICAL: onDelete: Cascade
 
   questionText String
-  questionType String // e.g., "multiple_choice", "short_answer", "essay"
+  questionType QuestionType // e.g., "multiple_choice", "short_answer", "essay"
 
-  imageUrl String? // Optional image for the question
-  videoUrl String? // Optional video for the question
-  hint     String? // Optional hint for the question
-
+  imageUrl      String? // Optional image for the question
+  videoUrl      String? // Optional video for the question
+  hint          String? // Optional hint for the question
+  // 
   options       String[] // For multiple choice questions
   correctAnswer String? // For auto-grading (if applicable)
   points        Float? // Points allocated for this question
+  order         Int // Order of the question in the exam
 
   createdAt                   DateTime?                    @default(now())
   updatedAt                   DateTime?                    @updatedAt
@@ -3180,6 +3180,7 @@ model AssignmentQuestionResponse {
 
   responseText    String?
   selectedOptions String[] // For multiple choice questions
+  pointsAwarded   Float? // Points awarded for this question
 
   createdAt DateTime? @default(now())
   updatedAt DateTime? @updatedAt
@@ -3570,11 +3571,9 @@ model ExamQuestion {
   points        Float        @default(1)
   order         Int // Order of the question in the exam
 
-  createdAt          DateTime?         @default(now())
-  updatedAt          DateTime?         @updatedAt
-  examAnswers        ExamAnswer[]
-  courseAssignment   CourseAssignment? @relation(fields: [courseAssignmentId], references: [id])
-  courseAssignmentId String?           @db.ObjectId
+  createdAt   DateTime?    @default(now())
+  updatedAt   DateTime?    @updatedAt
+  examAnswers ExamAnswer[]
 
   @@index([examId])
   @@index([order])
