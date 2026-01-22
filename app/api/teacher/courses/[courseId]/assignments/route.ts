@@ -50,7 +50,7 @@ async function getAssignments(request: Request, { params }: { params: { courseId
     const assignments = await prisma.courseAssignment.findMany({
       where: {
         courseId,
-        // companyId: educator.companyId,
+        companyId: educator.companyId,
         // OR: [
         //   { type: 'HOMEWORK' },
         //   { type: 'PROJECT' },
@@ -58,7 +58,7 @@ async function getAssignments(request: Request, { params }: { params: { courseId
         //   { type: 'OTHER' },
         // ],
       },
-      include: { _count: { select: { submissions: true } } },
+      include: { _count: { select: { submissions: true } }, course: true, classroom: true },
       orderBy: { publishedAt: 'asc' },
     });
 
@@ -68,7 +68,16 @@ async function getAssignments(request: Request, { params }: { params: { courseId
       description: a.description,
       dueDate: a.dueDate.toISOString().split('T')[0],
       publishedAt: a.publishedAt.toISOString().split('T')[0],
-      maxPoints: a.maxGrade,
+      maxGrade: a.maxGrade,
+      isPublished: a.isPublished,
+      location: a.location,
+      instructions: a.instructions,
+      startTime: a.startTime,
+      endTime: a.endTime,
+      classroomId: a.classroomId,
+      classroomName: a.classroom ? a.classroom.name : null,
+      durationMinutes: a.durationMinutes, 
+      autoGrade: a.autoGrade,
       status: a.type,
       submissionCount: a._count.submissions,
       displayStatus: ['HOMEWORK', 'PROJECT', 'QUIZ'].includes(a.type) ? 'Published' : 'Draft',
@@ -90,9 +99,12 @@ async function getAssignments(request: Request, { params }: { params: { courseId
 // POST /api/teacher/courses/[courseId]/assignments
 async function postAssignment(request: Request) {
   const body = await request.json();
-  const { id, title, description, dueDate, maxPoints, status, courseId, educatorId, companyId } = body;
+  const { id, title, description, dueDate, maxGrade, status, courseId, educatorId, companyId,
+    isOnline, durationMinutes, location, instructions, startTime, endTime, classroomId, autoGrade, isPublished
+   } = body;
 
-  if (!title || !dueDate || maxPoints === undefined || !status || !courseId || !educatorId || !companyId) {
+  // Validation
+  if (!title || !dueDate || !status || !courseId || !educatorId) {
     return formatResponse(false, null, 'Missing required assignment data', 400);
   }
 
@@ -101,45 +113,45 @@ async function postAssignment(request: Request) {
     return formatResponse(false, null, `Invalid assignment status. Must be one of: ${Object.values(ExamType).join(', ')}`, 400);
   }
 
-  const parsedDueDate = new Date(dueDate);
+  // Combine date and time if startTime is provided
+    let finalDueDate = new Date(dueDate);
+    if (startTime) {
+      const [hours, minutes] = startTime.split(':');
+      finalDueDate.setHours(parseInt(hours), parseInt(minutes));
+    }
+
+  const parsedDueDate = new Date(finalDueDate);
   if (isNaN(parsedDueDate.getTime())) return formatResponse(false, null, 'Invalid due date format', 400);
 
   try {
 
-  //   title       
-  // description 
+     const educator = await prisma.educator.findUnique({
+      where: { userId: educatorId },
+      select: { id: true, companyId: true, user: { select: { name: true, email: true, role: true } } },
+    });
 
-  // dueDate 
-  // type    
-
-  // createdById 
-  // createdBy   
-
-  // maxGrade 
-  // courseId 
-
-  // submissions 
-
-  // status
-
-  // publishedAt 
-
-  // company   Company? 
-  // companyId String?  
-
-  // createdAt DateTime? @default(now())
-  // updatedAt DateTime? @updatedAt
-  // Grade     Grade[]
+    if (!educator || !educator.user) {
+      return formatResponse(false, null, 'Educator not found', 404);
+    }
 
     const assignmentData = {
       title,
       description,
       dueDate: parsedDueDate,
-      maxGrade: maxPoints,
+      maxGrade: maxGrade,
       type: examType,
       courseId,
-      createdById: educatorId,
-      companyId,
+      createdById: educator.id,
+      companyId: educator.companyId,
+      isOnline: isOnline || status === 'QUIZ', 
+      durationMinutes: durationMinutes ? parseInt(durationMinutes) : null,
+      location: location || null,
+      instructions: instructions || null,
+      startTime: startTime || null,
+      endTime: endTime || null,
+      classroomId: classroomId || null,
+      autoGrade: autoGrade || false,
+      isPublished: isPublished || false,
     };
 
     let assignment;
@@ -154,8 +166,9 @@ async function postAssignment(request: Request) {
       title: assignment.title,
       description: assignment.description,
       dueDate: assignment.dueDate.toISOString().split('T')[0],
-      maxPoints: assignment.maxGrade,
+      maxGrade: assignment.maxGrade,
       publishedAt: assignment.publishedAt,
+      isPublished: assignment.isPublished,
       status: assignment.type,
       submissionCount: 0,
       displayStatus: ['HOMEWORK', 'PROJECT', 'QUIZ'].includes(assignment.type) ? 'Published' : 'Draft',

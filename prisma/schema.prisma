@@ -3073,6 +3073,12 @@ model CourseAssignment {
   classroomId String?    @db.ObjectId
   classroom   Classroom? @relation(fields: [classroomId], references: [id])
 
+  startTime DateTime? // When the assignment becomes available to students
+  endTime   DateTime? // When the assignment is no longer accessible
+
+  location     String? // Physical location or online link for submission
+  instructions String? // Additional instructions for the assignment
+
   submissions AssignmentSubmission[] // Relation to AssignmentSubmission (or Submission) model
 
   // Fields for online exams

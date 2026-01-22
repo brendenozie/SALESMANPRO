@@ -20,11 +20,36 @@ export interface AssignmentData {
   id: string;
   title: string;
   description: string | null;
-  dueDate: string; // YYYY-MM-DD format
-  maxPoints: number;
-  status: string; // This will be the ExamType from Prisma
-  submissionCount: number;
-  displayStatus: string; // A more user-friendly status derived from ExamType
+  courseInstructorName: string;
+  dueDate: string;
+  status: string;
+  maxGrade: number;
+  courseId: string;
+  courseTitle: string;
+  course: { id: string; title: string; academicLevels: { id: string; name: string }[] } | null;
+  courseAcademicLevels: { id: string; name: string }[];
+  classroomId: string | null;
+  classroom: { id: string; name: string; academicLevelId: string } | null;
+  date: string | null;
+  startTime: string | null;
+  endTime: string | null;
+  location: string | null;
+  notes: string | null;
+  type: 'QUIZ' | 'UNIT_TEST' | 'MIDTERM' | 'FINAL' | 'ASSIGNMENT_BASED' | 'PRACTICE' | 'OTHER';
+  totalPoints: number;
+  isPublished: boolean;
+  createdById: string | null;
+  createdByEmail: string | null;
+  createdByName: string | null;
+  durationMinutes: number | null;
+  companyId: string | null;
+  autoGrade: boolean;
+  isOnline: boolean;
+  instructions: string | null;
+  totalQuestions: number;
+  totalSubmissions: number;
+  createdAt: string | null;
+  updatedAt: string | null;
 }
 
 export interface CourseAssignmentInfo {
@@ -38,7 +63,6 @@ export interface ManageAssignmentsPageData {
   course: CourseAssignmentInfo;
   assignments: AssignmentData[];
   educatorId: string; // Pass educator ID to client for API calls
-  companyId: string; // Pass company ID to client for API calls
 }
 
 export default async function ManageAssignmentsServerPage({ params, searchParams }: PageProps) {
@@ -65,7 +89,7 @@ export default async function ManageAssignmentsServerPage({ params, searchParams
       assignmentsPageData = (await res.json()).data as ManageAssignmentsPageData;
       // Also pass down educatorId and companyId for client-side API calls
       assignmentsPageData.educatorId = educatorId;
-      assignmentsPageData.companyId = companyId;
+      // assignmentsPageData.companyId = companyId;
     } else {
       const errorData = await res.json();
       fetchError = errorData.message || `Failed to fetch assignments data: ${res.status} ${res.statusText}`;
@@ -98,7 +122,9 @@ export default async function ManageAssignmentsServerPage({ params, searchParams
       course={assignmentsPageData.course}
       initialAssignments={assignmentsPageData.assignments}
       educatorId={assignmentsPageData.educatorId}
-      companyId={assignmentsPageData.companyId}
+      courseId={courseId}
+      classroomId={classroomId}
+      scheduleId={scheduleId}
     />
   );
 }

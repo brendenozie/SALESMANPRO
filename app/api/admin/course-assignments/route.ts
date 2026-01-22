@@ -65,7 +65,7 @@ export const GET = withApiHandler(async (req: Request) => {
   }
 
   const assignments = await prisma.courseAssignment.findMany({
-    // where: whereClause,
+    where: whereClause,
     include: {
       course: {
         select: {
