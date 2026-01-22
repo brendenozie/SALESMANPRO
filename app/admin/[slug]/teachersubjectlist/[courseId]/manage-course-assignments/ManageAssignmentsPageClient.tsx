@@ -385,6 +385,7 @@ interface ModalProps {
 }
 
 const Modal: React.FC<ModalProps> = ({ isModalOpen, setIsModalOpen, editingAssignment, handleSave, form, setForm, primaryColor, loading }) => {
+  const isEdit = Boolean(editingAssignment);
   return (
     <AnimatePresence> 
       {isModalOpen && (
@@ -407,7 +408,7 @@ const Modal: React.FC<ModalProps> = ({ isModalOpen, setIsModalOpen, editingAssig
             <div className="px-8 pt-8 pb-2 flex justify-between items-start">
               <div>
                 <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">
-                  {editingAssignment ? 'Edit' : 'Create'} 
+                  {isEdit ? 'Edit' : 'Create'} 
                   <span style={{ color: primaryColor }} className="ml-2 underline decoration-2 underline-offset-4">
                     Assignment
                   </span>
@@ -515,6 +516,55 @@ const Modal: React.FC<ModalProps> = ({ isModalOpen, setIsModalOpen, editingAssig
                       </div>
                    </div>
                 </div>
+
+
+                
+            <div>
+              <label htmlFor="totalPoints" className="block text-sm font-medium text-gray-700 mb-1">Total Points <span className="text-red-500">*</span></label>
+              <input type="number" name="totalPoints" id="totalPoints" value={form.totalPoints} onChange={e => setForm({...form, totalPoints: Number(e.target.value)})} min="0" required
+                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base" />
+            </div>
+
+            <div className='md:col-span-2'>
+              <label htmlFor="durationMinutes" className="block text-sm font-medium text-gray-700 mb-1">Duration (minutes)</label>
+              <input type="number" name="durationMinutes" id="durationMinutes" value={form.durationMinutes || ''} onChange={e => setForm({...form, durationMinutes: Number(e.target.value)})} min="1"
+                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base" />
+            </div>
+
+            <div className="md:col-span-2">
+              <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">Notes (Instructions for Students)</label>
+              <textarea name="notes" id="notes" value={form.notes || ''} onChange={e => setForm({...form, notes: e.target.value})} rows={2}
+                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base"></textarea>
+            </div>
+
+            {/* Online Exam Specific Fields */}
+            <div className="md:col-span-2 flex items-center mt-4">
+              <input type="checkbox" name="isOnline" id="isOnline" checked={form.isOnline} onChange={e => setForm({...form, isOnline: e.target.checked})}
+                className="h-5 w-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500" />
+              <label htmlFor="isOnline" className="ml-2 block text-base font-medium text-gray-700">Is Online Exam?</label>
+            </div>
+
+            {form.isOnline && (
+              <>
+                <div>
+                  <label htmlFor="autoGrade" className="block text-sm font-medium text-gray-700 mb-1">Auto-Grade?</label>
+                  <div className="flex items-center h-full">
+                    <input type="checkbox" name="autoGrade" id="autoGrade" checked={form.autoGrade} onChange={e => setForm({...form, autoGrade: e.target.checked})}
+                      className="h-5 w-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500" />
+                    <label htmlFor="autoGrade" className="ml-2 block text-base font-medium text-gray-700">Enable Auto-Grading</label>
+                  </div>
+                </div>
+              </>
+            )}
+
+            {isEdit && (
+              <div className="md:col-span-2 flex items-center mt-4">
+                <input type="checkbox" name="isPublished" id="isPublished" checked={form.isPublished} onChange={e => setForm({...form, isPublished: e.target.checked})}
+                  className="h-5 w-5 text-green-600 border-gray-300 rounded focus:ring-green-500" />
+                <label htmlFor="isPublished" className="ml-2 block text-base font-medium text-gray-700">Publish Results to Students</label>
+              </div>
+            )}
+            
               </div>
 
               {/* Action Bar */}

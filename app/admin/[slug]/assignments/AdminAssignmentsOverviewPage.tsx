@@ -776,6 +776,7 @@ const AssignmentFormModal: React.FC<AssignmentFormModalProps> = ({ assignmentDat
                 <label htmlFor="isPublished" className="ml-2 block text-base font-medium text-gray-700">Publish Results to Students</label>
               </div>
             )}
+            
           </div>
 
           <div className="flex justify-end gap-3 pt-6 border-t border-gray-100 mt-6">

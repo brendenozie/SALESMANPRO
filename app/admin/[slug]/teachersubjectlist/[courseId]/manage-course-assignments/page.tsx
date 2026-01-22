@@ -123,8 +123,8 @@ export default async function ManageAssignmentsServerPage({ params, searchParams
       initialAssignments={assignmentsPageData.assignments}
       educatorId={assignmentsPageData.educatorId}
       courseId={courseId}
-      classroomId={classroomId}
-      scheduleId={scheduleId}
+      classroomId={classroomId || ''}
+      scheduleId={scheduleId || ''}
     />
   );
 }
