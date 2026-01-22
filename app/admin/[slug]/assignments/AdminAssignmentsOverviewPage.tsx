@@ -691,6 +691,8 @@ const AssignmentFormModal: React.FC<AssignmentFormModalProps> = ({ assignmentDat
                 className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base bg-white"
               >
                 <option value="">-- Select Type --</option>
+                <option value="HOMEWORK">Homework</option>
+                <option value="PROJECT">Project</option>
                 <option value="QUIZ">Quiz</option>
                 <option value="UNIT_TEST">Unit Test</option>
                 <option value="MIDTERM">Midterm</option>
@@ -776,7 +778,7 @@ const AssignmentFormModal: React.FC<AssignmentFormModalProps> = ({ assignmentDat
                 <label htmlFor="isPublished" className="ml-2 block text-base font-medium text-gray-700">Publish Results to Students</label>
               </div>
             )}
-            
+
           </div>
 
           <div className="flex justify-end gap-3 pt-6 border-t border-gray-100 mt-6">

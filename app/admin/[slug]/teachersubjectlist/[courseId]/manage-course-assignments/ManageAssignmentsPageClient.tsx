@@ -386,209 +386,161 @@ interface ModalProps {
 
 const Modal: React.FC<ModalProps> = ({ isModalOpen, setIsModalOpen, editingAssignment, handleSave, form, setForm, primaryColor, loading }) => {
   const isEdit = Boolean(editingAssignment);
+
+  // Helper for consistent input styling
+  const inputClass = "w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-offset-1 transition-all";
+
   return (
-    <AnimatePresence> 
+    <AnimatePresence>
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
-          {/* Clean Backdrop */}
-          <motion.div 
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-hidden">
+          {/* Backdrop */}
+          <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+            className="absolute inset-0 bg-slate-900/60 backdrop-blur-md"
             onClick={() => setIsModalOpen(false)}
           />
 
-          <motion.div 
-            initial={{ scale: 0.95, opacity: 0, y: 20 }}
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0, y: 40 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.95, opacity: 0, y: 20 }}
-            transition={{ type: "spring", damping: 25, stiffness: 400 }}
-            className="relative bg-white w-full max-w-2xl rounded-[2rem] shadow-[0_20px_50px_rgba(0,0,0,0.1)] overflow-hidden border border-slate-100"
+            exit={{ scale: 0.9, opacity: 0, y: 40 }}
+            transition={{ type: "spring", damping: 25, stiffness: 350 }}
+            className="relative bg-slate-50 w-full max-w-3xl rounded-[2.5rem] shadow-2xl overflow-hidden border border-white/20"
           >
-            {/* Elegant Header */}
-            <div className="px-8 pt-8 pb-2 flex justify-between items-start">
+            {/* Header: Simplified & Stronger */}
+            <div className="bg-white px-8 py-6 flex justify-between items-center border-b border-slate-100">
               <div>
-                <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">
-                  {isEdit ? 'Edit' : 'Create'} 
-                  <span style={{ color: primaryColor }} className="ml-2 underline decoration-2 underline-offset-4">
-                    Assignment
-                  </span>
+                <h2 className="text-2xl font-black text-slate-900 flex items-center gap-2">
+                  <div className="w-2 h-8 rounded-full" style={{ backgroundColor: primaryColor }} />
+                  {isEdit ? 'Edit' : 'New'} Assignment
                 </h2>
-                <p className="text-slate-400 text-sm font-medium mt-1">Fill in the workspace details.</p>
+                <p className="text-slate-400 text-xs font-semibold uppercase tracking-tighter mt-1">Configure your workspace requirements</p>
               </div>
-              <button 
-                onClick={() => setIsModalOpen(false)}
-                className="p-2 bg-slate-50 hover:bg-slate-100 rounded-xl transition-all text-slate-400 hover:text-slate-600"
-              >
+              <button onClick={() => setIsModalOpen(false)} className="p-3 bg-slate-50 hover:bg-red-50 hover:text-red-500 rounded-2xl transition-all text-slate-400">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
-            
-            <form onSubmit={handleSave} className="p-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-h-[65vh] overflow-y-auto pr-2 custom-scrollbar">
-                
-                {/* Title Section */}
-                <div className="col-span-full space-y-1.5">
-                  <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest ml-1">General Info</label>
-                  <input 
-                    required
-                    placeholder="Assignment Title"
-                    className="w-full px-5 py-4 bg-slate-50 border border-slate-100 focus:border-indigo-500 focus:bg-white rounded-2xl transition-all outline-none text-slate-800 placeholder:text-slate-300 font-semibold text-lg"
-                    value={form.title}
-                    onChange={e => setForm({...form, title: e.target.value})}
-                  />
-                  <textarea 
-                    rows={2}
-                    placeholder="Brief description..."
-                    className="w-full px-5 py-3 bg-slate-50 border border-slate-100 focus:border-indigo-500 focus:bg-white rounded-2xl transition-all outline-none text-slate-600 placeholder:text-slate-300 resize-none text-sm"
-                    value={form.description || ''}
-                    onChange={e => setForm({...form, description: e.target.value})}
-                  />
-                </div>
 
-                {/* Deadlines Card */}
-                <div className="bg-slate-50/50 p-5 rounded-[1.5rem] border border-slate-100 space-y-4">
-                  <div className="flex items-center gap-2 mb-1">
-                    <div className="w-8 h-8 rounded-lg bg-white shadow-sm flex items-center justify-center">
-                      <svg className="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                    </div>
-                    <span className="text-xs font-bold text-slate-500 uppercase">Deadline</span>
+            <form onSubmit={handleSave} className="p-1 overflow-hidden">
+              <div className="px-8 py-6 max-h-[70vh] overflow-y-auto custom-scrollbar space-y-8">
+                
+                {/* Section 1: Core Identity */}
+                <section className="space-y-4">
+                  <div className="flex items-center gap-2 text-slate-400">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                    <span className="text-[11px] font-bold uppercase tracking-widest">General Information</span>
                   </div>
-                  <input 
-                    type="date" 
-                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/20"
-                    value={form.dueDate}
-                    onChange={e => setForm({...form, dueDate: e.target.value})}
-                  />
-                  <div className="flex items-center bg-white border border-slate-200 rounded-xl px-4 py-3">
-                    <span className="text-xs font-bold text-slate-400 mr-3">MAX GRADE</span>
-                    <input 
-                      type="number"
-                      className="w-full bg-transparent border-none p-0 focus:ring-0 font-bold text-slate-700 text-sm"
-                      value={form.maxGrade}
-                      onChange={e => setForm({...form, maxGrade: Number(e.target.value)})}
+                  <div className="grid grid-cols-1 gap-4">
+                    <input
+                      required
+                      placeholder="Assignment Title"
+                      className="w-full px-6 py-5 bg-white border-none shadow-sm rounded-2xl focus:ring-2 text-xl font-bold text-slate-800 placeholder:text-slate-300 transition-all"
+                      style={{ '--tw-ring-color': primaryColor } as any}
+                      value={form.title}
+                      onChange={e => setForm({ ...form, title: e.target.value })}
+                    />
+                    <textarea
+                      rows={2}
+                      placeholder="What is this assignment about?"
+                      className="w-full px-6 py-4 bg-white border-none shadow-sm rounded-2xl focus:ring-2 text-slate-600 placeholder:text-slate-300 resize-none"
+                      style={{ '--tw-ring-color': primaryColor } as any}
+                      value={form.description || ''}
+                      onChange={e => setForm({ ...form, description: e.target.value })}
                     />
                   </div>
-                </div>
+                </section>
 
-                {/* Logistics Card */}
-                <div className="bg-slate-50/50 p-5 rounded-[1.5rem] border border-slate-100 space-y-4">
-                  <div className="flex items-center gap-2 mb-1">
-                    <div className="w-8 h-8 rounded-lg bg-white shadow-sm flex items-center justify-center">
-                      <svg className="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /></svg>
+                {/* Section 2: Logistics & Scoring */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Timing & Deadlines Card */}
+                  <div className="bg-white p-6 rounded-[2rem] shadow-sm space-y-4">
+                    <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest">Schedule & Grading</span>
+                    <div className="space-y-3">
+                      <div className="flex flex-col gap-1">
+                        <label className="text-xs font-bold text-slate-500 ml-1">Due Date</label>
+                        <input type="date" className={inputClass} value={form.dueDate} onChange={e => setForm({ ...form, dueDate: e.target.value })} />
+                      </div>
+                      <div className="flex gap-3">
+                        <div className="flex-1">
+                          <label className="text-xs font-bold text-slate-500 ml-1">Duration (Min)</label>
+                          <input type="number" className={inputClass} placeholder="60" value={form.durationMinutes || ''} onChange={e => setForm({ ...form, durationMinutes: Number(e.target.value) })} />
+                        </div>
+                        <div className="flex-1">
+                          <label className="text-xs font-bold text-slate-500 ml-1">Max Grade</label>
+                          <input type="number" className={inputClass} value={form.maxGrade} onChange={e => setForm({ ...form, maxGrade: Number(e.target.value) })} />
+                        </div>
+                      </div>
                     </div>
-                    <span className="text-xs font-bold text-slate-500 uppercase">Logistics</span>
                   </div>
-                  <select 
-                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 outline-none"
-                    value={form.status}
-                    onChange={e => setForm({...form, status: e.target.value as any})}
-                  >
-                    <option value="HOMEWORK">Homework</option>
-                    <option value="PROJECT">Project</option>
-                    <option value="QUIZ">Quiz</option>
-                  </select>
-                  <input 
-                    placeholder="Location / Link"
-                    className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 outline-none"
-                    value={form.location || ''}
-                    onChange={e => setForm({...form, location: e.target.value})}
+
+                  {/* Delivery & Type Card */}
+                  <div className="bg-white p-6 rounded-[2rem] shadow-sm space-y-4">
+                    <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">Delivery Details</span>
+                    <div className="space-y-3">
+                      <div className="flex flex-col gap-1">
+                        <label className="text-xs font-bold text-slate-500 ml-1">Assignment Type</label>
+                        <select className={inputClass} value={form.status} onChange={e => setForm({ ...form, status: e.target.value as any })}>
+                          <option value="HOMEWORK">Homework</option>
+                          <option value="PROJECT">Project</option>
+                          <option value="QUIZ">Quiz</option>
+                          <option value="UNIT_TEST">Unit Test</option>
+                        </select>
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <label className="text-xs font-bold text-slate-500 ml-1">Location / Link</label>
+                        <input placeholder="Room 402 or Zoom Link" className={inputClass} value={form.location || ''} onChange={e => setForm({ ...form, location: e.target.value })} />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Section 3: Smart Toggles */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <ToggleTile 
+                    label="Online Exam" 
+                    checked={form.isOnline} 
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setForm({...form, isOnline: e.target.checked})} 
+                    icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" /></svg>}
                   />
+                  {form.isOnline && (
+                    <ToggleTile 
+                      label="Auto Grade" 
+                      checked={form.autoGrade} 
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setForm({...form, autoGrade: e.target.checked})} 
+                      icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
+                    />
+                  )}
+                  {isEdit && (
+                    <ToggleTile 
+                      label="Publish Now" 
+                      checked={form.isPublished} 
+                      primaryColor="emerald"
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setForm({...form, isPublished: e.target.checked})} 
+                      icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>}
+                    />
+                  )}
                 </div>
-
-                {/* Sub-details (Time & Instructions) */}
-                <div className="col-span-full grid grid-cols-2 gap-4">
-                   <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">Duration</label>
-                      <div className="relative">
-                        <input 
-                          type="number"
-                          className="w-full px-4 py-3 bg-slate-50 border border-slate-100 rounded-xl text-sm outline-none"
-                          placeholder="60"
-                          onChange={e => setForm({...form, durationMinutes: Number(e.target.value)})}
-                        />
-                        <span className="absolute right-4 top-3 text-[10px] font-bold text-slate-300">MINS</span>
-                      </div>
-                   </div>
-                   <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">Type</label>
-                      <div className="flex items-center justify-center h-[46px] bg-slate-50 border border-slate-100 rounded-xl text-xs font-bold text-slate-500">
-                        {form.status}
-                      </div>
-                   </div>
-                </div>
-
-
-                
-            <div>
-              <label htmlFor="totalPoints" className="block text-sm font-medium text-gray-700 mb-1">Total Points <span className="text-red-500">*</span></label>
-              <input type="number" name="totalPoints" id="totalPoints" value={form.totalPoints} onChange={e => setForm({...form, totalPoints: Number(e.target.value)})} min="0" required
-                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base" />
-            </div>
-
-            <div className='md:col-span-2'>
-              <label htmlFor="durationMinutes" className="block text-sm font-medium text-gray-700 mb-1">Duration (minutes)</label>
-              <input type="number" name="durationMinutes" id="durationMinutes" value={form.durationMinutes || ''} onChange={e => setForm({...form, durationMinutes: Number(e.target.value)})} min="1"
-                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base" />
-            </div>
-
-            <div className="md:col-span-2">
-              <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">Notes (Instructions for Students)</label>
-              <textarea name="notes" id="notes" value={form.notes || ''} onChange={e => setForm({...form, notes: e.target.value})} rows={2}
-                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-base"></textarea>
-            </div>
-
-            {/* Online Exam Specific Fields */}
-            <div className="md:col-span-2 flex items-center mt-4">
-              <input type="checkbox" name="isOnline" id="isOnline" checked={form.isOnline} onChange={e => setForm({...form, isOnline: e.target.checked})}
-                className="h-5 w-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500" />
-              <label htmlFor="isOnline" className="ml-2 block text-base font-medium text-gray-700">Is Online Exam?</label>
-            </div>
-
-            {form.isOnline && (
-              <>
-                <div>
-                  <label htmlFor="autoGrade" className="block text-sm font-medium text-gray-700 mb-1">Auto-Grade?</label>
-                  <div className="flex items-center h-full">
-                    <input type="checkbox" name="autoGrade" id="autoGrade" checked={form.autoGrade} onChange={e => setForm({...form, autoGrade: e.target.checked})}
-                      className="h-5 w-5 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500" />
-                    <label htmlFor="autoGrade" className="ml-2 block text-base font-medium text-gray-700">Enable Auto-Grading</label>
-                  </div>
-                </div>
-              </>
-            )}
-
-            {isEdit && (
-              <div className="md:col-span-2 flex items-center mt-4">
-                <input type="checkbox" name="isPublished" id="isPublished" checked={form.isPublished} onChange={e => setForm({...form, isPublished: e.target.checked})}
-                  className="h-5 w-5 text-green-600 border-gray-300 rounded focus:ring-green-500" />
-                <label htmlFor="isPublished" className="ml-2 block text-base font-medium text-gray-700">Publish Results to Students</label>
-              </div>
-            )}
-            
               </div>
 
               {/* Action Bar */}
-              <div className="mt-8 flex items-center justify-between border-t border-slate-100 pt-6">
-                <button 
-                  type="button" 
-                  onClick={() => setIsModalOpen(false)}
-                  className="text-sm font-bold text-slate-400 hover:text-slate-600 transition-colors"
-                >
-                  Cancel
+              <div className="p-8 bg-white flex items-center justify-between border-t border-slate-100">
+                <button type="button" onClick={() => setIsModalOpen(false)} className="text-sm font-bold text-slate-400 hover:text-slate-600 transition-colors px-4">
+                  Discard Changes
                 </button>
                 
-                <motion.button 
-                  whileHover={{ scale: 1.02, translateY: -2 }}
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   type="submit"
                   disabled={loading}
                   style={{ backgroundColor: primaryColor }}
-                  className="px-10 py-4 rounded-2xl font-bold text-white shadow-lg shadow-indigo-100 flex items-center gap-3 disabled:opacity-50"
+                  className="px-12 py-4 rounded-2xl font-bold text-white shadow-xl flex items-center gap-3 disabled:opacity-50"
                 >
                   {loading ? (
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   ) : (
-                    <span>{editingAssignment ? 'Update Assignment' : 'Create Assignment'}</span>
+                    <span>{editingAssignment ? 'Save Changes' : 'Launch Assignment'}</span>
                   )}
                 </motion.button>
               </div>
@@ -600,175 +552,14 @@ const Modal: React.FC<ModalProps> = ({ isModalOpen, setIsModalOpen, editingAssig
   );
 };
 
-const Modalv1: React.FC<ModalProps> = ({ isModalOpen, setIsModalOpen, editingAssignment, handleSave, form, setForm, title, primaryColor, loading }) => {
-  return (
-    <AnimatePresence> 
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
-          {/* Backdrop with stronger blur */}
-          <motion.div 
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-slate-900/60 backdrop-blur-md"
-            onClick={() => setIsModalOpen(false)}
-          />
-
-          <motion.div 
-            initial={{ scale: 0.9, opacity: 0, y: 40 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.9, opacity: 0, y: 40 }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="relative bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl w-full max-w-2xl rounded-[2.5rem] shadow-[0_32px_64px_-12px_rgba(0,0,0,0.3)] overflow-hidden border border-white/20"
-          >
-            {/* Header with Gradient Accent */}
-            <div className="relative px-8 pt-8 pb-4">
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-indigo-500 to-transparent" />
-              <div className="flex justify-between items-center">
-                <div>
-                  <h2 className="text-3xl font-extrabold tracking-tight text-slate-900">
-                    {editingAssignment ? 'Refine' : 'Craft'} <span className="text-indigo-600">Assignment</span>
-                  </h2>
-                  <p className="text-slate-500 text-sm mt-1">Fill in the details below to set expectations.</p>
-                </div>
-                <button 
-                  onClick={() => setIsModalOpen(false)}
-                  className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400"
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                </button>
-              </div>
-            </div>
-            
-            <form onSubmit={handleSave} className="p-8 pt-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-h-[70vh] overflow-y-auto pr-2 custom-scrollbar">
-                
-                {/* Main Info Section */}
-                <div className="space-y-5 col-span-full">
-                  <div className="relative group">
-                    <label className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-1.5 block ml-1">Assignment Title</label>
-                    <input 
-                      required
-                      placeholder="e.g. Midterm Research Paper"
-                      className="w-full px-5 py-4 bg-slate-100/50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-2xl transition-all outline-none text-lg font-medium"
-                      value={form.title}
-                      onChange={e => setForm({...form, title: e.target.value})}
-                    />
-                  </div>
-
-                  <div className="relative">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1">Detailed Description</label>
-                    <textarea 
-                      rows={3}
-                      placeholder="What should students focus on?"
-                      className="w-full px-5 py-4 bg-slate-100/50 border-2 border-transparent focus:border-indigo-500 focus:bg-white rounded-2xl transition-all outline-none resize-none"
-                      value={form.description || ''}
-                      onChange={e => setForm({...form, description: e.target.value})}
-                    />
-                  </div>
-                </div>
-
-                {/* Logistics Card */}
-                <div className="p-5 bg-slate-50 rounded-3xl space-y-4 border border-slate-100">
-                  <h3 className="text-xs font-bold text-slate-400 uppercase tracking-tighter flex items-center gap-2">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                    Schedule & Grading
-                  </h3>
-                  <div className="space-y-4">
-                    <input 
-                      type="date" 
-                      className="w-full px-4 py-3 bg-white rounded-xl border-none shadow-sm focus:ring-2 focus:ring-indigo-500 transition-all cursor-pointer"
-                      value={form.dueDate}
-                      onChange={e => setForm({...form, dueDate: e.target.value})}
-                    />
-                    <div className="flex items-center gap-3 bg-white px-4 py-3 rounded-xl shadow-sm">
-                      <span className="text-sm font-bold text-slate-400">PTS</span>
-                      <input 
-                        type="number"
-                        placeholder="Max Grade"
-                        className="w-full border-none p-0 focus:ring-0 font-bold text-slate-700"
-                        value={form.maxGrade}
-                        onChange={e => setForm({...form, maxGrade: Number(e.target.value)})}
-                      />
-                    </div>
-                    <select 
-                      className="w-full px-4 py-3 bg-white rounded-xl border-none shadow-sm focus:ring-2 focus:ring-indigo-500 transition-all appearance-none font-medium text-slate-600"
-                      value={form.status}
-                      onChange={e => setForm({...form, status: e.target.value})}
-                    >
-                      <option value="HOMEWORK">📝 Homework</option>
-                      <option value="PROJECT">🚀 Project</option>
-                      <option value="QUIZ">⚡ Quiz</option>
-                      <option value="OTHER">📁 Other</option>
-                    </select>
-                  </div>
-                </div>
-
-                {/* Location & Time Card */}
-                <div className="p-5 bg-indigo-50/50 rounded-3xl space-y-4 border border-indigo-100/50">
-                  <h3 className="text-xs font-bold text-indigo-400 uppercase tracking-tighter flex items-center gap-2">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                    Environment
-                  </h3>
-                  <div className="grid grid-cols-2 gap-3">
-                    <input type="time" className="px-3 py-3 bg-white rounded-xl border-none shadow-sm text-sm" onChange={e => setForm({...form, startTime: e.target.value})} />
-                    <input type="time" className="px-3 py-3 bg-white rounded-xl border-none shadow-sm text-sm" onChange={e => setForm({...form, endTime: e.target.value})} />
-                    <input 
-                      placeholder="Room / URL"
-                      className="col-span-2 px-4 py-3 bg-white rounded-xl border-none shadow-sm text-sm focus:ring-2 focus:ring-indigo-500" 
-                      onChange={e => setForm({...form, location: e.target.value})}
-                    />
-                    <div className="col-span-2 relative">
-                      <input 
-                        placeholder="Duration (Mins)"
-                        className="w-full px-4 py-3 bg-white rounded-xl border-none shadow-sm text-sm pr-12" 
-                        onChange={e => setForm({...form, durationMinutes: Number(e.target.value)})}
-                      />
-                      <span className="absolute right-4 top-3 text-[10px] font-bold text-slate-300">MINS</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Full Width Instructions */}
-                <div className="col-span-full">
-                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1">Special Instructions</label>
-                  <textarea
-                    rows={2}
-                    placeholder="Any specific tools or rules?"
-                    className="w-full px-5 py-3 bg-slate-50 border-2 border-dashed border-slate-200 focus:border-indigo-400 focus:bg-white rounded-2xl transition-all outline-none resize-none text-sm"
-                    onChange={e => setForm({...form, instructions: e.target.value})}
-                  />
-                </div>
-              </div>
-
-              {/* Action Footer */}
-              <div className="pt-8 flex items-center justify-between">
-                <button 
-                  type="button" 
-                  onClick={() => setIsModalOpen(false)}
-                  className="text-sm font-bold text-slate-400 hover:text-slate-600 transition-colors px-4"
-                >
-                  Discard Changes
-                </button>
-                
-                <div className="flex gap-3">
-                  <motion.button 
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    type="submit"
-                    disabled={loading}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-10 py-4 rounded-2xl font-bold shadow-[0_10px_20px_-5px_rgba(79,70,229,0.4)] disabled:opacity-50 transition-all flex items-center gap-2"
-                  >
-                    {loading ? (
-                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    ) : (
-                      <>{editingAssignment ? 'Save Improvements' : 'Launch Assignment'}</>
-                    )}
-                  </motion.button>
-                </div>
-              </div>
-            </form>
-          </motion.div>
-        </div>
-      )}
-    </AnimatePresence>
-  );
-};
+// Clean helper for the checkboxes to make them look like buttons/tiles
+const ToggleTile = ({ label, checked, onChange, icon, primaryColor = "indigo" }: { label: string; checked: boolean; onChange: (e: React.ChangeEvent<HTMLInputElement>) => void; icon: React.ReactNode; primaryColor?: string }) => (
+  <label className={`
+    flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all cursor-pointer
+    ${checked ? `bg-${primaryColor}-50 border-${primaryColor}-500 text-${primaryColor}-700` : 'bg-white border-slate-100 text-slate-400 hover:border-slate-200'}
+  `}>
+    <input type="checkbox" className="hidden" checked={checked} onChange={onChange} />
+    <div className={`mb-2 ${checked ? `text-${primaryColor}-500` : 'text-slate-300'}`}>{icon}</div>
+    <span className="text-[10px] font-black uppercase tracking-tight text-center">{label}</span>
+  </label>
+);
