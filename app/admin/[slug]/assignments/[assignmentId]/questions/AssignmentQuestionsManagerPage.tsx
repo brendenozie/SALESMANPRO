@@ -51,6 +51,7 @@ interface AssignmentQuestionsManagerPageProps {
   assignmentDetails: AssignmentDetailsForQuestions;
   initialQuestions: AssignmentQuestionData[];
   companyId: string;
+  assignmentId: string;
 }
 
 // --- Question Card Component ---
@@ -501,7 +502,7 @@ const QuestionFormModal: React.FC<QuestionFormModalProps> = ({ assignmentId, que
 
 
 // --- Main AssignmentQuestionsManagerPage Component ---
-export default function AssignmentQuestionsManagerPage({ assignmentDetails, initialQuestions, companyId }: AssignmentQuestionsManagerPageProps) {
+export default function AssignmentQuestionsManagerPage({ assignmentDetails, initialQuestions, companyId, assignmentId }: AssignmentQuestionsManagerPageProps) {
   const [questions, setQuestions] = useState<AssignmentQuestionData[]>(initialQuestions);
   const [showFormModal, setShowFormModal] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<AssignmentQuestionData | null>(null);
@@ -520,12 +521,12 @@ export default function AssignmentQuestionsManagerPage({ assignmentDetails, init
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${apiBaseUrl}/admin/assignment-questions?assignmentId=${encodeURIComponent(assignmentDetails.id)}`, {
+      const res = await fetch(`${apiBaseUrl}/admin/assignment-questions?assignmentId=${encodeURIComponent(assignmentId)}`, {
         next: { revalidate: 60 },
       });
       if (res.ok) {
         const data: AssignmentQuestionData[] = await res.json();
-        setQuestions(data.sort((a,b) => a.order - b.order)); // Ensure questions are sorted by order
+        setQuestions((data?.sort((a,b) => a.order - b.order) || [])); // Ensure questions are sorted by order
       } else {
         const errorData = await res.json();
         setError(errorData.message || "Failed to fetch assignment questions.");
@@ -535,7 +536,7 @@ export default function AssignmentQuestionsManagerPage({ assignmentDetails, init
     } finally {
       setIsLoading(false);
     }
-  }, [assignmentDetails.id]);
+  }, [assignmentId]);
 
   useEffect(() => {
     // Only fetch if initial data is empty (meaning server fetch failed or was empty)
@@ -609,11 +610,11 @@ export default function AssignmentQuestionsManagerPage({ assignmentDetails, init
             <ChevronLeftIcon className="h-5 w-5 mr-1" /> Back to Assignments
           </Link>
           <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
-            Questions for: <span className="text-purple-700">{assignmentDetails.title}</span>
+            Questions for: <span className="text-purple-700">{assignmentDetails?.title}</span>
             <span className="ml-2 text-teal-600 text-base sm:text-xl">📝</span>
           </h1>
           <p className="text-sm text-gray-600 mt-1">
-            Course: {assignmentDetails.courseTitle} | {assignmentDetails.isOnline ? `Online Assignment (${assignmentDetails.durationMinutes || 'N/A'} mins)` : 'Offline Assignment'} | Auto-Grade: {assignmentDetails.autoGrade ? 'Yes' : 'No'}
+            Course: {assignmentDetails?.courseTitle} | {assignmentDetails?.isOnline ? `Online Assignment (${assignmentDetails?.durationMinutes || 'N/A'} mins)` : 'Offline Assignment'} | Auto-Grade: {assignmentDetails?.autoGrade ? 'Yes' : 'No'}
           </p>
         </div>
         <button
@@ -667,7 +668,7 @@ export default function AssignmentQuestionsManagerPage({ assignmentDetails, init
       {/* Question Form Modal */}
       {showFormModal && (
         <QuestionFormModal
-          assignmentId={assignmentDetails.id}
+          assignmentId={assignmentId}
           questionData={editingQuestion}
           onClose={() => { setShowFormModal(false); setEditingQuestion(null); setError(null); }}
           onSave={handleSaveQuestion}

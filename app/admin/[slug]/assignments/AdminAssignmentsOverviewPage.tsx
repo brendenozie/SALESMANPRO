@@ -422,7 +422,9 @@ export default function AssignmentsPageClient({
                               <div className="flex flex-col gap-1">
                                 <button 
                                   onClick={() => {
-                                    navigator.clipboard.writeText(window.location.origin + `/admin/assignments/${a.id}/questions`);
+                                    // navigator.clipboard.writeText(window.location.origin + `/admin/assignments/${a.id}/questions`);
+                                    //navigate to questions page
+                                    window.location.href = `/admin/${companyId}/assignments/${a.id}/questions`;
                                   }}
                                   className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-50 rounded-lg transition-all"
                                 >
@@ -431,7 +433,9 @@ export default function AssignmentsPageClient({
 
                                 <button 
                                   onClick={() => {
-                                    navigator.clipboard.writeText(window.location.origin + `/admin/assignments/${a.id}/submissions`);
+                                    // navigator.clipboard.writeText(window.location.origin + `/admin/assignments/${a.id}/submissions`);
+                                    //navigate to submissions page
+                                    window.location.href = `/admin/${companyId}/assignments/${a.id}/submissions`;
                                   }}
                                   className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-50 rounded-lg transition-all"
                                 >

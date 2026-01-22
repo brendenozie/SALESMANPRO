@@ -40,15 +40,16 @@ export default async function AssignmentQuestionsPage({ params }: PageProps) {
     console.error("Error fetching assignment data:", err);
   }
 
-  if (!initialAssignmentDetails) {
-    return <div className="p-8 text-center text-red-500 font-semibold">Assignment not found.</div>;
-  }
+  // if (!initialAssignmentDetails) {
+  //   return <div className="p-8 text-center text-red-500 font-semibold">Assignment not found.</div>;
+  // }
 
   return (
     <AssignmentQuestionsManagerPage
       assignmentDetails={initialAssignmentDetails}
       initialQuestions={initialQuestions}
       companyId={companyId}
+      assignmentId={assignmentId}
     />
   );
 }
