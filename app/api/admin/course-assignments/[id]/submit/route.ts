@@ -3,38 +3,92 @@ import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
-export const GET = withApiHandler(async (_req: Request, { params }: { params: { id: string } }) => {
+
+
+export const POST = withApiHandler(async (req: Request, { params }: { params: { id: string } }) => {
+  const assignmentId = params.id;
+  const body = await req.json();
+  const { studentId, courseId, companyId, responses } = body; 
+  // responses: Array<{ questionId: string, selectedOptions: string[], responseText: string }>
+
+  // 1. Fetch the assignment and its questions to validate and auto-grade
   const assignment = await prisma.courseAssignment.findUnique({
-    where: { id: params.id },
+    where: { id: assignmentId },
+    include: { courseAssignmentQuestions: true },
+  });
+
+  if (!assignment) {
+    return formatResponse(false, null, "Assignment not found", 404);
+  }
+
+  let totalScore = 0;
+  const questionResponsesData = [];
+
+  // 2. Auto-grading Logic (only if autoGrade is enabled)
+  if (assignment.isOnline && assignment.autoGrade) {
+    for (const question of assignment.courseAssignmentQuestions) {
+      const studentResp = responses.find((r: any) => r.questionId === question.id);
+      
+      if (studentResp) {
+        let isCorrect = false;
+
+        // Simple check for Multiple Choice (assuming single correct answer for now)
+        if (question.questionType === "multiple_choice") {
+          isCorrect = studentResp.selectedOptions[0] === question.correctAnswer;
+        } 
+        // Simple check for Short Answer
+        else if (question.questionType === "short_answer") {
+          isCorrect = studentResp.responseText?.trim().toLowerCase() === question.correctAnswer?.trim().toLowerCase();
+        }
+
+        if (isCorrect) {
+          totalScore += question.points || 0;
+        }
+
+        questionResponsesData.push({
+          questionId: question.id,
+          selectedOptions: studentResp.selectedOptions || [],
+          responseText: studentResp.responseText || null,
+        });
+      }
+    }
+  }
+
+  // 3. Create the Submission and its nested Responses
+  const submission = await prisma.assignmentSubmission.create({
+    data: {
+      assignmentId,
+      studentId,
+      courseId,
+      companyId,
+      grade: assignment.autoGrade ? totalScore : null,
+      gradedAt: assignment.autoGrade ? new Date() : null,
+      // Create associated responses for each question
+      assignmentQuestionResponses: {
+        create: responses.map((r: any) => ({
+          questionId: r.questionId,
+          selectedOptions: r.selectedOptions || [],
+          responseText: r.responseText || null,
+        })),
+      },
+    },
     include: {
-      courseAssignmentQuestions: true, // Fetch questions for this assignment
-      _count: { select: { submissions: true } }
+      assignmentQuestionResponses: true
     }
   });
 
-  if (!assignment) return formatResponse(false, null, "Not found", 404);
-  return formatResponse(true, assignment, null, 200);
+  return formatResponse(
+    true, 
+    { 
+      submissionId: submission.id, 
+      autoGraded: assignment.autoGrade, 
+      score: submission.grade 
+    }, 
+    "Submission received successfully", 
+    201
+  );
 });
 
-export const PATCH = withApiHandler(async (req: Request, { params }: { params: { id: string } }) => {
-  const body = await req.json();
-  
-  // Clean dates and numbers
-  if (body.dueDate) body.dueDate = new Date(body.dueDate);
-  if (body.maxGrade) body.maxGrade = parseFloat(body.maxGrade);
-
-  const updated = await prisma.courseAssignment.update({
-    where: { id: params.id },
-    data: body
-  });
-
-  return formatResponse(true, updated, "Updated successfully", 200);
-});
-
-export const DELETE = withApiHandler(async (_req: Request, { params }: { params: { id: string } }) => {
-  await prisma.courseAssignment.delete({ where: { id: params.id } });
-  return formatResponse(true, null, "Deleted successfully", 200);
-});
 // import prisma from "@/server/db/prismadb";
 // import { withApiHandler } from "@/lib/hooks/withApiHandler";
 // import { formatResponse } from "@/lib/formatResponse";

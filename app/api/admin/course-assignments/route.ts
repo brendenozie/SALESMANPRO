@@ -1,141 +1,264 @@
-// app/api/course-assignments/route.ts
+// // app/api/course-assignments/route.ts
+
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
-// ---------------- GET ----------------
-// /api/course-assignments
-const getHandler = async (req: Request) => {
+// Helper to map the assignment response consistently
+const mapAssignmentResponse = (assignment: any) => ({
+  id: assignment.id,
+  title: assignment.title,
+  description: assignment.description,
+  type: assignment.type,
+  status: assignment.status,
+  dueDate: assignment.dueDate,
+  maxGrade: assignment.maxGrade,
+  isOnline: assignment.isOnline,
+  durationMinutes: assignment.durationMinutes,
+  autoGrade: assignment.autoGrade,
+  courseId: assignment.courseId,
+  courseTitle: assignment.course?.title || "N/A",
+  courseInstructorName: assignment.course?.CourseEducatorAssignment?.[0]?.educator?.user?.name || "N/A",
+  totalSubmissions: assignment._count?.submissions || 0,
+  questionCount: assignment._count?.courseAssignmentQuestions || 0,
+  createdAt: assignment.createdAt,
+  updatedAt: assignment.updatedAt,
+  classroomId: assignment.classroomId,
+  classroomName: assignment.classroom?.name || "N/A",
+  classroom: { id: assignment.classroom?.id || null, name: assignment.classroom?.name || null, academicLevelId: assignment.classroom?.academicLevelId || null },
+  
+  course: { id: assignment.course?.id || null, title: assignment.course?.title || null },
+  // courseAcademicLevels: assignment.course?.academicLevels
+  //   .map((al: any) => al.academicLevel)
+  //   .filter((level: any) => level)
+  //   .sort((a: any, b: any) => (a.sortOrder || 0) - (b.sortOrder || 0))
+  //   .map((level: any) => ({ id: level.id, name: level.name })) || [],
+  
+  date: assignment.date || null,
+  startTime: assignment.startTime || null,
+  endTime: assignment.endTime || null,
+  
+  notes: assignment.notes || null,
+    
+  isPublished: assignment.isPublished,
+  createdById: assignment.createdById,
+  createdByName: assignment.createdBy?.user?.name || null,
+  createdByEmail: assignment.createdBy?.user?.email || null,
+  companyId: assignment.companyId,
+  
+  totalQuestions: assignment._count?.courseAssignmentQuestions || 0,
+      
+});
+
+export const GET = withApiHandler(async (req: Request) => {
   const { searchParams } = new URL(req.url);
   const courseId = searchParams.get("courseId");
   const companyId = searchParams.get("companyId");
 
-  const whereClause: any = {};
-
+  let whereClause: any = {};
   if (courseId) {
     whereClause.courseId = courseId;
   } else if (companyId) {
-    // get courses belonging to company
-    const coursesInCompany = await prisma.course.findMany({
-      where: { companyId },
-      select: { id: true },
-    });
-    const courseIdsInCompany = coursesInCompany.map((c) => c.id);
-    whereClause.courseId = { in: courseIdsInCompany };
+    whereClause.companyId = companyId;
   } else {
-    return formatResponse(false, null, "Either courseId or companyId is required.", 400);
+    return formatResponse(false, null, "courseId or companyId required", 400);
   }
 
   const assignments = await prisma.courseAssignment.findMany({
-    where: whereClause,
+    // where: whereClause,
     include: {
       course: {
         select: {
-          id: true,
           title: true,
-          CourseEducatorAssignment:{
-            include:{
-                educator: { select: { user: { select: { name: true } } } },
-            }
-          },
-          academicLevels: {
-            include: { academicLevel: { select: { id: true, name: true, sortOrder: true } } },
-          },
-        },
+          CourseEducatorAssignment: {
+            include: { educator: { select: { user: { select: { name: true } } } } }
+          }
+        }
       },
-      _count: { select: { submissions: true } },
+      classroom: { select: { id: true, name: true, academicLevelId: true } },
+      _count: { select: { submissions: true, courseAssignmentQuestions: true } }
     },
-    orderBy: { dueDate: "asc" },
+    orderBy: { createdAt: "desc" }
   });
 
-  const response = assignments.map((assignment) => ({
-    id: assignment.id,
-    courseId: assignment.courseId,
-    courseTitle: assignment.course?.title || "N/A",
-    courseInstructorName: assignment.course?.CourseEducatorAssignment?.[0]?.educator?.user?.name || "N/A",
-    courseAcademicLevels:
-      assignment.course?.academicLevels
-        .map((al) => al.academicLevel)
-        .filter(Boolean)
-        .sort((a, b) => (a?.sortOrder || 0) - (b?.sortOrder || 0))
-        .map((level) => ({ id: level!.id, name: level!.name })) || [],
-    title: assignment.title,
-    description: assignment.description,
-    dueDate: assignment.dueDate,
-    maxGrade: assignment.maxGrade,
-    createdAt: assignment.createdAt,
-    updatedAt: assignment.updatedAt,
-    totalSubmissions: assignment._count.submissions,
-  }));
+  return formatResponse(true, assignments.map(mapAssignmentResponse), null, 200);
+});
 
-  return formatResponse(true, response, null, 200);
-};
-export const GET = withApiHandler(getHandler);
-
-// ---------------- POST ----------------
-// /api/course-assignments
-const postHandler = async (req: Request) => {
+export const POST = withApiHandler(async (req: Request) => {
   const body = await req.json();
-  const { courseId, title, description, dueDate, maxGrade, createdBy } = body;
-
-  if (!courseId || !title || !dueDate || !createdBy) {
-    return formatResponse(false, null, "Course ID, Title, Due Date, and Created By are required.", 400);
-  }
-
-  // validate course exists
-  const existingCourse = await prisma.course.findUnique({ where: { id: courseId } });
-  if (!existingCourse) {
-    return formatResponse(false, null, "Provided courseId does not exist.", 400);
-  }
+  const { 
+    courseId, companyId, title, description, dueDate, 
+    maxGrade, createdBy, type, status, isOnline, classroomId,
+    durationMinutes, autoGrade 
+  } = body;
 
   const newAssignment = await prisma.courseAssignment.create({
     data: {
-      course: { connect: { id: courseId } },
       title,
       description,
+      type: type || "HOMEWORK",
+      status: status || "Draft",
       dueDate: new Date(dueDate),
-      maxGrade,
+      maxGrade: parseFloat(maxGrade),
+      isOnline: !!isOnline,
+      durationMinutes: durationMinutes ? parseInt(durationMinutes) : null,
+      autoGrade: !!autoGrade,
+      course: { connect: { id: courseId } },
+      company: companyId ? { connect: { id: companyId } } : undefined,
       createdBy: { connect: { id: createdBy } },
+      classroom: classroomId ? { connect: { id: classroomId } } : undefined,
     },
     include: {
       course: {
         select: {
           id: true,
           title: true,
-          CourseEducatorAssignment: {
-            include:{
-                educator: { select: { user: { select: { name: true } } } },
-            }
-          },
-          academicLevels: {
-            include: { academicLevel: { select: { id: true, name: true, sortOrder: true } } },
-          },
-        },
+        }
       },
-      _count: { select: { submissions: true } },
+      classroom: { select: { id: true, name: true, academicLevelId: true } },
     },
   });
 
-  const responseData = {
-    id: newAssignment.id,
-    courseId: newAssignment.courseId,
-    courseTitle: newAssignment.course?.title || "N/A",
-    courseInstructorName: newAssignment.course?.CourseEducatorAssignment?.[0]?.educator?.user?.name || "N/A",
-    courseAcademicLevels:
-      newAssignment.course?.academicLevels
-        .map((al) => al.academicLevel)
-        .filter(Boolean)
-        .sort((a, b) => (a?.sortOrder || 0) - (b?.sortOrder || 0))
-        .map((level) => ({ id: level!.id, name: level!.name })) || [],
-    title: newAssignment.title,
-    description: newAssignment.description,
-    dueDate: newAssignment.dueDate,
-    maxGrade: newAssignment.maxGrade,
-    createdAt: newAssignment.createdAt,
-    updatedAt: newAssignment.updatedAt,
-    totalSubmissions: newAssignment._count.submissions,
-  };
+  return formatResponse(true, newAssignment, "Assignment created successfully", 201);
+});
 
-  return formatResponse(true, responseData, null, 201);
-};
-export const POST = withApiHandler(postHandler);
+// import prisma from "@/server/db/prismadb";
+// import { withApiHandler } from "@/lib/hooks/withApiHandler";
+// import { formatResponse } from "@/lib/formatResponse";
+
+// // ---------------- GET ----------------
+// // /api/course-assignments
+// const getHandler = async (req: Request) => {
+//   const { searchParams } = new URL(req.url);
+//   const courseId = searchParams.get("courseId");
+//   const companyId = searchParams.get("companyId");
+
+//   const whereClause: any = {};
+
+//   if (courseId) {
+//     whereClause.courseId = courseId;
+//   } else if (companyId) {
+//     // get courses belonging to company
+//     const coursesInCompany = await prisma.course.findMany({
+//       where: { companyId },
+//       select: { id: true },
+//     });
+//     const courseIdsInCompany = coursesInCompany.map((c) => c.id);
+//     whereClause.courseId = { in: courseIdsInCompany };
+//   } else {
+//     return formatResponse(false, null, "Either courseId or companyId is required.", 400);
+//   }
+
+//   const assignments = await prisma.courseAssignment.findMany({
+//     where: whereClause,
+//     include: {
+//       course: {
+//         select: {
+//           id: true,
+//           title: true,
+//           CourseEducatorAssignment:{
+//             include:{
+//                 educator: { select: { user: { select: { name: true } } } },
+//             }
+//           },
+//           academicLevels: {
+//             include: { academicLevel: { select: { id: true, name: true, sortOrder: true } } },
+//           },
+//         },
+//       },
+//       _count: { select: { submissions: true } },
+//     },
+//     orderBy: { dueDate: "asc" },
+//   });
+
+//   const response = assignments.map((assignment) => ({
+//     id: assignment.id,
+//     courseId: assignment.courseId,
+//     courseTitle: assignment.course?.title || "N/A",
+//     courseInstructorName: assignment.course?.CourseEducatorAssignment?.[0]?.educator?.user?.name || "N/A",
+//     courseAcademicLevels:
+//       assignment.course?.academicLevels
+//         .map((al) => al.academicLevel)
+//         .filter(Boolean)
+//         .sort((a, b) => (a?.sortOrder || 0) - (b?.sortOrder || 0))
+//         .map((level) => ({ id: level!.id, name: level!.name })) || [],
+//     title: assignment.title,
+//     description: assignment.description,
+//     dueDate: assignment.dueDate,
+//     maxGrade: assignment.maxGrade,
+//     createdAt: assignment.createdAt,
+//     updatedAt: assignment.updatedAt,
+//     totalSubmissions: assignment._count.submissions,
+//   }));
+
+//   return formatResponse(true, response, null, 200);
+// };
+// export const GET = withApiHandler(getHandler);
+
+// // ---------------- POST ----------------
+// // /api/course-assignments
+// const postHandler = async (req: Request) => {
+//   const body = await req.json();
+//   const { courseId, title, description, dueDate, maxGrade, createdBy } = body;
+
+//   if (!courseId || !title || !dueDate || !createdBy) {
+//     return formatResponse(false, null, "Course ID, Title, Due Date, and Created By are required.", 400);
+//   }
+
+//   // validate course exists
+//   const existingCourse = await prisma.course.findUnique({ where: { id: courseId } });
+//   if (!existingCourse) {
+//     return formatResponse(false, null, "Provided courseId does not exist.", 400);
+//   }
+
+//   const newAssignment = await prisma.courseAssignment.create({
+//     data: {
+//       course: { connect: { id: courseId } },
+//       title,
+//       description,
+//       dueDate: new Date(dueDate),
+//       maxGrade,
+//       createdBy: { connect: { id: createdBy } },
+//     },
+//     include: {
+//       course: {
+//         select: {
+//           id: true,
+//           title: true,
+//           CourseEducatorAssignment: {
+//             include:{
+//                 educator: { select: { user: { select: { name: true } } } },
+//             }
+//           },
+//           academicLevels: {
+//             include: { academicLevel: { select: { id: true, name: true, sortOrder: true } } },
+//           },
+//         },
+//       },
+//       _count: { select: { submissions: true } },
+//     },
+//   });
+
+//   const responseData = {
+//     id: newAssignment.id,
+//     courseId: newAssignment.courseId,
+//     courseTitle: newAssignment.course?.title || "N/A",
+//     courseInstructorName: newAssignment.course?.CourseEducatorAssignment?.[0]?.educator?.user?.name || "N/A",
+//     courseAcademicLevels:
+//       newAssignment.course?.academicLevels
+//         .map((al) => al.academicLevel)
+//         .filter(Boolean)
+//         .sort((a, b) => (a?.sortOrder || 0) - (b?.sortOrder || 0))
+//         .map((level) => ({ id: level!.id, name: level!.name })) || [],
+//     title: newAssignment.title,
+//     description: newAssignment.description,
+//     dueDate: newAssignment.dueDate,
+//     maxGrade: newAssignment.maxGrade,
+//     createdAt: newAssignment.createdAt,
+//     updatedAt: newAssignment.updatedAt,
+//     totalSubmissions: newAssignment._count.submissions,
+//   };
+
+//   return formatResponse(true, responseData, null, 201);
+// };
+// export const POST = withApiHandler(postHandler);

@@ -3,38 +3,24 @@ import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
-export const GET = withApiHandler(async (_req: Request, { params }: { params: { id: string } }) => {
-  const assignment = await prisma.courseAssignment.findUnique({
-    where: { id: params.id },
-    include: {
-      courseAssignmentQuestions: true, // Fetch questions for this assignment
-      _count: { select: { submissions: true } }
-    }
-  });
 
-  if (!assignment) return formatResponse(false, null, "Not found", 404);
-  return formatResponse(true, assignment, null, 200);
+export const POST = withApiHandler(async (req: Request, { params }: { params: { id: string } }) => {
+  const { questions } = await req.json(); // Expecting an array of questions
+
+  // Example: Delete old questions and replace with new ones (Syncing)
+  await prisma.$transaction([
+    prisma.courseAssignmentQuestion.deleteMany({ where: { assignmentId: params.id } }),
+    prisma.courseAssignmentQuestion.createMany({
+      data: questions.map((q: any) => ({
+        ...q,
+        assignmentId: params.id
+      }))
+    })
+  ]);
+
+  return formatResponse(true, null, "Questions synced successfully", 200);
 });
 
-export const PATCH = withApiHandler(async (req: Request, { params }: { params: { id: string } }) => {
-  const body = await req.json();
-  
-  // Clean dates and numbers
-  if (body.dueDate) body.dueDate = new Date(body.dueDate);
-  if (body.maxGrade) body.maxGrade = parseFloat(body.maxGrade);
-
-  const updated = await prisma.courseAssignment.update({
-    where: { id: params.id },
-    data: body
-  });
-
-  return formatResponse(true, updated, "Updated successfully", 200);
-});
-
-export const DELETE = withApiHandler(async (_req: Request, { params }: { params: { id: string } }) => {
-  await prisma.courseAssignment.delete({ where: { id: params.id } });
-  return formatResponse(true, null, "Deleted successfully", 200);
-});
 // import prisma from "@/server/db/prismadb";
 // import { withApiHandler } from "@/lib/hooks/withApiHandler";
 // import { formatResponse } from "@/lib/formatResponse";

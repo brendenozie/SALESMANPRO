@@ -1,6 +1,6 @@
 // app/admin/[slug]/exams/page.tsx
 import React from "react";
-import AdminAssignmentsOverviewPage, { ExamData, CourseOption, EducatorOption, AcademicLevelOption } from "./AdminAssignmentsOverviewPage";
+import AdminAssignmentsOverviewPage, { AssignmentData, CourseOption, EducatorOption, AcademicLevelOption } from "./AdminAssignmentsOverviewPage";
 import { cookies } from "next/headers";
 import { ClassRoomOption } from "../students/StudentsClient";
 
@@ -12,7 +12,7 @@ interface PageProps {
 
 // --- Helper function to generate sample data (for fallback) ---
 const generateSampleExamData = (companyId: string): {
-  sampleExams: ExamData[];
+  sampleExams: AssignmentData[];
   sampleCourses: CourseOption[];
   sampleEducators: EducatorOption[];
   sampleAcademicLevels: AcademicLevelOption[];
@@ -52,12 +52,13 @@ const generateSampleExamData = (companyId: string): {
 
   const dummyTime = '1970-01-01T'; // For storing time components as Date objects
 
-  const exams: ExamData[] = [
+  const exams: AssignmentData[] = [
     {
       id: 'EXM001',
       title: 'Mathematics Midterm Exam',
       description: 'Covers Chapters 1-5.',
-      course:{ id: 'CRS003', title: 'Algebra', academicLevels: [{ id: 'AL003', name: 'Grade 9' }] },
+
+      course: { id: 'CRS003', title: 'Algebra', academicLevels: [{ id: 'AL003', name: 'Grade 9' }] },
       courseId: 'CRS003',
       courseTitle: 'Algebra',
       courseAcademicLevels: [{ id: 'AL003', name: 'Grade 9' }],
@@ -71,9 +72,9 @@ const generateSampleExamData = (companyId: string): {
       type: 'MIDTERM',
       totalPoints: 100,
       isPublished: false,
-      createdByEducatorId: 'EDU001',
-      createdByEducatorName: 'Mr. John Doe',
-      createdByEducatorEmail: 'john.doe@school.com',
+      createdById: 'EDU001',
+      createdByName: 'Mr. John Doe',
+      createdByEmail: 'john.doe@school.com',
       isOnline: false,
       durationMinutes: null,
       autoGrade: false,
@@ -82,12 +83,16 @@ const generateSampleExamData = (companyId: string): {
       companyId: companyId,
       createdAt: new Date('2025-06-01').toISOString(),
       updatedAt: new Date('2025-06-01').toISOString(),
+      courseInstructorName: "",
+      dueDate: "",
+      status: "",
+      maxGrade: 0
     },
     {
       id: 'EXM002',
       title: 'English Essay Final Draft',
       description: 'Submission deadline via LMS.',
-      course:{ id: 'CRS002', title: 'English Language', academicLevels: [{ id: 'AL002', name: 'Grade 8' }] },
+      course: { id: 'CRS002', title: 'English Language', academicLevels: [{ id: 'AL002', name: 'Grade 8' }] },
       courseId: 'CRS002',
       courseTitle: 'English Language',
       courseAcademicLevels: [{ id: 'AL002', name: 'Grade 8' }],
@@ -101,9 +106,9 @@ const generateSampleExamData = (companyId: string): {
       type: 'ASSIGNMENT_BASED',
       totalPoints: 50,
       isPublished: false,
-      createdByEducatorId: 'EDU002',
-      createdByEducatorName: 'Mrs. Jane Smith',
-      createdByEducatorEmail: 'jane.smith@school.com',
+      createdById: 'EDU002',
+      createdByName: 'Mrs. Jane Smith',
+      createdByEmail: 'jane.smith@school.com',
       isOnline: true,
       durationMinutes: null,
       autoGrade: false,
@@ -112,12 +117,16 @@ const generateSampleExamData = (companyId: string): {
       companyId: companyId,
       createdAt: new Date('2025-06-05').toISOString(),
       updatedAt: new Date('2025-06-05').toISOString(),
+      courseInstructorName: "",
+      dueDate: "",
+      status: "",
+      maxGrade: 0
     },
     {
       id: 'EXM003',
       title: 'Science Unit 2 Test',
       description: 'Covering cell biology and photosynthesis.',
-      course:{ id: 'CRS005', title: 'Science', academicLevels: [{ id: 'AL002', name: 'Grade 8' }] },
+      course: { id: 'CRS005', title: 'Science', academicLevels: [{ id: 'AL002', name: 'Grade 8' }] },
       courseId: 'CRS005',
       courseTitle: 'Science',
       classroomId: 'CRM002',
@@ -131,9 +140,9 @@ const generateSampleExamData = (companyId: string): {
       type: 'UNIT_TEST',
       totalPoints: 100,
       isPublished: true,
-      createdByEducatorId: 'EDU003',
-      createdByEducatorName: 'Ms. Emily White',
-      createdByEducatorEmail: 'emily.white@school.com',
+      createdById: 'EDU003',
+      createdByName: 'Ms. Emily White',
+      createdByEmail: 'emily.white@school.com',
       isOnline: false,
       durationMinutes: null,
       autoGrade: false,
@@ -142,12 +151,16 @@ const generateSampleExamData = (companyId: string): {
       companyId: companyId,
       createdAt: new Date('2025-06-10').toISOString(),
       updatedAt: new Date('2025-06-26').toISOString(),
+      courseInstructorName: "",
+      dueDate: "",
+      status: "",
+      maxGrade: 0
     },
     {
       id: 'EXM004',
       title: 'Physics Final Exam',
       description: 'Comprehensive exam covering all topics.',
-      course:{ id: 'CRS006', title: 'Physics', academicLevels: [{ id: 'AL005', name: 'Grade 11' }] },
+      course: { id: 'CRS006', title: 'Physics', academicLevels: [{ id: 'AL005', name: 'Grade 11' }] },
       courseId: 'CRS006',
       courseTitle: 'Physics',
       classroomId: 'CRM003',
@@ -161,9 +174,9 @@ const generateSampleExamData = (companyId: string): {
       type: 'FINAL',
       totalPoints: 100,
       isPublished: false,
-      createdByEducatorId: 'EDU004',
-      createdByEducatorName: 'Dr. Anne Ndugu',
-      createdByEducatorEmail: 'anne.ndugu@school.com',
+      createdById: 'EDU004',
+      createdByName: 'Dr. Anne Ndugu',
+      createdByEmail: 'anne.ndugu@school.com',
       isOnline: true,
       durationMinutes: 120,
       autoGrade: true,
@@ -172,6 +185,10 @@ const generateSampleExamData = (companyId: string): {
       companyId: companyId,
       createdAt: new Date('2025-06-20').toISOString(),
       updatedAt: new Date('2025-06-20').toISOString(),
+      courseInstructorName: "",
+      dueDate: "",
+      status: "",
+      maxGrade: 0
     },
   ];
 
@@ -184,7 +201,7 @@ export default async function ExamsManagerPage({ params }: PageProps) {
   const cookieHeader = (await cookies()).toString();
   const { slug : companyId } = await params;
 
-  let initialExams: ExamData[] = [];
+  let initialAssignments: AssignmentData[] = [];
   let allCourses: CourseOption[] = [];
   let allEducators: EducatorOption[] = [];
   let allAcademicLevels: AcademicLevelOption[] = [];
@@ -193,16 +210,18 @@ export default async function ExamsManagerPage({ params }: PageProps) {
 
   try {
     // Fetch exams
-    const examsRes = await fetch(`${apiBaseUrl}/admin/exams?companyId=${encodeURIComponent(companyId)}`, {
+    const examsRes = await fetch(`${apiBaseUrl}/admin/course-assignments?companyId=${encodeURIComponent(companyId)}`, {
       next: { revalidate: 60 },
       headers: { 
         Cookie: cookieHeader
       }
     });
     if (examsRes.ok) {
-      const data = (await examsRes.json()).data.data;
-      initialExams = data as ExamData[];
-      console.log(initialExams);  
+      const data = (await examsRes.json()).data;
+      console.log("Fetched Exams Data:");
+      console.log(data);
+      initialAssignments = data as AssignmentData[];
+      console.log(initialAssignments);  
     } else {
       console.error(`[ExamsManagerPage] Failed to fetch exams: ${examsRes.status} ${examsRes.statusText}`);
       fetchError = true;
@@ -275,10 +294,10 @@ export default async function ExamsManagerPage({ params }: PageProps) {
   }
 
   // If any fetch failed or returned empty, use sample data as fallback
-  if (fetchError && initialExams.length === 0 && allCourses.length === 0 && allEducators.length === 0 && allAcademicLevels.length === 0 && allClassRooms.length === 0) {
+  if (fetchError && initialAssignments.length === 0 && allCourses.length === 0 && allEducators.length === 0 && allAcademicLevels.length === 0 && allClassRooms.length === 0) {
     console.log("[ExamsManagerPage] Using sample data as fallback.");
     const { sampleExams, sampleCourses, sampleEducators, sampleAcademicLevels, sampleClassRooms } = generateSampleExamData(companyId);
-    initialExams = sampleExams;
+    initialAssignments = sampleExams;
     allCourses = sampleCourses;
     allEducators = sampleEducators;
     allAcademicLevels = sampleAcademicLevels;
@@ -287,7 +306,7 @@ export default async function ExamsManagerPage({ params }: PageProps) {
 
   return (
     <AdminAssignmentsOverviewPage
-      initialExams={initialExams}
+      initialAssignments={initialAssignments}
       allCourses={allCourses}
       allEducators={allEducators}
       allAcademicLevels={allAcademicLevels}
