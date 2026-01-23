@@ -5969,6 +5969,7 @@ model LibraryIssuance {
   companyId       String                @db.ObjectId
   company         Company               @relation(fields: [companyId], references: [id], onDelete: Cascade)
   issuedDate      DateTime              @default(now())
+  isDamaged       Boolean               @default(false)
   dueDate         DateTime
   returnDate      DateTime?
   status          LibraryIssuanceStatus @default(ACTIVE)

@@ -32,6 +32,15 @@ interface Props {
   schoolId: string;
 }
 
+// Helper to get name from our polymorphic member object
+const getMemberName = (m: any) => {
+  if (!m) return "Unknown Member";
+  if (m.student) return `${m.student.firstName} ${m.student.lastName}`;
+  if (m.educator) return m.educator.user?.name || "Staff";
+  return m.name || "Unknown";
+};
+
+
 const IssuanceRecordsClient = ({ initialRecords = [], books = [], members = [], schoolId }: Props) => {
   const [records, setRecords] = useState<Issuance[]>(initialRecords);
   const [search, setSearch] = useState("");
@@ -62,6 +71,7 @@ const IssuanceRecordsClient = ({ initialRecords = [], books = [], members = [], 
       toast.error("Failed to process return");
     }
   };
+  
 
   const handleNewTransaction = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -114,7 +124,7 @@ const IssuanceRecordsClient = ({ initialRecords = [], books = [], members = [], 
             </h1>
           </div>
 
-          <div className="flex gap-3">
+          {/* <div className="flex gap-3">
             <div className="hidden lg:flex items-center gap-6 px-6 py-3 bg-slate-900/40 border border-slate-800 rounded-2xl mr-4">
                <div className="text-center">
                   <p className="text-[10px] text-slate-500 uppercase font-bold">Active</p>
@@ -132,6 +142,25 @@ const IssuanceRecordsClient = ({ initialRecords = [], books = [], members = [], 
             >
               <ArrowsRightLeftIcon className="h-5 w-5" />
               <span>New Transaction</span>
+            </button>
+          </div> */}
+
+          <div className="flex gap-3">
+             {/* Stats Cards */}
+             <div className="hidden lg:flex items-center gap-6 px-6 py-3 bg-slate-900/40 border border-slate-800 rounded-2xl mr-4">
+               <div className="text-center">
+                  <p className="text-[10px] text-slate-500 uppercase font-bold">Active</p>
+                  <p className="text-lg font-bold text-blue-400">{stats.active}</p>
+               </div>
+               <div className="w-px h-8 bg-slate-800" />
+               <div className="text-center">
+                  <p className="text-[10px] text-slate-500 uppercase font-bold">Overdue</p>
+                  <p className="text-lg font-bold text-rose-500">{stats.overdue}</p>
+               </div>
+            </div>
+            <button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2 px-6 py-3.5 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-bold transition-all shadow-lg active:scale-95">
+              <ArrowsRightLeftIcon className="h-5 w-5" />
+              <span>Issue Book</span>
             </button>
           </div>
         </header>
@@ -209,7 +238,50 @@ const IssuanceRecordsClient = ({ initialRecords = [], books = [], members = [], 
       </div>
 
       {/* Issuance Modal */}
+      {/* Transaction Modal */}
       {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#05070A]/90 backdrop-blur-md">
+          <div className="bg-slate-900 border border-slate-800 w-full max-w-xl rounded-[2.5rem] p-8 shadow-2xl animate-in zoom-in duration-200">
+            <h2 className="text-2xl font-bold text-white mb-6">Authorize Issuance</h2>
+            <form onSubmit={handleNewTransaction} className="space-y-6">
+              <div className="space-y-4">
+                <div>
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Volume</label>
+                  <select name="bookId" required className="w-full bg-slate-800 border border-slate-700 rounded-2xl p-4 mt-2 text-white">
+                    <option value="">Select available book...</option>
+                    {books.filter(b => b.status === 'Available').map(b => (
+                      <option key={b.id} value={b.id}>{b.title} ({b.isbn})</option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Library Member</label>
+                  <select name="memberId" required className="w-full bg-slate-800 border border-slate-700 rounded-2xl p-4 mt-2 text-white">
+                    <option value="">Select recipient...</option>
+                    {members.map(m => (
+                      <option key={m.id} value={m.id}>{getMemberName(m)} — {m.memberId}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Return Deadline</label>
+                  <input type="date" name="dueDate" required className="w-full bg-slate-800 border border-slate-700 rounded-2xl p-4 mt-2 text-white" />
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 py-4 text-slate-400 font-bold hover:text-white transition-colors">Cancel</button>
+                <button type="submit" disabled={loading} className="flex-[2] py-4 bg-blue-600 text-white rounded-2xl font-bold hover:bg-blue-500 transition-all shadow-lg shadow-blue-600/20">
+                  {loading ? "Processing..." : "Complete Transaction"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {/* {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#05070A]/90 backdrop-blur-md">
           <div className="bg-slate-900 border border-slate-800 w-full max-w-xl rounded-[2rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
             <div className="p-8 border-b border-slate-800 flex justify-between items-center">
@@ -257,7 +329,7 @@ const IssuanceRecordsClient = ({ initialRecords = [], books = [], members = [], 
             </form>
           </div>
         </div>
-      )}
+      )} */}
     </main>
   );
 };

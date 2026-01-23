@@ -11,7 +11,8 @@ import {
   EnvelopeIcon,
   FunnelIcon,
   XMarkIcon,
-  CheckCircleIcon
+  CheckCircleIcon,
+  ExclamationTriangleIcon
 } from "@heroicons/react/24/solid";
 
 interface Member {
@@ -230,7 +231,75 @@ const LibraryMembersClient = ({ initialMembers = [], schoolId = '' }) => {
   );
 };
 
-const MemberCard = ({ member }: { member: Member }) => {
+const MemberCard = ({ member }: { member: any }) => {
+  const profile = member.student || member.educator;
+  const name = member.student 
+    ? `${member.student.firstName} ${member.student.lastName}` 
+    : member.educator?.user?.name;
+  
+  // Calculate total pending fines
+  const totalFines = member.issuances?.reduce((acc: number, issuance: any) => {
+    const issuanceFines = issuance.fines?.reduce((sum: number, fine: any) => sum + fine.amount, 0) || 0;
+    return acc + issuanceFines;
+  }, 0) || 0;
+
+  const hasFines = totalFines > 0;
+
+  return (
+    <div className={`group relative bg-slate-900/40 border ${hasFines ? 'border-rose-500/50' : 'border-slate-800'} hover:border-emerald-500/40 rounded-3xl p-6 transition-all duration-300`}>
+      {/* Fine Alert Badge */}
+      {hasFines && (
+        <div className="absolute -top-3 -right-3 bg-rose-600 text-white text-[10px] font-black px-3 py-1.5 rounded-full shadow-lg shadow-rose-900/40 animate-bounce">
+          DEBT: ${totalFines.toFixed(2)}
+        </div>
+      )}
+
+      <div className="flex items-start justify-between mb-6">
+        <div className="flex items-center gap-4">
+          <div className={`h-14 w-14 rounded-2xl flex items-center justify-center text-white text-xl font-bold shadow-lg ${hasFines ? 'bg-rose-500' : 'bg-slate-700'}`}>
+            {name?.charAt(0)}
+          </div>
+          <div>
+            <h3 className="font-bold text-lg text-white group-hover:text-emerald-300 transition-colors line-clamp-1">{name}</h3>
+            <span className="text-[10px] text-indigo-400 font-black tracking-widest uppercase">
+              {member.studentId ? "Student" : "Faculty"}
+            </span>
+          </div>
+        </div>
+        
+        <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
+          member.status === 'ACTIVE' && !hasFines ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'
+        }`}>
+          {hasFines ? 'Action Required' : member.status}
+        </div>
+      </div>
+
+      <div className="space-y-3 mb-6">
+        <div className="flex items-center gap-3 text-sm text-slate-400">
+          <EnvelopeIcon className="h-4 w-4 text-slate-600" />
+          <span className="line-clamp-1">{member.student?.contactEmail || member.educator?.user?.email}</span>
+        </div>
+        
+        {/* Fine Indicator in Info List */}
+        <div className={`flex items-center gap-3 text-sm ${hasFines ? 'text-rose-400 font-bold' : 'text-slate-400'}`}>
+          <ExclamationTriangleIcon className={`h-4 w-4 ${hasFines ? 'text-rose-500' : 'text-slate-600'}`} />
+          {hasFines ? `Outstanding Fine: $${totalFines.toFixed(2)}` : 'No outstanding fines'}
+        </div>
+      </div>
+
+      <div className="flex gap-2">
+        <button className={`flex-grow flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold transition-colors ${
+          hasFines ? 'bg-rose-600 hover:bg-rose-500 text-white' : 'bg-slate-800 hover:bg-slate-700 text-slate-200'
+        }`}>
+          <IdentificationIcon className="h-4 w-4" />
+          {hasFines ? 'Settle Balance' : 'View Profile'}
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const MemberCardV1 = ({ member }: { member: Member }) => {
   const profile = member.student || member.educator;
   const name = member.student ? `${member.student.firstName} ${member.student.lastName}` : member.educator?.user?.name;
   const email = member.student ? member.student.contactEmail : member.educator?.user?.email;
