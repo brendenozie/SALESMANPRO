@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Toaster, toast } from "react-hot-toast";
 import { 
   BanknotesIcon, 
@@ -8,32 +8,62 @@ import {
   ShieldExclamationIcon,
   ArrowPathIcon,
   ReceiptPercentIcon,
-  UserCircleIcon,
   CheckBadgeIcon
 } from "@heroicons/react/24/outline";
 
-const LibraryFinesClient = () => {
+interface Fine {
+  id: string;
+  member: string;
+  book: string;
+  daysOverdue: number;
+  amount: number;
+  status: 'Paid' | 'Unpaid';
+}
+
+const LibraryFinesClient = ({ initialFines = [], schoolId = '' }) => {
+  const [fines, setFines] = useState<Fine[]>(initialFines);
   const [search, setSearch] = useState("");
+  const [isProcessing, setIsProcessing] = useState<string | null>(null);
 
-  const fines = [
-    { id: '1', member: 'Alex Rivera', book: 'The Great Gatsby', daysOverdue: 12, amount: 24.00, status: 'Unpaid' },
-    { id: '2', member: 'Marcus Wright', book: 'Atomic Habits', daysOverdue: 21, amount: 42.50, status: 'Unpaid' },
-    { id: '3', member: 'Sarah Chen', book: 'Clean Code', daysOverdue: 0, amount: 5.00, status: 'Paid' },
-  ];
+  const filteredFines = useMemo(() => {
+    return fines.filter(f => 
+      f.member.toLowerCase().includes(search.toLowerCase()) || 
+      f.book.toLowerCase().includes(search.toLowerCase())
+    );
+  }, [fines, search]);
 
-  const totalOutstanding = fines
-    .filter(f => f.status === 'Unpaid')
-    .reduce((acc, curr) => acc + curr.amount, 0);
+  const totalOutstanding = useMemo(() => 
+    fines.filter(f => f.status === 'Unpaid')
+         .reduce((acc, curr) => acc + curr.amount, 0)
+  , [fines]);
+
+  const handleCollectPayment = async (fineId: string) => {
+    setIsProcessing(fineId);
+    try {
+      const res = await fetch(`/api/admin/library/fines/${fineId}/pay?companyId=${schoolId}`, {
+        method: "PATCH",
+      });
+
+      if (res.ok) {
+        setFines(prev => prev.map(f => f.id === fineId ? { ...f, status: 'Paid' } : f));
+        toast.success("Payment processed successfully");
+      } else {
+        toast.error("Failed to process payment");
+      }
+    } catch (error) {
+      toast.error("Network error");
+    } finally {
+      setIsProcessing(null);
+    }
+  };
 
   return (
     <main className="min-h-screen bg-[#05070A] text-slate-200 p-8 font-sans">
       <Toaster position="top-right" />
       
-      {/* Financial Glow Background */}
       <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-amber-500/5 blur-[120px] rounded-full -z-10" />
 
       <div className="max-w-7xl mx-auto">
-        {/* Header Section */}
         <header className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-12">
           <div>
             <div className="flex items-center gap-2 mb-2">
@@ -45,7 +75,7 @@ const LibraryFinesClient = () => {
             </h1>
           </div>
 
-          <div className="flex items-center gap-4 bg-slate-900/50 border border-slate-800 p-6 rounded-3xl backdrop-blur-md">
+          <div className="flex items-center gap-4 bg-slate-900/50 border border-slate-800 p-6 rounded-3xl backdrop-blur-md transition-all hover:border-amber-500/30">
             <div className="h-12 w-12 bg-amber-500/10 rounded-2xl flex items-center justify-center text-amber-500">
               <BanknotesIcon className="h-6 w-6" />
             </div>
@@ -56,14 +86,13 @@ const LibraryFinesClient = () => {
           </div>
         </header>
 
-        {/* Action Bar */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <div className="md:col-span-2 relative">
              <input 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Filter by member or book title..."
-              className="w-full bg-slate-900/40 border border-slate-800 focus:border-amber-500/50 rounded-2xl py-4 px-6 outline-none transition-all"
+              className="w-full bg-slate-900/40 border border-slate-800 focus:border-amber-500/50 rounded-2xl py-4 px-6 outline-none transition-all placeholder:text-slate-600 text-white"
              />
           </div>
           <button className="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-white rounded-2xl font-bold transition-all border border-slate-700">
@@ -72,15 +101,13 @@ const LibraryFinesClient = () => {
           </button>
         </div>
 
-        {/* Fines Ledger */}
         <div className="grid grid-cols-1 gap-4">
-          {fines.map((fine) => (
+          {filteredFines.map((fine) => (
             <div key={fine.id} className="group relative overflow-hidden bg-slate-900/20 border border-slate-800/60 rounded-3xl p-6 hover:bg-slate-900/40 transition-all">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 
-                {/* Member & Book Info */}
                 <div className="flex items-center gap-5">
-                  <div className={`h-14 w-14 rounded-2xl flex items-center justify-center border shadow-inner ${
+                  <div className={`h-14 w-14 rounded-2xl flex items-center justify-center border shadow-inner transition-colors ${
                     fine.status === 'Paid' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500' : 'bg-amber-500/10 border-amber-500/20 text-amber-500'
                   }`}>
                     {fine.status === 'Paid' ? <CheckBadgeIcon className="h-8 w-8" /> : <ShieldExclamationIcon className="h-8 w-8" />}
@@ -94,7 +121,6 @@ const LibraryFinesClient = () => {
                   </div>
                 </div>
 
-                {/* Metrics */}
                 <div className="flex flex-wrap items-center gap-8 md:gap-12">
                   <div className="text-center md:text-left">
                     <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Delay</p>
@@ -107,13 +133,16 @@ const LibraryFinesClient = () => {
                     </p>
                   </div>
                   
-                  {/* Status & CTA */}
                   <div className="flex items-center gap-3">
                     {fine.status === 'Unpaid' ? (
                       <>
-                        <button className="p-3 bg-amber-500 hover:bg-amber-400 text-black rounded-xl font-bold transition-all transform active:scale-95 flex items-center gap-2 text-xs">
+                        <button 
+                          onClick={() => handleCollectPayment(fine.id)}
+                          disabled={isProcessing === fine.id}
+                          className="p-3 bg-amber-500 hover:bg-amber-400 text-black rounded-xl font-bold transition-all transform active:scale-95 flex items-center gap-2 text-xs disabled:opacity-50"
+                        >
                           <CreditCardIcon className="h-4 w-4" />
-                          Collect Payment
+                          {isProcessing === fine.id ? "Processing..." : "Collect Payment"}
                         </button>
                         <button className="p-3 bg-slate-800 hover:bg-rose-900/30 text-slate-400 hover:text-rose-400 rounded-xl transition-all">
                           <ArrowPathIcon className="h-4 w-4" />
@@ -126,10 +155,8 @@ const LibraryFinesClient = () => {
                     )}
                   </div>
                 </div>
-
               </div>
 
-              {/* Decorative Progress bar for "Overdue Gravity" */}
               {fine.status === 'Unpaid' && (
                 <div className="absolute bottom-0 left-0 h-1 bg-gradient-to-r from-amber-600/0 via-amber-600/40 to-amber-600/0 w-full" />
               )}

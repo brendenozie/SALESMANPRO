@@ -29,8 +29,7 @@ export default async function LibraryMembersPage({ params }: PageProps) {
   }
 
   return (
-    <LibraryIssuanceRecords
-      // initialMembers={initialMembers}
+    <LibraryIssuanceRecords initialRecords={[]} books={[]} members={[]} schoolId={""}      // initialMembers={initialMembers}
       // schoolId={schoolId}
     />
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Toaster, toast } from "react-hot-toast";
 import { 
   ShoppingBagIcon, 
@@ -10,23 +10,48 @@ import {
   ArchiveBoxIcon,
   FunnelIcon,
   ArrowPathIcon,
-  BeakerIcon
+  BeakerIcon,
+  CheckCircleIcon
 } from "@heroicons/react/24/outline";
 
-const LibraryAcquisitionsClient = () => {
-  const [filter, setFilter] = useState('all');
+interface Acquisition {
+  id: string;
+  title: string;
+  qty: number;
+  cost: number;
+  status: 'Requested' | 'Processing' | 'In Transit' | 'Received';
+  date: string;
+  vendor: string;
+}
 
-  const orders = [
-    { id: 'ACQ-001', title: 'Modern Operating Systems', qty: 5, cost: 450.00, status: 'In Transit', date: '2023-11-10', vendor: 'Global Books' },
-    { id: 'ACQ-002', title: 'The Design of Everyday Things', qty: 2, cost: 78.50, status: 'Requested', date: '2023-11-12', vendor: 'Amazon Business' },
-    { id: 'ACQ-003', title: 'Encyclopedia of Science', qty: 1, cost: 120.00, status: 'Processing', date: '2023-11-08', vendor: 'TechLogistics' },
-  ];
+const LibraryAcquisitionsClient = ({ initialOrders = [], schoolId = "" }) => {
+  const [orders, setOrders] = useState<Acquisition[]>(initialOrders);
+  const [filter, setFilter] = useState('All Stages');
+
+  const filteredOrders = useMemo(() => {
+    if (filter === 'All Stages') return orders;
+    return orders.filter(o => o.status === filter);
+  }, [orders, filter]);
+
+  const handleReceiveOrder = async (orderId: string) => {
+    toast.loading("Integrating units into inventory...");
+    
+    // Simulate API call to update status and create inventory records
+    setTimeout(() => {
+      setOrders(prev => prev.map(o => 
+        o.id === orderId ? { ...o, status: 'Received', date: new Date().toISOString().split('T')[0] } : o
+      ));
+      toast.dismiss();
+      toast.success("Stock Received! Units added to catalog.");
+    }, 1500);
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'In Transit': return 'text-blue-400 bg-blue-500/10 border-blue-500/20';
       case 'Requested': return 'text-amber-400 bg-amber-500/10 border-amber-500/20';
       case 'Processing': return 'text-lime-400 bg-lime-500/10 border-lime-500/20';
+      case 'Received': return 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20';
       default: return 'text-slate-400 bg-slate-500/10 border-slate-500/20';
     }
   };
@@ -34,12 +59,9 @@ const LibraryAcquisitionsClient = () => {
   return (
     <main className="min-h-screen bg-[#05070A] text-slate-200 p-8 font-sans">
       <Toaster position="top-right" />
-      
-      {/* Inventory Glow */}
       <div className="fixed top-0 left-0 w-[400px] h-[400px] bg-lime-500/5 blur-[100px] rounded-full -z-10" />
 
       <div className="max-w-7xl mx-auto">
-        {/* Header Area */}
         <header className="flex flex-col xl:flex-row justify-between items-start xl:items-end gap-6 mb-12">
           <div>
             <div className="flex items-center gap-2 mb-2">
@@ -54,9 +76,14 @@ const LibraryAcquisitionsClient = () => {
           <div className="flex items-center gap-3 w-full xl:w-auto">
             <div className="flex-grow xl:w-64 relative">
               <FunnelIcon className="h-4 w-4 absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
-              <select className="w-full bg-slate-900 border border-slate-800 rounded-xl py-3 pl-10 pr-4 text-xs appearance-none focus:ring-2 focus:ring-lime-500/50 outline-none">
+              <select 
+                value={filter}
+                onChange={(e) => setFilter(e.target.value)}
+                className="w-full bg-slate-900 border border-slate-800 rounded-xl py-3 pl-10 pr-4 text-xs appearance-none focus:ring-2 focus:ring-lime-500/50 outline-none text-white cursor-pointer"
+              >
                 <option>All Stages</option>
                 <option>Requested</option>
+                <option>Processing</option>
                 <option>In Transit</option>
                 <option>Received</option>
               </select>
@@ -68,13 +95,12 @@ const LibraryAcquisitionsClient = () => {
           </div>
         </header>
 
-        {/* Acquisition Stages Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {orders.map((order) => (
+          {filteredOrders.map((order) => (
             <div key={order.id} className="group bg-slate-900/40 border border-slate-800/60 rounded-3xl p-6 hover:bg-slate-800/40 transition-all">
               <div className="flex justify-between items-start mb-4">
                 <span className="font-mono text-[10px] text-slate-500 tracking-tighter">{order.id}</span>
-                <span className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase border ${getStatusColor(order.status)}`}>
+                <span className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase border transition-colors ${getStatusColor(order.status)}`}>
                   {order.status}
                 </span>
               </div>
@@ -108,14 +134,25 @@ const LibraryAcquisitionsClient = () => {
                   <ArrowPathIcon className="h-3.5 w-3.5" />
                   Updated {order.date}
                 </div>
-                <button className="p-2.5 bg-slate-800 hover:bg-lime-600 text-slate-400 hover:text-white rounded-xl transition-all">
-                  <ClipboardDocumentCheckIcon className="h-5 w-5" />
-                </button>
+                
+                {order.status !== 'Received' ? (
+                  <button 
+                    onClick={() => handleReceiveOrder(order.id)}
+                    className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-lime-600 text-slate-400 hover:text-white rounded-xl transition-all text-[10px] font-bold uppercase tracking-wider"
+                  >
+                    <ClipboardDocumentCheckIcon className="h-4 w-4" />
+                    Mark Received
+                  </button>
+                ) : (
+                  <div className="flex items-center gap-1 text-emerald-500 text-[10px] font-black uppercase">
+                    <CheckCircleIcon className="h-4 w-4" />
+                    Cataloged
+                  </div>
+                )}
               </div>
             </div>
           ))}
 
-          {/* Quick Lab Check / Suggestions Card */}
           <div className="bg-gradient-to-br from-lime-900/20 to-teal-900/20 border border-lime-500/20 rounded-3xl p-6 flex flex-col justify-between">
             <div>
               <div className="h-10 w-10 bg-lime-500/20 rounded-xl flex items-center justify-center mb-4">

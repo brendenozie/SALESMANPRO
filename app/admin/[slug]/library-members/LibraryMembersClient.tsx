@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import { Toaster } from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 import { 
   UserPlusIcon, 
   MagnifyingGlassIcon, 
@@ -9,7 +9,8 @@ import {
   TicketIcon,
   ChevronRightIcon,
   EnvelopeIcon,
-  FunnelIcon
+  FunnelIcon,
+  XMarkIcon
 } from "@heroicons/react/24/solid";
 
 interface Member {
@@ -22,29 +23,67 @@ interface Member {
   avatarColor: string;
 }
 
-const LibraryMembersClient = ({ initialMembers = [], schoolId ='' }) => {
+const LibraryMembersClient = ({ initialMembers = [], schoolId = '' }) => {
+  const [members, setMembers] = useState<Member[]>(initialMembers);
   const [search, setSearch] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const members: Member[] = [
-    { id: '1', name: 'Alex Rivera', email: 'alex@example.com', memberId: 'LIB-9921', booksBorrowed: 3, status: 'Active', avatarColor: 'bg-blue-500' },
-    { id: '2', name: 'Sarah Chen', email: 'sarah.c@example.com', memberId: 'LIB-4432', booksBorrowed: 0, status: 'Active', avatarColor: 'bg-purple-500' },
-    { id: '3', name: 'Marcus Wright', email: 'm.wright@example.com', memberId: 'LIB-1102', booksBorrowed: 5, status: 'Suspended', avatarColor: 'bg-rose-500' },
-  ];
+  const filteredMembers = useMemo(() => {
+    return members.filter(m => 
+      m.name.toLowerCase().includes(search.toLowerCase()) || 
+      m.memberId.toLowerCase().includes(search.toLowerCase()) ||
+      m.email.toLowerCase().includes(search.toLowerCase())
+    );
+  }, [members, search]);
 
-  const filteredMembers = members.filter(m => 
-    m.name.toLowerCase().includes(search.toLowerCase()) || 
-    m.memberId.toLowerCase().includes(search.toLowerCase())
-  );
+  const handleRegister = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    const formData = new FormData(e.currentTarget);
+    
+    // Assign a random avatar color for the UI
+    const colors = ['bg-blue-500', 'bg-purple-500', 'bg-emerald-500', 'bg-rose-500', 'bg-amber-500'];
+    const randomColor = colors[Math.floor(Math.random() * colors.length)];
+
+    const payload = {
+      name: formData.get("name"),
+      email: formData.get("email"),
+      memberId: formData.get("memberId"),
+      status: 'Active',
+      avatarColor: randomColor,
+      booksBorrowed: 0
+    };
+
+    try {
+      const res = await fetch(`/api/admin/library/members?companyId=${schoolId}`, {
+        method: "POST",
+        body: JSON.stringify(payload),
+        headers: { "Content-Type": "application/json" }
+      });
+
+      if (res.ok) {
+        const { data } = await res.json();
+        setMembers([data, ...members]);
+        toast.success(`${payload.name} has been registered`);
+        setIsModalOpen(false);
+      } else {
+        toast.error("Failed to register member");
+      }
+    } catch (err) {
+      toast.error("An error occurred");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <main className="min-h-screen bg-[#05070A] text-slate-200 font-sans p-8">
       <Toaster position="top-right" />
       
-      {/* Background Decor */}
       <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-indigo-600/5 blur-[150px] rounded-full -z-10" />
 
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
           <div>
             <div className="flex items-center gap-2 mb-2">
@@ -56,13 +95,15 @@ const LibraryMembersClient = ({ initialMembers = [], schoolId ='' }) => {
             </h1>
           </div>
 
-          <button className="flex items-center gap-2 px-6 py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-bold transition-all shadow-lg shadow-indigo-600/20 active:scale-95">
+          <button 
+            onClick={() => setIsModalOpen(true)}
+            className="flex items-center gap-2 px-6 py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-bold transition-all shadow-lg shadow-indigo-600/20 active:scale-95"
+          >
             <UserPlusIcon className="h-5 w-5" />
             <span>Register Member</span>
           </button>
         </header>
 
-        {/* Search & Stats Bar */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-8">
           <div className="lg:col-span-3 relative group">
             <MagnifyingGlassIcon className="h-5 w-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-emerald-400 transition-colors" />
@@ -70,7 +111,7 @@ const LibraryMembersClient = ({ initialMembers = [], schoolId ='' }) => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by name, ID or email..."
-              className="w-full bg-slate-900/40 border border-slate-800 focus:border-emerald-500/50 rounded-2xl py-4 pl-12 outline-none transition-all"
+              className="w-full bg-slate-900/40 border border-slate-800 focus:border-emerald-500/50 rounded-2xl py-4 pl-12 outline-none transition-all placeholder:text-slate-600"
             />
           </div>
           <button className="flex items-center justify-center gap-2 px-6 py-4 bg-slate-900/40 border border-slate-800 rounded-2xl text-slate-400 hover:text-white transition-all">
@@ -79,16 +120,51 @@ const LibraryMembersClient = ({ initialMembers = [], schoolId ='' }) => {
           </button>
         </div>
 
-        {/* Members Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {filteredMembers.map((member) => (
             <MemberCard key={member.id} member={member} />
           ))}
         </div>
       </div>
+
+      {/* Register Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#05070A]/90 backdrop-blur-md">
+          <div className="bg-slate-900 border border-slate-800 w-full max-w-md rounded-[2.5rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
+            <div className="p-8 border-b border-slate-800 flex justify-between items-center">
+              <h2 className="text-2xl font-bold text-white">New Member</h2>
+              <button onClick={() => setIsModalOpen(false)} className="text-slate-500 hover:text-white transition-colors">
+                <XMarkIcon className="h-6 w-6" />
+              </button>
+            </div>
+            <form onSubmit={handleRegister} className="p-8 space-y-5">
+              <div>
+                <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Full Name</label>
+                <input name="name" required placeholder="e.g. Alex Rivera" className="w-full bg-slate-800/50 border border-slate-700 rounded-2xl px-5 py-4 mt-2 outline-none focus:border-emerald-500 transition-all text-white" />
+              </div>
+              <div>
+                <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Email Address</label>
+                <input name="email" type="email" required placeholder="alex@school.com" className="w-full bg-slate-800/50 border border-slate-700 rounded-2xl px-5 py-4 mt-2 outline-none focus:border-emerald-500 transition-all text-white" />
+              </div>
+              <div>
+                <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Member ID</label>
+                <input name="memberId" required placeholder="LIB-XXXX" className="w-full bg-slate-800/50 border border-slate-700 rounded-2xl px-5 py-4 mt-2 outline-none focus:border-emerald-500 transition-all text-white" />
+              </div>
+              <button 
+                type="submit" 
+                disabled={isSubmitting}
+                className="w-full py-4 mt-4 bg-emerald-500 text-[#05070A] rounded-2xl font-black transition-all hover:bg-emerald-400 active:scale-95 disabled:opacity-50"
+              >
+                {isSubmitting ? "Processing..." : "Create Identity"}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </main>
   );
 };
+
 
 const MemberCard = ({ member }: { member: Member }) => {
   return (

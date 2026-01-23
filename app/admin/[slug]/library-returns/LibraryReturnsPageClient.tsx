@@ -5,37 +5,72 @@ import { Toaster, toast } from "react-hot-toast";
 import { 
   ArrowDownLeftIcon, 
   QrCodeIcon, 
-  HandThumbUpIcon,
   ShieldCheckIcon,
   ArchiveBoxArrowDownIcon,
   ClockIcon,
   SparklesIcon
 } from "@heroicons/react/24/outline";
 
-const LibraryReturnsPageClient = () => {
+interface ReturnLog {
+  book: string;
+  user: string;
+  time: string;
+  status: string;
+}
+
+const LibraryReturnsPageClient = ({ schoolId }: { schoolId: string }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [returnId, setReturnId] = useState("");
+  const [recentReturns, setRecentReturns] = useState<ReturnLog[]>([
+    { book: "The Alchemist", user: "Sarah Chen", time: "Initial", status: "Archive Ready" },
+  ]);
 
-  const handleReturn = (e: React.FormEvent) => {
+  const handleReturn = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!returnId) return;
+
     setIsProcessing(true);
-    // Simulate API call
-    setTimeout(() => {
-      toast.success("Volume successfully restored to archive!");
-      setReturnId("");
+
+    try {
+      // We call a specific 'return-by-scan' endpoint that handles the lookup logic
+      const res = await fetch(`/api/admin/library/issuance/return-scan?companyId=${schoolId}`, {
+        method: "POST",
+        body: JSON.stringify({ identifier: returnId }),
+        headers: { "Content-Type": "application/json" }
+      });
+
+      const result = await res.json();
+
+      if (res.ok) {
+        toast.success("Volume successfully restored to archive!");
+        
+        // Add to the live feed
+        const newEntry: ReturnLog = {
+          book: result.data.bookTitle,
+          user: result.data.memberName,
+          time: "Just now",
+          status: "Perfect Condition"
+        };
+        
+        setRecentReturns([newEntry, ...recentReturns.slice(0, 4)]);
+        setReturnId("");
+      } else {
+        toast.error(result.error || "No active issuance found for this ID");
+      }
+    } catch (err) {
+      toast.error("System error during return processing");
+    } finally {
       setIsProcessing(false);
-    }, 1200);
+    }
   };
 
   return (
     <main className="min-h-screen bg-[#05070A] text-slate-200 p-8 font-sans">
       <Toaster position="bottom-center" />
       
-      {/* Background Ambience */}
       <div className="fixed bottom-0 left-0 w-[600px] h-[600px] bg-rose-600/5 blur-[120px] rounded-full -z-10" />
 
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
         <header className="mb-12">
           <div className="flex items-center gap-2 mb-2">
             <div className="p-1.5 bg-rose-500/20 rounded-lg">
@@ -49,8 +84,7 @@ const LibraryReturnsPageClient = () => {
         </header>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          
-          {/* Left: Processing Panel */}
+          {/* Left Panel */}
           <div className="lg:col-span-5 space-y-6">
             <div className="bg-slate-900/40 border border-slate-800 rounded-3xl p-8 backdrop-blur-sm relative overflow-hidden">
               <div className="relative z-10">
@@ -66,11 +100,13 @@ const LibraryReturnsPageClient = () => {
                       value={returnId}
                       onChange={(e) => setReturnId(e.target.value)}
                       placeholder="Scan barcode or type ID..."
-                      className="w-full bg-black/40 border border-slate-700 focus:border-rose-500/50 rounded-2xl py-5 px-6 text-lg outline-none transition-all font-mono"
+                      className="w-full bg-black/40 border border-slate-700 focus:border-rose-500/50 rounded-2xl py-5 px-6 text-lg outline-none transition-all font-mono text-white"
                       autoFocus
+                      disabled={isProcessing}
                     />
                   </div>
                   <button 
+                    type="submit"
                     disabled={!returnId || isProcessing}
                     className="w-full py-4 bg-white text-black font-black rounded-2xl hover:bg-rose-50 transition-all active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2"
                   >
@@ -85,12 +121,9 @@ const LibraryReturnsPageClient = () => {
                   </button>
                 </form>
               </div>
-              
-              {/* Decorative scan lines */}
               <div className="absolute top-0 right-0 w-32 h-32 bg-rose-500/5 blur-3xl rounded-full" />
             </div>
 
-            {/* Shelf Health Card */}
             <div className="bg-gradient-to-br from-indigo-900/20 to-slate-900/20 border border-slate-800 rounded-3xl p-6">
               <div className="flex items-center gap-4">
                 <div className="h-12 w-12 bg-indigo-500/10 rounded-2xl flex items-center justify-center text-indigo-400">
@@ -104,23 +137,19 @@ const LibraryReturnsPageClient = () => {
             </div>
           </div>
 
-          {/* Right: Recent Log */}
+          {/* Right Panel: Feed */}
           <div className="lg:col-span-7">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-bold text-slate-300 flex items-center gap-2">
                 <ClockIcon className="h-5 w-5 text-slate-500" />
                 Live Return Feed
               </h3>
-              <span className="px-3 py-1 bg-slate-800 text-slate-400 rounded-lg text-[10px] font-bold">Session: 14 Returns</span>
+              <span className="px-3 py-1 bg-slate-800 text-slate-400 rounded-lg text-[10px] font-bold">Session Activity</span>
             </div>
 
             <div className="space-y-3">
-              {[
-                { book: "The Alchemist", user: "Sarah Chen", time: "2 mins ago", status: "Perfect Condition" },
-                { book: "The Silent Patient", user: "Marcus Wright", time: "15 mins ago", status: "Inspected" },
-                { book: "Dune: Part One", user: "Alex Rivera", time: "1 hour ago", status: "Restored" },
-              ].map((item, i) => (
-                <div key={i} className="flex items-center justify-between p-5 bg-slate-900/20 border border-slate-800/40 rounded-2xl hover:bg-slate-900/40 transition-all group">
+              {recentReturns.map((item, i) => (
+                <div key={i} className="flex items-center justify-between p-5 bg-slate-900/20 border border-slate-800/40 rounded-2xl hover:bg-slate-900/40 transition-all group animate-in slide-in-from-right-4 duration-500">
                   <div className="flex items-center gap-4">
                     <div className="h-10 w-10 bg-slate-800 rounded-xl flex items-center justify-center text-slate-500 group-hover:text-rose-400 transition-colors">
                       <SparklesIcon className="h-5 w-5" />
@@ -140,7 +169,6 @@ const LibraryReturnsPageClient = () => {
               ))}
             </div>
           </div>
-
         </div>
       </div>
     </main>
