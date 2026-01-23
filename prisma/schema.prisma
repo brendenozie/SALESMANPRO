@@ -413,6 +413,7 @@ model Company {
   assets            Asset[]
   inventoryAudits   InventoryAudit[]
   libraryCategories LibraryCategory[]
+  libraryMembers    LibraryMember[]
 
   @@index([userId])
 }
@@ -1422,10 +1423,6 @@ model User {
   InventoryLog          InventoryLog[]
   subscriptionCompanies SubscriptionCompany[]
   addresses             Address[]
-
-  // Library Management relations
-  libraryIssuances    LibraryIssuance[]    @relation("LibraryIssuances")
-  libraryReservations LibraryReservation[] @relation("LibraryReservations")
 
   // Transport Management relations
   transportAssignments TransportAssignment[] @relation("TransportAssignments")
@@ -2685,6 +2682,7 @@ model Student {
   updatedAt DateTime? @updatedAt
 
   // @@map("students")
+  libraryMember LibraryMember?
 
   // @@index([userId])
   @@index([parentId])
@@ -2779,6 +2777,7 @@ model Educator {
   CourseEducatorAssignment CourseEducatorAssignment[]
   CourseAssignment         CourseAssignment[]
   Booking                  Booking[]
+  libraryMember            LibraryMember?
 
   // @@index([userId])
   @@index([companyId])
@@ -5934,24 +5933,52 @@ model LibraryBook {
   @@index([status])
 }
 
+enum LibraryMemberStatus {
+  ACTIVE
+  SUSPENDED
+  PENDING
+}
+
+model LibraryMember {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  companyId String  @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  // Connect to existing profiles
+  studentId String?  @unique @db.ObjectId
+  student   Student? @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  educatorId String?   @unique @db.ObjectId
+  educator   Educator? @relation(fields: [educatorId], references: [id], onDelete: Cascade)
+
+  memberId String              @unique // The "LIB-XXXX" barcode/ID
+  status   LibraryMemberStatus @default(ACTIVE)
+
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+  libraryIssuances    LibraryIssuance[]
+  libraryReservations LibraryReservation[]
+
+  @@index([companyId])
+}
+
 model LibraryIssuance {
-  id         String                @id @default(auto()) @map("_id") @db.ObjectId
-  bookId     String                @db.ObjectId
-  book       LibraryBook           @relation(fields: [bookId], references: [id], onDelete: Restrict)
-  userId     String                @db.ObjectId // Member who borrowed the book
-  user       User                  @relation("LibraryIssuances", fields: [userId], references: [id], onDelete: Cascade)
-  companyId  String                @db.ObjectId
-  company    Company               @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  issuedDate DateTime              @default(now())
-  dueDate    DateTime
-  returnDate DateTime?
-  status     LibraryIssuanceStatus @default(ACTIVE)
-  createdAt  DateTime              @default(now())
-  updatedAt  DateTime              @updatedAt
-  fines      LibraryFine[]
+  id              String                @id @default(auto()) @map("_id") @db.ObjectId
+  bookId          String                @db.ObjectId
+  book            LibraryBook           @relation(fields: [bookId], references: [id], onDelete: Restrict)
+  companyId       String                @db.ObjectId
+  company         Company               @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  issuedDate      DateTime              @default(now())
+  dueDate         DateTime
+  returnDate      DateTime?
+  status          LibraryIssuanceStatus @default(ACTIVE)
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+  fines           LibraryFine[]
+  libraryMember   LibraryMember?        @relation(fields: [libraryMemberId], references: [id])
+  libraryMemberId String?               @db.ObjectId
 
   @@index([bookId])
-  @@index([userId])
   @@index([companyId])
   @@index([status])
 }
@@ -5975,16 +6002,15 @@ model LibraryReservation {
   id              String                   @id @default(auto()) @map("_id") @db.ObjectId
   bookId          String                   @db.ObjectId
   book            LibraryBook              @relation(fields: [bookId], references: [id], onDelete: Cascade)
-  userId          String                   @db.ObjectId
-  user            User                     @relation("LibraryReservations", fields: [userId], references: [id], onDelete: Cascade)
   reservationDate DateTime                 @default(now())
   expiryDate      DateTime
   status          LibraryReservationStatus @default(PENDING)
   createdAt       DateTime                 @default(now())
   updatedAt       DateTime                 @updatedAt
+  libraryMember   LibraryMember?           @relation(fields: [libraryMemberId], references: [id])
+  libraryMemberId String?                  @db.ObjectId
 
   @@index([bookId])
-  @@index([userId])
   @@index([status])
 }
 
