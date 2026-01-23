@@ -402,6 +402,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     { label: "Library", href: `/admin/${adminSlug}/library`, 
       icon: HomeIcon , 
       subItems: [
+        { label: "Categories", href: `/admin/${adminSlug}/library-books-categories` },
         { label: "Books",  href: `/admin/${adminSlug}/library-books` },
         { label: "Members", href: `/admin/${adminSlug}/library-members` },
         { label: "Issuance Records", href: `/admin/${adminSlug}/library-issuance-records` },

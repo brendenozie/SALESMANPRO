@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import { 
   PlusIcon, 
@@ -20,9 +20,13 @@ export interface Book {
   title: string;
   author: string;
   isbn: string;
-  available: boolean;
-  category?: string;
-  availableCopies?: number;
+  status: "AVAILABLE" | "ISSUED" | "RESERVED"; // Matches your enum
+  categoryId: string;
+  category?: {
+    id: string;
+    name: string;
+  };
+  location?: string;
 }
 
 interface Props {
@@ -34,10 +38,23 @@ const LibraryBooksClient: React.FC<Props> = ({ initialBooks, schoolId }) => {
   const [books, setBooks] = useState<Book[]>(initialBooks);
   const [search, setSearch] = useState("");
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [categories, setCategories] = useState<{id: string, name: string}[]>([]);
   
   // Modal States
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingBook, setEditingBook] = useState<Book | null>(null);
+
+  // Fetch categories on mount
+  useEffect(() => {
+    const fetchCats = async () => {
+      const res = await fetch(`/api/admin/library/categories?companyId=${schoolId}`);
+      if (res.ok) {
+        const result = await res.json();
+        setCategories(result.data);
+      }
+    };
+    fetchCats();
+  }, [schoolId]);
 
   const filteredBooks = useMemo(() => {
     return books.filter(book =>
@@ -153,6 +170,7 @@ const LibraryBooksClient: React.FC<Props> = ({ initialBooks, schoolId }) => {
         <BookFormModal 
           book={editingBook} 
           schoolId={schoolId} 
+          categories={categories}
           onClose={() => setIsModalOpen(false)} 
           onSuccess={(updatedBook) => {
             if (editingBook) {
@@ -174,7 +192,7 @@ const LibraryBooksClient: React.FC<Props> = ({ initialBooks, schoolId }) => {
 
 const BookCard = ({ book, viewMode, onEdit, onDelete }: { book: Book, viewMode: 'grid' | 'list', onEdit: () => void, onDelete: () => void }) => {
   const [showMenu, setShowMenu] = useState(false);
-  const isAvailable = book.available;
+  const isAvailable = true;//book.available;
 
   const Menu = () => (
     <div className="absolute right-0 mt-2 w-36 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl z-10 overflow-hidden">
@@ -245,18 +263,35 @@ const BookCard = ({ book, viewMode, onEdit, onDelete }: { book: Book, viewMode: 
   );
 };
 
-const BookFormModal = ({ book, schoolId, onClose, onSuccess }: { book: Book | null, schoolId: string, onClose: () => void, onSuccess: (b: Book) => void }) => {
+const BookFormModal = ({ 
+  book, 
+  schoolId, 
+  categories, 
+  onClose, 
+  onSuccess 
+}: { 
+  book: Book | null, 
+  schoolId: string, 
+  categories: {id: string, name: string}[],
+  onClose: () => void, 
+  onSuccess: (b: Book) => void 
+}) => {
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     const formData = new FormData(e.currentTarget);
+    
+    // Map data to match the Relational API
     const data = {
       title: formData.get("title"),
       author: formData.get("author"),
       isbn: formData.get("isbn"),
-      available: formData.get("available") === "true",
+      categoryId: formData.get("categoryId"), // Relation ID
+      status: formData.get("status"),
+      location: formData.get("location"),
+      companyId: schoolId
     };
 
     try {
@@ -266,12 +301,15 @@ const BookFormModal = ({ book, schoolId, onClose, onSuccess }: { book: Book | nu
         body: JSON.stringify(data),
         headers: { "Content-Type": "application/json" }
       });
+      
+      const result = await res.json();
       if (res.ok) {
-        const result = await res.json();
         onSuccess(result.data);
+      } else {
+        toast.error(result.message || "Archive sync failed");
       }
     } catch (err) {
-      toast.error("Operation failed");
+      toast.error("Network error");
     } finally {
       setLoading(false);
     }
@@ -284,34 +322,60 @@ const BookFormModal = ({ book, schoolId, onClose, onSuccess }: { book: Book | nu
           <h2 className="text-xl font-bold text-white">{book ? "Edit Volume" : "Acquire Volume"}</h2>
           <button onClick={onClose} className="text-slate-500 hover:text-white transition-colors"><XMarkIcon className="h-6 w-6" /></button>
         </div>
-        <form onSubmit={handleSubmit} className="p-8 space-y-6">
+        
+        <form onSubmit={handleSubmit} className="p-8 space-y-5">
           <div className="space-y-4">
+            {/* Title */}
             <div>
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Title</label>
+              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Title</label>
               <input name="title" required defaultValue={book?.title} className="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 mt-1 outline-none focus:border-indigo-500 transition-all text-white" />
             </div>
+
             <div className="grid grid-cols-2 gap-4">
+              {/* Author */}
               <div>
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Author</label>
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Author</label>
                 <input name="author" required defaultValue={book?.author} className="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 mt-1 outline-none focus:border-indigo-500 transition-all text-white" />
               </div>
+              {/* ISBN */}
               <div>
-                <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">ISBN</label>
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">ISBN</label>
                 <input name="isbn" defaultValue={book?.isbn} className="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 mt-1 outline-none focus:border-indigo-500 transition-all text-white" />
               </div>
             </div>
+
             <div>
-              <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Status</label>
-              <select name="available" defaultValue={book?.available?.toString() ?? "true"} className="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 mt-1 outline-none focus:border-indigo-500 transition-all text-white">
-                <option value="true">Available in Archive</option>
-                <option value="false">Checked Out</option>
-              </select>
+              <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Location</label>
+              <input name="location" defaultValue={book?.location} className="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 mt-1 outline-none focus:border-indigo-500 transition-all text-white" />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              {/* Category Dropdown */}
+              <div>
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Category</label>
+                <select name="categoryId" required defaultValue={book?.categoryId} className="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 mt-1 outline-none focus:border-indigo-500 transition-all text-white">
+                  <option value="" disabled>Select Category</option>
+                  {categories.map(cat => (
+                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                  ))}
+                </select>
+              </div>
+              {/* Status */}
+              <div>
+                <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Archive Status</label>
+                <select name="status" defaultValue={book?.status || "AVAILABLE"} className="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 mt-1 outline-none focus:border-indigo-500 transition-all text-white">
+                  <option value="AVAILABLE">Available</option>
+                  <option value="ISSUED">Issued</option>
+                  <option value="RESERVED">Reserved</option>
+                </select>
+              </div>
             </div>
           </div>
+
           <div className="flex gap-3 pt-4">
             <button type="button" onClick={onClose} className="flex-1 px-6 py-3 border border-slate-800 rounded-2xl font-bold hover:bg-slate-800 transition-all">Cancel</button>
             <button type="submit" disabled={loading} className="flex-[2] px-6 py-3 bg-white text-black rounded-2xl font-bold hover:bg-indigo-50 transition-all active:scale-95 disabled:opacity-50">
-              {loading ? "Syncing Archive..." : book ? "Update Record" : "Confirm Acquisition"}
+              {loading ? "Syncing..." : book ? "Update Record" : "Confirm Acquisition"}
             </button>
           </div>
         </form>

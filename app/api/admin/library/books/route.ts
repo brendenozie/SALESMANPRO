@@ -4,48 +4,51 @@ import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
 // GET /api/admin/library/books
-// Fetches all library books filtered by companyId
 const getBooksLogic = async (request: Request) => {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
 
   if (!companyId) {
-    return formatResponse(false, null, "Company ID is required to fetch books.", 400);
+    return formatResponse(false, null, "Company ID is required.", 400);
   }
 
   const books = await prisma.libraryBook.findMany({
     where: { companyId },
+    include: {
+      category: {
+        select: { name: true, id: true } // Fetches category info
+      }
+    },
     orderBy: { createdAt: "desc" },
   });
 
-  return formatResponse(true, books, "Books retrieved successfully", 200);
+  return formatResponse(true, books, "Archive retrieved successfully", 200);
 };
 
 export const GET = withApiHandler(getBooksLogic, { requireAuth: true, requireRateLimit: true });
 
 // POST /api/admin/library/books
-// Creates a new library book
 const postBookLogic = async (request: Request) => {
   const body = await request.json();
-  const { title, author, isbn, publisher, category, status, location, companyId } = body;
+  const { 
+    title, 
+    author, 
+    isbn, 
+    publisher, 
+    categoryId, // Use categoryId from dropdown
+    status, 
+    location, 
+    companyId 
+  } = body;
 
-  if (!title || !author || !category || !companyId) {
-    return formatResponse(
-      false,
-      null,
-      "Title, author, category, and company ID are required.",
-      400
-    );
+  if (!title || !author || !categoryId || !companyId) {
+    return formatResponse(false, null, "Missing required fields.", 400);
   }
 
-  // Check if ISBN already exists (if provided)
+  // ISBN Conflict Check
   if (isbn) {
-    const existingBook = await prisma.libraryBook.findUnique({
-      where: { isbn },
-    });
-    if (existingBook) {
-      return formatResponse(false, null, "A book with this ISBN already exists.", 409);
-    }
+    const existing = await prisma.libraryBook.findUnique({ where: { isbn } });
+    if (existing) return formatResponse(false, null, "ISBN already exists.", 409);
   }
 
   const newBook = await prisma.libraryBook.create({
@@ -54,14 +57,19 @@ const postBookLogic = async (request: Request) => {
       author,
       isbn: isbn || null,
       publisher: publisher || null,
-      category,
       status: status || "AVAILABLE",
       location: location || null,
-      companyId,
+      company: {
+        connect: { id: companyId }
+      },
+      category: {
+        connect: { id: categoryId } // Connects to existing category
+      }
     },
+    include: { category: true } // Return with category for UI update
   });
 
-  return formatResponse(true, newBook, "Book created successfully", 201);
+  return formatResponse(true, newBook, "Volume acquired successfully", 201);
 };
 
 export const POST = withApiHandler(postBookLogic, { requireAuth: true, requireRateLimit: true });

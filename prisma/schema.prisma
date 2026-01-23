@@ -410,8 +410,9 @@ model Company {
   feeStructures FeeStructure[]
 
   // Inventory & Assets relations
-  assets          Asset[]
-  inventoryAudits InventoryAudit[]
+  assets            Asset[]
+  inventoryAudits   InventoryAudit[]
+  libraryCategories LibraryCategory[]
 
   @@index([userId])
 }
@@ -5900,13 +5901,26 @@ enum InventoryAuditStatus {
 // LIBRARY MANAGEMENT MODELS
 // ============================================================
 
+model LibraryCategory {
+  id           String        @id @default(auto()) @map("_id") @db.ObjectId
+  name         String        @unique
+  companyId    String        @db.ObjectId
+  company      Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  libraryBooks LibraryBook[]
+
+  @@index([companyId])
+}
+
 model LibraryBook {
   id           String               @id @default(auto()) @map("_id") @db.ObjectId
   title        String
   author       String
   isbn         String?              @unique
   publisher    String?
-  category     String
+  categoryId   String               @db.ObjectId
+  category     LibraryCategory      @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   status       LibraryBookStatus    @default(AVAILABLE)
   location     String? // Shelf/Section location
   companyId    String               @db.ObjectId
@@ -5918,7 +5932,6 @@ model LibraryBook {
 
   @@index([companyId])
   @@index([status])
-  @@index([category])
 }
 
 model LibraryIssuance {
