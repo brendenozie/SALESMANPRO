@@ -1,6 +1,9 @@
 // app/student/[slug]/my-grades/page.tsx
 import React from "react";
 import StudentGradesPageClient from "./StudentGradesPageClient";
+import { cookies } from "next/headers";
+import { getAuthSession } from "@/lib/auth";
+
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -59,7 +62,10 @@ export default async function StudentGradesServerPage({ params }: PageProps) {
   
   const { slug: studentSlug, courseId } = await params;
   // The 'slug' from the URL is the student's User ID
-  const studentId = studentSlug || MOCK_CURRENT_USER_ID;
+  // const studentId = studentSlug || MOCK_CURRENT_USER_ID;
+  const cookiesStore = (await cookies()).toString();
+    const session = await getAuthSession();
+    const studentId = session?.user?.id || "";
   // const studentId = params.slug || MOCK_CURRENT_USER_ID; 
   // const courseId = params.courseId;
 
@@ -75,11 +81,11 @@ export default async function StudentGradesServerPage({ params }: PageProps) {
       url.searchParams.append('courseId', courseId);
     }
 
-    const res = await fetch(url.toString(), { next: { revalidate: 60 } });
+    const res = await fetch(url.toString(), { next: { revalidate: 60 }, headers: { cookie: cookiesStore } } );
 
     if (res.ok) {
       // The API response structure is now different
-      const data = (await res.json());
+      const data = (await res.json()).data as StudentGradesPageData;
       gradesPageData = {
         ...data,
         studentId: studentId,
@@ -94,7 +100,7 @@ export default async function StudentGradesServerPage({ params }: PageProps) {
         };
       }
     } else {
-      const errorData = await res.json();
+      const errorData = (await res.json()).data;
       fetchError = errorData.message || `Failed to fetch student grades: ${res.status} ${res.statusText}`;
       console.error("[StudentGradesServerPage] Fetch error:", fetchError);
     }

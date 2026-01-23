@@ -1,6 +1,8 @@
 // app/student/[slug]/my-classes/page.tsx
 import React from "react";
 import StudentClassesPageClient from "./StudentClassesPageClient";
+import { cookies } from "next/headers";
+import { getAuthSession } from "@/lib/auth";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -36,7 +38,10 @@ export interface StudentClassesPageData {
 
 export default async function StudentClassesServerPage({ params }: PageProps) {
   const { slug: studentSlug } = await params;
-  const studentId = studentSlug || MOCK_CURRENT_STUDENT_ID;
+  // const studentId = studentSlug || MOCK_CURRENT_STUDENT_ID;
+  const cookiesStore = (await cookies()).toString();
+  const session = await getAuthSession();
+  const studentId = session?.user?.id || "";
 
   let classesPageData: StudentClassesPageData | null = null;
   let fetchError: string | null = null;
@@ -44,15 +49,15 @@ export default async function StudentClassesServerPage({ params }: PageProps) {
   try {
     const res = await fetch(
       `${apiBaseUrl}/student/classes?studentId=${encodeURIComponent(studentId)}`,
-      { next: { revalidate: 60 } } // Ensure fresh data
+      { next: { revalidate: 60 }, headers: { cookie: cookiesStore } } // Ensure fresh data
     );
 
     if (res.ok) {
-      classesPageData = (await res.json()) as StudentClassesPageData;
+      classesPageData = (await res.json()).data as StudentClassesPageData;
       classesPageData.studentId = studentId; // Ensure studentId is passed down
       // classesPageData.companyId = companyId; // Ensure companyId is passed down
     } else {
-      const errorData = await res.json();
+      const errorData = (await res.json()).data;
       fetchError = errorData.message || `Failed to fetch student classes: ${res.status} ${res.statusText}`;
       console.error("[StudentClassesServerPage] Fetch error:", fetchError);
     }

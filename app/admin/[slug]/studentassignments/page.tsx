@@ -1,6 +1,9 @@
 // app/student/[slug]/my-classes/[courseId]/assignments/page.tsx
 import React from "react";
 import StudentAssignmentsPageClient from "./StudentAssignmentsPageClient";
+import { cookies } from "next/headers";
+import { getAuthSession } from "@/lib/auth";
+
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -54,7 +57,10 @@ export interface StudentAssignmentsPageData {
 
 export default async function StudentAssignmentsServerPage({ params, searchParams }: PageProps) {
   const { slug: studentSlug, courseId } = await params;
-  const studentId = studentSlug || MOCK_CURRENT_STUDENT_USER_ID;
+  const cookiesStore = (await cookies()).toString();
+  const session = await getAuthSession();
+  const studentId = session?.user?.id || "";
+  // const studentId = studentSlug || MOCK_CURRENT_STUDENT_USER_ID;
   // const companyId = searchParams.companyId || MOCK_COMPANY_ID; // Get companyId from search params or use mock
 
   let assignmentsPageData: StudentAssignmentsPageData | null = null;
@@ -68,10 +74,10 @@ export default async function StudentAssignmentsServerPage({ params, searchParam
       url.searchParams.append('courseId', courseId);
     }
 
-    const res = await fetch(url.toString(), { next: { revalidate: 60 } });
+    const res = await fetch(url.toString(), { next: { revalidate: 60 }, headers: { cookie: cookiesStore } } ); // Ensure fresh data
 
     if (res.ok) {
-      const data = await res.json();
+      const data = (  await res.json()).data as StudentAssignmentsPageData;
       assignmentsPageData = {
         studentName: data.studentName,
         studentGradeLevel: data.studentGradeLevel,
@@ -88,7 +94,7 @@ export default async function StudentAssignmentsServerPage({ params, searchParam
         };
       }
     } else {
-      const errorData = await res.json();
+      const errorData = (await res.json()).data;
       fetchError = errorData.message || `Failed to fetch student assignments: ${res.status} ${res.statusText}`;
       console.error("[StudentAssignmentsServerPage] Fetch error:", fetchError);
     }
