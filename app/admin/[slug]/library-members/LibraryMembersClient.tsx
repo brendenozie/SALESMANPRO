@@ -52,7 +52,7 @@ const LibraryMembersClient = ({ initialMembers = [], schoolId = '' }) => {
   const filteredMembers = useMemo(() => {
     return members.filter(m => {
       const name = m.student ? `${m.student.firstName} ${m.student.lastName}` : m.educator?.user?.name;
-      return name?.toLowerCase().includes(search.toLowerCase()) || m.memberId.toLowerCase().includes(search.toLowerCase());
+      return name?.toLowerCase().includes(search.toLowerCase()) || m.memberId?.toLowerCase().includes(search.toLowerCase());
     });
   }, [members, search]);
 
