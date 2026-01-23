@@ -336,7 +336,7 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
     }
 
     // --- Student Dashboard ---
-    if (userRole === 'STUDENT') {
+    if (userRole === 'STUDENT' || userRole === 'SENIOR') {
       let studentDashboardData: StudentDashboardData;
       try {
         isLoading = true;
