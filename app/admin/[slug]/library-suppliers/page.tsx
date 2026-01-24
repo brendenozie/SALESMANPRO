@@ -3,35 +3,41 @@ import LibrarySuppliersClient from "./LibrarySuppliersClient";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
-interface PageProps {
-  params: Promise<{ slug: string }>;
-}
-
-export default async function LibraryMembersPage({ params }: PageProps) {
+export default async function LibrarySuppliersPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug: schoolId } = await params;
   const cookieHeader = (await cookies()).toString();
 
-  let initialMembers = [];  
+  let initialSuppliers = [];
   try {
     const res = await fetch(
-      `${apiBaseUrl}/admin/library/members?companyId=${schoolId}`,
+      `${apiBaseUrl}/admin/library/suppliers?companyId=${schoolId}`,
       {
         headers: { cookie: cookieHeader },
-        next: { revalidate: 60 },
+        cache: 'no-store'
       }
     );
 
     if (res.ok) {
-      initialMembers = (await res.json()).data;
+      const result = await res.json();
+      // Map database fields to client interface fields
+      initialSuppliers = result.data.map((s: any) => ({
+        id: s.id,
+        name: s.name,
+        category: s.category,
+        contact: s.contactEmail,
+        leadTime: s.leadTime,
+        status: s.status,
+        reliability: s.reliability
+      }));
     }
   } catch (err) {
-    console.error("[LibraryMembersPage] Failed to load members", err);
+    console.error("[LibrarySuppliersPage] Error:", err);
   }
 
   return (
-    <LibrarySuppliersClient
-      // initialMembers={initialMembers}
-      // schoolId={schoolId}
+    <LibrarySuppliersClient 
+      initialSuppliers={initialSuppliers} 
+      schoolId={schoolId} 
     />
   );
 }

@@ -31,26 +31,28 @@ const LibrarySuppliersClient = ({ initialSuppliers = [], schoolId = "" }) => {
 
   const handleOnboard = async (e: React.FormEvent) => {
     e.preventDefault();
-    const id = Math.random().toString(36).substr(2, 9);
-    const vendor: Supplier = {
-      ...newVendor,
-      id,
-      leadTime: '7 Days',
-      status: 'Active',
-      reliability: 100
-    };
+    
+    try {
+      const res = await fetch(`/api/admin/library/suppliers`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...newVendor,
+          contactEmail: newVendor.contact,
+          companyId: schoolId
+        })
+      });
 
-    setSuppliers([vendor, ...suppliers]);
-    setIsModalOpen(false);
-    setNewVendor({ name: '', category: '', contact: '' });
-    toast.success(`${vendor.name} successfully integrated!`);
-  };
-
-  const placeOrder = (name: string) => {
-    toast.loading(`Drafting requisition for ${name}...`, { duration: 1500 });
-    setTimeout(() => {
-      toast.success(`Purchase order dispatched to ${name}`);
-    }, 1600);
+      if (res.ok) {
+        const { data } = await res.json();
+        setSuppliers([data, ...suppliers]);
+        setIsModalOpen(false);
+        setNewVendor({ name: '', category: '', contact: '' });
+        toast.success(`${data.name} successfully integrated!`);
+      }
+    } catch (error) {
+      toast.error("Onboarding failed. Please check vendor details.");
+    }
   };
 
   return (
@@ -132,7 +134,9 @@ const LibrarySuppliersClient = ({ initialSuppliers = [], schoolId = "" }) => {
                   <p className="text-sm font-mono text-slate-500">{vendor.contact}</p>
                 </div>
                 <button 
-                  onClick={() => placeOrder(vendor.name)}
+                  onClick={() => {
+                    
+                  }}
                   className="flex items-center gap-2 text-xs font-bold text-cyan-400 hover:text-cyan-300 transition-colors"
                 >
                   Place Order

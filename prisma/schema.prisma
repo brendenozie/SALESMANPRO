@@ -410,10 +410,12 @@ model Company {
   feeStructures FeeStructure[]
 
   // Inventory & Assets relations
-  assets            Asset[]
-  inventoryAudits   InventoryAudit[]
-  libraryCategories LibraryCategory[]
-  libraryMembers    LibraryMember[]
+  assets              Asset[]
+  inventoryAudits     InventoryAudit[]
+  libraryCategories   LibraryCategory[]
+  libraryMembers      LibraryMember[]
+  librarySuppliers    LibrarySupplier[]
+  libraryAcquisitions LibraryAcquisition[]
 
   @@index([userId])
 }
@@ -5929,6 +5931,12 @@ model LibraryBook {
   issuances    LibraryIssuance[]
   reservations LibraryReservation[]
 
+  // New Inventory Fields
+  shelfLocation String   @default("Unassigned")
+  integrity     Int      @default(100) // 0-100 percentage
+  condition     String   @default("Good") // Mint, Good, Fair, Poor
+  lastAudit     DateTime @default(now())
+
   @@index([companyId])
   @@index([status])
 }
@@ -6013,6 +6021,43 @@ model LibraryReservation {
 
   @@index([bookId])
   @@index([status])
+}
+
+model LibrarySupplier {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  companyId String  @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  name         String
+  category     String // e.g., "Academic Publishers", "Stationery", "Digital Media"
+  contactEmail String  @unique
+  phone        String?
+  leadTime     String  @default("7 Days")
+  reliability  Int     @default(100) // Percentage 0-100
+  status       String  @default("Active") // Active, Under Review, Inactive
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+}
+
+model LibraryAcquisition {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  companyId String  @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  title    String
+  qty      Int
+  cost     Float
+  vendor   String
+  status   String  @default("Requested") // Requested, Processing, In Transit, Received
+  category String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
 }
 
 // ============================================================

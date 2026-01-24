@@ -26,37 +26,66 @@ interface InventoryItem {
 }
 
 const LibraryInventoryClient = ({ initialItems = [], schoolId = "" }) => {
-  const [search, setSearch] = useState("");
-  const [items, setItems] = useState<InventoryItem[]>(initialItems.length > 0 ? initialItems : [
-    { id: 'INV-7721', title: 'Deep Learning', category: 'Technology', shelf: 'A-12', condition: 'Mint', integrity: 100, lastAudit: '2023-12-01', status: 'In-Stock' },
-    { id: 'INV-4402', title: 'The Art of War', category: 'Philosophy', shelf: 'C-04', condition: 'Fair', integrity: 82, lastAudit: '2023-11-15', status: 'In-Stock' },
-    { id: 'INV-9910', title: 'Introduction to Algorithms', category: 'Education', shelf: 'A-02', condition: 'Good', integrity: 95, lastAudit: '2023-12-05', status: 'In-Stock' },
-  ]);
+  // const [search, setSearch] = useState("");
+  // const [items, setItems] = useState<InventoryItem[]>(initialItems.length > 0 ? initialItems : [
+  //   { id: 'INV-7721', title: 'Deep Learning', category: 'Technology', shelf: 'A-12', condition: 'Mint', integrity: 100, lastAudit: '2023-12-01', status: 'In-Stock' },
+  //   { id: 'INV-4402', title: 'The Art of War', category: 'Philosophy', shelf: 'C-04', condition: 'Fair', integrity: 82, lastAudit: '2023-11-15', status: 'In-Stock' },
+  //   { id: 'INV-9910', title: 'Introduction to Algorithms', category: 'Education', shelf: 'A-02', condition: 'Good', integrity: 95, lastAudit: '2023-12-05', status: 'In-Stock' },
+  // ]);
 
+  const [search, setSearch] = useState("");
+  const [items, setItems] = useState<any[]>(initialItems);
+
+  // Filter logic
   const filteredItems = useMemo(() => {
     return items.filter(item => 
       item.title.toLowerCase().includes(search.toLowerCase()) ||
       item.id.toLowerCase().includes(search.toLowerCase()) ||
-      item.shelf.toLowerCase().includes(search.toLowerCase())
+      item.shelfLocation?.toLowerCase().includes(search.toLowerCase())
     );
   }, [search, items]);
 
-  const handleAuditItem = (id: string) => {
-    setItems(prev => prev.map(item => 
-      item.id === id 
-        ? { ...item, lastAudit: new Date().toISOString().split('T')[0], status: 'In-Stock' } 
-        : item
-    ));
-    toast.success(`Asset ${id} verified and logged.`);
-  };
+  // DB Audit Function
+  const handleAuditItem = async (id: string) => {
+    try {
+      const res = await fetch(`/api/admin/library/inventory`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bookId: id, integrity: 100 })
+      });
 
-  const flagAsset = (id: string) => {
-    const reason = window.prompt("Reason for flagging asset (e.g., Water Damage, Missing Pages):");
-    if (reason) {
-      toast.error(`Asset ${id} flagged: ${reason}`);
-      // Here you would normally update the DB integrity score
+      if (res.ok) {
+        setItems(prev => prev.map(item => 
+          item.id === id ? { ...item, lastAudit: new Date().toISOString(), integrity: 100 } : item
+        ));
+        toast.success(`Asset Verified: Physical presence logged.`);
+      }
+    } catch (err) {
+      toast.error("Audit sync failed.");
     }
   };
+
+  // Flag Asset (Integrity reduction)
+  const flagAsset = async (id: string) => {
+    const damage = window.prompt("Assess damage level (0-100% integrity remaining):", "80");
+    if (damage && !isNaN(Number(damage))) {
+      try {
+        await fetch(`/api/admin/library/inventory`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ bookId: id, integrity: Number(damage) })
+        });
+        
+        setItems(prev => prev.map(item => 
+          item.id === id ? { ...item, integrity: Number(damage) } : item
+        ));
+        toast.error(`Asset Flagged: Integrity dropped to ${damage}%`);
+      } catch (err) {
+        toast.error("Update failed.");
+      }
+    }
+  };
+
 
   return (
     <main className="min-h-screen bg-[#05070A] text-slate-200 p-8 font-sans">

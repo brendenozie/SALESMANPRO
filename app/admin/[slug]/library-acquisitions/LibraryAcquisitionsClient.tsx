@@ -34,16 +34,27 @@ const LibraryAcquisitionsClient = ({ initialOrders = [], schoolId = "" }) => {
   }, [orders, filter]);
 
   const handleReceiveOrder = async (orderId: string) => {
-    toast.loading("Integrating units into inventory...");
+    const confirmReceive = window.confirm("Marking as received will add these units to your Master Inventory. Proceed?");
+    if (!confirmReceive) return;
+
+    const loader = toast.loading("Processing logistics and cataloging units...");
     
-    // Simulate API call to update status and create inventory records
-    setTimeout(() => {
-      setOrders(prev => prev.map(o => 
-        o.id === orderId ? { ...o, status: 'Received', date: new Date().toISOString().split('T')[0] } : o
-      ));
-      toast.dismiss();
-      toast.success("Stock Received! Units added to catalog.");
-    }, 1500);
+    try {
+      const res = await fetch(`/api/admin/library/acquisitions`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId, status: 'Received', companyId: schoolId })
+      });
+
+      if (res.ok) {
+        setOrders(prev => prev.map(o => 
+          o.id === orderId ? { ...o, status: 'Received', date: 'Just now' } : o
+        ));
+        toast.success("Inventory Updated: Units are now live in Master Inventory", { id: loader });
+      }
+    } catch (err) {
+      toast.error("Failed to update acquisition status", { id: loader });
+    }
   };
 
   const getStatusColor = (status: string) => {

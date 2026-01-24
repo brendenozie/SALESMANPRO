@@ -1,37 +1,31 @@
 import { cookies } from "next/headers";
 import LibraryAcquisitionsClient from "./LibraryAcquisitionsClient";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
-
-interface PageProps {
-  params: Promise<{ slug: string }>;
-}
-
-export default async function LibraryMembersPage({ params }: PageProps) {
+export default async function LibraryAcquisitionsPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug: schoolId } = await params;
   const cookieHeader = (await cookies()).toString();
 
-  let initialMembers = [];  
+  let initialOrders = [];
   try {
     const res = await fetch(
-      `${apiBaseUrl}/admin/library/members?companyId=${schoolId}`,
-      {
-        headers: { cookie: cookieHeader },
-        next: { revalidate: 60 },
-      }
+      `${process.env.NEXT_PUBLIC_API_URL}/admin/library/acquisitions?companyId=${schoolId}`,
+      { headers: { cookie: cookieHeader }, cache: 'no-store' }
     );
-
     if (res.ok) {
-      initialMembers = (await res.json()).data;
+      const result = await res.json();
+      initialOrders = result.data.map((o: any) => ({
+        id: o.id,
+        title: o.title,
+        qty: o.qty,
+        cost: o.cost,
+        status: o.status,
+        vendor: o.vendor,
+        date: new Date(o.updatedAt).toLocaleDateString()
+      }));
     }
   } catch (err) {
-    console.error("[LibraryMembersPage] Failed to load members", err);
+    console.error("Acquisitions fetch error", err);
   }
 
-  return (
-    <LibraryAcquisitionsClient
-      // initialMembers={initialMembers}
-      // schoolId={schoolId}
-    />
-  );
+  return <LibraryAcquisitionsClient initialOrders={initialOrders} schoolId={schoolId} />;
 }
