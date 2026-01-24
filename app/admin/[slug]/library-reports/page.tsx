@@ -1,37 +1,23 @@
 import { cookies } from "next/headers";
 import LibraryReportingClient from "./LibraryReportingClient";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
-
-interface PageProps {
-  params: Promise<{ slug: string }>;
-}
-
-export default async function LibraryMembersPage({ params }: PageProps) {
+export default async function LibraryReportsPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug: schoolId } = await params;
   const cookieHeader = (await cookies()).toString();
 
-  let initialMembers = [];  
+  let stats = null;
   try {
     const res = await fetch(
-      `${apiBaseUrl}/admin/library/members?companyId=${schoolId}`,
-      {
-        headers: { cookie: cookieHeader },
-        next: { revalidate: 60 },
-      }
+      `${process.env.NEXT_PUBLIC_API_URL}/admin/library/reports?companyId=${schoolId}`,
+      { headers: { cookie: cookieHeader }, cache: 'no-store' }
     );
-
     if (res.ok) {
-      initialMembers = (await res.json()).data;
+      const result = await res.json();
+      stats = result.data;
     }
   } catch (err) {
-    console.error("[LibraryMembersPage] Failed to load members", err);
+    console.error("Failed to load library analytics", err);
   }
 
-  return (
-    <LibraryReportingClient
-      // initialMembers={initialMembers}
-      // schoolId={schoolId}
-    />
-  );
+  return <LibraryReportingClient initialStats={stats} schoolId={schoolId} />;
 }

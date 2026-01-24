@@ -416,6 +416,7 @@ model Company {
   libraryMembers      LibraryMember[]
   librarySuppliers    LibrarySupplier[]
   libraryAcquisitions LibraryAcquisition[]
+  transportShifts     TransportShift[]
 
   @@index([userId])
 }
@@ -1443,6 +1444,7 @@ model User {
   // Asset and Inventory relations
   assetTrackingPerformer  AssetTracking[]  @relation("AssetTrackingPerformer")
   inventoryAuditConductor InventoryAudit[] @relation("InventoryAuditConductor")
+  transportShifts         TransportShift[]
 
   @@index([companyId])
   // @@index([settingsId])
@@ -6065,20 +6067,21 @@ model LibraryAcquisition {
 // ============================================================
 
 model TransportVehicle {
-  id           String                 @id @default(auto()) @map("_id") @db.ObjectId
-  registration String                 @unique
-  make         String
-  model        String
-  type         TransportVehicleType
-  status       TransportVehicleStatus @default(ACTIVE)
-  capacity     Int // Number of passengers
-  companyId    String                 @db.ObjectId
-  company      Company                @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  createdAt    DateTime               @default(now())
-  updatedAt    DateTime               @updatedAt
-  routes       TransportRoute[]
-  maintenances TransportMaintenance[]
-  fuelLogs     TransportFuelLog[]
+  id              String                 @id @default(auto()) @map("_id") @db.ObjectId
+  registration    String                 @unique
+  make            String
+  model           String
+  type            TransportVehicleType
+  status          TransportVehicleStatus @default(ACTIVE)
+  capacity        Int // Number of passengers
+  companyId       String                 @db.ObjectId
+  company         Company                @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
+  routes          TransportRoute[]
+  maintenances    TransportMaintenance[]
+  fuelLogs        TransportFuelLog[]
+  transportShifts TransportShift[]
 
   @@index([companyId])
   @@index([status])
@@ -6086,18 +6089,19 @@ model TransportVehicle {
 }
 
 model TransportRoute {
-  id          String                @id @default(auto()) @map("_id") @db.ObjectId
-  name        String
-  startPoint  String
-  endPoint    String
-  stops       Json? // Array of stop locations
-  companyId   String                @db.ObjectId
-  company     Company               @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  vehicleId   String?               @db.ObjectId // Default vehicle for this route
-  vehicle     TransportVehicle?     @relation(fields: [vehicleId], references: [id])
-  createdAt   DateTime              @default(now())
-  updatedAt   DateTime              @updatedAt
-  assignments TransportAssignment[]
+  id              String                @id @default(auto()) @map("_id") @db.ObjectId
+  name            String
+  startPoint      String
+  endPoint        String
+  stops           Json? // Array of stop locations
+  companyId       String                @db.ObjectId
+  company         Company               @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  vehicleId       String?               @db.ObjectId // Default vehicle for this route
+  vehicle         TransportVehicle?     @relation(fields: [vehicleId], references: [id])
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+  assignments     TransportAssignment[]
+  transportShifts TransportShift[]
 
   @@index([companyId])
   @@index([vehicleId])
@@ -6150,6 +6154,32 @@ model TransportAssignment {
 
   @@index([routeId])
   @@index([userId])
+}
+
+model TransportShift {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  startTime DateTime
+  endTime   DateTime
+  status    String   @default("SCHEDULED") // SCHEDULED, IN_PROGRESS, COMPLETED, CANCELLED
+
+  routeId String         @db.ObjectId
+  route   TransportRoute @relation(fields: [routeId], references: [id])
+
+  driverId String @db.ObjectId
+  driver   User   @relation(fields: [driverId], references: [id])
+
+  vehicleId String           @db.ObjectId
+  vehicle   TransportVehicle @relation(fields: [vehicleId], references: [id])
+
+  companyId String  @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId, startTime])
+  @@index([driverId])
+  @@index([vehicleId])
 }
 
 // ============================================================

@@ -1,35 +1,108 @@
 "use client";
 
 import React, { useState } from "react";
-import { Toaster } from "react-hot-toast";
+import { Toaster, toast } from "react-hot-toast";
 import { 
-  TruckIcon, 
-  MapPinIcon, 
-  WrenchScrewdriverIcon, 
-  UserGroupIcon, 
-  Battery50Icon,
-  ExclamationTriangleIcon,
-  ChevronRightIcon,
-  PlusIcon,
-  GlobeAltIcon
+  TruckIcon, MapPinIcon, WrenchScrewdriverIcon, UserGroupIcon, 
+  Battery50Icon, ExclamationTriangleIcon, ChevronRightIcon, 
+  PlusIcon, GlobeAltIcon, 
+  XMarkIcon,
+  IdentificationIcon,
+  CogIcon
 } from "@heroicons/react/24/outline";
 
+interface Vehicle {
+  id: string;
+  registration: string;
+  make: string;
+  model: string;
+  status: 'ACTIVE' | 'MAINTENANCE' | 'INACTIVE';
+  type: string;
+  capacity: number;
+  _count?: {
+    routes: number;
+    maintenances: number;
+  }
+}
+
 interface Props {
-  initialVehicles: any[];
+  initialVehicles: Vehicle[];
   schoolId: string;
 }
 
 const TransportFleetClient = ({ initialVehicles, schoolId }: Props) => {
-  const [activeFilter, setActiveFilter] = useState('all');
-  const [fleet, setFleet] = useState(initialVehicles);
+  const [fleet, setFleet] = useState<Vehicle[]>(initialVehicles);
+
+  // Toggle Maintenance Status
+  const toggleMaintenance = async (vehicleId: string, currentStatus: string) => {
+    const newStatus = currentStatus === 'ACTIVE' ? 'MAINTENANCE' : 'ACTIVE';
+    
+    try {
+      const res = await fetch(`/api/admin/transport/vehicles/${vehicleId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      });
+
+      if (res.ok) {
+        setFleet(prev => prev.map(v => v.id === vehicleId ? { ...v, status: newStatus as any } : v));
+        toast.success(newStatus === 'MAINTENANCE' ? "Vehicle grounded for service" : "Vehicle cleared for service");
+      }
+    } catch (err) {
+      toast.error("Update failed");
+    }
+  };
+
+  // Derived Stats
+  const activeCount = fleet.filter(v => v.status === 'ACTIVE').length;
+  const maintenanceCount = fleet.filter(v => v.status === 'MAINTENANCE').length;
+
+  // const [fleet, setFleet] = useState<Vehicle[]>(initialVehicles);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+  
+    // Form State
+    const [formData, setFormData] = useState({
+      registration: "",
+      make: "",
+      model: "",
+      capacity: 30,
+      type: "BUS" // Default from TransportVehicleType enum
+    });
+  
+    const handleAddVehicle = async (e: React.FormEvent) => {
+      e.preventDefault();
+      setIsSubmitting(true);
+      
+      try {
+        const res = await fetch(`/api/admin/transport/vehicles`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...formData, companyId: schoolId }),
+        });
+  
+        const result = await res.json();
+  
+        if (result.success) {
+          setFleet((prev) => [result.data, ...prev]);
+          toast.success(`Vehicle ${formData.registration} added to fleet!`);
+          setIsModalOpen(false);
+          setFormData({ registration: "", make: "", model: "", capacity: 30, type: "BUS" });
+        } else {
+          toast.error(result.message || "Failed to add vehicle");
+        }
+      } catch (error) {
+        toast.error("Network error. Please try again.");
+      } finally {
+        setIsSubmitting(false);
+      }
+    };
+  
 
   return (
     <main className="min-h-screen bg-[#05070A] text-slate-200 p-8 font-sans">
       <Toaster position="top-right" />
       
-      {/* Moving Background Gradient (Subtle Road Effect) */}
-      <div className="fixed top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-yellow-500/20 to-transparent -z-10 shadow-[0_0_50px_rgba(234,179,8,0.1)]" />
-
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <header className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 mb-12">
@@ -44,116 +117,177 @@ const TransportFleetClient = ({ initialVehicles, schoolId }: Props) => {
           </div>
 
           <div className="flex gap-3">
-            <button className="flex items-center gap-2 px-6 py-3 bg-slate-900 border border-slate-800 text-slate-300 rounded-2xl font-bold text-xs hover:bg-slate-800 transition-all">
-              <GlobeAltIcon className="h-4 w-4" />
-              Live Map
-            </button>
-            <button className="flex items-center gap-2 px-6 py-3 bg-yellow-500 hover:bg-yellow-400 text-black rounded-2xl font-bold text-xs transition-all shadow-lg shadow-yellow-500/20 active:scale-95">
-              <PlusIcon className="h-4 w-4 stroke-[3px]" />
-              Add Vehicle
-            </button>
+            <button 
+              onClick={() => setIsModalOpen(true)}
+              className="flex items-center gap-2 px-6 py-3 bg-yellow-500 hover:bg-yellow-400 text-black rounded-2xl font-bold text-xs transition-all shadow-lg shadow-yellow-500/20 active:scale-95"
+            >
+            <PlusIcon className="h-4 w-4 stroke-[3px]" />
+            Add Vehicle
+          </button>
           </div>
+          
         </header>
 
-        {/* Fleet Status Summary */}
+        {/* Dynamic Stats Summary */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-          {[
-            { label: 'Total Fleet', value: '18 Units', sub: '3 Standby', icon: TruckIcon, color: 'text-yellow-500' },
-            { label: 'On Route', value: '14 Active', sub: '92% Efficiency', icon: MapPinIcon, color: 'text-emerald-500' },
-            { label: 'Maintenance', value: '2 Pending', sub: 'Schedule Next Week', icon: WrenchScrewdriverIcon, color: 'text-rose-500' },
-          ].map((stat, i) => (
-            <div key={i} className="bg-slate-900/40 border border-slate-800 p-6 rounded-3xl backdrop-blur-md">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-slate-800 rounded-2xl">
-                  <stat.icon className={`h-6 w-6 ${stat.color}`} />
-                </div>
-                <div>
-                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{stat.label}</p>
-                  <h3 className="text-xl font-black text-white">{stat.value}</h3>
-                  <p className="text-[10px] text-slate-600 mt-0.5">{stat.sub}</p>
-                </div>
-              </div>
+            <div className="bg-slate-900/40 border border-slate-800 p-6 rounded-3xl">
+               <p className="text-[10px] font-bold text-slate-500 uppercase">Total Fleet</p>
+               <h3 className="text-xl font-black text-white">{fleet.length} Units</h3>
             </div>
-          ))}
+            <div className="bg-slate-900/40 border border-slate-800 p-6 rounded-3xl">
+               <p className="text-[10px] font-bold text-slate-500 uppercase">On Route</p>
+               <h3 className="text-xl font-black text-emerald-500">{activeCount} Active</h3>
+            </div>
+            <div className="bg-slate-900/40 border border-slate-800 p-6 rounded-3xl">
+               <p className="text-[10px] font-bold text-slate-500 uppercase">Maintenance</p>
+               <h3 className="text-xl font-black text-rose-500">{maintenanceCount} Pending</h3>
+            </div>
         </div>
 
         {/* Vehicle Grid */}
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
           {fleet.map((bus) => (
-            <div key={bus.id} className="group relative bg-slate-900/20 border border-slate-800 rounded-[2.5rem] p-8 hover:bg-slate-900/50 transition-all overflow-hidden border-t-4 border-t-slate-800 hover:border-t-yellow-500">
+            <div key={bus.id} className="group relative bg-slate-900/20 border border-slate-800 rounded-[2.5rem] p-8 hover:bg-slate-900/30 transition-all border-t-4 border-t-slate-800 hover:border-t-yellow-500">
               
               <div className="flex flex-col md:flex-row gap-8 relative z-10">
-                {/* Left: Vehicle Identity */}
                 <div className="space-y-4">
-                  <div className="inline-flex items-center gap-2 px-3 py-1 bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 rounded-full text-[10px] font-black uppercase tracking-tighter">
-                    <span className="h-1.5 w-1.5 rounded-full bg-yellow-500" />
+                  <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black uppercase border ${
+                    bus.status === 'ACTIVE' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 'bg-rose-500/10 text-rose-500 border-rose-500/20'
+                  }`}>
                     {bus.status}
                   </div>
                   <div>
-                    <h2 className="text-2xl font-black text-white">{bus.id}</h2>
-                    <p className="text-sm font-mono text-slate-500">{bus.plate}</p>
+                    <h2 className="text-2xl font-black text-white">{bus.make} {bus.model}</h2>
+                    <p className="text-sm font-mono text-slate-500 tracking-widest">{bus.registration}</p>
                   </div>
-                  <div className="flex items-center gap-3 pt-2">
-                    <div className="h-8 w-8 bg-slate-800 rounded-full overflow-hidden border border-slate-700 flex items-center justify-center">
-                      <UserGroupIcon className="h-4 w-4 text-slate-500" />
-                    </div>
-                    <div>
-                      <p className="text-[9px] font-bold text-slate-600 uppercase">Primary Pilot</p>
-                      <p className="text-xs text-slate-300">{bus.driver}</p>
-                    </div>
+                  <div className="flex items-center gap-2">
+                    <UserGroupIcon className="h-4 w-4 text-slate-500" />
+                    <span className="text-xs text-slate-400">Capacity: {bus.capacity} seats</span>
                   </div>
                 </div>
 
-                {/* Right: Telemetrics */}
                 <div className="flex-grow grid grid-cols-2 gap-4">
                   <div className="bg-black/30 rounded-3xl p-4 border border-slate-800/50">
-                    <div className="flex justify-between items-center mb-2">
-                      <Battery50Icon className={`h-4 w-4 ${bus.fuel < 20 ? 'text-rose-500 animate-pulse' : 'text-yellow-500'}`} />
-                      <span className="text-xs font-bold text-white">{bus.fuel}%</span>
-                    </div>
-                    <p className="text-[9px] font-bold text-slate-600 uppercase tracking-widest">Fuel Reserve</p>
-                    <div className="h-1 w-full bg-slate-800 rounded-full mt-2">
-                      <div className={`h-full rounded-full ${bus.fuel < 20 ? 'bg-rose-500' : 'bg-yellow-500'}`} style={{ width: `${bus.fuel}%` }} />
-                    </div>
+                    <p className="text-[9px] font-bold text-slate-600 uppercase">Routes Assigned</p>
+                    <div className="text-lg font-bold text-white">{bus._count?.routes || 0}</div>
                   </div>
-
                   <div className="bg-black/30 rounded-3xl p-4 border border-slate-800/50">
-                    <div className="flex justify-between items-center mb-2">
-                      <UserGroupIcon className="h-4 w-4 text-blue-400" />
-                      <span className="text-xs font-bold text-white">{bus.occupancy}</span>
-                    </div>
-                    <p className="text-[9px] font-bold text-slate-600 uppercase tracking-widest">Occupancy</p>
-                    <div className="h-1 w-full bg-slate-800 rounded-full mt-2">
-                      <div className="h-full bg-blue-500 rounded-full" style={{ width: '84%' }} />
-                    </div>
+                    <p className="text-[9px] font-bold text-slate-600 uppercase">Service History</p>
+                    <div className="text-lg font-bold text-white">{bus._count?.maintenances || 0} Logs</div>
                   </div>
-
-                  <div className="col-span-2 bg-slate-800/30 rounded-3xl p-4 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <MapPinIcon className="h-5 w-5 text-yellow-500" />
-                      <div>
-                        <p className="text-[9px] font-bold text-slate-600 uppercase">Assigned Route</p>
-                        <p className="text-sm font-bold text-white">{bus.route}</p>
-                      </div>
-                    </div>
-                    <button className="p-2 bg-slate-800 hover:bg-yellow-500 hover:text-black rounded-xl transition-all">
-                      <ChevronRightIcon className="h-4 w-4" />
-                    </button>
-                  </div>
+                  
+                  <button 
+                    onClick={() => toggleMaintenance(bus.id, bus.status)}
+                    className="col-span-2 py-3 bg-slate-800 hover:bg-slate-700 rounded-2xl text-[10px] font-black uppercase transition-all"
+                  >
+                    {bus.status === 'ACTIVE' ? 'Send to Maintenance' : 'Mark as Operational'}
+                  </button>
                 </div>
               </div>
-
-              {/* Maintenance Alert Badge */}
-              {bus.health !== 'Optimal' && (
-                <div className="absolute bottom-4 right-8 flex items-center gap-2 text-rose-500">
-                  <ExclamationTriangleIcon className="h-4 w-4" />
-                  <span className="text-[10px] font-black uppercase tracking-widest">Service Required</span>
-                </div>
-              )}
             </div>
           ))}
         </div>
       </div>
+
+
+      {/* --- ADD VEHICLE MODAL --- */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => !isSubmitting && setIsModalOpen(false)} />
+          
+          <div className="relative w-full max-w-lg bg-[#0F1115] border border-slate-800 rounded-[2.5rem] p-8 shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-center mb-8">
+              <div>
+                <h2 className="text-xl font-black text-white">New Asset Entry</h2>
+                <p className="text-xs text-slate-500">Register a new vehicle to the transport network</p>
+              </div>
+              <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-slate-800 rounded-full transition-colors">
+                <XMarkIcon className="h-5 w-5 text-slate-400" />
+              </button>
+            </div>
+
+            <form onSubmit={handleAddVehicle} className="space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                {/* Registration */}
+                <div className="col-span-2 space-y-2">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">License Plate</label>
+                  <div className="relative">
+                    <IdentificationIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+                    <input 
+                      required
+                      placeholder="KCB 123X"
+                      className="w-full bg-black/40 border border-slate-800 rounded-2xl py-3 pl-11 pr-4 text-sm text-white focus:border-yellow-500 outline-none transition-all uppercase"
+                      value={formData.registration}
+                      onChange={(e) => setFormData({...formData, registration: e.target.value})}
+                    />
+                  </div>
+                </div>
+
+                {/* Make & Model */}
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">Make</label>
+                  <input 
+                    required
+                    placeholder="Toyota"
+                    className="w-full bg-black/40 border border-slate-800 rounded-2xl py-3 px-4 text-sm text-white focus:border-yellow-500 outline-none transition-all"
+                    value={formData.make}
+                    onChange={(e) => setFormData({...formData, make: e.target.value})}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">Model</label>
+                  <input 
+                    required
+                    placeholder="Coaster"
+                    className="w-full bg-black/40 border border-slate-800 rounded-2xl py-3 px-4 text-sm text-white focus:border-yellow-500 outline-none transition-all"
+                    value={formData.model}
+                    onChange={(e) => setFormData({...formData, model: e.target.value})}
+                  />
+                </div>
+
+                {/* Capacity & Type */}
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">Capacity</label>
+                  <div className="relative">
+                    <UserGroupIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+                    <input 
+                      type="number"
+                      required
+                      className="w-full bg-black/40 border border-slate-800 rounded-2xl py-3 pl-11 pr-4 text-sm text-white focus:border-yellow-500 outline-none transition-all"
+                      value={formData.capacity}
+                      onChange={(e) => setFormData({...formData, capacity: parseInt(e.target.value)})}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase ml-1">Vehicle Type</label>
+                  <select 
+                    className="w-full bg-black/40 border border-slate-800 rounded-2xl py-3 px-4 text-sm text-white focus:border-yellow-500 outline-none transition-all appearance-none cursor-pointer"
+                    value={formData.type}
+                    onChange={(e) => setFormData({...formData, type: e.target.value})}
+                  >
+                    <option value="BUS">School Bus</option>
+                    <option value="VAN">Van / Shuttle</option>
+                    <option value="CAR">Staff Car</option>
+                  </select>
+                </div>
+              </div>
+
+              <button 
+                disabled={isSubmitting}
+                type="submit"
+                className="w-full py-4 bg-yellow-500 hover:bg-yellow-400 disabled:bg-slate-800 disabled:text-slate-500 text-black font-black text-xs uppercase tracking-[0.2em] rounded-2xl transition-all flex items-center justify-center gap-2"
+              >
+                {isSubmitting ? (
+                  <CogIcon className="h-5 w-5 animate-spin" />
+                ) : (
+                  "Finalize Registration"
+                )}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </main>
   );
 };

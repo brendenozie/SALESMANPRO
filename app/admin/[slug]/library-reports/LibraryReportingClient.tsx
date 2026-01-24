@@ -13,7 +13,8 @@ import {
   FunnelIcon
 } from "@heroicons/react/24/outline";
 
-const LibraryReportingClient = () => {
+const LibraryReportingClient = ({ initialStats, schoolId }: any) => {
+  const [data, setData] = useState(initialStats);
   const [reportRange, setReportRange] = useState("Last 30 Days");
 
   const topCategories = [
@@ -21,6 +22,8 @@ const LibraryReportingClient = () => {
     { name: 'Philosophy', count: 284, growth: '+5%' },
     { name: 'Fiction', count: 890, growth: '+18%' },
   ];
+
+  
 
   return (
     <main className="min-h-screen bg-[#05070A] text-slate-200 p-8 font-sans">
@@ -57,6 +60,38 @@ const LibraryReportingClient = () => {
             </button>
           </div>
         </header>
+
+        {/* KPI Grid */}
+        {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+          {kpis.map((kpi, i) => (
+            <div key={i} className="bg-slate-900/40 border border-slate-800 p-6 rounded-3xl">
+               <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{kpi.label}</p>
+               <h2 className="text-2xl font-black text-white mt-1">{kpi.value}</h2>
+            </div>
+          ))}
+        </div> */}
+
+        {/* Category Breakdown */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+           <div className="lg:col-span-1 bg-slate-900/20 border border-slate-800 rounded-3xl p-8">
+             <h3 className="text-lg font-bold text-white mb-6">Popular Categories</h3>
+             <div className="space-y-6">
+               {data?.categories?.map((cat: any, i: number) => (
+                 <div key={i}>
+                   <div className="flex justify-between text-sm mb-2">
+                     <span className="text-slate-300">{cat.name}</span>
+                     <span className="text-indigo-400 font-bold">{cat.count} items</span>
+                   </div>
+                   <div className="h-1.5 w-full bg-slate-800 rounded-full">
+                     <div className="h-full bg-indigo-500" style={{ width: `${(cat.count / 100) * 100}%` }} />
+                   </div>
+                 </div>
+               ))}
+             </div>
+           </div>
+           
+           {/* ... Utilization Charts ... */}
+        </div>
 
         {/* High-Level KPIs */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">

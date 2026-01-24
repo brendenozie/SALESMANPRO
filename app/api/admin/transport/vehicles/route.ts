@@ -3,62 +3,75 @@ import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
-// GET /api/admin/transport/vehicles
-// Fetches all transport vehicles filtered by companyId
-const getVehiclesLogic = async (request: Request) => {
+/**
+ * GET: Fetch all vehicles for a specific company
+ * Filters available via query params: status, type
+ */
+const getVehicles = async (request: Request) => {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
+  const status = searchParams.get("status");
+  const type = searchParams.get("type");
 
-  if (!companyId) {
-    return formatResponse(false, null, "Company ID is required to fetch vehicles.", 400);
-  }
+  if (!companyId) return formatResponse(false, null, "Company ID required", 400);
 
   const vehicles = await prisma.transportVehicle.findMany({
-    where: { companyId },
-    orderBy: { createdAt: "desc" },
-  });
-
-  return formatResponse(true, vehicles, "Vehicles retrieved successfully", 200);
-};
-
-export const GET = withApiHandler(getVehiclesLogic, { requireAuth: true, requireRateLimit: true });
-
-// POST /api/admin/transport/vehicles
-// Creates a new transport vehicle
-const postVehicleLogic = async (request: Request) => {
-  const body = await request.json();
-  const { registration, make, model, type, status, capacity, companyId } = body;
-
-  if (!registration || !make || !model || !type || !capacity || !companyId) {
-    return formatResponse(
-      false,
-      null,
-      "Registration, make, model, type, capacity, and company ID are required.",
-      400
-    );
-  }
-
-  // Check if registration already exists
-  const existingVehicle = await prisma.transportVehicle.findUnique({
-    where: { registration },
-  });
-  if (existingVehicle) {
-    return formatResponse(false, null, "A vehicle with this registration already exists.", 409);
-  }
-
-  const newVehicle = await prisma.transportVehicle.create({
-    data: {
-      registration,
-      make,
-      model,
-      type,
-      status: status || "ACTIVE",
-      capacity: parseInt(capacity),
+    where: { 
       companyId,
+      ...(status && { status: status as any }),
+      ...(type && { type: type as any })
     },
+    include: {
+      _count: {
+        select: { routes: true, maintenances: true }
+      }
+    },
+    orderBy: { createdAt: 'desc' }
   });
 
-  return formatResponse(true, newVehicle, "Vehicle created successfully", 201);
+  return formatResponse(true, vehicles, "Fleet data retrieved", 200);
 };
 
-export const POST = withApiHandler(postVehicleLogic, { requireAuth: true, requireRateLimit: true });
+/**
+ * POST: Register a new vehicle to the fleet
+ */
+const postVehicle = async (request: Request) => {
+  const body = await request.json();
+  const { 
+    registration, 
+    make, 
+    model, 
+    type, 
+    capacity, 
+    companyId 
+  } = body;
+
+  // Validation
+  if (!registration || !companyId) {
+    return formatResponse(false, null, "Missing required fleet identifiers", 400);
+  }
+
+  try {
+    const vehicle = await prisma.transportVehicle.create({
+      data: {
+        registration: registration.toUpperCase(),
+        make,
+        model,
+        type,
+        capacity: parseInt(capacity),
+        companyId,
+        status: "ACTIVE"
+      }
+    });
+
+    return formatResponse(true, vehicle, "Vehicle successfully added to fleet", 201);
+  } catch (error: any) {
+    if (error.code === 'P2002') {
+      return formatResponse(false, null, "Registration number already exists", 409);
+    }
+    throw error;
+  }
+};
+
+export const GET = withApiHandler(getVehicles, { requireAuth: true });
+export const POST = withApiHandler(postVehicle, { requireAuth: true });
