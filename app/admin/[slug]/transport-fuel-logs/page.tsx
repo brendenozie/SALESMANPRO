@@ -3,35 +3,25 @@ import FuelLogsClient from "./FuelLogsClient";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
-interface PageProps {
-  params: Promise<{ slug: string }>;
-}
-
-export default async function LibraryMembersPage({ params }: PageProps) {
+export default async function FuelLogsPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug: schoolId } = await params;
   const cookieHeader = (await cookies()).toString();
 
-  let initialMembers = [];  
+  let initialData = { logs: [], vehicles: [] };
+  
   try {
-    const res = await fetch(
-      `${apiBaseUrl}/admin/library/members?companyId=${schoolId}`,
-      {
-        headers: { cookie: cookieHeader },
-        next: { revalidate: 60 },
-      }
-    );
+    const [logRes, vehRes] = await Promise.all([
+      fetch(`${apiBaseUrl}/admin/transport/fuel?companyId=${schoolId}`, { headers: { cookie: cookieHeader } }),
+      fetch(`${apiBaseUrl}/admin/transport/vehicles?companyId=${schoolId}`, { headers: { cookie: cookieHeader } })
+    ]);
 
-    if (res.ok) {
-      initialMembers = (await res.json()).data;
+    if (logRes.ok && vehRes.ok) {
+      initialData.logs = (await logRes.json()).data;
+      initialData.vehicles = (await vehRes.json()).data;
     }
   } catch (err) {
-    console.error("[LibraryMembersPage] Failed to load members", err);
+    console.error("Failed to load fuel data", err);
   }
 
-  return (
-    <FuelLogsClient
-      // initialMembers={initialMembers}
-      // schoolId={schoolId}
-    />
-  );
+  return <FuelLogsClient initialData={initialData} schoolId={schoolId} />;
 }

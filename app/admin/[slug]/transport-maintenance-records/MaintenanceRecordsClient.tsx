@@ -13,15 +13,55 @@ import {
   PlusIcon,
   ArrowPathIcon
 } from "@heroicons/react/24/outline";
+import { format, startOfMonth } from "date-fns";
 
-const MaintenanceRecordsClient = () => {
+const MaintenanceRecordsClient = ({ initialData, schoolId }: any) => {
   const [filter, setFilter] = useState('all');
 
-  const records = [
-    { id: 'MNT-9901', vehicle: 'BUS-101', service: 'Engine Overhaul', date: '2026-01-10', cost: 1250.00, status: 'Completed', technician: 'Mike Ross' },
-    { id: 'MNT-9924', vehicle: 'BUS-202', service: 'Brake Pad Replacement', date: '2026-01-14', cost: 420.50, status: 'In Progress', technician: 'Sarah Connor' },
-    { id: 'MNT-9882', vehicle: 'VAN-05', service: 'Oil & Filter Change', date: '2025-12-28', cost: 115.00, status: 'Completed', technician: 'Mike Ross' },
-  ];
+  // const records = [
+  //   { id: 'MNT-9901', vehicle: 'BUS-101', service: 'Engine Overhaul', date: '2026-01-10', cost: 1250.00, status: 'Completed', technician: 'Mike Ross' },
+  //   { id: 'MNT-9924', vehicle: 'BUS-202', service: 'Brake Pad Replacement', date: '2026-01-14', cost: 420.50, status: 'In Progress', technician: 'Sarah Connor' },
+  //   { id: 'MNT-9882', vehicle: 'VAN-05', service: 'Oil & Filter Change', date: '2025-12-28', cost: 115.00, status: 'Completed', technician: 'Mike Ross' },
+  // ];
+
+  const [records, setRecords] = useState(initialData.records);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  // Stats Calculations
+  const activeRepairs = records.filter((r: any) => r.status === "IN_PROGRESS").length;
+  const monthlySpend = records
+    .filter((r: any) => new Date(r.scheduledDate) >= startOfMonth(new Date()))
+    .reduce((acc: number, r: any) => acc + (r.cost || 0), 0);
+
+  const [formData, setFormData] = useState({
+    vehicleId: "",
+    description: "",
+    scheduledDate: format(new Date(), "yyyy-MM-dd"),
+    cost: "",
+    status: "SCHEDULED"
+  });
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/admin/transport/maintenance?companyId=${schoolId}`, {
+        method: "POST",
+        body: JSON.stringify(formData),
+      });
+      const result = await res.json();
+      if (result.success) {
+        setRecords([result.data, ...records]);
+        setIsModalOpen(false);
+        toast.success("Maintenance event synchronized");
+      }
+    } catch (err) {
+      toast.error("System sync failed");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <main className="min-h-screen bg-[#05070A] text-slate-200 p-8 font-sans">
@@ -58,6 +98,12 @@ const MaintenanceRecordsClient = () => {
 
         {/* Diagnostic KPIs */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+
+          <div className="bg-slate-900/40 border border-slate-800 p-6 rounded-3xl border-l-4 border-l-orange-500">
+           <p className="text-[10px] font-bold text-slate-500 uppercase">Active Repairs</p>
+           <h3 className="text-2xl font-black text-white">{activeRepairs.toString().padStart(2, '0')} Vehicles</h3>
+        </div>
+
           <div className="bg-slate-900/40 border border-slate-800 p-6 rounded-3xl border-l-4 border-l-orange-500">
             <div className="flex items-center gap-4">
               <div className="p-3 bg-orange-500/10 rounded-xl text-orange-500">
@@ -108,17 +154,27 @@ const MaintenanceRecordsClient = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/50">
-                {records.map((log) => (
+                {records.map((log : any) => (
                   <tr key={log.id} className="hover:bg-slate-800/20 transition-colors group">
-                    <td className="p-6 font-mono text-xs text-slate-400">{log.id}</td>
-                    <td className="p-6 font-bold text-white">{log.vehicle}</td>
+                    <td className="p-6 font-mono text-xs text-slate-400">{log.id.slice(-6).toUpperCase()}</td>
+                    <td className="p-6 font-bold text-white">{log.vehicle?.registration}</td>
                     <td className="p-6">
+                      <div className="flex items-center gap-2">
+                        <WrenchScrewdriverIcon className="h-4 w-4 text-orange-500" />
+                        <span className="text-sm font-medium text-slate-300">{log.description}</span>
+                      </div>
+                      <p className="text-[10px] text-slate-500 mt-1">{format(new Date(log.scheduledDate), "MMM dd, yyyy")}</p>
+                    </td>
+
+                    {/* <td className="p-6 font-mono text-xs text-slate-400">{log.id}</td> */}
+                    {/* <td className="p-6 font-bold text-white">{log.vehicle}</td> */}
+                    {/* <td className="p-6">
                       <div className="flex items-center gap-2">
                         <WrenchScrewdriverIcon className="h-4 w-4 text-orange-500" />
                         <span className="text-sm font-medium text-slate-300">{log.service}</span>
                       </div>
                       <p className="text-[10px] text-slate-500 mt-1">{log.date}</p>
-                    </td>
+                    </td> */}
                     <td className="p-6 text-sm text-slate-400">{log.technician}</td>
                     <td className="p-6 font-mono text-sm text-white">${log.cost.toFixed(2)}</td>
                     <td className="p-6">
@@ -136,6 +192,57 @@ const MaintenanceRecordsClient = () => {
           </div>
         </div>
       </div>
+
+      {/* Create Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl">
+            <h2 className="text-2xl font-black text-white mb-6">Schedule Service</h2>
+            <form onSubmit={handleCreate} className="space-y-4">
+              <select 
+                required className="w-full bg-black border border-slate-800 rounded-xl p-3 text-sm text-white"
+                onChange={(e) => setFormData({...formData, vehicleId: e.target.value})}
+              >
+                <option value="">Select Vehicle</option>
+                {initialData.vehicles.map((v: any) => (
+                  <option key={v.id} value={v.id}>{v.registration} - {v.model}</option>
+                ))}
+              </select>
+              <input 
+                type="text" placeholder="Description (e.g. Brake Pads)" required
+                className="w-full bg-black border border-slate-800 rounded-xl p-3 text-sm text-white"
+                onChange={(e) => setFormData({...formData, description: e.target.value})}
+              />
+              <div className="grid grid-cols-2 gap-4">
+                <input 
+                  type="date" required className="bg-black border border-slate-800 rounded-xl p-3 text-sm text-white"
+                  value={formData.scheduledDate}
+                  onChange={(e) => setFormData({...formData, scheduledDate: e.target.value})}
+                />
+                <input 
+                  type="number" placeholder="Est. Cost" className="bg-black border border-slate-800 rounded-xl p-3 text-sm text-white"
+                  onChange={(e) => setFormData({...formData, cost: e.target.value})}
+                />
+              </div>
+              <select 
+                className="w-full bg-black border border-slate-800 rounded-xl p-3 text-sm text-white font-bold"
+                onChange={(e) => setFormData({...formData, status: e.target.value})}
+              >
+                <option value="SCHEDULED">Scheduled</option>
+                <option value="IN_PROGRESS">In Progress (Grounds Vehicle)</option>
+                <option value="COMPLETED">Completed</option>
+              </select>
+              <div className="flex gap-3 mt-6">
+                <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 px-6 py-3 bg-slate-800 rounded-xl font-bold text-xs">Cancel</button>
+                <button type="submit" disabled={loading} className="flex-1 px-6 py-3 bg-orange-600 rounded-xl font-bold text-xs text-white">
+                  {loading ? "Processing..." : "Confirm Entry"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      
     </main>
   );
 };

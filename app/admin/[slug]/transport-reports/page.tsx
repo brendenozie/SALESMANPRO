@@ -7,31 +7,33 @@ interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
-export default async function LibraryMembersPage({ params }: PageProps) {
+export default async function TransportDashboardPage({ params }: PageProps) {
   const { slug: schoolId } = await params;
   const cookieHeader = (await cookies()).toString();
 
-  let initialMembers = [];  
+  let initialData = null;
+  
   try {
+    // Fetch aggregated dashboard data including metrics, alerts, and efficiency
     const res = await fetch(
-      `${apiBaseUrl}/admin/library/members?companyId=${schoolId}`,
+      `${apiBaseUrl}/admin/transport/dashboard?companyId=${schoolId}`,
       {
         headers: { cookie: cookieHeader },
-        next: { revalidate: 60 },
+        next: { revalidate: 300 }, // Cache for 5 minutes
       }
     );
 
     if (res.ok) {
-      initialMembers = (await res.json()).data;
+      initialData = (await res.json()).data;
     }
   } catch (err) {
-    console.error("[LibraryMembersPage] Failed to load members", err);
+    console.error("[TransportDashboardPage] Failed to load dashboard data", err);
   }
 
   return (
     <TransportDashboard
-      // initialMembers={initialMembers}
-      // schoolId={schoolId}
+      initialData={initialData}
+      schoolId={schoolId}
     />
   );
 }

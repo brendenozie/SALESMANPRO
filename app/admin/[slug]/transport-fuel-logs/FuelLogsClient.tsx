@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Toaster } from "react-hot-toast";
+import { toast, Toaster } from "react-hot-toast";
 import { 
   BeakerIcon, 
   CurrencyDollarIcon, 
@@ -13,12 +13,50 @@ import {
   ArrowTrendingDownIcon
 } from "@heroicons/react/24/outline";
 
-const FuelLogsClient = () => {
-  const [logs] = useState([
-    { id: 'FL-440', date: '2026-01-14', vehicle: 'BUS-101', volume: '85.5L', cost: 145.35, station: 'Shell Central', odometer: '12,450 km' },
-    { id: 'FL-439', date: '2026-01-13', vehicle: 'BUS-202', volume: '110.0L', cost: 187.00, station: 'City Gas Hub', odometer: '44,890 km' },
-    { id: 'FL-438', date: '2026-01-12', vehicle: 'VAN-05', volume: '40.2L', cost: 68.34, station: 'Shell Central', odometer: '8,210 km' },
-  ]);
+const FuelLogsClient = ({ initialData, schoolId }: any) => {
+  const [logs, setLogs] = useState(initialData.logs);
+  //   const [logs] = useState([
+  //   { id: 'FL-440', date: '2026-01-14', vehicle: 'BUS-101', volume: '85.5L', cost: 145.35, station: 'Shell Central', odometer: '12,450 km' },
+  //   { id: 'FL-439', date: '2026-01-13', vehicle: 'BUS-202', volume: '110.0L', cost: 187.00, station: 'City Gas Hub', odometer: '44,890 km' },
+  //   { id: 'FL-438', date: '2026-01-12', vehicle: 'VAN-05', volume: '40.2L', cost: 68.34, station: 'Shell Central', odometer: '8,210 km' },
+  // ]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  // Form State
+  const [formData, setFormData] = useState({
+    vehicleId: "",
+    quantity: "",
+    cost: "",
+    odometer: "",
+    notes: ""
+  });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    try {
+      const res = await fetch(`/api/admin/transport/fuel?companyId=${schoolId}`, {
+        method: 'POST',
+        body: JSON.stringify(formData)
+      });
+      const result = await res.json();
+      
+      if (result.success) {
+        setLogs([result.data, ...logs]);
+        setIsModalOpen(false);
+        toast.success("Log synchronized with Fleet Command");
+      }
+    } catch (error) {
+      toast.error("Network synchronization failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const totalSpent = logs.reduce((acc: number, log: any) => acc + log.cost, 0);
+  const totalVolume = logs.reduce((acc: number, log: any) => acc + log.quantity, 0);
 
   return (
     <main className="min-h-screen bg-[#05070A] text-slate-200 p-8 font-sans">
@@ -54,6 +92,14 @@ const FuelLogsClient = () => {
 
         {/* Consumption Efficiency Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+
+          <div className="bg-slate-900/40 border border-slate-800 p-6 rounded-3xl relative overflow-hidden group">
+              <p className="text-[10px] font-bold text-slate-500 uppercase">Avg. Price/Litre</p>
+              <h3 className="text-2xl font-black text-white mt-1">
+                  ${logs.length > 0 ? (totalSpent / totalVolume).toFixed(2) : "0.00"}
+              </h3>
+          </div>
+
           <div className="bg-slate-900/40 border border-slate-800 p-6 rounded-3xl relative overflow-hidden group">
             <div className="relative z-10">
               <p className="text-[10px] font-bold text-slate-500 uppercase">Avg. Price/Litre</p>
@@ -108,7 +154,7 @@ const FuelLogsClient = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/30">
-                {logs.map((log) => (
+                {logs.map((log: any) => (
                   <tr key={log.id} className="hover:bg-emerald-500/[0.02] transition-colors group">
                     <td className="p-6">
                       <p className="text-xs text-slate-300 font-medium">{log.date}</p>
@@ -137,6 +183,56 @@ const FuelLogsClient = () => {
           </div>
         </div>
       </div>
+
+
+      {/* Modal for Log Entry */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl">
+            <h2 className="text-2xl font-black text-white mb-6">Record Refuel</h2>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <select 
+                required
+                className="w-full bg-black border border-slate-800 rounded-xl p-3 text-sm text-white"
+                onChange={(e) => setFormData({...formData, vehicleId: e.target.value})}
+              >
+                <option value="">Select Vehicle</option>
+                {initialData.vehicles.map((v: any) => (
+                  <option key={v.id} value={v.id}>{v.registration} ({v.model})</option>
+                ))}
+              </select>
+              <div className="grid grid-cols-2 gap-4">
+                <input 
+                    type="number" step="0.01" placeholder="Liters" required
+                    className="bg-black border border-slate-800 rounded-xl p-3 text-sm text-white"
+                    onChange={(e) => setFormData({...formData, quantity: e.target.value})}
+                />
+                <input 
+                    type="number" step="0.01" placeholder="Total Cost ($)" required
+                    className="bg-black border border-slate-800 rounded-xl p-3 text-sm text-white"
+                    onChange={(e) => setFormData({...formData, cost: e.target.value})}
+                />
+              </div>
+              <input 
+                type="number" placeholder="Odometer Reading (km)" required
+                className="w-full bg-black border border-slate-800 rounded-xl p-3 text-sm text-white"
+                onChange={(e) => setFormData({...formData, odometer: e.target.value})}
+              />
+              <div className="flex gap-3 mt-6">
+                <button 
+                    type="button" onClick={() => setIsModalOpen(false)}
+                    className="flex-1 px-6 py-3 bg-slate-800 rounded-xl font-bold text-xs"
+                >Cancel</button>
+                <button 
+                    type="submit" disabled={loading}
+                    className="flex-1 px-6 py-3 bg-emerald-600 rounded-xl font-bold text-xs text-white"
+                >{loading ? "Syncing..." : "Submit Log"}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
     </main>
   );
 };
