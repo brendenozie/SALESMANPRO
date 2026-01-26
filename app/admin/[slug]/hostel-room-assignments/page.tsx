@@ -7,31 +7,25 @@ interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
+
 export default async function RoomAssignmentsPage({ params }: PageProps) {
   const { slug: schoolId } = await params;
   const cookieHeader = (await cookies()).toString();
 
-  let initialMembers = [];  
+  let data = { unassigned: [], rooms: [] };
   try {
     const res = await fetch(
       `${apiBaseUrl}/admin/hostel/room-assignments?companyId=${schoolId}`,
-      {
-        headers: { cookie: cookieHeader },
-        next: { revalidate: 60 },
-      }
+      { headers: { cookie: cookieHeader }, cache: 'no-store' }
     );
-
-    if (res.ok) {
-      initialMembers = (await res.json()).data;
-    }
-  } catch (err) {
-    console.error("[RoomAssignmentsPage] Failed to load members", err);
-  }
+    if (res.ok) data = (await res.json()).data;
+  } catch (err) { console.error(err); }
 
   return (
-    <RoomAssignmentsClient
-      // initialMembers={initialMembers}
-      // schoolId={schoolId}
+    <RoomAssignmentsClient 
+      initialUnassigned={data.unassigned} 
+      initialRooms={data.rooms} 
+      schoolId={schoolId} 
     />
   );
 }

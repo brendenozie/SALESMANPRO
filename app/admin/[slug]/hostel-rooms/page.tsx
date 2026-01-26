@@ -11,26 +11,28 @@ export default async function HostelRoomsPage({ params }: PageProps) {
   const { slug: schoolId } = await params;
   const cookieHeader = (await cookies()).toString();
 
-  let initialRooms = [];  
-  try {
-    const res = await fetch(
-      `${apiBaseUrl}/admin/hostel/rooms?companyId=${schoolId}`,
-      {
-        headers: { cookie: cookieHeader },
-        next: { revalidate: 60 },
-      }
-    );
+  let rooms = [];  
+  let blocks = [];
 
-    if (res.ok) {
-      initialRooms = (await res.json()).data;
-    }
+  try {
+    
+    // Fetching both blocks and rooms to feed the client
+    const [roomsRes, blocksRes] = await Promise.all([
+      fetch(`${apiBaseUrl}/admin/hostel/rooms?companyId=${schoolId}`, { headers: { cookie: cookieHeader } }),
+      fetch(`${apiBaseUrl}/admin/hostel/blocks?companyId=${schoolId}`, { headers: { cookie: cookieHeader } })
+    ]);
+
+    rooms = (await roomsRes.json()).data || [];
+    blocks = (await blocksRes.json()).data || [];
+
   } catch (err) {
     console.error("[HostelRoomsPage] Failed to load rooms", err);
   }
 
   return (
     <HostelRoomsClient
-      initialRooms={initialRooms}
+      initialRooms={rooms}
+      blocks={blocks}
       schoolId={schoolId}
     />
   );

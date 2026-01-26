@@ -13,18 +13,47 @@ import {
   MagnifyingGlassIcon
 } from "@heroicons/react/24/outline";
 
-const RoomAssignmentsClient = () => {
-  const [unassigned] = useState([
-    { id: 'STU-501', name: 'Liam Neeson', grade: '12-A', gender: 'M' },
-    { id: 'STU-502', name: 'Sarah Jenkins', grade: '11-B', gender: 'F' },
-    { id: 'STU-503', name: 'David Goggins', grade: '12-C', gender: 'M' },
-  ]);
+const RoomAssignmentsClient = ({ initialUnassigned, initialRooms, schoolId }: any) => {
+  
+    const [unassigned, setUnassigned] = useState(initialUnassigned);
+  const [rooms, setRooms] = useState(initialRooms);
+  const [selectedStudent, setSelectedStudent] = useState<any>(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const [rooms] = useState([
-    { id: '101', type: 'Double', beds: [{ id: '101-A', student: 'Marcus H.' }, { id: '101-B', student: null }], wing: 'North' },
-    { id: '102', type: 'Single', beds: [{ id: '102-A', student: null }], wing: 'North' },
-    { id: '201', type: 'Double', beds: [{ id: '201-A', student: null }, { id: '201-B', student: null }], wing: 'South' },
-  ]);
+  const handleAssign = async (room: any) => {
+    if (!selectedStudent) {
+      toast.error("Select a resident from the left first");
+      return;
+    }
+
+    if (room.allocations.length >= room.capacity) {
+      toast.error("Room is full");
+      return;
+    }
+
+    const promise = fetch("/api/admin/hostel/allocate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ roomId: room.id, userId: selectedStudent.id }),
+    });
+
+    toast.promise(promise, {
+      loading: 'Assigning bed...',
+      success: () => {
+        // Optimistic UI Update
+        setUnassigned(unassigned.filter((s: any) => s.id !== selectedStudent.id));
+        setRooms(rooms.map((r: any) => 
+          r.id === room.id 
+            ? { ...r, allocations: [...r.allocations, { user: { name: selectedStudent.name } }] }
+            : r
+        ));
+        setSelectedStudent(null);
+        return "Assignment complete!";
+      },
+      error: "Could not assign room."
+    });
+  };
+
 
   return (
     <main className="min-h-screen bg-[#05070A] text-slate-200 p-8 font-sans">
@@ -53,7 +82,57 @@ const RoomAssignmentsClient = () => {
 
         <div className="flex-grow grid grid-cols-12 gap-8 overflow-hidden">
           {/* Left Side: Unassigned Residents */}
+          {/* Left Side: Unassigned Residents */}
           <section className="col-span-12 lg:col-span-4 bg-slate-900/30 border border-slate-800 rounded-[2.5rem] flex flex-col overflow-hidden">
+            <div className="p-6 border-b border-slate-800 flex items-center justify-between bg-slate-900/50">
+              <h3 className="font-bold text-white flex items-center gap-2 text-sm">
+                <InboxArrowDownIcon className="h-5 w-5 text-indigo-400" />
+                Available Residents
+              </h3>
+              <span className="bg-indigo-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">
+                {unassigned.length}
+              </span>
+            </div>
+
+            <div className="p-4 border-b border-slate-800">
+               <div className="relative">
+                  <MagnifyingGlassIcon className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
+                  <input 
+                    className="w-full bg-black/40 border border-slate-800 rounded-xl py-2 pl-10 pr-4 text-xs outline-none focus:border-indigo-500" 
+                    placeholder="Search name or grade..." 
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+               </div>
+            </div>
+
+            <div className="flex-grow overflow-y-auto p-4 space-y-3">
+              {unassigned
+                .filter((s: any) => s.name.toLowerCase().includes(searchTerm.toLowerCase()))
+                .map((student: any) => (
+                <div 
+                  key={student.id} 
+                  onClick={() => setSelectedStudent(student)}
+                  className={`p-4 border rounded-2xl cursor-pointer transition-all group ${
+                    selectedStudent?.id === student.id 
+                    ? 'bg-indigo-600 border-indigo-400' 
+                    : 'bg-slate-800/40 border-slate-700/50 hover:border-indigo-500/50'
+                  }`}
+                >
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className={`text-xs font-black ${selectedStudent?.id === student.id ? 'text-white' : 'text-white'}`}>{student.name}</p>
+                      <p className={`text-[10px] font-mono uppercase ${selectedStudent?.id === student.id ? 'text-indigo-200' : 'text-slate-500'}`}>
+                        {student.grade} • {student.gender}
+                      </p>
+                    </div>
+                    <ArrowsRightLeftIcon className="h-4 w-4 text-indigo-400" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* <section className="col-span-12 lg:col-span-4 bg-slate-900/30 border border-slate-800 rounded-[2.5rem] flex flex-col overflow-hidden">
             <div className="p-6 border-b border-slate-800 flex items-center justify-between bg-slate-900/50">
                <h3 className="font-bold text-white flex items-center gap-2 text-sm">
                   <InboxArrowDownIcon className="h-5 w-5 text-indigo-400" />
@@ -84,10 +163,10 @@ const RoomAssignmentsClient = () => {
                 </div>
               ))}
             </div>
-          </section>
+          </section> */}
 
           {/* Right Side: Room Selection Grid */}
-          <section className="col-span-12 lg:col-span-8 bg-slate-900/20 border border-slate-800 rounded-[2.5rem] flex flex-col overflow-hidden">
+          {/* <section className="col-span-12 lg:col-span-8 bg-slate-900/20 border border-slate-800 rounded-[2.5rem] flex flex-col overflow-hidden">
              <div className="p-6 border-b border-slate-800 flex items-center justify-between bg-slate-900/50">
                <div className="flex gap-4">
                   <button className="text-xs font-black text-indigo-400 border-b-2 border-indigo-400 pb-1">All Wings</button>
@@ -135,6 +214,46 @@ const RoomAssignmentsClient = () => {
                     </div>
                  </div>
                ))}
+            </div>
+          </section> */}
+          {/* Right Side: Room Grid */}
+          <section className="col-span-12 lg:col-span-8 bg-slate-900/20 border border-slate-800 rounded-[2.5rem] flex flex-col overflow-hidden">
+            <div className="flex-grow overflow-y-auto p-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+              {rooms.map((room: any) => (
+                <div 
+                  key={room.id} 
+                  className={`bg-black/40 border rounded-3xl p-6 transition-all ${
+                    selectedStudent ? 'border-indigo-500/40 cursor-pointer hover:bg-indigo-500/5' : 'border-slate-800'
+                  }`}
+                  onClick={() => selectedStudent && handleAssign(room)}
+                >
+                  <div className="flex justify-between items-start mb-6">
+                    <div>
+                      <h4 className="text-xl font-black text-white italic">Room {room.roomNumber}</h4>
+                      <p className="text-[10px] font-bold text-slate-600 uppercase">{room.type} • {room.block.name}</p>
+                    </div>
+                    <UserGroupIcon className="h-5 w-5 text-slate-700" />
+                  </div>
+
+                  <div className="space-y-3">
+                    {/* Render filled beds */}
+                    {room.allocations.map((alloc: any, i: number) => (
+                      <div key={i} className="p-3 rounded-xl border border-indigo-500/20 bg-indigo-500/5 flex items-center justify-between">
+                        <span className="text-xs font-bold text-white">{alloc.user.name}</span>
+                        <CheckBadgeIcon className="h-4 w-4 text-indigo-400" />
+                      </div>
+                    ))}
+                    {/* Render empty slots based on capacity */}
+                    {Array.from({ length: room.capacity - room.allocations.length }).map((_, i) => (
+                      <div key={i} className="p-3 rounded-xl border border-dashed border-slate-800 flex items-center justify-between">
+                        <span className="text-[10px] font-black text-slate-600 uppercase tracking-tighter italic">
+                          {selectedStudent ? "Click to Assign" : "Available Slot"}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
           </section>
         </div>
