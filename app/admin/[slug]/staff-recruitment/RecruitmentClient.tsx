@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { 
   BriefcaseIcon, 
   UserPlusIcon, 
@@ -11,15 +11,40 @@ import {
   UserGroupIcon,
   ArrowRightIcon
 } from "@heroicons/react/24/outline";
+import AddCandidateModal from "./AddCandidateModal";
 
-const RecruitmentClient = () => {
+const RecruitmentClient = ({ companyId }: { companyId: string }) => {
   const [activeStage, setActiveStage] = useState("All");
+  const [candidates, setCandidates] = useState<any[]>([]);
+  const [stats, setStats] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
-  const candidates = [
-    { id: 'APP-102', name: 'Dr. Julian Thorne', position: 'Physics Head', stage: 'Interview', score: '92%', source: 'LinkedIn', date: 'Jan 12' },
-    { id: 'APP-105', name: 'Amara Okafor', position: 'Primary Tutor', stage: 'Offer Sent', score: '88%', source: 'Referral', date: 'Jan 14' },
-    { id: 'APP-108', name: 'Thomas Wright', position: 'IT Specialist', stage: 'Onboarding', score: '95%', source: 'Direct', date: 'Jan 05' },
-  ];
+  const fetchPipeline = async () => {
+    setLoading(true);
+    const res = await fetch(`/api/admin/recruitment?companyId=${companyId}&stage=${activeStage}`);
+    const json = await res.json();
+    setCandidates(json.data || []);
+    setStats(json.stats);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchPipeline();
+  }, [activeStage, companyId]);
+
+  const handleNextStep = async (id: string, currentStage: string) => {
+    const stages = ['Applied', 'Screening', 'Interview', 'Offer Sent', 'Onboarding'];
+    const currentIndex = stages.indexOf(currentStage);
+    if (currentIndex < stages.length - 1) {
+      const nextStage = stages[currentIndex + 1];
+      await fetch(`/api/admin/recruitment`, {
+        method: 'PATCH',
+        body: JSON.stringify({ candidateId: id, nextStage })
+      });
+      fetchPipeline(); // Refresh data
+    }
+  };
 
   return (
     <main className="min-h-screen bg-[#05070A] text-slate-200 p-8 font-sans">
@@ -40,7 +65,7 @@ const RecruitmentClient = () => {
              <button className="flex items-center gap-2 px-6 py-3 bg-slate-900 border border-slate-800 rounded-2xl text-slate-400 hover:text-white transition-all font-bold text-xs">
                 <BriefcaseIcon className="h-4 w-4" /> Manage Vacancies
              </button>
-             <button className="flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-bold text-xs transition-all shadow-lg shadow-indigo-900/40">
+             <button onClick={() => setIsAddModalOpen(true)} className="flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-bold text-xs transition-all shadow-lg shadow-indigo-900/40">
                 <UserPlusIcon className="h-4 w-4" /> Add Candidate
              </button>
           </div>
@@ -49,9 +74,9 @@ const RecruitmentClient = () => {
         {/* Pipeline Analytics */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
           {[
-            { label: 'Active Vacancies', value: '06', icon: BriefcaseIcon, color: 'text-indigo-400' },
-            { label: 'Total Applicants', value: '124', icon: UserGroupIcon, color: 'text-blue-400' },
-            { label: 'Interviews Today', value: '03', icon: ClockIcon, color: 'text-amber-400' },
+            { label: 'Active Vacancies', value: stats?.activeVacancies || '0', icon: BriefcaseIcon, color: 'text-indigo-400' },
+            { label: 'Total Applicants', value: stats?.totalApplicants || '0', icon: UserGroupIcon, color: 'text-blue-400' },
+            { label: 'Interviews Today', value: stats?.interviewsToday || '0', icon: ClockIcon, color: 'text-amber-400' },
             { label: 'Conversion Rate', value: '12%', icon: CheckCircleIcon, color: 'text-emerald-400' },
           ].map((stat, i) => (
             <div key={i} className="bg-slate-900/40 border border-slate-800 p-6 rounded-[2rem]">
@@ -63,6 +88,7 @@ const RecruitmentClient = () => {
         </div>
 
         {/* Pipeline Stages Tab */}
+        
         <div className="flex overflow-x-auto gap-4 mb-8 no-scrollbar">
            {['All', 'Applied', 'Screening', 'Interview', 'Offer Sent', 'Onboarding'].map((stage) => (
              <button 
@@ -79,7 +105,12 @@ const RecruitmentClient = () => {
 
         {/* Candidate Cards Grid */}
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-          {candidates.map((candidate) => (
+          {loading ? (
+             <div className="col-span-full py-20 text-center text-slate-500 animate-pulse font-black uppercase text-xs tracking-widest">
+                Syncing Talent Pipeline...
+             </div>
+          ) : (
+          candidates.map((candidate) => (
             <div key={candidate.id} className="group bg-slate-900/20 border border-slate-800 rounded-[2.5rem] p-6 hover:bg-indigo-500/[0.03] hover:border-indigo-500/30 transition-all">
               <div className="flex justify-between items-start mb-6">
                  <div>
@@ -113,14 +144,26 @@ const RecruitmentClient = () => {
                  }`}>
                     {candidate.stage}
                  </span>
-                 <button className="flex items-center gap-1 text-[10px] font-black uppercase text-indigo-400 hover:text-white transition-all">
+                 <button onClick={() => handleNextStep(candidate.id, candidate.stage)} className="flex items-center gap-1 text-[10px] font-black uppercase text-indigo-400 hover:text-white transition-all">
                     Next Step <ArrowRightIcon className="h-3 w-3" />
                  </button>
+                 
               </div>
             </div>
-          ))}
+          )
+          )
+          )
+          }
         </div>
       </div>
+      
+      <AddCandidateModal 
+        isOpen={isAddModalOpen} 
+        onClose={() => setIsAddModalOpen(false)}
+        companyId={companyId}
+        onSuccess={fetchPipeline} // Re-fetches the pipeline data
+      />
+
     </main>
   );
 };

@@ -7,31 +7,20 @@ interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
-export default async function LibraryMembersPage({ params }: PageProps) {
+export default async function DepartmentsPage({ params }: PageProps) {
   const { slug: schoolId } = await params;
   const cookieHeader = (await cookies()).toString();
 
-  let initialMembers = [];  
+  let initialDepartments = [];
   try {
-    const res = await fetch(
-      `${apiBaseUrl}/admin/library/members?companyId=${schoolId}`,
-      {
-        headers: { cookie: cookieHeader },
-        next: { revalidate: 60 },
-      }
-    );
-
-    if (res.ok) {
-      initialMembers = (await res.json()).data;
-    }
+    const res = await fetch(`${apiBaseUrl}/admin/departments?companyId=${schoolId}`, {
+      headers: { cookie: cookieHeader },
+      cache: 'no-store'
+    });
+    if (res.ok) initialDepartments = (await res.json()).data;
   } catch (err) {
-    console.error("[LibraryMembersPage] Failed to load members", err);
+    console.error("Failed to load departments", err);
   }
 
-  return (
-    <DepartmentsClient
-      // initialMembers={initialMembers}
-      // schoolId={schoolId}
-    />
-  );
+  return <DepartmentsClient initialDepartments={initialDepartments} companyId={schoolId} />;
 }

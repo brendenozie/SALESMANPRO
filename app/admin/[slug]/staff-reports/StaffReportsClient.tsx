@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { 
   ChartPieIcon, 
   ArrowTrendingUpIcon, 
@@ -12,7 +12,46 @@ import {
   DocumentChartBarIcon
 } from "@heroicons/react/24/outline";
 
-const StaffReportsClient = () => {
+const StaffReportsClient = ({ companyId }: { companyId: string }) => {
+
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchAnalytics = async () => {
+      const res = await fetch(`/api/admin/reports?companyId=${companyId}`);
+      const json = await res.json();
+      setData(json);
+      setLoading(false);
+    };
+    fetchAnalytics();
+  }, [companyId]);
+
+  const handleExport = () => {
+    // Basic CSV Generator Logic
+    const headers = "Department,Cost,StaffCount\n";
+    const rows = data.departments.map((d: any) => `${d.dept},${d.raw},1`).join("\n");
+    const blob = new Blob([headers + rows], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.setAttribute('hidden', '');
+    a.setAttribute('href', url);
+    a.setAttribute('download', `HR_Report_${new Date().toLocaleDateString()}.csv`);
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
+  if (loading) return (
+    <div className="min-h-screen bg-[#05070A] flex items-center justify-center">
+      <div className="flex flex-col items-center gap-4">
+        <div className="h-12 w-12 border-4 border-cyan-500/20 border-t-cyan-500 rounded-full animate-spin" />
+        <p className="text-cyan-500 font-black text-[10px] uppercase tracking-widest">Aggregating Institutional Data...</p>
+      </div>
+    </div>
+  );
+
+
   return (
     <main className="min-h-screen bg-[#05070A] text-slate-200 p-8 font-sans">
       <div className="max-w-7xl mx-auto">
@@ -32,7 +71,7 @@ const StaffReportsClient = () => {
              <button className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-slate-400 hover:text-white transition-all text-xs font-bold">
                 <CalendarIcon className="h-4 w-4" /> Academic Year 2025-26
              </button>
-             <button className="flex items-center gap-2 px-6 py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl font-bold text-xs transition-all shadow-lg shadow-cyan-900/40">
+             <button  onClick={handleExport} className="flex items-center gap-2 px-6 py-2.5 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl font-bold text-xs transition-all shadow-lg shadow-cyan-900/40">
                 <ArrowDownTrayIcon className="h-4 w-4" /> Export Data
              </button>
           </div>
@@ -40,6 +79,9 @@ const StaffReportsClient = () => {
 
         {/* Top-Level KPIs */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+          <KPICard label="Retention Rate" value={`${data.metrics.retentionRate}%`} delta="+2%" icon={UserGroupIcon} color="text-emerald-400" />
+          <KPICard label="Monthly Payroll" value={`$${(data.metrics.monthlyPayroll/1000).toFixed(1)}k`} delta="Nominal" icon={CurrencyDollarIcon} color="text-cyan-400" />
+                    
           {[
             { label: 'Retention Rate', value: '91.4%', delta: '+2%', icon: UserGroupIcon, color: 'text-emerald-400' },
             { label: 'Monthly Payroll', value: '$142.5k', delta: 'Nominal', icon: CurrencyDollarIcon, color: 'text-cyan-400' },
@@ -59,6 +101,23 @@ const StaffReportsClient = () => {
 
         {/* Strategic Analysis Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+          {/* Bar Chart mapping using data.departments */}
+           <div className="lg:col-span-2 bg-slate-900/20 border border-slate-800 rounded-[3rem] p-8">
+              <div className="h-64 flex items-end gap-6 px-4">
+                {data.departments.map((item: any, i: number) => (
+                  <div key={i} className="flex-grow flex flex-col items-center gap-3 group">
+                     <div className="w-full bg-cyan-500/20 rounded-t-xl overflow-hidden h-full relative flex items-end">
+                        <div 
+                          className="w-full bg-cyan-500 group-hover:bg-cyan-400 transition-all" 
+                          style={{ height: `${(item.val / Math.max(...data.departments.map((d:any)=>d.val))) * 100}%` }} 
+                        />
+                     </div>
+                     <span className="text-[9px] font-bold text-slate-500 uppercase">{item.dept}</span>
+                  </div>
+                ))}
+              </div>
+           </div>
           
           {/* Departmental Cost Distribution */}
           <div className="lg:col-span-2 bg-slate-900/20 border border-slate-800 rounded-[3rem] p-8">
@@ -142,3 +201,14 @@ const StaffReportsClient = () => {
 };
 
 export default StaffReportsClient;
+
+const KPICard = ({ label, value, delta, icon: Icon, color }: any) => (
+  <div className="bg-slate-900/40 border border-slate-800 p-6 rounded-[2rem]">
+    <div className="flex justify-between items-start mb-4">
+      <Icon className={`h-6 w-6 ${color}`} />
+      <span className="text-[10px] font-black text-emerald-400">{delta}</span>
+    </div>
+    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{label}</p>
+    <h3 className="text-2xl font-black text-white mt-1 italic">{value}</h3>
+  </div>
+);

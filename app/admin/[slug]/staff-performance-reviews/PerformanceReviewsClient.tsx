@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { 
   StarIcon, 
   UserGroupIcon, 
@@ -12,13 +12,27 @@ import {
   ShieldCheckIcon
 } from "@heroicons/react/24/outline";
 import { StarIcon as StarSolid } from "@heroicons/react/24/solid";
+import ScoringRubricModal from "./ScoringRubricModal";
 
-const PerformanceReviewsClient = () => {
-  const reviews = [
-    { id: 'PERF-101', staff: 'Dr. Alistair Cook', role: 'Senior Lecturer', score: 4.8, studentFeedback: 96, peerScore: 4.5, growth: '+12%', status: 'Excellent' },
-    { id: 'PERF-205', staff: 'Sarah Jenkins', role: 'Dept Head', score: 4.2, studentFeedback: 88, peerScore: 4.0, growth: '+5%', status: 'Stable' },
-    { id: 'PERF-312', staff: 'Robert Fox', role: 'Lab Assistant', score: 3.5, studentFeedback: 72, peerScore: 3.8, growth: '-2%', status: 'Needs Review' },
-  ];
+const PerformanceReviewsClient = ({ companyId }: { companyId: string }) => {
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [isRubricOpen, setIsRubricOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPerformance = async () => {
+      try {
+        const res = await fetch(`/api/admin/performance?companyId=${companyId}`);
+        const json = await res.json();
+        setReviews(json.data || []);
+      } catch (err) {
+        console.error("Performance sync failed");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchPerformance();
+  }, [companyId]);
 
   return (
     <main className="min-h-screen bg-[#05070A] text-slate-200 p-8 font-sans">
@@ -36,7 +50,7 @@ const PerformanceReviewsClient = () => {
           </div>
 
           <div className="flex gap-3">
-             <button className="flex items-center gap-2 px-6 py-3 bg-slate-900 border border-slate-800 rounded-2xl text-slate-400 hover:text-white transition-all font-bold text-xs">
+             <button onClick={() => setIsRubricOpen(true)} className="flex items-center gap-2 px-6 py-3 bg-slate-900 border border-slate-800 rounded-2xl text-slate-400 hover:text-white transition-all font-bold text-xs">
                 <AdjustmentsVerticalIcon className="h-4 w-4" /> Scoring Rubric
              </button>
              <button className="flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-2xl font-bold text-xs transition-all shadow-lg shadow-purple-900/40">
@@ -78,60 +92,69 @@ const PerformanceReviewsClient = () => {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="text-[10px] font-black uppercase text-slate-500 tracking-widest border-b border-slate-800/50">
-                  <th className="p-6">Staff Member</th>
-                  <th className="p-6">Overall Rating</th>
-                  <th className="p-6">Student Feedback</th>
-                  <th className="p-6">Peer Evaluation</th>
-                  <th className="p-6">Annual Growth</th>
-                  <th className="p-6 text-right">Appraisal</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800/30">
-                {reviews.map((row) => (
-                  <tr key={row.id} className="group hover:bg-purple-500/[0.02] transition-colors">
-                    <td className="p-6">
-                      <p className="text-sm font-bold text-white italic">{row.staff}</p>
-                      <p className="text-[10px] font-mono text-slate-600">{row.role}</p>
-                    </td>
-                    <td className="p-6">
-                      <div className="flex items-center gap-1 text-purple-400">
-                        <StarSolid className="h-4 w-4" />
-                        <span className="text-sm font-black text-white">{row.score}</span>
-                      </div>
-                    </td>
-                    <td className="p-6">
-                      <div className="flex items-center gap-2">
-                        <div className="w-12 h-1 bg-slate-800 rounded-full overflow-hidden">
-                          <div className="h-full bg-indigo-500" style={{ width: `${row.studentFeedback}%` }} />
-                        </div>
-                        <span className="text-xs font-mono text-slate-400">{row.studentFeedback}%</span>
-                      </div>
-                    </td>
-                    <td className="p-6 text-xs text-slate-400 font-medium">
-                      <div className="flex items-center gap-2">
-                        <UserGroupIcon className="h-4 w-4 text-slate-600" /> {row.peerScore} / 5.0
-                      </div>
-                    </td>
-                    <td className="p-6">
-                      <span className={`text-[10px] font-black ${row.growth.startsWith('+') ? 'text-emerald-400' : 'text-rose-400'}`}>
-                        {row.growth}
-                      </span>
-                    </td>
-                    <td className="p-6 text-right">
-                      <button className="px-4 py-2 bg-slate-800 hover:bg-purple-600 text-white rounded-xl text-[10px] font-black uppercase transition-all">
-                        View Dossier
-                      </button>
-                    </td>
+            {isLoading ? (
+              <div className="p-20 text-center text-slate-500 animate-pulse">Calculating workforce metrics...</div>
+            ) : (
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="text-[10px] font-black uppercase text-slate-500 tracking-widest border-b border-slate-800/50">
+                    <th className="p-6">Staff Member</th>
+                    <th className="p-6">Overall Rating</th>
+                    <th className="p-6">Student Feedback</th>
+                    <th className="p-6">Peer Evaluation</th>
+                    <th className="p-6">Annual Growth</th>
+                    <th className="p-6 text-right">Appraisal</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-slate-800/30">
+                  {reviews.map((row) => (
+                    <tr key={row.id} className="group hover:bg-purple-500/[0.02] transition-colors">
+                      <td className="p-6">
+                        <p className="text-sm font-bold text-white italic">{row.staff}</p>
+                        <p className="text-[10px] font-mono text-slate-600">{row.role}</p>
+                      </td>
+                      <td className="p-6">
+                        <div className="flex items-center gap-1 text-purple-400">
+                          <StarSolid className="h-4 w-4" />
+                          <span className="text-sm font-black text-white">{row.score}</span>
+                        </div>
+                      </td>
+                      <td className="p-6">
+                        <div className="flex items-center gap-2">
+                          <div className="w-12 h-1 bg-slate-800 rounded-full overflow-hidden">
+                            <div className="h-full bg-indigo-500" style={{ width: `${row.studentFeedback}%` }} />
+                          </div>
+                          <span className="text-xs font-mono text-slate-400">{row.studentFeedback}%</span>
+                        </div>
+                      </td>
+                      <td className="p-6 text-xs text-slate-400 font-medium">
+                        <div className="flex items-center gap-2">
+                          <UserGroupIcon className="h-4 w-4 text-slate-600" /> {row.peerScore} / 5.0
+                        </div>
+                      </td>
+                      <td className="p-6">
+                        <span className={`text-[10px] font-black ${row.growth.startsWith('+') ? 'text-emerald-400' : 'text-rose-400'}`}>
+                          {row.growth}
+                        </span>
+                      </td>
+                      <td className="p-6 text-right">
+                        <button className="px-4 py-2 bg-slate-800 hover:bg-purple-600 text-white rounded-xl text-[10px] font-black uppercase transition-all">
+                          View Dossier
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         </div>
       </div>
+
+      <ScoringRubricModal 
+        isOpen={isRubricOpen} 
+        onClose={() => setIsRubricOpen(false)} 
+      />
     </main>
   );
 };

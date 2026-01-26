@@ -30,6 +30,7 @@ export default async function LibraryMembersPage({ params }: PageProps) {
 
   return (
     <RecruitmentClient
+      companyId={schoolId}
       // initialMembers={initialMembers}
       // schoolId={schoolId}
     />
