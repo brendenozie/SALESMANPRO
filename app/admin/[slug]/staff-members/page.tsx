@@ -7,31 +7,32 @@ interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
-export default async function LibraryMembersPage({ params }: PageProps) {
-  const { slug: schoolId } = await params;
+export default async function StaffDirectoryPage({ params }: PageProps) {
+  const { slug: companyId } = await params;
   const cookieHeader = (await cookies()).toString();
 
-  let initialMembers = [];  
+  let initialStaff = [];
   try {
     const res = await fetch(
-      `${apiBaseUrl}/admin/library/members?companyId=${schoolId}`,
+      `${apiBaseUrl}/admin/staff?companyId=${companyId}`,
       {
         headers: { cookie: cookieHeader },
-        next: { revalidate: 60 },
+        cache: 'no-store'
       }
     );
 
     if (res.ok) {
-      initialMembers = (await res.json()).data;
+      const json = await res.json();
+      initialStaff = json.data;
     }
   } catch (err) {
-    console.error("[LibraryMembersPage] Failed to load members", err);
+    console.error("Failed to load staff", err);
   }
 
   return (
-    <StaffMembersClient
-      // initialMembers={initialMembers}
-      // schoolId={schoolId}
+    <StaffMembersClient 
+      initialStaff={initialStaff} 
+      companyId={companyId} 
     />
   );
 }
