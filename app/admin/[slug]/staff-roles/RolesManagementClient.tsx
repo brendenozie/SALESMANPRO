@@ -1,34 +1,85 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   ShieldCheckIcon, 
   KeyIcon, 
-  LockClosedIcon, 
-  UserGroupIcon,
-  CheckCircleIcon,
-  ExclamationCircleIcon,
-  ChevronRightIcon,
-  PlusIcon,
-  CheckBadgeIcon
+  ChevronRightIcon, 
+  PlusIcon, 
+  CheckBadgeIcon,
+  ArrowPathIcon
 } from "@heroicons/react/24/outline";
+import DefineRoleModal from "./DefineRoleModal";
 
-const RolesManagementClient = () => {
-  const [selectedRole, setSelectedRole] = useState("Faculty");
+interface RoleData {
+  role: string;
+  _count: { _all: number };
+}
 
-  const roles = [
-    { id: 'R-1', name: 'Super Admin', users: 2, level: 'Level 10' },
-    { id: 'R-2', name: 'Faculty', users: 48, level: 'Level 5' },
-    { id: 'R-3', name: 'Finance', users: 4, level: 'Level 7' },
-    { id: 'R-4', name: 'HR Manager', users: 3, level: 'Level 8' },
-  ];
+interface RolesManagementClientProps {
+  initialData: {
+    roleCounts: RoleData[];
+    profiles: any[];
+  };
+  companyId: string;
+}
 
-  const permissions = [
+const RolesManagementClient = ({ initialData, companyId }: RolesManagementClientProps) => {
+  const [roles] = useState<RoleData[]>(initialData?.roleCounts || []);
+  const [selectedRole, setSelectedRole] = useState(roles[0]?.role || "ADMIN");
+  const [loading, setLoading] = useState(false);
+const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
+  
+  // Local state for the permission matrix
+  const [matrix, setMatrix] = useState([
     { category: 'Staff Records', actions: ['View', 'Edit', 'Delete'], status: [true, true, false] },
     { category: 'Financials', actions: ['View', 'Manage', 'Audit'], status: [false, false, false] },
     { category: 'Student Data', actions: ['View', 'Grade', 'Enroll'], status: [true, true, true] },
     { category: 'Reports', actions: ['Daily', 'Annual', 'Strategic'], status: [true, false, false] },
-  ];
+  ]);
+
+  // Effect to load existing permissions when a role is selected
+  useEffect(() => {
+    const existingProfile = initialData?.profiles?.find(p => p.jobTitle === selectedRole);
+    if (existingProfile?.permissions) {
+      setMatrix(existingProfile.permissions);
+    }
+  }, [selectedRole, initialData]);
+
+  const togglePermission = (categoryIdx: number, actionIdx: number) => {
+    const newMatrix = [...matrix];
+    const newStatus = [...newMatrix[categoryIdx].status];
+    newStatus[actionIdx] = !newStatus[actionIdx];
+    newMatrix[categoryIdx].status = newStatus;
+    setMatrix(newMatrix);
+  };
+
+  const handleSave = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch("/api/admin/roles/update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          companyId,
+          roleName: selectedRole,
+          permissions: matrix,
+        }),
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        alert(`Success: Permissions synchronized for ${selectedRole} group.`);
+      } else {
+        alert("Failed to save: " + result.error);
+      }
+    } catch (err) {
+      console.error("Save Error:", err);
+      alert("Network error. Check console.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <main className="min-h-screen bg-[#05070A] text-slate-200 p-8 font-sans">
@@ -45,7 +96,10 @@ const RolesManagementClient = () => {
             </h1>
           </div>
 
-          <button className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-bold text-xs transition-all shadow-lg shadow-blue-900/40">
+          <button 
+            onClick={() => setIsRoleModalOpen(true)}
+            className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-bold text-xs transition-all shadow-lg shadow-blue-900/40"
+          >
             <PlusIcon className="h-4 w-4 stroke-[3px]" /> Define New Role
           </button>
         </header>
@@ -54,26 +108,26 @@ const RolesManagementClient = () => {
           {/* Left: Role Selection List */}
           <div className="lg:col-span-4 space-y-4">
             <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-4">System Roles</h3>
-            {roles.map((role) => (
+            {roles.map((r) => (
               <button 
-                key={role.id}
-                onClick={() => setSelectedRole(role.name)}
+                key={r.role}
+                onClick={() => setSelectedRole(r.role)}
                 className={`w-full flex items-center justify-between p-5 rounded-[2rem] border transition-all ${
-                  selectedRole === role.name 
+                  selectedRole === r.role 
                   ? 'bg-blue-600/10 border-blue-500 shadow-lg shadow-blue-500/5' 
                   : 'bg-slate-900/40 border-slate-800 hover:border-slate-600'
                 }`}
               >
                 <div className="flex items-center gap-4">
-                  <div className={`p-2 rounded-xl ${selectedRole === role.name ? 'bg-blue-500 text-white' : 'bg-slate-800 text-slate-500'}`}>
+                  <div className={`p-2 rounded-xl ${selectedRole === r.role ? 'bg-blue-500 text-white' : 'bg-slate-800 text-slate-500'}`}>
                     <ShieldCheckIcon className="h-5 w-5" />
                   </div>
                   <div className="text-left">
-                    <p className="text-sm font-bold text-white">{role.name}</p>
-                    <p className="text-[10px] text-slate-500 font-medium">{role.users} Active Users</p>
+                    <p className="text-sm font-bold text-white uppercase">{r.role}</p>
+                    <p className="text-[10px] text-slate-500 font-medium">{r._count._all} Active Users</p>
                   </div>
                 </div>
-                <ChevronRightIcon className={`h-4 w-4 ${selectedRole === role.name ? 'text-blue-400' : 'text-slate-700'}`} />
+                <ChevronRightIcon className={`h-4 w-4 ${selectedRole === r.role ? 'text-blue-400' : 'text-slate-700'}`} />
               </button>
             ))}
           </div>
@@ -92,13 +146,17 @@ const RolesManagementClient = () => {
             </div>
 
             <div className="space-y-6">
-              {permissions.map((perm, idx) => (
+              {matrix.map((perm, idx) => (
                 <div key={idx} className="bg-black/20 border border-slate-800/50 rounded-2xl p-6">
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <span className="text-sm font-bold text-white uppercase tracking-wider w-32">{perm.category}</span>
                     <div className="flex flex-wrap gap-4">
                       {perm.actions.map((action, i) => (
-                        <label key={i} className="flex items-center gap-2 cursor-pointer group">
+                        <button 
+                          key={i} 
+                          onClick={() => togglePermission(idx, i)}
+                          className="flex items-center gap-2 cursor-pointer group"
+                        >
                           <div className={`h-5 w-5 rounded border transition-all flex items-center justify-center ${
                             perm.status[i] 
                             ? 'bg-blue-600 border-blue-500' 
@@ -109,7 +167,7 @@ const RolesManagementClient = () => {
                           <span className={`text-xs font-medium ${perm.status[i] ? 'text-slate-200' : 'text-slate-500'}`}>
                             {action}
                           </span>
-                        </label>
+                        </button>
                       ))}
                     </div>
                   </div>
@@ -118,12 +176,35 @@ const RolesManagementClient = () => {
             </div>
 
             <div className="mt-10 pt-8 border-t border-slate-800 flex justify-end gap-3">
-              <button className="px-6 py-2.5 rounded-xl text-xs font-bold text-slate-500 hover:text-white transition-colors">Discard Changes</button>
-              <button className="px-8 py-2.5 bg-white text-black rounded-xl text-xs font-black uppercase hover:bg-blue-50 transition-all">Save Permissions</button>
+              <button 
+                onClick={() => window.location.reload()}
+                className="px-6 py-2.5 rounded-xl text-xs font-bold text-slate-500 hover:text-white transition-colors"
+              >
+                Discard Changes
+              </button>
+              <button 
+                onClick={handleSave}
+                disabled={loading}
+                className="flex items-center gap-2 px-8 py-2.5 bg-white text-black rounded-xl text-xs font-black uppercase hover:bg-blue-50 transition-all disabled:bg-slate-600"
+              >
+                {loading && <ArrowPathIcon className="h-3 w-3 animate-spin" />}
+                {loading ? "Syncing..." : "Save Permissions"}
+              </button>
             </div>
           </div>
         </div>
       </div>
+
+      <DefineRoleModal 
+        isOpen={isRoleModalOpen} 
+        onClose={() => setIsRoleModalOpen(false)} 
+        companyId={companyId}
+        onSuccess={(newRole) => {
+          // You could push the new role to the local roles state 
+          // so it appears in the sidebar immediately
+          alert(`Role ${newRole} is ready for configuration.`);
+        }}
+      />
     </main>
   );
 };
