@@ -29,7 +29,8 @@ export default async function LibraryMembersPage({ params }: PageProps) {
   }
 
   return (
-    <HostelReportsClient
+    <HostelReportsClient 
+      schoolId={schoolId}      
       // initialMembers={initialMembers}
       // schoolId={schoolId}
     />

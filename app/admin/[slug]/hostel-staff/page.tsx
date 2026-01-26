@@ -30,8 +30,8 @@ export default async function LibraryMembersPage({ params }: PageProps) {
 
   return (
     <HostelStaffClient
-      // initialMembers={initialMembers}
-      // schoolId={schoolId}
+      initialStaff={initialMembers}
+      schoolId={schoolId}
     />
   );
 }
