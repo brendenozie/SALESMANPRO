@@ -13,7 +13,7 @@ import {
   XMarkIcon
 } from "@heroicons/react/24/outline";
 
-interface Driver {
+export interface Driver {
   id: string;
   name: string;
   licenseNumber: string;
@@ -25,7 +25,13 @@ interface Driver {
   phoneNumber: string;
 }
 
-const DriversPageClient = ({ initialDrivers, schoolId }: { initialDrivers: Driver[], schoolId: string }) => {
+interface DriversPageClientProps {
+  initialDrivers: Driver[];
+  schoolId: string;
+}
+
+export default function DriversPageClient({ initialDrivers, schoolId }: DriversPageClientProps) {
+
   const [drivers, setDrivers] = useState<Driver[]>(initialDrivers);
 
   const isExpired = (date: string) => new Date(date) < new Date();
@@ -34,14 +40,25 @@ const DriversPageClient = ({ initialDrivers, schoolId }: { initialDrivers: Drive
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   
+  // const [formData, setFormData] = useState({
+  //   name: "",
+  //   phoneNumber: "",
+  //   licenseNumber: "",
+  //   licenseClass: "Class A",
+  //   licenseExpiry: "",
+  //   experienceYears: "0",
+  // });
+
   const [formData, setFormData] = useState({
     name: "",
+    email: "", // Added because User model requires it
     phoneNumber: "",
     licenseNumber: "",
     licenseClass: "Class A",
     licenseExpiry: "",
     experienceYears: "0",
   });
+
   
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,13 +69,14 @@ const DriversPageClient = ({ initialDrivers, schoolId }: { initialDrivers: Drive
       // In production: const licenseUrl = await uploadToS3(file);
       const mockLicenseUrl = "https://storage.provider.com/licenses/drv_123.pdf";
   
+      // Update the handleUpload try block:
       const res = await fetch(`/api/admin/transport/drivers`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
           companyId: schoolId,
-          licenseUrl: mockLicenseUrl
+          licenseUrl: mockLicenseUrl // In real use, upload file to S3/Cloudinary first
         }),
       });
   
@@ -67,7 +85,7 @@ const DriversPageClient = ({ initialDrivers, schoolId }: { initialDrivers: Drive
         setDrivers(prev => [result.data, ...prev]);
         toast.success("Driver successfully onboarded.");
         setIsModalOpen(false);
-        setFormData({ name: "", phoneNumber: "", licenseNumber: "", licenseClass: "Class A", licenseExpiry: "", experienceYears: "0" });
+        setFormData({ name: "", email: "", phoneNumber: "", licenseNumber: "", licenseClass: "Class A", licenseExpiry: "", experienceYears: "0" });
       }
     } catch (error) {
       toast.error("Critical error during registration");
@@ -267,5 +285,3 @@ const DriversPageClient = ({ initialDrivers, schoolId }: { initialDrivers: Drive
     </main>
   );
 };
-
-export default DriversPageClient;

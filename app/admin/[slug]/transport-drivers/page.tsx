@@ -1,13 +1,19 @@
 import { cookies } from "next/headers";
-import DriversPageClient from "./DriversPageClient";
+import DriversPageClient, { Driver } from "./DriversPageClient";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
-export default async function DriversPage({ params }: { params: Promise<{ slug: string }> }) {
+interface pageProps {
+  params: Promise<{ slug: string }>;
+}
+
+export default async function DriversPage({ params }: pageProps) {
+  
   const { slug: schoolId } = await params;
   const cookieHeader = (await cookies()).toString();
 
-  let initialDrivers = [];  
+  let initialDrivers : Driver[] = [];  
+  
   try {
     // We assume an endpoint that filters staff by role 'DRIVER'
     const res = await fetch(
@@ -26,9 +32,9 @@ export default async function DriversPage({ params }: { params: Promise<{ slug: 
   }
 
   return (
-    <DriversPageClient
-      initialDrivers={initialDrivers}
-      schoolId={schoolId}
-    />
+      <DriversPageClient
+        initialDrivers={initialDrivers}
+        schoolId={schoolId}
+      />
   );
 }

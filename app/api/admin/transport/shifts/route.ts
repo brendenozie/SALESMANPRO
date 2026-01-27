@@ -21,7 +21,7 @@ export async function GET(req: Request) {
     where: { companyId, ...dateFilter },
     include: {
       route: { select: { name: true, startPoint: true, endPoint: true } },
-      driver: { select: { name: true,  } },
+      driver: { select: { user: { select: { name: true } } } },
       // phoneNumber: true
       vehicle: { select: { registration: true, type: true } }
     },
@@ -54,13 +54,15 @@ export async function POST(req: Request) {
         ]
       },
       include: {
-        driver: { select: { name: true } },
+        driver: { select: { user: {
+          select: { name: true }
+        } } },
         vehicle: { select: { registration: true } }
       }
     });
 
     if (conflict) {
-      const entity = conflict.driverId === driverId ? `Driver (${conflict.driver.name})` : `Vehicle (${conflict.vehicle.registration})`;
+      const entity = conflict.driverId === driverId ? `Driver (${conflict.driver.user.name})` : `Vehicle (${conflict.vehicle.registration})`;
       return formatResponse(false, null, `${entity} is already booked for this time slot.`, 409);
     }
 
@@ -77,7 +79,7 @@ export async function POST(req: Request) {
       },
       include: {
         route: { select: { name: true } },
-        driver: { select: { name: true } },
+        driver: { select: { user: { select: { name: true } } } },
         vehicle: { select: { registration: true } }
       }
     });

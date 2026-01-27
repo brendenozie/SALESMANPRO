@@ -8,6 +8,10 @@ export default async function TransportSchedulePage({ params }: { params: Promis
   const cookieHeader = (await cookies()).toString();
 
   let initialShifts = [];  
+  let initialDrivers = [];
+  let initialRoutes = [];
+  let initialVehicles = [];
+
   try {
     const res = await fetch(
       `${apiBaseUrl}/admin/transport/shifts?companyId=${schoolId}`,
@@ -20,6 +24,43 @@ export default async function TransportSchedulePage({ params }: { params: Promis
     if (res.ok) {
       initialShifts = (await res.json()).data;
     }
+
+    const resDrivers = await fetch(
+      `${apiBaseUrl}/admin/transport/drivers?companyId=${schoolId}`,
+      {
+        headers: { cookie: cookieHeader },
+        next: { revalidate: 60 },
+      }
+    );
+
+    if (resDrivers.ok) {
+      initialDrivers = (await resDrivers.json()).data;
+    }
+
+    const resRoutes = await fetch(
+      `${apiBaseUrl}/admin/transport/routes?companyId=${schoolId}`,
+      {
+        headers: { cookie: cookieHeader },
+        next: { revalidate: 60 },
+      }
+    );
+
+    if (resRoutes.ok) {
+      initialRoutes = (await resRoutes.json()).data;
+    }
+
+    const resVehicles = await fetch(
+      `${apiBaseUrl}/admin/transport/vehicles?companyId=${schoolId}`,
+      {
+        headers: { cookie: cookieHeader },
+        next: { revalidate: 60 },
+      }
+    );
+
+    if (resVehicles.ok) {
+      initialVehicles = (await resVehicles.json()).data;
+    }
+
   } catch (err) {
     console.error("[SchedulePage] Failed to load shifts", err);
   }
@@ -27,6 +68,9 @@ export default async function TransportSchedulePage({ params }: { params: Promis
   return (
     <TransportScheduleClient
       initialShifts={initialShifts}
+      initialDrivers={initialDrivers}
+      initialRoutes={initialRoutes}
+      initialVehicles={initialVehicles}
       schoolId={schoolId}
     />
   );

@@ -420,6 +420,7 @@ model Company {
   libraryAcquisitions       LibraryAcquisition[]
   transportShifts           TransportShift[]
   librarySupplierCategories LibrarySupplierCategory[]
+  transportDrivers          TransportDriver[]
 
   @@index([userId])
 }
@@ -1449,6 +1450,7 @@ model User {
   inventoryAuditConductor InventoryAudit[]  @relation("InventoryAuditConductor")
   transportShifts         TransportShift[]
   librarySuppliers        LibrarySupplier[]
+  transportDriver         TransportDriver?
 
   @@index([companyId])
   // @@index([settingsId])
@@ -6187,8 +6189,8 @@ model TransportShift {
   routeId String         @db.ObjectId
   route   TransportRoute @relation(fields: [routeId], references: [id])
 
-  driverId String @db.ObjectId
-  driver   User   @relation(fields: [driverId], references: [id])
+  driverId String          @db.ObjectId
+  driver   TransportDriver @relation(fields: [driverId], references: [id])
 
   vehicleId String           @db.ObjectId
   vehicle   TransportVehicle @relation(fields: [vehicleId], references: [id])
@@ -6198,10 +6200,34 @@ model TransportShift {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  user      User?    @relation(fields: [userId], references: [id])
+  userId    String?  @db.ObjectId
 
   @@index([companyId, startTime])
   @@index([driverId])
   @@index([vehicleId])
+}
+
+model TransportDriver {
+  id              String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String    @unique @db.ObjectId
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  licenseNo       String    @unique
+  status          String    @default("ACTIVE") // ACTIVE, SUSPENDED, INACTIVE
+  idImgUrl        String? // URL to driver's ID image
+  licenseImgUrl   String? // URL to driver's license image
+  licenseExpiry   DateTime?
+  experienceYears Int       @default(0)
+
+  companyId String  @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  transportShifts TransportShift[]
+
+  @@index([companyId])
+  @@index([status])
 }
 
 // ============================================================

@@ -23,7 +23,15 @@ interface Shift {
   vehicle: { registration: string };
 }
 
-const TransportScheduleClient = ({ initialShifts, schoolId }: { initialShifts: Shift[], schoolId: string }) => {
+interface TransportScheduleClientProps {
+  initialShifts: Shift[];
+  initialDrivers: any[];
+  initialRoutes: any[];
+  initialVehicles: any[];
+  schoolId: string;
+}
+
+const TransportScheduleClient = ({ initialShifts, initialDrivers, initialRoutes, initialVehicles, schoolId }: TransportScheduleClientProps) => {
   const [shifts, setShifts] = useState<Shift[]>(initialShifts);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [view, setView] = useState<'daily' | 'weekly'>('daily');
@@ -39,9 +47,9 @@ const TransportScheduleClient = ({ initialShifts, schoolId }: { initialShifts: S
   const [endTime, setEndTime] = useState("");
   
   // Mock data for selectors (In real app, pass these as props or fetch on mount)
-  const availableRoutes = [{ id: "r1", name: "North Circuit" }, { id: "r2", name: "Downtown Exp" }];
-  const availableDrivers = [{ id: "d1", name: "Robert Fox" }, { id: "d2", name: "Jane Cooper" }];
-  const availableVehicles = [{ id: "v1", name: "BUS-101 (60 Seats)" }, { id: "v2", name: "VAN-05 (14 Seats)" }];
+  const availableRoutes = initialRoutes;
+  const availableDrivers = initialDrivers;
+  const availableVehicles = initialVehicles;
   
   const handleCreateShift = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -258,7 +266,7 @@ const TransportScheduleClient = ({ initialShifts, schoolId }: { initialShifts: S
               <TruckIcon className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
               <select required value={selectedVehicle} onChange={e => setSelectedVehicle(e.target.value)} className="w-full bg-slate-900 border border-slate-800 rounded-xl py-3 pl-11 pr-4 text-xs text-white focus:border-emerald-500 outline-none appearance-none">
                 <option value="">Select Vehicle</option>
-                {availableVehicles.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
+                {availableVehicles.map(v => <option key={v.id} value={v.id}>{v.make} {v.model} {v.registration}</option>)}
               </select>
             </div>
           </div>
