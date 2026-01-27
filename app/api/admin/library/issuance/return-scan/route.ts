@@ -59,7 +59,7 @@ const returnScanLogic = async (request: Request) => {
       companyId,
       status: "ACTIVE",
       OR: [
-        { book: { id: identifier } }, // Assuming your book model has a unique 'identifier' or 'isbn'
+        { book: { isbn: identifier } }, // Assuming your book model has a unique 'identifier' or 'isbn'
         { libraryMember: { memberId: identifier } }
       ]
     },
@@ -81,10 +81,6 @@ const returnScanLogic = async (request: Request) => {
   // 2. Process the return transaction
   
   const updatedData = await prisma.$transaction(async (tx) => {
-
-
-
-
 
     // 1. Update Issuance
     const issuance = await tx.libraryIssuance.update({

@@ -35,7 +35,7 @@ interface Props {
 }
 
 // Helper to get name from our polymorphic member object
-const getMemberName = (m: any) => {
+const getMemberName = (m: any): string => {
   if (!m) return "Unknown Member";
   if (m.student) return `${m.student.firstName} ${m.student.lastName}`;
   if (m.educator) return m.educator.user?.name || "Staff";
