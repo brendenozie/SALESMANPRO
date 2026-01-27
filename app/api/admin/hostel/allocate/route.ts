@@ -5,17 +5,26 @@ export async function POST(req: Request) {
   try {
     const { roomId, userId, endDate } = await req.json();
 
-    // 1. Check current occupancy
+    // 1. Validate Room Capacity
     const room = await prisma.hostelRoom.findUnique({
       where: { id: roomId },
-      include: { allocations: { where: { status: "ACTIVE" } } }
+      include: { _count: { select: { allocations: { where: { status: "ACTIVE" } } } } }
     });
 
-    if (!room || room.allocations.length >= room.capacity) {
-      return NextResponse.json({ error: "Room is at full capacity" }, { status: 400 });
+    if (!room) return NextResponse.json({ error: "Room not found" }, { status: 404 });
+    if (room._count.allocations >= room.capacity) {
+      return NextResponse.json({ error: "Room is at maximum capacity" }, { status: 400 });
     }
 
-    // 2. Create allocation
+    // 2. Check if student is already allocated elsewhere
+    const existingAllocation = await prisma.hostelAllocation.findFirst({
+      where: { userId, status: "ACTIVE" }
+    });
+    if (existingAllocation) {
+      return NextResponse.json({ error: "Student is already assigned to a room" }, { status: 400 });
+    }
+
+    // 3. Create Allocation
     const allocation = await prisma.hostelAllocation.create({
       data: {
         roomId,
@@ -25,8 +34,8 @@ export async function POST(req: Request) {
       }
     });
 
-    return NextResponse.json({ data: allocation }, { status: 201 });
+    return NextResponse.json({ success: true, data: allocation });
   } catch (error) {
-    return NextResponse.json({ error: "Check-in failed" }, { status: 500 });
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

@@ -4,7 +4,6 @@ import React, { useState, useMemo } from "react";
 import { HomeModernIcon, SquaresPlusIcon } from "@heroicons/react/24/outline";
 import AddRoomModal from "./AddRoomModal"; // We'll extract the modal for cleanliness
 import CheckInForm from "./CheckInForm";
-import UnifiedHostelModal from "./UnifiedHostelModal";
 
 interface Props {
   initialRooms: any[];
@@ -15,7 +14,6 @@ interface Props {
 const HostelRoomsClient = ({ initialRooms, blocks, schoolId }: Props) => {
   const [rooms, setRooms] = useState(initialRooms);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isBlockModalOpen, setIsBlockModalOpen] = useState(false);
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
   
   // 1. Identify which Block (Wing) is active
@@ -50,14 +48,6 @@ const HostelRoomsClient = ({ initialRooms, blocks, schoolId }: Props) => {
                   > {block.name} </button>
                 ))}
              </div>
-             <button
-                onClick={() => setIsBlockModalOpen(true)}
-                className="flex items-center gap-2 px-6 py-3 bg-white text-black rounded-2xl font-bold text-xs hover:bg-purple-50 transition-all"
-              >
-                <SquaresPlusIcon className="h-4 w-4" />
-                Add Block
-             </button>
-             
              <button 
                 onClick={() => setIsModalOpen(true)}
                 className="flex items-center gap-2 px-6 py-3 bg-white text-black rounded-2xl font-bold text-xs hover:bg-purple-50 transition-all"
@@ -141,18 +131,6 @@ const HostelRoomsClient = ({ initialRooms, blocks, schoolId }: Props) => {
         />
       )}
 
-      {isBlockModalOpen && (
-        <UnifiedHostelModal 
-          config={{ mode: "ADD", type: "BLOCK" }}
-          schoolId={schoolId}
-          blockId={null}
-          onClose={() => setIsBlockModalOpen(false)}
-          onSuccess={() => {
-
-          }}
-          
-        />
-      )}
       
     </main>
   );
