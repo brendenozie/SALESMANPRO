@@ -432,6 +432,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     },
     { label: "Hostel", href: `/admin/${adminSlug}/hostel`, icon: HomeIcon,
       subItems: [
+        { label: "Blocks", href: `/admin/${adminSlug}/hostel-blocks` },
         { label: "Rooms", href: `/admin/${adminSlug}/hostel-rooms` },
         { label: "Residents", href: `/admin/${adminSlug}/hostel-residents` },
         { label: "Room Assignments", href: `/admin/${adminSlug}/hostel-room-assignments` },

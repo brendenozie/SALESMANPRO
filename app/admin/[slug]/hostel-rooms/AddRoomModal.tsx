@@ -5,11 +5,12 @@ import { XMarkIcon } from "@heroicons/react/24/outline";
 
 interface AddRoomModalProps {
   blockId: string;
+  schoolId?: string;
   onClose: () => void;
   onSuccess: (newRoom: any) => void;
 }
 
-const AddRoomModal = ({ blockId, onClose, onSuccess }: AddRoomModalProps) => {
+const AddRoomModal = ({ blockId, schoolId, onClose, onSuccess }: AddRoomModalProps) => {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     roomNumber: "",
@@ -25,7 +26,7 @@ const AddRoomModal = ({ blockId, onClose, onSuccess }: AddRoomModalProps) => {
       const res = await fetch("/api/admin/hostel/rooms", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...formData, blockId }),
+        body: JSON.stringify({ ...formData, blockId, companyId: schoolId }),
       });
       const result = await res.json();
       if (res.ok) {
