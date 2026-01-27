@@ -27,14 +27,14 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { bookId, libraryMemberId, dueDate, companyId } = body;
+    const { bookId, memberId, dueDate, companyId } = body;
 
     const transaction = await prisma.$transaction(async (tx) => {
       // 1. Create Issuance (Converting dueDate string to Date object)
       const issuance = await tx.libraryIssuance.create({
         data: {
           bookId,
-          libraryMemberId,
+          libraryMemberId: memberId,
           companyId,
           dueDate: new Date(dueDate),
           status: 'ACTIVE',

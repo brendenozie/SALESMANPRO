@@ -14,6 +14,8 @@ import {
   UserIcon
 } from "@heroicons/react/24/outline";
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+
 interface Issuance {
   id: string;
   bookId: string;
@@ -40,9 +42,44 @@ const getMemberName = (m: any) => {
   return m.name || "Unknown";
 };
 
+const getBookTitle = (b: any) => {
+  if (!b) return "Unknown Book";
+  return b.title || "Unknown Book";
+};
+
+const formatDate = (d: string) =>
+  new Date(d).toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  });
+
+const computeStatus = (row: any): 'Current' | 'Overdue' | 'Returned' => {
+  if (row.returnDate) return "Returned";
+
+  const due = new Date(row.dueDate);
+  const now = new Date();
+
+  if (due < now) return "Overdue";
+  return "Current";
+};
+
+const normalizeIssuance = (row: any) => ({
+  id: row.id,
+  bookId: row.bookId,
+  bookTitle: row.book?.title ?? "Unknown Book",
+  memberId: row.libraryMemberId,
+  memberName: getMemberName(row.libraryMember),
+  issueDate: formatDate(row.issuedDate),
+  dueDate: formatDate(row.dueDate),
+  status: computeStatus(row),
+});
 
 const IssuanceRecordsClient = ({ initialRecords = [], books = [], members = [], schoolId }: Props) => {
-  const [records, setRecords] = useState<Issuance[]>(initialRecords);
+  
+  const [records, setRecords] = useState<Issuance[]>(
+    initialRecords.map(normalizeIssuance)
+  );
   const [search, setSearch] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -54,13 +91,13 @@ const IssuanceRecordsClient = ({ initialRecords = [], books = [], members = [], 
   }), [records]);
 
   const filteredRecords = records.filter(r => 
-    r.bookTitle.toLowerCase().includes(search.toLowerCase()) || 
-    r.memberName.toLowerCase().includes(search.toLowerCase())
+    r.bookTitle?.toLowerCase().includes(search.toLowerCase()) || 
+    r.memberName?.toLowerCase().includes(search.toLowerCase())
   );
 
   const handleReturn = async (recordId: string) => {
     try {
-      const res = await fetch(`/api/admin/library/issuance/${recordId}/return?companyId=${schoolId}`, {
+      const res = await fetch(`${apiBaseUrl}/admin/library/issuance/${recordId}/return?companyId=${schoolId}`, {
         method: "PATCH",
       });
       if (res.ok) {
@@ -83,11 +120,12 @@ const IssuanceRecordsClient = ({ initialRecords = [], books = [], members = [], 
       memberId: formData.get("memberId"),
       dueDate: formData.get("dueDate"),
       issueDate: new Date().toISOString().split('T')[0],
-      status: 'Current'
+      status: 'Current',
+      companyId: schoolId
     };
 
     try {
-      const res = await fetch(`/api/admin/library/issuance?companyId=${schoolId}`, {
+      const res = await fetch(`${apiBaseUrl}/admin/library/issuance?companyId=${schoolId}`, {
         method: "POST",
         body: JSON.stringify(payload),
         headers: { "Content-Type": "application/json" }
@@ -95,10 +133,11 @@ const IssuanceRecordsClient = ({ initialRecords = [], books = [], members = [], 
 
       if (res.ok) {
         const { data } = await res.json();
-        setRecords([data, ...records]);
+        setRecords(prev => [normalizeIssuance(data), ...prev]);
         toast.success("Transaction recorded");
         setIsModalOpen(false);
       }
+      
     } catch (err) {
       toast.error("Transaction failed");
     } finally {
@@ -123,27 +162,6 @@ const IssuanceRecordsClient = ({ initialRecords = [], books = [], members = [], 
               Issuance <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">Ledger.</span>
             </h1>
           </div>
-
-          {/* <div className="flex gap-3">
-            <div className="hidden lg:flex items-center gap-6 px-6 py-3 bg-slate-900/40 border border-slate-800 rounded-2xl mr-4">
-               <div className="text-center">
-                  <p className="text-[10px] text-slate-500 uppercase font-bold">Active</p>
-                  <p className="text-lg font-bold text-blue-400">{stats.active}</p>
-               </div>
-               <div className="w-px h-8 bg-slate-800" />
-               <div className="text-center">
-                  <p className="text-[10px] text-slate-500 uppercase font-bold">Overdue</p>
-                  <p className="text-lg font-bold text-rose-500">{stats.overdue}</p>
-               </div>
-            </div>
-            <button 
-              onClick={() => setIsModalOpen(true)}
-              className="flex items-center gap-2 px-6 py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-2xl font-bold transition-all shadow-lg shadow-blue-600/20 active:scale-95"
-            >
-              <ArrowsRightLeftIcon className="h-5 w-5" />
-              <span>New Transaction</span>
-            </button>
-          </div> */}
 
           <div className="flex gap-3">
              {/* Stats Cards */}
@@ -249,8 +267,8 @@ const IssuanceRecordsClient = ({ initialRecords = [], books = [], members = [], 
                   <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest ml-1">Volume</label>
                   <select name="bookId" required className="w-full bg-slate-800 border border-slate-700 rounded-2xl p-4 mt-2 text-white">
                     <option value="">Select available book...</option>
-                    {books.filter(b => b.status === 'Available').map(b => (
-                      <option key={b.id} value={b.id}>{b.title} ({b.isbn})</option>
+                    {books.filter(b => b.status === 'AVAILABLE').map(b => (
+                      <option key={b.id} value={b.id}>{getBookTitle(b)} ({b.isbn})</option>
                     ))}
                   </select>
                 </div>
@@ -281,55 +299,7 @@ const IssuanceRecordsClient = ({ initialRecords = [], books = [], members = [], 
           </div>
         </div>
       )}
-      {/* {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#05070A]/90 backdrop-blur-md">
-          <div className="bg-slate-900 border border-slate-800 w-full max-w-xl rounded-[2rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
-            <div className="p-8 border-b border-slate-800 flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-white">New Issuance</h2>
-              <button onClick={() => setIsModalOpen(false)} className="text-slate-500 hover:text-white"><XMarkIcon className="h-6 w-6" /></button>
-            </div>
-            <form onSubmit={handleNewTransaction} className="p-8 space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Select Volume</label>
-                  <div className="relative">
-                    <BookOpenIcon className="h-5 w-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-600" />
-                    <select name="bookId" required className="w-full bg-slate-800/50 border border-slate-700 rounded-2xl pl-12 pr-4 py-4 appearance-none outline-none focus:border-blue-500 transition-all text-white">
-                      <option value="">Select a book...</option>
-                      {books.filter(b => b.available).map(book => (
-                        <option key={book.id} value={book.id}>{book.title}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Member</label>
-                  <div className="relative">
-                    <UserIcon className="h-5 w-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-600" />
-                    <select name="memberId" required className="w-full bg-slate-800/50 border border-slate-700 rounded-2xl pl-12 pr-4 py-4 appearance-none outline-none focus:border-blue-500 transition-all text-white">
-                      <option value="">Select member...</option>
-                      {members.map(member => (
-                        <option key={member.id} value={member.id}>{member.name} ({member.memberId})</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Due Date</label>
-                <input type="date" name="dueDate" required className="w-full bg-slate-800/50 border border-slate-700 rounded-2xl px-5 py-4 outline-none focus:border-blue-500 text-white" />
-              </div>
-              <button 
-                type="submit" 
-                disabled={loading}
-                className="w-full py-5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl font-black text-sm uppercase tracking-widest hover:scale-[1.02] transition-all active:scale-95 disabled:opacity-50"
-              >
-                {loading ? "Recording Transaction..." : "Authorize Issuance"}
-              </button>
-            </form>
-          </div>
-        </div>
-      )} */}
+      
     </main>
   );
 };
