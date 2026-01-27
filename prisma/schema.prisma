@@ -62,6 +62,8 @@ enum ROLE {
   STAFF_MEMBER
   SERVICE_PROVIDER
   RIDER
+  DRIVER
+  SUPPLIER
 }
 
 enum StudentLevelStatus {
@@ -410,13 +412,14 @@ model Company {
   feeStructures FeeStructure[]
 
   // Inventory & Assets relations
-  assets              Asset[]
-  inventoryAudits     InventoryAudit[]
-  libraryCategories   LibraryCategory[]
-  libraryMembers      LibraryMember[]
-  librarySuppliers    LibrarySupplier[]
-  libraryAcquisitions LibraryAcquisition[]
-  transportShifts     TransportShift[]
+  assets                    Asset[]
+  inventoryAudits           InventoryAudit[]
+  libraryCategories         LibraryCategory[]
+  libraryMembers            LibraryMember[]
+  librarySuppliers          LibrarySupplier[]
+  libraryAcquisitions       LibraryAcquisition[]
+  transportShifts           TransportShift[]
+  librarySupplierCategories LibrarySupplierCategory[]
 
   @@index([userId])
 }
@@ -1442,9 +1445,10 @@ model User {
   reviewerPerformanceReviews StaffPerformanceReview[] @relation("ReviewerPerformanceReviews")
 
   // Asset and Inventory relations
-  assetTrackingPerformer  AssetTracking[]  @relation("AssetTrackingPerformer")
-  inventoryAuditConductor InventoryAudit[] @relation("InventoryAuditConductor")
+  assetTrackingPerformer  AssetTracking[]   @relation("AssetTrackingPerformer")
+  inventoryAuditConductor InventoryAudit[]  @relation("InventoryAuditConductor")
   transportShifts         TransportShift[]
+  librarySuppliers        LibrarySupplier[]
 
   @@index([companyId])
   // @@index([settingsId])
@@ -6025,18 +6029,36 @@ model LibraryReservation {
   @@index([status])
 }
 
+model LibrarySupplierCategory {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  name      String  @unique
+  companyId String  @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  librarySuppliers LibrarySupplier[]
+
+  @@index([companyId])
+}
+
 model LibrarySupplier {
   id        String  @id @default(auto()) @map("_id") @db.ObjectId
   companyId String  @db.ObjectId
   company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
 
   name         String
-  category     String // e.g., "Academic Publishers", "Stationery", "Digital Media"
-  contactEmail String  @unique
+  categoryId   String?                  @db.ObjectId
+  category     LibrarySupplierCategory? @relation(fields: [categoryId], references: [id])
+  address      String?
+  contactEmail String                   @unique
   phone        String?
-  leadTime     String  @default("7 Days")
-  reliability  Int     @default(100) // Percentage 0-100
-  status       String  @default("Active") // Active, Under Review, Inactive
+  leadTime     String                   @default("7 Days")
+  reliability  Int                      @default(100) // Percentage 0-100
+  status       String                   @default("Active") // Active, Under Review, Inactive
+
+  userId String? @db.ObjectId
+  user   User?   @relation(fields: [userId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

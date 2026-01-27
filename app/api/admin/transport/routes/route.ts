@@ -54,7 +54,7 @@ const postRoute = async (request: Request) => {
 // import prisma from "@/server/db/prismadb";
 // import { formatResponse } from "@/lib/formatResponse";
 
-export async function POST(req: Request) {
+const postRouteV2 = async (req: Request) => {
   try {
     const body = await req.json();
     const { type, ...data } = body;
@@ -89,10 +89,12 @@ export async function POST(req: Request) {
       });
       return formatResponse(true, shift, "Shift dispatched to driver", 201);
     }
+
+    return formatResponse(false, null, "Invalid request type", 400);
   } catch (error: any) {
     return formatResponse(false, null, error.message, 500);
   }
 }
 
 export const GET = withApiHandler(getRoutes, { requireAuth: true });
-// export const POST = withApiHandler(postRoute, { requireAuth: true });
+export const POST = withApiHandler(postRoute, { requireAuth: true });

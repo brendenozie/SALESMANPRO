@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
+import bcrypt from "bcryptjs";
 
 /**
  * GET: Retrieve all suppliers for a school
@@ -23,23 +24,63 @@ const getSuppliers = async (request: Request) => {
 /**
  * POST: Onboard a new vendor
  */
+
 const postSupplier = async (request: Request) => {
   const body = await request.json();
-  const { name, category, contactEmail, companyId } = body;
+  const { name, categoryId, contactEmail, companyId, phone } = body;
 
-  const supplier = await prisma.librarySupplier.create({
-    data: {
-      name,
-      category,
-      contactEmail,
-      companyId,
-      status: "Active",
-      reliability: 100
-    }
+  if (!name || !categoryId || !contactEmail || !companyId) {
+    return formatResponse(false, null, "Missing required fields", 400);
+  }
+
+  // Prevent duplicate user
+  const existingUser = await prisma.user.findUnique({
+    where: { email: contactEmail },
   });
 
-  return formatResponse(true, supplier, "Supplier onboarded successfully", 201);
+  if (existingUser) {
+    return formatResponse(false, null, "User with this email already exists", 409);
+  }
+
+  // Auto password
+  const tempPassword = Math.random().toString(36).slice(-8);
+  const hashed = await bcrypt.hash(tempPassword, 10);
+
+  const result = await prisma.$transaction(async (tx) => {
+    // 1. Create User
+    const user = await tx.user.create({
+      data: {
+        name,
+        email: contactEmail,
+        password: hashed,
+        role: "SUPPLIER",
+        companyId,
+        isActive: true,
+      },
+    });
+
+    // 2. Create Supplier Profile
+    const supplier = await tx.librarySupplier.create({
+      data: {
+        name,
+        categoryId,
+        contactEmail,
+        phone,
+        companyId,
+        userId: user.id,
+        status: "Active",
+        reliability: 100,
+        leadTime: "7 Days",
+      },
+      include: { user: true },
+    });
+
+    return { supplier, tempPassword };
+  });
+
+  return formatResponse(true, result, "Supplier onboarded with login access", 201);
 };
+
 
 export const GET = withApiHandler(getSuppliers, { requireAuth: true });
 export const POST = withApiHandler(postSupplier, { requireAuth: true });

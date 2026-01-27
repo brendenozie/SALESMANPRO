@@ -51,6 +51,7 @@ const LibraryInventoryClient = ({ initialItems = [], schoolId = "" }) => {
       const res = await fetch(`/api/admin/library/inventory`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ bookId: id, integrity: 100 })
       });
 
@@ -72,6 +73,7 @@ const LibraryInventoryClient = ({ initialItems = [], schoolId = "" }) => {
       try {
         await fetch(`/api/admin/library/inventory`, {
           method: "PATCH",
+          credentials: "include",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ bookId: id, integrity: Number(damage) })
         });

@@ -410,6 +410,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
         { label: "Fines", href: `/admin/${adminSlug}/library-fines` },
         { label: "Maintenance", href: `/admin/${adminSlug}/library-maintenance` },
         { label: "Reservations", href: `/admin/${adminSlug}/library-reservations` },
+        { label: "Suppliers Categories", href: `/admin/${adminSlug}/library-suppliers-categories` },
         { label: "Suppliers", href: `/admin/${adminSlug}/library-suppliers` },
         { label: "Acquisitions", href: `/admin/${adminSlug}/library-acquisitions` },
         { label: "Inventory", href: `/admin/${adminSlug}/library-inventory` },

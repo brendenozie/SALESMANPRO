@@ -1,43 +1,43 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
-import { formatResponse } from "@/lib/formatResponse";
 
-
-// PATCH: Update reservation status (CANCELLED / FULFILLED)
-export const PATCH = withApiHandler(async (request: Request, { params }: any) => {
+const getSupplierById = async (
+  request: Request,
+  { params }: { params: { id: string } }
+) => {
+  const { searchParams } = new URL(request.url);
+  const companyId = searchParams.get("companyId");
   const { id } = params;
-  const { status } = await request.json();
 
-  const reservation = await prisma.libraryReservation.findUnique({
-    where: { id },
-    include: { book: true }
+  if (!companyId || !id) {
+    return NextResponse.json(
+      { success: false, message: "Missing parameters" },
+      { status: 400 }
+    );
+  }
+
+  const supplier = await prisma.librarySupplier.findFirst({
+    where: {
+      id,
+      companyId,
+    },
+    // include: {
+    //   suppliedBooks: true, // optional if relation exists
+    //   _count: {
+    //     select: { suppliedBooks: true },
+    //   },
+    // },
   });
 
-  if (!reservation) return formatResponse(false, null, "Reservation not found", 404);
+  if (!supplier) {
+    return NextResponse.json(
+      { success: false, message: "Supplier not found" },
+      { status: 404 }
+    );
+  }
 
-  const updated = await prisma.$transaction(async (tx) => {
-    const res = await tx.libraryReservation.update({
-      where: { id },
-      data: { status }
-    });
+  return NextResponse.json({ success: true, data: supplier });
+};
 
-    // If cancelled, and no other pending reservations, make book available
-    if (status === "CANCELLED" || status === "EXPIRED") {
-      const otherHold = await tx.libraryReservation.findFirst({
-        where: { bookId: reservation.bookId, status: "PENDING", NOT: { id } }
-      });
-
-      if (!otherHold) {
-        await tx.libraryBook.update({
-          where: { id: reservation.bookId },
-          data: { status: "AVAILABLE" }
-        });
-      }
-    }
-
-    return res;
-  });
-
-  return formatResponse(true, updated, `Reservation marked as ${status}`, 200);
-}, { requireAuth: true });
+export const GET = withApiHandler(getSupplierById, { requireAuth: true });
