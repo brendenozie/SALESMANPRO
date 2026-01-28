@@ -299,48 +299,4 @@ const MemberCard = ({ member }: { member: any }) => {
   );
 };
 
-const MemberCardV1 = ({ member }: { member: Member }) => {
-  const profile = member.student || member.educator;
-  const name = member.student ? `${member.student.firstName} ${member.student.lastName}` : member.educator?.user?.name;
-  const email = member.student ? member.student.contactEmail : member.educator?.user?.email;
-  const type = member.student ? "STUDENT" : "STAFF";
-
-  return (
-    <div className="group relative bg-slate-900/40 border border-slate-800 hover:border-emerald-500/40 rounded-3xl p-6 transition-all duration-300">
-      <div className="flex items-start justify-between mb-6">
-        <div className="flex items-center gap-4">
-          <div className="h-14 w-14 bg-gradient-to-br from-slate-700 to-slate-800 rounded-2xl flex items-center justify-center text-white text-xl font-bold">
-            {name?.charAt(0)}
-          </div>
-          <div>
-            <h3 className="font-bold text-lg text-white group-hover:text-emerald-300 transition-colors line-clamp-1">{name}</h3>
-            <span className="text-[10px] text-indigo-400 font-black tracking-widest uppercase">{type}</span>
-          </div>
-        </div>
-        <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${member.status === 'ACTIVE' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}`}>
-          {member.status}
-        </div>
-      </div>
-
-      <div className="space-y-3 mb-6">
-        <div className="flex items-center gap-3 text-sm text-slate-400">
-          <EnvelopeIcon className="h-4 w-4 text-slate-600" />
-          <span className="line-clamp-1">{email}</span>
-        </div>
-        <div className="flex items-center gap-3 text-sm text-slate-400">
-          <TicketIcon className="h-4 w-4 text-slate-600" />
-          {member.booksBorrowed} Books Held
-        </div>
-      </div>
-
-      <div className="flex justify-between items-center pt-4 border-t border-slate-800/50">
-        <span className="text-[10px] font-mono text-slate-600 uppercase tracking-widest">{member.memberId}</span>
-        <button className="text-xs font-bold text-indigo-400 hover:text-white flex items-center gap-1">
-          Details <ChevronRightIcon className="h-3 w-3" />
-        </button>
-      </div>
-    </div>
-  );
-};
-
 export default LibraryMembersClient;

@@ -6,7 +6,10 @@ import {
   PlusIcon, 
   TrashIcon, 
   PencilSquareIcon,
-  UsersIcon
+  UsersIcon,
+  XMarkIcon,
+  ChevronRightIcon,
+  CheckCircleIcon
 } from "@heroicons/react/24/outline";
 import toast from "react-hot-toast";
 import { FloorPlanView } from "./FloorPlanView";
@@ -31,6 +34,34 @@ export default function HostelBlocksPage({ initialBlocks, schoolId }: HostelBloc
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
+
+   // Search & Selection State
+    const [userType, setUserType] = useState<'STUDENT' | 'EDUCATOR'>('STUDENT');
+    const [query, setQuery] = useState("");
+    const [searchMembersResults, setSearchMembersResults] = useState<any[]>([]);
+    const [selectedProfile, setSelectedProfile] = useState<any | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+  
+    // Search Logic
+    useEffect(() => {
+      const delayDebounce = setTimeout(async () => {
+        if (query.length < 2) {
+          setSearchMembersResults([]);
+          return;
+        }
+        const res = await fetch(`/api/admin/hostel/members/search-profiles?companyId=${schoolId}&type=${userType}&q=${query}`);
+        const result = await res.json();
+        if (res.ok) setSearchMembersResults(result.data);
+      }, 300);
+      return () => clearTimeout(delayDebounce);
+    }, [query, userType, schoolId]);
+  
+    // const filteredMembers = useMemo(() => {
+    //   return members.filter(m => {
+    //     const name = m.student ? `${m.student.firstName} ${m.student.lastName}` : m.educator?.user?.name;
+    //     return name?.toLowerCase().includes(search.toLowerCase()) || m.memberId?.toLowerCase().includes(search.toLowerCase());
+    //   });
+    // }, [members, search]);
 
   const handleSearch = async (val: string) => {
     setSearchQuery(val);
@@ -58,6 +89,44 @@ export default function HostelBlocksPage({ initialBlocks, schoolId }: HostelBloc
       setSelectedRoom(null); // Close and refresh
     }
   };
+
+  
+    const handleOnboard = async (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      if (!selectedProfile) return toast.error("Select a profile first");
+      
+      setIsSubmitting(true);
+      const formData = new FormData(e.currentTarget);
+      
+      const payload = {
+        profileId: selectedProfile.id,
+        type: userType,
+        memberId: formData.get("memberId"),
+        companyId: schoolId
+      };
+  
+      try {
+        const res = await fetch(`/api/admin/hostel/residents?companyId=${schoolId}&blockId=${viewingBlock?.id}&roomId=${selectedRoom?.id}`, {
+          method: "POST",
+          body: JSON.stringify(payload),
+          headers: { "Content-Type": "application/json" }
+        });
+  
+        if (res.ok) {
+          const { data } = await res.json();
+          setSearchMembersResults([data, ...searchMembersResults]);
+          toast.success(`Identity established for ${selectedProfile.name}`);
+          setIsModalOpen(false);
+          setSelectedProfile(null);
+        } else {
+          toast.error("User is already a hostel resident");
+        }
+      } catch (err) {
+        toast.error("Integration error");
+      } finally {
+        setIsSubmitting(false);
+      }
+    };
 
   const openBlock = async (block: any) => {
     setViewingBlock(block);
@@ -143,43 +212,91 @@ export default function HostelBlocksPage({ initialBlocks, schoolId }: HostelBloc
 
 
                   {isAssigning ? (
-                    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-300">
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-sm font-black text-white uppercase">Find Resident</h3>
-                        <button onClick={() => setIsAssigning(false)} className="text-xs text-purple-500 font-bold">Cancel</button>
-                      </div>
-
-                      <div className="relative">
-                        <input 
-                          autoFocus
-                          value={searchQuery}
-                          onChange={(e) => handleSearch(e.target.value)}
-                          placeholder="Search by name or ID..."
-                          className="w-full bg-black border border-slate-800 rounded-2xl px-6 py-4 text-white focus:ring-2 focus:ring-purple-500 outline-none"
-                        />
-                        {isSearching && <div className="absolute right-4 top-4 animate-spin h-5 w-5 border-2 border-purple-500 border-t-transparent rounded-full" />}
-                      </div>
-
-                      <div className="space-y-2">
-                        {searchResults.map((user: any) => (
-                          <button
-                            key={user.id}
-                            onClick={() => assignResident(user.id)}
-                            className="w-full flex items-center justify-between p-4 rounded-xl bg-slate-900 border border-slate-800 hover:border-emerald-500/50 transition-all group"
-                          >
-                            <div className="text-left">
-                              <p className="text-sm font-bold text-white group-hover:text-emerald-400">{user.name}</p>
-                              <p className="text-[10px] text-slate-500 font-bold uppercase">{user.studentId || "No ID"}</p>
+                      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#05070A]/90 backdrop-blur-md">
+                        <div className="bg-slate-900 border border-slate-800 w-full max-w-md rounded-[2.5rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
+                          <div className="p-8 border-b border-slate-800 flex justify-between items-center">
+                            <h2 className="text-2xl font-bold text-white">Issue Identity</h2>
+                            <button onClick={() => { setIsAssigning(false); setSelectedProfile(null); }} className="text-slate-500 hover:text-white transition-colors">
+                              <XMarkIcon className="h-6 w-6" />
+                            </button>
+                          </div>
+              
+                          <div className="px-8 pt-6">
+                            <div className="flex bg-slate-800/50 p-1 rounded-2xl mb-6">
+                              {(['STUDENT', 'EDUCATOR'] as const).map(type => (
+                                <button 
+                                  key={type}
+                                  onClick={() => { setUserType(type); setSelectedProfile(null); setSearchResults([]); }}
+                                  className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${userType === type ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400 hover:text-white'}`}
+                                >
+                                  {type === 'STUDENT' ? 'Students' : 'Faculty'}
+                                </button>
+                              ))}
                             </div>
-                            <PlusIcon className="h-5 w-5 text-slate-600 group-hover:text-emerald-500" />
-                          </button>
-                        ))}
-                        
-                        {searchQuery.length >= 2 && searchResults.length === 0 && !isSearching && (
-                          <p className="text-center py-8 text-slate-500 text-sm italic">No unallocated residents found.</p>
-                        )}
+                          </div>
+              
+                          <form onSubmit={handleOnboard} className="p-8 pt-0 space-y-5">
+                            {!selectedProfile ? (
+                              <div className="relative">
+                                <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Search Profile</label>
+                                <input 
+                                  value={query}
+                                  onChange={(e) => setQuery(e.target.value)}
+                                  placeholder={`Search ${userType}...`}
+                                  className="w-full bg-slate-800/50 border border-slate-700 rounded-2xl px-5 py-4 mt-2 outline-none focus:border-indigo-500 transition-all text-white" 
+                                />
+                                {searchMembersResults.length > 0 && (
+                                  <div className="absolute z-10 w-full mt-2 bg-slate-800 border border-slate-700 rounded-2xl shadow-2xl max-h-48 overflow-y-auto">
+                                    {searchMembersResults.map(res => (
+                                      <div 
+                                        key={res.id} 
+                                        onClick={() => setSelectedProfile(res)}
+                                        className="p-4 hover:bg-indigo-500/10 cursor-pointer border-b border-slate-700/50 last:border-0 flex justify-between items-center"
+                                      >
+                                        <div>
+                                          <p className="text-sm font-bold text-white">{res.name}</p>
+                                          <p className="text-[10px] text-slate-500">{res.identifier}</p>
+                                        </div>
+                                        <ChevronRightIcon className="h-4 w-4 text-slate-600" />
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            ) : (
+                              <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                  <CheckCircleIcon className="h-5 w-5 text-emerald-500" />
+                                  <div>
+                                    <p className="text-white font-bold text-sm">{selectedProfile.name}</p>
+                                    <p className="text-[10px] text-emerald-400 font-mono">{selectedProfile.identifier}</p>
+                                  </div>
+                                </div>
+                                <button type="button" onClick={() => setSelectedProfile(null)} className="text-[10px] text-slate-400 hover:text-white underline">Change</button>
+                              </div>
+                            )}
+              
+                            <div>
+                              <label className="text-xs font-black text-slate-500 uppercase tracking-widest ml-1">Archive Member ID</label>
+                              <input 
+                                name="memberId" 
+                                required 
+                                defaultValue={selectedProfile?.identifier}
+                                placeholder="LIB-XXXX" 
+                                className="w-full bg-slate-800/50 border border-slate-700 rounded-2xl px-5 py-4 mt-2 outline-none focus:border-emerald-500 transition-all text-white font-mono uppercase" 
+                              />
+                            </div>
+              
+                            <button 
+                              type="submit" 
+                              disabled={isSubmitting || !selectedProfile}
+                              className="w-full py-4 bg-white text-black rounded-2xl font-black transition-all hover:bg-indigo-50 active:scale-95 disabled:opacity-30"
+                            >
+                              {isSubmitting ? "Syncing..." : "Confirm Onboarding"}
+                            </button>
+                          </form>
+                        </div>
                       </div>
-                    </div>
                   ) : (
                     // {/* Resident List */}
                     <div className="flex-1 overflow-y-auto p-8">

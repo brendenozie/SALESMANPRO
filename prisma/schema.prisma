@@ -421,6 +421,7 @@ model Company {
   transportShifts           TransportShift[]
   librarySupplierCategories LibrarySupplierCategory[]
   transportDrivers          TransportDriver[]
+  hostelMembers             HostelMember[]
 
   @@index([userId])
 }
@@ -1435,7 +1436,6 @@ model User {
   transportAssignments TransportAssignment[] @relation("TransportAssignments")
 
   // Hostel Management relations
-  hostelAllocations         HostelAllocation[]         @relation("HostelAllocations")
   hostelMaintenanceRequests HostelMaintenanceRequest[] @relation("HostelMaintenanceRequests")
 
   // Staff Management (HR) relations
@@ -2693,6 +2693,7 @@ model Student {
 
   // @@map("students")
   libraryMember LibraryMember?
+  hostelMember  HostelMember?
 
   // @@index([userId])
   @@index([parentId])
@@ -2788,6 +2789,7 @@ model Educator {
   CourseAssignment         CourseAssignment[]
   Booking                  Booking[]
   libraryMember            LibraryMember?
+  hostelMember             HostelMember?
 
   // @@index([userId])
   @@index([companyId])
@@ -6268,20 +6270,48 @@ model HostelRoom {
   @@index([type])
 }
 
+enum HostelMemberStatus {
+  ACTIVE
+  SUSPENDED
+  PENDING
+}
+
+model HostelMember {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  companyId String  @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  // Connect to existing profiles
+  studentId String?  @unique @db.ObjectId
+  student   Student? @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  educatorId String?   @unique @db.ObjectId
+  educator   Educator? @relation(fields: [educatorId], references: [id], onDelete: Cascade)
+
+  memberId String             @unique // The "LIB-XXXX" barcode/ID
+  status   HostelMemberStatus @default(ACTIVE)
+
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  hostelAllocations HostelAllocation[]
+
+  @@index([companyId])
+}
+
 model HostelAllocation {
-  id        String                 @id @default(auto()) @map("_id") @db.ObjectId
-  roomId    String                 @db.ObjectId
-  room      HostelRoom             @relation(fields: [roomId], references: [id], onDelete: Cascade)
-  userId    String                 @db.ObjectId // Student allocated to this room
-  user      User                   @relation("HostelAllocations", fields: [userId], references: [id], onDelete: Cascade)
-  startDate DateTime               @default(now())
-  endDate   DateTime?
-  status    HostelAllocationStatus @default(ACTIVE)
-  createdAt DateTime               @default(now())
-  updatedAt DateTime               @updatedAt
+  id             String                 @id @default(auto()) @map("_id") @db.ObjectId
+  roomId         String                 @db.ObjectId
+  room           HostelRoom             @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  startDate      DateTime               @default(now())
+  endDate        DateTime?
+  status         HostelAllocationStatus @default(ACTIVE)
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+  hostelMember   HostelMember?          @relation(fields: [hostelMemberId], references: [id])
+  hostelMemberId String?                @db.ObjectId
 
   @@index([roomId])
-  @@index([userId])
+  @@index([hostelMemberId])
   @@index([status])
 }
 
