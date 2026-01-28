@@ -3,14 +3,14 @@ import prisma from "@/server/db/prismadb";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
-  const companyId = searchParams.get("companyId");
+  const blockId = searchParams.get("blockId");
 
-  if (!companyId) return NextResponse.json({ error: "Missing companyId" }, { status: 400 });
+  if (!blockId) return NextResponse.json({ error: "Missing blockId" }, { status: 400 });
 
   try {
     const rooms = await prisma.hostelRoom.findMany({
       where: {
-        block: { companyId: companyId }
+        block: { id: blockId }
       },
       include: {
         block: true,
@@ -29,6 +29,7 @@ export async function GET(req: Request) {
       roomNumber: room.roomNumber,
       type: room.type,
       floor: room.floor,
+      capacity: room.capacity,
       occupancy: room.allocations.length,
       max: room.capacity,
       wing: room.block.name, // Mapping Block Name to "Wing"

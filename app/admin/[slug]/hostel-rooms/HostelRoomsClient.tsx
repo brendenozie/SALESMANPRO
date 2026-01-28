@@ -1,30 +1,47 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { HomeModernIcon, SquaresPlusIcon } from "@heroicons/react/24/outline";
 import AddRoomModal from "./AddRoomModal"; // We'll extract the modal for cleanliness
 import CheckInForm from "./CheckInForm";
-import UnifiedHostelModal from "./UnifiedHostelModal";
+import { toast } from "react-hot-toast";
 
 interface Props {
-  initialRooms: any[];
-  blocks: any[]; // New prop: array of HostelBlock objects
+  initiablocks: any[]; // New prop: array of HostelBlock objects
   schoolId: string;
 }
 
-const HostelRoomsClient = ({ initialRooms, blocks, schoolId }: Props) => {
-  const [rooms, setRooms] = useState(initialRooms);
+const HostelRoomsClient = ({ initiablocks, schoolId }: Props) => {
+  const [rooms, setRooms] = useState<any[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isBlockModalOpen, setIsBlockModalOpen] = useState(false);
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
+  const [blocks, setBlocks] = useState(initiablocks);
   
   // 1. Identify which Block (Wing) is active
   const [activeBlockId, setActiveBlockId] = useState(blocks && blocks.length > 0 && blocks[0]?.id || "");
+  const [selectedBlock, setSelectedBlock] = useState(blocks && blocks.length > 0 ? blocks[0] : null);
 
   // 2. Filter rooms based on the selected Block
-  const filteredRooms = useMemo(() => {
-    return rooms.filter(room => room.blockId === activeBlockId);
-  }, [rooms, activeBlockId]);
+  // const filteredRooms = useMemo(() => {
+  //   return rooms.filter(room => room.blockId === activeBlockId);
+  // }, [rooms, activeBlockId]);
+
+  const fetchBlocks = async () => {
+    const res = await fetch(`/api/admin/hostel/blocks?companyId=${schoolId}`);
+    const json = await res.json();
+    setBlocks(json.data || []);
+  };
+
+  const fetchRooms = async (blockId: string) => {
+    const res = await fetch(`/api/admin/hostel/rooms?blockId=${blockId}&companyId=${schoolId}`);
+    const json = await res.json();
+    setRooms(json.data || []);
+  };
+
+  useEffect(() => {
+    fetchRooms(activeBlockId);
+  }, [activeBlockId]);
 
   return (
     <main className="min-h-screen bg-[#05070A] text-slate-200 p-8 font-sans">
@@ -45,13 +62,19 @@ const HostelRoomsClient = ({ initialRooms, blocks, schoolId }: Props) => {
                 {blocks && blocks.length > 0 && blocks.map(block => (
                   <button 
                     key={block.id}
-                    onClick={() => setActiveBlockId(block.id)}
+                    onClick={() => {
+                      setActiveBlockId(block.id);
+                      setSelectedBlock(block);
+                    }}
                     className={`px-6 py-2 rounded-xl text-xs font-bold transition-all ${activeBlockId === block.id ? 'bg-purple-600 text-white' : 'text-slate-500 hover:text-slate-300'}`}
                   > {block.name} </button>
                 ))}
              </div>
              <button
-                onClick={() => setIsBlockModalOpen(true)}
+                onClick={() => {
+                  setIsBlockModalOpen(true);
+                  setSelectedBlock(null);
+                }}
                 className="flex items-center gap-2 px-6 py-3 bg-white text-black rounded-2xl font-bold text-xs hover:bg-purple-50 transition-all"
               >
                 <SquaresPlusIcon className="h-4 w-4" />
@@ -70,7 +93,7 @@ const HostelRoomsClient = ({ initialRooms, blocks, schoolId }: Props) => {
 
         {/* Room Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-          {filteredRooms.map((room) => (
+          {rooms.map((room) => (
             <div key={room.id} className="group bg-slate-900/40 border border-slate-800 rounded-[2rem] p-6 hover:border-purple-500/30 transition-all relative">
               <div className="flex justify-between items-start mb-6">
                 <div className="h-12 w-12 bg-slate-800 rounded-2xl flex items-center justify-center text-purple-400 group-hover:scale-110 transition-transform">
@@ -142,16 +165,77 @@ const HostelRoomsClient = ({ initialRooms, blocks, schoolId }: Props) => {
       )}
 
       {isBlockModalOpen && (
-        <UnifiedHostelModal 
-          config={{ mode: "ADD", type: "BLOCK" }}
-          schoolId={schoolId}
-          blockId={null}
-          onClose={() => setIsBlockModalOpen(false)}
-          onSuccess={() => {
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+            <div className="bg-slate-900 border border-slate-800 w-full max-w-md rounded-[2.5rem] p-8 shadow-2xl">
+              <h2 className="text-2xl font-black text-white mb-6">
+                {selectedBlock ? "Edit" : "New"} <span className="text-purple-500">Block.</span>
+              </h2>
+              
+              <form onSubmit={async (e) => {
+                e.preventDefault();
+                const formData = new FormData(e.currentTarget);
+                const data = {
+                  name: formData.get("name"),
+                  type: formData.get("type"),
+                  companyId: schoolId
+                };
 
-          }}
-          
-        />
+                const method = selectedBlock ? "PUT" : "POST"; // Implement PUT in API if needed
+                const res = await fetch(`/api/admin/hostel/blocks${selectedBlock ? `?id=${selectedBlock.id}` : ''}`, {
+                  method,
+                  body: JSON.stringify(data),
+                  headers: { "Content-Type": "application/json" }
+                });
+
+                if (res.ok) {
+                  toast.success("Block saved successfully");
+                  setIsBlockModalOpen(false);
+                  fetchBlocks();
+                }
+              }} className="space-y-4">
+                <div>
+                  <label className="text-[10px] font-black uppercase text-slate-500 ml-2">Block Name</label>
+                  <input 
+                    name="name" 
+                    defaultValue={selectedBlock?.name}
+                    placeholder="e.g., Kilimanjaro Wing"
+                    className="w-full bg-black/50 border border-slate-800 rounded-2xl px-6 py-4 text-white focus:ring-2 focus:ring-purple-500 outline-none" 
+                    required 
+                  />
+                </div>
+                
+                <div>
+                  <label className="text-[10px] font-black uppercase text-slate-500 ml-2">Block Type</label>
+                  <select 
+                    name="type" 
+                    defaultValue={selectedBlock?.type || "BOYS"}
+                    className="w-full bg-black/50 border border-slate-800 rounded-2xl px-6 py-4 text-white focus:ring-2 focus:ring-purple-500 outline-none appearance-none"
+                  >
+                    <option value="BOYS">BOYS Only</option>
+                    <option value="GIRLS">GIRLS Only</option>
+                    <option value="MIXED">Mixed / Co-ed</option>
+                    <option value="STAFF">Staff Only</option>
+                  </select>
+                </div>
+
+                <div className="flex gap-3 mt-8">
+                  <button 
+                    type="button" 
+                    onClick={() => setIsBlockModalOpen(false)}
+                    className="flex-1 px-6 py-4 bg-slate-800 text-white rounded-2xl font-bold text-sm"
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="submit" 
+                    className="flex-1 px-6 py-4 bg-purple-600 text-white rounded-2xl font-bold text-sm shadow-lg shadow-purple-900/30"
+                  >
+                    Save Block
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
       )}
       
     </main>

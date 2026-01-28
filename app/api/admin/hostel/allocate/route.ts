@@ -1,6 +1,27 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 
+
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url);
+  const query = searchParams.get("q") || "";
+  const companyId = searchParams.get("companyId");
+
+  // Find users who aren't currently allocated to a room
+  const users = await prisma.user.findMany({
+    where: {
+      companyId,
+      name: { contains: query, mode: 'insensitive' },
+      // Logic: User has no ACTIVE allocations
+      hostelAllocations: { none: { status: "ACTIVE" } }
+    },
+    take: 5
+  });
+
+  return NextResponse.json({ data: users });
+}
+
+
 export async function POST(req: Request) {
   try {
     const { roomId, userId, endDate } = await req.json();

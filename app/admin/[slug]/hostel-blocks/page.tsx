@@ -31,7 +31,6 @@ export default async function HostelRoomsPage({ params }: PageProps) {
 
   return (
     <HostelBlocksPage
-      // initialRooms={rooms}
       initialBlocks={blocks}
       schoolId={schoolId}
     />

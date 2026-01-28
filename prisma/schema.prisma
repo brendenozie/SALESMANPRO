@@ -5805,6 +5805,8 @@ enum HostelRoomType {
   TRIPLE
   QUAD
   DORMITORY
+  HOSTEL
+  SUITE
 }
 
 enum HostelAllocationStatus {

@@ -17,12 +17,10 @@ export default async function HostelRoomsPage({ params }: PageProps) {
   try {
     
     // Fetching both blocks and rooms to feed the client
-    const [roomsRes, blocksRes] = await Promise.all([
-      fetch(`${apiBaseUrl}/admin/hostel/rooms?companyId=${schoolId}`, { headers: { cookie: cookieHeader } }),
+    const [blocksRes] = await Promise.all([
       fetch(`${apiBaseUrl}/admin/hostel/blocks?companyId=${schoolId}`, { headers: { cookie: cookieHeader } })
     ]);
 
-    rooms = (await roomsRes.json()).data || [];
     blocks = (await blocksRes.json()).data || [];
 
   } catch (err) {
@@ -31,8 +29,7 @@ export default async function HostelRoomsPage({ params }: PageProps) {
 
   return (
     <HostelRoomsClient
-      initialRooms={rooms}
-      blocks={blocks}
+      initiablocks={blocks}
       schoolId={schoolId}
     />
   );

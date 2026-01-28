@@ -1,81 +1,57 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 
-// export async function GET(req: Request) {
-//   const { searchParams } = new URL(req.url);
-//   const companyId = searchParams.get("companyId");
-
-//   if (!companyId) {
-//     return NextResponse.json({ error: "Missing companyId" }, { status: 400 });
-//   }
-
-//   try {
-//     const blocks = await prisma.hostelBlock.findMany({
-//       where: { companyId },
-//       include: {
-//         _count: {
-//           select: { rooms: true }
-//         }
-//       }
-//     });
-
-//     return NextResponse.json({ data: blocks });
-//   } catch (error) {
-//     console.error("[BLOCKS_GET]", error);
-//     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
-//   }
-// }
-// import { NextResponse } from "next/server";
-// import { db } from "@/lib/db";
-
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const companyId = searchParams.get("companyId");
 
-  if (!companyId) return new NextResponse("School ID required", { status: 400 });
+  if (!companyId) return NextResponse.json({ error: "Missing companyId" }, { status: 400 });
 
-  try {
-    const blocks = await prisma.hostelBlock.findMany({
-      where: { companyId },
-      include: {
-        _count: { select: { rooms: true } },
-        rooms: {
-          include: {
-            _count: { select: { allocations: { where: { status: "ACTIVE" } } } }
-          }
+  const blocks = await prisma.hostelBlock.findMany({
+    where: { companyId },
+    include: {
+      _count: { select: { rooms: true } },
+      rooms: {
+        select: {
+          capacity: true,
+          allocations: { where: { status: "ACTIVE" } } // Adjust status based on your schema
         }
-      },
-      orderBy: { createdAt: "desc" }
-    });
+      }
+    }
+  });
 
-    // Calculate aggregate occupancy for the whole block
-    const formattedBlocks = blocks.map(block => {
-      const totalCapacity = block.rooms.reduce((acc, room) => acc + room.capacity, 0);
-      const totalOccupancy = block.rooms.reduce((acc, room) => acc + room._count.allocations, 0);
-      
-      return {
-        ...block,
-        roomCount: block._count.rooms,
-        totalCapacity,
-        totalOccupancy
-      };
-    });
+  // Transform data to include aggregated stats the UI expects
+  const formattedBlocks = blocks.map(block => ({
+    ...block,
+    roomCount: block._count.rooms,
+    totalCapacity: block.rooms.reduce((acc, room) => acc + room.capacity, 0),
+    totalOccupancy: block.rooms.reduce((acc, room) => acc + room.allocations.length, 0),
+  }));
 
-    return NextResponse.json({ success: true, data: formattedBlocks });
-  } catch (error) {
-    return NextResponse.json({ error: "Failed to fetch blocks" }, { status: 500 });
-  }
+  return NextResponse.json({ data: formattedBlocks });
+}
+
+export async function POST(req: Request) {
+  const body = await req.json();
+  const { name, type, companyId } = body;
+
+  const block = await prisma.hostelBlock.create({
+    data: { name, type, companyId }
+  });
+
+  return NextResponse.json({ data: block });
 }
 
 export async function DELETE(req: Request) {
-  try {
-    const { searchParams } = new URL(req.url);
-    const id = searchParams.get("id");
-    if (!id) return new NextResponse("ID required", { status: 400 });
+  const { searchParams } = new URL(req.url);
+  const id = searchParams.get("id");
 
+  if (!id) return NextResponse.json({ error: "ID required" }, { status: 400 });
+
+  try {
     await prisma.hostelBlock.delete({ where: { id } });
     return NextResponse.json({ success: true });
   } catch (error) {
-    return NextResponse.json({ error: "Cannot delete block with existing rooms" }, { status: 400 });
+    return NextResponse.json({ error: "Cannot delete block with active rooms" }, { status: 400 });
   }
 }
