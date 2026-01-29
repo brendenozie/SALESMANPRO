@@ -1,32 +1,47 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 
-// get specific room by room id
+interface RouteParams {
+  params: Promise<{ id: string }>;
+}
 
-export async function GET(req: Request) {
-  // const { searchParams } = new URL(req.url);
-  // const id = searchParams.get("id");
-  // get Id from path 
-  const url = new URL(req.url);
-  const id = url.pathname.split("/").pop();
-
-  if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
-
+export async function GET(req: Request, { params }: RouteParams) {
   try {
+    const { id } = await params;
+
+    if (!id) {
+      return NextResponse.json({ error: "Missing Room ID" }, { status: 400 });
+    }
+
     const room = await prisma.hostelRoom.findUnique({
       where: { id },
       include: {
-        block: true,
+        block: {
+          select: { name: true, type: true }
+        },
         allocations: {
-          where: { status: "ACTIVE" } // Only count current residents
+          where: { status: "ACTIVE" },
+          include: {
+            hostelMember: {
+              include: {
+                student: true,
+                educator: { include: { user: { select: { name: true } } } }
+              }
+            }
+          }
         },
         maintenanceRequests: {
-          where: { status: "PENDING" }
+          where: { status: "PENDING" },
+          orderBy: { createdAt: 'desc' }
         }
       }
     });
-    if (!room) return NextResponse.json({ error: "Room not found" }, { status: 404 });
-    // Transform data for the UI
+
+    if (!room) {
+      return NextResponse.json({ error: "Room not found" }, { status: 404 });
+    }
+
+    // High-fidelity data transformation for the Dossier/Details view
     const transformedRoom = {
       id: room.id,
       roomNumber: room.roomNumber,
@@ -34,59 +49,36 @@ export async function GET(req: Request) {
       floor: room.floor,
       capacity: room.capacity,
       occupancy: room.allocations.length,
-      max: room.capacity,
-      wing: room.block.name, // Mapping Block Name to "Wing"
-      status: room.allocations.length >= room.capacity ? "Full" : "Available",
-      amenities: ["Wi-Fi", "AC"], // You can add an amenities field to your Prisma model later
-      hasMaintenance: room.maintenanceRequests.length > 0
+      availableSlots: Math.max(0, room.capacity - room.allocations.length),
+      wing: room.block.name,
+      blockType: room.block.type,
+      status: room.allocations.length >= room.capacity ? "FULL" : "AVAILABLE",
+      
+      // Map residents to a cleaner format
+      residents: room.allocations.map(alloc => ({
+        allocationId: alloc.id,
+        memberId: alloc.hostelMember?.id,
+        name: alloc.hostelMember?.student 
+          ? `${alloc.hostelMember.student.firstName} ${alloc.hostelMember.student.lastName}`
+          : alloc.hostelMember?.educator?.user?.name || "Unknown",
+        type: alloc.hostelMember?.student ? "STUDENT" : "STAFF",
+        joinedAt: alloc.startDate,
+      })),
+
+      maintenance: {
+        hasActiveIssues: room.maintenanceRequests.length > 0,
+        count: room.maintenanceRequests.length,
+        latest: room.maintenanceRequests[0] || null
+      },
+
+      // Static amenities for now, or fetch from a model if added later
+      amenities: ["High-speed Wi-Fi", "Daily Cleaning", "Climate Control"],
     };
+
     return NextResponse.json({ data: transformedRoom });
+
   } catch (error) {
-    return NextResponse.json({ error: "Failed to fetch room" }, { status: 500 });
+    console.error("[ROOM_GET_BY_ID]", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
-
-
-// export async function GET(req: Request) {
-//   const { searchParams } = new URL(req.url);
-//   const blockId = searchParams.get("blockId");
-
-//   if (!blockId) return NextResponse.json({ error: "Missing blockId" }, { status: 400 });
-
-//   try {
-//     const rooms = await prisma.hostelRoom.findMany({
-//       where: {
-//         block: { id: blockId }
-//       },
-//       include: {
-//         block: true,
-//         allocations: {
-//           where: { status: "ACTIVE" } // Only count current residents
-//         },
-//         maintenanceRequests: {
-//           where: { status: "PENDING" }
-//         }
-//       }
-//     });
-
-//     // Transform data for the UI
-//     const transformedRooms = rooms.map(room => ({
-//       id: room.id,
-//       roomNumber: room.roomNumber,
-//       type: room.type,
-//       floor: room.floor,
-//       capacity: room.capacity,
-//       occupancy: room.allocations.length,
-//       max: room.capacity,
-//       wing: room.block.name, // Mapping Block Name to "Wing"
-//       status: room.allocations.length >= room.capacity ? "Full" : 
-//               room.allocations.length > 0 ? "Partial" : "Available",
-//       amenities: ["Wi-Fi", "AC"], // You can add an amenities field to your Prisma model later
-//       hasMaintenance: room.maintenanceRequests.length > 0
-//     }));
-
-//     return NextResponse.json({ data: transformedRooms });
-//   } catch (error) {
-//     return NextResponse.json({ error: "Failed to fetch rooms" }, { status: 500 });
-//   }
-// }

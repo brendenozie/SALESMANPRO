@@ -9,7 +9,8 @@ import {
   UsersIcon,
   XMarkIcon,
   ChevronRightIcon,
-  CheckCircleIcon
+  CheckCircleIcon,
+  UserCircleIcon
 } from "@heroicons/react/24/outline";
 import toast from "react-hot-toast";
 import { FloorPlanView } from "./FloorPlanView";
@@ -49,7 +50,7 @@ export default function HostelBlocksPage({ initialBlocks, schoolId }: HostelBloc
           setSearchMembersResults([]);
           return;
         }
-        const res = await fetch(`/api/admin/hostel/members/search-profiles?companyId=${schoolId}&type=${userType}&q=${query}`);
+        const res = await fetch(`/api/admin/hostel/residents/search-profiles?companyId=${schoolId}&type=${userType}&q=${query}`);
         const result = await res.json();
         if (res.ok) setSearchMembersResults(result.data);
       }, 300);
@@ -90,7 +91,6 @@ export default function HostelBlocksPage({ initialBlocks, schoolId }: HostelBloc
     }
   };
 
-  
     const handleOnboard = async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
       if (!selectedProfile) return toast.error("Select a profile first");
@@ -101,8 +101,13 @@ export default function HostelBlocksPage({ initialBlocks, schoolId }: HostelBloc
       const payload = {
         profileId: selectedProfile.id,
         type: userType,
-        memberId: formData.get("memberId"),
-        companyId: schoolId
+        studentId: userType === 'STUDENT' ? selectedProfile.id : null,
+        educatorId: userType === 'EDUCATOR' ? selectedProfile.id : null,
+        schoolId: schoolId,
+        blockId: viewingBlock?.id,
+        roomId: selectedRoom?.id,
+        companyId: schoolId,
+        memberId: formData.get("memberId") ? String(formData.get("memberId")) : selectedProfile.identifier,
       };
   
       try {
@@ -138,6 +143,7 @@ export default function HostelBlocksPage({ initialBlocks, schoolId }: HostelBloc
   const openRoom = async (room: any) => {
     const res = await fetch(`/api/admin/hostel/rooms/${room.id || room._id}`);
     const json = await res.json();
+    console.log("Fetched Room:", json.data);
     setSelectedRoom(json.data);
   };
 
@@ -186,8 +192,8 @@ export default function HostelBlocksPage({ initialBlocks, schoolId }: HostelBloc
               </button>
             </header>
 
-            <FloorPlanView rooms={rooms} 
-              onEditRoom={(room) => openRoom(room)} />
+            <FloorPlanView rooms={rooms} onEditRoom={(room) => openRoom(room)} />
+
           </div>
           {/* Slide-over Backdrop */}
           <div className={`fixed inset-0 z-[70] transition-opacity duration-300 ${selectedRoom ? "opacity-100 visible" : "opacity-0 invisible"}`}>
@@ -282,7 +288,7 @@ export default function HostelBlocksPage({ initialBlocks, schoolId }: HostelBloc
                                 name="memberId" 
                                 required 
                                 defaultValue={selectedProfile?.identifier}
-                                placeholder="LIB-XXXX" 
+                                placeholder="RES-XXXX" 
                                 className="w-full bg-slate-800/50 border border-slate-700 rounded-2xl px-5 py-4 mt-2 outline-none focus:border-emerald-500 transition-all text-white font-mono uppercase" 
                               />
                             </div>
@@ -303,29 +309,54 @@ export default function HostelBlocksPage({ initialBlocks, schoolId }: HostelBloc
                       <div className="flex justify-between items-center mb-6">
                         <h3 className="text-xs font-black uppercase tracking-widest text-slate-500">Current Residents</h3>
                         <span className="px-2 py-1 bg-purple-500/10 text-purple-500 rounded text-[10px] font-bold">
-                          {selectedRoom.allocations?.length} / {selectedRoom.capacity} Occupied
+                          {selectedRoom.residents?.length} / {selectedRoom.capacity} Occupied
                         </span>
                       </div>
 
                       <div className="space-y-4">
-                        {selectedRoom.allocations?.length > 0 ? (
-                          selectedRoom.allocations?.map((allocation: any) => (
-                            <div key={allocation.id} className="group flex items-center gap-4 p-4 rounded-2xl bg-slate-900/50 border border-slate-800 hover:border-purple-500/50 transition-all">
-                              <div className="h-10 w-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-400 group-hover:bg-purple-600 group-hover:text-white transition-colors">
-                                <UsersIcon className="h-5 w-5" />
+                        {selectedRoom.residents?.length > 0 ? (
+                          selectedRoom.residents.map((resident: any) => (
+                            <div 
+                              key={resident.allocationId} 
+                              className="group flex items-center gap-4 p-4 rounded-3xl bg-slate-900/40 border border-slate-800/50 hover:border-purple-500/30 transition-all duration-300"
+                            >
+                              {/* Avatar Section */}
+                              <div className="relative">
+                                <div className="h-12 w-12 rounded-2xl bg-slate-800 flex items-center justify-center text-slate-500 group-hover:bg-purple-600/20 group-hover:text-purple-400 transition-colors">
+                                  <UserCircleIcon className="h-6 w-6" />
+                                </div>
+                                <div className={`absolute -top-1 -right-1 h-3 w-3 rounded-full border-2 border-[#0A0C10] ${resident.type === 'STUDENT' ? 'bg-blue-500' : 'bg-amber-500'}`} />
                               </div>
-                              <div className="flex-1">
-                                <p className="text-sm font-bold text-white">{allocation.residentName || "Assigned Resident"}</p>
-                                <p className="text-[10px] text-slate-500 uppercase font-bold">Joined: {new Date(allocation.createdAt).toLocaleDateString()}</p>
+
+                              {/* Resident Info */}
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <p className="text-sm font-black text-white truncate">{resident.name}</p>
+                                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-slate-800 text-slate-400 font-bold uppercase tracking-tighter">
+                                    {resident.type}
+                                  </span>
+                                </div>
+                                <p className="text-[10px] text-slate-500 font-medium mt-0.5">
+                                  Allocated: {new Date(resident.joinedAt).toLocaleDateString('en-GB', { 
+                                    day: '2-digit', 
+                                    month: 'short', 
+                                    year: 'numeric' 
+                                  })}
+                                </p>
                               </div>
-                              <button className="text-[10px] font-black text-rose-500 hover:bg-rose-500/10 px-3 py-2 rounded-lg transition-colors">
-                                EVict
+
+                              {/* Action Button */}
+                              <button 
+                                // onClick={() => handleCheckOut(resident.allocationId)}
+                                className="opacity-0 group-hover:opacity-100 px-3 py-2 bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all"
+                              >
+                                Check Out
                               </button>
                             </div>
                           ))
                         ) : (
-                          <div className="text-center py-12 border-2 border-dashed border-slate-800 rounded-3xl">
-                            <p className="text-slate-600 font-medium italic">This room is currently empty.</p>
+                          <div className="flex flex-col items-center justify-center py-12 border-2 border-dashed border-slate-800/50 rounded-[2.5rem]">
+                            <p className="text-slate-600 font-bold text-xs uppercase tracking-widest">No Active Residents</p>
                           </div>
                         )}
                       </div>
@@ -343,6 +374,7 @@ export default function HostelBlocksPage({ initialBlocks, schoolId }: HostelBloc
                       Assign Resident
                     </button>
                   </div>
+                  
                 </div>
               )}
             </div>
