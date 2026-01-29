@@ -5,119 +5,110 @@ import { Toaster, toast } from "react-hot-toast";
 import { 
   ArrowsRightLeftIcon, 
   InboxArrowDownIcon,
-  CheckBadgeIcon,
   UserGroupIcon,
   MagnifyingGlassIcon,
-  UserIcon,
-  PlusCircleIcon
+  PlusCircleIcon,
+  XMarkIcon
 } from "@heroicons/react/24/outline";
 
 const RoomAssignmentsClient = ({ initialUnassigned, initialRooms, schoolId }: any) => {
   const [unassigned, setUnassigned] = useState(initialUnassigned);
   const [rooms, setRooms] = useState(initialRooms);
   const [selectedStudent, setSelectedStudent] = useState<any>(null);
+  const [transferSource, setTransferSource] = useState<any>(null); 
   const [searchTerm, setSearchTerm] = useState("");
-  // Inside RoomAssignmentsClient component...
 
-    const [transferSource, setTransferSource] = useState<any>(null); // { allocationId, studentName, fromRoomId }
-
-    const handleTransferOrAssign = async (targetRoom: any) => {
-      // If we are in "Transfer Mode"
-      if (transferSource) {
-        if (targetRoom.id === transferSource.fromRoomId) {
-          toast.error("Resident is already in this room");
-          return;
-        }
-
-        const promise = fetch("/api/admin/hostel/transfer", {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ 
-            allocationId: transferSource.allocationId, 
-            targetRoomId: targetRoom.id 
-          }),
-        });
-
-        toast.promise(promise, {
-          loading: 'Transferring resident...',
-          success: () => {
-            setRooms((prev: any) => prev.map((r: any) => {
-              // Remove from old room
-              if (r.id === transferSource.fromRoomId) {
-                return { 
-                  ...r, 
-                  occupancy: r.occupancy - 1, 
-                  residents: r.residents.filter((res: any) => res.allocationId !== transferSource.allocationId) 
-                };
-              }
-              // Add to new room
-              if (r.id === targetRoom.id) {
-                return { 
-                  ...r, 
-                  occupancy: r.occupancy + 1, 
-                  residents: [...r.residents, { 
-                    allocationId: transferSource.allocationId, 
-                    name: transferSource.studentName, 
-                    joinedAt: new Date().toISOString() 
-                  }] 
-                };
-              }
-              return r;
-            }));
-            setTransferSource(null);
-            return "Transfer successful!";
-          },
-          error: "Transfer failed."
-        });
+  const handleTransferOrAssign = async (targetRoom: any) => {
+    // 1. Logic for Transferring an existing resident
+    if (transferSource) {
+      if (targetRoom.id === transferSource.fromRoomId) {
+        toast.error("Resident is already in this room");
+        return;
+      }
+      if (targetRoom.occupancy >= targetRoom.capacity) {
+        toast.error("Target room is full");
         return;
       }
 
-      // Fallback to standard assignment logic if not transferring
-      if (selectedStudent) {
-        handleAssign(targetRoom);
-      }
-    };
+      const promise = fetch("/api/admin/hostel/transfer", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          allocationId: transferSource.allocationId, 
+          targetRoomId: targetRoom.id 
+        }),
+      });
 
-  const handleAssign = async (room: any) => {
-    if (!selectedStudent) {
-      toast.error("Select a resident first");
-      return;
-    }
-
-    if (room.residents.length >= room.capacity) {
-      toast.error("This room is already at capacity");
-      return;
-    }
-
-    const promise = fetch("/api/admin/hostel/allocate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ 
-        roomId: room.id, 
-        studentId: selectedStudent.id, // Matches the student model ID
-        companyId: schoolId
-      }),
-    });
-
-    toast.promise(promise, {
-      loading: 'Finalizing assignment...',
-      success: (data) => {
-        // Optimistic UI Update based on your API structure
-        setUnassigned(unassigned.filter((s: any) => s.id !== selectedStudent.id));
-        setRooms(rooms.map((r: any) => 
-          r.id === room.id 
-            ? { 
+      toast.promise(promise, {
+        loading: 'Transferring resident...',
+        success: () => {
+          setRooms((prev: any) => prev.map((r: any) => {
+            if (r.id === transferSource.fromRoomId) {
+              return { 
                 ...r, 
-                occupancy: r.occupancy + 1,
-                residents: [...r.residents, { name: selectedStudent.name, joinedAt: new Date().toISOString() }] 
-              }
-            : r
-        ));
-        setSelectedStudent(null);
-        return "Assignment secured!";
-      },
-      error: "Assignment failed. Please try again."
-    });
+                occupancy: r.occupancy - 1, 
+                residents: r.residents.filter((res: any) => res.allocationId !== transferSource.allocationId) 
+              };
+            }
+            if (r.id === targetRoom.id) {
+              return { 
+                ...r, 
+                occupancy: r.occupancy + 1, 
+                residents: [...r.residents, { 
+                  allocationId: transferSource.allocationId, 
+                  name: transferSource.studentName, 
+                  joinedAt: new Date().toISOString() 
+                }] 
+              };
+            }
+            return r;
+          }));
+          setTransferSource(null);
+          return "Transfer successful!";
+        },
+        error: "Transfer failed."
+      });
+      return;
+    }
+
+    // 2. Logic for Assigning a new resident from the sidebar
+    if (selectedStudent) {
+      if (targetRoom.occupancy >= targetRoom.capacity) {
+        toast.error("This room is already at capacity");
+        return;
+      }
+
+      const promise = fetch("/api/admin/hostel/allocate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          roomId: targetRoom.id, 
+          // Use the type to decide which ID to send based on your XOR API logic
+          studentId: selectedStudent.type === 'STUDENT' ? selectedStudent.id : null,
+          educatorId: selectedStudent.type === 'STAFF' ? selectedStudent.id : null,
+          companyId: schoolId
+        }),
+      });
+
+      toast.promise(promise, {
+        loading: 'Finalizing assignment...',
+        success: (response) => {
+          setUnassigned(unassigned.filter((s: any) => s.id !== selectedStudent.id));
+          setRooms(rooms.map((r: any) => 
+            r.id === targetRoom.id 
+              ? { 
+                  ...r, 
+                  occupancy: r.occupancy + 1,
+                  residents: [...r.residents, { name: selectedStudent.name, joinedAt: new Date().toISOString() }] 
+                }
+              : r
+          ));
+          setSelectedStudent(null);
+          return "Assignment secured!";
+        },
+        error: "Assignment failed."
+      });
+    }
   };
 
   const totalAvailableBeds = rooms.reduce((acc: number, r: any) => acc + (r.capacity - r.occupancy), 0);
@@ -140,13 +131,24 @@ const RoomAssignmentsClient = ({ initialUnassigned, initialRooms, schoolId }: an
           </div>
           
           <div className="flex gap-4">
-             <div className="px-6 py-3 bg-slate-900/50 border border-slate-800 rounded-2xl flex items-center gap-4 backdrop-blur-md">
+              {/* Transfer Cancellation Button */}
+              {transferSource && (
+                <button 
+                  onClick={() => setTransferSource(null)}
+                  className="px-6 py-3 bg-amber-500/10 border border-amber-500/50 rounded-2xl flex items-center gap-2 backdrop-blur-md text-amber-500 hover:bg-amber-500 hover:text-white transition-all"
+                >
+                  <XMarkIcon className="h-4 w-4" />
+                  <span className="text-xs font-black uppercase tracking-widest">Cancel Transfer</span>
+                </button>
+              )}
+
+              <div className="px-6 py-3 bg-slate-900/50 border border-slate-800 rounded-2xl flex items-center gap-4 backdrop-blur-md">
                 <div className="relative flex items-center justify-center">
                   <div className="h-3 w-3 rounded-full bg-emerald-500 animate-ping absolute" />
                   <div className="h-2 w-2 rounded-full bg-emerald-500 relative" />
                 </div>
                 <span className="text-xs font-black text-white uppercase tracking-widest">{totalAvailableBeds} Beds Vacant</span>
-             </div>
+              </div>
           </div>
         </header>
 
@@ -166,40 +168,45 @@ const RoomAssignmentsClient = ({ initialUnassigned, initialRooms, schoolId }: an
             </div>
 
             <div className="px-8 py-4 border-b border-slate-800 bg-black/20">
-               <div className="relative group">
+                <div className="relative group">
                   <MagnifyingGlassIcon className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
                   <input 
                     className="w-full bg-transparent border-none rounded-xl py-2 pl-10 pr-4 text-xs outline-none text-white placeholder:text-slate-600" 
                     placeholder="Filter by name or ADM..." 
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
-               </div>
+                </div>
             </div>
 
             <div className="flex-grow overflow-y-auto p-6 space-y-4 custom-scrollbar">
               {unassigned
                 .filter((s: any) => s.name.toLowerCase().includes(searchTerm.toLowerCase()) || s.idNumber.toLowerCase().includes(searchTerm.toLowerCase()))
-                .map((student: any) => (
+                .map((resident: any) => (
                 <button 
-                  key={student.id} 
-                  onClick={() => setSelectedStudent(student)}
+                  key={resident.id} 
+                  onClick={() => {
+                    setSelectedStudent(resident);
+                    setTransferSource(null); // Assignment mode cancels transfer mode
+                  }}
                   className={`w-full text-left p-5 border rounded-[2rem] transition-all duration-300 relative overflow-hidden group ${
-                    selectedStudent?.id === student.id 
+                    selectedStudent?.id === resident.id 
                     ? 'bg-indigo-600 border-indigo-400 shadow-xl shadow-indigo-500/20 scale-[1.02]' 
                     : 'bg-slate-800/20 border-slate-800 hover:border-indigo-500/40'
                   }`}
                 >
                   <div className="flex justify-between items-center relative z-10">
                     <div>
-                      <p className="text-sm font-black text-white tracking-tight">{student.name}</p>
-                      <p className={`text-[10px] font-bold uppercase mt-1 ${selectedStudent?.id === student.id ? 'text-indigo-100' : 'text-slate-500'}`}>
-                        {student.idNumber}
-                      </p>
-                      <span className={`text-[8px] px-1.5 py-0.5 rounded-md font-bold ${student.type === 'STAFF' ? 'bg-amber-500/20 text-amber-500' : 'bg-blue-500/20 text-blue-400'}`}>
-                        {student.type}
-                      </span>
+                      <p className="text-sm font-black text-white tracking-tight">{resident.name}</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <p className={`text-[10px] font-bold uppercase ${selectedStudent?.id === resident.id ? 'text-indigo-100' : 'text-slate-500'}`}>
+                          {resident.idNumber}
+                        </p>
+                        <span className={`text-[8px] px-1.5 py-0.5 rounded-md font-bold ${resident.type === 'STAFF' ? 'bg-amber-500/20 text-amber-500' : 'bg-blue-500/20 text-blue-400'}`}>
+                          {resident.type}
+                        </span>
+                      </div>
                     </div>
-                    <ArrowsRightLeftIcon className={`h-5 w-5 transition-transform duration-500 ${selectedStudent?.id === student.id ? 'rotate-180 text-white' : 'text-slate-700'}`} />
+                    <PlusCircleIcon className={`h-5 w-5 transition-transform duration-500 ${selectedStudent?.id === resident.id ? 'text-white' : 'text-slate-700'}`} />
                   </div>
                 </button>
               ))}
@@ -211,15 +218,17 @@ const RoomAssignmentsClient = ({ initialUnassigned, initialRooms, schoolId }: an
             <div className="flex-grow overflow-y-auto p-10 grid grid-cols-1 md:grid-cols-2 gap-8 custom-scrollbar">
               {rooms.map((room: any) => {
                 const isFull = room.occupancy >= room.capacity;
+                const isActiveAction = (selectedStudent || transferSource) && !isFull;
+
                 return (
                   <div 
                     key={room.id} 
                     className={`group/room bg-slate-900/40 border-[1px] rounded-[2.5rem] p-8 transition-all duration-500 relative ${
-                      selectedStudent && !isFull 
+                      isActiveAction 
                       ? 'border-indigo-500/30 cursor-pointer hover:bg-indigo-500/5 hover:border-indigo-500 hover:shadow-2xl' 
                       : 'border-slate-800 shadow-inner'
                     }`}
-                    onClick={() => selectedStudent && !isFull && handleAssign(room)}
+                    onClick={() => isActiveAction && handleTransferOrAssign(room)}
                   >
                     <div className="flex justify-between items-start mb-8">
                       <div>
@@ -239,7 +248,6 @@ const RoomAssignmentsClient = ({ initialUnassigned, initialRooms, schoolId }: an
 
                     <div className="space-y-3">
                       {/* Active Residents */}
-                      {/* Inside the room.residents.map loop */}
                       {room.residents.map((res: any, i: number) => (
                         <div 
                           key={i} 
@@ -250,7 +258,7 @@ const RoomAssignmentsClient = ({ initialUnassigned, initialRooms, schoolId }: an
                               studentName: res.name,
                               fromRoomId: room.id
                             });
-                            setSelectedStudent(null); // Clear normal selection
+                            setSelectedStudent(null); 
                             toast.success(`Moving ${res.name}. Select a new room.`, { icon: '🔄' });
                           }}
                           className={`group/resident p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
@@ -267,23 +275,13 @@ const RoomAssignmentsClient = ({ initialUnassigned, initialRooms, schoolId }: an
                         </div>
                       ))}
 
-                      {/* {room.residents.map((res: any, i: number) => (
-                        <div key={i} className="group/resident p-4 rounded-2xl border border-indigo-500/10 bg-indigo-500/5 flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className="h-2 w-2 rounded-full bg-indigo-400" />
-                            <span className="text-xs font-black text-white uppercase tracking-tight">{res.name}</span>
-                          </div>
-                          <CheckBadgeIcon className="h-4 w-4 text-indigo-400 opacity-40" />
-                        </div>
-                      ))} */}
-
-                      {/* Ghost Slots for empty capacity */}
+                      {/* Ghost Slots */}
                       {Array.from({ length: room.capacity - room.occupancy }).map((_, i) => (
-                        <div key={i} className={`p-4 rounded-2xl border border-dashed flex items-center justify-between transition-colors ${selectedStudent ? 'border-indigo-500/40 bg-indigo-500/5' : 'border-slate-800'}`}>
-                          <span className={`text-[10px] font-black uppercase tracking-widest italic ${selectedStudent ? 'text-indigo-400 animate-pulse' : 'text-slate-700'}`}>
-                            {selectedStudent ? "Deploy Here" : "Vacant Slot"}
+                        <div key={i} className={`p-4 rounded-2xl border border-dashed flex items-center justify-between transition-colors ${isActiveAction ? 'border-indigo-500/40 bg-indigo-500/5' : 'border-slate-800'}`}>
+                          <span className={`text-[10px] font-black uppercase tracking-widest italic ${isActiveAction ? 'text-indigo-400 animate-pulse' : 'text-slate-700'}`}>
+                            {transferSource ? "Transfer Here" : selectedStudent ? "Deploy Here" : "Vacant Slot"}
                           </span>
-                          <PlusCircleIcon className={`h-5 w-5 ${selectedStudent ? 'text-indigo-500' : 'text-slate-800'}`} />
+                          <PlusCircleIcon className={`h-5 w-5 ${isActiveAction ? 'text-indigo-500' : 'text-slate-800'}`} />
                         </div>
                       ))}
                     </div>
