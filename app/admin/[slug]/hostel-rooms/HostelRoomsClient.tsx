@@ -132,12 +132,12 @@ const HostelRoomsClient = ({ initiablocks, schoolId }: Props) => {
                 Manage Details
               </button> */}
               
-              <button 
+              {/* <button 
                 onClick={() => setSelectedRoomId(selectedRoomId === room.id ? null : room.id)}
                 className="w-full py-3 bg-slate-800 hover:bg-purple-600 rounded-xl text-xs font-bold transition-all"
               >
               {selectedRoomId === room.id ? "Close Panel" : "Manage Check-in"}
-              </button>
+              </button> */}
 
               {selectedRoomId === room.id && (
                   <CheckInForm 

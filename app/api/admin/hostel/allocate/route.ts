@@ -49,7 +49,10 @@ export async function POST(req: Request) {
   try {
     const { roomId, studentId, educatorId, companyId, endDate } = await req.json();
 
-    if (!roomId || !companyId || (!studentId && !educatorId)) {
+    // Check if exactly one ID is provided (XOR logic)
+    const hasExactlyOneRecipient = (!!studentId !== !!educatorId);
+
+    if (!roomId || !companyId || !hasExactlyOneRecipient) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 

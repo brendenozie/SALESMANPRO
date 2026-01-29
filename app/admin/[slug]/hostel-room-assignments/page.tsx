@@ -19,6 +19,7 @@ export default async function RoomAssignmentsPage({ params }: PageProps) {
       { headers: { cookie: cookieHeader }, cache: 'no-store' }
     );
     if (res.ok) data = (await res.json()).data;
+    console.log(data);
   } catch (err) { console.error(err); }
 
   return (
