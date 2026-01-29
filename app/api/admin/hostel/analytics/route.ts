@@ -1,37 +1,89 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
+import { startOfDay, subDays } from "date-fns";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const companyId = searchParams.get("companyId");
 
+  if (!companyId) return NextResponse.json({ error: "Company ID required" }, { status: 400 });
+
   try {
-    // 1. Occupancy Rate
+    // 1. Calculate Occupancy Rate
+    // Get total capacity across all blocks for this company
     const totalBeds = await prisma.hostelRoom.aggregate({
-      where: { companyId },
+      where: { block: { companyId } },
       _sum: { capacity: true }
     });
-    const occupiedBeds = await prisma.student.count({
-      where: { companyId, hostelRoomId: { not: null } }
+
+    // Count currently active allocations
+    const activeAllocations = await prisma.hostelAllocation.count({
+      where: { 
+        status: "ACTIVE",
+        room: { block: { companyId } }
+      }
     });
-    const occupancyRate = ((occupiedBeds / (totalBeds._sum.capacity || 1)) * 100).toFixed(1);
+
+    const totalCapacity = totalBeds._sum.capacity || 0;
+    const occupancyRate = totalCapacity > 0 
+      ? ((activeAllocations / totalCapacity) * 100).toFixed(1) 
+      : "0";
 
     // 2. MTTR (Mean Time To Repair)
-    const resolvedTickets = await prisma.hostelMaintenance.findMany({
-      where: { companyId, status: "RESOLVED", updatedAt: { not: null } },
-      select: { createdAt: true, updatedAt: true }
+    // Filter by 'RESOLVED' (or COMPLETED) status based on your enum
+    const resolvedTickets = await prisma.hostelMaintenanceRequest.findMany({
+      where: { 
+        room: { block: { companyId } },
+        status: "COMPLETED", // Ensure this matches your enum value
+        resolvedDate: { not: null } 
+      },
+      select: { createdAt: true, resolvedDate: true }
     });
     
     const totalRepairTime = resolvedTickets.reduce((acc, ticket) => {
-      return acc + (ticket.updatedAt.getTime() - ticket.createdAt.getTime());
+      if (!ticket.resolvedDate) return acc;
+      return acc + (ticket.resolvedDate.getTime() - ticket.createdAt.getTime());
     }, 0);
+
     const mttr = resolvedTickets.length > 0 
       ? (totalRepairTime / resolvedTickets.length / 3600000).toFixed(1) 
       : "0";
 
     // 3. Visitor Volume (Last 7 Days)
+    const sevenDaysAgo = subDays(startOfDay(new Date()), 7);
     const visitorCount = await prisma.hostelVisitor.count({
-      where: { companyId, checkIn: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } }
+      where: { companyId, checkIn: { gte: sevenDaysAgo } }
+    });
+
+    // 4. Dynamic Wing/Block Data
+    const blocks = await prisma.hostelBlock.findMany({
+      where: { companyId },
+      include: {
+        rooms: {
+          include: {
+            allocations: { where: { status: "ACTIVE" } }
+          }
+        }
+      }
+    });
+
+    const wingData = blocks.map((block, index) => {
+      const blockCapacity = block.rooms.reduce((acc, r) => acc + r.capacity, 0);
+      const blockOccupancy = block.rooms.reduce((acc, r) => acc + r.allocations.length, 0);
+      const percentage = blockCapacity > 0 ? Math.round((blockOccupancy / blockCapacity) * 100) : 0;
+      
+      const colors = ['bg-indigo-500', 'bg-violet-500', 'bg-fuchsia-500', 'bg-slate-700'];
+      
+      return {
+        label: block.name,
+        val: percentage,
+        color: colors[index % colors.length]
+      };
+    });
+
+    // 5. Staff Overview (Bonus context)
+    const onDutyStaff = await prisma.hostelStaff.count({
+        where: { companyId, isOnDuty: true }
     });
 
     return NextResponse.json({
@@ -39,15 +91,12 @@ export async function GET(req: Request) {
         occupancy: `${occupancyRate}%`,
         mttr: `${mttr} hrs`,
         visitors: visitorCount.toString(),
-        revenue: "$84.5k", // Linked to your finance module
-        wingData: [
-          { label: 'North Wing', val: 98, color: 'bg-indigo-500' },
-          { label: 'South Wing', val: 92, color: 'bg-violet-500' },
-          { label: 'Executive', val: 45, color: 'bg-slate-700' },
-        ]
+        activeStaff: onDutyStaff,
+        wingData
       }
     });
   } catch (error) {
+    console.error("REPORTS_API_ERROR", error);
     return NextResponse.json({ error: "Analytics failed" }, { status: 500 });
   }
 }
