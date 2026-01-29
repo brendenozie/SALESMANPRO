@@ -164,6 +164,32 @@ export default function HostelBlocksPage({ initialBlocks, schoolId }: HostelBloc
     }
   };
 
+  // const handleCheckOut = async (allocationId: string) => {
+  //   if (!confirm("Confirm check-out of this resident?")) return;
+  //   const res = await fetch(`/api/admin/hostel/allocate/${allocationId}`, { method: "DELETE" });
+  //   if (res.ok) {
+  //     toast.success("Resident checked out successfully");
+  //     // Refresh room details
+  //     openBlock(viewingBlock); 
+  //     setSelectedRoom(null); // Close and refresh
+  //   } else {
+  //     toast.error("Error during check-out");
+  //   }
+  // };
+
+  const handleCheckOut = async (allocationId: string) => {
+    const res = await fetch('/api/admin/hostel/allocate', {
+      method: 'PATCH',
+      body: JSON.stringify({ allocationId, status: 'INACTIVE' }),
+      headers: { 'Content-Type': 'application/json' }
+    });
+    
+    if (res.ok) {
+      // Refresh your local UI state here
+      toast.success("Bed vacated successfully");
+    }
+  };
+
   return (
     <>
       
@@ -347,7 +373,7 @@ export default function HostelBlocksPage({ initialBlocks, schoolId }: HostelBloc
 
                               {/* Action Button */}
                               <button 
-                                // onClick={() => handleCheckOut(resident.allocationId)}
+                                onClick={() => handleCheckOut(resident.allocationId)}
                                 className="opacity-0 group-hover:opacity-100 px-3 py-2 bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all"
                               >
                                 Check Out
@@ -534,8 +560,7 @@ export default function HostelBlocksPage({ initialBlocks, schoolId }: HostelBloc
               onSuccess={(newRoom) => setRooms([...rooms, newRoom])}
             />
           )}
-
-          
+  
     </>
   );
 }
