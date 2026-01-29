@@ -5813,6 +5813,7 @@ enum HostelRoomType {
 
 enum HostelAllocationStatus {
   ACTIVE
+  INACTIVE
   VACATED
   TRANSFERRED
   SUSPENDED
