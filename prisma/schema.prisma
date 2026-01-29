@@ -422,6 +422,8 @@ model Company {
   librarySupplierCategories LibrarySupplierCategory[]
   transportDrivers          TransportDriver[]
   hostelMembers             HostelMember[]
+  hostelVisitors            HostelVisitor[]
+  hostelStaffs              HostelStaff[]
 
   @@index([userId])
 }
@@ -1451,6 +1453,7 @@ model User {
   transportShifts         TransportShift[]
   librarySuppliers        LibrarySupplier[]
   transportDriver         TransportDriver?
+  hostelStaffs            HostelStaff[]
 
   @@index([companyId])
   // @@index([settingsId])
@@ -2692,8 +2695,9 @@ model Student {
   updatedAt DateTime? @updatedAt
 
   // @@map("students")
-  libraryMember LibraryMember?
-  hostelMember  HostelMember?
+  libraryMember  LibraryMember?
+  hostelMember   HostelMember?
+  hostelVisitors HostelVisitor[]
 
   // @@index([userId])
   @@index([parentId])
@@ -2790,6 +2794,7 @@ model Educator {
   Booking                  Booking[]
   libraryMember            LibraryMember?
   hostelMember             HostelMember?
+  hostelVisitors           HostelVisitor[]
 
   // @@index([userId])
   @@index([companyId])
@@ -6295,6 +6300,7 @@ model HostelMember {
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
   hostelAllocations HostelAllocation[]
+  hostelVisitors    HostelVisitor[]
 
   @@index([companyId])
 }
@@ -6322,6 +6328,7 @@ model HostelMaintenanceRequest {
   room         HostelRoom                       @relation(fields: [roomId], references: [id], onDelete: Cascade)
   reportedBy   String                           @db.ObjectId // User who reported
   reporter     User                             @relation("HostelMaintenanceRequests", fields: [reportedBy], references: [id], onDelete: Cascade)
+  category     String
   description  String
   priority     HostelMaintenanceRequestPriority @default(MEDIUM)
   status       HostelMaintenanceRequestStatus   @default(PENDING)
@@ -6334,6 +6341,73 @@ model HostelMaintenanceRequest {
   @@index([reportedBy])
   @@index([status])
   @@index([priority])
+}
+
+model HostelVisitor {
+  id            String  @id @default(auto()) @map("_id") @db.ObjectId
+  name          String
+  contactNumber String?
+  relation      String
+
+  // Relations
+  studentId String?  @db.ObjectId
+  student   Student? @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  companyId String?  @db.ObjectId
+  company   Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  // Identity & Security
+  idType     String // National ID, Passport, etc.
+  idNumber   String?
+  idImageUrl String?
+
+  // Timing & Status
+  status   String    @default("ACTIVE") // ACTIVE, CHECKED_OUT
+  checkIn  DateTime  @default(now())
+  checkOut DateTime?
+
+  educatorId String?   @db.ObjectId
+  educator   Educator? @relation(fields: [educatorId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  hostelMember   HostelMember? @relation(fields: [hostelMemberId], references: [id])
+  hostelMemberId String?       @db.ObjectId
+
+  @@index([studentId])
+  @@index([companyId])
+  @@index([checkIn])
+}
+
+model HostelStaff {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  staffId     String    @unique // The "Badge Number" (e.g., STF-001)
+  name        String
+  phoneNumber String
+  role        StaffRole @default(WARDEN)
+  shiftLabel  String // e.g., "Day (08:00 - 16:00)"
+  isOnDuty    Boolean   @default(false)
+
+  userId String? @db.ObjectId
+  user   User?   @relation(fields: [userId], references: [id])
+
+  // Relations
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+  @@index([role])
+}
+
+enum StaffRole {
+  WARDEN
+  SECURITY
+  CLEANER
+  MAINTENANCE
 }
 
 // ============================================================

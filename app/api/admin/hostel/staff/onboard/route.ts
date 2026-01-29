@@ -3,33 +3,43 @@ import prisma from "@/server/db/prismadb";
 
 export async function POST(req: Request) {
   try {
-    const { name, role, phoneNumber, shiftLabel, staffId, companyId } = await req.json();
+    const body = await req.json();
+    const { name, role, phoneNumber, staffId, shiftLabel, companyId, userId } = body;
 
-    const newStaff = await prisma.$transaction(async (tx) => {
-      const staff = await tx.hostelStaff.create({
-        data: {
-          name,
-          role, // e.g., 'WARDEN', 'SECURITY', 'CLEANER'
-          phoneNumber,
-          staffId,
-          companyId,
-          isOnDuty: false,
-        }
-      });
+    // 1. Validation
+    if (!name || !staffId || !companyId) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
 
-      await tx.hostelShift.create({
-        data: {
-          staffId: staff.id,
-          label: shiftLabel, // e.g., 'Day (08:00 - 16:00)'
-          isActive: true
-        }
-      });
+    // 2. Check for duplicate Staff ID
+    const existing = await prisma.hostelStaff.findUnique({
+      where: { staffId }
+    });
+    if (existing) {
+      return NextResponse.json({ error: "Staff ID already exists" }, { status: 400 });
+    }
 
-      return staff;
+    // 3. Create Record
+    const newStaff = await prisma.hostelStaff.create({
+      data: {
+        name,
+        role,
+        phoneNumber,
+        staffId,
+        shiftLabel,
+        companyId,
+        isOnDuty: false,
+        // Link to User if provided
+        ...(userId && { userId }) 
+      },
+      include: {
+        user: true // Include user details in response
+      }
     });
 
     return NextResponse.json({ data: newStaff }, { status: 201 });
-  } catch (error) {
-    return NextResponse.json({ error: "Failed to onboard staff" }, { status: 500 });
+  } catch (error: any) {
+    console.error("ONBOARD_ERROR", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

@@ -14,20 +14,36 @@ interface Props {
   schoolId: string;
 }
 
-const MaintenancePageClient = ({ initialTickets, schoolId }: Props) => {
+const MaintenancePageClient = ({ initialTickets, rooms, schoolId }: any) => {
+
   const [tickets, setTickets] = useState(initialTickets);
-  const [filter, setFilter] = useState('all tickets');
-  // Inside MaintenancePageClient.tsx
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [filter, setFilter] = useState('all tickets');
+
+  // Category Icon Helper
+  const getIcon = (category: string) => {
+    switch (category) {
+      case 'PLUMBING': return <BeakerIcon className="h-7 w-7" />;
+      case 'ELECTRICAL': return <LightBulbIcon className="h-7 w-7" />;
+      case 'STRUCTURAL': return <WrenchIcon className="h-7 w-7" />;
+      default: return <WrenchIcon className="h-7 w-7" />;
+    }
+  };
+
+  // const [tickets, setTickets] = useState(initialTickets);
+  // const [filter, setFilter] = useState('all tickets');
+  // Inside MaintenancePageClient.tsx
+  // const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Filtering Logic
   const filteredTickets = useMemo(() => {
     if (filter === 'all tickets') return tickets;
-    if (filter === 'active') return tickets.filter(t => t.status !== 'COMPLETED');
-    if (filter === 'high priority') return tickets.filter(t => t.priority === 'HIGH');
-    if (filter === 'completed') return tickets.filter(t => t.status === 'COMPLETED');
+    if (filter === 'active') return tickets.filter((t: any) => t.status !== 'COMPLETED');
+    if (filter === 'high priority') return tickets.filter((t: any) => t.priority === 'HIGH');
+    if (filter === 'completed') return tickets.filter((t: any) => t.status === 'COMPLETED');
     return tickets;
   }, [tickets, filter]);
+  
 
   const updateStatus = async (ticketId: string, newStatus: string) => {
     const res = await fetch(`/api/admin/hostel/maintenance/${ticketId}`, {
@@ -37,7 +53,7 @@ const MaintenancePageClient = ({ initialTickets, schoolId }: Props) => {
     });
 
     if (res.ok) {
-      setTickets(tickets.map(t => t.dbId === ticketId ? { ...t, status: newStatus } : t));
+      setTickets(tickets.map((t: any) => t.dbId === ticketId ? { ...t, status: newStatus } : t));
       toast.success(`Ticket marked as ${newStatus}`);
     }
   };
@@ -79,61 +95,56 @@ const MaintenancePageClient = ({ initialTickets, schoolId }: Props) => {
 
         {/* Ticket List */}
         <div className="space-y-4">
-          {filteredTickets.map((tkt) => (
-            <div key={tkt.id} className="group bg-slate-900/20 border border-slate-800 rounded-[2.5rem] p-6 border-l-4" 
-                 style={{ borderLeftColor: tkt.priority === 'HIGH' ? '#ef4444' : tkt.priority === 'MEDIUM' ? '#f59e0b' : '#3b82f6' }}>
+          {filteredTickets.map((tkt: any) => (
+            <div key={tkt.dbId} className="group bg-slate-900/20 border border-slate-800 rounded-[2.5rem] p-6 border-l-4 transition-all hover:bg-slate-900/40" 
+                style={{ borderLeftColor: tkt.priority === 'HIGH' ? '#ef4444' : tkt.priority === 'MEDIUM' ? '#f59e0b' : '#3b82f6' }}>
               <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
-                
-                <div className="flex items-center gap-6 w-full lg:w-1/3">
+                <div className="flex items-center gap-6 w-full lg:w-1/2">
                   <div className="h-14 w-14 bg-slate-800 rounded-2xl flex items-center justify-center text-orange-400">
-                    {tkt.category === 'PLUMBING' ? <BeakerIcon className="h-7 w-7" /> : <WrenchIcon className="h-7 w-7" />}
+                    {getIcon(tkt.category)}
                   </div>
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-[10px] font-mono text-slate-500">{tkt.id}</span>
-                      <span className="text-[10px] font-black text-orange-500 uppercase">Room {tkt.room}</span>
+                      <span className="text-[10px] font-mono text-slate-500 uppercase tracking-tighter">{tkt.id}</span>
+                      <span className="h-1 w-1 bg-slate-700 rounded-full" />
+                      <span className="text-[10px] font-black text-orange-500 uppercase tracking-widest">Room {tkt.room}</span>
                     </div>
-                    <h4 className="text-lg font-bold text-white">{tkt.issue}</h4>
+                    <h4 className="text-lg font-bold text-white leading-tight">{tkt.issue}</h4>
+                    <p className="text-[10px] text-slate-500 font-medium mt-1 uppercase tracking-wider">Reported by {tkt.reportedBy.name}</p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4">
-                   <div className={`px-4 py-2 rounded-xl border text-[10px] font-black uppercase ${
+                <div className="flex items-center gap-4 ml-auto">
+                  <div className={`px-4 py-2 rounded-xl border text-[9px] font-black uppercase tracking-widest ${
                       tkt.status === 'IN_PROGRESS' ? 'bg-blue-500/10 border-blue-500/20 text-blue-400' :
                       tkt.status === 'PENDING' ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' :
                       'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
-                   }`}>
-                     {tkt.status.replace('_', ' ')}
-                   </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                   {tkt.status !== 'COMPLETED' && (
-                     <button 
-                       onClick={() => updateStatus(tkt.dbId, 'COMPLETED')}
-                       className="px-6 py-3 bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white border border-emerald-600/30 rounded-xl text-xs font-bold transition-all"
-                     >
-                       Mark Resolved
-                     </button>
-                   )}
-                   <button className="p-3 bg-slate-800 text-slate-400 rounded-xl">
-                      <ChatBubbleLeftRightIcon className="h-5 w-5" />
-                   </button>
+                  }`}>
+                    {tkt.status.replace('_', ' ')}
+                  </div>
+                  
+                  {tkt.status !== 'COMPLETED' && (
+                    <button 
+                      onClick={() => updateStatus(tkt.dbId, 'COMPLETED')}
+                      className="px-6 py-3 bg-emerald-600/10 hover:bg-emerald-600 text-emerald-500 hover:text-white border border-emerald-600/20 rounded-xl text-[10px] font-black uppercase transition-all"
+                    >
+                      Mark Resolved
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
           ))}
-        </div>
+        </div> 
       </div>
 
-      {/* At the bottom of return */}
-      {isModalOpen && (
+      {/* {isModalOpen && (
         <FileRequestModal 
-          rooms={[]} // You'll need to pass room data from your page.tsx fetch allRooms
+          rooms={rooms} // Pass the fetched rooms here
           onClose={() => setIsModalOpen(false)}
           onSuccess={(newTkt: any) => setTickets([newTkt, ...tickets])}
         />
-      )}
+      )} */}
     </main>
   );
 };

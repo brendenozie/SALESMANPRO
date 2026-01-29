@@ -8,13 +8,12 @@ export async function GET(req: Request) {
   try {
     const visitors = await prisma.hostelVisitor.findMany({
       where: { companyId },
-      include: { student: { select: { name: true } } },
+      include: { student: { select: { firstName: true } },  educator: { include: { user: { select: { name: true } } } } },
       orderBy: { checkIn: 'desc' }
     });
-
     return NextResponse.json({ data: visitors });
   } catch (error) {
-    return NextResponse.json({ error: "Failed to fetch logs" }, { status: 500 });
+    return NextResponse.json({ error: "Fetch failed" }, { status: 500 });
   }
 }
 
@@ -23,7 +22,12 @@ export async function PATCH(req: Request) {
     const { id } = await req.json();
     const visitor = await prisma.hostelVisitor.update({
       where: { id },
-      data: { checkOut: new Date(), status: "CHECKED_OUT" }
+      data: { 
+        checkOut: new Date(), 
+        status: "CHECKED_OUT" 
+      },
+      include: { student: { select: { firstName: true } }, 
+      educator: { include: { user: { select: { name: true } } } } }
     });
     return NextResponse.json({ data: visitor });
   } catch (error) {

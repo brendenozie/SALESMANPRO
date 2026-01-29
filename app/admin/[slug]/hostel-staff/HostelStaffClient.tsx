@@ -17,33 +17,40 @@ const HostelStaffClient = ({ initialStaff, schoolId }: Props) => {
   const [staff, setStaff] = useState(initialStaff);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const toggleDuty = async (staffId: string, currentStatus: string) => {
-    const newStatus = currentStatus === 'On-Duty' ? false : true;
+  const toggleDuty = async (dbId: string, currentIsOnDuty: boolean) => {
+    const newStatus = !currentIsOnDuty;
     
+    // Optimistic Update: Update UI immediately for a snappy feel
+    const previousStaffState = [...staff];
+    setStaff(staff.map(s => s.id === dbId ? { ...s, isOnDuty: newStatus } : s));
+
     try {
-      const res = await fetch(`/api/admin/hostel/staff/${staffId}/status`, {
+      const res = await fetch(`/api/admin/hostel/staff/${dbId}/status`, {
         method: 'PATCH',
         body: JSON.stringify({ isOnDuty: newStatus }),
         headers: { 'Content-Type': 'application/json' }
       });
 
-      if (res.ok) {
-        setStaff(staff.map(s => s.dbId === staffId ? 
-          { ...s, status: newStatus ? 'On-Duty' : 'Resting' } : s
-        ));
-        toast.success(`Status updated for ${staff.find(s => s.dbId === staffId).name}`);
+      if (!res.ok) {
+        throw new Error("Failed to sync with server");
       }
+
+      const updatedMember = await res.json();
+      toast.success(`${updatedMember.name} is now ${newStatus ? 'On-Duty' : 'Off-Duty'}`);
+      
     } catch (err) {
-      toast.error("Status update failed");
+      // Rollback UI state if the server call fails
+      setStaff(previousStaffState);
+      toast.error("Status update failed. Please try again.");
     }
   };
 
-  // Dashboard Aggregates
-  const stats = {
-    wardens: staff?.filter(s => s.role === 'WARDEN' && s.status === 'On-Duty').length,
-    cleaners: staff?.filter(s => s.role === 'CLEANER' && s.status === 'On-Duty').length,
-    totalWardens: staff?.filter(s => s.role === 'WARDEN').length
-  };
+// 2. Adjust Statistics to use boolean logic
+const stats = {
+  wardens: staff?.filter(s => s.role === 'WARDEN' && s.isOnDuty).length,
+  cleaners: staff?.filter(s => s.role === 'CLEANER' && s.isOnDuty).length,
+  totalWardens: staff?.filter(s => s.role === 'WARDEN').length
+};
 
   return (
     <main className="min-h-screen bg-[#05070A] text-slate-200 p-8 font-sans">
@@ -101,6 +108,50 @@ const HostelStaffClient = ({ initialStaff, schoolId }: Props) => {
         {/* Staff Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {staff.map((member) => (
+          <div key={member.id} className="...">
+            <div className="flex items-start justify-between mb-6">
+              <div className="flex items-center gap-4">
+                {/* Generate Avatar from Name */}
+                <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-700 flex items-center justify-center text-white font-black text-lg">
+                  {member.name.split(' ').map((n: any) => n[0]).join('')}
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-white">{member.name}</h3>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-black text-violet-500 uppercase tracking-widest">{member.role}</span>
+                    <span className="text-[10px] font-mono text-slate-600">#{member.staffId}</span>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Pulse indicator for isOnDuty */}
+              <button 
+                onClick={() => toggleDuty(member.id, member.isOnDuty)}
+                className={`h-3 w-3 rounded-full transition-all cursor-pointer ${
+                  member.isOnDuty ? 'bg-emerald-500 shadow-[0_0_10px_#10b981]' : 'bg-slate-700'
+                }`} 
+              />
+            </div>
+
+            {/* Map correct fields */}
+            <div className="space-y-4 mb-8">
+              <div className="flex items-center gap-3 p-3 bg-black/40 rounded-2xl border border-slate-800/50">
+                <ClockIcon className="h-4 w-4 text-slate-400" />
+                <p className="text-xs text-slate-300 font-medium">{member.shiftLabel}</p>
+              </div>
+              <div className="flex items-center gap-3 p-3 bg-black/40 rounded-2xl border border-slate-800/50">
+                <PhoneArrowUpRightIcon className="h-4 w-4 text-slate-400" />
+                <p className="text-xs font-mono text-slate-300">{member.phoneNumber}</p>
+              </div>
+            </div>
+            
+            {/* Email from the 'user' relation */}
+            <div className="text-[10px] text-slate-500 truncate px-2 mb-4">
+              Linked: {member.user?.email || "No account"}
+            </div>
+          </div>
+        ))}
+          {/* {staff.map((member) => (
             <div key={member.id} className="group bg-slate-900/20 border border-slate-800 rounded-[2.5rem] p-6 hover:bg-slate-900/40 transition-all">
               <div className="flex items-start justify-between mb-6">
                 <div className="flex items-center gap-4">
@@ -143,7 +194,7 @@ const HostelStaffClient = ({ initialStaff, schoolId }: Props) => {
                 </button>
               </div>
             </div>
-          ))}
+          ))} */}
         </div>
       </div>
 
