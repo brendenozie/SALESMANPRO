@@ -1,6 +1,6 @@
 // app/api/users/route.ts
 import prisma from "@/server/db/prismadb";
-import { UserStatus, Plan, ROLE } from "@prisma/client";
+import { UserStatus, Plan, ROLES } from "@prisma/client";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 import { verifyAuth } from "@/lib/verifyAuth";
@@ -23,7 +23,7 @@ async function handleGET(request: Request) {
     const searchTerm = searchParams.get("search")?.toLowerCase() || "";
     const filterStatus = searchParams.get("status") as UserStatus | null;
     const filterPlan = searchParams.get("plan") as Plan | null;
-    const filterRole = searchParams.get("role") as ROLE | null;
+    const filterRole = searchParams.get("role") as ROLES | null;
 
     const where: any = {};
 

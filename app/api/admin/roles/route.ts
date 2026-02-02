@@ -1,30 +1,26 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const companyId = searchParams.get("companyId");
-
+export async function POST(req: Request) {
   try {
-    // Group users by role to get the counts for the left sidebar
-    const roleCounts = await prisma.user.groupBy({
-      by: ['role'],
-      where: { companyId },
-      _count: { _all: true },
+    const { companyId, roleName, department, baseTemplate } = await req.json();
+
+    // Set default matrix based on template
+    const defaultPermissions = [
+      { category: 'Staff Records', actions: ['View', 'Edit', 'Delete'], status: [true, false, false] },
+      { category: 'Financials', actions: ['View', 'Manage'], status: [false, false] },
+    ];
+
+    const newRole = await prisma.role.create({
+      data: {
+        name: roleName,
+        companyId: companyId,
+        permissions: defaultPermissions,
+      },
     });
 
-    // Fetch one example profile for each role to get the permission structure
-    const profiles = await prisma.staffProfile.findMany({
-      where: { companyId },
-      distinct: ['jobTitle'], // Using jobTitle or role as the grouping factor
-      select: {
-        jobTitle: true,
-        permissions: true,
-      }
-    });
-
-    return NextResponse.json({ roleCounts, profiles });
+    return NextResponse.json({ success: true, role: newRole });
   } catch (error) {
-    return NextResponse.json({ error: "Failed to fetch roles" }, { status: 500 });
+    return NextResponse.json({ error: "Role already exists" }, { status: 400 });
   }
 }

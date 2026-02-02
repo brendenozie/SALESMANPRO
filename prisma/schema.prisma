@@ -38,7 +38,7 @@ enum UserStatus {
   SUSPENDED
 }
 
-enum ROLE {
+enum ROLES {
   USER
   CONSUMER
   AGENT
@@ -79,7 +79,7 @@ model Session {
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId       String   @db.ObjectId
-  role         ROLE?    @default(USER)
+  role         ROLES?   @default(USER)
 
   @@index([userId])
 }
@@ -424,6 +424,7 @@ model Company {
   hostelMembers             HostelMember[]
   hostelVisitors            HostelVisitor[]
   hostelStaffs              HostelStaff[]
+  roles                     Role[]
 
   @@index([userId])
 }
@@ -1299,6 +1300,36 @@ model Transaction {
   agent   SalesAgent @relation("AgentTransactions", fields: [agentId], references: [id])
 }
 
+model Role {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  name      String // e.g., "Senior Registrar"
+  companyId String  @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id])
+
+  // The JSON structure for your matrix: [{category: "Finance", actions: ["View"], status: [true]}]
+  permissions Json?
+
+  users     UserRole[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@unique([name, companyId])
+}
+
+// Junction table to allow a user to have multiple roles if needed
+model UserRole {
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  userId String @db.ObjectId
+  roleId String @db.ObjectId
+  user   User   @relation(fields: [userId], references: [id])
+  role   Role   @relation(fields: [roleId], references: [id])
+
+  @@unique([userId, roleId])
+}
+
+// Update your User model to include:
+// roles UserRole[]
+
 model User {
   id       String  @id @default(auto()) @map("_id") @db.ObjectId
   name     String?
@@ -1308,7 +1339,7 @@ model User {
   isActive  Boolean   @default(true)
   deletedAt DateTime?
 
-  role ROLE? @default(ADMIN)
+  role ROLES? @default(ADMIN)
 
   status UserStatus? @default(ACTIVE)
 
@@ -1454,6 +1485,7 @@ model User {
   librarySuppliers        LibrarySupplier[]
   transportDriver         TransportDriver?
   hostelStaffs            HostelStaff[]
+  userRoles               UserRole[]
 
   @@index([companyId])
   // @@index([settingsId])
