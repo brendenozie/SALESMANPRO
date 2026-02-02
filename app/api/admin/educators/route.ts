@@ -70,7 +70,7 @@ async function getEducators(request: Request) {
     bio: educator.bio,
     address: educator.address,
     companyId: educator.companyId,
-    departmentId: educator.departmentId,
+    departmentId: educator.departmentId ?? null,
     departmentName: educator.Department?.name ?? "N/A",
     academicLevelAssignments: educator.academicLevelAssignments,
     academicLevels: educator.academicLevelAssignments
@@ -143,13 +143,13 @@ async function createEducator(request: Request) {
     }
   }
 
-  const staffProfile = await prisma.staffProfile.findUnique({ where: { userId: user.id } });
-  if (staffProfile) return formatResponse(false, null, "Staff profile already exists for this user", 409);
+  // const staffProfile = await prisma.staffProfile.findUnique({ where: { userId: user.id } });
+  // if (staffProfile) return formatResponse(false, null, "Staff profile already exists for this user", 409);
 
-  const newStaff = await prisma.staffProfile.create({
-    data: { userId: user.id, companyId, jobTitle: "Educator", department: "Education" },
-    include: { user: { select: { name: true, email: true, phone: true, profilePicture: true } } },
-  });
+  // const newStaff = await prisma.staffProfile.create({
+  //   data: { userId: user.id, companyId, jobTitle: "Educator", department: "Education" },
+  //   include: { user: { select: { name: true, email: true, phone: true, profilePicture: true } } },
+  // });
 
   const loginCode = await generateUniqueLoginCode();
 

@@ -78,7 +78,7 @@ const DepartmentsClient = ({ initialDepartments, companyId }: { initialDepartmen
 
                 <div className="flex items-center justify-between pt-6 border-t border-slate-800/50">
                   <div className="flex -space-x-3">
-                    {dept.staff.map((s: any, i: number) => (
+                    {dept.staff && dept.staff.map((s: any, i: number) => (
                       <div key={i} title={s.name} className="h-8 w-8 rounded-full border-2 border-slate-900 bg-slate-700 flex items-center justify-center text-[10px] font-bold text-white uppercase overflow-hidden">
                         {s.image ? <img src={s.image} alt="" /> : s.name[0]}
                       </div>

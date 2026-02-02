@@ -207,7 +207,8 @@ export default async function TeachersManagementPage({ params }: PageProps) {
     // Fetch all educators for this company
     const educatorsRes = await fetch(
       `${apiBaseUrl}/admin/educators?companyId=${encodeURIComponent(companyId)}`, // Corrected API path
-      { next: { revalidate: 60 }  // equivalent to SSR on every request
+      {
+         next: { revalidate: 60 }  // equivalent to SSR on every request
         , headers: { cookie: cookieHeader }
       }
     );

@@ -7,8 +7,8 @@ import { formatResponse } from "@/lib/formatResponse";
 const createDepartmentSchema = z.object({
   name: z.string().min(1, "Department name is required"),
   description: z.string().optional(),
-  headId: z.string().uuid().optional(),
-  companyId: z.string().uuid({ message: "Valid companyId is required" }),
+  headId: z.string().optional().nullable(),
+  companyId: z.string(),
 });
 
 // --- GET /api/departments ---
@@ -55,6 +55,7 @@ async function createDepartment(request: Request) {
   const body = await request.json();
 
   const parsed = createDepartmentSchema.safeParse(body);
+
   if (!parsed.success) {
     return formatResponse(false, null, parsed.error.format(), 400);
   }

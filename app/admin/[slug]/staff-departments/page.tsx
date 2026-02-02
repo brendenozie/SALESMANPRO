@@ -17,7 +17,10 @@ export default async function DepartmentsPage({ params }: PageProps) {
       headers: { cookie: cookieHeader },
       cache: 'no-store'
     });
-    if (res.ok) initialDepartments = (await res.json()).data;
+    if (res.ok) initialDepartments = (await res.json()).data.data;
+
+    console.log("Fetched departments:", initialDepartments);
+
   } catch (err) {
     console.error("Failed to load departments", err);
   }
