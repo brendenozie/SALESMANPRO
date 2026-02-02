@@ -109,6 +109,11 @@ async function createAgent(req: Request) {
         bio,
         profilePicture: profileImageUrl,
         emailVerified: false,
+        staffProfile: {
+          create: {
+            companyId, jobTitle: "Sales Agent", department: "Sales",
+          },
+        },
       },
     });
 
@@ -124,7 +129,7 @@ async function createAgent(req: Request) {
         specialties,
         regions,
       },
-      include: { user: true },
+      include: { user: true,  },
     });
 
     const agentProfile: AgentProfile = {
@@ -140,6 +145,8 @@ async function createAgent(req: Request) {
       totalListings: 0,
       closedDeals: 0,
       joinedAt: newSalesAgent.createdAt?.toISOString() || new Date().toISOString(),
+      // jobTitle: newSalesAgent.staffProfile?.jobTitle || "Sales Agent",
+      // department: newSalesAgent.staffProfile?.department || "Sales",
     };
 
     return formatResponse(true, agentProfile, "Agent created successfully", 201);

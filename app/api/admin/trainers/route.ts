@@ -88,6 +88,12 @@ async function handlePOST(request: Request) {
           role: 'EDUCATOR',
           status: 'ACTIVE',
           company: { connect: { id: companyId } },
+          staffProfile: { create: { 
+            companyId,
+            jobTitle: 'Trainer',
+            department: 'Fitness',
+            employmentStatus: 'ACTIVE',
+           } },
         },
       });
 

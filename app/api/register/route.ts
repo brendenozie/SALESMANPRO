@@ -69,6 +69,24 @@ export async function POST(req: Request) {
       },
     });
 
+    if(!isSalesmanPro) {
+      const company = await prisma.company.findFirst({
+        where: { domain: origin.replace("www.", "") },
+      });
+
+      if (company) {
+        await prisma.consumer.upsert({
+            where: { userId: newUser.id },
+            update: {},
+            create: {
+              companyId: company.id,
+              userId: newUser.id,
+            },
+            include: { user: true }
+          });
+      }
+    }
+
     return withCors(
       { message: "User registered successfully.", user: { id: newUser.id, email: newUser.email } },
       201

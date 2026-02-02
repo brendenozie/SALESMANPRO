@@ -95,6 +95,11 @@ async function createDoctor(request: Request) {
         phone,
         profilePicture,
         role: "DOCTOR", // ✅ set proper role
+        staffProfile: {
+          create: {
+            companyId, jobTitle: "Doctor", department: "Medical", employmentStatus: "ACTIVE",
+          },
+        },
       },
     });
   } else {

@@ -107,6 +107,11 @@ export const POST = withAuthAndRateLimit(async (request) => {
           regions,
         },
       },
+      staffProfile: {
+        create: {
+          companyId, jobTitle: "Sales Agent", department: "Sales",
+        },
+      },
     },
     include: { salesAgentProfile: true },
   });

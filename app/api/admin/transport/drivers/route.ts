@@ -47,6 +47,12 @@ export async function POST(req: Request) {
           phone: phoneNumber,
           role: "ADMIN", // Or add DRIVER to your ROLE enum
           companyId,
+          staffProfile: { create: { 
+            companyId,
+            jobTitle: 'Driver',
+            department: 'Transport',
+            employmentStatus: 'ACTIVE',
+           } }
         }
       });
 

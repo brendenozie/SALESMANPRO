@@ -96,6 +96,7 @@ async function handlePOST(request: Request) {
       data: {
         ...userData,
         company: { connect: { id: companyId } },
+        // staffProfile: { create: { companyId }  // Create associated staff profile
       },
     });
 

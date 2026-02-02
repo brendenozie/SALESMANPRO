@@ -112,6 +112,11 @@ async function postHandler(req: Request) {
       bio,
       profilePicture: profileImageUrl,
       emailVerified: false,
+      staffProfile: {
+        create: {
+          companyId, jobTitle: "Sales Agent", department: "Sales",
+        },
+      },
     },
   });
 

@@ -62,6 +62,12 @@ data: {
 email,
 name,
 role,
+staffProfile: { create: { 
+            companyId,
+            jobTitle: 'Writer',
+            department: 'Content',
+            employmentStatus: 'ACTIVE',
+           } }
 },
 });
 }

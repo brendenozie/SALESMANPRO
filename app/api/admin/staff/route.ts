@@ -84,7 +84,9 @@ async function createStaff(req: Request) {
     let user = await prisma.user.findUnique({ where: { email } });
 
     if (!user) {
-      user = await prisma.user.create({ data: { name, email, phone, profilePicture, role: "STAFF" } });
+      user = await prisma.user.create({ data: { 
+        name, email, phone, profilePicture, role: "STAFF"
+       } });
     } else if (user.role !== "STAFF" && user.role !== "ADMIN") {
       user = await prisma.user.update({ where: { id: user.id }, data: { role: "STAFF" } });
     }

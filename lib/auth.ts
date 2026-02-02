@@ -388,6 +388,24 @@ export const authOptions: NextAuthOptions = {
         },
       });
 
+      if(!isSalesmanPro) {
+        const company = await prisma.company.findFirst({
+          where: { domain: origin.replace("www.", "") },
+        });
+
+        if (company) {
+          const consumer = await prisma.consumer.upsert({
+            where: { userId: user.id },
+            update: {},
+            create: {
+              companyId: company.id,
+              userId: user.id,
+            },
+            include: { user: true }
+          });
+        }
+      }
+    
       return true;
     },
 

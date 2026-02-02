@@ -1,5 +1,5 @@
 import prisma from "@/server/db/prismadb";
-import { StudentLevelStatus, ROLE } from "@prisma/client";
+import { StudentLevelStatus, ROLES } from "@prisma/client";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 
@@ -98,8 +98,8 @@ async function handlePOST(request: Request) {
   const result = await prisma.$transaction(async (tx) => {
     let user = await tx.user.upsert({
       where: { email },
-      update: { role: ROLE.STUDENT },
-      create: { email, name: `${firstName} ${lastName}`, role: ROLE.STUDENT }
+      update: { role: ROLES.STUDENT },
+      create: { email, name: `${firstName} ${lastName}`, role: ROLES.STUDENT }
     });
 
     const loginCode = await generateUniqueLoginCode();

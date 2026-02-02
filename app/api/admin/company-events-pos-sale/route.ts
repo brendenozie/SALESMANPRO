@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
-import { ROLE } from "@prisma/client";
+import { ROLES } from "@prisma/client";
 
 // --- Type Definitions for the Handler ---
 
@@ -97,7 +97,7 @@ async function handlePost(request: Request, context: HandlerContext): Promise<Ne
         data: {
           email: customerEmail,
           name: customerName,
-          role: "CONSUMER" as ROLE,
+          role: "CONSUMER" as ROLES,
         },
       });
       userId = newUser.id;

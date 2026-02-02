@@ -56,6 +56,7 @@ const postClientLogic = async (req: Request) => {
       status,
       role: 'CLIENT',
       password: 'default_password', // WARN: Use a proper hashing mechanism
+      companyId: companyId || undefined,
     },
   });
 

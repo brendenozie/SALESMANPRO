@@ -65,6 +65,11 @@ export async function POST(req: Request) {
             role: "STAFF", 
             companyId,
             phone: phoneNumber,
+            staffProfile: {
+              create: {
+                companyId, jobTitle: role || "Hostel Staff", department: "Hostel",
+              },
+            },
           }
         });
         finalUserId = newUser.id;

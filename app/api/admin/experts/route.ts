@@ -149,6 +149,11 @@ async function createExpert(request: Request) {
         company: {
           connect: { id: companyId },
         },
+        staffProfile: {
+          create: {
+            companyId, jobTitle: "Expert", department: "Expertise", employmentStatus: "ACTIVE",
+          },
+        },
       },
     });
 
