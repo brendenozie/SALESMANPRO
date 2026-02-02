@@ -24,11 +24,31 @@ interface RolesManagementClientProps {
   companyId: string;
 }
 
+// const RolesManagementClient = ({ initialData, companyId }: RolesManagementClientProps) => {
+// Inside RolesManagementClient.tsx
+
 const RolesManagementClient = ({ initialData, companyId }: RolesManagementClientProps) => {
-  const [roles] = useState<RoleData[]>(initialData?.roleCounts || []);
-  const [selectedRole, setSelectedRole] = useState(roles[0]?.role || "ADMIN");
+  // 1. Initialize roles with the DB objects
+  const [roles, setRoles] = useState<any>(initialData || []);
+  
+  // 2. Track the active Role ID instead of just a string name
+  const [selectedRoleId, setSelectedRoleId] = useState(roles.profiles[0]?.id || "");
+
+  // 3. Find the current role object to display its permissions
+  const activeRole = roles.profiles.find((r:any) => r.id === selectedRoleId);
+
+  useEffect(() => {
+        if (activeRole?.permissions) {
+          setMatrix(activeRole.permissions);
+        }
+  }, [selectedRoleId]);
+
+     
+
+  // const [roles] = useState<RoleData[]>(initialData?.roleCounts || []);
+  const [selectedRole, setSelectedRole] = useState(roles.profiles[0]?.role || "ADMIN");
   const [loading, setLoading] = useState(false);
-const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
+  const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
   
   // Local state for the permission matrix
   const [matrix, setMatrix] = useState([
@@ -53,6 +73,25 @@ const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
     newMatrix[categoryIdx].status = newStatus;
     setMatrix(newMatrix);
   };
+
+  // Inside RolesManagementClient.tsx
+
+  // const handleSave = async () => {
+  //   setLoading(true);
+  //   try {
+  //     const response = await fetch("/api/admin/roles/update", {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({
+  //         roleId: selectedRoleId, // Use the ID from the DB
+  //         permissions: matrix,    // The updated UI state
+  //       }),
+  //     });
+  //     // ... rest of logic
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   const handleSave = async () => {
     setLoading(true);
@@ -81,6 +120,35 @@ const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
     }
   };
 
+   // Updated Sidebar Rendering
+    //   return (
+    //     <div className="lg:col-span-4 space-y-4">
+    //       {roles.map((r) => (
+    //         <button 
+    //           key={r.id}
+    //           onClick={() => setSelectedRoleId(r.id)}
+    //           className={`w-full flex items-center justify-between p-5 rounded-[2rem] border transition-all ${
+    //             selectedRoleId === r.id 
+    //             ? 'bg-blue-600/10 border-blue-500' 
+    //             : 'bg-slate-900/40 border-slate-800'
+    //           }`}
+    //         >
+    //           <div className="flex items-center gap-4">
+    //             <div className={`p-2 rounded-xl ${selectedRoleId === r.id ? 'bg-blue-500' : 'bg-slate-800'}`}>
+    //               <ShieldCheckIcon className="h-5 w-5" />
+    //             </div>
+    //             <div className="text-left">
+    //               <p className="text-sm font-bold text-white uppercase">{r.role}</p>
+    //               <p className="text-[10px] text-slate-500">{r.userCount} Assigned Users</p>
+    //             </div>
+    //           </div>
+    //           <ChevronRightIcon className="h-4 w-4" />
+    //         </button>
+    //       ))}
+    //     </div>
+    //   );
+    // };
+
   return (
     <main className="min-h-screen bg-[#05070A] text-slate-200 p-8 font-sans">
       <div className="max-w-7xl mx-auto">
@@ -108,7 +176,7 @@ const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
           {/* Left: Role Selection List */}
           <div className="lg:col-span-4 space-y-4">
             <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-4">System Roles</h3>
-            {roles.map((r) => (
+            {roles && roles?.profiles.map((r: any) => (
               <button 
                 key={r.role}
                 onClick={() => setSelectedRole(r.role)}
@@ -195,7 +263,7 @@ const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
         </div>
       </div>
 
-      <DefineRoleModal 
+      {/* <DefineRoleModal 
         isOpen={isRoleModalOpen} 
         onClose={() => setIsRoleModalOpen(false)} 
         companyId={companyId}
@@ -204,7 +272,24 @@ const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
           // so it appears in the sidebar immediately
           alert(`Role ${newRole} is ready for configuration.`);
         }}
+      /> */}
+
+      <DefineRoleModal 
+        isOpen={isRoleModalOpen} 
+        onClose={() => setIsRoleModalOpen(false)} 
+        companyId={companyId}
+        onSuccess={(newRoleObject) => {
+          // Add the new DB record to your local state
+          setRoles((prev: any) => [...prev, {
+            id: newRoleObject.id,
+            role: newRoleObject.name,
+            permissions: newRoleObject.permissions,
+            userCount: 0
+          }]);
+          setSelectedRoleId(newRoleObject.id);
+        }}
       />
+
     </main>
   );
 };

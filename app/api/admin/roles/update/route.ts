@@ -1,34 +1,39 @@
-// app/api/admin/roles/update/route.ts
 import { NextResponse } from "next/server";
+
 import prisma from "@/server/db/prismadb";
 
-export async function POST(request: Request) {
+export async function POST(req: Request) {
   try {
-    const body = await request.json();
-    const { companyId, roleName, permissions } = body;
+    const body = await req.json();
+    const { roleId, permissions } = body;
 
-    if (!companyId || !roleName) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    if (!roleId || !permissions) {
+      return NextResponse.json(
+        { error: "Missing Role ID or Permissions data" },
+        { status: 400 }
+      );
     }
 
-    // Update all staff profiles that match this role/job title in the company
-    const updated = await prisma.staffProfile.updateMany({
+    // Update the dynamic Role record
+    const updatedRole = await prisma.role.update({
       where: {
-        companyId: companyId,
-        // Assuming jobTitle is used as the display name for roles in your UI
-        jobTitle: roleName, 
+        id: roleId,
       },
       data: {
-        permissions: permissions, // Saving the array/object of permissions
+        permissions: permissions, // Stores the matrix array as JSON
       },
     });
 
-    return NextResponse.json({ 
-      success: true, 
-      count: updated.count 
+    return NextResponse.json({
+      success: true,
+      message: "Hierarchy synchronized successfully",
+      data: updatedRole,
     });
-  } catch (error) {
-    console.error("API_ROLES_UPDATE_ERROR", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  } catch (error: any) {
+    console.error("[ROLE_UPDATE_ERROR]", error);
+    return NextResponse.json(
+      { error: "Internal Server Error", details: error.message },
+      { status: 500 }
+    );
   }
 }

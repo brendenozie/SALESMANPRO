@@ -7,7 +7,8 @@ interface DefineRoleModalProps {
   isOpen: boolean;
   onClose: () => void;
   companyId: string;
-  onSuccess: (newRole: string) => void;
+  // Updated: returns the whole role object from DB
+  onSuccess: (newRole: any) => void; 
 }
 
 const DefineRoleModal = ({ isOpen, onClose, companyId, onSuccess }: DefineRoleModalProps) => {
@@ -34,9 +35,14 @@ const DefineRoleModal = ({ isOpen, onClose, companyId, onSuccess }: DefineRoleMo
         body: JSON.stringify(payload),
       });
 
-      if (res.ok) {
-        onSuccess(payload.roleName as string);
+      const result = await res.json();
+
+      if (res.ok && result.success) {
+        // Pass the actual database record back to the parent
+        onSuccess(result.role); 
         onClose();
+      } else {
+        alert(result.error || "Failed to create role.");
       }
     } catch (err) {
       alert("Error creating role configuration.");

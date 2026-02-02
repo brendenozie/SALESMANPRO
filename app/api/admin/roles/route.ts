@@ -11,13 +11,24 @@ export async function POST(req: Request) {
       { category: 'Financials', actions: ['View', 'Manage'], status: [false, false] },
     ];
 
-    const newRole = await prisma.role.create({
-      data: {
-        name: roleName,
-        companyId: companyId,
-        permissions: defaultPermissions,
+    const newRole = await prisma.role.findMany({
+      where: { companyId },
+      include: {
+        _count: {
+          select: { users: true } // Counts records in the UserRole junction table
+        }
       },
+      orderBy: { createdAt: 'asc' }
     });
+    
+    // role.create({
+    //   data: {
+    //     name: roleName,
+    //     companyId: companyId,
+    //     permissions: defaultPermissions,
+    //     userCount: role._count.users
+    //   },
+    // });
 
     return NextResponse.json({ success: true, role: newRole });
   } catch (error) {

@@ -446,9 +446,9 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
      },
     { label: "Staff", href: `/admin/${adminSlug}/staff`, icon: HomeIcon,
       subItems: [
-        { label: "Staff Members", href: `/admin/${adminSlug}/staff-members` },
-        { label: "Roles", href: `/admin/${adminSlug}/staff-roles` },
         { label: "Departments", href: `/admin/${adminSlug}/staff-departments` },
+        { label: "Roles", href: `/admin/${adminSlug}/staff-roles` },
+        { label: "Staff Members", href: `/admin/${adminSlug}/staff-members` },
         { label: "Attendance", href: `/admin/${adminSlug}/staff-attendance` },
         { label: "Payroll", href: `/admin/${adminSlug}/staff-payroll` },
         { label: "Leave Management", href: `/admin/${adminSlug}/staff-leave-management` },

@@ -33,7 +33,7 @@ const DepartmentsClient = ({ initialDepartments, companyId }: { initialDepartmen
               <span className="text-indigo-400 text-[10px] font-black uppercase tracking-[0.2em]">Organizational Units</span>
             </div>
             <h1 className="text-4xl font-extrabold text-white tracking-tight">
-              School <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-blue-400">Departments.</span>
+               <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-blue-400">Departments.</span>
             </h1>
           </div>
           <button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2 px-6 py-3 bg-white text-black rounded-2xl font-bold text-xs hover:bg-indigo-50 transition-all">
