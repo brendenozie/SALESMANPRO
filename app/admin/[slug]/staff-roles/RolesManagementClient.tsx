@@ -7,7 +7,8 @@ import {
   ChevronRightIcon, 
   PlusIcon, 
   CheckBadgeIcon,
-  ArrowPathIcon
+  ArrowPathIcon,
+  ArrowPathRoundedSquareIcon
 } from "@heroicons/react/24/outline";
 import DefineRoleModal from "./DefineRoleModal";
 
@@ -32,10 +33,10 @@ const RolesManagementClient = ({ initialData, companyId }: RolesManagementClient
   const [roles, setRoles] = useState<any>(initialData || []);
   
   // 2. Track the active Role ID instead of just a string name
-  const [selectedRoleId, setSelectedRoleId] = useState(roles.profiles[0]?.id || "");
+  const [selectedRoleId, setSelectedRoleId] = useState(roles?.profiles?.[0]?.id || "");
 
   // 3. Find the current role object to display its permissions
-  const activeRole = roles.profiles.find((r:any) => r.id === selectedRoleId);
+  const activeRole = roles.profiles?.find((r:any) => r.id === selectedRoleId);
 
   useEffect(() => {
         if (activeRole?.permissions) {
@@ -46,7 +47,7 @@ const RolesManagementClient = ({ initialData, companyId }: RolesManagementClient
      
 
   // const [roles] = useState<RoleData[]>(initialData?.roleCounts || []);
-  const [selectedRole, setSelectedRole] = useState(roles.profiles[0]?.role || "ADMIN");
+  const [selectedRole, setSelectedRole] = useState(roles.profiles?.[0]?.role || "ADMIN");
   const [loading, setLoading] = useState(false);
   const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
   
@@ -73,25 +74,6 @@ const RolesManagementClient = ({ initialData, companyId }: RolesManagementClient
     newMatrix[categoryIdx].status = newStatus;
     setMatrix(newMatrix);
   };
-
-  // Inside RolesManagementClient.tsx
-
-  // const handleSave = async () => {
-  //   setLoading(true);
-  //   try {
-  //     const response = await fetch("/api/admin/roles/update", {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify({
-  //         roleId: selectedRoleId, // Use the ID from the DB
-  //         permissions: matrix,    // The updated UI state
-  //       }),
-  //     });
-  //     // ... rest of logic
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
 
   const handleSave = async () => {
     setLoading(true);
@@ -176,7 +158,8 @@ const RolesManagementClient = ({ initialData, companyId }: RolesManagementClient
           {/* Left: Role Selection List */}
           <div className="lg:col-span-4 space-y-4">
             <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-4">System Roles</h3>
-            {roles && roles?.profiles.map((r: any) => (
+            {roles && roles?.profiles?.map((r: any) => (
+              <div>
               <button 
                 key={r.role}
                 onClick={() => setSelectedRole(r.role)}
@@ -197,6 +180,24 @@ const RolesManagementClient = ({ initialData, companyId }: RolesManagementClient
                 </div>
                 <ChevronRightIcon className={`h-4 w-4 ${selectedRole === r.role ? 'text-blue-400' : 'text-slate-700'}`} />
               </button>
+
+              {/* // Inside your roles.map in RolesManagementClient.tsx */}
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent selecting the role
+                    // handleDuplicate(r);
+                  }}
+                  className="p-2 hover:bg-blue-500/20 rounded-lg text-slate-500 hover:text-blue-400 transition-colors"
+                  title="Duplicate Role"
+                >
+                  <ArrowPathRoundedSquareIcon className="h-4 w-4" /> 
+                </button>
+                <ChevronRightIcon className={`h-4 w-4 ${selectedRoleId === r.id ? 'text-blue-400' : 'text-slate-700'}`} />
+              </div>
+
+              </div>
+              
             ))}
           </div>
 
@@ -262,17 +263,6 @@ const RolesManagementClient = ({ initialData, companyId }: RolesManagementClient
           </div>
         </div>
       </div>
-
-      {/* <DefineRoleModal 
-        isOpen={isRoleModalOpen} 
-        onClose={() => setIsRoleModalOpen(false)} 
-        companyId={companyId}
-        onSuccess={(newRole) => {
-          // You could push the new role to the local roles state 
-          // so it appears in the sidebar immediately
-          alert(`Role ${newRole} is ready for configuration.`);
-        }}
-      /> */}
 
       <DefineRoleModal 
         isOpen={isRoleModalOpen} 

@@ -20,7 +20,8 @@ export default async function RolesPage({ params }: { params: Promise<{ slug: st
     );
 
     if (res.ok) {
-      initialData = (await res.json());
+      initialData = (await res.json()).data;
+      console.log("Fetched roles data:", initialData);
     }
   } catch (err) {
     console.error("Failed to load roles", err);

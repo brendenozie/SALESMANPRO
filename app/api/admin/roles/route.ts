@@ -1,6 +1,28 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 
+export async function GET(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const companyId = searchParams.get("companyId");
+    if (!companyId) {
+      return NextResponse.json({ error: "companyId is required" }, { status: 400 });
+    }
+    const roles = await prisma.role.findMany({
+      where: { companyId },
+      include: {  
+        _count: {
+          select: { users: true } // Counts records in the UserRole junction table
+        }
+      },
+      orderBy: { createdAt: 'asc' }
+    });
+    return NextResponse.json({ data: roles });
+  } catch (error) {
+    return NextResponse.json({ error: "Failed to fetch roles" }, { status: 500 });
+  }
+}
+
 export async function POST(req: Request) {
   try {
     const { companyId, roleName, department, baseTemplate } = await req.json();
