@@ -38,7 +38,7 @@ const CreateDepartmentModal = ({ isOpen, onClose, companyId, refreshData }: Crea
     };
 
     try {
-      const res = await fetch("/api/admin/departments/create", {
+      const res = await fetch("/api/admin/departments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
