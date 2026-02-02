@@ -8,7 +8,8 @@ import {
   PlusIcon, 
   CheckBadgeIcon,
   ArrowPathIcon,
-  ArrowPathRoundedSquareIcon
+  ArrowPathRoundedSquareIcon,
+  XMarkIcon
 } from "@heroicons/react/24/outline";
 import DefineRoleModal from "./DefineRoleModal";
 
@@ -72,6 +73,37 @@ const RolesManagementClient = ({ initialData, companyId }: RolesManagementClient
     const newStatus = [...newMatrix[categoryIdx].status];
     newStatus[actionIdx] = !newStatus[actionIdx];
     newMatrix[categoryIdx].status = newStatus;
+    setMatrix(newMatrix);
+  };
+
+  // 1. Add a new permission category
+  const addCategory = () => {
+    const newCategory = {
+      category: "New Module",
+      actions: ["View", "Edit", "Delete"],
+      status: [false, false, false],
+    };
+    setMatrix([...matrix, newCategory]);
+  };
+
+  // 2. Remove a category
+  const removeCategory = (idx: number) => {
+    const newMatrix = matrix.filter((_, i) => i !== idx);
+    setMatrix(newMatrix);
+  };
+
+  // 3. Rename a category
+  const updateCategoryName = (idx: number, newName: string) => {
+    const newMatrix = [...matrix];
+    newMatrix[idx].category = newName;
+    setMatrix(newMatrix);
+  };
+
+  // 4. Add a specific action to a row (e.g., adding "Audit" to a row)
+  const addActionToCategory = (idx: number) => {
+    const newMatrix = [...matrix];
+    newMatrix[idx].actions.push("New Action");
+    newMatrix[idx].status.push(false);
     setMatrix(newMatrix);
   };
 
@@ -212,10 +244,68 @@ const RolesManagementClient = ({ initialData, companyId }: RolesManagementClient
                 <KeyIcon className="h-4 w-4 text-amber-500" />
                 <span className="text-[10px] font-black text-slate-400 uppercase">Master Auth</span>
               </div>
+              <div>
+                <h2 className="text-2xl font-black text-white italic">{selectedRole} Permissions</h2>
+                <p className="text-xs text-slate-500 mt-1">Full control over access levels and modules.</p>
+              </div>
+              <button 
+                onClick={addCategory}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600/20 border border-blue-500/50 text-blue-400 rounded-xl text-[10px] font-black uppercase hover:bg-blue-600 hover:text-white transition-all"
+              >
+                <PlusIcon className="h-3 w-3" /> Add Module
+              </button>
             </div>
 
             <div className="space-y-6">
               {matrix.map((perm, idx) => (
+                <div key={idx} className="bg-black/20 border border-slate-800/50 rounded-2xl p-6 group relative">
+                  {/* Delete Module Button */}
+                  <button 
+                    onClick={() => removeCategory(idx)}
+                    className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 p-1 text-slate-600 hover:text-red-500 transition-all"
+                  >
+                    <XMarkIcon className="h-4 w-4" />
+                  </button>
+
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    {/* Editable Title */}
+                    <input 
+                      value={perm.category}
+                      onChange={(e) => updateCategoryName(idx, e.target.value)}
+                      className="bg-transparent text-sm font-bold text-white uppercase tracking-wider w-48 border-b border-transparent focus:border-blue-500 outline-none"
+                    />
+
+                    <div className="flex flex-wrap gap-4 items-center">
+                      {perm.actions.map((action, i) => (
+                        <div key={i} className="flex items-center gap-2 group/action">
+                          <button 
+                            onClick={() => togglePermission(idx, i)}
+                            className="flex items-center gap-2 cursor-pointer"
+                          >
+                            <div className={`h-5 w-5 rounded border transition-all flex items-center justify-center ${
+                              perm.status[i] ? 'bg-blue-600 border-blue-500' : 'bg-slate-800 border-slate-700'
+                            }`}>
+                              {perm.status[i] && <CheckBadgeIcon className="h-4 w-4 text-white" />}
+                            </div>
+                            <span className={`text-xs font-medium ${perm.status[i] ? 'text-slate-200' : 'text-slate-500'}`}>
+                              {action}
+                            </span>
+                          </button>
+                        </div>
+                      ))}
+                      
+                      {/* Quick Add Action button */}
+                      <button 
+                        onClick={() => addActionToCategory(idx)}
+                        className="p-1 rounded-md border border-dashed border-slate-700 text-slate-600 hover:border-slate-500 hover:text-slate-400"
+                      >
+                        <PlusIcon className="h-3 w-3" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {/* {matrix.map((perm, idx) => (
                 <div key={idx} className="bg-black/20 border border-slate-800/50 rounded-2xl p-6">
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <span className="text-sm font-bold text-white uppercase tracking-wider w-32">{perm.category}</span>
@@ -241,7 +331,7 @@ const RolesManagementClient = ({ initialData, companyId }: RolesManagementClient
                     </div>
                   </div>
                 </div>
-              ))}
+              ))} */}
             </div>
 
             <div className="mt-10 pt-8 border-t border-slate-800 flex justify-end gap-3">
