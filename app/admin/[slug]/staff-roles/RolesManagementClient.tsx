@@ -240,14 +240,14 @@ const RolesManagementClient = ({ initialData, companyId }: RolesManagementClient
                 <h2 className="text-2xl font-black text-white italic">{selectedRole} Permissions</h2>
                 <p className="text-xs text-slate-500 mt-1">Configure functional access levels for this user group.</p>
               </div>
-              <div className="flex items-center gap-2 px-4 py-2 bg-black/40 border border-slate-800 rounded-xl">
+              {/* <div className="flex items-center gap-2 px-4 py-2 bg-black/40 border border-slate-800 rounded-xl">
                 <KeyIcon className="h-4 w-4 text-amber-500" />
                 <span className="text-[10px] font-black text-slate-400 uppercase">Master Auth</span>
               </div>
               <div>
                 <h2 className="text-2xl font-black text-white italic">{selectedRole} Permissions</h2>
                 <p className="text-xs text-slate-500 mt-1">Full control over access levels and modules.</p>
-              </div>
+              </div> */}
               <button 
                 onClick={addCategory}
                 className="flex items-center gap-2 px-4 py-2 bg-blue-600/20 border border-blue-500/50 text-blue-400 rounded-xl text-[10px] font-black uppercase hover:bg-blue-600 hover:text-white transition-all"
@@ -305,33 +305,6 @@ const RolesManagementClient = ({ initialData, companyId }: RolesManagementClient
                   </div>
                 </div>
               ))}
-              {/* {matrix.map((perm, idx) => (
-                <div key={idx} className="bg-black/20 border border-slate-800/50 rounded-2xl p-6">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <span className="text-sm font-bold text-white uppercase tracking-wider w-32">{perm.category}</span>
-                    <div className="flex flex-wrap gap-4">
-                      {perm.actions.map((action, i) => (
-                        <button 
-                          key={i} 
-                          onClick={() => togglePermission(idx, i)}
-                          className="flex items-center gap-2 cursor-pointer group"
-                        >
-                          <div className={`h-5 w-5 rounded border transition-all flex items-center justify-center ${
-                            perm.status[i] 
-                            ? 'bg-blue-600 border-blue-500' 
-                            : 'bg-slate-800 border-slate-700 group-hover:border-slate-500'
-                          }`}>
-                            {perm.status[i] && <CheckBadgeIcon className="h-4 w-4 text-white" />}
-                          </div>
-                          <span className={`text-xs font-medium ${perm.status[i] ? 'text-slate-200' : 'text-slate-500'}`}>
-                            {action}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              ))} */}
             </div>
 
             <div className="mt-10 pt-8 border-t border-slate-800 flex justify-end gap-3">
