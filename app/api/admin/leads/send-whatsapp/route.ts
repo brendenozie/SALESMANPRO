@@ -21,28 +21,44 @@ export async function POST(req: Request) {
       G: `Hi 👋 I help small businesses get more customers using simple websites. Do you have a website for your business?`,
       H: `Hi 👋 Je, tayari una tovuti kwa biashara yako?`,
       I: `Hello 👋 Natumai uko poa. Je, tayari una tovuti kwa biashara yako?`,
-      J: `Hello 👋`
     };
 
     const message = scripts[scriptVersion] || scripts.A;
 
     // 2. Call the WhatsApp Gateway (Evolution API Example)
     // Replace with your actual Gateway URL and API Key
-    const gatewayUrl = process.env.WHATSAPP_GATEWAY_URL; 
-    const apiKey = process.env.WHATSAPP_API_KEY;
+    // const gatewayUrl = process.env.WHATSAPP_GATEWAY_URL; 
+    // const apiKey = process.env.WHATSAPP_API_KEY;
 
-    const response = await fetch(`${gatewayUrl}/message/sendText/${process.env.WHATSAPP_INSTANCE_NAME}`, {
-      method: "POST",
+    // const response = await fetch(`${gatewayUrl}/message/sendText/${process.env.WHATSAPP_INSTANCE_NAME}`, {
+    //   method: "POST",
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //     "apikey": apiKey!,
+    //   },
+    //   body: JSON.stringify({
+    //     number: lead.phone, // Ensure phone has country code (e.g., 254...)
+    //     options: { delay: 1200, presence: "composing" }, // Mimic human typing
+    //     textMessage: { text: message },
+    //   }),
+    // });
+    const url = `https://graph.facebook.com/v18.0/${process.env.WHATSAPP_PHONE_ID}/messages`;
+
+    const response = await fetch(url, {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
-        "apikey": apiKey!,
+        'Authorization': `Bearer ${process.env.WHATSAPP_ACCESS_TOKEN}`,
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        number: lead.phone, // Ensure phone has country code (e.g., 254...)
-        options: { delay: 1200, presence: "composing" }, // Mimic human typing
-        textMessage: { text: message },
+        messaging_product: "whatsapp",
+        to: lead.phone, // e.g., "15551234567"
+        type: "text",
+        text: { body: message },
       }),
     });
+
+    // const data = await response.json();
 
     const result = await response.json();
 
