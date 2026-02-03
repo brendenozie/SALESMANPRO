@@ -58,8 +58,6 @@ export async function POST(req: Request) {
       }),
     });
 
-    // const data = await response.json();
-
     const result = await response.json();
 
     if (response.ok) {
