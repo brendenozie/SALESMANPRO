@@ -2,12 +2,13 @@ import LeadsClient from "./LeadsClient";
 import { cookies } from "next/headers";
 
 interface LeadsPageProps {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
 export default async function LeadsPage({ params }: LeadsPageProps) {
   const cookieStore = (await cookies()).toString();
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/leads?companyId=${params.slug}`, {
+  const companyId = (await params).slug;
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/leads?companyId=${companyId}`, {
     cache: "no-store",
     headers: {
       Cookie: cookieStore,
@@ -16,5 +17,5 @@ export default async function LeadsPage({ params }: LeadsPageProps) {
 
   const leads = res.ok ? await res.json() : [];
 
-  return <LeadsClient initialLeads={leads.data || []} companyId={params.slug} />;
+  return <LeadsClient initialLeads={leads.data || []} companyId={companyId || ""} />;
 }
