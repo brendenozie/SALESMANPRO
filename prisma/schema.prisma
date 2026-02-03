@@ -425,6 +425,7 @@ model Company {
   hostelVisitors            HostelVisitor[]
   hostelStaffs              HostelStaff[]
   roles                     Role[]
+  leads                     Lead[]
 
   @@index([userId])
 }
@@ -6607,4 +6608,61 @@ model InventoryAudit {
   @@index([status])
   @@index([auditDate])
   @@index([conductedBy])
+}
+
+// sales engine
+
+model Lead {
+  id            String             @id @default(auto()) @map("_id") @db.ObjectId
+  phone         String             @unique
+  name          String?
+  email         String?
+  city          String?
+  businessType  String?
+  hasWebsite    Boolean?
+  stage         String             @default("cold")
+  tag           String?
+  lastMessageAt DateTime?
+  createdAt     DateTime           @default(now())
+  companyId     String             @db.ObjectId
+  company       Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  conversations LeadConversation[]
+  deals         Deal[]
+}
+
+// model Lead {
+//   id            String             @id @default(auto()) @map("_id") @db.ObjectId
+//   phone         String             @unique
+//   name          String?
+//   city          String?
+//   businessType  String?
+//   hasWebsite    Boolean?
+//   stage         String             @default("cold") // cold | replied | interested | negotiating | paid
+//   tag           String?
+//   lastMessageAt DateTime?
+//   createdAt     DateTime           @default(now())
+//   conversations LeadConversation[]
+//   deals         Deal[]
+//   companyId     String             @db.ObjectId
+//   company       Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+// }
+
+model LeadConversation {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  leadId    String   @db.ObjectId
+  message   String
+  direction String // in | out
+  createdAt DateTime @default(now())
+  lead      Lead     @relation(fields: [leadId], references: [id])
+}
+
+model Deal {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  leadId    String   @db.ObjectId
+  price     Int
+  monthly   Int
+  plan      String
+  status    String   @default("pending")
+  createdAt DateTime @default(now())
+  lead      Lead     @relation(fields: [leadId], references: [id])
 }
