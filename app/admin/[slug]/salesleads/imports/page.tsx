@@ -1,5 +1,9 @@
 import ImportLeadsClient from "./ImportLeadsClient";
 
-export default function ImportLeadsPage() {
-  return <ImportLeadsClient />;
+interface LeadsPageProps {
+  params: { slug: string };
+}
+
+export default function ImportLeadsPage({ params }: LeadsPageProps) {
+  return <ImportLeadsClient companyId={params.slug} />;
 }

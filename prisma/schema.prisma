@@ -6613,39 +6613,25 @@ model InventoryAudit {
 // sales engine
 
 model Lead {
-  id            String             @id @default(auto()) @map("_id") @db.ObjectId
-  phone         String             @unique
-  name          String?
-  email         String?
-  city          String?
-  businessType  String?
-  hasWebsite    Boolean?
-  stage         String             @default("cold")
-  tag           String?
-  lastMessageAt DateTime?
-  createdAt     DateTime           @default(now())
-  companyId     String             @db.ObjectId
-  company       Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  conversations LeadConversation[]
-  deals         Deal[]
+  id               String             @id @default(auto()) @map("_id") @db.ObjectId
+  phone            String             @unique
+  name             String?
+  email            String?
+  city             String?
+  businessType     String?
+  hasWebsite       Boolean?
+  stage            String             @default("cold")
+  tag              String?
+  lastMessageAt    DateTime?
+  createdAt        DateTime           @default(now())
+  companyId        String             @db.ObjectId
+  company          Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  conversations    LeadConversation[]
+  deals            Deal[]
+  automationStatus String             @default("idle") // idle, queued, sent, failed
+  lastPingAt       DateTime?
+  scriptVersion    String? // A, B, or C
 }
-
-// model Lead {
-//   id            String             @id @default(auto()) @map("_id") @db.ObjectId
-//   phone         String             @unique
-//   name          String?
-//   city          String?
-//   businessType  String?
-//   hasWebsite    Boolean?
-//   stage         String             @default("cold") // cold | replied | interested | negotiating | paid
-//   tag           String?
-//   lastMessageAt DateTime?
-//   createdAt     DateTime           @default(now())
-//   conversations LeadConversation[]
-//   deals         Deal[]
-//   companyId     String             @db.ObjectId
-//   company       Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
-// }
 
 model LeadConversation {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId

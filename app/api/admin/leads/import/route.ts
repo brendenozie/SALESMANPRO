@@ -40,7 +40,7 @@ export async function POST(req: Request) {
         update: {},
         create: {
           phone,
-          name: `${u.firstName || ""} ${u.lastName || ""}`.trim(),
+          name: `${u.name}` || `${u.firstName || ""} ${u.lastName || ""}`.trim(),
           email: u.email || null,
           createdAt: u.createdAt?.$date
             ? new Date(u.createdAt.$date)

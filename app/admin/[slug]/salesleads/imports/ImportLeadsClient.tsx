@@ -2,7 +2,11 @@
 
 import { useState } from "react";
 
-export default function ImportLeadsClient() {
+interface ImportLeadsClientProps {
+  companyId: string;
+}
+
+export default function ImportLeadsClient({ companyId }: ImportLeadsClientProps) {
   const [file, setFile] = useState<File | null>(null);
   const [result, setResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -14,6 +18,7 @@ export default function ImportLeadsClient() {
 
     const form = new FormData();
     form.append("file", file);
+    form.append("companyId", companyId);
 
     const res = await fetch("/api/admin/leads/import", {
       method: "POST",

@@ -723,11 +723,11 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
         label: "Users",  href: `/admin/${adminSlug}/saas-users`, icon: UsersIcon,  },
         {
         label: "leads", icon: UsersIcon, subItems: [
-          { label: "All Leads", href: `/admin/${adminSlug}/saasleads` },
-          { label: "Lead Bulk", href: `/admin/${adminSlug}/saasleads/imports` },
-          { label: "Add New Lead", href: `/admin/${adminSlug}/saasleads/new` },
-          { label: "Lead Sources", href: `/admin/${adminSlug}/saasleadsources` },
-          { label: "Lead Statuses", href: `/admin/${adminSlug}/saasleadstatuses` },
+          { label: "All Leads", href: `/admin/${adminSlug}/salesleads` },
+          { label: "Lead Bulk", href: `/admin/${adminSlug}/salesleads/imports` },
+          { label: "Add New Lead", href: `/admin/${adminSlug}/salesleads/new` },
+          { label: "Lead Sources", href: `/admin/${adminSlug}/salesleadsources` },
+          { label: "Lead Statuses", href: `/admin/${adminSlug}/salesleadstatuses` },
         ],
       },
       {

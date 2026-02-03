@@ -2,15 +2,50 @@ import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
-async function updateLead(req: Request, { params }: { params: { id: string } }) {
-  const data = await req.json();
-
-  const lead = await prisma.lead.update({
-    where: { id: params.id },
-    data,
+async function getLeads(req: Request) {
+  const { searchParams } = new URL(req.url);
+  const companyId = searchParams.get("companyId");
+  if (!companyId) {
+    return formatResponse(false, null, "Company ID is required", 400);
+  }
+    
+  const leads = await prisma.lead.findMany({
+    where: {
+      companyId: companyId,
+    },
+    orderBy: { createdAt: "desc" },
   });
 
-  return formatResponse(true, lead, "Updated", 200);
+  return formatResponse(true, leads, "Leads fetched", 200);
 }
 
-export const PUT = withApiHandler(updateLead);
+async function createLead(req: Request) {
+  const { phone,
+    companyId,
+    name,
+    email,
+    createdAt,
+    firstName,
+    lastName
+   } = await req.json();
+
+  const lead = await prisma.lead.upsert({
+    where: { phone },
+    update: {},
+    create: { 
+      phone,
+          name: name || `${firstName || ""} ${lastName || ""}`.trim(),
+          email: email || null,
+          createdAt: createdAt?.$date
+            ? new Date(createdAt.$date)
+            : new Date(),
+          stage: "cold",
+          companyId,
+     },
+  });
+
+  return formatResponse(true, lead, "Lead saved", 201);
+}
+
+export const GET = withApiHandler(getLeads);
+export const POST = withApiHandler(createLead);
