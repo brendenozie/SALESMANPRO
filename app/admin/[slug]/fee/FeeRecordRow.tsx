@@ -2,7 +2,7 @@
 import React from "react";
 import { BanknotesIcon, PencilSquareIcon, TrashIcon } from "@heroicons/react/24/outline";
 
-const FeeRecordRow = ({ record, onLogPayment, onEditRecord, onDeleteRecord }: any) => {
+const FeeRecordRow = ({ record, onLogPayment, onEditRecord, onDeleteRecord, onDownloadInvoice }: any) => {
   const getStatusStyle = (status: string) => {
     switch (status.toLowerCase()) {
       case 'paid': return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
@@ -48,6 +48,13 @@ const FeeRecordRow = ({ record, onLogPayment, onEditRecord, onDeleteRecord }: an
           <button onClick={() => onLogPayment(record)} className="p-2 hover:bg-emerald-500/20 text-emerald-400 rounded-xl transition-colors"><BanknotesIcon className="h-4 w-4" /></button>
           <button onClick={() => onEditRecord(record)} className="p-2 hover:bg-indigo-500/20 text-indigo-400 rounded-xl transition-colors"><PencilSquareIcon className="h-4 w-4" /></button>
           <button onClick={() => onDeleteRecord(record.id, name)} className="p-2 hover:bg-rose-500/20 text-rose-400 rounded-xl transition-colors"><TrashIcon className="h-4 w-4" /></button>
+          <button
+            onClick={onDownloadInvoice}
+            className="text-indigo-400 hover:text-indigo-300 text-xs font-bold"
+          >
+            Invoice PDF
+          </button>
+
         </div>
       </td>
     </tr>

@@ -2,7 +2,7 @@
 import React from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
-const LogPaymentModal: React.FC<any> = ({ isOpen, onClose, feeRecord, onSavePayment, isSubmitting }) => {
+const LogPaymentModal: React.FC<any> = ({ isOpen, onClose, feeRecord, onSavePayment, isSubmitting, onDownloadReceipt }) => {
   const [paymentAmount, setPaymentAmount] = React.useState<number>(0);
   const [paymentMethod, setPaymentMethod] = React.useState<string>("");
   // const [receiptNumber, setReceiptNumber] = React.useState<string>("");
@@ -48,6 +48,10 @@ const LogPaymentModal: React.FC<any> = ({ isOpen, onClose, feeRecord, onSavePaym
                   </div>
                </div>
             </div>
+
+            {/* <button type="button" onClick={() => onDownloadReceipt(feeRecord?.id)} className="text-indigo-400 hover:text-indigo-300 text-xs font-bold px-8">
+              Download Receipt
+            </button> */}
 
             <form onSubmit={handleSubmit} className="p-8 space-y-4">
               <div className="relative">

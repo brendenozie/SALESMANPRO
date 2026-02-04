@@ -61,7 +61,17 @@ const FeesClient = ({
 
   // Financial Summary
   const stats = useMemo(() => {
-    const totalDue = feeRecords && feeRecords.length > 0 ? feeRecords.reduce((acc: number, curr: any) => acc + (curr.calculatedTotalFeesDue || 0), 0) : 0;
+    // const totalDue = feeRecords && feeRecords.length > 0 ? feeRecords.reduce((acc: number, curr: any) => acc + (curr.calculatedTotalFeesDue || 0), 0) : 0;
+    const totalDue =
+        feeRecords?.reduce((acc: number, curr: any) => {
+          const feeItems = curr.appliedFeeItems || [];
+          const recordTotal = feeItems.reduce(
+            (s: number, i: any) => s + (i.amount || 0),
+            0
+          );
+          return acc + recordTotal;
+        }, 0) ?? 0;
+
     const totalPaid = feeRecords && feeRecords.length > 0 ? feeRecords.reduce((acc: number, curr: any) => acc + (curr.amountPaid || 0), 0) : 0;
     const balance = totalDue - totalPaid;
     return { totalDue, totalPaid, balance };
@@ -193,6 +203,17 @@ const FeesClient = ({
     setIsRefreshing(false);
   };
 
+  const downloadInvoice = (recordId: string) => {
+    const url = `${apiBaseUrl}/admin/fees/invoice/${recordId}`;
+    window.open(url, "_blank");
+  };
+
+  const downloadReceipt = (paymentId: string) => {
+    const url = `${apiBaseUrl}/admin/fees/receipt/${paymentId}`;
+    window.open(url, "_blank");
+  };
+
+
   return (
     <main className="min-h-screen bg-[#0B0F1A] text-slate-200 p-4 md:p-8">
       <Toaster position="top-right" />
@@ -321,7 +342,12 @@ const FeesClient = ({
                   </thead>
                   <tbody className="divide-y divide-slate-800/50">
                     {feeRecords && feeRecords.length > 0 && feeRecords.map((record: any) => (
-                      <FeeRecordRow key={record.id} record={record} onLogPayment={() => setLoggingPaymentRecord(record)} onEditRecord={() => setEditingRecord(record)} onDeleteRecord={() => {}} />
+                      <FeeRecordRow key={record.id} 
+                      record={record} 
+                      onLogPayment={() => setLoggingPaymentRecord(record)} 
+                      onEditRecord={() => setEditingRecord(record)} 
+                      onDeleteRecord={() => {}} 
+                      onDownloadInvoice={() => downloadInvoice(record.id)} />
                     ))}
                   </tbody>
                 </table>
@@ -394,6 +420,7 @@ const FeesClient = ({
         feeRecord={loggingPaymentRecord}
         onSavePayment={handleLogPaymentSave}
         isSubmitting={isSubmitting}
+        onDownloadReceipt={downloadReceipt}
       />
 
       {/* <ApplyBatchFeeModal 

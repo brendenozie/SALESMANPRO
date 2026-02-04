@@ -433,6 +433,7 @@ model Company {
   leads                     Lead[]
   staffAttendanceRecords    StaffAttendanceRecord[]
   payrollRecords            PayrollRecord[]
+  expenses                  Expense[]
 
   @@index([userId])
 }
@@ -6847,4 +6848,22 @@ model Deal {
   status    String   @default("pending")
   createdAt DateTime @default(now())
   lead      Lead     @relation(fields: [leadId], references: [id])
+}
+
+model Expense {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  expenseId   String   @unique // e.g., "EXP-4022"
+  category    String // Utilities, Maintenance, etc.
+  description String
+  vendor      String
+  amount      Float
+  status      String   @default("Pending Approval") // Paid, Pending Approval, Processing
+  date        DateTime @default(now())
+  receiptUrl  String? // For the voucher/document button
+  companyId   String   @db.ObjectId
+  company     Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("expenses")
 }

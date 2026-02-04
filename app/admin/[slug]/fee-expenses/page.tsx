@@ -50,65 +50,32 @@ interface Props {
  * at request‐time (no caching, just like getServerSideProps),
  * then renders the Client Component below.
  */
-export default async function AdminInventoryPage({ params }: Props) {
+export default async function AdminExpensePage({ params }: Props) {
   const { slug : companyId } = await params;
   const cookieHeaders = (await cookies()).toString();
 
-  let productsData: Product[] = [];
+  let initialExpenses: any[] = [];
   let categoriesData: Category[] = [];
   let agentsData: Agent[] = [];
 
   try {
-    // Fetch all products for this company
-    const productsRes = await fetch(
-      `${apiBaseUrl}/admin/get-all-products?companyId=${encodeURIComponent(companyId)}`,
+    // Fetch all expenses for this company
+    const expensesRes = await fetch(
+      `${apiBaseUrl}/admin/expenses?companyId=${encodeURIComponent(companyId)}`,
       { next: { revalidate: 60 },
         headers: { cookie: cookieHeaders }
      } // equivalent to SSR on every request
     );
-    if (productsRes.ok) {
-      productsData = (await productsRes.json()).data as Product[];
+    if (expensesRes.ok) {
+      initialExpenses = (await expensesRes.json()).data as Product[];
     }
 
-    // Fetch all categories for this company
-    const categoriesRes = await fetch(
-      `${apiBaseUrl}/admin/get-store-categories?companyId=${encodeURIComponent(
-        companyId
-      )}`,
-      { next: { revalidate: 60 }, headers: { cookie: cookieHeaders } }
-    );
-    if (categoriesRes.ok) {
-      const categoriesJson = (await categoriesRes.json()).data as {
-        results: Category[];
-      };
-      categoriesData = categoriesJson.results;
-    }
-
-    // Fetch all agents for this company
-    const agentsRes = await fetch(
-      `${apiBaseUrl}/admin/get-all-agents?companyId=${encodeURIComponent(companyId)}`,
-      { next: { revalidate: 60 }, headers: { cookie: cookieHeaders } }
-    );
-    if (agentsRes.ok) {
-      agentsData = (await agentsRes.json()).data as Agent[];
-    }
-
-    // Sanity check: ensure arrays
-    if (!Array.isArray(productsData)) {
-      throw new Error("Products API response is not an array.");
-    }
-    if (!Array.isArray(categoriesData)) {
-      throw new Error("Categories API response is not an array.");
-    }
-    if (!Array.isArray(agentsData)) {
-      throw new Error("Agents API response is not an array.");
-    }
   } catch (err: any) {
     console.error("AdminInventoryPage-fetch error:", err.message);
     // We simply proceed with empty arrays if something fails.
   }
 
   return (
-    <ExpenseTrackingClient />
+    <ExpenseTrackingClient companyId={companyId} initialExpenses={initialExpenses} />
   );
 }
