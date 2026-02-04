@@ -432,6 +432,7 @@ model Company {
   roles                     Role[]
   leads                     Lead[]
   staffAttendanceRecords    StaffAttendanceRecord[]
+  payrollRecords            PayrollRecord[]
 
   @@index([userId])
 }
@@ -4564,18 +4565,45 @@ model StaffProfile {
   // Optional fields for Staff
   position         String?
   permissions      Json? // Store staff-specific permissions here
+  salary           Float            @default(0.0)
+  bankAccount      String?
+  bankCode         String? // SWIFT or Sort Code
+
+  payrolls PayrollRecord[]
 
   doctor   Doctor? @relation(fields: [doctorId], references: [id])
   doctorId String? @db.ObjectId
 
-  createdAt DateTime? @default(now())
-  updatedAt DateTime? @updatedAt
+  createdAt       DateTime?       @default(now())
+  updatedAt       DateTime?       @updatedAt
+  salaryHistories SalaryHistory[]
 
   @@index([companyId])
   @@index([jobTitle])
   @@index([department])
   // @@index([userId])
   @@index([doctorId])
+}
+
+model PayrollRecord {
+  id        String       @id @default(auto()) @map("_id") @db.ObjectId
+  staffId   String       @db.ObjectId
+  staff     StaffProfile @relation(fields: [staffId], references: [id])
+  companyId String       @db.ObjectId
+  company   Company      @relation(fields: [companyId], references: [id])
+
+  month      Int // 1-12
+  year       Int
+  baseSalary Float
+  taxAmount  Float // Calculated at 15%
+  bonus      Float @default(0.0)
+  netPayable Float
+
+  status    String   @default("PENDING") // PENDING, PAID
+  isLocked  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@unique([staffId, month, year])
 }
 
 // NEW: Service Model
@@ -6504,10 +6532,30 @@ model StaffPayroll {
   createdAt   DateTime           @default(now())
   updatedAt   DateTime           @updatedAt
 
+  salaryHistory SalaryHistory[] // Relation to history
+
   @@unique([userId, month, year])
   @@index([userId])
   @@index([companyId])
   @@index([status])
+}
+
+model SalaryHistory {
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  staffProfileId String       @db.ObjectId
+  staffProfile   StaffProfile @relation(fields: [staffProfileId], references: [id])
+
+  previousSalary Float
+  newSalary      Float
+  changeReason   String? // e.g., "Annual Promotion", "Market Adjustment"
+  changedBy      String   @db.ObjectId // Admin User ID
+  effectiveDate  DateTime @default(now())
+
+  createdAt      DateTime      @default(now())
+  staffPayroll   StaffPayroll? @relation(fields: [staffPayrollId], references: [id])
+  staffPayrollId String?       @db.ObjectId
+
+  @@index([staffProfileId])
 }
 
 model StaffPerformanceReview {

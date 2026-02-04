@@ -87,7 +87,7 @@ const EditSalaryModal = ({ isOpen, onClose, companyId, onSuccess }: SalaryModalP
               >
                 <option value="">Choose Employee...</option>
                 {staffList.map((s: any) => (
-                  <option key={s.id} value={s.staffProfile.id}>{s.name}</option>
+                  <option key={s.id} value={s.id || s.staffProfile.id}>{s.name}</option>
                 ))}
               </select>
             </div>

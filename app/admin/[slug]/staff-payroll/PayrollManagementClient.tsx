@@ -9,7 +9,7 @@ import EditSalaryModal from "./EditSalaryModal";
 import PayslipPreviewModal from "./PayslipPreviewModal";
 import BoardApprovalToggle from "./BoardApprovalToggle";
 
-const PayrollManagementClient = ({ initialData, companyId }: any) => {
+const PayrollManagementClient = ({ initialData, initialStaff, companyId }: any) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [activeSubTab, setActiveSubTab] = useState("logs"); // "logs" or "setup"
   const [previewData, setPreviewData] = useState<any>(null);
@@ -58,30 +58,15 @@ const PayrollManagementClient = ({ initialData, companyId }: any) => {
               className="flex items-center gap-2 px-6 py-3 bg-slate-900 border border-slate-800 rounded-2xl text-slate-400 hover:text-white transition-all font-bold text-xs"
             >
               <CalculatorIcon className="h-4 w-4" /> Edit Salary Structure
-            </button>
+            </button>             
              <button 
                onClick={runPayroll}
-               disabled={isProcessing}
+               disabled={isProcessing || isLocked} // DISABLED WHEN LOCKED
                className="flex items-center gap-2 px-8 py-3 bg-amber-600 hover:bg-amber-500 text-white rounded-2xl font-bold text-xs transition-all shadow-lg shadow-amber-900/40 disabled:opacity-50"
              >
                 <ArrowDownTrayIcon className={`h-4 w-4 ${isProcessing ? 'animate-bounce' : ''}`} /> 
                 {isProcessing ? 'Calculating...' : 'Run Monthly Payroll'}
              </button>
-             <button 
-                onClick={() => setIsSalaryModalOpen(true)}
-                disabled={isLocked} // DISABLED WHEN LOCKED
-                className="flex items-center gap-2 px-6 py-3 bg-slate-900 border border-slate-800 rounded-2xl text-slate-400 disabled:opacity-30 disabled:cursor-not-allowed transition-all font-bold text-xs"
-              >
-                <CalculatorIcon className="h-4 w-4" /> Salary Structures
-              </button>
-              <button 
-                onClick={runPayroll}
-                disabled={isProcessing || isLocked} // DISABLED WHEN LOCKED
-                className="flex items-center gap-2 px-8 py-3 bg-amber-600 hover:bg-amber-500 text-white rounded-2xl font-bold text-xs transition-all shadow-lg shadow-amber-900/40 disabled:bg-slate-800 disabled:shadow-none"
-              >
-                <ArrowDownTrayIcon className="h-4 w-4" /> 
-                {isProcessing ? 'Calculating...' : 'Run Monthly Payroll'}
-              </button>
           </div>
         </header>
 
