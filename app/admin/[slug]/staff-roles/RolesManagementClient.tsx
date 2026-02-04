@@ -170,7 +170,7 @@ export default function RolesPage({ companyId, initialData }: { companyId: strin
                   <PencilIcon className="w-4 h-4" />
                 </button>
                 <button 
-                  onClick={async () => { if(confirm('Delete role?')) await fetch(`/api/roles/${role.id}`, { method: 'DELETE' }); fetchRoles(); }}
+                  onClick={async () => { if(confirm('Delete role?')) await fetch(`/api/admin/roles/${role.id}`, { method: 'DELETE' }); fetchRoles(); }}
                   className="p-2 hover:bg-red-50 text-red-600 rounded-lg"
                 >
                   <TrashIcon className="w-4 h-4" />
