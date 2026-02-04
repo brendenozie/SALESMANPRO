@@ -460,11 +460,11 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     {
       label: "FEE Management", icon: BanknotesIcon,
       subItems: [
-        { label: "FEE Dashboard", href: `/admin/${adminSlug}/fee-dashboard` },
-        { label: "FEE Structure", href: `/admin/${adminSlug}/fee-structure` },        
-        { label: "FEE Items", href: `/admin/${adminSlug}/fee-items` },          
-        { label: "FEE", href: `/admin/${adminSlug}/fee` },     
-        { label: "Transactions", href: `/admin/${adminSlug}/fee-transactions` },
+        // { label: "FEE Dashboard", href: `/admin/${adminSlug}/fee-dashboard` },
+        // { label: "FEE Structure", href: `/admin/${adminSlug}/fee-structure` },        
+        { label: "FEE Structure", href: `/admin/${adminSlug}/fee-items` },          
+        { label: "FEE Transactions", href: `/admin/${adminSlug}/fee` },     
+        // { label: "Transactions", href: `/admin/${adminSlug}/fee-transactions` },
         { label: "Invoices", href: `/admin/${adminSlug}/fee-invoices` },
         { label: "Expenses", href: `/admin/${adminSlug}/fee-expenses` },
         { label: "Profit & Loss", href: `/admin/${adminSlug}/fee-profit-loss` },
