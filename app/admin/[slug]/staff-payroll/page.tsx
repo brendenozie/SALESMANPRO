@@ -7,7 +7,7 @@ interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
-export default async function LibraryMembersPage({ params }: PageProps) {
+export default async function PayrollManagementPage({ params }: PageProps) {
   const { slug: schoolId } = await params;
   const cookieHeader = (await cookies()).toString();
 
@@ -15,7 +15,7 @@ export default async function LibraryMembersPage({ params }: PageProps) {
   let initialStaff = []; 
   try {
     const res = await fetch(
-      `${apiBaseUrl}/admin/library/members?companyId=${schoolId}`,
+      `${apiBaseUrl}/admin/payroll?companyId=${schoolId}`,
       {
         headers: { cookie: cookieHeader },
         next: { revalidate: 60 },
@@ -23,10 +23,10 @@ export default async function LibraryMembersPage({ params }: PageProps) {
     );
 
     if (res.ok) {
-      initialData = (await res.json()).data;
+      initialData = (await res.json());
     }
   } catch (err) {
-    console.error("[LibraryMembersPage] Failed to load members", err);
+    console.error("[PayrollManagementPage] Failed to load payroll data", err);
   }
 
   const resStaff = await fetch(

@@ -66,7 +66,7 @@ const PayslipPreviewModal = ({ isOpen, onClose, data }: PayslipPreviewProps) => 
               </div>
               <div className="flex justify-between text-sm py-2">
                 <span className="text-slate-600">Performance Bonus</span>
-                <span className="font-mono font-bold text-emerald-600">+${data.bonus.toLocaleString()}</span>
+                <span className="font-mono font-bold text-emerald-600">+${data.bonus?.toLocaleString()}</span>
               </div>
             </div>
 
