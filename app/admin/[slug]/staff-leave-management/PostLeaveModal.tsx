@@ -58,7 +58,7 @@ const PostLeaveModal = ({ isOpen, onClose, companyId, onSuccess }: any) => {
             <label className="text-[10px] font-black text-slate-500 uppercase ml-1">Select Employee</label>
             <select name="userId" required className="w-full bg-slate-900/50 border border-slate-800 rounded-2xl py-4 px-5 text-sm text-white outline-none focus:border-violet-500 appearance-none">
               <option value="">Choose Personnel...</option>
-              {staffList.map((s: any) => <option key={s.id} value={s.userId}>{s.user?.name}</option>)}
+              {staffList.map((s: any) => <option key={s.id} value={s.userId}>{s.name || s.user?.name}</option>)}
             </select>
           </div>
 
@@ -75,7 +75,7 @@ const PostLeaveModal = ({ isOpen, onClose, companyId, onSuccess }: any) => {
             <label className="text-[10px] font-black text-slate-500 uppercase ml-1">Backup Staff</label>
             <select name="backupId" className="w-full bg-slate-900/50 border border-slate-800 rounded-2xl py-4 px-5 text-sm text-white outline-none focus:border-violet-500 appearance-none">
               <option value="">None Assigned</option>
-              {staffList.map((s: any) => <option key={s.id} value={s.id}>{s.user?.name}</option>)}
+              {staffList.map((s: any) => <option key={s.id} value={s.id}>{s.name || s.user?.name}</option>)}
             </select>
           </div>
 

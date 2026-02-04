@@ -1496,6 +1496,7 @@ model User {
   hostelStaffs            HostelStaff[]
   userRoles               UserRole[]
   staffAttendanceRecords  StaffAttendanceRecord[]
+  leaveRequests           LeaveRequest[]
 
   @@index([companyId])
   // @@index([settingsId])
@@ -4578,6 +4579,13 @@ model StaffProfile {
   updatedAt       DateTime?       @updatedAt
   salaryHistories SalaryHistory[]
 
+  // Dynamic balances (Updated when a request is APPROVED)
+  annualLeaveRemaining Int @default(21)
+  sickLeaveRemaining   Int @default(10)
+
+  // Relations
+  backupFor LeaveRequest[] @relation("BackupCoverage")
+
   @@index([companyId])
   @@index([jobTitle])
   @@index([department])
@@ -6538,6 +6546,59 @@ model StaffPayroll {
   @@index([userId])
   @@index([companyId])
   @@index([status])
+}
+
+// 1. Leave Policy: Defines how many days are allowed per type (Annual, Sick, etc.)
+model LeavePolicy {
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  companyId   String @db.ObjectId
+  leaveType   String // e.g., "ANNUAL", "SICK", "MATERNITY"
+  daysAllowed Int    @default(21)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([companyId, leaveType])
+}
+
+// 2. Leave Request: The core transaction model
+model LeaveRequest {
+  id        String @id @default(auto()) @map("_id") @db.ObjectId
+  companyId String @db.ObjectId
+  userId    String @db.ObjectId
+
+  type          String // ANNUAL, SICK, etc.
+  startDate     DateTime
+  endDate       DateTime
+  daysRequested Int
+  reason        String?
+  status        LeaveStatus @default(PENDING) // PENDING, APPROVED, DECLINED
+
+  // Backup coverage
+  backupStaffId String?       @db.ObjectId
+  backupStaff   StaffProfile? @relation("BackupCoverage", fields: [backupStaffId], references: [id])
+
+  adminNote String?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  DECLINED
+}
+
+// 3. Leave Freeze: Prevents requests during specific periods
+model LeaveFreeze {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  companyId       String   @db.ObjectId
+  label           String // e.g., "End of Year Exams"
+  startDate       DateTime
+  endDate         DateTime
+  departmentScope String   @default("ALL") // "ALL" or specific Dept Name
+
+  createdAt DateTime @default(now())
 }
 
 model SalaryHistory {

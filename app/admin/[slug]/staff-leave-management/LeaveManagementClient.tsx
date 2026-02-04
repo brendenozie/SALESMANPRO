@@ -12,7 +12,7 @@ import LeaveCalendarView from "./LeaveCalendarView";
 import { format, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths } from "date-fns";
 
 
-const LeaveManagementClient = ({ companyId, initialRequests }: any) => {
+const LeaveManagementClient = ({ companyId, initialRequests, initialStaff }: any) => {
   const [activeTab, setActiveTab] = useState("Pending");
   const [isPolicyModalOpen, setIsPolicyModalOpen] = useState(false);
   const [requests, setRequests] = useState(initialRequests || []);
@@ -20,6 +20,7 @@ const LeaveManagementClient = ({ companyId, initialRequests }: any) => {
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"list" | "calendar">("list");
   const [calendarData, setCalendarData] = useState([]);
+  const [staff, setStaff] = useState(initialStaff || []);
   
   const [conflicts, setConflicts] = useState<Record<string, string[]>>({});
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -108,7 +109,7 @@ const LeaveManagementClient = ({ companyId, initialRequests }: any) => {
               <h4 className="text-xs font-black text-white uppercase tracking-widest">Upcoming Continuity Risks</h4>
             </div>
             <ul className="space-y-3">
-              {Object.entries((conflicts && conflicts.length > 0 && conflicts) || []).slice(0, 3).map(([date, depts]) => (
+              {Object.entries(conflicts || {}).slice(0, 3).map(([date, depts]) => (
                 <li key={date} className="flex justify-between items-center text-[10px]">
                   <span className="font-mono text-slate-400">{format(new Date(date), 'MMM dd')}</span>
                   <span className="font-bold text-rose-400">{depts.join(", ")} Critical</span>

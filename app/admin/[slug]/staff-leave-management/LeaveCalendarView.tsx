@@ -15,9 +15,9 @@ const LeaveCalendarView = ({ events, companyId }: { events: any[], companyId: st
   });
 
   const getEventsForDay = (day: Date) => {
-    return events.filter(event => 
-      day >= new Date(event.start) && day <= new Date(event.end)
-    );
+      return (events && events?.filter(event => 
+        day >= new Date(event.start) && day <= new Date(event.end)
+      ) ) || [];
   };
 
   useEffect(() => {

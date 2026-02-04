@@ -7,14 +7,15 @@ interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
-export default async function LibraryMembersPage({ params }: PageProps) {
+export default async function LeaveManagementPage({ params }: PageProps) {
   const { slug: schoolId } = await params;
   const cookieHeader = (await cookies()).toString();
 
-  let initialMembers = [];  
+  let initialRequests = [];  
+  let initialStaff = [];
   try {
     const res = await fetch(
-      `${apiBaseUrl}/admin/library/members?companyId=${schoolId}`,
+      `${apiBaseUrl}/admin/leave?companyId=${schoolId}`,
       {
         headers: { cookie: cookieHeader },
         next: { revalidate: 60 },
@@ -22,16 +23,30 @@ export default async function LibraryMembersPage({ params }: PageProps) {
     );
 
     if (res.ok) {
-      initialMembers = (await res.json()).data;
+      initialRequests = (await res.json()).data;
     }
   } catch (err) {
-    console.error("[LibraryMembersPage] Failed to load members", err);
+    console.error("[LeaveManagementPage] Failed to load leave requests", err);
   }
+
+  const resStaff = await fetch(
+      `${apiBaseUrl}/admin/staff?companyId=${schoolId}`,
+      {
+        headers: { cookie: cookieHeader },
+        cache: 'no-store'
+      }
+    );
+
+    if (resStaff.ok) {
+      const json = await resStaff.json();
+      initialStaff = json.data;
+    }
 
   return (
     <LeaveManagementClient
-      // initialMembers={initialMembers}
-      // schoolId={schoolId}
+      initialRequests={initialRequests}
+      initialStaff={initialStaff}
+      companyId={schoolId}
     />
   );
 }
