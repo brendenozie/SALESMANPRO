@@ -7,14 +7,15 @@ interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
-export default async function LibraryMembersPage({ params }: PageProps) {
+export default async function StaffAttendancePage({ params }: PageProps) {
   const { slug: schoolId } = await params;
   const cookieHeader = (await cookies()).toString();
 
-  let initialMembers = [];  
+  let initialData = [];  
+  let initialStaff = [];
   try {
     const res = await fetch(
-      `${apiBaseUrl}/admin/library/members?companyId=${schoolId}`,
+      `${apiBaseUrl}/admin/attendance?companyId=${schoolId}`,
       {
         headers: { cookie: cookieHeader },
         next: { revalidate: 60 },
@@ -22,16 +23,32 @@ export default async function LibraryMembersPage({ params }: PageProps) {
     );
 
     if (res.ok) {
-      initialMembers = (await res.json()).data;
+      initialData = (await res.json());
+      console.log("Fetched initial attendance data:", initialData);
     }
+
+    const resStaff = await fetch(
+      `${apiBaseUrl}/admin/staff?companyId=${schoolId}`,
+      {
+        headers: { cookie: cookieHeader },
+        cache: 'no-store'
+      }
+    );
+
+    if (resStaff.ok) {
+      const json = await resStaff.json();
+      initialStaff = json.data;
+    }
+
   } catch (err) {
-    console.error("[LibraryMembersPage] Failed to load members", err);
+    console.error("[StaffAttendancePage] Failed to load attendance data", err);
   }
 
   return (
     <StaffAttendanceClient
-      // initialMembers={initialMembers}
-      // schoolId={schoolId}
+      initialData={initialData}
+      initialStaff={initialStaff}
+      schoolId={schoolId}
     />
   );
 }

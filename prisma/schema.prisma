@@ -231,6 +231,11 @@ model Company {
   currency     String  @default("KES")
   locale       String  @default("en-US")
 
+  lat     Float? // Office Latitude
+  lng     Float? // Office Longitude
+  radius  Int      @default(200) // Allowed distance in meters
+  devices Device[]
+
   settings CompanySettings?
 
   pricingTiers Json[] // ServicePricingTier name, description, price, duration, features[]
@@ -426,6 +431,7 @@ model Company {
   hostelStaffs              HostelStaff[]
   roles                     Role[]
   leads                     Lead[]
+  staffAttendanceRecords    StaffAttendanceRecord[]
 
   @@index([userId])
 }
@@ -1363,6 +1369,7 @@ model User {
   // Add these fields for patient data
   dateOfBirth DateTime? // Added for patient's date of birth
   gender      String? // Added for patient's gender (consider enum for strict values)
+  hardwareId  String?   @unique // The ID assigned to the user in the physical scanner
 
   ProductReview         ProductReview[]
   ProductReviewLog      ProductReviewLog[]
@@ -1480,13 +1487,14 @@ model User {
   reviewerPerformanceReviews StaffPerformanceReview[] @relation("ReviewerPerformanceReviews")
 
   // Asset and Inventory relations
-  assetTrackingPerformer  AssetTracking[]   @relation("AssetTrackingPerformer")
-  inventoryAuditConductor InventoryAudit[]  @relation("InventoryAuditConductor")
+  assetTrackingPerformer  AssetTracking[]         @relation("AssetTrackingPerformer")
+  inventoryAuditConductor InventoryAudit[]        @relation("InventoryAuditConductor")
   transportShifts         TransportShift[]
   librarySuppliers        LibrarySupplier[]
   transportDriver         TransportDriver?
   hostelStaffs            HostelStaff[]
   userRoles               UserRole[]
+  staffAttendanceRecords  StaffAttendanceRecord[]
 
   @@index([companyId])
   // @@index([settingsId])
@@ -1494,6 +1502,14 @@ model User {
   @@index([parentId])
   @@index([headTeacherId])
   @@index([status])
+}
+
+model Device {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  name      String // e.g., "Front Lobby Scanner"
+  apiKey    String  @unique
+  companyId String  @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id])
 }
 
 enum Status {
@@ -6513,6 +6529,77 @@ model StaffPerformanceReview {
   @@index([employeeId])
   @@index([reviewerId])
 }
+
+// Enums for standardizing data
+enum StaffAttendanceStatus {
+  PRESENT
+  LATE
+  ABSENT
+  ON_LEAVE
+}
+
+enum StaffAttendanceMethod {
+  BIOMETRIC
+  GEO_FENCE
+  MANUAL_OVERRIDE
+  WEB_PORTAL
+}
+
+model StaffAttendanceRecord {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String  @db.ObjectId
+  user      User    @relation(fields: [userId], references: [id])
+  companyId String  @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id])
+
+  date         DateTime // Canonical date (e.g., 2024-05-20 00:00:00)
+  checkInTime  DateTime?
+  checkOutTime DateTime?
+
+  status StaffAttendanceStatus @default(PRESENT)
+  method StaffAttendanceMethod @default(WEB_PORTAL)
+
+  // Storage for manual entry details
+  isManual  Boolean @default(false)
+  adminNote String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, date]) // One attendance record per user per day
+  @@index([companyId, date])
+}
+
+// Optional: Detailed audit trail for every single clock action
+model StaffAttendanceAuditLog {
+  id        String                @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String                @db.ObjectId
+  companyId String                @db.ObjectId
+  type      String // "IN" or "OUT"
+  timestamp DateTime
+  method    StaffAttendanceMethod
+  note      String?
+  adminId   String?               @db.ObjectId // Who performed the override
+}
+
+// model StaffAttendanceRecord {
+//   id        String    @id @default(auto()) @map("_id") @db.ObjectId
+//   companyId String    @db.ObjectId
+//   company   Company   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+//   date      DateTime  @default(now())
+//   arrival   DateTime?
+//   departure DateTime?
+//   status    String    @default("Present") // Present, Absent, Late, Excused
+//   notes     String?
+//   createdAt DateTime  @default(now())
+//   updatedAt DateTime  @updatedAt
+//   userId    String    @db.ObjectId
+//   user      User      @relation(fields: [userId], references: [id])
+
+//   @@index([userId])
+//   @@index([companyId])
+//   @@index([date])
+// }
 
 // ============================================================
 // FEE MANAGEMENT MODELS

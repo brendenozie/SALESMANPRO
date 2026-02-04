@@ -7,7 +7,7 @@ import {
 } from "@heroicons/react/24/outline";
 import ManualClockModal from "./ManualClockModal";
 
-const StaffAttendanceClient = ({ initialData, companyId }: any) => {
+const StaffAttendanceClient = ({ initialData, initialStaff, schoolId }: any) => {
   const [view, setView] = useState("Daily");
   const [isManualModalOpen, setIsManualModalOpen] = useState(false);
   const [logs, setLogs] = useState(initialData?.logs || []);
@@ -17,7 +17,7 @@ const StaffAttendanceClient = ({ initialData, companyId }: any) => {
   const refreshData = async () => {
     setRefreshing(true);
     try {
-      const res = await fetch(`/api/admin/attendance?companyId=${companyId}`);
+      const res = await fetch(`/api/admin/attendance?companyId=${schoolId}`);
       const data = await res.json();
       if (data.logs) {
         setLogs(data.logs);
@@ -162,7 +162,8 @@ const StaffAttendanceClient = ({ initialData, companyId }: any) => {
       <ManualClockModal 
         isOpen={isManualModalOpen} 
         onClose={() => setIsManualModalOpen(false)} 
-        companyId={companyId}
+        companyId={schoolId}
+        initialStaff={initialStaff}
         onSuccess={refreshData} // Automatically reloads table after entry
       />
       

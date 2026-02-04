@@ -8,11 +8,12 @@ interface ManualClockModalProps {
   onClose: () => void;
   companyId: string;
   onSuccess: () => void;
+  initialStaff: any[];
 }
 
-const ManualClockModal = ({ isOpen, onClose, companyId, onSuccess }: ManualClockModalProps) => {
+const ManualClockModal = ({ isOpen, onClose, companyId, onSuccess, initialStaff }: ManualClockModalProps) => {
   const [loading, setLoading] = useState(false);
-  const [staffList, setStaffList] = useState([]);
+  const [staffList, setStaffList] = useState(initialStaff || []);
 
   useEffect(() => {
     if (isOpen) {
@@ -84,7 +85,7 @@ const ManualClockModal = ({ isOpen, onClose, companyId, onSuccess }: ManualClock
               <select name="userId" required className="w-full bg-slate-900/50 border border-slate-800 rounded-2xl py-4 pl-14 pr-5 text-sm text-white focus:border-lime-500 outline-none appearance-none">
                 <option value="">Choose Personnel...</option>
                 {staffList.map((staff: any) => (
-                  <option key={staff.id} value={staff.userId}>{staff.user?.name}</option>
+                  <option key={staff.id} value={staff.userId}>{staff.name || staff.user?.name || staff.email}</option>
                 ))}
               </select>
             </div>
