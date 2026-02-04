@@ -1,59 +1,35 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 
+// GET: Fetch all roles for a specific company
 export async function GET(req: Request) {
-  try {
-    const { searchParams } = new URL(req.url);
-    const companyId = searchParams.get("companyId");
-    if (!companyId) {
-      return NextResponse.json({ error: "companyId is required" }, { status: 400 });
-    }
-    const roles = await prisma.role.findMany({
-      where: { companyId },
-      include: {  
-        _count: {
-          select: { users: true } // Counts records in the UserRole junction table
-        }
-      },
-      orderBy: { createdAt: 'asc' }
-    });
-    return NextResponse.json({ data: roles });
-  } catch (error) {
-    return NextResponse.json({ error: "Failed to fetch roles" }, { status: 500 });
-  }
+  const { searchParams } = new URL(req.url);
+  const companyId = searchParams.get('companyId');
+
+  if (!companyId) return NextResponse.json({ error: "Missing Company ID" }, { status: 400 });
+
+  const roles = await prisma.role.findMany({
+    where: { companyId },
+    orderBy: { createdAt: 'desc' }
+  });
+  return NextResponse.json(roles);
 }
 
+// POST: Create a new role
 export async function POST(req: Request) {
   try {
-    const { companyId, roleName, department, baseTemplate } = await req.json();
+    const body = await req.json();
+    const { name, companyId, permissions } = body;
 
-    // Set default matrix based on template
-    const defaultPermissions = [
-      { category: 'Staff Records', actions: ['View', 'Edit', 'Delete'], status: [true, false, false] },
-      { category: 'Financials', actions: ['View', 'Manage'], status: [false, false] },
-    ];
-
-    const newRole = await prisma.role.findMany({
-      where: { companyId },
-      include: {
-        _count: {
-          select: { users: true } // Counts records in the UserRole junction table
-        }
+    const role = await prisma.role.create({
+      data: {
+        name,
+        companyId,
+        permissions: permissions || [],
       },
-      orderBy: { createdAt: 'asc' }
     });
-    
-    // role.create({
-    //   data: {
-    //     name: roleName,
-    //     companyId: companyId,
-    //     permissions: defaultPermissions,
-    //     userCount: role._count.users
-    //   },
-    // });
-
-    return NextResponse.json({ success: true, role: newRole });
+    return NextResponse.json(role);
   } catch (error) {
-    return NextResponse.json({ error: "Role already exists" }, { status: 400 });
+    return NextResponse.json({ error: "Role name must be unique within the company" }, { status: 400 });
   }
 }
