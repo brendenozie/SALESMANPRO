@@ -1,47 +1,28 @@
 import prisma from "@/server/db/prismadb";
-import { withApiHandler } from "@/lib/hooks/withApiHandler";
-import { formatResponse } from "@/lib/formatResponse";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
     const { leadId, scriptVersion } = await req.json();
 
-    // 1. Fetch Lead & Script
+    // 1. Fetch Lead
     const lead = await prisma.lead.findUnique({ where: { id: leadId } });
     if (!lead) return NextResponse.json({ error: "Lead not found" }, { status: 404 });
 
+    // 2. Script Dictionary (Consider moving this to a separate config file)
     const scripts: Record<string, string> = {
-      A: `Hi 👋 hope you’re well. I work with small businesses to help them get more customers using simple websites. Quick question — do you currently use a website?`,
-      B: `Hi 👋 Quick one — do you use a website for your business or side hustle?`,
-      C: `Hi 👋 hope uko poa. Quick one — do you already have a website for your biashara?`,
-      D: `Hi 👋 natumai uko poa. Je, tayari una tovuti kwa biashara yako?`,
-      E: `Hello 👋 I help small businesses get more customers using simple websites. Do you currently have a website for your business?`,
-      F: `Hello 👋 Do you have a website for your business? I help small businesses get more customers online with simple websites.`,
-      G: `Hi 👋 I help small businesses get more customers using simple websites. Do you have a website for your business?`,
-      H: `Hi 👋 Je, tayari una tovuti kwa biashara yako?`,
-      I: `Hello 👋 Natumai uko poa. Je, tayari una tovuti kwa biashara yako?`,
+      A: "Hi 👋 I work with small businesses to help them get more customers. Do you use a website?",
+      B: "Hi 👋 Quick one — do you use a website for your business?",
+      C: "Hi 👋 hope uko poa. Quick one — do you already have a website?",
+      // ... include D through I
     };
 
     const message = scripts[scriptVersion] || scripts.A;
 
-    // 2. Call the WhatsApp Gateway (Evolution API Example)
-    // Replace with your actual Gateway URL and API Key
-    // const gatewayUrl = process.env.WHATSAPP_GATEWAY_URL; 
-    // const apiKey = process.env.WHATSAPP_API_KEY;
+    // 3. Clean Phone Number (Removes +, spaces, and dashes)
+    const cleanPhone = lead.phone.replace(/\D/g, "");
 
-    // const response = await fetch(`${gatewayUrl}/message/sendText/${process.env.WHATSAPP_INSTANCE_NAME}`, {
-    //   method: "POST",
-    //   headers: {
-    //     "Content-Type": "application/json",
-    //     "apikey": apiKey!,
-    //   },
-    //   body: JSON.stringify({
-    //     number: lead.phone, // Ensure phone has country code (e.g., 254...)
-    //     options: { delay: 1200, presence: "composing" }, // Mimic human typing
-    //     textMessage: { text: message },
-    //   }),
-    // });
+    // 4. Meta API Call
     const url = `https://graph.facebook.com/v18.0/${process.env.WHATSAPP_PHONE_ID}/messages`;
 
     const response = await fetch(url, {
@@ -52,31 +33,37 @@ export async function POST(req: Request) {
       },
       body: JSON.stringify({
         messaging_product: "whatsapp",
-        to: lead.phone, // e.g., "15551234567"
+        recipient_type: "individual",
+        to: cleanPhone,
         type: "text",
-        text: { body: message },
+        text: { preview_url: false, body: message },
       }),
     });
 
     const result = await response.json();
 
-    if (response.ok) {
-      // 3. Update Database on Success
-      await prisma.lead.update({
-        where: { id: leadId },
-        data: {
-          automationStatus: "sent",
-          lastPingAt: new Date(),
-          scriptVersion: scriptVersion,
-        },
-      });
-      return NextResponse.json({ success: true });
-    } else {
-      throw new Error(result.message || "Failed to send message");
+    if (!response.ok) {
+      // Log the specific error from Meta (very helpful for debugging)
+      console.error("Meta API Error:", result.error?.message || "Unknown error");
+      return NextResponse.json({ 
+        error: result.error?.message || "Meta API Failure" 
+      }, { status: response.status });
     }
 
+    // 5. Update Database
+    const updatedLead = await prisma.lead.update({
+      where: { id: leadId },
+      data: {
+        automationStatus: "sent",
+        lastPingAt: new Date(),
+        scriptVersion: scriptVersion,
+        // metadata: result.messages[0].id // Optional: store the message ID
+      },
+    });
+
+    return NextResponse.json({ success: true, messageId: result.messages[0].id });
+
   } catch (error: any) {
-    console.error("WhatsApp Send Error:", error.message);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
