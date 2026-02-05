@@ -1,44 +1,12 @@
 // app/admin/[slug]/pos/page.tsx
 import React from "react";
-import AdminPOSClient from "./AdminPOSClient";
+
+import AdminPOSClient from "./AdminPOSClient";// Import Product type
+import { MarketListingForm, IStoreCategory } from "@/types/typings";
+import { cookies } from "next/headers";
+import { getAuthSession } from "@/lib/auth";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
-
-// Re-using Product and ProductCategory types from Menu module for consistency
-export type ProductCategory = {
-  id: string;
-  name: string;
-  slug: string;
-  description: string;
-  image: string | null;
-  sortOrder: number;
-  visible: boolean;
-  companyId: string | null;
-};
-
-export type Product = {
-  id: string;
-  name: string;
-  description: string | null;
-  images: { url: string }[];
-  video: string | null;
-  tags: string[];
-  productCategoryId: string | null;
-  category: { name: string } | null;
-  costPrice: number;
-  salesPrice: number;
-  finalPrice: number;
-  discount: number | null;
-  isAvailable: boolean;
-  isOnOffer: boolean;
-  isFlashDeal: boolean;
-  isNewArrival: boolean;
-  isDiscounted: boolean;
-  isFeatured: boolean;
-  ingredients: string | null;
-  createdAt: string;
-  updatedAt: string;
-};
 
 interface PageProps {
   params:Promise<{ slug: string }>
@@ -48,36 +16,72 @@ interface PageProps {
  * Server Component: Fetches initial data for the POS.
  */
 export default async function PosPage({ params }: PageProps) {
+  const session = await getAuthSession();
+  
   const { slug : companyId } = await params;
-  let categoriesData: ProductCategory[] = [];
-  let productsData: Product[] = [];
+  const cookieHeaders = (await cookies()).toString();
+  const userName = session?.user?.name || "Guest";
+  // console.log("Current userName from cookies:", userName);
+
+  //get user from session cookie
+  // Fetch initial data: categories and products
+
+  let initialCategories: IStoreCategory[] = [];
+  let initialProducts: MarketListingForm[] = [];
 
   try {
-    // Fetch Product Categories for the company
-    const categoriesRes = await fetch(`${apiBaseUrl}/admin/menu-categories?companyId=${companyId}`, { next: { revalidate: 60 } });
+    // Fetch Store Categories
+    // Correcting the API path to match your provided route: /api/store-categories
+    const categoriesRes = await fetch(`${apiBaseUrl}/admin/pos-categories?companyId=${companyId}`, {
+      next: { revalidate: 60 },
+      headers: { cookie: cookieHeaders }, // Forward cookies for authentication
+    });
     if (categoriesRes.ok) {
-      categoriesData = (await categoriesRes.json()) as ProductCategory[];
+      const categoriesData = (await categoriesRes.json()).data;
+      console.log("Fetched categories data:", categoriesData);
+      initialCategories = categoriesData.categories || []; // Ensure it's an array
     } else {
-      console.error("[PosPage] Failed to fetch categories →", categoriesRes.status, categoriesRes.statusText);
+      console.error(`Failed to fetch categories: ${categoriesRes.status} ${categoriesRes.statusText}`);
     }
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+  }
 
-    // Fetch Products (dishes) for the company
-    const productsRes = await fetch(`${apiBaseUrl}/admin/products?companyId=${companyId}`, { next: { revalidate: 60 } });
+  try {
+    // Fetch Marketplace Listings (Products)
+    // Correcting the API path to match your provided route: /api/marketplace-list
+    const productsRes = await fetch(`${apiBaseUrl}/admin/pos-marketplace-listings?companyId=${companyId}`, {
+      next: { revalidate: 60 },
+      headers: { cookie: cookieHeaders }, // Forward cookies for authentication
+    });
     if (productsRes.ok) {
-      productsData = (await productsRes.json()) as Product[];
+      const productsData = (await productsRes.json()).data;
+      console.log("Fetched products data:", productsData);
+      // Map marketplace listings to the Product type expected by StorePOSPageClient
+      initialProducts = productsData.results ;
+        
+      //   || []).map((listing: any) => ({
+      //   id: listing.id, // Use the listing's ID as the product ID for cart tracking
+      //   name: listing.product?.name || 'Unnamed Product',
+      //   description: listing.product?.description || 'No description available.',
+      //   price: listing.price, // Use the listing's specific price
+      //   imageUrl: listing.product?.images?.[0] || 'https://placehold.co/100x100/4B5563/ffffff?text=No+Image', // First image
+      //   stock: listing.quantityAvailable, // Listing's available quantity
+      // }));
     } else {
-      console.error("[PosPage] Failed to fetch products →", productsRes.status, productsRes.statusText);
+      console.error(`Failed to fetch products: ${productsRes.status} ${productsRes.statusText}`);
     }
-
-  } catch (err: any) {
-    console.error("[PosPage] Error fetching POS data →", err.message);
+  } catch (error) {
+    console.error("Error fetching products:", error);
   }
 
   return (
     <AdminPOSClient
-      // initialCategories={categoriesData}
-      // initialProducts={productsData}
-      // companyId={companyId}
+      companyId={companyId}
+      initialCategories={initialCategories}
+      initialProducts={initialProducts}
+      userId={session?.user?.id || null}
+      userName={userName}
     />
   );
 }
