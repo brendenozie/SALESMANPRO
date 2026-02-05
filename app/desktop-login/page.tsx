@@ -1,148 +1,122 @@
-// auth.salesmanpro.site
-
 "use client";
-import { authOptions } from "@/lib/auth";
-
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowPathIcon, GlobeAltIcon, ShieldCheckIcon } from "@heroicons/react/24/outline";
 
-// Placeholder for an actual Google Icon component
-const GoogleIcon = (props: React.SVGProps<SVGSVGElement>) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="10" />
-    <circle cx="12" cy="12" r="3" />
-    <path d="M16 12h5" />
-    <path d="M8 12H3" />
-    <path d="M12 16v5" />
-    <path d="M12 8V3" />
-  </svg>
-);
-
-// Placeholder for a loading spinner component (like from lucide-react)
-const Loader2 = (props: React.SVGProps<SVGSVGElement>) => (
-    <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-spin">
-        <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-    </svg>
-);
-
-
-export default function SignInPage() {
+export default function DesktopSignIn() {
   const params = useSearchParams();
-  // Ensure the callback URL is secure, if not from the query parameter
   const callbackUrl = params.get("callbackUrl") || "https://salesmanpro.site";
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const handleGoogleSignIn = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      // Save callbackUrl locally so we can access it later
-    localStorage.setItem("callbackUrl", callbackUrl);
-      // We set redirect: false to handle the redirect manually after the promise resolves
-      // or to display a custom loading state while next-auth is processing.
-      // However, for a simple sign-in flow, keeping redirect: true is often simpler.
-      // Let's stick with the original simplified flow for now.
-      await signIn("google", {
-        redirect: true,
-        callbackUrl: callbackUrl,
-      });
-    } catch (err) {
-      console.error(err);
-      setError("Sign-In failed. Please check your connection and try again.");
-      setLoading(false);
-    }
+    setLoading(true);
+    await signIn("google", { redirect: true, callbackUrl });
   };
 
   return (
-    // 1. **Background**: Richer, more professional gradient. Added background patterns for visual interest.
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900 overflow-hidden relative">
-      {/* Optional: Add decorative background shapes for a modern look */}
-      <div className="absolute top-0 left-0 w-80 h-80 bg-yellow-400 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob dark:bg-yellow-600"></div>
-      <div className="absolute bottom-0 right-0 w-80 h-80 bg-indigo-400 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000 dark:bg-indigo-600"></div>
+    <div className="relative min-h-screen w-full flex items-center justify-center bg-[#050505] overflow-hidden font-sans">
       
-      {/* 2. **Login Card**: Larger, rounded, professional shadow, and a subtle glass-like effect on dark mode. */}
-      <div className="relative z-10 bg-white dark:bg-gray-800 backdrop-blur-sm bg-opacity-95 dark:bg-opacity-80 rounded-3xl shadow-2xl transition-all duration-300 p-10 max-w-sm w-full text-center border border-gray-100 dark:border-gray-700">
-        
-        {/* 3. **Branding/Header** */}
-        <div className="mb-8">
-          {/* Logo Placeholder (use an actual SVG or Image here) */}
-          <div className="w-16 h-16 mx-auto mb-4 p-2 bg-yellow-500 rounded-full flex items-center justify-center shadow-lg">
-            {/* Replace with a SalesmanPro specific icon */}
-            <GoogleIcon className="w-8 h-8 text-white" /> 
-          </div>          
-          <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">
-            Powered by
-          </p>
-          <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white transition-colors duration-300">
-            SalesmanPro<span className="text-sm">.site</span>
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">
-            The future of sales management.
-          </p>
-        </div>
-
-        <div className="mb-6">
-            <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200">
-                Welcome Back!
-            </h2>
-            <p className="text-gray-500 dark:text-gray-400 mt-2 text-sm">
-                Securely sign in using your Google account.
-            </p>
-        </div>
-
-        {/* 4. **Sign In Button**: Clearer intent, dedicated Google branding, better hover/active states. */}
-        <button
-          onClick={handleGoogleSignIn}
-          disabled={loading}
-          className="w-full flex items-center justify-center space-x-3 
-                     bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 
-                     py-3 border border-gray-300 dark:border-gray-600 rounded-xl 
-                     font-medium shadow-md hover:shadow-lg hover:border-yellow-500 dark:hover:border-yellow-400
-                     transition-all duration-300 ease-in-out disabled:opacity-60 disabled:cursor-not-allowed
-                     transform hover:-translate-y-0.5"
-        >
-          {loading ? (
-            <>
-              <Loader2 className="w-5 h-5 text-yellow-500" />
-              <span>Signing in...</span>
-            </>
-          ) : (
-            <>
-              {/* Actual Google Logo/Icon should be here */}
-              <GoogleIcon className="w-5 h-5 text-yellow-500" />
-              <span>Sign in with Google</span>
-            </>
-          )}
-        </button>
-
-        {/* 5. **Error/Footer** */}
-        {error && (
-          <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900 rounded-lg">
-            <p className="text-red-600 dark:text-red-400 text-sm font-medium">
-              🚨 {error}
-            </p>
-          </div>
-        )}
-        
-        <p className="mt-8 text-xs text-gray-400 dark:text-gray-500">
-            By signing in, you agree to our Terms of Service.
-        </p>
-
+      {/* --- 1. THE CAPTIVATING BACKGROUND --- */}
+      {/* Animated Mesh Gradients */}
+      <div className="absolute inset-0 z-0">
+        <motion.div 
+          animate={{ 
+            scale: [1, 1.2, 1],
+            x: [0, 50, 0],
+            y: [0, 30, 0] 
+          }}
+          transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+          className="absolute -top-[10%] -left-[10%] w-[50%] h-[50%] bg-blue-600/20 rounded-full blur-[120px]" 
+        />
+        <motion.div 
+          animate={{ 
+            scale: [1, 1.3, 1],
+            x: [0, -40, 0],
+            y: [0, -50, 0] 
+          }}
+          transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+          className="absolute -bottom-[10%] -right-[10%] w-[60%] h-[60%] bg-yellow-500/10 rounded-full blur-[120px]" 
+        />
       </div>
-      
-      {/* Add Tailwind animation utility classes for the decorative blobs (requires configuration or manual styling) 
-          If you use a global CSS file, you can define these:
-          @keyframes blob {
-            0%, 100% { transform: translate(0px, 0px) scale(1); }
-            33% { transform: translate(30px, -50px) scale(1.1); }
-            66% { transform: translate(-20px, 20px) scale(0.9); }
-          }
-          .animate-blob { animation: blob 7s infinite; }
-          .animation-delay-2000 { animation-delay: 2s; }
-      */}
 
+      {/* --- 2. THE GLASS LOGIN PORTAL --- */}
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="relative z-10 w-full max-w-[420px] p-1 bg-gradient-to-b from-white/10 to-transparent rounded-[32px]"
+      >
+        <div className="bg-[#0A0A0A]/90 backdrop-blur-3xl rounded-[31px] p-10 shadow-2xl border border-white/5">
+          
+          {/* Header Section */}
+          <div className="text-center mb-10">
+            <motion.div 
+              initial={{ rotate: -10, opacity: 0 }}
+              animate={{ rotate: 0, opacity: 1 }}
+              className="inline-flex p-3 bg-yellow-500 rounded-2xl shadow-[0_0_30px_rgba(234,179,8,0.3)] mb-6"
+            >
+              <ShieldCheckIcon className="w-8 h-8 text-black" />
+            </motion.div>
+            
+            <h1 className="text-3xl font-black tracking-tighter text-white mb-2">
+              SALESMAN<span className="text-yellow-500">PRO</span>
+            </h1>
+            <div className="flex items-center justify-center space-x-2">
+               <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20 uppercase tracking-widest">
+                 Secure Desktop Terminal
+               </span>
+            </div>
+          </div>
+
+          {/* Action Section */}
+          <div className="space-y-6">
+            <div className="text-center">
+              <h2 className="text-lg font-medium text-gray-200">System Authentication</h2>
+              <p className="text-sm text-gray-500 mt-1">Please sign in to access your dashboard</p>
+            </div>
+
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleGoogleSignIn}
+              disabled={loading}
+              className="group relative w-full flex items-center justify-center space-x-3 bg-white text-black py-4 rounded-2xl font-bold transition-all hover:shadow-[0_0_20px_rgba(255,255,255,0.2)] disabled:opacity-50"
+            >
+              {loading ? (
+                <ArrowPathIcon className="w-5 h-5 animate-spin" />
+              ) : (
+                <>
+                  <svg className="w-5 h-5" viewBox="0 0 24 24">
+                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                  </svg>
+                  <span>Connect with Google</span>
+                </>
+              )}
+            </motion.button>
+          </div>
+
+          {/* Footer Info */}
+          <div className="mt-10 pt-8 border-t border-white/5 flex justify-between items-center text-[10px] uppercase tracking-widest font-bold text-gray-600">
+             <div className="flex items-center gap-1.5">
+               <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+               Server Online
+             </div>
+             <div>v2.1.0-DESKTOP</div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Decorative Bottom Bar */}
+      <div className="absolute bottom-6 left-0 right-0 flex justify-center space-x-8 text-gray-700">
+          <ShieldCheckIcon className="w-4 h-4 opacity-30" />
+          <GlobeAltIcon className="w-4 h-4 opacity-30" />
+          <ShieldCheckIcon className="w-4 h-4 opacity-30" />
+      </div>
     </div>
   );
 }
