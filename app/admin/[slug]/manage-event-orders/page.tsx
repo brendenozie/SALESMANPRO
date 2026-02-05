@@ -73,8 +73,8 @@ export default async function AdminOrdersPage({ params }: Props) {
     
     if (ordersRes.ok) {
       const ordersJson = await ordersRes.json();
-      // Assuming the API returns the order list in a 'data' or 'orders' field
-      allOrders = (ordersJson.data || ordersJson.orders) as Order[]; 
+      // Assuming the API returns the order list in a 'data' or 'orders' field || ordersJson.orders
+      allOrders = (ordersJson.data.orderItems ) as Order[]; 
     } else {
       const errorData = await ordersRes.json();
       throw new Error(errorData.message || `HTTP error! status: ${ordersRes.status}`);
@@ -85,15 +85,15 @@ export default async function AdminOrdersPage({ params }: Props) {
   }
 
   // --- 4. Error Fallback UI (Server-side rendered error) ---
-  if (initialFetchError && allOrders.length === 0) {
-      return (
-        <div className="min-h-screen bg-gray-950 text-red-400 p-8 sm:p-12 font-sans">
-          <h1 className="text-4xl font-bold mb-4">Initial Data Load Error 😟</h1>
-          <p>We could not load the initial orders for company ID: **{companyId}**.</p>
-          <p className="mt-2 text-red-300">**Details:** {initialFetchError}</p>
-        </div>
-      );
-  }
+  // if (initialFetchError && allOrders.length === 0) {
+  //     return (
+  //       <div className="min-h-screen bg-gray-950 text-red-400 p-8 sm:p-12 font-sans">
+  //         <h1 className="text-4xl font-bold mb-4">Initial Data Load Error 😟</h1>
+  //         <p>We could not load the initial orders for company ID: **{companyId}**.</p>
+  //         <p className="mt-2 text-red-300">**Details:** {initialFetchError}</p>
+  //       </div>
+  //     );
+  // }
 
   // --- 5. Pass Data to Client Component ---
   return (

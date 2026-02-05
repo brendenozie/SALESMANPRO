@@ -59,13 +59,14 @@ export default async function AdminOrdersPage({ params }: Props) {
     // NOTE: The API endpoint used by the Server Component must return all orders for the admin.
     const ordersRes = await fetch(
       // Assuming your API endpoint for all orders is simply /admin/{slug}/orders
-      `${apiBaseUrl}/admin/${companyId}/orders`, 
+      `${apiBaseUrl}/admin/orders?companyId=${encodeURIComponent(companyId)}`, 
       { next: { revalidate: 60 }, headers: { cookie: cookiesHeader } }
     );
     if (ordersRes.ok) {
       const ordersJson = await ordersRes.json();
+      console.log("AdminOrdersPage-fetch all orders →", ordersJson);
       // Assuming the API returns an object like { orders: [...] }
-      allOrders = ordersJson.data.orders as Order[]; 
+      allOrders = ordersJson.data.orderItems as Order[]; 
     } else {
       const errorData = await ordersRes.json();
       throw new Error(errorData.message || `HTTP error! status: ${ordersRes.status}`);
@@ -76,15 +77,15 @@ export default async function AdminOrdersPage({ params }: Props) {
   }
 
   // // If there's a severe error on initial fetch, you can render a fallback message
-  if (initialFetchError && allOrders.length === 0) {
-      return (
-        <div className="min-h-screen bg-gray-950 text-red-400 p-8 sm:p-12 font-sans">
-          <h1 className="text-4xl font-bold mb-4">Data Loading Error</h1>
-          <p>Could not load initial orders data for company ID: {companyId}.</p>
-          <p className="mt-2 text-red-300">{initialFetchError}</p>
-        </div>
-      );
-  }
+  // if (initialFetchError && allOrders.length === 0) {
+  //     return (
+  //       <div className="min-h-screen bg-gray-950 text-red-400 p-8 sm:p-12 font-sans">
+  //         <h1 className="text-4xl font-bold mb-4">Data Loading Error</h1>
+  //         <p>Could not load initial orders data for company ID: {companyId}.</p>
+  //         <p className="mt-2 text-red-300">{initialFetchError}</p>
+  //       </div>
+  //     );
+  // }
 
 
   return (

@@ -125,9 +125,9 @@ export default function AdminEventsClient({ slug, allOrganizers, allEvents }: Ad
     }
   }, [slug, searchTerm]); // Dependencies for useCallback
 
-  useEffect(() => {
-    fetchEvents();
-  }, [fetchEvents]); // Re-fetch when fetchEvents changes (due to slug/searchTerm)
+  // useEffect(() => {
+  //   fetchEvents();
+  // }, [fetchEvents]); // Re-fetch when fetchEvents changes (due to slug/searchTerm)
 
   // Clear messages after a few seconds
   useEffect(() => {
