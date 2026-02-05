@@ -24,7 +24,7 @@ async function handleGetCategories(request: Request, { params }: RouteParams) {
   });
 
   // withApiHandler handles wrapping this result in a success formatResponse with status 200
-  return formatResponse(true, { data: categories }, "Product categories fetched successfully", 200);
+  return formatResponse(true, categories , "Product categories fetched successfully", 200);
 }
 
 // --- POST Handler Core Logic ---

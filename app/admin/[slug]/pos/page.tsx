@@ -1,6 +1,9 @@
 // app/admin/[slug]/pos/page.tsx
 import React from "react";
 import PosClient from "./PosClient";
+import { MarketListingForm, IStoreCategory } from "@/types/typings";
+import { cookies } from "next/headers";
+import { getAuthSession } from "@/lib/auth";
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -48,23 +51,33 @@ interface PageProps {
  * Server Component: Fetches initial data for the POS.
  */
 export default async function PosPage({ params }: PageProps) {
-  const { slug : companyId } = await params;
-  let categoriesData: ProductCategory[] = [];
-  let productsData: Product[] = [];
+  
+  const session = await getAuthSession();
+    
+    const { slug : companyId } = await params;
+    const cookieHeaders = (await cookies()).toString();
+    const userName = session?.user?.name || "Guest";
+  let categoriesData: any[] = [];
+  let productsData: any[] = [];
 
   try {
     // Fetch Product Categories for the company
-    const categoriesRes = await fetch(`${apiBaseUrl}/admin/menu-categories?companyId=${companyId}`, { next: { revalidate: 60 } });
+    const categoriesRes = await fetch(`${apiBaseUrl}/admin/pos-categories?companyId=${companyId}`, { 
+      next: { revalidate: 60 }, 
+      headers: { cookie: cookieHeaders }, });
     if (categoriesRes.ok) {
-      categoriesData = (await categoriesRes.json()) as ProductCategory[];
+      categoriesData = (await categoriesRes.json()).data.categories;
+      console.log("[PosPage] Fetched categories data →", categoriesData);
     } else {
       console.error("[PosPage] Failed to fetch categories →", categoriesRes.status, categoriesRes.statusText);
     }
 
     // Fetch Products (dishes) for the company
-    const productsRes = await fetch(`${apiBaseUrl}/admin/products?companyId=${companyId}`, { next: { revalidate: 60 } });
+    const productsRes = await fetch(`${apiBaseUrl}/admin/pos-marketplace-listings?companyId=${companyId}`, { next: { revalidate: 60 },
+      headers: { cookie: cookieHeaders }, });
     if (productsRes.ok) {
-      productsData = (await productsRes.json()) as Product[];
+      productsData = (await productsRes.json()).data.results;
+      console.log("[PosPage] Fetched products data →", productsData);
     } else {
       console.error("[PosPage] Failed to fetch products →", productsRes.status, productsRes.statusText);
     }
@@ -78,6 +91,8 @@ export default async function PosPage({ params }: PageProps) {
       initialCategories={categoriesData}
       initialProducts={productsData}
       companyId={companyId}
+      userName={userName}
+      userId={session?.user?.id || ""}
     />
   );
 }

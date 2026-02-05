@@ -1,475 +1,469 @@
+// components/admin/components/AdminPOSClient.tsx
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
-import Image from "next/image";
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
-  PlusIcon,
-  MinusIcon,
-  TrashIcon,
-  MagnifyingGlassIcon,
-  ChevronRightIcon,
-  ChevronLeftIcon,
-  ShoppingCartIcon,
-  ClipboardDocumentListIcon,
-  ReceiptPercentIcon, // NEW: For offers/totals
-  Bars3BottomLeftIcon, // NEW: For Menu
-} from "@heroicons/react/24/outline";
-import { Product, ProductCategory } from "./page";
+    ReceiptPercentIcon,
+    CalendarDaysIcon,
+    UserCircleIcon,
+    XMarkIcon,
+    PlusIcon,
+    MinusIcon,
+    ArrowPathIcon,
+    PrinterIcon,
+    CheckCircleIcon,
+    ExclamationCircleIcon,
+    MagnifyingGlassIcon,
+    ShoppingBagIcon,
+} from '@heroicons/react/24/outline';
+import { useStoreContext } from '@/contexts/StoreContext';
+import { IStoreCategory, MarketListingForm } from '@/types/typings';
 
-// Image loader (same as elsewhere)
-const loader = ({
-  src,
-  width,
-  quality,
-}: {
-  src: string;
-  width: number;
-  quality?: number;
-}) => `${src}?w=${width}&q=${quality || 75}`;
-
-const DUMMY_PRODUCTS: Product[] = [
-  { id: "p1", name: "Spicy Chicken Burger", description: "Grilled chicken, jalapeños, spicy mayo.", images: [{ url: "https://placehold.co/400x200/FF5722/FFF?text=Spicy+Burger" }], finalPrice: 14.50, salesPrice: 16.00, discount: 10, isAvailable: true, isOnOffer: true, productCategoryId: "cat1", category: { name: "Burgers" }, tags: [], costPrice: 8.00, ingredients: "chicken, bun, jalapenos", createdAt: "", updatedAt: "", video: null, isFlashDeal: false, isNewArrival: false, isDiscounted: true, isFeatured: false },
-  { id: "p2", name: "Margherita Pizza", description: "Classic tomato, mozzarella, fresh basil.", images: [{ url: "https://placehold.co/400x200/3F51B5/FFF?text=Margherita+Pizza" }], finalPrice: 12.00, salesPrice: 12.00, discount: 0, isAvailable: true, isOnOffer: false, productCategoryId: "cat2", category: { name: "Pizzas" }, tags: [], costPrice: 6.00, ingredients: "dough, sauce, cheese", createdAt: "", updatedAt: "", video: null, isFlashDeal: false, isNewArrival: false, isDiscounted: false, isFeatured: false },
-  { id: "p3", name: "Veggie Delight Wrap", description: "Fresh seasonal veggies, hummus, whole wheat wrap.", images: [{ url: "https://placehold.co/400x200/4CAF50/FFF?text=Veggie+Wrap" }], finalPrice: 9.75, salesPrice: 9.75, discount: 0, isAvailable: true, isOnOffer: false, productCategoryId: "cat3", category: { name: "Wraps" }, tags: [], costPrice: 5.00, ingredients: "veggies, wrap, hummus", createdAt: "", updatedAt: "", video: null, isFlashDeal: false, isNewArrival: false, isDiscounted: false, isFeatured: false },
-  { id: "p4", name: "Chocolate Lava Cake", description: "Warm chocolate cake with molten center.", images: [{ url: "https://placehold.co/400x200/795548/FFF?text=Lava+Cake" }], finalPrice: 7.00, salesPrice: 7.00, discount: 0, isAvailable: true, isOnOffer: false, productCategoryId: "cat4", category: { name: "Desserts" }, tags: [], costPrice: 3.50, ingredients: "chocolate, flour, sugar", createdAt: "", updatedAt: "", video: null, isFlashDeal: false, isNewArrival: false, isDiscounted: false, isFeatured: false },
-  { id: "p5", name: "Iced Coffee", description: "Refreshing cold brew with milk.", images: [{ url: "https://placehold.co/400x200/607D8B/FFF?text=Iced+Coffee" }], finalPrice: 4.00, salesPrice: 4.00, discount: 0, isAvailable: true, isOnOffer: false, productCategoryId: "cat5", category: { name: "Drinks" }, tags: [], costPrice: 2.00, ingredients: "coffee, milk, ice", createdAt: "", updatedAt: "", video: null, isFlashDeal: false, isNewArrival: false, isDiscounted: false, isFeatured: false },
-  { id: "p6", name: "Avocado Toast", description: "Smashed avocado on sourdough with chili flakes.", images: [{ url: "https://placehold.co/400x200/FFEB3B/333?text=Avocado+Toast" }], finalPrice: 8.50, salesPrice: 8.50, discount: 0, isAvailable: true, isOnOffer: false, productCategoryId: "cat1", category: { name: "Burgers" }, tags: [], costPrice: 4.00, ingredients: "avocado, bread, chili", createdAt: "", updatedAt: "", video: null, isFlashDeal: false, isNewArrival: false, isDiscounted: false, isFeatured: false },
-  { id: "p7", name: "BBQ Pulled Pork Sandwich", description: "Slow-cooked pork with tangy BBQ sauce.", images: [{ url: "https://placehold.co/400x200/F44336/FFF?text=Pulled+Pork" }], finalPrice: 13.00, salesPrice: 13.00, discount: 0, isAvailable: true, isOnOffer: false, productCategoryId: "cat1", category: { name: "Burgers" }, tags: [], costPrice: 7.00, ingredients: "pork, bun, BBQ sauce", createdAt: "", updatedAt: "", video: null, isFlashDeal: false, isNewArrival: false, isDiscounted: false, isFeatured: false },
-  { id: "p8", name: "Spicy Tuna Roll", description: "Fresh tuna, spicy mayo, cucumber.", images: [{ url: "https://placehold.co/400x200/9C27B0/FFF?text=Tuna+Roll" }], finalPrice: 11.00, salesPrice: 11.00, discount: 0, isAvailable: true, isOnOffer: false, productCategoryId: "cat6", category: { name: "Sushi" }, tags: [], costPrice: 5.50, ingredients: "tuna, rice, cucumber", createdAt: "", updatedAt: "", video: null, isFlashDeal: false, isNewArrival: false, isDiscounted: false, isFeatured: false },
-];
-const DUMMY_CATEGORIES: ProductCategory[] = [
-  { id: "cat1", name: "Burgers", slug: "burgers", description: "", image: null, sortOrder: 1, visible: true, companyId: "your_company_id" },
-  { id: "cat2", name: "Pizzas", slug: "pizzas", description: "", image: null, sortOrder: 2, visible: true, companyId: "your_company_id" },
-  { id: "cat3", name: "Wraps", slug: "wraps", description: "", image: null, sortOrder: 3, visible: true, companyId: "your_company_id" },
-  { id: "cat4", name: "Desserts", slug: "desserts", description: "", image: null, sortOrder: 4, visible: true, companyId: "your_company_id" },
-  { id: "cat5", name: "Drinks", slug: "drinks", description: "", image: null, sortOrder: 5, visible: true, companyId: "your_company_id" },
-  { id: "cat6", name: "Sushi", slug: "sushi", description: "", image: null, sortOrder: 6, visible: true, companyId: "your_company_id" },
-];
-
-interface CartItem {
-  productId: string;
-  name: string;
-  price: number;
-  quantity: number;
-  course: string;
+// --- Persistent State Hook ---
+function usePersistentState<T>(key: string, initial: T) {
+    const [state, setState] = useState<T>(() => {
+        if (typeof window === 'undefined') return initial;
+        try {
+            const raw = sessionStorage.getItem(key);
+            return raw ? (JSON.parse(raw) as T) : initial;
+        } catch { return initial; }
+    });
+    useEffect(() => {
+        try { sessionStorage.setItem(key, JSON.stringify(state)); } catch {}
+    }, [key, state]);
+    return [state, setState] as const;
 }
 
-interface PosClientProps {
-  initialCategories: ProductCategory[];
-  initialProducts: Product[];
-  companyId: string;
+// --- Types ---
+export type CartItem = MarketListingForm & {
+    quantity: number;
+    subtotal: number;
+};
+
+interface ReceiptDetails {
+    cart: CartItem[];
+    subtotal: number;
+    totalDiscount: number;
+    totalTax: number;
+    finalTotal: number;
+    agentName: string;
+    transactionId: string;
+    date: string;
+    storeName: string;
+    currency: string;
+    storeAddress?: string;
+    storePhone?: string;
 }
 
-const PosClient: React.FC<PosClientProps> = ({ initialCategories, initialProducts, companyId }) => {
-  // ... (all existing state and handlers remain the same)
-	const [products, setProducts] = useState<Product[]>(initialProducts.length > 0 ? initialProducts : DUMMY_PRODUCTS);
-	const [categories, setCategories] = useState<ProductCategory[]>(initialCategories.length > 0 ? initialCategories : DUMMY_CATEGORIES);
-	const [activeCategory, setActiveCategory] = useState<string>("All"); // Filter by category ID
-	const [searchTerm, setSearchTerm] = useState<string>("");
-	const [cart, setCart] = useState<CartItem[]>([]);
-	const [currentCourse, setCurrentCourse] = useState<number>(1); // For grouping items into courses
-	const [loading, setLoading] = useState<boolean>(false);
-	const [error, setError] = useState<string | null>(null);
+const PosClient: React.FC<{
+    initialProducts?: MarketListingForm[];
+    initialCategories?: IStoreCategory[];
+    companyId: string;
+    userName: string;
+    userId: string | null;
+}> = ({ companyId, initialProducts = [], initialCategories = [], userName, userId }) => {
+    
+    const { storeFormData } = useStoreContext();
+    const primaryColor = storeFormData?.themeSettings?.primaryColor || '#0d9488';
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:3000/api';
 
-	// Constants for tax and service charge
-	const TAX_RATE = 0.08; // 8% tax
-	const SERVICE_CHARGE_RATE = 0.10; // 10% service charge
+    // --- State ---
+    // const [mode, setMode] = useState<'invoice' | 'appointment'>('invoice');
+    const [searchTerm, setSearchTerm] = useState('');
+    const [selectedCategory, setSelectedCategory] = usePersistentState('pos_cat', 'All');
+    const [cart, setCart] = useState<CartItem[]>([]);
+    const [clientDetails, setClientDetails] = useState({ name: '', email: '', phone: '' });
+    const [isLoading, setIsLoading] = useState(false);
+    const [discountPercent, setDiscountPercent] = useState(0);
 
-  // --- NEW: State for mobile view ---
-  const [mobileView, setMobileView] = useState<'menu' | 'order'>('menu');
+    // --- Helpers ---
+    const currency = storeFormData?.currency || 'USD';
+    const taxRate = 0.08;
 
-  // ... (useEffect, useMemo calculations, and handlers like addToCart, updateQuantity, etc. remain unchanged) ...
-	const filteredProducts = useMemo(() => {
-    let filtered = products.filter(p => p.isAvailable); // Only show available products
+    const subtotal = useMemo(() => cart.reduce((acc, item) => acc + item.subtotal, 0), [cart]);
+    const discountAmount = (subtotal * discountPercent) / 100;
+    const taxAmount = (subtotal - discountAmount) * taxRate;
+    const total = subtotal - discountAmount + taxAmount;
 
-    if (activeCategory !== "All") {
-      filtered = filtered.filter(product => product.productCategoryId === activeCategory);
-    }
+    // --- Printing Logic ---
+    
+const generateReceiptHtml = (details: ReceiptDetails): string => {
+  const itemsHtml = details.cart.map(item => `
+    <div style="display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 4px;">
+      <span style="flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.name}</span>
+      <span style="width: 40px; text-align: center;">x${item.quantity}</span>
+      <span style="width: 80px; text-align: right;">${details.currency} ${item.finalPrice?.toFixed(2)}</span>
+      <span style="width: 100px; text-align: right; font-weight: bold;">${details.currency} ${item.subtotal.toFixed(2)}</span>
+    </div>
+  `).join('');
 
-    if (searchTerm) {
-      filtered = filtered.filter(product =>
-        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        product.description?.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-    return filtered;
-  }, [products, activeCategory, searchTerm]);
+  return `
+    <div style="font-family: 'Inter', sans-serif; width: 300px; margin: 0 auto; padding: 20px; color: #333; background-color: #fff; border: 1px solid #eee;">
+      <h2 style="text-align: center; font-size: 24px; margin-bottom: 5px; color: #6A0572;">${storeFormData?.name}</h2>
+      <p style="text-align: center; font-size: 12px; margin-bottom: 10px; color: #555;">${storeFormData?.address}<br>${storeFormData?.contactPhone}</p>
+      <hr style="border: none; border-top: 1px dashed #ccc; margin: 15px 0;">
 
-  // Group cart items by course
-  const groupedCartItems = useMemo(() => {
-    return cart.reduce((acc, item) => {
-      if (!acc[item.course]) {
-        acc[item.course] = [];
-      }
-      acc[item.course].push(item);
-      return acc;
-    }, {} as Record<string, CartItem[]>);
-  }, [cart]);
+      <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px;">
+        <span>Date:</span><span>${details.date}</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 15px;">
+        <span>Txn ID:</span><span>${details.transactionId}</span>
+      </div>
 
-  // Calculate totals
-  const subtotal = useMemo(() => {
-    return cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  }, [cart]);
+      <div style="font-size: 15px; font-weight: bold; margin-bottom: 10px; color: #444;">Items:</div>
+      ${itemsHtml}
 
-  const taxAmount = subtotal * TAX_RATE;
-  const serviceChargeAmount = subtotal * SERVICE_CHARGE_RATE;
-  const grandTotal = subtotal + taxAmount + serviceChargeAmount;
- const addToCart = (product: Product) => {
-    setCart((prevCart) => {
-      const existingItemIndex = prevCart.findIndex(
-        (item) => item.productId === product.id && item.course === `Course ${currentCourse}`
-      );
+      <hr style="border: none; border-top: 1px dashed #ccc; margin: 15px 0;">
 
-      if (existingItemIndex > -1) {
-        const newCart = [...prevCart];
-        newCart[existingItemIndex] = {
-          ...newCart[existingItemIndex],
-          quantity: newCart[existingItemIndex].quantity + 1,
-        };
-        return newCart;
-      } else {
-        return [
-          ...prevCart,
-          {
-            productId: product.id,
-            name: product.name,
-            price: product.finalPrice,
-            quantity: 1,
-            course: `Course ${currentCourse}`,
-          },
-        ];
-      }
+      <div style="display: flex; justify-content: space-between; font-size: 16px; margin-bottom: 5px;">
+        <span>Subtotal:</span><span style="font-weight: bold;">${details.currency} ${details.subtotal.toFixed(2)}</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; font-size: 16px; margin-bottom: 5px;">
+        <span>Discount:</span><span style="font-weight: bold; color: #E91E63;">- ${details.currency} ${discountAmount.toFixed(2)}</span>
+      </div>
+      <div style="display: flex; justify-content: space-between; font-size: 16px; margin-bottom: 15px;">
+        <span>Tax:</span><span style="font-weight: bold;">${details.currency} ${details.totalTax.toFixed(2)}</span>
+      </div>
+
+      <div style="display: flex; justify-content: space-between; font-size: 22px; font-weight: bold; border-top: 2px solid #6A0572; padding-top: 10px; margin-top: 10px;">
+        <span>TOTAL:</span><span>${details.currency} ${details.finalTotal.toFixed(2)}</span>
+      </div>
+
+      <hr style="border: none; border-top: 1px dashed #ccc; margin: 15px 0;">
+      <p style="text-align: center; font-size: 13px; color: #555;">Served by: ${details.agentName}</p>
+      <p style="text-align: center; font-size: 16px; font-weight: bold; margin-top: 15px; color: #6A0572;">THANK YOU!</p>
+      <p style="text-align: center; font-size: 11px; color: #777; margin-top: 10px;">All sales final. No refunds.</p>
+    </div>
+  `;
+};
+
+// --- Print Function (remains mostly the same, now uses dynamic currencySymbol) ---
+// --- Updated Print Function for Desktop Integration ---
+const printReceipt = (htmlContent: string) => {
+  // 1. Check if we are running inside the SalesmanPro Desktop App
+  if ((window as any).chrome?.webview) {
+    (window as any).chrome.webview.postMessage({
+      type: 'PRINT_HTML_RECEIPT',
+      payload: htmlContent
     });
-  };
+    console.log("Sent receipt to Desktop Printer Service");
+      (window as any).chrome.webview.postMessage({ type: 'NOTIFY', message: 'Receipt sent to printer!' });
 
-  const updateQuantity = (productId: string, course: string, delta: number) => {
-    setCart((prevCart) => {
-      const newCart = prevCart
-        .map((item) =>
-          item.productId === productId && item.course === course
-            ? { ...item, quantity: item.quantity + delta }
-            : item
-        )
-        .filter((item) => item.quantity > 0); // Remove if quantity drops to 0 or less
-      return newCart;
-    });
-  };
-const handlePlaceOrder = async () => {
-    if (cart.length === 0) {
-      alert("Cart is empty. Please add items to place an order.");
-      return;
+    return;
+  }
+
+  // 2. Fallback for standard Web Browsers (your existing logic)
+  const iframe = document.createElement('iframe');
+  iframe.style.display = 'none';
+  document.body.appendChild(iframe);
+
+  const iframeDoc = iframe.contentWindow?.document;
+  if (iframeDoc) {
+    iframeDoc.open();
+     iframeDoc.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Receipt</title>
+        <style>
+          @page {
+            size: 80mm auto;
+            margin: 0;
+          }
+          body {
+            margin: 0;
+            padding: 0;
+            -webkit-print-color-adjust: exact;
+          }
+          div { font-family: 'Inter', sans-serif; width: 300px; margin: 0 auto; padding: 20px; color: #333; background-color: #fff; border: 1px solid #eee; }
+          h2 { text-align: center; font-size: 24px; margin-bottom: 5px; color: #6A0572; }
+          p { text-align: center; font-size: 12px; margin-bottom: 10px; color: #555; }
+          hr { border: none; border-top: 1px dashed #ccc; margin: 15px 0; }
+          .flex-between { display: flex; justify-content: space-between; }
+          .item-row { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 4px; }
+          .item-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+          .item-qty { width: 40px; text-align: center; }
+          .item-price { width: 80px; text-align: right; }
+          .item-subtotal { width: 100px; text-align: right; font-weight: bold; }
+          .section-title { font-size: 15px; font-weight: bold; margin-bottom: 10px; color: #444; }
+          .summary-row { display: flex; justify-content: space-between; font-size: 16px; margin-bottom: 5px; }
+          .total-row { display: flex; justify-content: space-between; font-size: 22px; font-weight: bold; border-top: 2px solid #6A0572; padding-top: 10px; margin-top: 10px; }
+          .thank-you { text-align: center; font-size: 16px; font-weight: bold; margin-top: 15px; color: #6A0572; }
+          .policy { text-align: center; font-size: 11px; color: #777; margin-top: 10px; }
+        </style>
+      </head>
+      <body>
+        ${htmlContent}
+      </body>
+      </html>
+    `);
+    iframeDoc.close();
+    iframe.onload = () => {
+      iframe.contentWindow?.focus();
+      iframe.contentWindow?.print();
+      document.body.removeChild(iframe);
+    };
+  } else {
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(htmlContent);
+      printWindow.document.close();
+      printWindow.print();
+    } else {
+      alert('Could not open print window. Please allow pop-ups for printing.');
     }
+  }
+};
+    const generateReceiptHtmlV1 = (details: ReceiptDetails): string => `
+        <div style="font-family: 'Courier New', monospace; width: 300px; padding: 10px; color: #000;">
+            <div style="text-align: center; border-bottom: 1px dashed #000; padding-bottom: 10px;">
+                <h2 style="margin: 0;">${details.storeName}</h2>
+                <p style="font-size: 12px;">ID: ${details.transactionId}</p>
+            </div>
+            <div style="margin-top: 10px;">
+                ${details.cart.map(item => `
+                    <div style="display: flex; justify-content: space-between; font-size: 14px;">
+                        <span>${item.name} x${item.quantity}</span>
+                        <span>${details.currency}${item.subtotal.toFixed(2)}</span>
+                    </div>
+                `).join('')}
+            </div>
+            <div style="border-top: 1px dashed #000; margin-top: 10px; padding-top: 5px;">
+                <div style="display: flex; justify-content: space-between;"><b>TOTAL:</b> <b>${details.currency}${details.finalTotal.toFixed(2)}</b></div>
+            </div>
+            <p style="text-align: center; font-size: 11px; margin-top: 20px;">Served by: ${details.agentName}<br>${details.date}</p>
+        </div>
+    `;
 
-    setLoading(true);
-    setError(null);
-
-    // Prepare order data for API
-    const orderData = {
-      companyId: companyId, // From props
-      consumerId: "clx91w11g000010v0j8235t4e", // Placeholder: In a real POS, this might be a selected customer ID or a guest ID
-      name: "POS Customer", // Placeholder
-      email: "pos@example.com", // Placeholder
-      phone: "1234567890", // Placeholder
-      items: cart.map(item => ({
-        marketplaceListingId: item.productId, // Link to Product (marketplaceListing in schema)
-        quantity: item.quantity,
-        price: item.price,
-        // No appointmentId, riderId, status for POS order items in this basic version
-      })),
-      totalPrice: grandTotal,
-      orderSource: "IN_PERSON", // Or "POS" if you add a specific enum value
-      status: "PENDING", // Initial status for POS orders
-      delivery: false, // Assuming in-restaurant order for now
-      // Add other relevant fields like shippingAddress if it's a delivery from POS
+    const printReceiptV1 = (html: string) => {
+        // Desktop Bridge
+        if ((window as any).chrome?.webview) {
+            (window as any).chrome.webview.postMessage({ type: 'PRINT_HTML_RECEIPT', payload: html });
+            return;
+        }
+        // Browser Fallback
+        const iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        document.body.appendChild(iframe);
+        const doc = iframe.contentWindow?.document;
+        if (doc) {
+            doc.write(`<html><body onload="window.print()">${html}</body></html>`);
+            doc.close();
+            setTimeout(() => document.body.removeChild(iframe), 1000);
+        }
     };
 
-    try {
-      const res = await fetch(`http://localhost:3000/api/customer-orders`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(orderData),
-      });
+    // --- Actions ---
+    const handleAddToCart = (product: MarketListingForm) => {
+        setCart(prev => {
+            const exists = prev.find(i => i.id === product.id);
+            if (exists) {
+                return prev.map(i => i.id === product.id 
+                    ? { ...i, quantity: i.quantity + 1, subtotal: (i.quantity + 1) * (i.sellingPrice || 0) } 
+                    : i
+                );
+            }
+            return [...prev, { ...product, quantity: 1, subtotal: product.sellingPrice || 0 }];
+        });
+    };
 
-      if (res.ok) {
-        alert("Order placed successfully!");
-        clearCart(); // Clear cart after successful order
-      } else {
-        const errorData = await res.json();
-        throw new Error(errorData.message || 'Failed to place order.');
-      }
-    } catch (err: any) {
-      setError(err.message || "Failed to place order.");
-      console.error("Error placing order:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-const removeItem = (productId: string, course: string) => {
-    setCart((prevCart) =>
-      prevCart.filter(
-        (item) => !(item.productId === productId && item.course === course)
-      )
-    );
-  };
-
-  const clearCart = () => {
-    setCart([]);
-    setCurrentCourse(1);
-  };
-
-  const addCourse = () => {
-    setCurrentCourse((prev) => prev + 1);
-  };
-
-  const removeCourse = (courseName: string) => {
-    setCart((prevCart) => prevCart.filter(item => item.course !== courseName));
-    // If the current course is removed and it's the highest, decrement currentCourse
-    if (courseName === `Course ${currentCourse}` && currentCourse > 1) {
-        setCurrentCourse(prev => prev - 1);
-    }
-  };
-
-  // --- Main Render ---
-  return (
-    // MODIFIED: Added relative positioning and pb-20 for mobile nav space
-    <div className="relative flex flex-col lg:flex-row h-screen bg-gray-900 text-gray-100 font-sans lg:pb-0 pb-20">
-      
-      {/* --- Left Panel: Order Cart --- */}
-      {/* MODIFIED: Conditional rendering for mobile vs. desktop */}
-      <div className={`
-        ${mobileView === 'order' ? 'flex' : 'hidden'} 
-        lg:flex w-full lg:w-2/5 xl:w-1/3 bg-gray-800 p-4 sm:p-6 flex-col shadow-lg overflow-hidden
-      `}>
-        {/* MODIFIED: Header styling */}
-        <h2 className="text-2xl font-bold text-white mb-4 flex items-center">
-          <ShoppingCartIcon className="h-7 w-7 mr-3 text-sky-400" /> Current Order
-        </h2>
-
-        {loading && <p className="text-center text-blue-400 mb-4">Processing order...</p>}
-        {error && <p className="text-center text-red-500 mb-4">Error: {error}</p>}
-
-        {/* MODIFIED: Cart scroll container */}
-        <div className="flex-grow overflow-y-auto pr-2 -mr-2 custom-scrollbar">
-          {Object.keys(groupedCartItems).length === 0 ? (
-            <div className="text-center text-gray-500 flex flex-col items-center justify-center h-full">
-              <ClipboardDocumentListIcon className="h-16 w-16 mx-auto mb-4 text-gray-600" />
-              <p className="text-lg font-semibold">Your order is empty</p>
-              <p className="text-sm">Add items from the menu to get started.</p>
-            </div>
-          ) : (
-             Object.keys(groupedCartItems).sort((a, b) => parseInt(a.replace('Course ', '')) - parseInt(b.replace('Course ', ''))).map(courseName => (
-              // MODIFIED: Course group styling
-              <div key={courseName} className="mb-4 bg-gray-900/50 rounded-xl">
-                <div className="flex justify-between items-center p-3 border-b border-gray-700">
-                  <h3 className="text-lg font-bold text-sky-300">{courseName}</h3>
-                   {courseName !== `Course 1` && (
-                    <button onClick={() => removeCourse(courseName)} className="text-red-400 hover:text-red-300 transition-colors" aria-label={`Remove ${courseName}`}>
-                      <TrashIcon className="h-5 w-5" />
-                    </button>
-                  )}
-                </div>
-                <ul className="space-y-2 p-3">
-                  {groupedCartItems[courseName].map((item) => (
-                    // MODIFIED: Cart item styling
-                    <li key={item.productId} className="flex items-center text-base">
-                      <div className="flex-grow">
-                        <p className="font-semibold text-white">{item.name}</p>
-                        <p className="text-gray-400 text-xs">${item.price.toFixed(2)}</p>
-                      </div>
-                      <div className="flex items-center space-x-3">
-                        <button onClick={() => updateQuantity(item.productId, item.course, -1)} className="p-1.5 rounded-full bg-gray-700 hover:bg-gray-600 transition-transform active:scale-95" aria-label={`Decrease quantity of ${item.name}`}>
-                          <MinusIcon className="h-4 w-4" />
-                        </button>
-                        <span className="font-bold w-6 text-center text-lg">{item.quantity}</span>
-                        <button onClick={() => updateQuantity(item.productId, item.course, 1)} className="p-1.5 rounded-full bg-sky-500 text-white hover:bg-sky-400 transition-transform active:scale-95" aria-label={`Increase quantity of ${item.name}`}>
-                          <PlusIcon className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))
-          )}
-        </div>
-
-        {/* Course Actions */}
-        <div className="mt-4 flex justify-between items-center border-t border-gray-700 pt-4">
-            <button
-                onClick={addCourse}
-                className="px-4 py-2 bg-indigo-600 text-white rounded-lg shadow-md hover:bg-indigo-700 transition font-semibold"
-            >
-                Add Course ({currentCourse + 1})
-            </button>
-            <p className="text-lg font-medium">Current Course: <span className="text-rose-400 font-bold">Course {currentCourse}</span></p>
-        </div>
+    const finalizeSale = async () => {
+        if (cart.length === 0 || !clientDetails.name) return alert("Required: Cart items and Client Name");
         
-        {/* MODIFIED: Totals styling */}
-        <div className="mt-auto pt-4 border-t-2 border-gray-700/50 space-y-2">
-          <div className="flex justify-between text-base text-gray-300">
-            <span>Subtotal</span>
-            <span className="font-medium">${subtotal.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between text-base text-gray-300">
-            <span>Tax ({TAX_RATE * 100}%)</span>
-            <span className="font-medium">${taxAmount.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between text-base text-gray-300">
-            <span>Service</span>
-            <span className="font-medium">${serviceChargeAmount.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between text-2xl font-bold text-white pt-2 mt-2 border-t border-gray-700">
-            <span>Total</span>
-            <span className="text-green-400">${grandTotal.toFixed(2)}</span>
-          </div>
-        </div>
+        setIsLoading(true);
+        try {
+            const response = await fetch(`${apiBaseUrl}/shop/serviceOrders`, { // Fixed URL
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    billing: { // Added billing wrapper
+                                        name: clientDetails.name,
+                                        email: clientDetails.email || 'walk-in@store.com',
+                                        phone: clientDetails.phone,
+                                    },
+                                    consumerId: userId || 'pos-agent',
+                                    paymentOption: 'cod', 
+                                    listingId: cart[0]?.id,    // API expects top-level listingId
+                                    price: cart[0]?.sellingPrice, // API expects top-level price
+                                    totalPrice: total,
+                                    appointment: {
+                                        date: new Date().toISOString(),
+                                        timeSlot: "Now",
+                                        locationType: "In-Store"
+                                    }
+                                }),
+                            });
 
-        {/* MODIFIED: Action buttons styling */}
-        <div className="mt-4 grid grid-cols-2 gap-3">
-          <button onClick={clearCart} className="w-full py-3 bg-red-800/80 text-white text-base font-bold rounded-lg shadow-lg hover:bg-red-700 transition disabled:opacity-50" disabled={cart.length === 0 || loading}>
-            Clear
-          </button>
-          <button onClick={handlePlaceOrder} className="w-full py-3 bg-green-600 text-white text-base font-bold rounded-lg shadow-xl hover:bg-green-500 transition disabled:opacity-50" disabled={cart.length === 0 || loading}>
-            {loading ? 'Submitting...' : 'Place Order'}
-          </button>
-        </div>
-      </div>
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.error || 'Sale failed');
 
-      {/* --- Right Panel: Product Display --- */}
-      {/* MODIFIED: Conditional rendering for mobile vs. desktop */}
-       <div className={`
-        ${mobileView === 'menu' ? 'flex' : 'hidden'} 
-        lg:flex flex-grow bg-gray-900 p-4 sm:p-6 flex-col overflow-hidden
-      `}>
-        {/* ... (Header and Search bar remain mostly the same, slight style tweaks) ... */}
-              {/* Right Panel: Product Display */}
-      <div className="flex-grow bg-gray-900 p-6 flex flex-col overflow-hidden">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-3xl font-extrabold text-sky-400 flex items-center">
-            <ClipboardDocumentListIcon className="h-8 w-8 mr-3" /> Menu Items
-          </h2>
-          <div className="relative w-full max-w-sm">
-            <input
-              type="text"
-              placeholder="Search dishes..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full p-3 pl-10 rounded-lg bg-gray-800 text-gray-200 border border-gray-700 focus:ring-2 focus:ring-sky-500 focus:outline-none shadow-md"
-            />
-            <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-          </div>
-        </div>
+            // Trigger Printing
+            const receiptHtml = generateReceiptHtml({
+                cart, subtotal, totalTax: taxAmount, totalDiscount: discountAmount,
+                finalTotal: total, agentName: userName, currency,
+                transactionId: result.data?.trackingNumber || 'N/A',
+                date: new Date().toLocaleString(),
+                storeName: storeFormData?.name || 'My Service Store'
+            });
+            printReceipt(receiptHtml);
 
-        {/* Category Tabs */}
-        <div className="flex flex-wrap gap-3 p-2 bg-gray-800 rounded-full shadow-inner mb-6 overflow-x-auto custom-scrollbar">
-          <button
-            onClick={() => setActiveCategory("All")}
-            className={`px-5 py-2 text-sm md:text-base font-semibold rounded-full transition-all duration-300
-              ${activeCategory === "All"
-                ? "bg-sky-500 text-white shadow-md"
-                : "bg-transparent text-gray-300 hover:bg-gray-700"
-              }`}
-          >
-            All
-          </button>
-          {categories.map((category) => (
-            <button
-              key={category.id}
-              onClick={() => setActiveCategory(category.id)}
-              className={`px-5 py-2 text-sm md:text-base font-semibold rounded-full transition-all duration-300
-                ${activeCategory === category.id
-                  ? "bg-sky-500 text-white shadow-md"
-                  : "bg-transparent text-gray-300 hover:bg-gray-700"
-                }`}
-            >
-              {category.name}
-            </button>
-          ))}
-        </div>
+            // Reset
+            setCart([]);
+            setClientDetails({ name: '', email: '', phone: '' });
+            alert("Transaction Complete!");
+        } catch (error: any) {
+            alert(error.message);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
-        
-        {/* MODIFIED: Category tabs styling */}
-        {/* <div className="flex space-x-2 p-1.5 bg-gray-800 rounded-full shadow-inner mb-6 overflow-x-auto custom-scrollbar">
-          <button onClick={() => setActiveCategory("All")} className={`px-4 py-1.5 text-sm font-semibold rounded-full transition-colors duration-200 flex-shrink-0 ${activeCategory === "All" ? "bg-sky-500 text-white" : "text-gray-300 hover:bg-gray-700"}`}>
-            All Items
-          </button>
-          {categories.map((category) => (
-            <button key={category.id} onClick={() => setActiveCategory(category.id)} className={`px-4 py-1.5 text-sm font-semibold rounded-full transition-colors duration-200 flex-shrink-0 ${activeCategory === category.id ? "bg-sky-500 text-white" : "text-gray-300 hover:bg-gray-700"}`}>
-              {category.name}
-            </button>
-          ))}
-        </div> */}
+    const filteredProducts = useMemo(() => {
+        return initialProducts.filter(p => {
+            const matchesCat = selectedCategory === 'All' || p.category === selectedCategory;
+            const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
+            return matchesCat && matchesSearch;
+        });
+    }, [initialProducts, selectedCategory, searchTerm]);
 
-        {/* MODIFIED: Product Grid styling */}
-        {loading ? ( <div className="flex-grow flex items-center justify-center">Loading...</div> ) 
-         : error ? ( <div className="flex-grow flex items-center justify-center text-red-400">Error: {error}</div> ) 
-         : filteredProducts.length === 0 ? ( <div className="flex-grow flex items-center justify-center text-gray-500">No items found.</div>) 
-         : (
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4 flex-grow overflow-y-auto pr-2 -mr-2 custom-scrollbar">
-            {filteredProducts.map((product) => (
-              // MODIFIED: Product card design
-              <div key={product.id} className="bg-gray-800 rounded-xl shadow-lg flex flex-col group">
-                <div className="relative h-28 sm:h-32 w-full">
-                  <Image src={product.images?.[0]?.url ?? "https://placehold.co/400x200/333/eee?text=No+Image"} alt={product.name} fill className="object-cover rounded-t-xl" loader={loader} />
-                  {product.isOnOffer && (<span className="absolute top-2 right-2 bg-yellow-400 text-gray-900 text-xs font-bold px-2 py-0.5 rounded-full shadow-sm">Offer</span>)}
-                </div>
-                <div className="p-3 flex flex-col flex-grow">
-                  <h3 className="font-bold text-white text-base leading-tight truncate">{product.name}</h3>
-                  <p className="text-xs text-gray-400 line-clamp-2 flex-grow">{product.description}</p>
-                  <div className="flex justify-between items-center mt-3">
-                    <div className="flex items-baseline">
-                      <span className="text-lg font-extrabold text-green-400">${product.finalPrice.toFixed(2)}</span>
-                      {product.discount && product.discount > 0 && (<span className="text-xs text-gray-500 line-through ml-2">${product.salesPrice.toFixed(2)}</span>)}
+    return (
+        <div className="flex flex-col lg:flex-row h-screen bg-gray-50 dark:bg-gray-900 overflow-hidden font-sans">
+            <style>{`
+                .glass { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); }
+                .custom-scroll::-webkit-scrollbar { width: 6px; }
+                .custom-scroll::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+            `}</style>
+
+            {/* Catalog (Left) */}
+            <div className="flex-1 flex flex-col p-4 overflow-hidden">
+                <div className="flex items-center justify-between mb-6">
+                    <h1 className="text-2xl font-black text-gray-800 dark:text-white">Terminal <span style={{ color: primaryColor }}>.POS</span></h1>
+                    <div className="flex gap-2">
+                        {/* {['invoice', 'appointment'].map(m => (
+                            <button 
+                                key={m}
+                                onClick={() => setMode(m as any)}
+                                className={`px-4 py-2 rounded-xl text-sm font-bold capitalize transition-all ${mode === m ? 'shadow-lg text-white' : 'bg-white text-gray-500'}`}
+                                style={{ backgroundColor: mode === m ? primaryColor : '' }}
+                            >
+                                {m}
+                            </button>
+                        ))} */}
                     </div>
-                    <button onClick={(e) => { e.stopPropagation(); addToCart(product); }} className="p-2 rounded-full bg-sky-500 text-white shadow-md group-hover:bg-sky-400 transition-transform active:scale-95" aria-label={`Add ${product.name} to cart`}>
-                      <PlusIcon className="h-5 w-5" />
-                    </button>
-                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
 
-      {/* --- NEW: Mobile Bottom Navigation --- */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-gray-800/80 backdrop-blur-sm border-t border-gray-700/50 flex justify-around p-2 z-50">
-        <button onClick={() => setMobileView('menu')} className={`flex flex-col items-center gap-1 transition-colors ${mobileView === 'menu' ? 'text-sky-400' : 'text-gray-400'}`}>
-          <Bars3BottomLeftIcon className="h-6 w-6" />
-          <span className="text-xs font-semibold">Menu</span>
-        </button>
-        <button onClick={() => setMobileView('order')} className={`relative flex flex-col items-center gap-1 transition-colors ${mobileView === 'order' ? 'text-sky-400' : 'text-gray-400'}`}>
-          <ShoppingCartIcon className="h-6 w-6" />
-          <span className="text-xs font-semibold">Order</span>
-          {cart.length > 0 && (
-            <span className="absolute -top-1 -right-2 bg-sky-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
-              {cart.reduce((acc, item) => acc + item.quantity, 0)}
-            </span>
-          )}
-        </button>
-      </div>
-      
-      {/* Custom Scrollbar Styling */}
-      <style jsx>{`
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 8px;
-          height: 8px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: #2d3748; /* gray-800 */
-          border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: #4a5568; /* gray-700 */
-          border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: #6b7280; /* gray-600 */
-        }
-      `}</style>
-    </div>
-    </div>
-  );
+                <div className="flex gap-4 mb-4">
+                    <div className="relative flex-1">
+                        <MagnifyingGlassIcon className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                        <input 
+                            placeholder="Search services..."
+                            className="w-full pl-10 pr-4 py-3 rounded-2xl border-none shadow-sm focus:ring-2 dark:bg-gray-800"
+                            style={{ '--tw-ring-color': primaryColor } as any}
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                    <select 
+                        className="rounded-2xl border-none shadow-sm dark:bg-gray-800"
+                        value={selectedCategory}
+                        onChange={(e) => setSelectedCategory(e.target.value)}
+                    >
+                        <option value="All">All Categories</option>
+                        {initialCategories.map(c => <option key={c.id} value={c.id}>{c.displayName}</option>)}
+                    </select>
+                </div>
+
+                <div className="flex-1 overflow-y-auto grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 custom-scroll pr-2">
+                    {filteredProducts.map(product => (
+                        <motion.div 
+                            key={product.id}
+                            whileHover={{ y: -5 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => handleAddToCart(product)}
+                            className="bg-white dark:bg-gray-800 p-3 rounded-3xl shadow-sm border border-transparent hover:border-teal-500 cursor-pointer group"
+                        >
+                            <div className="aspect-square rounded-2xl bg-gray-100 mb-3 overflow-hidden">
+                                <img src={product.images?.[0] || 'https://placehold.co/200'} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
+                            </div>
+                            <h3 className="font-bold text-sm truncate dark:text-white">{product.name}</h3>
+                            <p className="text-xs text-gray-400 mb-2">{product.category}</p>
+                            <p className="font-black text-lg" style={{ color: primaryColor }}>{currency} {product.sellingPrice?.toFixed(2)}</p>
+                        </motion.div>
+                    ))}
+                </div>
+            </div>
+
+            {/* Cart & Checkout (Right) */}
+            <div className="w-full lg:w-[400px] glass dark:bg-gray-800/50 p-6 flex flex-col border-l border-gray-200 dark:border-gray-700">
+                <div className="flex items-center gap-3 mb-8">
+                    <div className="p-3 rounded-2xl bg-teal-100 text-teal-600">
+                        <ShoppingBagIcon className="w-6 h-6" />
+                    </div>
+                    <div>
+                        <h2 className="font-bold text-xl dark:text-white">Order Details</h2>
+                        <p className="text-xs text-gray-400">Agent: {userName}</p>
+                    </div>
+                </div>
+
+                <div className="space-y-3 mb-6">
+                    <input 
+                        placeholder="Client Name *" 
+                        className="w-full p-3 rounded-xl border-gray-200 dark:bg-gray-900 dark:border-gray-700" 
+                        value={clientDetails.name}
+                        onChange={e => setClientDetails({...clientDetails, name: e.target.value})}
+                    />
+                    <div className="grid grid-cols-2 gap-2">
+                        <input 
+                            placeholder="Phone" 
+                            className="p-3 rounded-xl border-gray-200 dark:bg-gray-900 dark:border-gray-700"
+                            onChange={e => setClientDetails({...clientDetails, phone: e.target.value})}
+                        />
+                        <input 
+                            placeholder="Email" 
+                            className="p-3 rounded-xl border-gray-200 dark:bg-gray-900 dark:border-gray-700"
+                            onChange={e => setClientDetails({...clientDetails, email: e.target.value})}
+                        />
+                    </div>
+                </div>
+
+                <div className="flex-1 overflow-y-auto custom-scroll mb-4 pr-2">
+                    {cart.map(item => (
+                        <div key={item.id} className="flex items-center gap-3 mb-4 bg-white/50 dark:bg-gray-900 p-3 rounded-2xl">
+                            <div className="flex-1">
+                                <p className="font-bold text-sm dark:text-white">{item.name}</p>
+                                <p className="text-xs text-gray-400">{currency} {item.sellingPrice} x {item.quantity}</p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <button onClick={() => setCart(prev => prev.filter(i => i.id !== item.id))} className="text-red-400"><XMarkIcon className="w-5 h-5"/></button>
+                                <span className="font-black dark:text-white">{currency}{item.subtotal.toFixed(2)}</span>
+                            </div>
+                        </div>
+                    ))}
+                    {cart.length === 0 && <div className="h-full flex flex-col items-center justify-center text-gray-400 opacity-50"><ShoppingBagIcon className="w-12 h-12 mb-2"/>Empty Cart</div>}
+                </div>
+
+                <div className="pt-4 border-t border-dashed border-gray-300 space-y-2">
+                    <div className="flex justify-between text-gray-500"><span>Subtotal</span><span>{currency}{subtotal.toFixed(2)}</span></div>
+                    <div className="flex justify-between text-red-500"><span>Discount (%)</span><input type="number" className="w-12 text-right bg-transparent border-none p-0 focus:ring-0" value={discountPercent} onChange={e => setDiscountPercent(Number(e.target.value))}/></div>
+                    <div className="flex justify-between text-gray-500"><span>Tax (8%)</span><span>{currency}{taxAmount.toFixed(2)}</span></div>
+                    <div className="flex justify-between text-2xl font-black pt-4 dark:text-white">
+                        <span>Total</span>
+                        <span style={{ color: primaryColor }}>{currency}{total.toFixed(2)}</span>
+                    </div>
+
+                    <button 
+                        onClick={finalizeSale}
+                        disabled={isLoading}
+                        className="w-full py-4 rounded-3xl text-white font-black text-lg shadow-xl shadow-teal-500/20 mt-4 flex items-center justify-center gap-3 active:scale-95 transition-transform"
+                        style={{ backgroundColor: primaryColor }}
+                    >
+                        {isLoading ? <ArrowPathIcon className="w-6 h-6 animate-spin"/> : <><PrinterIcon className="w-6 h-6"/> Complete Sale</>}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
 };
 
 export default PosClient;
