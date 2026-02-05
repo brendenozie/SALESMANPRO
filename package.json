@@ -10,6 +10,7 @@
     "analyze:browser": "cross-env BUNDLE_ANALYZE=browser next build"
   },
   "dependencies": {
+    "@ai-sdk/google": "^3.0.21",
     "@aws-sdk/client-s3": "^3.429.0",
     "@aws-sdk/s3-request-presigner": "^3.910.0",
     "@badrap/bar-of-progress": "^0.2.2",
@@ -26,6 +27,7 @@
     "@sentry/nextjs": "^10.26.0",
     "@stripe/stripe-js": "^1.44.1",
     "@tanstack/react-virtual": "^3.13.12",
+    "ai": "^6.0.72",
     "apexcharts": "^4.0.0",
     "axios": "^1.2.0",
     "bcryptjs": "^3.0.2",
