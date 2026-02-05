@@ -1105,9 +1105,34 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon }, // Icon for gear/settings
   ],
 
-  "Security Services":[
-    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
-    
+  // "Security Services":[
+  //   { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+  //   { label: "Clients", href: `/admin/${adminSlug}/security-clients`, icon: UsersIcon },
+  //   { label: "Security Personnel", href: `/admin/${adminSlug}/security-personnel`, icon: ShieldCheckIcon },
+  //   { label: "Service Requests", href: `/admin/${adminSlug}/security-requests`, icon: ClipboardDocumentListIcon },
+  //   { label: "Schedules & Assignments", href: `/admin/${adminSlug}/security-schedules`, icon: CalendarDaysIcon },
+  //   { label: "Incidents & Reports", href: `/admin/${adminSlug}/security-incidents`, icon: DocumentTextIcon },
+  //   { label: "Billing & Invoices", href: `/admin/${adminSlug}/security-billing`, icon: CreditCardIcon },
+  //   { label: "Equipment & Inventory", href: `/admin/${adminSlug}/security-equipment`, icon: CubeTransparentIcon },
+  //   { label: "Messages", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleBottomCenterTextIcon },
+  //   { label: "Settings", href: `/admin/${adminSlug}/security-settings`, icon: Cog6ToothIcon },    
+  // ],
+
+  "Security Services": [
+    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },    
+    { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
+    { label: "Clients", href: `/admin/${adminSlug}/finance-clients`, icon: UsersIcon },
+    { label: "Experts/Team", href: `/admin/${adminSlug}/finance-team`, icon: ShieldCheckIcon }, // Manage experts/advisors
+    // { label: "Cases & Matters", href: `/admin/${adminSlug}/finance-cases`, icon: BriefcaseIcon }, // For legal cases/financial matters
+    { label: "Documents", href: `/admin/${adminSlug}/finance-documents`, icon: DocumentTextIcon },
+    { label: "Appointments", href: `/admin/${adminSlug}/finance-appointments`, icon: CalendarDaysIcon }, // For scheduling consultations    
+    { label: "Services", href: `/admin/${adminSlug}/services`, icon: WrenchScrewdriverIcon },
+    { label: "Billing & Invoices", href: `/admin/${adminSlug}/finance-invoices`, icon: ClipboardDocumentListIcon }, // More explicit name
+    { label: "Packages & Pricing", href: `/admin/${adminSlug}/finance-packages`, icon: TagIcon }, // Manage consultation packages
+    { label: "Testimonials", href: `/admin/${adminSlug}/finance-testimonials`, icon: ChatBubbleLeftRightIcon }, // Manage client feedback
+    { label: "FAQs", href: `/admin/${adminSlug}/finance-faqs`, icon: QuestionMarkCircleIcon }, // Manage frequently asked questions 
+    { label: "Blogs", icon: DocumentTextIcon, subItems: [ { label: "All Blogs", href: `/admin/${adminSlug}/blogs` }, ], },
+    { label: "Settings", href: `/admin/${adminSlug}/finance-settings`, icon: Cog6ToothIcon }, // General admin settings
   ],
 
   //Old PAths
