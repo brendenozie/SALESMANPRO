@@ -27,14 +27,33 @@ export const config = {
 export default async function middleware(request: NextRequest, ev: NextFetchEvent) {
   const url = request.nextUrl.clone();
   const { pathname } = url;
-  const host = request.headers.get("host")?.split(":")[0] || "";
-  const origin = request.headers.get("origin");
+  // const host = request.headers.get("host")?.split(":")[0] || "";
+  // const origin = request.headers.get("origin");
   
+// const url = request.nextUrl.clone();
+//   const { pathname } = url;
+  const userAgent = request.headers.get("user-agent") || "";
+  
+  // 1. Detect if it's our Desktop App
+  const isDesktop = userAgent.includes("SalesmanProDesktop");
 
+  // 2. Check for Next-Auth Session
+  const session = await getToken({ req: request });
+
+  // 3. DESKTOP REDIRECT LOGIC
+  // If user is on desktop, NOT logged in, and NOT already on the desktop-login page
+  if (isDesktop && !session && !pathname.startsWith("/desktop-login")) {
+    return NextResponse.redirect(new URL("/desktop-login", request.url));
+  }
+
+  // ---- REST OF YOUR EXISTING MIDDLEWARE LOGIC ----
+  const host = request.headers.get("host")?.split(":")[0] || "";
+    
   // ---- 1. API & CORS HANDLING ----
    if (pathname.startsWith("/api/")) {
     return NextResponse.next();
   }
+
   // if (pathname.startsWith("/api/")) {
   //   const responseHeaders = new Headers();
   //   if (origin) {
