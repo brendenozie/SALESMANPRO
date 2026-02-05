@@ -1118,7 +1118,7 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
   //   { label: "Settings", href: `/admin/${adminSlug}/security-settings`, icon: Cog6ToothIcon },    
   // ],
 
-  "Security Services": [
+  "Security": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },    
     { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
     { label: "Clients", href: `/admin/${adminSlug}/finance-clients`, icon: UsersIcon },
