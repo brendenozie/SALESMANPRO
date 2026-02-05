@@ -38,13 +38,40 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
   const isDesktop = userAgent.includes("SalesmanProDesktop");
 
   // 2. Check for Next-Auth Session
-  const session = await getToken({ req: request });
+  // const session = await getToken({ req: request });
 
-  // 3. DESKTOP REDIRECT LOGIC
-  // If user is on desktop, NOT logged in, and NOT already on the desktop-login page
-  if (isDesktop && !session && !pathname.startsWith("/desktop-login")) {
+  // We explicitly pass the secret and handle both secure and non-secure cookie names
+  const session = await getToken({ 
+    req: request,
+    secret: process.env.NEXTAUTH_SECRET,
+    // This ensures it works on both localhost (http) and production (https)
+    cookieName: process.env.NODE_ENV === 'production' ? '__Secure-next-auth.session-token' : 'next-auth.session-token'
+  });
+
+  // 1. PREVENT REDIRECT LOOPS
+  // Only redirect to login if we are NOT already there and NOT in an auth API call
+  const isAuthPage = pathname.startsWith("/desktop-login") || pathname.startsWith("/api/auth");
+  
+  if (isDesktop && !session && !isAuthPage) {
     return NextResponse.redirect(new URL("/desktop-login", request.url));
   }
+
+  // 2. ESCAPE FROM LOGIN PAGE
+  // If we are on the desktop, have a session, and are sitting on the login page -> Go to Dashboard
+  if (isDesktop && session && pathname === "/desktop-login") {
+    return NextResponse.redirect(new URL("/dashboards", request.url));
+  }
+  // 3. DESKTOP REDIRECT LOGIC
+  // If user is on desktop, NOT logged in, and NOT already on the desktop-login page
+  // Only redirect if NOT already on the desktop-login page
+  // if (isDesktop && !session && pathname !== "/desktop-login") {
+  //   return NextResponse.redirect(new URL("/desktop-login", request.url));
+  // }
+
+  // // 🔥 FIX 2: If logged in on desktop, don't stay on the login page
+  // if (isDesktop && session && pathname === "/desktop-login") {
+  //   return NextResponse.redirect(new URL("/dashboards", request.url));
+  // }
 
   // ---- REST OF YOUR EXISTING MIDDLEWARE LOGIC ----
   const host = request.headers.get("host")?.split(":")[0] || "";

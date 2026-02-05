@@ -215,7 +215,84 @@ const generateReceiptHtml = (details: ReceiptDetails): string => {
 };
 
 // --- Print Function (remains mostly the same, now uses dynamic currencySymbol) ---
+// --- Updated Print Function for Desktop Integration ---
 const printReceipt = (htmlContent: string) => {
+  // 1. Check if we are running inside the SalesmanPro Desktop App
+  if ((window as any).chrome?.webview) {
+    (window as any).chrome.webview.postMessage({
+      type: 'PRINT_HTML_RECEIPT',
+      payload: htmlContent
+    });
+    console.log("Sent receipt to Desktop Printer Service");
+      (window as any).chrome.webview.postMessage({ type: 'NOTIFY', message: 'Receipt sent to printer!' });
+
+    return;
+  }
+
+  // 2. Fallback for standard Web Browsers (your existing logic)
+  const iframe = document.createElement('iframe');
+  iframe.style.display = 'none';
+  document.body.appendChild(iframe);
+
+  const iframeDoc = iframe.contentWindow?.document;
+  if (iframeDoc) {
+    iframeDoc.open();
+     iframeDoc.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Receipt</title>
+        <style>
+          @page {
+            size: 80mm auto;
+            margin: 0;
+          }
+          body {
+            margin: 0;
+            padding: 0;
+            -webkit-print-color-adjust: exact;
+          }
+          div { font-family: 'Inter', sans-serif; width: 300px; margin: 0 auto; padding: 20px; color: #333; background-color: #fff; border: 1px solid #eee; }
+          h2 { text-align: center; font-size: 24px; margin-bottom: 5px; color: #6A0572; }
+          p { text-align: center; font-size: 12px; margin-bottom: 10px; color: #555; }
+          hr { border: none; border-top: 1px dashed #ccc; margin: 15px 0; }
+          .flex-between { display: flex; justify-content: space-between; }
+          .item-row { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 4px; }
+          .item-name { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+          .item-qty { width: 40px; text-align: center; }
+          .item-price { width: 80px; text-align: right; }
+          .item-subtotal { width: 100px; text-align: right; font-weight: bold; }
+          .section-title { font-size: 15px; font-weight: bold; margin-bottom: 10px; color: #444; }
+          .summary-row { display: flex; justify-content: space-between; font-size: 16px; margin-bottom: 5px; }
+          .total-row { display: flex; justify-content: space-between; font-size: 22px; font-weight: bold; border-top: 2px solid #6A0572; padding-top: 10px; margin-top: 10px; }
+          .thank-you { text-align: center; font-size: 16px; font-weight: bold; margin-top: 15px; color: #6A0572; }
+          .policy { text-align: center; font-size: 11px; color: #777; margin-top: 10px; }
+        </style>
+      </head>
+      <body>
+        ${htmlContent}
+      </body>
+      </html>
+    `);
+    iframeDoc.close();
+    iframe.onload = () => {
+      iframe.contentWindow?.focus();
+      iframe.contentWindow?.print();
+      document.body.removeChild(iframe);
+    };
+  } else {
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(htmlContent);
+      printWindow.document.close();
+      printWindow.print();
+    } else {
+      alert('Could not open print window. Please allow pop-ups for printing.');
+    }
+  }
+};
+
+const printReceiptV1 = (htmlContent: string) => {
   const iframe = document.createElement('iframe');
   iframe.style.display = 'none';
   document.body.appendChild(iframe);
@@ -560,98 +637,181 @@ const StorePOSPageClient: React.FC<StorePOSPageClientProps> = ({ companyId, init
   
   const finalTotal = useMemo(() => subtotal - totalDiscountAmount + totalTax, [subtotal, totalDiscountAmount, totalTax]);
   
-
   const finalizeSale = useCallback(async () => {
-    setPaymentStatus(null); // Reset status
-    console.log("Finalizing sale...");
+  if (cart.length === 0) return alert("Cart is empty");
+  
+  setPaymentStatus(null);
+  console.log("Finalizing sale...");
 
-    // Prepare payload for the /api/customer-orders API
-    const orderPayload = {
-      userId: currentAgent?.id, // Get current agent's ID
-      companyId: companyId,
-      totalAmount: finalTotal,
-      discountAmount: totalDiscountAmount,
-      taxAmount: totalTax,
-      paymentDetails: {
-        amount: finalTotal,
-        status: 'COMPLETED', // Assuming immediate completion for this simulation
-        transactionId: `TXN-${Date.now()}`, // Generate unique ID
+  // 1. Map frontend cart to backend schema
+  const orderPayload = {
+    name: "Walk-in Customer", // Or collect from a field
+    email: "pos-customer@store.com", // Fallback for POS
+    phone: "0000000000",
+    consumerId: userId || 'pos-agent',
+    companyId: companyId,
+    paymentOption: "cod", // POS usually defaults to Cash (cod) or Card
+    totalPrice: subtotal,
+    totalFinalPrice: finalTotal,
+    items: cart.map(item => ({
+      marketplaceListingId: item.id,
+      quantity: item.quantity,
+      price: item.finalPrice ?? 0,
+    })),
+    paymentData: {
+      notes: `POS Sale by ${currentAgent?.name}`,
+      discountApplied: totalDiscountAmount
+    }
+  };
+
+  try {
+    const response = await fetch(`${apiBaseUrl}/shop/orders`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
       },
-      items: cart.map(item => ({
-        productId: item.id,
-        quantity: item.quantity,
-        priceAtSale: item.finalPrice,
-        subtotal: item.subtotal,
-      })),
+      body: JSON.stringify(orderPayload),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || !result.success) {
+      throw new Error(result.error || 'Failed to process order');
+    }
+
+    // 2. Handle Payment Redirects (Stripe/Paystack/Paypal)
+    if (result.data.authorizationUrl) {
+      window.location.href = result.data.authorizationUrl;
+      return;
+    }
+
+    setPaymentStatus('success');
+
+    // 3. Print Receipt
+    const now = new Date();
+    const receiptDetails: ReceiptDetails = {
+      cart,
+      subtotal,
+      totalDiscountAmount,
+      totalTax,
+      finalTotal,
+      agentId: currentAgent?.id || 'N/A',
+      agentName: currentAgent?.name || 'N/A',
+      transactionId: result.data.trackingNumber, // Use tracking number from API
+      date: now.toLocaleDateString(),
+      time: now.toLocaleTimeString(),
+      storeName: companyInfo?.name || 'Your Awesome Store',
+      storeAddress: companyInfo?.address || '123 Main St',
+      storePhone: companyInfo?.phone || '',
+      currencySymbol: currencySymbol,
     };
 
-    // Simulate API call to /api/customer-orders
-    try {
-      // In a real app:
-      // const response = await fetch(`${apiBaseUrl}/customer-orders', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(orderPayload),
-      // });
-      // if (!response.ok) throw new Error('Failed to process order');
-      // const result = await response.json(); // May contain transaction ID or order ID
+    const receiptHtml = generateReceiptHtml(receiptDetails);
+    printReceipt(receiptHtml);
 
-      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate network delay
+    // 4. Cleanup
+    setCart([]);
+    setDiscountPercentage(0);
+    setShowPaymentModal(false);
 
-      const success = Math.random() > 0.1; // 90% success rate for simulation
-      if (success) {
-        setPaymentStatus('success');
+  } catch (error: any) {
+    console.error("Order creation failed:", error);
+    setPaymentStatus('failed');
+    alert(`Error: ${error.message}`);
+  }
+}, [cart, finalTotal, subtotal, totalDiscountAmount, totalTax, companyId, userId, currentAgent, companyInfo, currencySymbol]);
 
-        // --- Receipt Printing (uses dynamic company and agent info) ---
-        const now = new Date();
-        const receiptDetails: ReceiptDetails = {
-          cart,
-          subtotal,
-          totalDiscountAmount,
-          totalTax,
-          finalTotal,
-          agentId: currentAgent?.id || 'N/A',
-          agentName: currentAgent?.name || 'N/A',
-          transactionId: orderPayload.paymentDetails.transactionId,
-          date: now.toLocaleDateString(),
-          time: now.toLocaleTimeString(),
-          storeName: companyInfo?.name || 'Your Awesome Store',
-          storeAddress: companyInfo?.address || '123 Main St, City, Country',
-          storePhone: companyInfo?.phone || '+1 (555) 123-4567',
-          currencySymbol: currencySymbol,
-        };
-        const receiptHtml = generateReceiptHtml(receiptDetails);
-        printReceipt(receiptHtml);
-        // --- End Receipt Printing ---
+  // const finalizeSale = useCallback(async () => {
+  //   setPaymentStatus(null); // Reset status
+  //   console.log("Finalizing sale...");
 
-        // Clear cart and reset discount
-        setCart([]);
-        setDiscountPercentage(0);
+  //   // Prepare payload for the /api/customer-orders API
+  //   const orderPayload = {
+  //     userId: currentAgent?.id, // Get current agent's ID
+  //     companyId: companyId,
+  //     totalAmount: finalTotal,
+  //     discountAmount: totalDiscountAmount,
+  //     taxAmount: totalTax,
+  //     paymentDetails: {
+  //       amount: finalTotal,
+  //       status: 'COMPLETED', // Assuming immediate completion for this simulation
+  //       transactionId: `TXN-${Date.now()}`, // Generate unique ID
+  //     },
+  //     items: cart.map(item => ({
+  //       productId: item.id,
+  //       quantity: item.quantity,
+  //       priceAtSale: item.finalPrice,
+  //       subtotal: item.subtotal,
+  //     })),
+  //   };
 
-        // Simulate stock update on the frontend (real app would rely on backend confirmation)
-        setProducts(prevProducts =>
-          prevProducts.map(p => {
-            const soldItem = cart.find(ci => ci.id === p.id);
-            // if (soldItem) {
-            //   return { ...p, stock: p.stock - soldItem.quantity };
-            // }
-            return p;
-          })
-        );
-        // Potentially update agent's displayed sales metrics if they are stateful on frontend
-        // setCurrentAgent(prev => prev ? { ...prev, dailySalesCount: prev.dailySalesCount + 1, dailySalesValue: prev.dailySalesValue + finalTotal } : null);
+  //   // Simulate API call to /api/customer-orders
+  //   try {
+  //     // In a real app:
+  //     // const response = await fetch(`${apiBaseUrl}/customer-orders', {
+  //     //   method: 'POST',
+  //     //   headers: { 'Content-Type': 'application/json' },
+  //     //   body: JSON.stringify(orderPayload),
+  //     // });
+  //     // if (!response.ok) throw new Error('Failed to process order');
+  //     // const result = await response.json(); // May contain transaction ID or order ID
 
-      } else {
-        setPaymentStatus('failed');
-      }
-    } catch (error) {
-      console.error("Error during sale finalization:", error);
-      setPaymentStatus('failed');
-    } finally {
-      setShowPaymentModal(false);
-      setShowConfirmationModal(true); // Show confirmation of success/failure
-    }
-  }, [cart, subtotal, totalDiscountAmount, totalTax, finalTotal, currentAgent, companyId, companyInfo, currencySymbol]);
+  //     await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate network delay
+
+  //     const success = Math.random() > 0.1; // 90% success rate for simulation
+  //     if (success) {
+  //       setPaymentStatus('success');
+
+  //       // --- Receipt Printing (uses dynamic company and agent info) ---
+  //       const now = new Date();
+  //       const receiptDetails: ReceiptDetails = {
+  //         cart,
+  //         subtotal,
+  //         totalDiscountAmount,
+  //         totalTax,
+  //         finalTotal,
+  //         agentId: currentAgent?.id || 'N/A',
+  //         agentName: currentAgent?.name || 'N/A',
+  //         transactionId: orderPayload.paymentDetails.transactionId,
+  //         date: now.toLocaleDateString(),
+  //         time: now.toLocaleTimeString(),
+  //         storeName: companyInfo?.name || 'Your Awesome Store',
+  //         storeAddress: companyInfo?.address || '123 Main St, City, Country',
+  //         storePhone: companyInfo?.phone || '+1 (555) 123-4567',
+  //         currencySymbol: currencySymbol,
+  //       };
+  //       const receiptHtml = generateReceiptHtml(receiptDetails);
+  //       printReceipt(receiptHtml);
+  //       // --- End Receipt Printing ---
+
+  //       // Clear cart and reset discount
+  //       setCart([]);
+  //       setDiscountPercentage(0);
+
+  //       // Simulate stock update on the frontend (real app would rely on backend confirmation)
+  //       setProducts(prevProducts =>
+  //         prevProducts.map(p => {
+  //           const soldItem = cart.find(ci => ci.id === p.id);
+  //           // if (soldItem) {
+  //           //   return { ...p, stock: p.stock - soldItem.quantity };
+  //           // }
+  //           return p;
+  //         })
+  //       );
+  //       // Potentially update agent's displayed sales metrics if they are stateful on frontend
+  //       // setCurrentAgent(prev => prev ? { ...prev, dailySalesCount: prev.dailySalesCount + 1, dailySalesValue: prev.dailySalesValue + finalTotal } : null);
+
+  //     } else {
+  //       setPaymentStatus('failed');
+  //     }
+  //   } catch (error) {
+  //     console.error("Error during sale finalization:", error);
+  //     setPaymentStatus('failed');
+  //   } finally {
+  //     setShowPaymentModal(false);
+  //     setShowConfirmationModal(true); // Show confirmation of success/failure
+  //   }
+  // }, [cart, subtotal, totalDiscountAmount, totalTax, finalTotal, currentAgent, companyId, companyInfo, currencySymbol]);
 
   const handleProcessPayment = useCallback(() => {
     if (cart.length === 0) {
