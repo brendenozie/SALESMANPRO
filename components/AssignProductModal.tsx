@@ -115,64 +115,64 @@ const AssignProductModal: React.FC<any> = ({ showAssignProductModal, setShowAssi
 
   const Step1SelectAgent: React.FC = () => (
     <>
-      <div className="mb-4">
-        <input
-          type="text"
-          placeholder="Search agent by name or ID..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 shadow-sm"
-        />
-      </div>
+        <div className="mb-4">
+          <input
+            type="text"
+            placeholder="Search agent by name or ID..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 shadow-sm"
+          />
+        </div>
 
-      <div className="max-h-64 overflow-y-auto border border-gray-200 rounded-lg p-2 space-y-1 bg-white">
-        {isLoading ? (
-          <div className="p-4 text-center text-gray-500">Loading agents...</div>
-        ) : filteredAgents.length === 0 ? (
-          <div className="p-4 text-center text-gray-500">No agents found.</div>
-        ) : (
-          filteredAgents.map((agent: any) => (
-            <div
-              key={agent.id}
-              onClick={() => setSelectedAgent(agent.id)}
-              className={`p-3 flex items-center space-x-3 rounded-md cursor-pointer transition duration-150 ease-in-out ${
-                selectedAgent === agent.id 
-                  ? 'bg-blue-50 border border-blue-500 ring-2 ring-blue-500 shadow-md' 
-                  : 'hover:bg-gray-50'
-              }`}
-            >
-              <img
-                src={agent.profilePicture || '/placeholder-avatar.png'}
-                alt={agent.name}
-                className="h-10 w-10 rounded-full object-cover border border-gray-100"
-              />
-              <div>
-                <p className="font-semibold text-gray-800">{agent.user.name}</p>
-                <p className="text-xs text-gray-500 truncate">ID: {agent.id}</p>
+        <div className="max-h-64 overflow-y-auto border border-gray-200 rounded-lg p-2 space-y-1 bg-white">
+          {isLoading ? (
+            <div className="p-4 text-center text-gray-500">Loading agents...</div>
+          ) : filteredAgents.length === 0 ? (
+            <div className="p-4 text-center text-gray-500">No agents found.</div>
+          ) : (
+            filteredAgents.map((agent: any) => (
+              <div
+                key={agent.id}
+                onClick={() => setSelectedAgent(agent.id)}
+                className={`p-3 flex items-center space-x-3 rounded-md cursor-pointer transition duration-150 ease-in-out ${
+                  selectedAgent === agent.id 
+                    ? 'bg-blue-50 border border-blue-500 ring-2 ring-blue-500 shadow-md' 
+                    : 'hover:bg-gray-50'
+                }`}
+              >
+                <img
+                  src={agent.profilePicture || '/placeholder-avatar.png'}
+                  alt={agent.name}
+                  className="h-10 w-10 rounded-full object-cover border border-gray-100"
+                />
+                <div>
+                  <p className="font-semibold text-gray-800">{agent.user.name}</p>
+                  <p className="text-xs text-gray-500 truncate">ID: {agent.id}</p>
+                </div>
+                {selectedAgent === agent.id && (
+                  <svg className="ml-auto w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 13.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                )}
               </div>
-              {selectedAgent === agent.id && (
-                <svg className="ml-auto w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 13.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                </svg>
-              )}
-            </div>
-          ))
-        )}
-      </div>
-      
-      <div className="mt-6 flex justify-end">
-        <button
-          onClick={() => setCurrentStep(2)}
-          disabled={!selectedAgent}
-          className={`px-6 py-2 rounded-lg text-white font-medium transition duration-150 ${
-            selectedAgent 
-              ? 'bg-blue-600 hover:bg-blue-700' 
-              : 'bg-gray-300 text-gray-600 cursor-not-allowed'
-          }`}
-        >
-          Next: Assignment Details
-        </button>
-      </div>
+            ))
+          )}
+        </div>
+        
+        <div className="mt-6 flex justify-end">
+          <button
+            onClick={() => setCurrentStep(2)}
+            disabled={!selectedAgent}
+            className={`px-6 py-2 rounded-lg text-white font-medium transition duration-150 ${
+              selectedAgent 
+                ? 'bg-blue-600 hover:bg-blue-700' 
+                : 'bg-gray-300 text-gray-600 cursor-not-allowed'
+            }`}
+          >
+            Next: Assignment Details
+          </button>
+        </div>
     </>
   );
 
@@ -290,7 +290,7 @@ const AssignProductModal: React.FC<any> = ({ showAssignProductModal, setShowAssi
       onClose={() => setShowAssignProductModal(false)}
       title={`Assign **${product.name}** to Sales Agent`}
     >
-      <div className="p-6">
+      <div className="p-6 bg-white rounded-xl shadow-lg w-full max-w-2xl">
         {/* Stepper Indicator */}
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center">

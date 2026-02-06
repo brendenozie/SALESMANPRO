@@ -1,17 +1,12 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-// Assuming these are imported correctly from your components folder
+import { useRouter, useSearchParams } from "next/navigation";
 import ProductRequestModal from "@/components/ProductRequestModal";
 import AddToProductMarketModal from "@/components/AddToProductMarketModal";
 import { IStoreCategory, MarketListingForm } from "@/types/typings";
-import { useRouter, useSearchParams } from "next/navigation";
+import { ArrowTrendingDownIcon, ChevronLeftIcon, ChevronRightIcon, CubeTransparentIcon, GiftTopIcon, MagnifyingGlassCircleIcon, PencilIcon, PlusIcon, ShoppingBagIcon, TrashIcon } from "@heroicons/react/24/outline";
 
-// interface ClientProps {
-//   companyId: string;
-//   productsData: MarketListingForm[];
-//   categoriesData: IStoreCategory[];
-// }
 interface ClientProps {
   companyId: string;
   productsData: MarketListingForm[];
@@ -24,27 +19,23 @@ interface ClientProps {
   }
 }
 
-
-// export default function ClientInventoryClient({ companyId, categoriesData, productsData }: ClientProps) {
 export default function ClientInventoryClient({ pagination, companyId, categoriesData, productsData }: ClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  const [showRemoveProductModal, setShowRemoveProductModal] = useState(false);
+  const [showAddToMarketModal, setShowAddToMarketModal] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<MarketListingForm | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("ALL");
+
+  const { page, totalPages } = pagination;
 
   const goToPage = (page: number) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set("page", page.toString());
     router.push(`?${params.toString()}`);
   };
-
-  const { page, totalPages } = pagination;
-  const [showRemoveProductModal, setShowRemoveProductModal] = useState(false);
-  const [showAddToMarketModal, setShowAddToMarketModal] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<MarketListingForm | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("ALL");
-  
-  // NOTE: The showRequestModal state was redundant in the original code,
-  // as removal uses ProductRequestModal. I've removed the showRequestModal state.
 
   const handleEditProductClick = (product: MarketListingForm) => {
     setSelectedProduct(product);
@@ -57,233 +48,186 @@ export default function ClientInventoryClient({ pagination, companyId, categorie
   };
 
   const handleAddProductClick = () => {
-    setSelectedProduct(null); // Clear selected product for new addition
+    setSelectedProduct(null);
     setShowAddToMarketModal(true);
   };
 
-  // --- Filtered Products Logic (Efficiency) ---
   const filteredProducts = useMemo(() => {
     return productsData.filter(product => {
-      const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase())  || 
+      const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                             product.description?.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      const matchesCategory = selectedCategory === "ALL" || 
-                              product.category === selectedCategory; // Assuming category name is used for filtering
-
+      const matchesCategory = selectedCategory === "ALL" || product.category === selectedCategory;
       return matchesSearch && matchesCategory;
     });
   }, [productsData, searchTerm, selectedCategory]);
-  
-  // --- Quick Stats (Intuitive Overview) ---
-  const totalProducts = productsData.length;
+
   const totalQuantity = productsData.reduce((sum, p) => sum + p.quantity, 0);
 
-
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-8 lg:p-12 transition-colors duration-500">
+    <div className="min-h-screen bg-[#f8fafc] dark:bg-gray-950 p-4 md:p-10 transition-colors duration-300">
       
-      {/* 🌟 VIBRANT HEADER SECTION */}
-      <header className="max-w-7xl mx-auto mb-12">
-        <h1 className="text-4xl sm:text-5xl font-extrabold text-gray-900 dark:text-white leading-tight mb-2">
-          Product Marketplace 🚀
-        </h1>
-        <p className="text-lg text-gray-600 dark:text-gray-400 max-w-3xl">
-          Central hub for managing your company's product listings, inventory, and market visibility.
-        </p>
+      {/* 🚀 HEADER SECTION */}
+      <header className="max-w-7xl mx-auto mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="px-3 py-1 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 text-xs font-bold uppercase tracking-wider">
+              Management Portal
+            </span>
+          </div>
+          <h1 className="text-4xl md:text-5xl font-black text-gray-900 dark:text-white tracking-tight">
+            Marketplace<span className="text-blue-600">.</span>
+          </h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-2 text-lg">
+            Manage, track, and scale your product inventory.
+          </p>
+        </div>
+
+        <button
+          onClick={handleAddProductClick}
+          className="group flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl shadow-lg shadow-blue-200 dark:shadow-none transition-all active:scale-95"
+        >
+          <PlusIcon className="w-5 h-5 group-hover:rotate-90 transition-transform" />
+          <span className="font-bold">Add New Product</span>
+        </button>
       </header>
 
-      {/* 📊 OVERVIEW STATS & ACTIONS */}
-      <div className="max-w-7xl mx-auto mb-10">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
-            {/* Stat Card 1 */}
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700">
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total Listings</p>
-                <p className="text-4xl font-extrabold text-blue-600 mt-1">{totalProducts}</p>
-            </div>
-            {/* Stat Card 2 */}
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700">
-                <p className="text-sm font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Stock Quantity</p>
-                <p className="text-4xl font-extrabold text-green-600 mt-1">{totalQuantity}</p>
-            </div>
-            {/* Action Card/Button */}
-            <div 
-                onClick={handleAddProductClick}
-                className="bg-blue-50 dark:bg-blue-900/30 p-6 rounded-2xl shadow-inner cursor-pointer flex flex-col justify-center items-center text-center border-2 border-dashed border-blue-200 dark:border-blue-700 hover:bg-blue-100 transition duration-300"
-            >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-blue-600 dark:text-blue-400 mb-2" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
-                </svg>
-                <p className="text-lg font-bold text-blue-700 dark:text-blue-300">Add New Product</p>
-            </div>
-        </div>
+      {/* 📊 ANALYTICS OVERVIEW */}
+      <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <StatCard label="Active Listings" value={pagination.total} icon={<ShoppingBagIcon className="w-5 h-5" />} color="text-blue-600" />
+        <StatCard label="Total Stock" value={totalQuantity} icon={<GiftTopIcon className="w-5 h-5" />} color="text-emerald-600" />
+        <StatCard label="Categories" value={categoriesData.length} icon={<CubeTransparentIcon className="w-5 h-5" />} color="text-purple-600" />
+        <StatCard label="Market Reach" value="Top 10%" icon={<ArrowTrendingDownIcon className="w-5 h-5" />} color="text-orange-600" />
       </div>
 
-      {/* 🔍 FILTER & SEARCH BAR */}
-      <div className="max-w-7xl mx-auto mb-8 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md flex flex-col sm:flex-row gap-4 items-center border border-gray-100 dark:border-gray-700">
-        <input
-          type="text"
-          placeholder="Search product name or description..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full sm:w-2/3 px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 transition duration-150"
-        />
-        
-        <select
-          value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value)}
-          className="w-full sm:w-1/3 px-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 transition duration-150 appearance-none bg-white dark:bg-gray-700"
-        >
-          <option value="ALL">All Categories ({productsData.length})</option>
-          {categoriesData.map(cat => (
-            <option key={cat.id} value={cat.displayName || 'Unknown'}>
-                {cat.displayName} ({productsData.filter(p => p.category.name === cat.displayName).length})
-            </option>
-          ))}
-        </select>
+      {/* 🔍 SEARCH & FILTERS */}
+      <div className="max-w-7xl mx-auto mb-8 sticky top-4 z-10">
+        <div className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border border-gray-200 dark:border-gray-800 p-3 rounded-2xl shadow-xl flex flex-col md:flex-row gap-3">
+          <div className="relative flex-grow">
+            <MagnifyingGlassCircleIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 " />
+            <input
+              type="text"
+              placeholder="Search by name, SKU, or description..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-gray-800 border-none rounded-xl focus:ring-2 focus:ring-blue-500 dark:text-white transition-all"
+            />
+          </div>
+          
+          <div className="flex gap-3">
+            <select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              className="px-4 py-3 bg-gray-50 dark:bg-gray-800 border-none rounded-xl focus:ring-2 focus:ring-blue-500 dark:text-white font-medium cursor-pointer min-w-[160px]"
+            >
+              <option value="ALL">All Categories</option>
+              {categoriesData.map(cat => (
+                <option key={cat.id} value={cat.displayName ?? ''}>{cat.displayName}</option>
+              ))}
+            </select>
+          </div>
+        </div>
       </div>
 
       {/* 📦 PRODUCT GRID */}
       <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-          {filteredProducts.length > 0 ? (
-            filteredProducts.map((product, index) => (
+        {filteredProducts.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filteredProducts.map((product) => (
               <div
-                key={product.id || index}
-                className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 shadow-xl hover:shadow-2xl transition transform hover:scale-[1.02] duration-300 relative overflow-hidden group"
+                key={product.id}
+                className="group bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl overflow-hidden hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-300 flex flex-col"
               >
-                {/* Product Image Placeholder (Crucial visual element) */}
-                <div className="h-32 w-full bg-gray-100 dark:bg-gray-700 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
-                    <img src={product.images?.[0] || `https://via.placeholder.com/150/`} alt={product.name} className="object-cover h-full w-full" />
-                    {/* <svg className="h-12 w-12 text-gray-400 dark:text-gray-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4.5-4.5 2 2 3.5-3.5 2 2V15zm-2-9a2 2 0 11-4 0 2 2 0 014 0z" clipRule="evenodd"></path></svg> */}
-                </div>
-
-                {/* Status Badges */}
-                <div className="absolute top-3 right-3 flex gap-2">
+                {/* Image Container */}
+                <div className="relative h-48 bg-gray-100 dark:bg-gray-800 overflow-hidden">
+                  <img 
+                    src={product.images?.[0] || `https://via.placeholder.com/300`} 
+                    alt={product.name} 
+                    className="object-cover w-full h-full group-hover:scale-110 transition-transform duration-500" 
+                  />
+                  <div className="absolute top-3 right-3 flex flex-col gap-2">
                     {product.isNewArrival && (
-                    <span className="bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">New!</span>
+                      <span className="bg-blue-600 text-white text-[10px] font-black px-2 py-1 rounded-lg uppercase shadow-lg">New</span>
                     )}
                     {product.isOnOffer && (
-                    <span className="bg-purple-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-md">Offer</span>
+                      <span className="bg-orange-500 text-white text-[10px] font-black px-2 py-1 rounded-lg uppercase shadow-lg">Sale</span>
                     )}
+                  </div>
                 </div>
 
-                <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1 line-clamp-2">
-                  {product.name || "Untitled Product"}
-                </h3>
-                <p className="text-sm text-blue-600 dark:text-blue-400 font-medium mb-3">{product.category.name}</p>
-
-
-                <div className="grid grid-cols-2 gap-y-2 mb-5 text-sm">
-                  <p className="text-gray-500 dark:text-gray-400">Stock:</p>
-                  <p className="font-bold text-right text-gray-900 dark:text-white">{product.quantity}</p>
+                {/* Content */}
+                <div className="p-5 flex-grow">
+                  <span className="text-xs font-bold text-blue-500 uppercase tracking-widest">{product.category.name}</span>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mt-1 line-clamp-1 group-hover:text-blue-600 transition-colors">
+                    {product.name}
+                  </h3>
                   
-                  <p className="text-gray-500 dark:text-gray-400">Selling Price:</p>
-                  <p className="font-bold text-right text-green-600">${product.sellingPrice.toFixed(2)}</p>
-                  
-                  {product.discount && product.discount > 0 && (
-                    <>
-                      <p className="text-gray-500 dark:text-gray-400">Discount:</p>
-                      <p className="font-bold text-right text-red-500">{product.discount}%</p>
-                    </>
-                  )}
+                  <div className="mt-4 flex justify-between items-end">
+                    <div>
+                      <p className="text-gray-400 text-xs font-medium uppercase">Price</p>
+                      <p className="text-xl font-black text-gray-900 dark:text-white">
+                        ${product.sellingPrice.toLocaleString()}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-gray-400 text-xs font-medium uppercase">Stock</p>
+                      <p className={`text-sm font-bold ${product.quantity < 5 ? 'text-red-500' : 'text-gray-700 dark:text-gray-300'}`}>
+                        {product.quantity} units
+                      </p>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Action Buttons with Hover Effect */}
-                <div className="flex justify-end gap-3 pt-4 border-t border-gray-100 dark:border-gray-700">
-                  <button
+                {/* Actions */}
+                <div className="p-4 bg-gray-50 dark:bg-gray-800/50 flex gap-2">
+                  <button 
                     onClick={() => handleEditProductClick(product)}
-                    title="Edit Product"
-                    className="p-2 rounded-full bg-indigo-50 hover:bg-indigo-100 text-indigo-600 transition-all duration-300 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                    className="flex-grow flex justify-center items-center gap-2 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-bold text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M13.586 3.586a2 2 0 112.828 2.828l-7.65 7.65A2 2 0 019.172 15L6 15v-3.172a2 2 0 01.586-1.414l7.65-7.65z" /></svg>
+                    <PencilIcon className="w-4 h-4" /> Edit
                   </button>
-
-                  <button
+                  <button 
                     onClick={() => handleRemoveProductClick(product)}
-                    title="Remove Listing"
-                    className="p-2 rounded-full bg-red-50 hover:bg-red-100 text-red-600 transition-all duration-300 shadow-sm hover:shadow-md focus:outline-none focus:ring-2 focus:ring-red-400"
+                    className="p-2.5 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 011-1h4a1 1 0 110 2H8a1 1 0 01-1-1zm1 3a1 1 0 100 2h4a1 1 0 100-2H8z" clipRule="evenodd" /></svg>
+                    <TrashIcon className="w-5 h-5" />
                   </button>
                 </div>
               </div>
-            ))
-          ) : (
-            // 🚫 Empty State / No Results
-            <div className="col-span-full text-center py-20 px-4 bg-white dark:bg-gray-800 rounded-2xl border-2 border-dashed border-gray-300 dark:border-gray-600 flex flex-col items-center justify-center shadow-lg">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-20 w-20 text-blue-400 dark:text-blue-500 mb-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <p className="text-2xl font-bold text-gray-700 dark:text-white mb-3">
-                {productsData.length === 0 ? "No Products Yet!" : "No Matching Products Found"}
-              </p>
-              <p className="text-lg text-gray-500 dark:text-gray-400 mb-6 max-w-md">
-                {productsData.length === 0 
-                  ? "It looks like your marketplace is empty. Click below to add your first item."
-                  : "Try clearing your filters or search term to see all listings."
-                }
-              </p>
-              {productsData.length === 0 && (
-                <button
-                  onClick={handleAddProductClick}
-                  className="flex items-center gap-2 px-7 py-3 bg-blue-600 text-white font-semibold rounded-xl shadow-xl hover:bg-blue-700 transform hover:scale-[1.05] transition duration-300 ease-in-out focus:outline-none focus:ring-4 focus:ring-blue-300"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" /></svg>
-                  Add Your First Product
-                </button>
-              )}
+            ))}
+          </div>
+        ) : (
+          <div className="py-20 flex flex-col items-center text-center">
+            <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-6">
+              <MagnifyingGlassCircleIcon className="w-10 h-10 text-gray-400" />
             </div>
-          )}
-        </div>
-      </div>
-        
-      {totalPages > 1 && (
-          <div className="flex justify-center mt-12 gap-2">
-
-            {/* Prev Button */}
-            <button
-              disabled={page <= 1}
-              onClick={() => goToPage(page - 1)}
-              className={`px-4 py-2 rounded-lg border 
-                ${page <= 1 ? "opacity-40 cursor-not-allowed" : "hover:bg-gray-100 dark:hover:bg-gray-700"}
-              `}
-            >
-              Prev
-            </button>
-
-            {/* Page Numbers */}
-            {[...Array(totalPages)].map((_, i) => {
-              const p = i + 1;
-              const active = p === page;
-
-              return (
-                <button
-                  key={p}
-                  onClick={() => goToPage(p)}
-                  className={`px-4 py-2 rounded-lg border transition 
-                    ${active ? "bg-blue-600 text-white" : "hover:bg-gray-100 dark:hover:bg-gray-700"}
-                  `}
-                >
-                  {p}
-                </button>
-              );
-            })}
-
-            {/* Next Button */}
-            <button
-              disabled={page >= totalPages}
-              onClick={() => goToPage(page + 1)}
-              className={`px-4 py-2 rounded-lg border 
-                ${page >= totalPages ? "opacity-40 cursor-not-allowed" : "hover:bg-gray-100 dark:hover:bg-gray-700"}
-              `}
-            >
-              Next
-            </button>
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-white">No products found</h3>
+            <p className="text-gray-500 max-w-sm mt-2">We couldn't find anything matching your current filters. Try adjusting your search.</p>
           </div>
         )}
+      </div>
 
+      {/* 🔢 PAGINATION */}
+      {totalPages > 1 && (
+        <div className="max-w-7xl mx-auto mt-12 flex justify-center items-center gap-2">
+          <PaginationButton onClick={() => goToPage(page - 1)} disabled={page <= 1} icon={<ChevronLeftIcon className="w-5 h-5" />} />
+          <div className="flex gap-2 mx-4">
+            {[...Array(totalPages)].map((_, i) => (
+              <button
+                key={i}
+                onClick={() => goToPage(i + 1)}
+                className={`w-10 h-10 rounded-xl font-bold transition-all ${
+                  page === i + 1 ? "bg-blue-600 text-white scale-110 shadow-lg" : "text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-800"
+                }`}
+              >
+                {i + 1}
+              </button>
+            ))}
+          </div>
+          <PaginationButton onClick={() => goToPage(page + 1)} disabled={page >= totalPages} icon={<ChevronRightIcon className="w-5 h-5" />} />
+        </div>
+      )}
 
-      {/* MODALS */}
+      {/* MODALS remain the same... */}
       {showRemoveProductModal && selectedProduct && (
         <ProductRequestModal
           showRequestProductModal={showRemoveProductModal}
@@ -297,12 +241,40 @@ export default function ClientInventoryClient({ pagination, companyId, categorie
           showRequestProductModal={showAddToMarketModal}
           setShowRequestProductModal={setShowAddToMarketModal}
           product={null} 
-          marketListItem={selectedProduct} // Pass selectedProduct for edit, null for new
+          marketListItem={selectedProduct}
           categories={categoriesData}
           companyId={companyId}
-          locations={[]} // Assuming locations is defined elsewhere or handled in the modal
+          locations={[]}
         />
       )}
     </div>
+  );
+}
+
+// --- Helper Components ---
+
+function StatCard({ label, value, icon, color }: { label: string; value: string | number; icon: React.ReactNode; color: string }) {
+  return (
+    <div className="bg-white dark:bg-gray-900 p-5 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm hover:shadow-md transition-shadow">
+      <div className={`w-10 h-10 rounded-2xl flex items-center justify-center mb-4 bg-gray-50 dark:bg-gray-800 ${color}`}>
+        {icon}
+      </div>
+      <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">{label}</p>
+      <p className="text-2xl font-black text-gray-900 dark:text-white mt-1">{value}</p>
+    </div>
+  );
+}
+
+function PaginationButton({ onClick, disabled, icon }: { onClick: () => void; disabled: boolean; icon: React.ReactNode }) {
+  return (
+    <button
+      disabled={disabled}
+      onClick={onClick}
+      className={`p-2.5 rounded-xl border border-gray-200 dark:border-gray-800 transition-all ${
+        disabled ? "opacity-30 cursor-not-allowed" : "hover:bg-white dark:hover:bg-gray-800 shadow-sm active:scale-90"
+      }`}
+    >
+      {icon}
+    </button>
   );
 }

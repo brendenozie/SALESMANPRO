@@ -1,3 +1,4 @@
+import { XMarkIcon } from "@heroicons/react/24/outline";
 import { setCookie } from "cookies-next";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import { useEffect, useState, ReactNode } from "react";
@@ -62,20 +63,16 @@ interface ModalProps {
   onClose: () => void;
   title?: string;
   children: ReactNode;
+  showCloseButton?: boolean; // New prop to control close button visibility
 }
 
-function Modal({ isOpen, onClose, children }: ModalProps) {
+function Modal({ isOpen, onClose, children,title, showCloseButton = true, }: ModalProps) {
   // Disable background scroll when modal opens
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = ""; // reset
-    }
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isOpen]);
+      if (isOpen) document.body.style.overflow = "hidden";
+      else document.body.style.overflow = "";
+      return () => { document.body.style.overflow = ""; };
+    }, [isOpen]);
 
   return (
     <AnimatePresence>
@@ -92,12 +89,52 @@ function Modal({ isOpen, onClose, children }: ModalProps) {
 
           {/* Modal Container */}
          <motion.div
-            className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-0 sm:p-6 overflow-y-auto"
+            // className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-0 sm:p-6 overflow-y-auto"
+            className="
+              fixed inset-0 z-50 
+              shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)]
+              rounded-t-[32px] sm:rounded-[28px]
+              flex flex-col items-start sm:items-center justify-center
+              p-0 sm:p-6 overflow-y-auto
+              max-h-[95vh]
+            "
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.98 }}
             transition={{ type: 'spring', stiffness: 250, damping: 25 }}
           >
+            {/* Header Area */}
+            <div className="flex items-start justify-between px-6 sm:px-8 pt-6 pb-2">
+              <div className="flex-1">
+                {title && (
+                  <h2 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">
+                    {title}
+                  </h2>
+                )}
+                
+              </div>
+
+               {/* ❌ VISIBLE CLOSE BUTTON */}
+                {showCloseButton && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation(); // Stop click from hitting backdrop
+                      onClose();
+                    }}
+                    className="
+                      ml-4 p-2 
+                      bg-gray-100 dark:bg-gray-800 
+                      text-gray-600 dark:text-gray-400 
+                      hover:text-red-600 dark:hover:text-red-400 
+                      hover:bg-red-50 dark:hover:bg-red-900/20
+                      rounded-full transition-all duration-200
+                    "
+                  >
+                    <XMarkIcon className="w-6 h-6 stroke-[2.5]" />
+                  </button>
+                )}
+              </div>
+
             {/* Inner Container */}
             <div
               className="
@@ -111,6 +148,9 @@ function Modal({ isOpen, onClose, children }: ModalProps) {
             >
               {children}
             </div>
+
+            {/* Bottom spacer for mobile safe areas */}
+            <div className="h-6 sm:h-2 w-full shrink-0" />
           </motion.div>
 
         </>

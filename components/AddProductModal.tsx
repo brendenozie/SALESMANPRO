@@ -924,7 +924,7 @@ export default function AddProductModal({
   };
 
   return (
-   <Modal isOpen={showRequestProductModal} onClose={() => setShowRequestProductModal(false)} title="">
+   <Modal isOpen={showRequestProductModal} onClose={() => setShowRequestProductModal(false)} title="" showCloseButton={false} >
     <div className="relative w-full max-w-5xl h-[90vh] bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col">
 
       {/* Loading Overlay */}
