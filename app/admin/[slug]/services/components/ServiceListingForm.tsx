@@ -676,10 +676,10 @@ const ServiceListingForm: React.FC<ServiceListingFormProps> = ({
     const progress = ((activeTabIndex + 1) / tabs.length) * 100;
 
     return (
-        <AnimatePresence>
+       <AnimatePresence>
             {isOpen && (
                 <motion.div
-                    className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 lg:p-6"
+                    className="fixed inset-0 z-50 flex items-center justify-center p-0 sm:p-4 lg:p-6 overflow-hidden"
                     initial="hidden"
                     animate="visible"
                     exit="exit"
@@ -693,7 +693,7 @@ const ServiceListingForm: React.FC<ServiceListingFormProps> = ({
 
                     {/* Modal Card */}
                     <motion.div
-                        className="relative w-full max-w-6xl h-[100dvh] sm:h-auto sm:max-h-[90vh] bg-white dark:bg-gray-900 sm:rounded-3xl shadow-2xl flex flex-col md:flex-row overflow-hidden"
+                        className="relative w-full max-w-6xl h-[100dvh] sm:h-[90vh] bg-white dark:bg-gray-900 sm:rounded-3xl shadow-2xl flex flex-col md:flex-row overflow-hidden"
                         variants={modalVariants}
                     >
                         
@@ -701,8 +701,8 @@ const ServiceListingForm: React.FC<ServiceListingFormProps> = ({
                         {/* SIDEBAR (Desktop) / TOPBAR (Mobile)                       */}
                         {/* --------------------------------------------------------- */}
                         
-                        {/* Mobile Header & Progress */}
-                        <div className="md:hidden bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 z-20">
+                        {/* Mobile Header & Progress (Fixed at top) */}
+                        <div className="md:hidden flex-shrink-0 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 z-20">
                             <div className="flex items-center justify-between p-4">
                                 <h3 className="font-bold text-gray-900 dark:text-white truncate max-w-[70%]">
                                     {initialData ? 'Edit Service' : 'New Service'}
@@ -711,13 +711,10 @@ const ServiceListingForm: React.FC<ServiceListingFormProps> = ({
                                     <XMarkIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                                 </button>
                             </div>
-                            {/* Horizontal Icon Scroll */}
                             <div className="flex overflow-x-auto hide-scrollbar px-4 pb-3 gap-6 snap-x">
                                 {tabs.map((tab, index) => {
                                     const isActive = activeTabIndex === index;
-                                    const isCompleted = index < activeTabIndex;
                                     const hasError = tab.fields?.some(field => errors[field]);
-
                                     return (
                                         <button
                                             key={tab.id}
@@ -734,7 +731,6 @@ const ServiceListingForm: React.FC<ServiceListingFormProps> = ({
                                     );
                                 })}
                             </div>
-                            {/* Progress Line */}
                             <div className="h-1 w-full bg-gray-100 dark:bg-gray-800">
                                 <motion.div 
                                     className="h-full bg-gradient-to-r from-indigo-500 to-purple-500"
@@ -744,8 +740,8 @@ const ServiceListingForm: React.FC<ServiceListingFormProps> = ({
                             </div>
                         </div>
 
-                        {/* Desktop Sidebar */}
-                        <div className="hidden md:flex flex-col w-1/4 bg-gray-50 dark:bg-gray-800/50 border-r border-gray-200 dark:border-gray-700 p-8">
+                        {/* Desktop Sidebar (Independent Scroll) */}
+                        <div className="hidden md:flex flex-col w-1/4 bg-gray-50 dark:bg-gray-800/50 border-r border-gray-200 dark:border-gray-700 p-8 overflow-y-auto custom-scrollbar">
                             <h2 className="text-2xl font-extrabold text-gray-900 dark:text-white mb-2">
                                 {initialData ? 'Edit Service' : 'Create Service'}
                             </h2>
@@ -754,9 +750,7 @@ const ServiceListingForm: React.FC<ServiceListingFormProps> = ({
                             </p>
 
                             <nav className="space-y-1 relative">
-                                {/* Connector Line */}
                                 <div className="absolute left-[1.15rem] top-4 bottom-4 w-0.5 bg-gray-200 dark:bg-gray-700 -z-10" />
-
                                 {tabs.map((tab, index) => {
                                     const isActive = activeTabIndex === index;
                                     const isCompleted = index < activeTabIndex;
@@ -770,43 +764,21 @@ const ServiceListingForm: React.FC<ServiceListingFormProps> = ({
                                                 ${isActive ? 'bg-white dark:bg-gray-700 shadow-sm' : 'hover:bg-gray-100 dark:hover:bg-gray-700/50'}
                                             `}
                                         >
-                                            {/* Status Indicator */}
-                                            <div className={`
-                                                w-8 h-8 rounded-full flex items-center justify-center border-2 flex-shrink-0 transition-colors
-                                                ${isActive 
-                                                    ? 'border-indigo-600 bg-indigo-600 text-white' 
-                                                    : isCompleted 
-                                                        ? 'border-green-500 bg-green-500 text-white'
-                                                        : hasError 
-                                                            ? 'border-red-500 bg-red-50 text-red-500'
-                                                            : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-400'
-                                                }
+                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 flex-shrink-0 transition-colors
+                                                ${isActive ? 'border-indigo-600 bg-indigo-600 text-white' 
+                                                : isCompleted ? 'border-green-500 bg-green-500 text-white'
+                                                : hasError ? 'border-red-500 bg-red-50 text-red-500'
+                                                : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-400'}
                                             `}>
                                                 {isCompleted ? <CheckCircleIcon className="w-5 h-5" /> : <tab.icon className="w-4 h-4" />}
                                             </div>
-
-                                            {/* Label */}
                                             <div className="text-left">
                                                 <p className={`text-sm font-semibold ${isActive ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
                                                     {tab.name}
                                                 </p>
-                                                {isActive && (
-                                                    <motion.p 
-                                                        initial={{ opacity: 0 }} 
-                                                        animate={{ opacity: 1 }} 
-                                                        className="text-xs text-indigo-600 dark:text-indigo-400"
-                                                    >
-                                                        In Progress
-                                                    </motion.p>
-                                                )}
                                             </div>
-                                            
-                                            {/* Active Bar Indicator */}
                                             {isActive && (
-                                                <motion.div 
-                                                    layoutId="activeTabIndicator"
-                                                    className="absolute left-0 top-0 bottom-0 w-1 bg-indigo-600 rounded-l-xl"
-                                                />
+                                                <motion.div layoutId="activeTabIndicator" className="absolute left-0 top-0 bottom-0 w-1 bg-indigo-600 rounded-l-xl" />
                                             )}
                                         </motion.button>
                                     );
@@ -818,18 +790,19 @@ const ServiceListingForm: React.FC<ServiceListingFormProps> = ({
                         {/* MAIN CONTENT AREA                                         */}
                         {/* --------------------------------------------------------- */}
                         
-                        <div className="flex-1 flex flex-col h-full bg-white dark:bg-gray-900 relative">
-                            {/* Desktop Close Button (Floating) */}
+                        <div className="flex-1 flex flex-col min-h-0 bg-white dark:bg-gray-900 relative overflow-hidden">
+                            
+                            {/* Desktop Close Button */}
                             <button
                                 onClick={onClose}
-                                className="hidden md:flex absolute top-6 right-6 z-20 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
+                                className="hidden md:flex absolute top-6 right-6 z-30 p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
                             >
                                 <XMarkIcon className="w-6 h-6" />
                             </button>
 
-                            {/* Scrollable Form Content */}
-                            <div className="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-10 pb-24 md:pb-24">
-                                <div className="max-w-3xl mx-auto">
+                            {/* Scrollable Form Area */}
+                            <div className="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-10">
+                                <div className="max-w-3xl mx-auto pb-24 md:pb-32">
                                     <div className="mb-6 md:mb-8">
                                         <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white mb-2">
                                             {tabs[activeTabIndex].name}
@@ -839,7 +812,7 @@ const ServiceListingForm: React.FC<ServiceListingFormProps> = ({
                                         </p>
                                     </div>
 
-                                    <form id="service-form" onSubmit={handleSubmit}>
+                                     <form id="service-form" onSubmit={handleSubmit}>
                                         <AnimatePresence mode="wait">
                                             <motion.div
                                                 key={activeTabId}
@@ -963,51 +936,29 @@ const ServiceListingForm: React.FC<ServiceListingFormProps> = ({
                                 </div>
                             </div>
 
-                            {/* --------------------------------------------------------- */}
-                            {/* STICKY FOOTER ACTIONS                                     */}
-                            {/* --------------------------------------------------------- */}
-                            
-                            <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-t border-gray-100 dark:border-gray-800 flex justify-between items-center z-10">
-                                {/* Previous Button */}
-                                <button
-                                    type="button"
-                                    onClick={() => !isFirstTab && setActiveTabIndex(prev => prev - 1)}
+                            {/* Sticky Footer (Shrink-0 ensures it stays visible) */}
+                            <div className="shrink-0 p-4 md:p-6 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-t border-gray-100 dark:border-gray-800 flex justify-between items-center z-20">
+                                <button 
+                                    type="button" 
                                     disabled={isFirstTab}
-                                    className={`
-                                        flex items-center gap-2 px-6 py-2.5 rounded-lg font-medium transition-all
-                                        ${isFirstTab 
-                                            ? 'opacity-0 pointer-events-none' 
-                                            : 'text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'
-                                        }
-                                    `}
+                                    onClick={() => setActiveTabIndex(prev => prev - 1)}
+                                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 disabled:opacity-50"
                                 >
                                     <ArrowLeftIcon className="w-4 h-4" /> Back
                                 </button>
 
-                                {/* Next / Submit Button */}
                                 {isLastTab ? (
-                                    <button
-                                        onClick={handleSubmit}
-                                        disabled={isSubmitting}
-                                        className="flex items-center gap-2 px-8 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-lg shadow-indigo-200 dark:shadow-none transform active:scale-95 transition-all"
+                                    <button 
+                                        onClick={handleSubmit} 
+                                        className="px-6 py-2 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors"
                                     >
-                                        {isSubmitting ? (
-                                            <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
-                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
-                                            </svg>
-                                        ) : (
-                                            <>
-                                                {initialData ? 'Update Service' : 'Complete Setup'}
-                                                <CheckCircleIcon className="w-5 h-5" />
-                                            </>
-                                        )}
+                                        {isSubmitting ? "Saving..." : "Complete Setup"}
                                     </button>
                                 ) : (
-                                    <button
-                                        type="button"
+                                    <button 
+                                        type="button" 
                                         onClick={() => setActiveTabIndex(prev => prev + 1)}
-                                        className="flex items-center gap-2 px-8 py-2.5 rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900 font-semibold shadow-lg transform active:scale-95 transition-all hover:opacity-90"
+                                        className="flex items-center gap-2 px-6 py-2 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors"
                                     >
                                         Next Step <ArrowRightIcon className="w-4 h-4" />
                                     </button>

@@ -200,9 +200,9 @@ slug = 'default-service-provider',
                         <h1 className="text-4xl font-extrabold text-white tracking-tight mb-2">Welcome Back 👋</h1>
                         <p className="text-gray-400 text-lg">Here’s your service overview and performance summary.</p>
                     </div>
-                    <Link href={`/admin/${slug}/settings`} className="mt-4 sm:mt-0 inline-flex items-center px-5 py-2.5 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition-all shadow-lg hover:shadow-indigo-500/30">
+                    {/* <Link href={`/admin/${slug}/settings`} className="mt-4 sm:mt-0 inline-flex items-center px-5 py-2.5 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition-all shadow-lg hover:shadow-indigo-500/30">
                         Manage Profile
-                    </Link>
+                    </Link> */}
                 </motion.header>
                 
                 {alerts.pendingTasks > 0 && (
