@@ -37,6 +37,8 @@ import { CompanyLocation } from "@prisma/client";
 import { categoryReducer } from "@/hooks/categoryReducer";
 import toast from "react-hot-toast";
 import { PaymentSettings } from "../PaymentAccordion/PaymentAccordion";
+import { SparklesIcon } from "@heroicons/react/24/solid"; 
+
 
 const SITE_CATEGORIES_WITH_PRICING = [
   "service provider",
@@ -63,6 +65,7 @@ type Props = {
   availableLocations: ILocation[];
   initialData?: Partial<StoreForm> & { id: string };
 };
+
 
 
 // Helper to build a selected tree from CompanyLocation[] and all Locations
@@ -426,6 +429,110 @@ export default function CreateStoreForm({
     () => form.heroSlides.map(() => null)
   );
 
+   const handleAiGenerate = async (section: "basic" | "seo" | "faqs" | "pricing" | "marketing") => {
+    if (!form.name || !form.category) {
+      toast.error("Please provide a business name and category first.");
+      return;
+    }
+
+    const loadingToast = toast.loading(`AI is generating your ${section} content...`);
+
+    try {
+      const res = await fetch("/api/ai/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: form.name,
+          category: form.category,
+          section,
+          currentDescription: form.description,
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || "Failed to generate content");
+      }
+
+      const data = await res.json();
+
+      setForm((prev) => {
+        if (section === "basic") {
+          return {
+            ...prev,
+            tagline: data.tagline,
+            description: data.description,
+          };
+        } else if (section === "seo") {
+          return {
+            ...prev,
+            seo: {
+              ...prev.seo,
+              id: prev.seo?.id || "", // Preserve existing ID if present
+              title: data.title,
+              description: data.description,
+              keywords: data.keywords,
+            },
+          };
+        } else if (section === "faqs") {
+          return {
+            ...prev,
+            faqs: [...prev.faqs, ...data],
+          };
+        } else if (section === "pricing") {
+          return { ...prev, pricingTiers: data.pricingTiers };
+        } else if (section === "marketing") {
+          const newHeroSlides = data.heroSlides.map((s: any) => ({
+            id: crypto.randomUUID(),
+            companyId: form.id,
+            imageUrl: s.imageUrl, // <--- This is now the DALL-E generated URL
+            headline: s.headline,
+            subline: s.subline,
+            ctaText: s.ctaText,
+            type: 'image',
+            order: 0,
+            // ... other defaults
+          }));
+          // const newHeroSlides = data.heroSlides.map((s: any, i: number) => ({
+          //   ...prev.heroSlides[0], // fallback defaults
+          //   ...s,
+          //   id: crypto.randomUUID(),
+          // }));
+          const newPromotions = data.promotions.map((p: any) => ({
+             // use the createEmptyPromotion logic you have or just spread defaults
+             ...p,
+             id: crypto.randomUUID(),
+             startsAt: new Date().toISOString(),
+          }));
+          return { ...prev, heroSlides: newHeroSlides, promotions: newPromotions };
+        }
+  //       case "marketing":
+  // const newHeroSlides = data.heroSlides.map((s: any) => ({
+  //   id: crypto.randomUUID(),
+  //   companyId: form.id,
+  //   imageUrl: s.imageUrl, // <--- This is now the DALL-E generated URL
+  //   headline: s.headline,
+  //   subline: s.subline,
+  //   ctaText: s.ctaText,
+  //   type: 'image',
+  //   order: 0,
+  //   // ... other defaults
+  // }));
+
+  // setForm((prev) => ({
+  //   ...prev,
+  //   heroSlides: [...prev.heroSlides, ...newHeroSlides],
+  // }));
+  // break;
+        return prev;
+      });
+
+      toast.success(`${section.toUpperCase()} content generated successfully!`, { id: loadingToast });
+    } catch (error: any) {
+      console.error("AI Generation Error:", error);
+      toast.error(error.message || "Something went wrong with the AI.", { id: loadingToast });
+    }
+  };
     // Memoize the selected locations in the hierarchical structure for display
 
   const selectedLocationsForDisplay: SelectedLocation[] = useMemo(() => {
@@ -1572,9 +1679,12 @@ const handleSubmit = async (e: FormEvent) => {
 
 
   // Render step or review
-  const StepContent = useMemo(() => {
+   const StepContent = useMemo(() => {
     if (stepIndex < allSteps.length) {
-      return allSteps[stepIndex].render(
+      const step = allSteps[stepIndex];
+      
+      // Inject AI buttons into specific steps
+      const content = step.render(
         form,
         handlers,
         availableCategories,
@@ -1583,7 +1693,107 @@ const handleSubmit = async (e: FormEvent) => {
         selectedCategoriesArray,
         dispatch
       );
+
+      // Example of wrapping the basic step content to add a button
+      if (step.key === "basic") {
+        return (
+          <div className="space-y-4">
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={() => handleAiGenerate("basic")}
+                className="flex items-center gap-2 px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg text-sm font-medium hover:bg-indigo-100 transition shadow-sm border border-indigo-200"
+              >
+                <SparklesIcon className="w-4 h-4" />
+                Generate Bio with AI
+              </button>
+            </div>
+            {content}
+          </div>
+        );
+      }
+
+      if (step.key === "seo") {
+        return (
+          <div className="space-y-4">
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={() => handleAiGenerate("seo")}
+                className="flex items-center gap-2 px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg text-sm font-medium hover:bg-indigo-100 transition shadow-sm border border-indigo-200"
+              >
+                <SparklesIcon className="w-4 h-4" />
+                Optimize SEO with AI
+              </button>
+            </div>
+            {content}
+          </div>
+        );
+      }
+
+      // 1. Pricing Step
+      if (step.key === "pricing") {
+        return (
+          <div className="space-y-4">
+            <div className="bg-orange-50 p-4 rounded-lg border border-orange-100 flex justify-between items-center">
+              <div>
+                <h4 className="text-orange-800 font-semibold">Need a pricing strategy?</h4>
+                <p className="text-sm text-orange-600">AI can suggest tiers based on your industry.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleAiGenerate("pricing")}
+                className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition shadow-md"
+              >
+                <SparklesIcon className="w-4 h-4" />
+                Generate Pricing
+              </button>
+            </div>
+            {content}
+          </div>
+        );
+      }
+
+      // 2. Marketing / Hero Slides Step
+
+      if (step.key === "marketing" || step.key === "promotions") {
+          return (
+            <div className="space-y-4">
+              <div className="bg-purple-50 p-4 rounded-lg border border-purple-100 flex justify-between items-center">
+                <div>
+                  <h4 className="text-purple-800 font-semibold">Write copy that converts</h4>
+                  <p className="text-sm text-purple-600">Let AI generate headlines and promo codes.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleAiGenerate("marketing")}
+                  className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition shadow-md"
+                >
+                  <SparklesIcon className="w-4 h-4" />
+                  Generate Ad Copy
+                </button>
+              </div>
+              {content}
+            </div>
+          );
+        }
+
+      return content;
     }
+
+    
+  // const StepContent = useMemo(() => {
+  //   if (stepIndex < allSteps.length) {
+  //     return allSteps[stepIndex].render(
+  //       form,
+  //       handlers,
+  //       availableCategories,
+  //       availableLocations,
+  //       selectedLocationsForDisplay,
+  //       selectedCategoriesArray,
+  //       dispatch
+  //     );
+  //   }
   
     // Review screen
     return (
