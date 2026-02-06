@@ -38,7 +38,6 @@ import { CompanyLocation } from "@prisma/client";
 import { categoryReducer } from "@/hooks/categoryReducer";
 import toast from "react-hot-toast";
 import { PaymentSettings } from "../PaymentAccordion/PaymentAccordion";
-import { SparklesIcon } from "@heroicons/react/24/solid"; 
 
 
 const SITE_CATEGORIES_WITH_PRICING = [
@@ -430,110 +429,7 @@ export default function CreateStoreForm({
     () => form.heroSlides.map(() => null)
   );
 
-   const handleAiGenerate = async (section: "basic" | "seo" | "faqs" | "pricing" | "marketing") => {
-    if (!form.name || !form.category) {
-      toast.error("Please provide a business name and category first.");
-      return;
-    }
-
-    const loadingToast = toast.loading(`AI is generating your ${section} content...`);
-
-    try {
-      const res = await fetch("/api/ai/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: form.name,
-          category: form.category,
-          section,
-          currentDescription: form.description,
-        }),
-      });
-
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || "Failed to generate content");
-      }
-
-      const data = await res.json();
-
-      setForm((prev) => {
-        if (section === "basic") {
-          return {
-            ...prev,
-            tagline: data.tagline,
-            description: data.description,
-          };
-        } else if (section === "seo") {
-          return {
-            ...prev,
-            seo: {
-              ...prev.seo,
-              id: prev.seo?.id || "", // Preserve existing ID if present
-              title: data.title,
-              description: data.description,
-              keywords: data.keywords,
-            },
-          };
-        } else if (section === "faqs") {
-          return {
-            ...prev,
-            faqs: [...prev.faqs, ...data],
-          };
-        } else if (section === "pricing") {
-          return { ...prev, pricingTiers: data.pricingTiers };
-        } else if (section === "marketing") {
-          const newHeroSlides = data.heroSlides.map((s: any) => ({
-            id: crypto.randomUUID(),
-            companyId: form.id,
-            imageUrl: s.imageUrl, // <--- This is now the DALL-E generated URL
-            headline: s.headline,
-            subline: s.subline,
-            ctaText: s.ctaText,
-            type: 'image',
-            order: 0,
-            // ... other defaults
-          }));
-          // const newHeroSlides = data.heroSlides.map((s: any, i: number) => ({
-          //   ...prev.heroSlides[0], // fallback defaults
-          //   ...s,
-          //   id: crypto.randomUUID(),
-          // }));
-          const newPromotions = data.promotions.map((p: any) => ({
-             // use the createEmptyPromotion logic you have or just spread defaults
-             ...p,
-             id: crypto.randomUUID(),
-             startsAt: new Date().toISOString(),
-          }));
-          return { ...prev, heroSlides: newHeroSlides, promotions: newPromotions };
-        }
-  //       case "marketing":
-  // const newHeroSlides = data.heroSlides.map((s: any) => ({
-  //   id: crypto.randomUUID(),
-  //   companyId: form.id,
-  //   imageUrl: s.imageUrl, // <--- This is now the DALL-E generated URL
-  //   headline: s.headline,
-  //   subline: s.subline,
-  //   ctaText: s.ctaText,
-  //   type: 'image',
-  //   order: 0,
-  //   // ... other defaults
-  // }));
-
-  // setForm((prev) => ({
-  //   ...prev,
-  //   heroSlides: [...prev.heroSlides, ...newHeroSlides],
-  // }));
-  // break;
-        return prev;
-      });
-
-      toast.success(`${section.toUpperCase()} content generated successfully!`, { id: loadingToast });
-    } catch (error: any) {
-      console.error("AI Generation Error:", error);
-      toast.error(error.message || "Something went wrong with the AI.", { id: loadingToast });
-    }
-  };
+ 
     // Memoize the selected locations in the hierarchical structure for display
 
   const selectedLocationsForDisplay: SelectedLocation[] = useMemo(() => {
@@ -1488,10 +1384,10 @@ const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [sel
       setForm((prev) => ({
         ...prev,
         seo: {
-          ...prev.seo,
-          title: data.title || prev.seo.title,
-          description: data.description || prev.seo.description,
-          keywords: data.keywords || prev.seo.keywords,
+          ...(prev.seo || { id: "", description: null, title: null, keywords: [] }),
+          title: data.title || prev.seo?.title,
+          description: data.description || prev.seo?.description,
+          keywords: data.keywords || prev.seo?.keywords,
         },
       }));
       toast.success("SEO metadata generated!");
@@ -1882,207 +1778,143 @@ const handleSubmit = async (e: FormEvent) => {
   }
 };
 
+const StepContent = useMemo(() => {
+  // 1. Render Specific Steps with AI Injection
+  if (stepIndex < allSteps.length) {
+    const step = allSteps[stepIndex];
+    const stepKey = step.key;
 
-  // Render step or review
-   const StepContent = useMemo(() => {
-    if (stepIndex < allSteps.length) {
-      const currentStep = allSteps[stepIndex];
-      const stepKey = currentStep.key;
-      const stepContent = currentStep.render(
-      const step = allSteps[stepIndex];
-      
-      // Inject AI buttons into specific steps
-      const content = step.render(
-        form,
-        handlers,
-        availableCategories,
-        availableLocations,
-        selectedLocationsForDisplay,
-        selectedCategoriesArray,
-        dispatch
-      );
+    // Execute the standard render function for the step
+    const content = step.render(
+      form,
+      handlers,
+      availableCategories,
+      availableLocations,
+      selectedLocationsForDisplay,
+      selectedCategoriesArray,
+      dispatch
+    );
 
-      // Wrap content with AI buttons for specific steps
-      const shouldShowAutopilot = stepKey === "basic";
-      const shouldShowEnhance =
-        stepKey === "seo" || stepKey === "pricingtiers" || stepKey === "marketing";
+    // AI Configuration for Banners
+    const aiConfig: Record<string, { label: string; section: string; color: string; desc: string }> = {
+      basic: { 
+        label: "Magic Wand Autopilot", 
+        section: "basic", 
+        color: "from-purple-600 to-blue-600",
+        desc: "Generate your business name, tagline, and description automatically."
+      },
+      seo: { 
+        label: "Optimize SEO", 
+        section: "seo", 
+        color: "from-indigo-500 to-purple-500",
+        desc: "Let AI write high-ranking titles and meta descriptions."
+      },
+      pricing: { 
+        label: "Generate Pricing", 
+        section: "pricing", 
+        color: "from-orange-500 to-red-500",
+        desc: "Need a strategy? AI can suggest industry-standard tiers."
+      },
+      marketing: { 
+        label: "Generate Ad Copy", 
+        section: "marketing", 
+        color: "from-pink-500 to-rose-500",
+        desc: "Write headlines and promo codes that convert visitors."
+      },
+    };
 
-      if (shouldShowAutopilot || shouldShowEnhance) {
-        return (
-          <div className="relative">
-            {stepContent}
-            {/* AI Action Buttons */}
-            <div className="mt-6 pt-6 border-t flex gap-3 flex-wrap">
-              {shouldShowAutopilot && (
-                <button
-                  type="button"
-                  onClick={handleFullStoreAutopilot}
-                  disabled={isAiProcessing || !form.name || !form.category}
-                  className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-semibold shadow-lg hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                >
-                  <SparklesIcon className="w-5 h-5" />
-                  Magic Wand Autopilot
-                </button>
-              )}
-              {shouldShowEnhance && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    const sectionMap: Record<string, string> = {
-                      seo: "seo",
-                      pricingtiers: "pricing",
-                      marketing: "marketing",
-                    };
-                    handleAiGenerate(sectionMap[stepKey] || stepKey);
-                  }}
-                  disabled={isAiProcessing || !form.name || !form.category}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-lg font-medium shadow-md hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                >
-                  <SparklesIcon className="w-4 h-4" />
-                  Enhance with AI
-                </button>
-              )}
-            </div>
-          </div>
-        );
-      }
+    const currentAi = aiConfig[stepKey];
 
-      return stepContent;
-      // Example of wrapping the basic step content to add a button
-      if (step.key === "basic") {
-        return (
-          <div className="space-y-4">
-            <div className="flex justify-end">
-              <button
-                type="button"
-                onClick={() => handleAiGenerate("basic")}
-                className="flex items-center gap-2 px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg text-sm font-medium hover:bg-indigo-100 transition shadow-sm border border-indigo-200"
-              >
-                <SparklesIcon className="w-4 h-4" />
-                Generate Bio with AI
-              </button>
-            </div>
-            {content}
-          </div>
-        );
-      }
-
-      if (step.key === "seo") {
-        return (
-          <div className="space-y-4">
-            <div className="flex justify-end">
-              <button
-                type="button"
-                onClick={() => handleAiGenerate("seo")}
-                className="flex items-center gap-2 px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg text-sm font-medium hover:bg-indigo-100 transition shadow-sm border border-indigo-200"
-              >
-                <SparklesIcon className="w-4 h-4" />
-                Optimize SEO with AI
-              </button>
-            </div>
-            {content}
-          </div>
-        );
-      }
-
-      // 1. Pricing Step
-      if (step.key === "pricing") {
-        return (
-          <div className="space-y-4">
-            <div className="bg-orange-50 p-4 rounded-lg border border-orange-100 flex justify-between items-center">
+    if (currentAi) {
+      return (
+        <div className="space-y-6">
+          {/* AI Banner / Action Box */}
+          <div className={`p-4 rounded-xl border flex flex-col md:flex-row justify-between items-center gap-4 bg-opacity-5 transition-all ${
+            stepKey === 'basic' ? 'bg-purple-50 border-purple-100' : 'bg-gray-50 border-gray-100'
+          }`}>
+            <div className="flex items-center gap-3">
+              <div className={`p-2 rounded-lg bg-gradient-to-br ${currentAi.color} text-white shadow-md`}>
+                <SparklesIcon className="w-5 h-5" />
+              </div>
               <div>
-                <h4 className="text-orange-800 font-semibold">Need a pricing strategy?</h4>
-                <p className="text-sm text-orange-600">AI can suggest tiers based on your industry.</p>
+                <h4 className="font-bold text-gray-900">AI Assistant</h4>
+                <p className="text-sm text-gray-600">{currentAi.desc}</p>
               </div>
-              <button
-                type="button"
-                onClick={() => handleAiGenerate("pricing")}
-                className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition shadow-md"
-              >
-                <SparklesIcon className="w-4 h-4" />
-                Generate Pricing
-              </button>
             </div>
+            
+            <button
+              type="button"
+              onClick={() => stepKey === 'basic' ? handleFullStoreAutopilot() : handleAiGenerate(currentAi.section)}
+              disabled={isAiProcessing || !form.name || !form.category}
+              className={`whitespace-nowrap flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r ${currentAi.color} text-white rounded-lg font-semibold shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed transition-all`}
+            >
+              {isAiProcessing ? (
+                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <SparklesIcon className="w-4 h-4" />
+              )}
+              {currentAi.label}
+            </button>
+          </div>
+
+          {/* Actual Form Content */}
+          <div className="relative">
             {content}
           </div>
-        );
-      }
-
-      // 2. Marketing / Hero Slides Step
-
-      if (step.key === "marketing" || step.key === "promotions") {
-          return (
-            <div className="space-y-4">
-              <div className="bg-purple-50 p-4 rounded-lg border border-purple-100 flex justify-between items-center">
-                <div>
-                  <h4 className="text-purple-800 font-semibold">Write copy that converts</h4>
-                  <p className="text-sm text-purple-600">Let AI generate headlines and promo codes.</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => handleAiGenerate("marketing")}
-                  className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition shadow-md"
-                >
-                  <SparklesIcon className="w-4 h-4" />
-                  Generate Ad Copy
-                </button>
-              </div>
-              {content}
-            </div>
-          );
-        }
-
-      return content;
+        </div>
+      );
     }
 
-    
-  // const StepContent = useMemo(() => {
-  //   if (stepIndex < allSteps.length) {
-  //     return allSteps[stepIndex].render(
-  //       form,
-  //       handlers,
-  //       availableCategories,
-  //       availableLocations,
-  //       selectedLocationsForDisplay,
-  //       selectedCategoriesArray,
-  //       dispatch
-  //     );
-  //   }
-  
-    // Review screen
-    return (
-      <div className="space-y-6">
-        <h2 className="text-2xl font-semibold">Review Your Store</h2>
+    // Default render if no AI banner is needed for the step
+    return content;
+  }
+
+  // 2. Review Screen (Rendered when stepIndex >= allSteps.length)
+  return (
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4">
+      <div className="border-b pb-4">
+        <h2 className="text-3xl font-bold text-gray-900">Review Your Store</h2>
+        <p className="text-gray-500">Double check everything before we launch your shop.</p>
+      </div>
+
+      <div className="grid gap-4">
         {allSteps.map((s: any, i: number) => (
           <div
             key={s.key}
-            className="p-4 border rounded hover:bg-gray-50 cursor-pointer"
+            className="group p-5 border rounded-xl bg-white hover:border-indigo-300 hover:shadow-sm transition-all cursor-pointer"
             onClick={() => setStepIndex(i)}
           >
-            <h3 className="font-medium mb-2 flex justify-between items-center">
-              <span>{s.title}</span>
-              <span className="text-xs text-indigo-500">Edit ➔</span>
-            </h3>
-            <div className="text-gray-700">{renderReviewContent(s.key, form)}</div>
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="font-bold text-gray-800 flex items-center gap-2">
+                <span className="w-6 h-6 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-xs">
+                  {i + 1}
+                </span>
+                {s.title}
+              </h3>
+              <span className="text-sm font-medium text-indigo-500 group-hover:underline">Edit Step ➔</span>
+            </div>
+            <div className="text-gray-600 text-sm bg-gray-50 p-3 rounded-lg border border-gray-100">
+              {renderReviewContent(s.key, form)}
+            </div>
           </div>
         ))}
       </div>
-    );
-  }, [
-    stepIndex,
-    allSteps,
-    form,
-    handlers,
-    availableCategories,
-    availableLocations,
-    selectedLocationsForDisplay,
-    selectedCategoriesArray,
-    dispatch,
-    isAiProcessing,
-    handleAiGenerate,
-    handleFullStoreAutopilot,
-  ]);
-  
+    </div>
+  );
+}, [
+  stepIndex,
+  allSteps,
+  form,
+  handlers,
+  availableCategories,
+  availableLocations,
+  selectedLocationsForDisplay,
+  selectedCategoriesArray,
+  dispatch,
+  isAiProcessing,
+  handleAiGenerate,
+  handleFullStoreAutopilot,
+]);
   const currentTitle =
     stepIndex < allSteps.length ? allSteps[stepIndex].title : "Review & Submit";
   const percent = Math.min(((stepIndex + 1) / totalSteps) * 100, 100);
