@@ -664,6 +664,9 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
         icon: ClipboardDocumentListIcon,
       },
       {
+          label: "Subscription Payments", href: `/admin/${adminSlug}/subscriptionpayments`, icon: ClipboardDocumentListIcon
+      },
+      {
         label: "Billing & Payments",
         href: `/admin/${adminSlug}/saas-billing`,
         icon: CreditCardIcon,
@@ -731,9 +734,15 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
         ],
       },
       {
+          label: "Sample Listings Generator", href: `/admin/${adminSlug}/samplelistingsgenerator`, icon: ClipboardDocumentListIcon
+      },
+      {
         label: "Plans & Subscriptions",
         href: `/admin/${adminSlug}/saas-plans`,
         icon: ClipboardDocumentListIcon,
+      },
+      {
+          label: "Subscription Payments", href: `/admin/${adminSlug}/subscriptionpayments`, icon: ClipboardDocumentListIcon
       },
       {
         label: "Billing & Payments",
