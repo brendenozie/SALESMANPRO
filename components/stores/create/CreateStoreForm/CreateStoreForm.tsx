@@ -23,6 +23,7 @@ import {
   IPromotion
 } from "@/types/typings";
 import { CheckCircleIcon } from "@heroicons/react/24/outline";
+import { SparklesIcon } from "@heroicons/react/24/solid";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   storeSteps,
@@ -1447,6 +1448,210 @@ const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [sel
   
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // AI-related state
+  const [isAiProcessing, setIsAiProcessing] = useState(false);
+  const [aiStatus, setAiStatus] = useState("");
+
+  // Constants
+  const AI_GENERATION_DELAY_MS = 1000;
+
+  // Core AI generation logic without state management
+  const generateContentForSection = async (section: string) => {
+    const response = await fetch("/api/ai/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: form.name,
+        category: form.category,
+        section,
+        currentDescription: form.description,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || "AI generation failed");
+    }
+
+    const data = await response.json();
+
+    // Apply the generated content based on section
+    if (section === "basic") {
+      setForm((prev) => ({
+        ...prev,
+        tagline: data.tagline || prev.tagline,
+        description: data.description || prev.description,
+      }));
+      toast.success("Basic info generated!");
+    } else if (section === "seo") {
+      setForm((prev) => ({
+        ...prev,
+        seo: {
+          ...prev.seo,
+          title: data.title || prev.seo.title,
+          description: data.description || prev.seo.description,
+          keywords: data.keywords || prev.seo.keywords,
+        },
+      }));
+      toast.success("SEO metadata generated!");
+    } else if (section === "pricing") {
+      setForm((prev) => ({
+        ...prev,
+        pricingTiers: data.pricingTiers || prev.pricingTiers,
+      }));
+      toast.success("Pricing tiers generated!");
+    } else if (section === "marketing") {
+      interface AIGeneratedSlide {
+        imageUrl?: string;
+        headline?: string;
+        subline?: string;
+        ctaText?: string;
+      }
+      
+      const newHeroSlides = (data.heroSlides || []).map((slide: AIGeneratedSlide) => ({
+        id: "",
+        companyId: form.id,
+        imageUrl: slide.imageUrl || "",
+        productImageUrl: null,
+        headline: slide.headline || null,
+        subline: slide.subline || null,
+        ctaText: slide.ctaText || null,
+        ctaLink: null,
+        badgeText: null,
+        price: null,
+        endsAt: null,
+        order: 0,
+        iconKey: null,
+        backgroundColor: null,
+        textColor: null,
+        videoLink: null,
+        type: 'image' as const,
+      }));
+
+      interface AIGeneratedPromotion {
+        title?: string;
+        description?: string;
+      }
+
+      const newPromotions = (data.promotions || []).map((promo: AIGeneratedPromotion) => ({
+        id: "",
+        title: promo.title || "",
+        description: promo.description || "",
+        companyId: form.id,
+        startDate: null,
+        endDate: null,
+        isActive: false,
+        featureDescription1: null,
+        featureDescription2: null,
+        featureDescription3: null,
+        featureImage1: null,
+        featureImage2: null,
+        featureImage3: null,
+        bannerUrl: null,
+        ctaText: null,
+        ctaLink: null,
+        discount: null,
+        perks: [],
+        trustLogos: [],
+      }));
+
+      setForm((prev) => ({
+        ...prev,
+        heroSlides: [...prev.heroSlides, ...newHeroSlides],
+        promotions: [...prev.promotions, ...newPromotions],
+      }));
+      toast.success("Marketing content generated!");
+    } else if (section === "faqs") {
+      interface AIGeneratedFAQ {
+        question?: string;
+        answer?: string;
+      }
+      
+      const newFaqs = (data.faqs || []).map((faq: AIGeneratedFAQ) => ({
+        question: faq.question || "",
+        answer: faq.answer || "",
+      }));
+      setForm((prev) => ({
+        ...prev,
+        faqs: [...prev.faqs, ...newFaqs],
+      }));
+      toast.success("FAQs generated!");
+    }
+  };
+
+  // AI Generation Functions
+  const handleAiGenerate = async (section: string) => {
+    if (!form.name || !form.category) {
+      toast.error("Please fill in store name and category first");
+      return;
+    }
+
+    setIsAiProcessing(true);
+    setAiStatus(`Generating ${section} content...`);
+
+    try {
+      await generateContentForSection(section);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to generate AI content";
+      console.error("AI generation error:", error);
+      toast.error(errorMessage);
+    } finally {
+      setIsAiProcessing(false);
+      setAiStatus("");
+    }
+  };
+
+  const handleFullStoreAutopilot = async () => {
+    if (!form.name || !form.category) {
+      toast.error("Please fill in store name and category first");
+      return;
+    }
+
+    setIsAiProcessing(true);
+
+    try {
+      // Generate basic info
+      setAiStatus("✨ Crafting your store's personality...");
+      await generateContentForSection("basic");
+      await new Promise((resolve) => setTimeout(resolve, AI_GENERATION_DELAY_MS));
+
+      // Generate SEO
+      setAiStatus("🔍 Optimizing for search engines...");
+      await generateContentForSection("seo");
+      await new Promise((resolve) => setTimeout(resolve, AI_GENERATION_DELAY_MS));
+
+      // Generate pricing if applicable
+      const cat = form.category?.toLowerCase().trim() || "";
+      if (SITE_CATEGORIES_WITH_PRICING.includes(cat)) {
+        setAiStatus("💰 Setting your prices...");
+        await generateContentForSection("pricing");
+        await new Promise((resolve) => setTimeout(resolve, AI_GENERATION_DELAY_MS));
+      }
+
+      // Generate marketing
+      setAiStatus("🎨 Designing your banner...");
+      await generateContentForSection("marketing");
+      await new Promise((resolve) => setTimeout(resolve, AI_GENERATION_DELAY_MS));
+
+      // Generate FAQs
+      setAiStatus("❓ Creating helpful FAQs...");
+      await generateContentForSection("faqs");
+      await new Promise((resolve) => setTimeout(resolve, AI_GENERATION_DELAY_MS));
+
+      toast.success("🎉 Store autopilot complete! Review your content.");
+      
+      // Jump to review step (which is at index allSteps.length)
+      setStepIndex(allSteps.length);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Autopilot encountered an error";
+      console.error("Autopilot error:", error);
+      toast.error(errorMessage);
+    } finally {
+      setIsAiProcessing(false);
+      setAiStatus("");
+    }
+  };
 
 ////////////////////////////////////////////////////////////////////////////////
 // Upload helper for getting signed URLs and uploading files
@@ -1681,6 +1886,9 @@ const handleSubmit = async (e: FormEvent) => {
   // Render step or review
    const StepContent = useMemo(() => {
     if (stepIndex < allSteps.length) {
+      const currentStep = allSteps[stepIndex];
+      const stepKey = currentStep.key;
+      const stepContent = currentStep.render(
       const step = allSteps[stepIndex];
       
       // Inject AI buttons into specific steps
@@ -1694,6 +1902,52 @@ const handleSubmit = async (e: FormEvent) => {
         dispatch
       );
 
+      // Wrap content with AI buttons for specific steps
+      const shouldShowAutopilot = stepKey === "basic";
+      const shouldShowEnhance =
+        stepKey === "seo" || stepKey === "pricingtiers" || stepKey === "marketing";
+
+      if (shouldShowAutopilot || shouldShowEnhance) {
+        return (
+          <div className="relative">
+            {stepContent}
+            {/* AI Action Buttons */}
+            <div className="mt-6 pt-6 border-t flex gap-3 flex-wrap">
+              {shouldShowAutopilot && (
+                <button
+                  type="button"
+                  onClick={handleFullStoreAutopilot}
+                  disabled={isAiProcessing || !form.name || !form.category}
+                  className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg font-semibold shadow-lg hover:shadow-xl hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  <SparklesIcon className="w-5 h-5" />
+                  Magic Wand Autopilot
+                </button>
+              )}
+              {shouldShowEnhance && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const sectionMap: Record<string, string> = {
+                      seo: "seo",
+                      pricingtiers: "pricing",
+                      marketing: "marketing",
+                    };
+                    handleAiGenerate(sectionMap[stepKey] || stepKey);
+                  }}
+                  disabled={isAiProcessing || !form.name || !form.category}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-lg font-medium shadow-md hover:shadow-lg hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                >
+                  <SparklesIcon className="w-4 h-4" />
+                  Enhance with AI
+                </button>
+              )}
+            </div>
+          </div>
+        );
+      }
+
+      return stepContent;
       // Example of wrapping the basic step content to add a button
       if (step.key === "basic") {
         return (
@@ -1824,6 +2078,9 @@ const handleSubmit = async (e: FormEvent) => {
     selectedLocationsForDisplay,
     selectedCategoriesArray,
     dispatch,
+    isAiProcessing,
+    handleAiGenerate,
+    handleFullStoreAutopilot,
   ]);
   
   const currentTitle =
@@ -1869,6 +2126,79 @@ const handleSubmit = async (e: FormEvent) => {
           <p className="text-sm text-gray-400 mt-4 animate-pulse">
             This might take a moment, grab a coffee!
           </p>
+        </motion.div>
+      </motion.div>
+    )}
+
+    {/* AI Processing Overlay */}
+    {isAiProcessing && (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.3 }}
+        className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-purple-600 via-indigo-600 to-blue-600 bg-opacity-95 backdrop-blur-md"
+      >
+        <motion.div
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{
+            delay: 0.1,
+            duration: 0.4,
+            type: "spring",
+            stiffness: 120,
+          }}
+          className="bg-white p-10 rounded-2xl shadow-2xl flex flex-col items-center max-w-md text-center"
+        >
+          {/* AI Sparkles Icon */}
+          <motion.div
+            animate={{
+              rotate: [0, 360],
+              scale: [1, 1.1, 1],
+            }}
+            transition={{
+              duration: 2,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+            className="w-20 h-20 mb-6 flex items-center justify-center bg-gradient-to-r from-purple-500 to-blue-500 rounded-full"
+          >
+            <SparklesIcon className="w-12 h-12 text-white" />
+          </motion.div>
+
+          <p className="text-2xl font-bold text-gray-900 mb-3 leading-snug">
+            AI Magic in Progress...
+          </p>
+          <motion.p
+            key={aiStatus}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-lg text-gray-700 font-medium mb-2"
+          >
+            {aiStatus}
+          </motion.p>
+          <p className="text-sm text-gray-500 mt-2">
+            Sit back and relax while AI creates amazing content for you
+          </p>
+
+          {/* Progress dots */}
+          <div className="flex gap-2 mt-6">
+            {[0, 1, 2].map((i) => (
+              <motion.div
+                key={i}
+                animate={{
+                  scale: [1, 1.5, 1],
+                  opacity: [0.3, 1, 0.3],
+                }}
+                transition={{
+                  duration: 1.5,
+                  repeat: Infinity,
+                  delay: i * 0.2,
+                }}
+                className="w-3 h-3 bg-purple-500 rounded-full"
+              />
+            ))}
+          </div>
         </motion.div>
       </motion.div>
     )}
