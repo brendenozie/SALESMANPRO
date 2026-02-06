@@ -50,18 +50,6 @@ interface PlanFeatures {
   [key: string]: string[];
 }
 
-// interface Plan {
-//   id: string;
-//   name: string;
-//   price?: string;
-//   priceMonthly?: number;
-//   priceAnnually?: number;
-//   currency: string;
-//   features: PlanFeatures;
-//   isPopular: boolean;
-//   tagline: string;
-// }
-
 // ------------------------------------------------------------------
 // --- 2. REUSABLE SUB-COMPONENTS (with style tweaks) ---
 // ------------------------------------------------------------------
@@ -155,87 +143,6 @@ const PaginationControls = ({ page, totalPages, onPageChange } : {
 // --- 3. PRICING COMPONENT (Modified to accept props) ---
 // ------------------------------------------------------------------
 
-// --- START MOCK DATA (Data Structure is unchanged as requested) ---
-// const MOCK_PLANS: Plan[] = [
-//   {
-//     id: "basic",
-//     name: "Ghuba Basic",
-//     price: "Ksh. 9999",
-//     priceMonthly: 9999,
-//     currency: "Ksh.",
-//     tagline: "Just the essentials to get you selling.",
-//     features: {
-//       website: ["Standard Ghuba subdomain", "SSL Certificate"],
-//       inventory: ["Unlimited Products"],
-//       sales: ["Unlimited Sales Records", "20 Invoices & Receipts"],
-//       payments: ["Online Payment Gateway (KES only)"],
-//       crm: ["25 Messaging credits", "Unlimited Customer Records"],
-//       operations: ["1 Staff user", "App dashboard"],
-//       integrations: ["Facebook Pixel (ShipBubble)"],
-//       support: ["Email & In-App Support"],
-//     },
-//     isPopular: false,
-//   },
-//   {
-//     id: "starter",
-//     name: "Ghuba Starter",
-//     price: "Ksh. 2,999",
-//     priceMonthly: 2999,
-//     currency: "Ksh.",
-//     tagline: "Scale your sales with powerful tools.",
-//     features: {
-//       website: ["Custom domain", "SSL Certificate", "Custom branding"],
-//       inventory: ["Unlimited Products", "Bulk Product Edit"],
-//       sales: ["Unlimited Sales Records", "50 Invoices & Receipts", "Coupon Codes"],
-//       payments: ["Online Payment Gateway (KES + USD settlements)"],
-//       crm: ["100 Messaging credits", "Unlimited Customer Records", "5 Custom Groups"],
-//       operations: ["3 Staff users", "App + trend reports"],
-//       integrations: ["Facebook Pixel, Google Analytics, Fez Delivery"],
-//       support: ["Priority Support"],
-//     },
-//     isPopular: true,
-//   },
-//   {
-//     id: "pro",
-//     name: "Ghuba Pro",
-//     price: "Ksh. 6,999",
-//     priceMonthly: 6999,
-//     currency: "Ksh.",
-//     tagline: "Automate and optimize for maximum growth.",
-//     features: {
-//       website: ["Custom domain + favicon", "SSL Certificate", "Advanced Theme Editor"],
-//       inventory: ["Unlimited Products", "Bulk Edit", "Variations", "Low Stock Alerts"],
-//       sales: ["Unlimited Sales & Receipts", "Limit Coupons", "POS"],
-//       payments: ["Full KES & USD support"],
-//       crm: ["200 Messaging credits", "Unlimited Records", "20 Custom Groups"],
-//       operations: ["5 Staff users", "App + email insights"],
-//       integrations: ["All carriers + automation"],
-//       support: ["Account Manager"],
-//     },
-//     isPopular: false,
-//   },
-//   {
-//     id: "growth",
-//     name: "Ghuba Growth",
-//     price: "Ksh. 14,999",
-//     priceMonthly: 14999,
-//     currency: "Ksh.",
-//     tagline: "Enterprise-grade power for your business.",
-//     features: {
-//       website: ["Fully branded domain", "SSL Certificate", "Dedicated Success Team"],
-//       inventory: ["Unlimited Products", "Bulk Edit", "Variations", "MOQ"],
-//       sales: ["Unlimited Sales & Receipts", "Coupons", "POS", "Advanced Analytics"],
-//       payments: ["KES, USD & EUR support"],
-//       crm: ["1000 Messaging credits", "Unlimited Records", "100 Custom Groups"],
-//       operations: ["Unlimited Staff", "Advanced analytics", "Multi-location"],
-//       integrations: ["Free-shipping rules engine", "Custom API Access"],
-//       support: ["Dedicated helpline"],
-//     },
-//     isPopular: false,
-//   },
-// ];
-// --- END MOCK DATA ---
-
 // Mock PaystackPop type on window
 declare global {
     interface Window { 
@@ -288,6 +195,12 @@ function PricingSection({ companyId, email, category }: { companyId: string, ema
   const [subscriptionStatus, setSubscriptionStatus] = useState<{ message: string, type: 'success' | 'error' } | null>(null);
   const [usdPrices, setUsdPrices] = useState<Record<string, number>>({});
   const [isOutsideKenya, setIsOutsideKenya] = useState<boolean>(false);
+
+  const [paymentMethod, setPaymentMethod] = useState<"PAYSTACK" | "MPESA">("PAYSTACK");
+    const [mpesaPhone, setMpesaPhone] = useState("");
+    const [mpesaRef, setMpesaRef] = useState("");
+    const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
+    const MPESA_TILL = "537214"; // <-- your Safaricom Till Number
 
   // --- Logic: Determine Price based on Category ---
   const getPlanPrice = (plan: Plan, period: "MONTHLY" | "ANNUALLY"): number => {
@@ -434,6 +347,43 @@ function PricingSection({ companyId, email, category }: { companyId: string, ema
     }
   };
 
+  const handleMpesaSubmit = async (plan: Plan) => {
+  if (!mpesaPhone || !mpesaRef) {
+    showStatusMessage("Enter phone and reference");
+    return;
+  }
+
+  try {
+    const price = getPlanPrice(plan, billingPeriod);
+    const planId = plan.id || plan._id?.$oid;
+
+    const res = await fetch("/api/payments/mpesatill", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        companyId,
+        planId,
+        phone: mpesaPhone,
+        reference: mpesaRef,
+        amount: price,
+        billingPeriod,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.message);
+
+    showStatusMessage("Payment submitted. Awaiting confirmation.", "success");
+    setMpesaPhone("");
+    setMpesaRef("");
+    setSelectedPlan(null);
+
+  } catch (err: any) {
+    showStatusMessage(err.message);
+  }
+};
+
   // --- Render Helpers ---
   const renderPrice = (plan: Plan) => {
     const rawPrice = getPlanPrice(plan, billingPeriod);
@@ -560,8 +510,84 @@ function PricingSection({ companyId, email, category }: { companyId: string, ema
                        </div>
                   )}
 
+                  {selectedPlan === plan && (
+                        <div className="mt-4 space-y-3">
+                            <div className="flex gap-3">
+                            <button
+                                onClick={() => setPaymentMethod("PAYSTACK")}
+                                className={`flex-1 py-2 rounded-lg font-semibold ${
+                                paymentMethod === "PAYSTACK"
+                                    ? "bg-black text-white"
+                                    : "bg-gray-100"
+                                }`}
+                            >
+                                Paystack
+                            </button>
+
+                            <button
+                                onClick={() => setPaymentMethod("MPESA")}
+                                className={`flex-1 py-2 rounded-lg font-semibold ${
+                                paymentMethod === "MPESA"
+                                    ? "bg-green-600 text-white"
+                                    : "bg-gray-100"
+                                }`}
+                            >
+                                M-Pesa
+                            </button>
+                            </div>
+
+                            {paymentMethod === "MPESA" && (
+                            <div className="bg-green-50 p-4 rounded-lg text-sm space-y-3">
+                                <p className="font-semibold">Pay via M-Pesa Buy Goods</p>
+
+                                <ol className="list-decimal ml-5 space-y-1">
+                                <li>Go to M-Pesa</li>
+                                <li>Select <b>Buy Goods</b></li>
+                                <li>Enter Till: <b>{MPESA_TILL}</b></li>
+                                <li>Enter amount shown</li>
+                                <li>Confirm payment</li>
+                                </ol>
+
+                                <input
+                                placeholder="Phone Number"
+                                value={mpesaPhone}
+                                onChange={(e) => setMpesaPhone(e.target.value)}
+                                className="w-full px-3 py-2 border rounded"
+                                />
+
+                                <input
+                                placeholder="M-Pesa Reference (e.g QWE45RT)"
+                                value={mpesaRef}
+                                onChange={(e) => setMpesaRef(e.target.value)}
+                                className="w-full px-3 py-2 border rounded"
+                                />
+
+                                <button
+                                onClick={() => handleMpesaSubmit(plan)}
+                                className="w-full bg-green-600 text-white py-2 rounded-lg font-bold"
+                                >
+                                Confirm Payment
+                                </button>
+                            </div>
+                            )}
+
+                             {paymentMethod === "PAYSTACK" && (
+                                <button
+                                    onClick={() => handlePlanSelect(plan)}
+                                    className="w-full bg-gray-900 text-white py-3 rounded-lg font-bold mb-2"
+                                >
+                                    Pay with Paystack
+                                </button>
+                                )}
+                                                        </div>
+)}
+
+                {
+                    // hide when plan is selected show when changed
+                        selectedPlan !== plan &&
                   <button
-                    onClick={() => handlePlanSelect(plan)}
+                    // onClick={() => handlePlanSelect(plan)}
+                    onClick={() => setSelectedPlan(plan)}
                     disabled={loading}
                     className={`w-full py-4 rounded-xl font-bold text-lg transition-all duration-200 active:scale-95 flex items-center justify-center
                       ${isPopular 
@@ -575,6 +601,8 @@ function PricingSection({ companyId, email, category }: { companyId: string, ema
                         `Choose ${plan.name}`
                     )}
                   </button>
+
+                }
 
                   <div className="mt-8 pt-8 border-t border-gray-100 text-left space-y-4">
                     <p className="font-semibold text-gray-900">What's included:</p>
@@ -850,7 +878,7 @@ export default function StoresPage() {
                         />
                     ) : (
                         paginatedStores && paginatedStores.map(store => {
-                            const isActive = store.subscriptionStatus === 'ACTIVE';
+                            const isActive = false ;//store.subscriptionStatus === 'ACTIVE';
                             
                             return (
                                 <motion.div
