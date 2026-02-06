@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
-// import { verifyAdmin } from "@/server/auth/verifyAdmin";
 
 export async function POST(req: Request) {
   try {
@@ -10,8 +9,7 @@ export async function POST(req: Request) {
     //   return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     // }
 
-    const body = await req.json();
-    const { phone, reference } = body;
+    const { phone, reference } = await req.json();
 
     if (!phone || !reference) {
       return NextResponse.json(
@@ -20,58 +18,71 @@ export async function POST(req: Request) {
       );
     }
 
-    // ✅ Find pending Till payment
-    const payment = await prisma.payment.findFirst({
+    // ✅ Find pending subscription payment
+    const payment = await prisma.subscriptionPayment.findFirst({
       where: {
-        transactionId: reference,
         // phone,
+        gatewayRef: reference,
         status: "PENDING",
-        // method: "MPESA_TILL",
+        gateway: "MPESA_TILL",
       },
       include: {
-        order: true,
-        user: true,
+        subscription: {
+          include: { company: true },
+        },
       },
     });
 
     if (!payment) {
       return NextResponse.json(
-        { message: "Pending Till payment not found" },
+        { message: "Pending Till subscription payment not found" },
         { status: 404 }
       );
     }
 
-    // ✅ Complete payment
+    const subscription = payment.subscription;
+
+    // ✅ Calculate renewal safely
+    const renewalDate = new Date(subscription.renewalDate || new Date());
+    if (subscription.billingCycle === "ANNUALLY") {
+      renewalDate.setFullYear(renewalDate.getFullYear() + 1);
+    } else {
+      renewalDate.setMonth(renewalDate.getMonth() + 1);
+    }
+
+    // ✅ Confirm everything
     await prisma.$transaction(async (tx) => {
-      await tx.payment.update({
+      await tx.subscriptionPayment.update({
         where: { id: payment.id },
         data: {
-          status: "COMPLETED",
-          transactionId: reference,
+          status: "SUCCESS",
+          paidAt: new Date(),
         },
       });
 
-      await tx.customerOrder.update({
-        where: { id: payment.orderId },
+      await tx.subscriptionCompany.update({
+        where: { id: subscription.id },
         data: {
-          paymentStatus: "COMPLETED",
-          paymentMethod: "MPESA_TILL",
-          transactionId: reference,
-          transactionReference: reference,
-          status: "COMPLETED",
-          deliveryStatus: "Payment Verified",
+          status: "ACTIVE",
+          gateway: "MPESA_TILL",
+          renewalDate,
         },
+      });
+
+      await tx.company.update({
+        where: { id: subscription.companyId },
+        data: { hasWebsite: true },
       });
     });
 
     return NextResponse.json({
       success: true,
-      message: "Till payment confirmed",
-      paymentId: payment.id,
-      orderId: payment.orderId,
+      message: "Till subscription confirmed",
+      subscriptionId: subscription.id,
+      companyId: subscription.companyId,
     });
   } catch (err: any) {
-    console.error(err);
+    console.error("Till confirm error:", err);
 
     return NextResponse.json(
       { message: err.message || "Server error" },

@@ -48,15 +48,20 @@ async function getCompanies(req: Request, context: HandlerContext) {
     const companies = await prisma.company.findMany({
       where: { userId: user.id },
       orderBy: { createdAt: "asc" },
-
       include: {
         subscriptionCompanies: {
-          where: {
-            status: "ACTIVE", // Only active subs
-          },
+          // ACTIVE or AWAITING_CONFIRMATION
+            where: {
+              status: {
+                in: ["ACTIVE", "AWAITING_CONFIRMATION"],
+              },
+            },
           select: {
-            status: true,
+            status: true, renewalDate: true, 
           },
+          // sort lates date first
+          orderBy: { createdAt: "desc" },
+          take: 1, // Only need the latest subscription to determine status
         },
       },
     });
@@ -76,8 +81,7 @@ async function getCompanies(req: Request, context: HandlerContext) {
       updatedAt: c.updatedAt,
 
       // If array contains at least 1 ACTIVE subscription → mark store as ACTIVE
-      subscriptionStatus:
-        c.subscriptionCompanies.length > 0 ? "ACTIVE" : "INACTIVE",
+      subscriptionStatus: c.subscriptionCompanies.length > 0 && c.subscriptionCompanies[0]?.renewalDate && c.subscriptionCompanies[0].renewalDate > new Date()  ? "ACTIVE" : "INACTIVE",
     }));
 
     return formatResponse(true, formattedStores, "Companies fetched successfully");

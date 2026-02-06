@@ -15,6 +15,7 @@ import {
 import StoreCard from '@/components/stores/StoreCard'; // This component MUST be updated
 import useSWR, { mutate } from 'swr';
 import { convertKEStoUSD, getUserCountry } from '@/lib/hooks/useUserCountry';
+import { set } from 'lodash';
 
 const defaultCompanyId = process.env.NEXT_PUBLIC_DEFAULT_COMPANY_ID || "6825c2c7969ab9f16f620f67"; // Mocking as env vars aren't here
         
@@ -185,7 +186,7 @@ interface Plan {
 
 // --- MAIN PRICING SECTION COMPONENT ---
 // It now receives companyId and email, but onSubscriptionSuccess is handled internally
-function PricingSection({ companyId, email, category }: { companyId: string, email: string, category: string }) {
+function PricingSection({ companyId, email, category, onSubscriptionSuccess }: { companyId: string, email: string, category: string, onSubscriptionSuccess: () => void }) {
   const paystackPublicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY || "pk_test_4ec65e0fe08ffa32b2708be2adb75b865d2517ce";
 
   const [plans, setPlans] = useState<Plan[]>([]);
@@ -317,6 +318,7 @@ function PricingSection({ companyId, email, category }: { companyId: string, ema
       
       if (!res.ok || !data?.data?.data?.authorization_url) {
         throw new Error(data.message || "Payment initialization failed");
+
       }
 
       // @ts-ignore
@@ -336,6 +338,7 @@ function PricingSection({ companyId, email, category }: { companyId: string, ema
         onClose: () => {
           showStatusMessage("Payment cancelled", "error");
           setLoading(false);
+        //   onSubscriptionSuccess();
         },
       });
       handler.openIframe();
@@ -372,15 +375,21 @@ function PricingSection({ companyId, email, category }: { companyId: string, ema
 
     const data = await res.json();
 
-    if (!res.ok) throw new Error(data.message);
+    if (!res.ok){
+        setLoading(false);        
+         throw new Error(data.message);
+    }
 
     showStatusMessage("Payment submitted. Awaiting confirmation.", "success");
     setMpesaPhone("");
     setMpesaRef("");
     setSelectedPlan(null);
+    setLoading(false);
+    onSubscriptionSuccess();
 
   } catch (err: any) {
     showStatusMessage(err.message);
+    setLoading(false);
   }
 };
 
@@ -703,7 +712,7 @@ const PricingModal = ({ isOpen, onClose, companyId, email,category, onSubscripti
                               companyId={companyId} 
                               email={email}
                               category={category}
-                              // onSubscriptionSuccess={onSubscriptionSuccess}
+                              onSubscriptionSuccess={onSubscriptionSuccess}
                             />
                         </div>
                     </motion.div>
@@ -878,7 +887,7 @@ export default function StoresPage() {
                         />
                     ) : (
                         paginatedStores && paginatedStores.map(store => {
-                            const isActive = store.subscriptionStatus === 'ACTIVE';
+                            const isActive = store.subscriptionStatus === 'ACTIVE' || store.subscriptionStatus === 'AWAITING_CONFIRMATION';
                             
                             return (
                                 <motion.div
