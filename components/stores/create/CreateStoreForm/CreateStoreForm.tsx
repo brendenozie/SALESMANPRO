@@ -1845,7 +1845,8 @@ const StepContent = useMemo(() => {
             <button
               type="button"
               onClick={() => stepKey === 'basic' ? handleFullStoreAutopilot() : handleAiGenerate(currentAi.section)}
-              disabled={isAiProcessing || !form.name || !form.category}
+              disabled={isAiProcessing || !form.category}
+              // disabled={isAiProcessing || !form.name || !form.category}
               className={`whitespace-nowrap flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r ${currentAi.color} text-white rounded-lg font-semibold shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed transition-all`}
             >
               {isAiProcessing ? (
