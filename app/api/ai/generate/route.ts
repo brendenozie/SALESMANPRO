@@ -17,17 +17,21 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "AI key not set" }, { status: 500 });
     }
 
+    // Sanitize user inputs to prevent prompt injection
+    const sanitizedName = (name || "").slice(0, 100).replace(/[<>]/g, "");
+    const sanitizedCategory = (category || "").slice(0, 100).replace(/[<>]/g, "");
+
     let prompt = "";
     if (section === "basic") {
-      prompt = `Generate a tagline and description for "${name}" in "${category}". Return JSON with "tagline" and "description".`;
+      prompt = `Generate a tagline and description for "${sanitizedName}" in "${sanitizedCategory}". Return JSON with "tagline" and "description".`;
     } else if (section === "seo") {
-      prompt = `Generate SEO title, description, and keywords for "${name}" in "${category}". Return JSON with "title", "description", and "keywords" (array of strings).`;
+      prompt = `Generate SEO title, description, and keywords for "${sanitizedName}" in "${sanitizedCategory}". Return JSON with "title", "description", and "keywords" (array of strings).`;
     } else if (section === "pricing") {
-      prompt = `Generate 3 pricing tiers (Basic, Pro, Enterprise) for "${name}" in "${category}". Return JSON with "pricingTiers" array containing objects with: name, price (number), features (array of strings), description, duration (e.g., "monthly").`;
+      prompt = `Generate 3 pricing tiers (Basic, Pro, Enterprise) for "${sanitizedName}" in "${sanitizedCategory}". Return JSON with "pricingTiers" array containing objects with: name, price (number), features (array of strings), description, duration (e.g., "monthly").`;
     } else if (section === "marketing") {
-      prompt = `Generate 2 hero slides (headline, subline, ctaText) and 2 promotions for "${name}" in "${category}". Return JSON with "heroSlides" array (objects with headline, subline, ctaText strings) and "promotions" array (objects with title, description strings).`;
+      prompt = `Generate 2 hero slides (headline, subline, ctaText) and 2 promotions for "${sanitizedName}" in "${sanitizedCategory}". Return JSON with "heroSlides" array (objects with headline, subline, ctaText strings) and "promotions" array (objects with title, description strings).`;
     } else if (section === "faqs") {
-      prompt = `Generate 5 FAQs for "${name}" in "${category}". Return JSON with "faqs" array containing objects with "question" and "answer" strings.`;
+      prompt = `Generate 5 FAQs for "${sanitizedName}" in "${sanitizedCategory}". Return JSON with "faqs" array containing objects with "question" and "answer" strings.`;
     } else {
       return NextResponse.json({ error: "Invalid section" }, { status: 400 });
     }
@@ -55,6 +59,14 @@ export async function POST(req: Request) {
     }
 
     const textData = await textResponse.json();
+    
+    if (!textData.choices || textData.choices.length === 0) {
+      return NextResponse.json(
+        { error: "Invalid response from OpenAI" },
+        { status: 500 }
+      );
+    }
+    
     const content = JSON.parse(textData.choices[0].message.content);
 
     // DALL-E integration for marketing section
@@ -68,7 +80,7 @@ export async function POST(req: Request) {
           },
           body: JSON.stringify({
             model: "dall-e-3",
-            prompt: `Professional hero banner for a ${category} store called "${name}". Modern, clean, professional style.`,
+            prompt: `Professional hero banner for a ${sanitizedCategory} store called "${sanitizedName}". Modern, clean, professional style.`,
             n: 1,
             size: "1024x1024",
           }),
@@ -87,8 +99,9 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json(content);
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
     console.error("AI generation error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }

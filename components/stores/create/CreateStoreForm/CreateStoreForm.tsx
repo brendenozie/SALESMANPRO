@@ -1346,6 +1346,133 @@ const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [sel
   const [isAiProcessing, setIsAiProcessing] = useState(false);
   const [aiStatus, setAiStatus] = useState("");
 
+  // Constants
+  const AI_GENERATION_DELAY_MS = 1000;
+
+  // Core AI generation logic without state management
+  const generateContentForSection = async (section: string) => {
+    const response = await fetch("/api/ai/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: form.name,
+        category: form.category,
+        section,
+        currentDescription: form.description,
+      }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || "AI generation failed");
+    }
+
+    const data = await response.json();
+
+    // Apply the generated content based on section
+    if (section === "basic") {
+      setForm((prev) => ({
+        ...prev,
+        tagline: data.tagline || prev.tagline,
+        description: data.description || prev.description,
+      }));
+      toast.success("Basic info generated!");
+    } else if (section === "seo") {
+      setForm((prev) => ({
+        ...prev,
+        seo: {
+          ...prev.seo,
+          title: data.title || prev.seo.title,
+          description: data.description || prev.seo.description,
+          keywords: data.keywords || prev.seo.keywords,
+        },
+      }));
+      toast.success("SEO metadata generated!");
+    } else if (section === "pricing") {
+      setForm((prev) => ({
+        ...prev,
+        pricingTiers: data.pricingTiers || prev.pricingTiers,
+      }));
+      toast.success("Pricing tiers generated!");
+    } else if (section === "marketing") {
+      interface AIGeneratedSlide {
+        imageUrl?: string;
+        headline?: string;
+        subline?: string;
+        ctaText?: string;
+      }
+      
+      const newHeroSlides = (data.heroSlides || []).map((slide: AIGeneratedSlide) => ({
+        id: "",
+        companyId: form.id,
+        imageUrl: slide.imageUrl || "",
+        productImageUrl: null,
+        headline: slide.headline || null,
+        subline: slide.subline || null,
+        ctaText: slide.ctaText || null,
+        ctaLink: null,
+        badgeText: null,
+        price: null,
+        endsAt: null,
+        order: 0,
+        iconKey: null,
+        backgroundColor: null,
+        textColor: null,
+        videoLink: null,
+        type: 'image' as const,
+      }));
+
+      interface AIGeneratedPromotion {
+        title?: string;
+        description?: string;
+      }
+
+      const newPromotions = (data.promotions || []).map((promo: AIGeneratedPromotion) => ({
+        id: "",
+        title: promo.title || "",
+        description: promo.description || "",
+        companyId: form.id,
+        startDate: null,
+        endDate: null,
+        isActive: false,
+        featureDescription1: null,
+        featureDescription2: null,
+        featureDescription3: null,
+        featureImage1: null,
+        featureImage2: null,
+        featureImage3: null,
+        bannerUrl: null,
+        ctaText: null,
+        ctaLink: null,
+        discount: null,
+        perks: [],
+        trustLogos: [],
+      }));
+
+      setForm((prev) => ({
+        ...prev,
+        heroSlides: [...prev.heroSlides, ...newHeroSlides],
+        promotions: [...prev.promotions, ...newPromotions],
+      }));
+      toast.success("Marketing content generated!");
+    } else if (section === "faqs") {
+      interface AIGeneratedFAQ {
+        question?: string;
+        answer?: string;
+      }
+      
+      const newFaqs = (data.faqs || []).map((faq: AIGeneratedFAQ) => ({
+        question: faq.question || "",
+        answer: faq.answer || "",
+      }));
+      setForm((prev) => ({
+        ...prev,
+        faqs: [...prev.faqs, ...newFaqs],
+      }));
+      toast.success("FAQs generated!");
+    }
+  };
+
   // AI Generation Functions
   const handleAiGenerate = async (section: string) => {
     if (!form.name || !form.category) {
@@ -1357,112 +1484,11 @@ const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [sel
     setAiStatus(`Generating ${section} content...`);
 
     try {
-      const response = await fetch("/api/ai/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: form.name,
-          category: form.category,
-          section,
-          currentDescription: form.description,
-        }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "AI generation failed");
-      }
-
-      const data = await response.json();
-
-      // Apply the generated content based on section
-      if (section === "basic") {
-        setForm((prev) => ({
-          ...prev,
-          tagline: data.tagline || prev.tagline,
-          description: data.description || prev.description,
-        }));
-        toast.success("Basic info generated!");
-      } else if (section === "seo") {
-        setForm((prev) => ({
-          ...prev,
-          seo: {
-            ...prev.seo,
-            title: data.title || prev.seo.title,
-            description: data.description || prev.seo.description,
-            keywords: data.keywords || prev.seo.keywords,
-          },
-        }));
-        toast.success("SEO metadata generated!");
-      } else if (section === "pricing") {
-        setForm((prev) => ({
-          ...prev,
-          pricingTiers: data.pricingTiers || prev.pricingTiers,
-        }));
-        toast.success("Pricing tiers generated!");
-      } else if (section === "marketing") {
-        const newHeroSlides = (data.heroSlides || []).map((slide: any) => ({
-          id: "",
-          companyId: form.id,
-          imageUrl: slide.imageUrl || "",
-          productImageUrl: null,
-          headline: slide.headline || null,
-          subline: slide.subline || null,
-          ctaText: slide.ctaText || null,
-          ctaLink: null,
-          badgeText: null,
-          price: null,
-          endsAt: null,
-          order: 0,
-          iconKey: null,
-          backgroundColor: null,
-          textColor: null,
-          videoLink: null,
-          type: 'image' as const,
-        }));
-
-        const newPromotions = (data.promotions || []).map((promo: any) => ({
-          id: "",
-          title: promo.title || "",
-          description: promo.description || "",
-          companyId: form.id,
-          startDate: null,
-          endDate: null,
-          isActive: false,
-          featureDescription1: null,
-          featureDescription2: null,
-          featureDescription3: null,
-          featureImage1: null,
-          featureImage2: null,
-          featureImage3: null,
-          bannerUrl: null,
-          ctaText: null,
-          ctaLink: null,
-          discount: null,
-          perks: [],
-          trustLogos: [],
-        }));
-
-        setForm((prev) => ({
-          ...prev,
-          heroSlides: [...prev.heroSlides, ...newHeroSlides],
-          promotions: [...prev.promotions, ...newPromotions],
-        }));
-        toast.success("Marketing content generated!");
-      } else if (section === "faqs") {
-        const newFaqs = (data.faqs || []).map((faq: any) => ({
-          question: faq.question || "",
-          answer: faq.answer || "",
-        }));
-        setForm((prev) => ({
-          ...prev,
-          faqs: [...prev.faqs, ...newFaqs],
-        }));
-        toast.success("FAQs generated!");
-      }
-    } catch (error: any) {
+      await generateContentForSection(section);
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Failed to generate AI content";
       console.error("AI generation error:", error);
-      toast.error(error.message || "Failed to generate AI content");
+      toast.error(errorMessage);
     } finally {
       setIsAiProcessing(false);
       setAiStatus("");
@@ -1480,39 +1506,40 @@ const selectedCategoriesArray = useMemo(() => Object.values(selectedState), [sel
     try {
       // Generate basic info
       setAiStatus("✨ Crafting your store's personality...");
-      await handleAiGenerate("basic");
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await generateContentForSection("basic");
+      await new Promise((resolve) => setTimeout(resolve, AI_GENERATION_DELAY_MS));
 
       // Generate SEO
       setAiStatus("🔍 Optimizing for search engines...");
-      await handleAiGenerate("seo");
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await generateContentForSection("seo");
+      await new Promise((resolve) => setTimeout(resolve, AI_GENERATION_DELAY_MS));
 
       // Generate pricing if applicable
       const cat = form.category?.toLowerCase().trim() || "";
       if (SITE_CATEGORIES_WITH_PRICING.includes(cat)) {
         setAiStatus("💰 Setting your prices...");
-        await handleAiGenerate("pricing");
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        await generateContentForSection("pricing");
+        await new Promise((resolve) => setTimeout(resolve, AI_GENERATION_DELAY_MS));
       }
 
       // Generate marketing
       setAiStatus("🎨 Designing your banner...");
-      await handleAiGenerate("marketing");
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await generateContentForSection("marketing");
+      await new Promise((resolve) => setTimeout(resolve, AI_GENERATION_DELAY_MS));
 
       // Generate FAQs
       setAiStatus("❓ Creating helpful FAQs...");
-      await handleAiGenerate("faqs");
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await generateContentForSection("faqs");
+      await new Promise((resolve) => setTimeout(resolve, AI_GENERATION_DELAY_MS));
 
       toast.success("🎉 Store autopilot complete! Review your content.");
       
-      // Jump to review step
+      // Jump to review step (which is at index allSteps.length)
       setStepIndex(allSteps.length);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Autopilot encountered an error";
       console.error("Autopilot error:", error);
-      toast.error("Autopilot encountered an error");
+      toast.error(errorMessage);
     } finally {
       setIsAiProcessing(false);
       setAiStatus("");
