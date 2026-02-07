@@ -159,7 +159,8 @@ const fetchData = async <T,>(
 
         const dataRes = await res.json();
         // Adjusting based on common API responses from the original file (results or data)
-        const data = dataRes?.results || dataRes?.data || dataRes; 
+        console.log(`✅ Successfully fetched data for ${endpoint}:`, dataRes);
+        const data = dataRes?.results || dataRes?.data || dataRes?.data?.results || null; 
 
         if (!data || (Array.isArray(data) && data.length === 0)) {
             console.warn(`No data received for ${endpoint}. Using fallback sample data.`);
@@ -201,7 +202,7 @@ export default async function PropertyManagementPage({ params }: PropertyPagePro
 
 
     // Consolidate data and error handling
-    const initialProperties: MarketListingForm[] = propertiesResult.data || generateMockProperties();
+    const initialProperties: MarketListingForm[] = propertiesResult.data?.results  || generateMockProperties();
     const initialCategories: IStoreCategory[] = categoriesResult.data?.results || [];
     const initialLocations: ILocation[] = locationsResult.data || [];
     

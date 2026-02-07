@@ -143,11 +143,7 @@ export default async function AppointmentsPage({ params }: Props) {
       ? [...fetchedAppointments, ...fetchedOrderItems] // Use fetched data
       : combinedSamples; // Use fallback data
 
-  console.log(
-    (fetchedAppointments.length > 0 || fetchedOrderItems.length > 0)
-      ? `✅ Using fetched data. Total items: ${initialData.length}`
-      : `⚠️ Using sample fallback data for demo. Total items: ${initialData.length}`
-  );
+  console.log("✅ Initial data prepared with unified types:", initialData);
 
   // 3. Pass the single, unified data array to the client component
   return (

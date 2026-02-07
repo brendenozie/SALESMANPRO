@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, LayoutGroup } from "framer-motion";
 import {
   CheckCircleIcon,
   XMarkIcon,
@@ -14,17 +14,14 @@ import {
   TagIcon,
   CurrencyDollarIcon,
   TruckIcon,
-  ClipboardDocumentCheckIcon,
-  ArrowRightOnRectangleIcon,
   PhoneIcon,
   EnvelopeIcon,
-  ArrowLongRightIcon,
-  InformationCircleIcon,
+  FunnelIcon,
+  SparklesIcon,
 } from "@heroicons/react/24/outline";
 import { useStoreContext } from "@/contexts/StoreContext";
 
-// --- TYPE DEFINITIONS ---
-// It's good practice to make types more specific where possible.
+
 export interface Client {
   name: string;
   email: string;
@@ -61,465 +58,261 @@ export interface OrderItem {
 }
 
 export type UnifiedItem = AppointmentItem | OrderItem;
-
-// --- TYPE GUARDS ---
-// Utility functions to check item type safely.
-const isAppointment = (item: UnifiedItem): item is AppointmentItem => item.type === 'Appointment';
-
-// --- CONSTANTS & UTILS ---
+// --- HELPERS ---
 const KANBAN_COLUMNS = {
-  TO_DO: ["SCHEDULED", "PENDING"],
-  IN_PROGRESS: ["PROCESSING"],
-  COMPLETED: ["COMPLETED", "DELIVERED"],
-  CANCELED: ["CANCELLED", "REJECTED", "FAILED"],
+  TO_DO: { label: "Incoming", gradient: "from-amber-400 to-orange-500", statuses: ["SCHEDULED", "PENDING"] },
+  IN_PROGRESS: { label: "In Flight", gradient: "from-blue-400 to-indigo-600", statuses: ["PROCESSING"] },
+  COMPLETED: { label: "Finished", gradient: "from-emerald-400 to-cyan-500", statuses: ["COMPLETED", "DELIVERED"] },
+  CANCELED: { label: "Archived", gradient: "from-slate-400 to-slate-600", statuses: ["CANCELLED", "REJECTED", "FAILED"] },
 };
 
-type KanbanColumnKey = keyof typeof KANBAN_COLUMNS;
-
-const ALL_STATUSES = Object.values(KANBAN_COLUMNS).flat();
-
-const getStatusProps = (status: string) => {
-  const upperStatus = status.toUpperCase();
-  if (KANBAN_COLUMNS.TO_DO.includes(upperStatus)) {
-    return {
-      colorClass: "bg-yellow-50 dark:bg-yellow-900/50 border-yellow-400 text-yellow-800 dark:text-yellow-300",
-      headerClass: "border-yellow-500 bg-yellow-400/20 dark:bg-yellow-900/50",
-      icon: ClockIcon,
-    };
-  }
-  if (KANBAN_COLUMNS.IN_PROGRESS.includes(upperStatus)) {
-    return {
-      colorClass: "bg-blue-50 dark:bg-blue-900/50 border-blue-400 text-blue-800 dark:text-blue-300",
-      headerClass: "border-blue-500 bg-blue-400/20 dark:bg-blue-900/50",
-      icon: ArrowPathIcon,
-    };
-  }
-  if (KANBAN_COLUMNS.COMPLETED.includes(upperStatus)) {
-    return {
-      colorClass: "bg-green-50 dark:bg-green-900/50 border-green-400 text-green-800 dark:text-green-300",
-      headerClass: "border-green-500 bg-green-400/20 dark:bg-green-900/50",
-      icon: CheckCircleIcon,
-    };
-  }
-  if (KANBAN_COLUMNS.CANCELED.includes(upperStatus)) {
-    return {
-      colorClass: "bg-red-50 dark:bg-red-900/50 border-red-400 text-red-800 dark:text-red-300",
-      headerClass: "border-red-500 bg-red-400/20 dark:bg-red-900/50",
-      icon: XMarkIcon,
-    };
-  }
-  return {
-    colorClass: "bg-gray-50 dark:bg-gray-700 border-gray-400 text-gray-700 dark:text-gray-300",
-    headerClass: "border-gray-500 bg-gray-400/20 dark:bg-gray-700/50",
-    icon: InformationCircleIcon,
-  };
+const formatDateTime = (dateString?: string, timeString?: string) => {
+  if (!dateString) return "TBD";
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + (timeString ? ` • ${timeString}` : '');
 };
 
-const formatDateTime = (dateString?: string, timeString?: string): string => {
-    if (!dateString || !timeString) return "No date";
-    try {
-        const dateTime = new Date(`${dateString}T${timeString.replace(/\s/g, '')}`);
-        if (isNaN(dateTime.getTime())) return `${dateString} @ ${timeString}`;
-        return dateTime.toLocaleString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            hour: 'numeric',
-            minute: '2-digit',
-            hour12: true,
-        });
-    } catch (e) {
-        return `${dateString} @ ${timeString}`;
-    }
-};
+// --- COMPONENTS ---
 
-// --- CHILD COMPONENTS ---
-
-const StatusBadge: React.FC<{ status: string }> = React.memo(({ status }) => {
-  const { colorClass, icon: Icon } = getStatusProps(status);
+const StatusPill = ({ status, type }: { status: string; type: string }) => {
+  const isOrder = type === "Order";
   return (
-    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${colorClass} min-w-[100px] justify-center shadow-sm`}>
-      <Icon className="w-4 h-4" />
-      <span className="truncate">{status.toUpperCase()}</span>
+    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border shadow-sm uppercase tracking-wider ${
+      isOrder ? "bg-teal-500/10 border-teal-500/30 text-teal-600" : "bg-indigo-500/10 border-indigo-500/30 text-indigo-600"
+    }`}>
+      {status}
     </span>
   );
-});
+};
 
-const ItemCard: React.FC<{ item: UnifiedItem; onSelect: (item: UnifiedItem) => void }> = React.memo(({ item, onSelect }) => {
-    const isAppointmentItem = isAppointment(item);
-    const { name, client, status, date, timeSlot } = useMemo(() => {
-        if (isAppointmentItem) {
-            return {
-                name: item.service,
-                client: item.client.name,
-                status: item.status,
-                date: item.date,
-                timeSlot: item.timeSlot
-            };
-        }
-        return {
-            name: item.marketplaceListing?.title || "Order",
-            client: item.consumer.name || "N/A",
-            status: item.status,
-            date: item.date,
-            timeSlot: item.timeSlot
-        };
-    }, [item, isAppointmentItem]);
+const GlassCard = ({ item, onClick, primaryColor }: any) => {
+  const isOrder = item.type === "Order";
+  const title = isOrder ? item.marketplaceListing?.title : item.service;
+  const clientName = isOrder ? item.consumer?.name : item.client?.name;
 
-    const IconComponent = isAppointmentItem ? CalendarDaysIcon : ShoppingCartIcon;
-    const borderColor = isAppointmentItem ? "border-indigo-500" : "border-teal-500";
-    const textColor = isAppointmentItem ? "text-indigo-600 dark:text-indigo-400" : "text-teal-600 dark:text-teal-400";
-
-    return (
-        <motion.div
-            layout
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            whileHover={{ scale: 1.03, zIndex: 10, y: -5 }}
-            whileTap={{ scale: 0.98 }}
-            className={`p-4 bg-white dark:bg-gray-800 rounded-xl shadow-md hover:shadow-xl border-l-4 ${borderColor} cursor-pointer transition-all duration-200`}
-            onClick={() => onSelect(item)}
-        >
-            <div className="flex justify-between items-start mb-2">
-                <span className={`text-xs font-bold flex items-center gap-1.5 ${textColor}`}>
-                    <IconComponent className="w-4 h-4" /> {item.type}
-                </span>
-                <StatusBadge status={status} />
-            </div>
-            <h3 className="text-md font-bold text-gray-900 dark:text-gray-100 truncate mb-1" title={name}>{name}</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1.5 mb-3">
-                <UserCircleIcon className="w-4 h-4 text-gray-400" />
-                {client}
-            </p>
-            <div className="flex justify-between items-center text-xs font-medium text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-700 pt-2">
-                <span>ID: {item.id.substring(0, 8)}...</span>
-                <span>{formatDateTime(date, timeSlot)}</span>
-            </div>
-        </motion.div>
-    );
-});
-
-const KanbanColumn: React.FC<{ title: string; items: UnifiedItem[]; onSelectItem: (item: UnifiedItem) => void; }> = ({ title, items, onSelectItem }) => {
-  const { headerClass } = getStatusProps(title);
-  
   return (
-    <div className="flex-shrink-0 w-80 md:w-96">
-      <div className={`flex justify-between items-center p-3 mb-4 rounded-xl shadow-md ${headerClass} sticky top-0 z-10`}>
-        <h3 className="font-bold text-lg text-gray-900 dark:text-gray-100">{title.replace('_', ' ')}</h3>
-        <span className="text-sm font-semibold p-1 px-3 rounded-full bg-white/50 dark:bg-gray-800/50">{items.length}</span>
+    <motion.div
+      layout
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.9 }}
+      whileHover={{ y: -5, boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)" }}
+      onClick={() => onClick(item)}
+      className="group relative bg-white/70 dark:bg-gray-800/40 backdrop-blur-md border border-white/20 dark:border-gray-700/50 p-4 rounded-2xl cursor-pointer overflow-hidden transition-all"
+    >
+      {/* Type Accent */}
+      <div className={`absolute top-0 left-0 w-1 h-full ${isOrder ? 'bg-teal-500' : 'bg-indigo-500'}`} />
+      
+      <div className="flex justify-between items-start mb-3">
+        <div className={`p-2 rounded-lg ${isOrder ? 'bg-teal-500/10 text-teal-600' : 'bg-indigo-500/10 text-indigo-600'}`}>
+          {isOrder ? <ShoppingCartIcon className="w-5 h-5" /> : <CalendarDaysIcon className="w-5 h-5" />}
+        </div>
+        <StatusPill status={item.status} type={item.type} />
       </div>
-      <motion.div layout className="space-y-4 min-h-[500px] p-1">
-        <AnimatePresence>
-          {items.map((item) => <ItemCard key={item.id} item={item} onSelect={onSelectItem} />)}
-        </AnimatePresence>
-        {items.length === 0 && (
-          <div className="p-4 text-center text-sm text-gray-400 dark:text-gray-500 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl h-24 flex items-center justify-center">
-            No items here.
+
+      <h3 className="font-bold text-gray-900 dark:text-white leading-tight mb-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+        {title}
+      </h3>
+      
+      <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-4">
+        <UserCircleIcon className="w-4 h-4" />
+        <span className="truncate">{clientName}</span>
+      </div>
+
+      <div className="flex justify-between items-center pt-3 border-t border-gray-100 dark:border-gray-700/50">
+        <div className="flex flex-col">
+          <span className="text-[10px] text-gray-400 uppercase font-bold">Scheduled</span>
+          <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">{formatDateTime(item.date, item.timeSlot)}</span>
+        </div>
+        {isOrder && item.price && (
+          <div className="text-right">
+             <span className="text-xs font-bold text-emerald-600">${item.price.toFixed(2)}</span>
           </div>
         )}
-      </motion.div>
-    </div>
+      </div>
+    </motion.div>
   );
 };
 
-const KanbanBoard: React.FC<{ groupedItems: Record<KanbanColumnKey, UnifiedItem[]>; onSelectItem: (item: UnifiedItem) => void; }> = ({ groupedItems, onSelectItem }) => (
-  <div className="flex overflow-x-auto gap-6 pb-4 pt-1">
-    {Object.entries(groupedItems).map(([columnName, items]) => (
-      <KanbanColumn
-        key={columnName}
-        title={columnName}
-        items={items}
-        onSelectItem={onSelectItem}
-      />
-    ))}
-  </div>
-);
-
-const DetailRow: React.FC<{ icon: React.ElementType; label: string; value?: string | number; color?: string; }> = ({ icon: Icon, label, value, color }) => (
-    <div className="flex items-start p-3 rounded-lg bg-gray-50 dark:bg-gray-800/50 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150">
-        <Icon className={`w-5 h-5 mt-0.5 mr-3 flex-shrink-0 ${color || 'text-gray-500 dark:text-gray-400'}`} />
-        <div className="flex-grow flex justify-between items-center text-sm w-full">
-            <span className="font-medium text-gray-900 dark:text-gray-100">{label}:</span>
-            <span className="text-gray-700 dark:text-gray-300 font-medium text-right truncate ml-4">{value || 'N/A'}</span>
-        </div>
-    </div>
-);
-
-const DetailPanel: React.FC<{ item: UnifiedItem; onClose: () => void; onUpdate: (id: string, newStatus: string, rider?: string) => Promise<void>; primaryColor: string; }> = ({ item, onClose, onUpdate, primaryColor }) => {
-    const [newStatus, setNewStatus] = useState(isAppointment(item) ? item.status : item.status);
-    const [rider, setRider] = useState(!isAppointment(item) ? item.order?.rider || "" : "");
-    const [isLoading, setIsLoading] = useState(false);
-
-    const handleUpdate = async () => {
-        setIsLoading(true);
-        await onUpdate(item.id, newStatus, rider);
-        setIsLoading(false);
-    };
-    
-    const { name, client, date, timeSlot } = useMemo(() => {
-        if (isAppointment(item)) {
-            return {
-                name: item.service,
-                client: item.client,
-                date: item.date,
-                timeSlot: item.timeSlot,
-            };
-        }
-        return {
-            name: item.marketplaceListing?.title || "Order",
-            client: item.consumer,
-            date: item.date,
-            timeSlot: item.timeSlot,
-        };
-    }, [item]);
-
-    return (
-        <motion.div
-            className="fixed inset-0 z-50 overflow-hidden"
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-        >
-            {/* Backdrop */}
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-            
-            {/* Panel */}
-            <motion.div
-                className="fixed right-0 top-0 h-full w-full max-w-lg bg-white dark:bg-gray-900 shadow-2xl z-50 flex flex-col"
-                initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
-                transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            >
-                {/* Header */}
-                <header className="flex-shrink-0 p-6 border-b border-gray-200 dark:border-gray-800 sticky top-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm z-10">
-                    <div className="flex justify-between items-start">
-                        <div>
-                            <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{name}</h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1.5"><TagIcon className="w-4 h-4" /> ID: {item.id}</p>
-                        </div>
-                        <button onClick={onClose} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"><XMarkIcon className="w-6 h-6" /></button>
-                    </div>
-                </header>
-
-                {/* Content */}
-                <main className="p-6 flex-grow overflow-y-auto space-y-6">
-                    <section>
-                      <h4 className="text-lg font-bold mb-3 flex items-center gap-2"><UserCircleIcon className="w-6 h-6 text-indigo-500" />Client Info</h4>
-                      <div className="space-y-2">
-                        <DetailRow icon={UserCircleIcon} label="Name" value={client.name} />
-                        <DetailRow icon={EnvelopeIcon} label="Email" value={client.email} />
-                        <DetailRow icon={PhoneIcon} label="Phone" value={client.phone} />
-                      </div>
-                    </section>
-                    <section>
-                      <h4 className="text-lg font-bold mb-3 flex items-center gap-2"><CalendarDaysIcon className="w-6 h-6 text-green-500" />Details</h4>
-                       <div className="space-y-2">
-                         <DetailRow icon={ClockIcon} label="Scheduled For" value={formatDateTime(date, timeSlot)} />
-                         {!isAppointment(item) && <DetailRow icon={CurrencyDollarIcon} label="Price" value={`$${item.price?.toFixed(2)}`} color="text-green-500" />}
-                         {!isAppointment(item) && <DetailRow icon={ShoppingCartIcon} label="Quantity" value={item.quantity} />}
-                         {isAppointment(item) && item.notes && <DetailRow icon={ClipboardDocumentCheckIcon} label="Notes" value={item.notes} />}
-                       </div>
-                    </section>
-                    {!isAppointment(item) && (
-                        <section>
-                          <h4 className="text-lg font-bold mb-3 flex items-center gap-2"><TruckIcon className="w-6 h-6 text-yellow-500" />Logistics</h4>
-                          <div className="space-y-2">
-                             <DetailRow icon={TruckIcon} label="Assigned Rider" value={item.order?.rider || 'Unassigned'} />
-                          </div>
-                        </section>
-                    )}
-                </main>
-
-                {/* Footer Actions */}
-                <footer className="flex-shrink-0 p-6 border-t border-gray-200 dark:border-gray-800 sticky bottom-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm z-10">
-                    <label className="block text-md font-bold text-gray-900 dark:text-gray-100 mb-3">Change Status</label>
-                    <div className="flex flex-wrap gap-2 mb-4">
-                        {ALL_STATUSES.map((s) => (
-                            <motion.button
-                                key={s}
-                                onClick={() => setNewStatus(s)}
-                                className={`flex-1 py-2 px-3 rounded-lg text-sm font-semibold transition-all duration-200 shadow-sm min-w-[100px] border ${newStatus.toUpperCase() === s.toUpperCase() ? 'text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 border-gray-200 dark:border-gray-600'}`}
-                                style={{ backgroundColor: newStatus.toUpperCase() === s.toUpperCase() ? primaryColor : undefined, borderColor: newStatus.toUpperCase() === s.toUpperCase() ? primaryColor : undefined }}
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                            >
-                                {s}
-                            </motion.button>
-                        ))}
-                    </div>
-                     {!isAppointment(item) && (
-                        <div className="mb-4">
-                            <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 flex items-center gap-2"><TruckIcon className="w-4 h-4" />Assign Rider</label>
-                            <input type="text" value={rider} onChange={(e) => setRider(e.target.value)} className="mt-1 block w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 p-2.5 shadow-inner focus:ring-2" style={{'--tw-ring-color': primaryColor} as React.CSSProperties} placeholder="Rider Name or ID" />
-                        </div>
-                    )}
-                    <div className="flex justify-end gap-3 mt-4">
-                        <button onClick={onClose} className="px-5 py-2.5 rounded-lg text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">Cancel</button>
-                        <motion.button
-                            onClick={handleUpdate}
-                            disabled={isLoading}
-                            className="px-5 py-2.5 rounded-lg text-white font-semibold transition-all shadow-md flex items-center justify-center min-w-[150px]"
-                            style={{ backgroundColor: primaryColor }}
-                            whileHover={{ scale: 1.02, filter: 'brightness(1.1)' }}
-                        >
-                            {isLoading ? <ArrowPathIcon className="w-5 h-5 animate-spin" /> : "Update Status"}
-                        </motion.button>
-                    </div>
-                </footer>
-            </motion.div>
-        </motion.div>
-    );
-};
-
-// --- CUSTOM HOOKS ---
-
-function useCommandCenterState(initialItems: UnifiedItem[]) {
-    const [unifiedItems, setUnifiedItems] = useState<UnifiedItem[]>([]);
-    const [selectedItem, setSelectedItem] = useState<UnifiedItem | null>(null);
-    const [searchTerm, setSearchTerm] = useState("");
-    const [notification, setNotification] = useState<{ message: string; isSuccess: boolean } | null>(null);
-
-    useEffect(() => {
-        const sortedItems = initialItems?.length > 0 && [...initialItems].sort((a, b) => {
-            const dateA = new Date(`${a.date}T${a.timeSlot?.replace(/\s/g, '') || '00:00'}`);
-            const dateB = new Date(`${b.date}T${b.timeSlot?.replace(/\s/g, '') || '00:00'}`);
-            if (isNaN(dateA.getTime())) return 1;
-            if (isNaN(dateB.getTime())) return -1;
-            return dateB.getTime() - dateA.getTime();
-        });
-        setUnifiedItems(sortedItems || []);
-    }, [initialItems]);
-
-    const groupedItems = useMemo(() => {
-        const columns: Record<KanbanColumnKey, UnifiedItem[]> = {
-            TO_DO: [],
-            IN_PROGRESS: [],
-            COMPLETED: [],
-            CANCELED: [],
-        };
-
-        const filtered = unifiedItems.filter(item => {
-            const searchLower = searchTerm.toLowerCase();
-            const clientName = isAppointment(item) ? item.client.name : item.consumer.name || '';
-            const itemName = isAppointment(item) ? item.service : item.marketplaceListing?.title || '';
-            return clientName.toLowerCase().includes(searchLower) || itemName.toLowerCase().includes(searchLower) || item.id.includes(searchLower);
-        });
-
-        filtered.forEach(item => {
-            const status = (isAppointment(item) ? item.status : item.status).toUpperCase();
-            for (const [col, statuses] of Object.entries(KANBAN_COLUMNS)) {
-                if (statuses.includes(status)) {
-                    columns[col as KanbanColumnKey].push(item);
-                    return;
-                }
-            }
-        });
-        return columns;
-    }, [unifiedItems, searchTerm]);
-
-    const handleUpdateItem = useCallback(async (id: string, newStatus: string, rider?: string) => {
-        // --- API call would go here ---
-        await new Promise(resolve => setTimeout(resolve, 800)); // Simulate network delay
-
-        setUnifiedItems(prev => prev.map(item => {
-            if (item.id === id) {
-                if (isAppointment(item)) {
-                    return { ...item, status: newStatus as AppointmentItem["status"] };
-                }
-                return { ...item, status: newStatus, order: { ...item.order, status: newStatus, rider } };
-            }
-            return item;
-        }));
-        setSelectedItem(null);
-        setNotification({ message: `Item ${id.substring(0, 8)} updated to "${newStatus}"`, isSuccess: true });
-        setTimeout(() => setNotification(null), 3000);
-    }, []);
-
-    const handleSelectItem = useCallback((item: UnifiedItem) => setSelectedItem(item), []);
-    const handleClosePanel = useCallback(() => setSelectedItem(null), []);
-
-    return {
-        groupedItems,
-        searchTerm,
-        setSearchTerm,
-        selectedItem,
-        handleSelectItem,
-        handleClosePanel,
-        handleUpdateItem,
-        notification,
-    };
-}
-
-
-// --- MAIN COMPONENT ---
-interface Props {
-  initialData: UnifiedItem[]; // Simplified prop
-}
-
-export default function AdminAppointmentsClient({ initialData }: Props) {
+export default function AdminAppointmentsClient({ initialData }: { initialData: any[] }) {
   const { storeFormData } = useStoreContext();
-  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#0d9488';
-  const secondaryColor = storeFormData?.themeSettings?.secondaryColor || '#f97316';
+  const primaryColor = storeFormData?.themeSettings?.primaryColor || '#6366f1';
+  
+  const [items, setItems] = useState(initialData || []);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedItem, setSelectedItem] = useState<any>(null);
 
-  const {
-    groupedItems,
-    searchTerm,
-    setSearchTerm,
-    selectedItem,
-    handleSelectItem,
-    handleClosePanel,
-    handleUpdateItem,
-    notification,
-  } = useCommandCenterState(initialData);
+  // Filter and Group
+  const filteredGroups = useMemo(() => {
+    const groups: any = { TO_DO: [], IN_PROGRESS: [], COMPLETED: [], CANCELED: [] };
+    const search = searchTerm.toLowerCase();
+
+    items.filter(item => {
+      const title = (item.type === "Order" ? item.marketplaceListing?.title : item.service) || "";
+      const client = (item.type === "Order" ? item.consumer?.name : item.client?.name) || "";
+      return title.toLowerCase().includes(search) || client.toLowerCase().includes(search);
+    }).forEach(item => {
+      const status = item.status.toUpperCase();
+      for (const [key, config] of Object.entries(KANBAN_COLUMNS)) {
+        if (config.statuses.includes(status)) {
+          groups[key].push(item);
+          break;
+        }
+      }
+    });
+    return groups;
+  }, [items, searchTerm]);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 py-8 px-4 sm:px-6">
-      <div className="max-w-full mx-auto">
-        <header className="mb-6 max-w-7xl mx-auto">
-          <h1 className="text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white">
-            <span className="bg-clip-text text-transparent" style={{ backgroundImage: `linear-gradient(to right, ${primaryColor}, ${secondaryColor})` }}>
-              Unified Command Center
-            </span>
-          </h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-2">Manage your workflow: Appointments (Indigo) & Orders (Teal).</p>
-        </header>
-
-        <AnimatePresence>
-          {notification && (
-            <motion.div
-              initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
-              className={`mb-6 p-4 rounded-xl shadow-lg text-center font-medium max-w-7xl mx-auto flex items-center justify-center gap-3 ${
-                notification.isSuccess ? 'bg-green-100 text-green-800 dark:bg-green-800/30 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-800/30 dark:text-red-200'
-              }`}
-            >
-              {notification.isSuccess ? <CheckCircleIcon className="w-5 h-5" /> : <XMarkIcon className="w-5 h-5" />}
-              {notification.message}
-            </motion.div>
-          )}
-        </AnimatePresence>
-        
-        <div className="max-w-7xl mx-auto mb-6 sticky top-0 z-20 bg-gray-50 dark:bg-gray-950/80 backdrop-blur-sm pt-2 pb-4">
-            <div className="relative">
-                <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                    type="text"
-                    placeholder="Search by client, service, or ID..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-12 pr-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2"
-                    style={{'--tw-ring-color': primaryColor} as React.CSSProperties}
-                />
-            </div>
-        </div>
-
-        <KanbanBoard groupedItems={groupedItems} onSelectItem={handleSelectItem} />
+    <div className="min-h-screen bg-[#f8fafc] dark:bg-[#020617] p-4 md:p-8 transition-colors duration-500">
+      {/* Background Decorative Blobs */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-[10%] -left-[10%] w-[40%] h-[40%] bg-indigo-500/10 blur-[120px] rounded-full" />
+        <div className="absolute top-[20%] -right-[10%] w-[30%] h-[30%] bg-teal-500/10 blur-[120px] rounded-full" />
       </div>
 
+      <div className="relative max-w-[1600px] mx-auto">
+        {/* Modern Header */}
+        <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="p-2 bg-indigo-600 rounded-lg shadow-lg shadow-indigo-500/30">
+                <SparklesIcon className="w-5 h-5 text-white" />
+              </div>
+              <span className="text-sm font-bold text-indigo-600 tracking-widest uppercase">Operations</span>
+            </div>
+            <h1 className="text-4xl font-black text-gray-900 dark:text-white tracking-tight">
+              Command <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-teal-500">Center</span>
+            </h1>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <div className="relative group">
+              <MagnifyingGlassIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-indigo-500 transition-colors" />
+              <input 
+                type="text" 
+                placeholder="Search everything..."
+                className="w-full md:w-80 pl-12 pr-4 py-3 bg-white dark:bg-gray-800 border-none rounded-2xl shadow-xl shadow-gray-200/50 dark:shadow-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          </div>
+        </header>
+
+        {/* Board */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <LayoutGroup>
+            {Object.entries(KANBAN_COLUMNS).map(([key, config]) => (
+              <div key={key} className="flex flex-col min-h-[70vh]">
+                <div className="flex items-center justify-between mb-6 px-2">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-3 h-3 rounded-full bg-gradient-to-tr ${config.gradient}`} />
+                    <h2 className="font-black text-gray-700 dark:text-gray-300 uppercase tracking-tighter text-sm">
+                      {config.label}
+                    </h2>
+                    <span className="bg-gray-200 dark:bg-gray-800 px-2 py-0.5 rounded text-[10px] font-bold text-gray-500">
+                      {filteredGroups[key].length}
+                    </span>
+                  </div>
+                  <FunnelIcon className="w-4 h-4 text-gray-400 cursor-pointer hover:text-indigo-500" />
+                </div>
+
+                <div className="flex-1 space-y-4">
+                  <AnimatePresence mode="popLayout">
+                    {filteredGroups[key].map((item: any) => (
+                      <GlassCard 
+                        key={item.id} 
+                        item={item} 
+                        onClick={setSelectedItem} 
+                        primaryColor={primaryColor} 
+                      />
+                    ))}
+                  </AnimatePresence>
+                </div>
+              </div>
+            ))}
+          </LayoutGroup>
+        </div>
+      </div>
+
+      {/* Side Panel Overlay */}
       <AnimatePresence>
         {selectedItem && (
-          <DetailPanel
-            item={selectedItem}
-            onClose={handleClosePanel}
-            onUpdate={handleUpdateItem}
-            primaryColor={primaryColor}
-          />
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setSelectedItem(null)}
+              className="fixed inset-0 bg-gray-900/40 backdrop-blur-md z-[60]"
+            />
+            <motion.div
+              initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed right-0 top-0 h-full w-full max-w-md bg-white dark:bg-gray-900 shadow-[-20px_0_50px_rgba(0,0,0,0.1)] z-[70] p-8 flex flex-col"
+            >
+              <button onClick={() => setSelectedItem(null)} className="absolute top-6 right-6 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full">
+                <XMarkIcon className="w-6 h-6 text-gray-500" />
+              </button>
+
+              <div className="mb-8 mt-4">
+                <StatusPill status={selectedItem.status} type={selectedItem.type} />
+                <h2 className="text-3xl font-black text-gray-900 dark:text-white mt-4">
+                  {selectedItem.type === "Order" ? selectedItem.marketplaceListing?.title : selectedItem.service}
+                </h2>
+                <p className="text-gray-500 font-mono text-xs mt-1 uppercase tracking-widest">UID: {selectedItem.id.slice(0, 12)}</p>
+              </div>
+
+              <div className="space-y-6 flex-1 overflow-y-auto pr-2 custom-scrollbar">
+                <section>
+                  <h4 className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em] mb-4">Customer Profile</h4>
+                  <div className="bg-gray-50 dark:bg-gray-800/50 rounded-2xl p-4 space-y-4">
+                    <div className="flex items-center gap-3">
+                       <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 font-bold">
+                        {(selectedItem.type === "Order" ? selectedItem.consumer?.name : selectedItem.client?.name)?.[0]}
+                       </div>
+                       <div>
+                         <p className="text-sm font-bold text-gray-900 dark:text-white">{selectedItem.type === "Order" ? selectedItem.consumer?.name : selectedItem.client?.name}</p>
+                         <p className="text-xs text-gray-500">{selectedItem.type === "Order" ? selectedItem.consumer?.email : selectedItem.client?.email}</p>
+                       </div>
+                    </div>
+                    <div className="flex gap-2">
+                       <button className="flex-1 flex items-center justify-center gap-2 py-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-xs font-bold hover:shadow-md transition-all">
+                         <PhoneIcon className="w-4 h-4 text-indigo-500" /> Call
+                       </button>
+                       <button className="flex-1 flex items-center justify-center gap-2 py-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-xs font-bold hover:shadow-md transition-all">
+                         <EnvelopeIcon className="w-4 h-4 text-teal-500" /> Email
+                       </button>
+                    </div>
+                  </div>
+                </section>
+
+                <section>
+                  <h4 className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.2em] mb-4">Logistics & Timing</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="p-4 rounded-2xl bg-gray-50 dark:bg-gray-800/50">
+                       <ClockIcon className="w-5 h-5 text-gray-400 mb-2" />
+                       <p className="text-[10px] text-gray-400 uppercase font-bold">Time Slot</p>
+                       <p className="text-sm font-bold">{selectedItem.timeSlot || "Anytime"}</p>
+                    </div>
+                    <div className="p-4 rounded-2xl bg-gray-50 dark:bg-gray-800/50">
+                       <CalendarDaysIcon className="w-5 h-5 text-gray-400 mb-2" />
+                       <p className="text-[10px] text-gray-400 uppercase font-bold">Date</p>
+                       <p className="text-sm font-bold">{selectedItem.date}</p>
+                    </div>
+                  </div>
+                </section>
+              </div>
+
+              <div className="pt-6 border-t border-gray-100 dark:border-gray-800 space-y-3">
+                <p className="text-xs font-bold text-gray-400 uppercase px-2">Action Center</p>
+                <div className="flex gap-3">
+                  <button className="flex-1 py-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-2xl font-black text-sm shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all">
+                    Update Status
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </>
         )}
       </AnimatePresence>
     </div>
