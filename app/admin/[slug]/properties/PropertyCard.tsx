@@ -24,6 +24,9 @@ const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-KE', { style: 'currency', currency: 'KES', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(price);
 };
 
+// Image Loader
+const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
+
 const getStatusBadgeClass = (status: MarketListingForm['status']) => {
     switch (status) {
         case 'Available': return 'bg-green-100 text-green-800 ring-green-600/20';
@@ -59,8 +62,9 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({ property, companyId,
   // Fallback for Next/Image loader if needed, but using a simple img tag for maximum compatibility with dynamic URLs
   const ImageComponent = property.images && property.images.length > 0 ? 
     <Image 
-      src={imageUrl} 
+      src={imageUrl || 'http://unsplash.it/400/300?random'} 
       alt={property.name} 
+      loader={loader}
       fill 
       sizes="(max-width: 640px) 100vw, 33vw"
       className="object-cover transition-transform duration-500 group-hover:scale-105"

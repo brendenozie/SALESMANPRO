@@ -28,6 +28,8 @@ interface PropertyClientPageProps {
   serverLoadError: string | null;
 }
 
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+
 export default function PropertyClientPage({
   companyId,
   initialProperties,
@@ -48,9 +50,9 @@ export default function PropertyClientPage({
 
   // --- Logic ---
   const stats = useMemo(() => ({
-    total: properties.length,
-    active: properties.filter(p => ['active', 'published'].includes(p.status?.toLowerCase() || '')).length,
-    pending: properties.filter(p => !['active', 'published', 'sold', 'archived'].includes(p.status?.toLowerCase() || '')).length,
+    total: properties?.length,
+    active: properties?.filter(p => ['active', 'published'].includes(p.status?.toLowerCase() || '')).length,
+    pending: properties?.filter(p => !['active', 'published', 'sold', 'archived'].includes(p.status?.toLowerCase() || '')).length,
   }), [properties]);
 
   const confirmDelete = useCallback(async (propertyId: string) => {

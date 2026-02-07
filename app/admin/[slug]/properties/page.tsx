@@ -161,7 +161,7 @@ const fetchData = async <T,>(
         // Adjusting based on common API responses from the original file (results or data)
         console.log(`✅ Successfully fetched data for ${endpoint}:`, dataRes);
         const data = dataRes?.results || dataRes?.data || dataRes?.data?.results || null; 
-
+        console.log(`Extracted data for ${endpoint}:`, data);
         if (!data || (Array.isArray(data) && data.length === 0)) {
             console.warn(`No data received for ${endpoint}. Using fallback sample data.`);
             return { data: fallbackData(), error: null };
@@ -190,19 +190,19 @@ export default async function PropertyManagementPage({ params }: PropertyPagePro
     }
 
     // --- 1. Fetch Properties (Market Listings) ---
-    const propertiesResult = await fetchData<MarketListingForm[]>('admin/my-market-place', companyId, cookiesHeaders, generateMockProperties);
+    const propertiesResult = await fetchData<any>('admin/my-market-place', companyId, cookiesHeaders, generateMockProperties);
     
     // --- 2. Fetch Categories ---
     // NOTE: The original component had a complicated fetch/mapping for categories. We simplify the fetch call here.
-    const categoriesResult = await fetchData<{ results : IStoreCategory[] }>('admin/get-store-categories', companyId, cookiesHeaders, () => ({ results: [] } ), 'companyId');
+    const categoriesResult = await fetchData<any>('admin/get-store-categories', companyId, cookiesHeaders, () => ({ results: [] } ), 'companyId');
 
     // --- 3. Fetch Locations ---
     // NOTE: The original fetch was to `${apiBaseUrl}/admin/locations' without companyId. Assuming this is a global list.
-    const locationsResult = await fetchData<ILocation[]>('admin/locations', '', cookiesHeaders, () => [], 'none');
+    const locationsResult = await fetchData<any>('admin/locations', '', cookiesHeaders, () => ({ results: [] }), 'none');
 
 
     // Consolidate data and error handling
-    const initialProperties: MarketListingForm[] = propertiesResult.data?.results  || generateMockProperties();
+    const initialProperties: MarketListingForm[] = propertiesResult.data?.results || generateMockProperties();
     const initialCategories: IStoreCategory[] = categoriesResult.data?.results || [];
     const initialLocations: ILocation[] = locationsResult.data || [];
     
