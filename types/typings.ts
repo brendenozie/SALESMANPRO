@@ -83,6 +83,7 @@ export enum PolicyType {
   RETURNS,
   PRIVACY,
   TERMS,
+  CANCELLATION,
 }
 
 export enum SectionType {

@@ -86,7 +86,9 @@ const baseData: Partial<StoreForm> = {
     trackingUrl: null,
     regions: null,
     enablePickup: null,
-    pickupInstructions: null
+    pickupInstructions: null,
+    standardRate: null,
+    expressRate: null
   },
 };
 
@@ -180,7 +182,10 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
       tagline: "**Inspire Audiences.** Book Your Next Keynote.",
       description: "An experienced speaker delivering **impactful presentations** on technology, leadership, and future trends.",
       socialLinks: [{ channel: SocialChannel.YOUTUBE, url: "https://youtube.com/speaker" }],
-      faqs:        [{ question: "What are your popular speaking topics?", answer: "AI in business, Future of Work, and High-Performance Teams.", order: 1 }],
+      faqs:        [{ question: "What are your popular speaking topics?", answer: "AI in business, Future of Work, and High-Performance Teams.", order: 1 },
+                      { question: "Do you offer virtual keynotes?", answer: "Yes, we have experience delivering engaging virtual presentations worldwide.", order: 2 },
+                      { question: "What is your booking process?", answer: "Contact us with your event details, and we'll provide a custom proposal within 48 hours.", order: 3 }
+      ],
       testimonials:[{ authorName: "Jane D.", quote: "Incredible energy and insight. A true professional!", rating: 5 }],
       heroSlides:  [{
         imageUrl: getSampleImageUrl('public-speaking'), headline: "Book Me for Your Event", subline: "Delivering memorable keynotes globally.", ctaText: "View Topics", ctaLink: "/topics",
@@ -188,20 +193,38 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
       }],
       events:       [{ title: "Tech Summit Keynote", date: in1Day, location: "Online" } as any],
       awards:       [{ name: "Top 10 Speaker 2024", iconUrl: "/icons/award.svg" }],
+      pricingTiers: [
+        { name: "Keynote", price: 5000, duration: "per event", features: ["60-90 min presentation", "Q&A session"] },
+        { name: "Workshop", price: 10000, duration: "per event", features: ["Half-day workshop", "Custom content"] }
+      ],
+      policies:    [{ type: PolicyType.CANCELLATION, content: "Cancellations must be made at least 30 days in advance for a full refund." }],
+      metrics:      [{ label: "Events Spoken At", value: 100 },{ label: "Audience Reached", value: 50000 }, { label: "Repeat Bookings", value: 40 }],
+      stats:        [{ label: "Average Rating", value: "4.9/5" }, { label: "Referral Rate", value: "60%" }, { label: "International Events", value: "30%" }],
     }),
 
     "Shoes Store": withOverrides({
       tagline: "**Step into Style.** Premium Footwear.",
       description: "Discover the perfect pair for any occasion with our curated selection of **comfort, performance, and fashion**.",
       socialLinks: [{ channel: SocialChannel.INSTAGRAM, url: "https://insta.com/shoes" }],
-      policies:    [{ type: PolicyType.SHIPPING, content: "Free returns on all footwear orders." }],
+      policies:    [{ type: PolicyType.SHIPPING, content: "Free returns on all footwear orders." }, { type: PolicyType.RETURNS, content: "30-day return policy. Shoes must be unworn and in original packaging." }],
       faqs:        [{ question: "What is your sizing guide?", answer: "Check our detailed chart on the product page, or contact support for help.", order: 1 }],
       testimonials:[{ authorName: "Sara L.", quote: "The most comfortable running shoes I've ever owned!", rating: 5 }],
       heroSlides:  [{
         imageUrl: getSampleImageUrl('shoes-store'), headline: "New Arrivals: The Glide 5000", subline: "Engineered for speed and comfort.", ctaText: "Shop Running", ctaLink: "/shop/running",
         id: "", companyId: "", price: null, productImageUrl: null, badgeText: "Performance", endsAt: null, order: 0, iconKey: null, backgroundColor: null, textColor: null, videoLink: null, type: 'image'
       }],
+      partnerLogos: [
+        {  src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand A" },
+        {  src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand B" },
+        {  src:"https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand C" },
+        {  src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand D" },
+        {  src: "https://img.icons8.com/?size=100&id=118466&format=png&color=000000", alt: "Brand E" },
+      ],
+      stats:        [{ label: "Customer Satisfaction", value: "97%" }, { label: "Repeat Buyers", value: "80%" }, { label: "Average Delivery Time", value: "3 days" }],
+      awards:       [{ name: "Best Footwear Store 2024", iconUrl: "/icons/award.svg" }, {name: "Top 100 Retailers 2024", iconUrl: "/icons/award.svg" }],
+      metrics:      [{ label: "Pairs Sold", value: 20000 }, { label: "5-Star Reviews", value: 5000 }, { label: "Countries Shipped To", value: 50 }, { label: "New Customers", value: 5000 }],
       Collection: [{ name: "Best Sellers Sneakers", description: "Our most popular everyday shoes." } as any],
+
     }),
 
     "Service Provider": withOverrides({
@@ -215,9 +238,14 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
         imageUrl: getSampleImageUrl('service-provider'), headline: "Need a Repair? Get a Quote.", subline: "Local experts ready to help, 24/7.", ctaText: "Get Free Quote", ctaLink: "/quote",
         id: "", companyId: "", price: null, productImageUrl: null, badgeText: "24/7 Support", endsAt: null, order: 0, iconKey: null, backgroundColor: null, textColor: null, videoLink: null, type: 'image'
       }],
-      metrics:      [{ label: "Jobs Completed", value: 5000 }],
-      stats:        [{ label: "Avg. Customer Rating", value: "4.8/5" }],
-      pricingTiers: [{ name: "Standard Callout", price: 50, duration: "hourly", features: ["Quality guarantee", "Vetted professionals"] }],
+      metrics:      [{ label: "Jobs Completed", value: 5000 }, { label: "Average Response Time", value: 30  }, { label: "Customer Satisfaction", value: 95 }],
+      stats:        [{ label: "Avg. Customer Rating", value: "4.8/5" }, { label: "Repeat Customers", value: "70%" }, { label: "Service Areas", value: 100 }, { label: "Average Job Value", value: "$150" }],
+      pricingTiers: [{ name: "Standard Callout", price: 50, duration: "hourly", features: ["Quality guarantee", "Vetted professionals"] },
+                      { name: "Premium Service", price: 100, duration: "hourly", features: ["Priority scheduling", "Extended warranty"] },
+                      { name: "Emergency Service", price: 150, duration: "hourly", features: ["Immediate dispatch", "24/7 availability"] }
+                    ],
+      awards:       [{ name: "Best Home Service Platform 2024", iconUrl: "/icons/award.svg" }, { name: "Top 50 Startups 2024", iconUrl: "/icons/award.svg" }],
+      
     }),
 
     "Booking & Appointments": withOverrides({
@@ -359,6 +387,13 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
         id: "", companyId: "", price: null, productImageUrl: null, badgeText: "Local", endsAt: null, order: 0, iconKey: null, backgroundColor: null, textColor: null, videoLink: null, type: 'image'
       }],
       pricingTiers: [{ name: "Standard Listing", price: 9, duration: "monthly", features: ["Name & contact info"] }],
+      Collection: [{ name: "Top Rated", description: "Businesses with the best reviews." } as any],
+      events:       [{ title: "Local Business Expo", date: in1Day, location: "City Convention Center" } as any],
+      Announcement:  [{ title: "New Feature: User Reviews", content: "Customers can now leave reviews on business listings.", date: in1Day } as any],
+      awards:       [{ name: "Best Local Directory 2024", iconUrl: "/icons/award.svg" }],
+      metrics:      [{ label: "Businesses Listed", value: 2000 }],
+      stats:        [{ label: "Monthly Visitors", value: 50000 }],
+
     }),
 
     "Educational & Online Courses": withOverrides({
@@ -373,6 +408,7 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
       pricingTiers: [
         { name: "Single Course", price: 199, duration: "one-time", features: ["Lifetime access", "Certificate"] },
       ],
+      Collection: [{ name: "Most Popular Courses", description: "Our students' top picks." } as any],
     }),
 
     "Restaurant & Food Delivery": withOverrides({
@@ -396,6 +432,11 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
         id: "", companyId: "", price: null, productImageUrl: null, badgeText: "Limited Seats", endsAt: null, order: 0, iconKey: null, backgroundColor: null, textColor: null, videoLink: null, type: 'image'
       }],
       events:       [{ title: "Opening Night Gala", date: in1Day, location: "City Auditorium" } as any],
+      Announcement:  [{ title: "Early Bird Discounts", content: "Get 20% off if you book before next month.", date: in3Days } as any],
+      awards:       [{ name: "Top Event Organizer 2024", iconUrl: "/icons/award.svg" }],
+      metrics:      [{ label: "Events Hosted", value: 150 }],
+      stats:        [{ label: "Average Attendance", value: 500 }],
+            
     }),
 
     "Real Estate": withOverrides({
@@ -408,6 +449,7 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
         imageUrl: getSampleImageUrl('real-estate'), headline: "Luxury Listings: Up to 50% Off", subline: "Explore exclusive properties in downtown.", ctaText: "Search Listings", ctaLink: "/properties",
         id: "", companyId: "", price: null, productImageUrl: null, badgeText: "Hot Market", endsAt: null, order: 0, iconKey: null, backgroundColor: null, textColor: null, videoLink: null, type: 'image'
       }],
+      Collection: [{ name: "Featured Properties", description: "Handpicked homes for you." } as any],
     }),
 
     "SaaS & Web Apps": withOverrides({
@@ -429,11 +471,14 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
     "Marketplace": withOverrides({
       tagline: "Buy & Sell Locally, **The Easy Way**.",
       description: "The largest online **product marketplace** for connecting local buyers and sellers across all categories.",
+      socialLinks: [{ channel: SocialChannel.FACEBOOK, url: "https://fb.com/marketplace" }],
+      Collection: [{ name: "Top Categories", description: "Explore popular product categories." } as any],
       faqs:        [{ question: "How safe is the payment process?", answer: "We use secure escrow and verified payment gateways for all transactions.", order: 1 }],
       heroSlides:  [{
         imageUrl: getSampleImageUrl('marketplace'), headline: "List Your Items for Free!", subline: "Start selling to thousands of local buyers today.", ctaText: "Start Selling", ctaLink: "/sell",
         id: "", companyId: "", price: null, productImageUrl: null, badgeText: "Local Deals", endsAt: null, order: 0, iconKey: null, backgroundColor: null, textColor: null, videoLink: null, type: 'image'
       }],
+
     }),
 
     'Security Services': withOverrides({
@@ -456,7 +501,69 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
       ],
     }),
 
-    // "Security Consulting" : withOverrides({ tagline:})
+    "Fashion Shop": withOverrides({
+      tagline: "**Elevate Your Style** with Our Fashion Collection",
+      description: "Discover the latest trends in fashion with our curated selection of clothing and accessories for every occasion.",
+      socialLinks: [{ channel: SocialChannel.INSTAGRAM, url: "https://insta.com/fashionshop" }],
+      faqs:        [{ question: "Do you offer international shipping?", answer: "Yes, we ship worldwide. Shipping fees and times vary by location.", order: 1 }],
+      testimonials:[{ authorName: "Sophia M.", quote: "The quality and style of their clothes are amazing. I always get compliments!", rating: 5 }],
+      heroSlides:  [{
+        imageUrl: getSampleImageUrl('fashion'), headline: "New Season, New Styles", subline: "Explore our latest collection for the season.", ctaText: "Shop Now", ctaLink: "/shop",
+        id: "", companyId: "", price: null, productImageUrl: null, badgeText: "New Arrivals", endsAt: null, order: 0, iconKey: null, backgroundColor: null, textColor: null, videoLink: null, type: 'image'
+      }],
+    }),
+
+    "Furniture Shop": withOverrides({
+      tagline: "**Furnish Your Dream Home** with Style",
+      description: "Discover our curated collection of modern and classic furniture pieces designed to elevate your living space with comfort and elegance.",
+      socialLinks: [{ channel: SocialChannel.INSTAGRAM, url: "https://insta.com/furnitureshop" }],
+      faqs:        [{ question: "Do you offer custom furniture?", answer: "Yes, we provide custom design services to create pieces that fit your unique style and space.", order: 1 }],
+      testimonials:[{ authorName: "Emily R.", quote: "The quality and design of their furniture exceeded my expectations. Highly recommend!", rating: 5 }],
+      heroSlides:  [{
+        imageUrl: getSampleImageUrl('furniture'), headline: "New Collection Launching This Season", subline: "Explore our latest designs for every room in your home.", ctaText: "Shop Now", ctaLink: "/shop",
+        id: "", companyId: "", price: null, productImageUrl: null, badgeText: "New Arrivals", endsAt: null, order: 0, iconKey: null, backgroundColor: null, textColor: null, videoLink: null, type: 'image'
+      }],
+    }),
+
+    "Security Consulting" : withOverrides({ 
+      tagline: "**Expert Security Consulting** for Your Business",
+      description: "Our security consulting services provide comprehensive risk assessments, strategic planning, and implementation support to protect your business from evolving threats.",
+      socialLinks: [{ channel: SocialChannel.LINKEDIN, url: "https://linkedin.com/company/securityconsulting" }],
+      faqs:        [{ question: "What industries do you specialize in?", answer: "We have experience across various sectors including finance, healthcare, and retail.", order: 1 }],
+      testimonials:[{ authorName: "Michael S.", quote: "Their consulting services helped us identify vulnerabilities and implement effective security measures. Highly recommend!", rating: 5 }],
+      heroSlides:  [{
+        imageUrl: getSampleImageUrl('security-consulting'),
+        headline: "Protect Your Business Today",
+        subline: "Schedule a free consultation to assess your security needs.",
+        ctaText: "Get Consultation",
+        ctaLink: "/contact",
+        id: "", companyId: "", price: null, productImageUrl: null, badgeText: "Trusted Advisors", endsAt: null, order: 0, iconKey: null, backgroundColor: null, textColor: null, videoLink: null, type: 'image'
+      }],
+      pricingTiers: [
+        { name: "Basic Assessment", price: 499, duration: "one-time", features: ["Comprehensive risk assessment", "Detailed report"] },
+        { name: "Full Consulting Package", price: 1999, duration: "project-based", features: ["All Basic features", "Strategic planning", "Implementation support"] }
+      ],
+    }),
+
+    "Security" : withOverrides({ 
+      tagline: "**Expert Security Consulting** for Your Business",
+      description: "Our security consulting services provide comprehensive risk assessments, strategic planning, and implementation support to protect your business from evolving threats.",
+      socialLinks: [{ channel: SocialChannel.LINKEDIN, url: "https://linkedin.com/company/securityconsulting" }],
+      faqs:        [{ question: "What industries do you specialize in?", answer: "We have experience across various sectors including finance, healthcare, and retail.", order: 1 }],
+      testimonials:[{ authorName: "Michael S.", quote: "Their consulting services helped us identify vulnerabilities and implement effective security measures. Highly recommend!", rating: 5 }],
+      heroSlides:  [{
+        imageUrl: getSampleImageUrl('security-consulting'),
+        headline: "Protect Your Business Today",
+        subline: "Schedule a free consultation to assess your security needs.",
+        ctaText: "Get Consultation",
+        ctaLink: "/contact",
+        id: "", companyId: "", price: null, productImageUrl: null, badgeText: "Trusted Advisors", endsAt: null, order: 0, iconKey: null, backgroundColor: null, textColor: null, videoLink: null, type: 'image'
+      }],
+      pricingTiers: [
+        { name: "Basic Assessment", price: 499, duration: "one-time", features: ["Comprehensive risk assessment", "Detailed report"] },
+        { name: "Full Consulting Package", price: 1999, duration: "project-based", features: ["All Basic features", "Strategic planning", "Implementation support"] }
+      ],
+    }),
     
     // --- Remaining Stubbed Categories ---
     "Other":                            withOverrides({ tagline: "Tailored Solutions for Your Unique Idea", description: "A flexible starting point for any business or personal project not covered by other categories." }),

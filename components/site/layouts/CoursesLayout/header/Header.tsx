@@ -604,3 +604,268 @@ export default function Header() {
     </header>
   );
 }
+
+
+
+// 'use client';
+
+// import React, { useEffect, useMemo, useRef, useState } from 'react';
+// import { motion, AnimatePresence } from 'framer-motion';
+// import Image from 'next/image';
+// import Link from 'next/link';
+// import { useRouter } from 'next/navigation';
+// import {
+//   Bars3Icon,
+//   XMarkIcon,
+//   UserIcon,
+//   ShoppingBagIcon,
+//   ChevronDownIcon,
+//   MagnifyingGlassIcon,
+//   BookOpenIcon,
+//   EnvelopeIcon,
+//   PhoneIcon,
+// } from '@heroicons/react/24/outline';
+// import { useStoreContext } from '@/contexts/StoreContext';
+// import { useStateContext } from '@/contexts/ContextProvider';
+// import { useSession, signOut } from 'next-auth/react';
+
+// const loader = ({ src }: { src: string }) => src;
+
+// /**
+//  * REIMAGINED HEADER 2026:
+//  * - Floating Glass Island Architecture
+//  * - Dynamic Search Expansion
+//  * - Integrated Theme Variables
+//  */
+
+// export default function Header() {
+//   const router = useRouter();
+
+//   // Contexts & Auth
+//   const { storeFormData } = useStoreContext() || {};
+//   const stateCtx = useStateContext ? useStateContext() : undefined;
+//   const cart = stateCtx?.cart ?? [];
+//   const { data: session } = useSession();
+//   const user = session?.user as { role?: string; name?: string; image?: string } | undefined;
+
+//   // Destructure store data
+//   const {
+//     name = 'Your Academy',
+//     slug = '',
+//     logoUrl,
+//     contactEmail,
+//     contactPhone,
+//     socialLinks = [],
+//     StoreCategory = [],
+//     themeSettings = {},
+//   } = storeFormData || {};
+
+//   const primaryColor = themeSettings?.primaryColor || '#fd2121';
+//   const accentColor = themeSettings?.secondaryColor || '#FFC107';
+
+//   // UI State
+//   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+//   const [searchOpen, setSearchOpen] = useState(false);
+//   const [query, setQuery] = useState('');
+//   const [suggestions, setSuggestions] = useState<{ id: string; title: string; slug?: string }[]>([]);
+//   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+//   const [categoriesOpen, setCategoriesOpen] = useState(false);
+
+//   // Refs
+//   const searchInputRef = useRef<HTMLInputElement | null>(null);
+//   const suggestionsRef = useRef<HTMLDivElement | null>(null);
+//   const debounceRef = useRef<number | null>(null);
+//   const abortControllerRef = useRef<AbortController | null>(null);
+
+//   const themeStyles = useMemo(() => ({
+//     '--primary-color': primaryColor,
+//     '--accent-color': accentColor,
+//   } as React.CSSProperties), [primaryColor, accentColor]);
+
+//   // Search Logic
+//   useEffect(() => {
+//     if (!query || query.trim().length < 2) {
+//       setSuggestions([]);
+//       setLoadingSuggestions(false);
+//       return;
+//     }
+//     setLoadingSuggestions(true);
+//     if (debounceRef.current) window.clearTimeout(debounceRef.current);
+//     debounceRef.current = window.setTimeout(() => {
+//       if (abortControllerRef.current) abortControllerRef.current.abort();
+//       const ac = new AbortController();
+//       abortControllerRef.current = ac;
+
+//       fetch(`/api/courses/search?q=${encodeURIComponent(query.trim())}`, { signal: ac.signal })
+//         .then(async (res) => {
+//           const data = await res.json();
+//           setSuggestions(Array.isArray(data) ? data.slice(0, 8) : []);
+//         })
+//         .catch(() => setSuggestions([]))
+//         .finally(() => setLoadingSuggestions(false));
+//     }, 250);
+//   }, [query]);
+
+//   // Handlers
+//   const handleUserAction = () => {
+//     if (!user) return router.push(`/site/${slug}/courses/login`);
+//     user.role?.toLowerCase() === 'admin' ? router.push('/dashboards') : router.push('/profile');
+//   };
+
+//   const selectCategory = (catId: string) => {
+//     router.push(`/category/${catId}`);
+//     setCategoriesOpen(false);
+//     setMobileMenuOpen(false);
+//   };
+
+//   return (
+//     <header 
+//       className="fixed top-0 md:top-4 left-0 right-0 z-50 px-0 md:px-8 pointer-events-none font-inter" 
+//       style={themeStyles}
+//     >
+//       <motion.div 
+//         initial={{ y: -20, opacity: 0 }} 
+//         animate={{ y: 0, opacity: 1 }}
+//         className="max-w-7xl mx-auto pointer-events-auto"
+//       >
+//         {/* Main Floating Bar */}
+//         <div className="relative flex items-center justify-between px-4 py-2 md:py-3 md:rounded-[2.5rem] bg-white/80 dark:bg-slate-900/90 border-b md:border border-white/20 shadow-2xl backdrop-blur-xl">
+          
+//           {/* Left: Logo */}
+//           <div className="flex items-center gap-4 shrink-0 cursor-pointer" onClick={() => router.push(`/site/${slug}`)}>
+//             {logoUrl ? (
+//               <Image src={logoUrl} alt={name} width={130} height={40} loader={loader} className="h-8 md:h-10 w-auto object-contain" />
+//             ) : (
+//               <span className="text-xl font-black tracking-tighter bg-gradient-to-r from-[var(--primary-color)] to-[var(--accent-color)] bg-clip-text text-transparent">
+//                 {name.toUpperCase()}
+//               </span>
+//             )}
+//           </div>
+
+//           {/* Center: Nav Links */}
+//           <nav className="hidden lg:flex items-center bg-gray-100/50 dark:bg-white/5 rounded-full px-2 py-1 border border-black/5 dark:border-white/5">
+//             <NavLink href={`/site/${slug}`} label="Home" />
+//             <NavLink href={`/courses`} label="Courses" icon={<BookOpenIcon className="w-4 h-4" />} />
+            
+//             <div className="relative group">
+//               <button 
+//                 className="flex items-center gap-1 px-4 py-2 text-sm font-semibold text-gray-600 dark:text-gray-300 hover:text-[var(--primary-color)] transition-colors"
+//                 onClick={() => setCategoriesOpen(!categoriesOpen)}
+//               >
+//                 Categories <ChevronDownIcon className={`w-3 h-3 transition-transform ${categoriesOpen ? 'rotate-180' : ''}`} />
+//               </button>
+              
+//               <AnimatePresence>
+//                 {categoriesOpen && (
+//                   <motion.div 
+//                     initial={{ opacity: 0, scale: 0.95, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 10 }}
+//                     className="absolute top-full left-0 mt-3 w-60 p-2 bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl"
+//                   >
+//                     {StoreCategory.map((cat: any) => (
+//                       <button key={cat.id} onClick={() => selectCategory(cat.id)} className="w-full text-left px-4 py-2.5 text-sm rounded-xl hover:bg-[var(--primary-color)] hover:text-white transition-all text-gray-700 dark:text-gray-200">
+//                         {cat.displayName}
+//                       </button>
+//                     ))}
+//                   </motion.div>
+//                 )}
+//               </AnimatePresence>
+//             </div>
+//           </nav>
+
+//           {/* Right: Actions */}
+//           <div className="flex items-center gap-2">
+//             {/* Search Bar */}
+//             <div className="hidden md:flex items-center relative">
+//               <motion.input
+//                 ref={searchInputRef}
+//                 whileFocus={{ width: 220 }}
+//                 className="w-36 bg-gray-100 dark:bg-white/10 border-none rounded-full py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-[var(--primary-color)] transition-all outline-none text-gray-800 dark:text-white"
+//                 placeholder="Search..."
+//                 value={query}
+//                 onChange={(e) => setQuery(e.target.value)}
+//                 onFocus={() => setSearchOpen(true)}
+//                 onBlur={() => setTimeout(() => setSearchOpen(false), 200)}
+//               />
+//               <MagnifyingGlassIcon className="absolute left-3 w-4 h-4 text-gray-400" />
+              
+//               {/* Search Suggestions Dropdown */}
+//               <AnimatePresence>
+//                 {searchOpen && (suggestions.length > 0 || loadingSuggestions) && (
+//                   <motion.div 
+//                     initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
+//                     className="absolute top-full right-0 mt-3 w-80 bg-white dark:bg-slate-900 border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl overflow-hidden"
+//                   >
+//                     {loadingSuggestions ? (
+//                       <div className="p-4 text-sm text-gray-500 animate-pulse">Searching for courses...</div>
+//                     ) : (
+//                       suggestions.map((s) => (
+//                         <div key={s.id} onClick={() => router.push(`/site/${slug}/courses/${s.slug ?? s.id}`)} className="p-3 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer border-b border-gray-100 dark:border-white/5 last:border-0">
+//                           <p className="text-sm font-medium text-gray-800 dark:text-gray-100">{s.title}</p>
+//                         </div>
+//                       ))
+//                     )}
+//                   </motion.div>
+//                 )}
+//               </AnimatePresence>
+//             </div>
+
+//             <div className="h-6 w-[1px] bg-gray-200 dark:bg-white/10 mx-1 hidden md:block" />
+
+//             {/* Shopping Cart */}
+//             <button onClick={() => router.push('/checkout')} className="relative p-2.5 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/10 rounded-full transition-all">
+//               <ShoppingBagIcon className="w-6 h-6" />
+//               {cart?.length > 0 && (
+//                 <span className="absolute top-1.5 right-1.5 flex h-4 w-4">
+//                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--primary-color)] opacity-75"></span>
+//                   <span className="relative inline-flex rounded-full h-4 w-4 bg-[var(--primary-color)] text-[10px] font-bold text-white items-center justify-center">
+//                     {cart.length}
+//                   </span>
+//                 </span>
+//               )}
+//             </button>
+
+//             {/* Auth Toggle */}
+//             <button onClick={handleUserAction} className="flex items-center gap-2 pl-1 pr-4 py-1 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:scale-105 transition-transform active:scale-95 shadow-lg">
+//               <div className="w-7 h-7 rounded-full bg-gray-400 overflow-hidden ring-2 ring-white/20">
+//                 {user?.image ? <img src={user.image} className="w-full h-full object-cover" /> : <UserIcon className="w-4 h-4 m-1.5" />}
+//               </div>
+//               <span className="hidden sm:block text-xs font-bold uppercase tracking-wider">{user ? 'Account' : 'Login'}</span>
+//             </button>
+
+//             {/* Mobile Menu Trigger */}
+//             <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="lg:hidden p-2 text-gray-600 dark:text-gray-300">
+//               {mobileMenuOpen ? <XMarkIcon className="w-7 h-7" /> : <Bars3Icon className="w-7 h-7" />}
+//             </button>
+//           </div>
+//         </div>
+
+//         {/* Mobile Menu Overlays */}
+//         <AnimatePresence>
+//           {mobileMenuOpen && (
+//             <motion.div 
+//               initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
+//               className="absolute top-full left-4 right-4 mt-2 bg-white dark:bg-slate-900 rounded-3xl border border-gray-200 dark:border-white/10 shadow-2xl p-4 lg:hidden"
+//             >
+//               <div className="flex flex-col gap-2">
+//                 <Link href={`/site/${slug}`} onClick={() => setMobileMenuOpen(false)} className="p-3 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 font-semibold">Home</Link>
+//                 <Link href={`/courses`} onClick={() => setMobileMenuOpen(false)} className="p-3 rounded-xl hover:bg-gray-100 dark:hover:bg-white/5 font-semibold">Courses</Link>
+//                 <div className="h-[1px] bg-gray-100 dark:bg-white/10 my-2" />
+//                 <p className="px-3 text-xs font-bold text-gray-400 uppercase">Contact</p>
+//                 {contactEmail && <a href={`mailto:${contactEmail}`} className="p-3 text-sm text-gray-600 dark:text-gray-300">{contactEmail}</a>}
+//               </div>
+//             </motion.div>
+//           )}
+//         </AnimatePresence>
+//       </motion.div>
+//     </header>
+//   );
+// }
+
+// // Nav Link Helper
+// function NavLink({ href, label, icon }: { href: string; label: string; icon?: React.ReactNode }) {
+//   return (
+//     <Link href={href} className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-gray-600 dark:text-gray-300 hover:text-[var(--primary-color)] transition-colors rounded-full hover:bg-white dark:hover:bg-white/5">
+//       {icon} {label}
+//     </Link>
+//   );
+// }
