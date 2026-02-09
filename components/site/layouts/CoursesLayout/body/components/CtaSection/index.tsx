@@ -143,7 +143,7 @@ export default function CtaSection() {
             </motion.h2>
 
             <motion.p
-              className="text-lg text-gray-700 dark:text-gray-300 mb-8 max-w-xl mx-auto lg:mx-0 leading-relaxed"
+              className="text-lg text-gray-700 dark:text-gray-300 mb-8 max-w-xl mx-auto lg:mx-0 leading-relaxed h-20 overflow-hidden"
               variants={itemVariants}
             >
               {ctaSubtitle}
@@ -154,7 +154,7 @@ export default function CtaSection() {
               whileHover={{ scale: 1.05, boxShadow: `0 15px 30px ${primaryColor}60` }}
               whileTap={{ scale: 0.95 }}
               className={clsx(`inline-flex items-center justify-center text-white w-full sm:w-auto
-                            px-12 py-4 rounded-full text-xl font-extrabold shadow-2xl transition-all duration-300 mb-12
+                            px-12 py-2 rounded-full text-xl font-extrabold shadow-2xl transition-all duration-300 mb-12
                             focus:outline-none focus:ring-4 focus:ring-opacity-75`)}
               style={{
                 background: primaryColor,

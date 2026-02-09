@@ -532,9 +532,9 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
       ],
       Collection: [{ name: "Most Popular Courses", description: "Our students' top picks." } as any],
       events: [{ title: "Live Q&A with Instructors", date: in1Day, location: "Online" } as any],
-      awards: [{ name: "Best Online Learning Platform 2024", iconUrl: "/icons/award.svg" }, { name: "Top 10 EdTech Companies 2024", iconUrl: "/icons/award.svg" }],
-      metrics: [{ label: "Students Enrolled", value: 10000 }, { label: "Average Course Rating", value: 4.8 }, { label: "Courses Offered", value: 50 }],
-      stats: [{ label: "Students Enrolled", value: 10000 }, { label: "Average Course Rating", value: "4.8/5" }, { label: "Courses Offered", value: 50 }],
+      awards: [{ name: "Best Online Learning Platform 2024", iconUrl: "/icons/award.svg" }, { name: "Top 10 EdTech Companies 2024", iconUrl: "/icons/award.svg" }, { name: "Best User Experience 2024", iconUrl: "/icons/award.svg" }, { name: "Most Courses Available 2024", iconUrl: "/icons/award.svg" }],
+      metrics: [{ label: "Students Enrolled", value: 10000 }, { label: "Average Course Rating", value: 4.8 }, { label: "Courses Offered", value: 50 }, { label: "Live Events Hosted", value: 20 },{ label: "Certificates Issued", value: 8000 }],
+      stats: [{ label: "Students Enrolled", value: 10000 }, { label: "Average Course Rating", value: "4.8/5" }, { label: "Courses Offered", value: 50 }, { label: "Live Events Hosted", value: 20 }, { label: "Certificates Issued", value: 8000 }],
       policies: [{ type: PolicyType.CANCELLATION, content: "Courses can be canceled within 14 days of purchase for a full refund." }],
       promotions: [
         { title: "New Year Sale", description: "Get 20% off all courses with code NEWYEAR20. Limited time offer!", ctaText: "Shop Now", ctaLink: "/courses",

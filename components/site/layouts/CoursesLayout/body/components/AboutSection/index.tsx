@@ -187,7 +187,7 @@ export default function AboutSection() {
                     {aboutTagline}
                 </motion.p>
                 <motion.h2
-                    className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-gray-900 dark:text-white mb-6 leading-tight"
+                    className="text-4xl md:text-5xl lg:text-5xl font-extrabold text-gray-900 dark:text-white mb-6 leading-tight"
                     variants={textItemVariants}
                 >
                     {aboutHeadline.split(' ').map((word, index) => (
@@ -201,7 +201,7 @@ export default function AboutSection() {
                     ))}
                 </motion.h2>
                 <motion.p
-                    className="text-gray-700 dark:text-gray-300 text-lg leading-relaxed mb-8"
+                    className="text-gray-700 dark:text-gray-300 text-lg leading-relaxed mb-8 h-24 overflow-hidden"
                     variants={textItemVariants}
                 >
                     {aboutDescription}

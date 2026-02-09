@@ -37,7 +37,7 @@ export default function Footer() {
             <span className="text-xl font-bold">{name}</span>
           </Link>
           {description && (
-            <p className="text-sm text-gray-200">{description}</p>
+            <p className="text-sm text-gray-200 h-20 overflow-hidden">{description}</p>
           )}
           <div className="flex space-x-4 mt-4">
             {socialLinks.map((s) => (

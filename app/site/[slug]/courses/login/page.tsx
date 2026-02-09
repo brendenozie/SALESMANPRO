@@ -1,213 +1,195 @@
 "use client";
 
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { AcademicCapIcon, ArrowRightIcon, KeyIcon } from '@heroicons/react/24/outline'; // Removed LockClosedIcon
+import React, { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { AcademicCapIcon, KeyIcon, ArrowRightIcon, SparklesIcon } from '@heroicons/react/24/outline';
 import { useRouter } from 'next/navigation';
-import { signIn } from 'next-auth/react'; // Import signIn function from next-auth/react
+import { signIn } from 'next-auth/react';
+import { useStoreContext } from '@/contexts/StoreContext';
 
 export default function LoginPage() {
+
+  const { storeFormData } = useStoreContext();
+
+  const { themeSettings } = storeFormData || {};
+  const primaryColor = themeSettings?.primaryColor || '#fd2121';
+  const accentColor = themeSettings?.secondaryColor || '#FFC107';
+  
   const [loginCode, setLoginCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-
+  
   const router = useRouter();
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  // Animation variants (no changes needed here)
-  const containerVariants = {
-    hidden: { opacity: 0, y: 50 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        type: "spring",
-        stiffness: 80,
-        damping: 10,
-        when: "beforeChildren",
-        staggerChildren: 0.1,
-      },
-    },
-  };
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
 
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 },
-  };
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleLogin = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (loginCode.length !== 6) return;
+    
     setLoading(true);
     setMessage(null);
 
-    // Basic validation for 6 digits
-    if (loginCode.length !== 6 || !/^\d+$/.test(loginCode)) {
-      setMessage({ type: 'error', text: 'Please enter a valid 6-digit school login code.' });
-      setLoading(false);
-      return;
-    }
-
     try {
-      // Call the specific 'school-code-login' provider
       const result = await signIn('school-code-login', {
         loginCode,
-        redirect: false, // Prevent NextAuth from redirecting automatically
+        redirect: false,
       });
 
       if (result?.error) {
-        // Handle errors from the signIn function (e.g., credentials mismatch)
-        setMessage({ type: 'error', text: result.error });
+        setMessage({ type: 'error', text: "Invalid code. Please try again." });
+        setLoginCode('');
       } else if (result?.ok) {
-        setMessage({ type: 'success', text: 'Login successful! Redirecting...' });
-
-        // A more robust redirection logic would involve fetching the session
-        // and using the role from there. For immediate redirection based on
-        // mock logic, we can still use the startsWith for demonstration,
-        // but remember to replace this with actual session-based role checking.
-        // For example, after `signIn` is successful, you could `await getSession()`
-        // and then check `session.user.role`.
-
-        // Simulating role-based redirection based on the provided URLs
+        setMessage({ type: 'success', text: 'Identity verified. Entering portal...' });
+        
         setTimeout(() => {
-          // In a real app, after successful signIn, you'd typically redirect to a
-          // protected route (e.g., /dashboard) and then use `useSession` to get
-          // the user's role and perform the final role-based redirection.
-          // For this example, we'll keep the mock logic for immediate redirection.
-          if (loginCode.startsWith('1')) { // Example: Teacher codes start with '1'
-            router.push('/admin/685018d708b38f9635fb3a03'); // Teacher dashboard
-          } else { // Assume others are students for this mock
-            router.push('/admin/685084cc4da288b5c3156e4a'); // Student dashboard
+          if (loginCode.startsWith('1')) {
+            router.push('/admin/685018d708b38f9635fb3a03');
+          } else {
+            router.push('/admin/685084cc4da288b5c3156e4a');
           }
-        }, 1000);
+        }, 1200);
       }
     } catch (error) {
-      console.error("Login error:", error);
-      setMessage({ type: 'error', text: 'An unexpected error occurred. Please try again later.' });
+      setMessage({ type: 'error', text: 'Connection failed. Try again.' });
     } finally {
       setLoading(false);
     }
   };
 
+  useEffect(() => {
+    if (loginCode.length === 6) {
+      handleLogin();
+    }
+  }, [loginCode]);
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-900 to-purple-800 flex items-center justify-center p-4 font-sans">
+    <div className="relative min-h-screen w-full flex items-center justify-center p-6 overflow-hidden bg-[#040d08]">
+      {/* Updated Mesh Background: Emerald & Forest Tones */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute top-[-15%] left-[-10%] w-[50%] h-[50%] rounded-full bg-emerald-700/20 blur-[130px] animate-pulse" />
+        <div className="absolute bottom-[-15%] right-[-10%] w-[50%] h-[50%] rounded-full bg-green-900/30 blur-[130px] animate-pulse [animation-delay:1s]" />
+      </div>
+
       <motion.div
-        className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-8 sm:p-10 w-full max-w-md
-                  flex flex-col items-center text-center relative overflow-hidden"
-        initial="hidden"
-        animate="visible"
-        variants={containerVariants}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="relative z-10 w-full max-w-md"
       >
-        {/* Abstract background blobs for visual interest */}
-        <div className="absolute -top-10 -left-10 w-40 h-40 bg-yellow-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
-        <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-purple-400 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
-
-        <motion.div variants={itemVariants} className="relative z-10">
-          <AcademicCapIcon className="w-20 h-20 text-indigo-600 dark:text-purple-400 mx-auto mb-6" />
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white mb-4 leading-tight">
-            Welcome Back!
-          </h2>
-          <p className="text-gray-600 dark:text-gray-300 mb-8 text-lg">
-            Enter your 6-digit school login code to continue.
-          </p>
-        </motion.div>
-
-        <motion.form onSubmit={handleLogin} className="w-full relative z-10" variants={itemVariants}>
-          <div className="mb-6">
-            <div className="relative">
-              <KeyIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 dark:text-gray-500" />
-              <input
-                type="text" // Keep as text to allow leading zeros if any, but validate length
-                inputMode="numeric" // Suggest numeric keyboard on mobile
-                pattern="[0-9]*" // Hint for numeric input
-                maxLength={6} // Enforce 6 digits
-                placeholder="6-Digit Login Code"
-                className={`w-full p-4 pl-12 rounded-xl border border-gray-300 dark:border-gray-700
-                           bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white
-                           focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all`}
-                value={loginCode}
-                onChange={(e) => {
-                  // Allow only digits and limit to 6 characters
-                  const value = e.target.value.replace(/\D/g, '').substring(0, 6);
-                  setLoginCode(value);
-                }}
-                required
-              />
-            </div>
-          </div>
-          {/* Removed the password input field entirely */}
-
-          {message && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className={`p-3 rounded-lg text-sm mb-6 ${
-                message.type === 'success' ? 'bg-green-100 text-green-700 dark:bg-green-700 dark:text-green-100' : 'bg-red-100 text-red-700 dark:bg-red-700 dark:text-red-100'
-              }`}
+        <div className="backdrop-blur-3xl bg-emerald-950/10 border border-emerald-500/20 rounded-[3rem] p-10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden">
+          
+          {/* Top Section */}
+          <div className="text-center mb-10">
+            <motion.div 
+              initial={{ scale: 0.8 }}
+              animate={{ scale: 1 }}
+              className={`inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-br from-emerald-500 to-green-700 shadow-[0_10px_20px_rgba(16,185,129,0.3)] mb-6`}
+              style={{ background: `linear-gradient(to bottom right, ${primaryColor}, ${accentColor})` }}
             >
-              {message.text}
+              <AcademicCapIcon className="w-12 h-12 text-emerald-50" />
             </motion.div>
-          )}
+            <h1 className="text-4xl font-black text-white tracking-tight mb-2 italic">
+              {storeFormData?.name || "EduLearn Academy"}
+            </h1>
+            <p className="text-emerald-200/50 font-medium tracking-widest uppercase text-xs">
+              Secure Digital Gateway
+            </p>
+          </div>
 
-          <motion.button
-            type="submit"
-            className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold py-4 rounded-xl
-                       shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300
-                       focus:outline-none focus:ring-4 focus:ring-indigo-500 focus:ring-opacity-75 flex items-center justify-center gap-2"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            disabled={loading}
-            variants={itemVariants}
-          >
-            {loading ? (
-              <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-            ) : (
-              <>
-                Login
-              </>
-            )}
-          </motion.button>
-        </motion.form>
+          <form onSubmit={(e) => e.preventDefault()} className="space-y-10">
+            <div className="relative group">
+              <input
+                ref={inputRef}
+                type="text"
+                inputMode="numeric"
+                maxLength={6}
+                value={loginCode}
+                onChange={(e) => setLoginCode(e.target.value.replace(/\D/g, ''))}
+                className="absolute inset-0 opacity-0 cursor-default"
+                disabled={loading}
+              />
 
-        {/* <motion.div className="mt-8 text-sm relative z-10" variants={itemVariants}>
-           Removed "Forgot password?" as there's no password for this flow 
-          <p className="mt-4 text-gray-700 dark:text-gray-300">
-            Don't have an account?{' '}
-            <a
-              href="#signup"
-              className="text-indigo-600 dark:text-purple-400 font-semibold hover:underline transition-colors"
-              onClick={(e) => { e.preventDefault(); console.log('Sign up clicked!'); }}
-            >
-              Sign up
-            </a>
-          </p>
-        </motion.div> */}
+              {/* Gold-Themed Digit Boxes */}
+              <div className="flex justify-between gap-3">
+                {[...Array(6)].map((_, i) => (
+                  <div
+                    key={i}
+                    className={`w-12 h-16 sm:w-14 sm:h-20 flex items-center justify-center text-3xl font-bold rounded-2xl border-2 transition-all duration-500 ${
+                      loginCode[i] 
+                        ? 'border-amber-400 bg-amber-400/10 text-amber-400 shadow-[0_0_20px_rgba(251,191,36,0.2)]' 
+                        : 'border-emerald-500/20 bg-emerald-500/5 text-emerald-800'
+                    } ${
+                      loginCode.length === i && !loading ? 'border-emerald-400 animate-pulse' : ''
+                    }`}
+                  >
+                    {loginCode[i] || ""}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Status Messages */}
+            <AnimatePresence mode="wait">
+              {message && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  className={`flex items-center gap-3 text-sm font-semibold p-4 rounded-2xl ${
+                    message.type === 'success' 
+                      ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' 
+                      : 'bg-rose-500/10 text-rose-400 border border-rose-500/30'
+                  }`}
+                >
+                  <SparklesIcon className="w-5 h-5 flex-shrink-0" />
+                  {message.text}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Action Area: Metallic Gold Button */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => handleLogin()}
+                disabled={loading || loginCode.length < 6}
+                className="group relative w-full overflow-hidden rounded-2xl bg-gradient-to-r from-amber-300 via-amber-500 to-amber-600 p-[2px] transition-all hover:scale-[1.03] active:scale-[0.97] disabled:opacity-30"
+              >
+                <div className="bg-[#040d08] group-hover:bg-transparent transition-colors rounded-[14px] p-4 font-black text-amber-400 group-hover:text-emerald-950 uppercase tracking-widest text-sm flex items-center justify-center gap-3">
+                  {loading ? (
+                    <div className="flex gap-2">
+                      <span className="w-2 h-2 bg-current rounded-full animate-bounce" />
+                      <span className="w-2 h-2 bg-current rounded-full animate-bounce [animation-delay:0.2s]" />
+                      <span className="w-2 h-2 bg-current rounded-full animate-bounce [animation-delay:0.4s]" />
+                    </div>
+                  ) : (
+                    <>
+                      Enter Portal
+                      <ArrowRightIcon className="w-5 h-5 transition-transform group-hover:translate-x-2" />
+                    </>
+                  )}
+                </div>
+              </button>
+            </div>
+          </form>
+
+          <div className="mt-10 text-center">
+             <button className="text-emerald-600 hover:text-amber-400 text-xs font-bold uppercase tracking-widest transition-colors duration-300">
+               Forgot Access Code?
+             </button>
+          </div>
+        </div>
       </motion.div>
 
-      {/* Tailwind CSS keyframe animation for the blob effect (copy-pasted from previous sections) */}
-      <style jsx>{`
-        @keyframes blob {
-          0% {
-            transform: translate(0, 0) scale(1);
-          }
-          33% {
-            transform: translate(30px, -50px) scale(1.1);
-          }
-          66% {
-            transform: translate(-20px, 20px) scale(0.9);
-          }
-          100% {
-            transform: translate(0, 0) scale(1);
-          }
-        }
-        .animate-blob {
-          animation: blob 7s infinite cubic-bezier(0.68, -0.55, 0.27, 1.55);
-        }
-        .animation-delay-2000 {
-          animation-delay: 2s;
-        }
-      `}</style>
+      {/* Footer Details */}
+      <div className="absolute bottom-8 flex gap-6 text-[10px] uppercase tracking-[0.2em] text-emerald-800 font-bold">
+        <span>© 2026 {storeFormData?.name || "EduLearn Academy"}</span>
+        <span className="text-emerald-900">•</span>
+        <span>Secure Session</span>
+      </div>
     </div>
   );
 }
