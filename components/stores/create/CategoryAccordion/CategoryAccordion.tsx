@@ -45,8 +45,13 @@ export default function CategoryTree({
     }, [availableCategories]);
 
     const categoriesForContext = useMemo(() => {
+        console.log("Filtering categories for context:", category);
         const allowedNames = new Set(STORE_CATEGORY_MAP[category] || []);
-        return availableCategories?.filter(cat => allowedNames.has(cat.name || '')) || [];
+        console.log("Allowed category names for context:", allowedNames);
+        const filtered = availableCategories?.filter(cat => allowedNames.has(cat.name || '')) || [];
+        console.log("Available categories:", availableCategories);
+        console.log("Filtered categories for context:", filtered);
+        return filtered;
     }, [category, availableCategories]);
 
     const filteredData = useMemo(() => {
