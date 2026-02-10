@@ -6,6 +6,7 @@ import { NextFetchEvent, NextRequest, NextResponse } from "next/server";
 // Your app’s main host
 const PRIMARY_HOST = "salesmanpro.site";
 const AUTH_DOMAIN = "auth.salesmanpro.site"; // Central auth domain
+const SECONDARY_HOSTS = ["c170-102-135-172-117.ngrok-free.app"]; // Add your custom domains here
 
 // Protected paths that require authentication
 const protectedPaths = [
@@ -160,7 +161,8 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
     host !== PRIMARY_HOST &&
     !host.endsWith(".salesmanpro.site") &&
     !host.startsWith("127.0.0.1") &&
-    !host.startsWith("localhost")
+    !host.startsWith("localhost") &&
+    !SECONDARY_HOSTS.includes(host)
   ) {
     // Normalize host
     const normalizedHost = host.replace(/^www\./, "").toLowerCase();
@@ -180,6 +182,21 @@ export default async function middleware(request: NextRequest, ev: NextFetchEven
     res.headers.set("x-rewritten-slug", normalizedHost);
     
     return res;
+  }
+
+  if (host && SECONDARY_HOSTS.includes(host)) {
+    // If the path is /site/duka-yangu, we don't want to rewrite it AGAIN
+    // because it's already pointing to the correct internal directory.
+    
+    if (pathname.startsWith("/site/")) {
+      return NextResponse.next(); 
+    }
+
+    // If you want to allow a "default" for the ngrok root, set it here
+    const defaultSlug = "duka-yangu"; 
+    url.pathname = `/site/${defaultSlug}${pathname === "/" ? "" : pathname}`;
+
+    return NextResponse.rewrite(url);
   }
   
   // ---- 7. DEFAULT ----
