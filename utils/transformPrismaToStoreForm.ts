@@ -166,7 +166,9 @@ export function transformCompanyToStoreForm(raw: any): StoreForm {
       trackingUrl: raw.ShippingSettings.trackingUrl ?? null,
       regions: raw.ShippingSettings.regions ?? [],
       enablePickup: typeof raw.ShippingSettings.enablePickup === 'boolean' ? raw.ShippingSettings.enablePickup : null,
-      pickupInstructions: raw.ShippingSettings.pickupInstructions ?? null,
+      pickupInstructions: raw.ShippingSettings.pickupInstructions ?? null,      
+      standardRate: typeof raw.ShippingSettings.standardRate === 'number' ? raw.ShippingSettings.standardRate : null,
+      expressRate: typeof raw.ShippingSettings.expressRate === 'number' ? raw.ShippingSettings.expressRate : null,
     }
     : null,
   StoreCategory: raw.StoreCategory?.map((sc: any) => ({
