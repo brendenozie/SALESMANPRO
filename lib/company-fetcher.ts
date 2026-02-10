@@ -94,6 +94,56 @@ export async function revalidateCompanyCache(slug: string) {
   revalidateTag(`company:${slug}`); // invalidate this specific company
 }
 
+export const revalidateStore = (companyId: string) => {
+  revalidateTag(`products-${companyId}`);
+  revalidateTag(`categories-${companyId}`);
+  revalidateTag(`blogs-${companyId}`);
+  revalidateTag(`testimonials-${companyId}`);
+  // console.log(`✨ All caches purged for company: ${companyId}`);
+};
+
+export const triggerRefresh = {
+  products: (companyId: string) => revalidateTag(`products-${companyId}`),
+  categories: (catId: string) => revalidateTag(`cat-${catId}`),
+  testimonials: (companyId: string) => revalidateTag(`testimonials-${companyId}`),
+  blogs: (companyId: string) => revalidateTag(`blogs-${companyId}`),
+};
+
+export async function onBlogUpdate(companyId: string) {
+  // Clears the cache for just this company's blog list
+  revalidateTag(`blogs-${companyId}`);
+}
+
+// Call this after prisma.testimonial.create(...)
+export async function onNewTestimonial(companyId: string) {
+  revalidateTag(`testimonials-${companyId}`);
+}
+
+export async function refreshCategoryCache(categoryId?: string, agentId?: string) {
+  if (categoryId) revalidateTag(`cat-${categoryId}`);
+  if (agentId) revalidateTag(`agent-${agentId}`);
+  // Force refresh for anyone looking at "all listings"
+  revalidateTag('marketplace-listings');
+}
+
+/**
+ * Clears the cache for a specific company's product list.
+ * Call this inside your Prisma update/create/delete logic.
+ */
+export async function refreshCompanyProducts(companyId: string) {
+  try {
+    // 1. Clears the specific data cache we tagged in the API
+    revalidateTag(`products-${companyId}`);
+
+    // 2. Optional: Clears the layout/page cache if you have a 
+    // frontend route like /marketplace/[companyId]
+    // revalidatePath(`/marketplace/${companyId}`);
+    
+    console.log(`Cache cleared for company: ${companyId}`);
+  } catch (error) {
+    console.error("Revalidation failed:", error);
+  }
+}
 /**
  * -----------------------------------------------------
  * 🧩 Prisma Include Objects

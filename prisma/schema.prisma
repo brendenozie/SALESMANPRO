@@ -2032,6 +2032,8 @@ model marketplaceListings {
   @@index([tags])
   @@index([images])
   @@index([email])
+  @@index([companyId, createdAt])
+  @@index([companyId, isFeatured, createdAt])
 }
 
 model ProductReview {
