@@ -45,7 +45,8 @@ const TargetsClient: React.FC = () => {
         if (!response.ok) {
           throw new Error("Failed to fetch targets");
         }
-        const data: Target[] = await response.json();
+        const result = await response.json();
+        const data: Target[] = result.data || [];
 
         setTargets(data);
 
