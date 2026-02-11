@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
+import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
 
 // --------------------
 // Formatter (sync)
@@ -44,6 +45,11 @@ const baseSelect = {
 
 // --------------------
 // GET /api/admin/appointments
+// OPTIMIZATIONS:
+// 1. Cache-First: Checks Redis before database
+// 2. Selective Fields: Uses select for optimal query
+// 3. Edge Caching: Includes Cache-Control headers
+// 4. Pagination: Built-in with meta information
 // --------------------
 export const GET = withApiHandler(async (request, context) => {
   const { user } = context;
@@ -61,6 +67,32 @@ export const GET = withApiHandler(async (request, context) => {
     return formatResponse(false, "Missing companyId", "error", 400);
   }
 
+  // STEP 1: Build cache key from all query parameters
+  const cacheKey = `admin:appointments:${companyId}:${user.role}:${user.id}:${searchTerm || ""}:${filterStatus || ""}:${page}:${limit}`;
+  const CACHE_TTL = 60; // 60 seconds
+
+  // STEP 2: Check cache first
+  try {
+    const cachedData = await cacheGet<any>(cacheKey);
+    if (cachedData) {
+      const response = formatResponse(
+        true,
+        cachedData,
+        "appointments",
+        200
+      );
+      response.headers.set(
+        "Cache-Control",
+        "s-maxage=60, stale-while-revalidate=30"
+      );
+      return response;
+    }
+  } catch (cacheError) {
+    console.error("Cache read error:", cacheError);
+    // Continue to database query if cache fails
+  }
+
+  // STEP 3: Cache miss - query database
   const where: any = { companyId };
 
   if (user.role !== "ADMIN") {
@@ -92,63 +124,116 @@ export const GET = withApiHandler(async (request, context) => {
 
   const formatted = appointments.map(formatAppointmentData);
 
-  return formatResponse(
-    true,
-    {
-      data: formatted,
-      meta: {
-        page,
-        limit,
-        total,
-        pages: Math.ceil(total / limit),
-      },
+  const responseData = {
+    data: formatted,
+    meta: {
+      page,
+      limit,
+      total,
+      pages: Math.ceil(total / limit),
     },
+  };
+
+  // STEP 4: Update cache
+  try {
+    await cacheSet(cacheKey, responseData, CACHE_TTL);
+  } catch (cacheError) {
+    console.error("Cache write error:", cacheError);
+    // Continue even if cache update fails
+  }
+
+  // STEP 5: Return response with edge caching headers
+  const response = formatResponse(
+    true,
+    responseData,
     "appointments",
     200
   );
+  response.headers.set(
+    "Cache-Control",
+    "s-maxage=60, stale-while-revalidate=30"
+  );
+  return response;
 });
 
 // --------------------
 // POST /api/admin/appointments
+// OPTIMIZATIONS:
+// 1. Atomic Operations: Try/catch with Prisma create
+// 2. Cache Invalidation: Clears related caches
+// 3. Input Validation: Validates all required fields
 // --------------------
 export const POST = withApiHandler(async (request, context) => {
   const { user } = context;
   if (!user) return formatResponse(false, "Unauthorized", "error", 401);
 
-  const body = await request.json();
-  const { userId, doctorId, service, date, time, status, companyId } = body;
+  try {
+    const body = await request.json();
+    const { userId, doctorId, service, date, time, status, companyId } = body;
 
-  if (!userId || !doctorId || !date || !time || !status || !companyId) {
-    return formatResponse(
-      false,
-      "Missing required fields: userId, doctorId, date, time, status, companyId",
-      "error",
-      400
-    );
+    if (!userId || !doctorId || !date || !time || !status || !companyId) {
+      return formatResponse(
+        false,
+        "Missing required fields: userId, doctorId, date, time, status, companyId",
+        "error",
+        400
+      );
+    }
+
+    if (user.role !== "ADMIN" && doctorId !== user.id) {
+      return formatResponse(false, "You cannot create appointments for another doctor", "error", 403);
+    }
+
+    const appointmentDateTime = new Date(`${date}T${time}:00`);
+    if (isNaN(appointmentDateTime.getTime())) {
+      return formatResponse(false, "Invalid date or time", "error", 400);
+    }
+
+    const created = await prisma.appointment.create({
+      data: {
+        userId,
+        doctorId,
+        service,
+        date: appointmentDateTime,
+        status,
+        companyId,
+      },
+      select: baseSelect,
+    });
+
+    // STEP: Invalidate all appointments caches for this company
+    try {
+      await cacheDel(`admin:appointments:${companyId}:*`);
+    } catch (cacheError) {
+      console.error("Cache invalidation error:", cacheError);
+      // Continue even if cache invalidation fails
+    }
+
+    return formatResponse(true, formatAppointmentData(created), "appointment", 201);
+  } catch (error: any) {
+    console.error("Error creating appointment:", error);
+    
+    // Enhanced error handling for specific Prisma errors
+    if (error.code === "P2002") {
+      return formatResponse(
+        false,
+        "An appointment with these details already exists",
+        "error",
+        409
+      );
+    }
+    
+    if (error.code === "P2003") {
+      return formatResponse(
+        false,
+        "Invalid userId, doctorId, or companyId",
+        "error",
+        400
+      );
+    }
+    
+    return formatResponse(false, "Failed to create appointment", "error", 500);
   }
-
-  if (user.role !== "ADMIN" && doctorId !== user.id) {
-    return formatResponse(false, "You cannot create appointments for another doctor", "error", 403);
-  }
-
-  const appointmentDateTime = new Date(`${date}T${time}:00`);
-  if (isNaN(appointmentDateTime.getTime())) {
-    return formatResponse(false, "Invalid date or time", "error", 400);
-  }
-
-  const created = await prisma.appointment.create({
-    data: {
-      userId,
-      doctorId,
-      service,
-      date: appointmentDateTime,
-      status,
-      companyId,
-    },
-    select: baseSelect,
-  });
-
-  return formatResponse(true, formatAppointmentData(created), "appointment", 201);
 });
 // import prisma from "@/server/db/prismadb";
 // import { withApiHandler } from "@/lib/hooks/withApiHandler";
