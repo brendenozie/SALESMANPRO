@@ -6682,6 +6682,11 @@ model StaffAttendanceRecord {
   date         DateTime // Canonical date (e.g., 2024-05-20 00:00:00)
   checkInTime  DateTime?
   checkOutTime DateTime?
+  imageUrl     String? // URL to the captured image at check-in/out
+  lat          Float? // Latitude for geofencing
+  lng          Float? // Longitude for geofencing
+
+  accuracy Float? // Accuracy of the geofence location in meters
 
   status StaffAttendanceStatus @default(PRESENT)
   method StaffAttendanceMethod @default(WEB_PORTAL)

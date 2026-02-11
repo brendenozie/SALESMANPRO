@@ -1,56 +1,38 @@
-'use client';
+"use client";
 
-import React from 'react';
+import React, { useRef, useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   UsersIcon,
   BookOpenIcon,
   ClipboardDocumentCheckIcon,
   CalendarDaysIcon,
   ClockIcon,
-  AcademicCapIcon, // For classes
-  PaperAirplaneIcon, // For send message
-  MegaphoneIcon, // For announcements
-  ChatBubbleBottomCenterTextIcon, // For messages
-  PencilSquareIcon, // For grading
-  BellAlertIcon, // For overdue
+  AcademicCapIcon,
+  MegaphoneIcon,
+  ChatBubbleBottomCenterTextIcon,
+  PencilSquareIcon,
   Bars3BottomLeftIcon,
   RocketLaunchIcon,
-  ClipboardDocumentListIcon, // For assignments overview
-} from '@heroicons/react/24/outline'; // Using outline for main icons
+  ClipboardDocumentListIcon,
+  ArrowDownCircleIcon,
+  CheckCircleIcon,
+  MapPinIcon,
+  FingerPrintIcon,
+  ArrowUpCircleIcon,
+  XMarkIcon,
+  PaperAirplaneIcon,
+} from "@heroicons/react/24/outline";
 
-// Sample Data for the Teacher Dashboard
-const teacherName = "Mr. John Doe"; // Placeholder for logged-in teacher's name
-const teacherRole = "Mathematics Teacher, Grade 7 & 8";
+// --- Sample Dashboard Data ---
+const teacherName = "Alex Johnson";
+const teacherRole = "Mathematics Lead • Grade 8";
 
 const teacherStats = [
-  {
-    title: 'Total Students',
-    icon: <UsersIcon className="h-7 w-7 text-blue-600" />,
-    value: '180',
-    description: 'Across all your classes',
-    color: 'bg-blue-50',
-  },
-  {
-    title: 'Assignments Due',
-    icon: <ClipboardDocumentCheckIcon className="h-7 w-7 text-purple-600" />,
-    value: '7',
-    description: 'To be collected/marked this week',
-    color: 'bg-purple-50',
-  },
-  {
-    title: 'Unread Messages',
-    icon: <ChatBubbleBottomCenterTextIcon className="h-7 w-7 text-green-600" />,
-    value: '4',
-    description: 'From students & parents',
-    color: 'bg-green-50',
-  },
-  {
-    title: 'Upcoming Classes',
-    icon: <ClockIcon className="h-7 w-7 text-yellow-600" />,
-    value: '3',
-    description: 'Scheduled for today',
-    color: 'bg-yellow-50',
-  },
+  { title: 'Total Students', icon: <UsersIcon className="h-6 w-6 text-blue-600" />, value: '180', color: 'bg-blue-50' },
+  { title: 'Assignments Due', icon: <ClipboardDocumentCheckIcon className="h-6 w-6 text-purple-600" />, value: '7', color: 'bg-purple-50' },
+  { title: 'Unread Messages', icon: <ChatBubbleBottomCenterTextIcon className="h-6 w-6 text-green-600" />, value: '4', color: 'bg-green-50' },
+  { title: 'Today\'s Classes', icon: <ClockIcon className="h-6 w-6 text-yellow-600" />, value: '3', color: 'bg-yellow-50' },
 ];
 
 const quickActions = [
@@ -63,6 +45,7 @@ const quickActions = [
   { label: "Post Announcement", icon: <MegaphoneIcon className="h-6 w-6" />, href: "#/announcements/new" },
   { label: "My Calendar", icon: <CalendarDaysIcon className="h-6 w-6" />, href: "#/calendar" },
 ];
+
 
 const assignments = [
   { id: 1, title: 'Algebra Homework Set 2', class: 'Grade 8 Math', dueDate: 'Today', status: 'Pending Marking', color: 'bg-yellow-500' },
@@ -157,60 +140,225 @@ interface PrincipalDashboardProps extends TutorDashboardData {
 }
 
 
-export default function TeachersClient({
-  companyId,
-  currentUserId,
-}: PrincipalDashboardProps) {
-  const today = new Date().toLocaleDateString('en-US', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
+// --- Upload Helper ---
+export async function uploadFiles(
+  apiBaseUrl: string,
+  files: File[],
+  type: "image" | "video" | "book",
+  onProgress?: (progress: number, file: File) => void
+): Promise<{ url: string; key: string; contentType: string }[]> {
+  if (!files?.length) return [];
+
+  const uploads = files.map(async (file) => {
+    const res = await fetch(
+      `${apiBaseUrl}/upload-url?filename=${encodeURIComponent(file.name)}&type=${type}&contentType=${encodeURIComponent(file.type)}`
+    );
+
+    if (!res.ok) throw new Error(`Failed to get signed URL`);
+    const { uploadUrl, publicUrl, key, contentType } = await res.json();
+
+    await new Promise<void>((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open("PUT", uploadUrl);
+      xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable && onProgress) onProgress(Math.round((e.loaded / e.total) * 100), file);
+      };
+      xhr.onload = () => xhr.status === 200 ? resolve() : reject();
+      xhr.onerror = () => reject();
+      xhr.send(file);
+    });
+
+    return { url: publicUrl, key, contentType };
   });
 
+  return Promise.all(uploads);
+}
+
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+
+
+// --- MAIN COMPONENT ---
+export default function StaffDashboard({ companyId, currentUserId }: PrincipalDashboardProps) {
+  const router = useRouter();
+  
+  // Dashboard & Attendance States
+  const [attendanceStatus, setAttendanceStatus] = useState<"NOT_STARTED" | "CLOCKED_IN" | "CLOCKED_OUT">("NOT_STARTED");
+  const [lastTime, setLastTime] = useState<string | null>(null);
+  const [showScanner, setShowScanner] = useState(false);
+  
+  // Scanner States
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [scanStatus, setScanStatus] = useState<"idle" | "verifying" | "success">("idle");
+  const [streamActive, setStreamActive] = useState(false);
+
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [isUploading, setIsUploading] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    
+  // 1. Initial Status Check
+  useEffect(() => {
+    const fetchStatus = async () => {
+      try {
+        const res = await fetch(`/api/attendance/status?userId=${currentUserId}`);
+        const data = await res.json();
+        if (data.success) {
+          setAttendanceStatus(data.data.attendanceStatus);
+          setLastTime(data.data.record?.checkInTime || data.data.record?.checkOutTime);
+        }
+      } catch (err) { console.error("Status Sync Error"); }
+    };
+    fetchStatus();
+  }, [currentUserId]);
+
+  // 2. Camera Controls
+  const startCamera = async () => {
+    setScanStatus("idle");
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "user", width: 400, height: 400 }
+      });
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        setStreamActive(true);
+      }
+    } catch (err) { alert("Camera access denied"); }
+  };
+
+  const stopCamera = () => {
+    if (videoRef.current?.srcObject) {
+      (videoRef.current.srcObject as MediaStream).getTracks().forEach(t => t.stop());
+      setStreamActive(false);
+    }
+  };
+
+  useEffect(() => {
+    if (showScanner) startCamera();
+    else stopCamera();
+    return () => stopCamera();
+  }, [showScanner]);
+
+  // 3. Handle Verification Logic
+  const handleVerify = async () => {
+    setScanStatus("verifying");
+    
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+      if (videoRef.current && canvasRef.current) {
+        const context = canvasRef.current.getContext("2d");
+        context?.drawImage(videoRef.current, 0, 0, 400, 400);
+        const imageData = canvasRef.current.toDataURL("image/jpeg");
+
+        const type = attendanceStatus === "NOT_STARTED" ? "IN" : "OUT";
+
+        let finalImageUrl = "";
+        
+        if (imageData) {
+          setIsUploading(true);
+          try {
+            const fileType = imageData.startsWith('data:video/') ? 'video' : 'image';
+            const blob = await fetch(imageData).then(res => res.blob());
+            const file = new File([blob], `attendance_${Date.now()}.${fileType === 'image' ? 'jpg' : 'mp4'}`, { type: fileType === 'image' ? 'image/jpeg' : 'video/mp4' });
+            const [uploadResult] = await uploadFiles(apiBaseUrl, [file], fileType, (p) => setUploadProgress(p));
+            
+            if (fileType === 'image') finalImageUrl = uploadResult.url;
+            
+          } catch (err) {
+            alert("Upload failed");
+            setIsUploading(false);
+            return;
+          }
+          setIsUploading(false);
+        }
+
+        const res = await fetch("/api/attendance/clock-in", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId: currentUserId,
+            companyId,
+            type,
+            imageUrl: finalImageUrl,
+            coords: { lat: pos.coords.latitude, lng: pos.coords.longitude }
+          }),
+        });
+
+        if (res.ok) {
+          setScanStatus("success");
+          setTimeout(() => {
+            setShowScanner(false);
+            window.location.reload(); // Refresh to update dashboard state
+          }, 2000);
+        } else {
+          setScanStatus("idle");
+          alert("Verification failed. Please try again.");
+        }
+      }
+    }, () => {
+      setScanStatus("idle");
+      alert("Location access required for clock-in.");
+    });
+  };
+
+  const todayStr = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-8 bg-gray-100 min-h-screen font-sans">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
-            Welcome, {teacherName}
-            <span className="ml-2 text-indigo-600 text-base sm:text-xl">📚</span>
-          </h1>
-          <p className="text-sm text-gray-600 mt-1">{teacherRole}</p>
-        </div>
-        <div className="bg-white text-gray-700 px-4 py-2 rounded-lg shadow-sm border border-gray-200 text-sm font-medium flex items-center gap-2">
-          <CalendarDaysIcon className="h-5 w-5 text-gray-500" />
-          <span>{today}</span>
-        </div>
-      </div>
+    <div className="min-h-screen bg-[#F8FAFC] font-sans">
+      
+      {/* --- DASHBOARD HEADER --- */}
+      <header className="bg-white border-b border-slate-200 px-6 py-8">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+          <div>
+            <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+              Welcome, {teacherName} <span className="text-indigo-600">📚</span>
+            </h1>
+            <p className="text-slate-500 font-medium">{teacherRole} • {todayStr}</p>
+          </div>
 
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-        {/* Left Column: Stats, Assignments & Quick Actions */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Key Stats */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {teacherStats.map((stat, index) => (
-              <div
-                key={index}
-                className={`p-5 rounded-xl shadow-md border border-gray-200 transition-all duration-200 ease-in-out
-                            hover:shadow-lg transform hover:-translate-y-1 cursor-pointer
-                            ${stat.color}`}
+          {/* ATTENDANCE QUICK WIDGET */}
+          <div className="flex items-center gap-4 bg-slate-50 p-2 pr-4 rounded-2xl border border-slate-200 shadow-sm">
+            <div className={`p-3 rounded-xl ${attendanceStatus === 'CLOCKED_IN' ? 'bg-orange-100 text-orange-600' : 'bg-indigo-100 text-indigo-600'}`}>
+              <ClockIcon className="h-6 w-6" />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Shift Status</p>
+              <p className="text-sm font-bold text-slate-700">
+                {attendanceStatus === "NOT_STARTED" && "Not Clocked In"}
+                {attendanceStatus === "CLOCKED_IN" && `Active since ${new Date(lastTime!).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`}
+                {attendanceStatus === "CLOCKED_OUT" && "Shift Completed"}
+              </p>
+            </div>
+            {attendanceStatus !== "CLOCKED_OUT" && (
+              <button 
+                onClick={() => setShowScanner(true)}
+                className={`ml-4 px-5 py-2.5 rounded-xl font-bold text-white transition-all transform active:scale-95 shadow-md ${
+                  attendanceStatus === "CLOCKED_IN" ? "bg-orange-500 hover:bg-orange-600" : "bg-indigo-600 hover:bg-indigo-700"
+                }`}
               >
-                <div className="flex items-center mb-3">
-                  <div className="p-2 bg-white rounded-full shadow-sm mr-3 flex-shrink-0">
-                    {stat.icon}
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                    <h2 className="text-3xl font-bold text-gray-800">{stat.value}</h2>
-                  </div>
+                {attendanceStatus === "NOT_STARTED" ? "Clock In" : "Clock Out"}
+              </button>
+            )}
+          </div>
+        </div>
+      </header>
+
+      {/* --- MAIN DASHBOARD CONTENT --- */}
+      <main className="max-w-7xl mx-auto p-6 grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        {/* LEFT COLUMN */}
+        <div className="lg:col-span-2 space-y-8">
+          {/* STATS GRID */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {teacherStats.map((stat, i) => (
+              <div key={i} className={`p-5 rounded-2xl border border-slate-100 shadow-sm transition-all hover:shadow-md ${stat.color}`}>
+                <div className="bg-white/80 w-10 h-10 rounded-lg flex items-center justify-center mb-4 shadow-sm">
+                  {stat.icon}
                 </div>
-                <p className="text-xs text-gray-500 mt-1">{stat.description}</p>
+                <h3 className="text-2xl font-black text-slate-800">{stat.value}</h3>
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-tight">{stat.title}</p>
               </div>
             ))}
-          </div>          
+          </div>
 
           {/* Quick Actions */}
           <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
@@ -222,9 +370,7 @@ export default function TeachersClient({
                 <a
                   key={idx}
                   href={action.href}
-                  className="flex flex-col items-center p-4 bg-gray-50 rounded-lg text-gray-700
-                             hover:bg-indigo-50 hover:text-indigo-700 transition-colors duration-200
-                             focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2"
+                  className="flex flex-col items-center p-4 bg-gray-50 rounded-lg text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:ring-offset-2"
                 >
                   <div className="text-indigo-500 mb-2">{action.icon}</div>
                   <span className="text-center text-sm font-medium">{action.label}</span>
@@ -233,42 +379,39 @@ export default function TeachersClient({
             </div>
           </div>
 
-          {/* Assignments Overview */}
-          <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold mb-5 text-gray-800 flex items-center gap-2">
-              <Bars3BottomLeftIcon className="h-5 w-5 text-indigo-500" /> Assignments Overview
-            </h3>
+          {/* ASSIGNMENTS TABLE */}
+          <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="p-6 border-b border-slate-50 flex justify-between items-center">
+              <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+                <Bars3BottomLeftIcon className="h-5 w-5 text-indigo-500" /> Current Assignments
+              </h3>
+              <button className="text-sm font-bold text-indigo-600 hover:underline">View All</button>
+            </div>
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="w-full text-left border-collapse">
+                <thead className="bg-slate-50/50">
                   <tr>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Assignment</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Class</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Due Date</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th scope="col" className="relative px-6 py-3">
-                      <span className="sr-only">Actions</span>
-                    </th>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest">Assignment</th>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest">Status</th>
+                    <th className="px-6 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest">Action</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {assignments.map((assignment) => (
-                    <tr key={assignment.id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{assignment.title}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{assignment.class}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{assignment.dueDate}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                          ${assignment.status === 'Pending Marking' && 'bg-yellow-100 text-yellow-800'}
-                          ${assignment.status === 'Due Soon' && 'bg-blue-100 text-blue-800'}
-                          ${assignment.status === 'Overdue' && 'bg-red-100 text-red-800'}
-                          ${assignment.status === 'Assigned' && 'bg-green-100 text-green-800'}
-                        `}>
-                          {assignment.status}
+                <tbody className="divide-y divide-slate-100">
+                  {assignments.map((item) => (
+                    <tr key={item.id} className="hover:bg-slate-50/50 transition-colors">
+                      <td className="px-6 py-4">
+                        <p className="text-sm font-bold text-slate-800">{item.title}</p>
+                        <p className="text-xs text-slate-400">{item.class} • Due {item.dueDate}</p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${item.color}`}>
+                          {item.status}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <a href="#" className="text-indigo-600 hover:text-indigo-900">Manage</a>
+                      <td className="px-6 py-4">
+                        <button className="p-2 hover:bg-white rounded-lg transition-all text-slate-400 hover:text-indigo-600 border border-transparent hover:border-slate-200">
+                          <PencilSquareIcon className="h-5 w-5" />
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -276,12 +419,30 @@ export default function TeachersClient({
               </table>
             </div>
           </div>
-
         </div>
 
-        {/* Right Column: Announcements, Messages, My Classes & Timetable */}
-        <div className="lg:col-span-1 space-y-6">
+        {/* RIGHT COLUMN */}
+        <div className="space-y-8">
+          <div className="bg-indigo-900 rounded-3xl p-6 text-white relative overflow-hidden shadow-xl shadow-indigo-200">
+            <RocketLaunchIcon className="absolute -right-4 -bottom-4 h-32 w-32 text-indigo-800/50 rotate-12" />
+            <h4 className="text-xl font-bold mb-2">New Feature!</h4>
+            <p className="text-indigo-100 text-sm mb-6 leading-relaxed">You can now track student progress in real-time using our new analytics module.</p>
+            <button className="bg-white text-indigo-900 px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-indigo-50 transition-colors">Explore</button>
+          </div>
 
+          <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm">
+             <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2">
+               <MegaphoneIcon className="h-5 w-5 text-orange-500" /> Announcements
+             </h3>
+             <div className="space-y-4">
+                <div className="p-4 bg-orange-50 border-l-4 border-orange-400 rounded-r-xl">
+                  <p className="text-sm font-bold text-orange-900">Final Exams Prep</p>
+                  <p className="text-xs text-orange-700 mt-1">Please update your study guides by Friday EOD.</p>
+                </div>
+             </div>
+          </div>
+
+          
           {/* Recent Announcements */}
           <div className="bg-white rounded-xl shadow-md border border-gray-200 p-6">
             <h3 className="text-lg font-semibold mb-4 text-gray-800 flex items-center gap-2">
@@ -356,7 +517,136 @@ export default function TeachersClient({
           </div>
 
         </div>
-      </div>
+      </main>
+
+      {/* --- BIOMETRIC SCANNER OVERLAY --- */}
+      {showScanner && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-md" onClick={() => setShowScanner(false)} />
+          
+          <div className="relative bg-white w-full max-w-md rounded-[40px] shadow-2xl overflow-hidden p-8 animate-in zoom-in duration-300">
+            {/* Modal Close */}
+            <button 
+              onClick={() => setShowScanner(false)}
+              className="absolute top-6 right-6 p-2 bg-slate-100 hover:bg-slate-200 rounded-full transition-colors"
+            >
+              <XMarkIcon className="h-5 w-5 text-slate-500" />
+            </button>
+
+            <div className="text-center mb-8">
+              <h2 className="text-2xl font-black text-slate-900">
+                Identity Verification
+              </h2>
+              <p className="text-slate-500 text-sm font-medium mt-1">
+                {attendanceStatus === "NOT_STARTED" ? "Clocking In" : "Clocking Out"} for {todayStr}
+              </p>
+            </div>
+
+            {/* Video Feed Container */}
+            <div className="relative flex justify-center mb-10">
+              <div className={`absolute -inset-4 rounded-full blur-2xl transition-all duration-700 ${
+                scanStatus === 'success' ? 'bg-emerald-400/20' : 'bg-indigo-400/20'
+              } ${scanStatus === 'verifying' ? 'animate-pulse' : ''}`} />
+              
+              <div className={`relative w-64 h-64 rounded-full p-2 bg-white shadow-xl transition-all duration-500 border-2 ${
+                scanStatus === 'success' ? 'border-emerald-500' : 'border-slate-100'
+              }`}>
+                <div className="relative w-full h-full rounded-full overflow-hidden bg-slate-50">
+                  {!streamActive && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-slate-50 z-20">
+                      <ArrowDownCircleIcon className="w-8 h-8 animate-spin text-indigo-500" />
+                    </div>
+                  )}
+                  
+                  <video 
+                    ref={videoRef} 
+                    autoPlay 
+                    playsInline 
+                    className={`w-full h-full object-cover grayscale-[20%] transition-all duration-700 ${scanStatus === 'success' ? 'scale-110 opacity-50 blur-sm' : 'scale-100'}`}
+                  />
+                  
+                  <canvas ref={canvasRef} width="400" height="400" className="hidden" />
+
+                  {/* Corner Viewfinders */}
+                  <div className="absolute inset-10 border-2 border-white/20 rounded-3xl pointer-events-none">
+                    <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-indigo-500" />
+                    <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-indigo-500" />
+                    <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-indigo-500" />
+                    <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-indigo-500" />
+                  </div>
+
+                  {/* Scan Line */}
+                  {scanStatus === 'verifying' && (
+                    <div className="absolute inset-0 z-10 overflow-hidden">
+                      <div className="w-full h-[2px] bg-indigo-500 shadow-[0_0_15px_#6366f1] animate-scan-move" />
+                    </div>
+                  )}
+
+                  {/* Success Overlay */}
+                  {scanStatus === 'success' && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-emerald-50/40 backdrop-blur-sm z-30">
+                      <CheckCircleIcon className="w-16 h-16 text-emerald-500 animate-bounce" />
+                      <span className="mt-2 font-bold text-emerald-700">Verified</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Location Badge */}
+              <div className="absolute -bottom-2 bg-white px-4 py-2 rounded-2xl shadow-lg border border-slate-100 flex items-center gap-2">
+                <MapPinIcon className="w-3.5 h-3.5 text-indigo-600" />
+                <span className="text-[10px] font-black text-slate-700 tracking-widest uppercase">Office Geofence Active</span>
+              </div>
+            </div>
+
+            {/* Action Button */}
+            <div className="space-y-4">
+              <button
+                onClick={handleVerify}
+                disabled={scanStatus !== "idle" || !streamActive}
+                className={`w-full py-5 rounded-3xl font-bold text-lg transition-all transform active:scale-[0.98] shadow-xl flex items-center justify-center gap-3 ${
+                  scanStatus === 'success' 
+                  ? 'bg-emerald-500 text-white' 
+                  : 'bg-slate-900 text-white hover:bg-black disabled:bg-slate-200 disabled:text-slate-400'
+                }`}
+              >
+                {scanStatus === "verifying" ? (
+                  <>
+                    <ArrowDownCircleIcon className="w-6 h-6 animate-spin" />
+                    Authenticating...
+                  </>
+                ) : scanStatus === "success" ? (
+                    "Success! Redirecting..."
+                ) : (
+                  <>
+                    <FingerPrintIcon className="w-6 h-6" />
+                    Confirm Biometrics
+                  </>
+                )}
+              </button>
+
+              <button 
+                onClick={startCamera}
+                className="w-full py-2 flex items-center justify-center gap-2 text-slate-400 text-sm font-bold hover:text-indigo-600 transition-colors"
+              >
+                <ArrowUpCircleIcon className="w-4 h-4" />
+                Retry Camera
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Global Animation Styles */}
+      <style jsx global>{`
+        @keyframes scan-move {
+          0% { transform: translateY(0); }
+          100% { transform: translateY(256px); }
+        }
+        .animate-scan-move {
+          animation: scan-move 2s linear infinite;
+        }
+      `}</style>
     </div>
   );
 }
