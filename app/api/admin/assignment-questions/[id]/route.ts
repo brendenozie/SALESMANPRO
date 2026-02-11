@@ -40,19 +40,19 @@ const flatten = (q: any) => ({
 export const GET = withApiHandler(async (request, context) => {
   const { id } = context.params;
 
-  const question = await prisma.examQuestion.findUnique({
-    where: { id },
-    select: QUESTION_SELECT
-  });
-
-  if (!question) return formatResponse(false, null, "Question not found", 404);
-
   const cacheKey = `examQuestion:${id}`;
 
   const cached = await cacheGet(cacheKey);
   if (cached) {
     return formatResponse(true, cached, null, 200);
   }
+
+  const question = await prisma.examQuestion.findUnique({
+    where: { id },
+    select: QUESTION_SELECT
+  });
+
+  if (!question) return formatResponse(false, null, "Question not found", 404);
 
   const responseData = flatten(question);
   await cacheSet(cacheKey, responseData, 120); // Cache for 2min

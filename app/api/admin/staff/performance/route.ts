@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import prisma from "@/server/db/prismadb";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const companyId = searchParams.get("companyId");
 
   try {
-    const reviews = await prisma.performanceReview.findMany({
+    const reviews = await prisma.staffPerformanceReview.findMany({
       where: { companyId },
       include: {
         staff: { include: { user: { select: { name: true } } } },
@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { staffId, companyId, studentFeedback, peerScore, score, growth } = body;
 
-    const review = await prisma.performanceReview.create({
+    const review = await prisma.staffPerformanceReview.create({
       data: {
         staffId,
         companyId,

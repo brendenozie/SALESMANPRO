@@ -435,6 +435,7 @@ model Company {
   payrollRecords            PayrollRecord[]
   expenses                  Expense[]
   domainVerified            Boolean                   @default(false)
+  candidates                candidate[]
 
   @@index([userId])
 }
@@ -1500,6 +1501,7 @@ model User {
   staffAttendanceRecords  StaffAttendanceRecord[]
   leaveRequests           LeaveRequest[]
   // @@index([hardwareId])
+  candidates              candidate[]
 
   @@index([companyId])
   // @@index([settingsId])
@@ -6705,6 +6707,24 @@ model StaffAttendanceAuditLog {
   method    StaffAttendanceMethod
   note      String?
   adminId   String?               @db.ObjectId // Who performed the override
+}
+
+model candidate {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  email     String   @unique
+  phone     String?
+  position  String
+  resumeUrl String?
+  status    String   @default("Applied") // Applied, Interviewing, Offered, Rejected
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  companyId String  @db.ObjectId
+  company   Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  userId String? @db.ObjectId
+  user   User?   @relation(fields: [userId], references: [id])
 }
 
 // model StaffAttendanceRecord {
