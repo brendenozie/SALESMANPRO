@@ -3,23 +3,80 @@ import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
+export const POST = withApiHandler(
+  async (req: Request, { params }: { params: { id: string } }) => {
+    const assignmentId = params.id;
 
-export const POST = withApiHandler(async (req: Request, { params }: { params: { id: string } }) => {
-  const { questions } = await req.json(); // Expecting an array of questions
+    const body = await req.json();
+    const { questions } = body;
 
-  // Example: Delete old questions and replace with new ones (Syncing)
-  await prisma.$transaction([
-    prisma.courseAssignmentQuestion.deleteMany({ where: { assignmentId: params.id } }),
-    prisma.courseAssignmentQuestion.createMany({
-      data: questions.map((q: any) => ({
-        ...q,
-        assignmentId: params.id
-      }))
-    })
-  ]);
+    if (!assignmentId) {
+      return formatResponse(false, null, "Assignment ID is required", 400);
+    }
 
-  return formatResponse(true, null, "Questions synced successfully", 200);
-});
+    if (!Array.isArray(questions)) {
+      return formatResponse(false, null, "Questions must be an array", 400);
+    }
+
+    // Optional: sanitize & validate question structure
+    const sanitizedQuestions = questions
+      .filter((q: any) => q && typeof q === "object")
+      .map((q: any) => ({
+        assignmentId,
+        questionText: q.questionText || "",
+        questionType: q.questionType || "short_answer",
+        imageUrl: q.imageUrl || null,
+        videoUrl: q.videoUrl || null,
+        hint: q.hint || null,
+        options: q.options ? q.options : [],
+        correctAnswer: q.correctAnswer || null,
+        points: typeof q.points === "number" ? q.points : 0,
+        order: typeof q.order === "number" ? q.order : 0,
+      }));
+
+    await prisma.$transaction(async (tx) => {
+      // Delete existing questions
+      await tx.courseAssignmentQuestion.deleteMany({
+        where: { assignmentId },
+      });
+
+      if (sanitizedQuestions.length > 0) {
+        await tx.courseAssignmentQuestion.createMany({
+          data: sanitizedQuestions,
+        });
+      }
+    });
+
+    return formatResponse(
+      true,
+      null,
+      "Questions synced successfully",
+      200
+    );
+  }
+);
+
+// import prisma from "@/server/db/prismadb";
+// import { withApiHandler } from "@/lib/hooks/withApiHandler";
+// import { formatResponse } from "@/lib/formatResponse";
+
+
+// export const POST = withApiHandler(async (req: Request, { params }: { params: { id: string } }) => {
+//   const { questions } = await req.json(); // Expecting an array of questions
+
+//   // Example: Delete old questions and replace with new ones (Syncing)
+//   await prisma.$transaction([
+//     prisma.courseAssignmentQuestion.deleteMany({ where: { assignmentId: params.id } }),
+//     prisma.courseAssignmentQuestion.createMany({
+//       data: questions.map((q: any) => ({
+//         ...q,
+//         assignmentId: params.id
+//       }))
+//     })
+//   ]);
+
+//   return formatResponse(true, null, "Questions synced successfully", 200);
+// });
 
 // import prisma from "@/server/db/prismadb";
 // import { withApiHandler } from "@/lib/hooks/withApiHandler";

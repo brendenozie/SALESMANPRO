@@ -434,6 +434,7 @@ model Company {
   staffAttendanceRecords    StaffAttendanceRecord[]
   payrollRecords            PayrollRecord[]
   expenses                  Expense[]
+  domainVerified            Boolean                   @default(false)
 
   @@index([userId])
 }
@@ -1498,6 +1499,7 @@ model User {
   userRoles               UserRole[]
   staffAttendanceRecords  StaffAttendanceRecord[]
   leaveRequests           LeaveRequest[]
+  // @@index([hardwareId])
 
   @@index([companyId])
   // @@index([settingsId])
@@ -2215,6 +2217,8 @@ model Request {
   @@index([requesterId])
   @@index([RequestApprovedById])
   @@index([status])
+  @@index([requestedByType, createdAt(sort: Desc)])
+  @@index([requesterId, createdAt(sort: Desc)])
 }
 
 // Enum for requestedByType
@@ -2913,6 +2917,7 @@ model Classroom {
 
   @@index([companyId])
   @@index([academicLevelId])
+  @@index([companyId, name(sort: Asc)])
 }
 
 // NEW JUNCTION MODEL: EducatorAcademicLevelAssignment
@@ -3310,6 +3315,7 @@ model Announcement {
   @@index([type])
   @@index([audience]) // New index for filtering by audience
   @@index([status]) // New index for filtering by audience
+  @@index([companyId, status, publishedAt(sort: Desc)])
 }
 
 // Enum for Announcement Status
@@ -3476,6 +3482,7 @@ model EventRegistration {
   @@index([studentId])
   @@index([companyId])
   @@index([status])
+  @@index([companyId, eventId, status])
 }
 
 enum RegistrationStatus {
@@ -5010,6 +5017,8 @@ model PatientInvoices {
   @@index([patientId])
   @@index([companyId])
   @@index([status])
+  @@index([companyId, status])
+  @@index([invoiceDate(sort: Desc)])
 }
 
 // Enum for Transaction types
@@ -5053,6 +5062,8 @@ model BillingTransaction {
   @@index([companyId])
   @@index([invoiceId])
   @@index([status])
+  @@index([companyId, transactionDate(sort: Desc)])
+  @@index([userId, status])
 }
 
 // --- New Schema for Video Management ---
@@ -5314,6 +5325,8 @@ model Case {
 
   @@index([assignedToUserId])
   @@index([status])
+  @@index([companyId, status])
+  @@index([companyId, createdAt(sort: Desc)])
 }
 
 model Document {
