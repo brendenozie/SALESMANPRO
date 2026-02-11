@@ -2,7 +2,6 @@ import prisma from "@/server/db/prismadb";
 import { formatResponse } from "@/lib/formatResponse";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { cacheGet, cacheSet, cacheDel } from "@/lib/cache";
-import { NextResponse } from "next/server";
 
 // ============================================================================
 // CONSTANTS & OPTIMIZATIONS
