@@ -11,6 +11,22 @@ import { cacheGet, cacheSet, cacheDel } from '@/lib/cache';
 // ============================================================================
 
 /**
+ * Type definition for formatted client response
+ */
+interface FormattedClient {
+    id: string;
+    userId: string;
+    name: string;
+    email: string;
+    phone: string;
+    membershipType: string;
+    membershipStatus: string;
+    joinDate: string;
+    lastActive: string;
+    photoUrl: string;
+}
+
+/**
  * OPTIMIZATION: Constant selection object for database queries.
  * Uses `select` instead of `include` to fetch only required fields.
  */
@@ -69,7 +85,7 @@ const getClientsLogic = async (req: Request, context: RouteContext) => {
 
     try {
         // STEP 1: Check cache first (Cache-First Pattern)
-        const cachedClients = await cacheGet<any[]>(CACHE_KEY);
+        const cachedClients = await cacheGet<FormattedClient[]>(CACHE_KEY);
         
         if (cachedClients) {
             // Cache hit - return cached data with edge caching headers
