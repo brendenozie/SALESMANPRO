@@ -14,7 +14,7 @@ export async function GET(req: Request) {
   // OPTIMIZATION: Run queries in parallel to reduce waterfall latency
   const [logs, totalUsers] = await Promise.all([
     prisma.staffAttendanceRecord.findMany({
-      where: { companyId, date: today },
+      where: { date: today },//companyId, 
       select: {
         id: true,
         checkInTime: true,

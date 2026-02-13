@@ -107,16 +107,16 @@ export default function AdminLayout({ children, params }: {
     <div className="flex h-screen overflow-hidden">
       {/* Mobile Header (visible on small screens) */}
       <header className="lg:hidden fixed top-0 w-full bg-white flex items-center justify-between p-4 shadow-md z-30">
-        <button onClick={() => setMobileOpen(o => !o)} className="p-2 rounded-md text-indigo-600 hover:bg-gray-100">
+        <button onClick={() => setMobileOpen(o => !o)} className="p-2 rounded-md text-sky-600 hover:bg-gray-100">
           {mobileOpen ? <XMarkIcon className="h-6 w-6" /> : <Bars3Icon className="h-6 w-6" />}
         </button>
-        <span className="font-bold text-lg uppercase text-indigo-800 truncate">
+        <span className="font-bold text-lg uppercase text-sky-800 truncate">
           {userRole.toLowerCase() === 'consumer' ? 'ADMIN' : userRole || 'ADMIN'}
         </span>
       </header>
 
       {/* Sidebar (fixed on desktop, slides in on mobile) */}
-      <aside className={`fixed inset-y-0 left-0 w-64 bg-gradient-to-b from-indigo-900 to-purple-800 text-white flex flex-col transition-transform duration-300 ease-in-out ${
+      <aside className={`fixed inset-y-0 left-0 w-64 bg-gradient-to-b from-sky-950 to-sky-900 text-white flex flex-col transition-transform duration-300 ease-in-out ${
         mobileOpen ? 'translate-x-0' : '-translate-x-full'
       } lg:translate-x-0 z-20`}>
         {/* User/Company Info */}

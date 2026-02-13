@@ -783,6 +783,34 @@ export function getCategoryDefaultData(category: string): Partial<StoreForm> {
       ],
     }),
 
+    "Delivery & Logistics": withOverrides({
+      tagline: "**Fast & Reliable Delivery** for Your Business",
+      description: "Our delivery and logistics services provide efficient and secure transportation solutions to meet your business needs, ensuring timely deliveries and customer satisfaction.",
+      socialLinks: [{ channel: SocialChannel.FACEBOOK, url: "https://fb.com/deliverylogistics" }],
+      faqs: [{ question: "What areas do you serve?", answer: "We provide delivery services across the city and surrounding regions. Contact us for specific locations.", order: 1 }],
+      testimonials: [{ authorName: "Sarah L.", quote: "Their delivery service is fast and reliable. They helped us meet tight deadlines consistently.", rating: 5 }],
+      heroSlides: [{
+        imageUrl: getSampleImageUrl('delivery-logistics'),
+        headline: "Streamline Your Deliveries Today",
+        subline: "Get a free quote for our delivery and logistics services.",
+        ctaText: "Get Quote", ctaLink: "/contact",
+        id: "", companyId: "", price: null, productImageUrl: null, badgeText: "Trusted Delivery", endsAt: null, order: 0, iconKey: null, backgroundColor: null, textColor: null, videoLink: null, type: 'image'
+      }],
+      pricingTiers: [
+        { name: "Standard Delivery", price: 5, duration: "per delivery", features: ["Delivery within 3-5 business days"] },
+        { name: "Express Delivery", price: 15, duration: "per delivery", features: ["Delivery within 1-2 business days"] }
+      ],
+      metrics: [{ label: "Deliveries Completed", value: 10000 }, { label: "Average Delivery Time", value: 3 }, { label: "Customer Satisfaction", value: 95 }],
+      stats: [{ label: "Deliveries Completed", value: 10000 }, { label: "Average Delivery Time", value: "3 days" }, { label: "Customer Satisfaction", value: "95%" }],
+      awards: [{ name: "Best Delivery Service 2024", iconUrl: "/icons/award.svg" }, { name: "Top 10 Logistics Companies 2024", iconUrl: "/icons/award.svg" }],
+      policies: [{ type: PolicyType.CANCELLATION, content: "Deliveries can be canceled up to 24 hours before the scheduled delivery time for a full refund." }],
+      promotions: [
+        { title: "Free First Delivery", description: "Try our delivery service with your first delivery on us. Sign up today!", ctaText: "Sign Up Now", ctaLink: "/signup",
+          companyId: "", perks: [{ id: "", label: "Free Delivery", icon: "StarIcon" }], trustLogos: []
+        },
+      ],
+    }),
+
     // --- Remaining Stubbed Categories ---
     "Other": withOverrides({ tagline: "Tailored Solutions for Your Unique Idea", description: "A flexible starting point for any business or personal project not covered by other categories." }),
     "Tutors": withOverrides({ tagline: "**Expert Tutors**, Anytime, Anywhere", description: "Personalized online tutoring in Math, Science, and Languages for all grade levels." }),

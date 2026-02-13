@@ -51,6 +51,7 @@ import {
   PencilSquareIcon,
   TruckIcon,
   BookOpenIcon,
+  EyeIcon,
   // CarIcon,
 } from "@heroicons/react/24/outline";
 import { sub } from "date-fns";
@@ -1144,6 +1145,19 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
     { label: "Settings", href: `/admin/${adminSlug}/finance-settings`, icon: Cog6ToothIcon }, // General admin settings
   ],
 
+  "Logistics & Delivery": [
+    { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
+    { label: "Categories", href: `/admin/${adminSlug}/categories`, icon: ClipboardDocumentListIcon },
+    { label: "Drivers & Personnel", href: `/admin/${adminSlug}/logistics-drivers`, icon: UsersIcon },
+    { label: "Vehicles & Fleet", href: `/admin/${adminSlug}/logistics-vehicles`, icon: TruckIcon },
+    { label: "Routes & Schedules", href: `/admin/${adminSlug}/logistics-routes`, icon: MapPinIcon },
+    { label: "Shipments & Orders", href: `/admin/${adminSlug}/logistics-shipments`, icon: ClipboardDocumentListIcon },
+    { label: "Tracking & Status", href: `/admin/${adminSlug}/logistics-tracking`, icon: EyeIcon },
+    { label: "Billing & Invoices", href: `/admin/${adminSlug}/logistics-billing`, icon: CreditCardIcon },
+    { label: "Messages", href: `/admin/${adminSlug}/messages`, icon: ChatBubbleBottomCenterTextIcon },
+    { label: "Settings", href: `/admin/${adminSlug}/settings`, icon: Cog6ToothIcon },
+  ],
+  
   //Old PAths
   // "Marketplace": [
   //   { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },

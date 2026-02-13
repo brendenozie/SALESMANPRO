@@ -29,6 +29,7 @@ const SecurityLayout = dynamic(() => import('@/components/site/layouts/SecurityL
 const Security2Layout = dynamic(() => import('@/components/site/layouts/Security2Layout/Security2Layout'));
 const FashionLayout = dynamic(() => import('@/components/site/layouts/FashionLayout/FashionLayout'));
 const FurnitureLayout = dynamic(() => import('@/components/site/layouts/FurnitureLayout/FurnitureLayout'));
+const DeliveryLayout = dynamic(() => import('@/components/site/layouts/DeliveryLayout/DeliveryLayout'));
 
 import { ReactNode } from 'react';
 import { StoreForm } from '../../../types/typings';
@@ -116,6 +117,8 @@ const categoryHeaderFooterLayoutMap: Record<string, LayoutHeaderFooterComponent>
 
     'modern furniture store': FurnitureLayout,
     'modern fashion store': FashionLayout,
+
+    'delivery & logistics': DeliveryLayout,
     
     'other':DefaultLayout ,
     'Other':DefaultLayout ,     

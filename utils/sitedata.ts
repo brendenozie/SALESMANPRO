@@ -185,6 +185,13 @@ export const SITE_CATEGORIES: Category[] = [
         // { name: "Alarm Systems", link: "https://alarmsystems.salesmanpro.site", description: "Highlight alarm system products and services.", tag: 'Standard' },
       ]
     },
+    {
+      name: "Delivery & Logistics",
+      icon: "🚚",
+      variants: [
+        { name: "Delivery & Logistics", link: "https://delivery.salesmanpro.site", description: "Manage delivery and logistics services.", tag: 'Standard' }
+      ]
+    },
     { name: "Other",
       icon: "🌐",
       variants: [

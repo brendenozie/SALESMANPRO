@@ -38,6 +38,11 @@ const SITE_CATEGORIES: Category[] = [
     icon: "🛒", 
     variants: [
       { name: "Modern Shop (v1)", link: "https://duka-yangu.salesmanpro.site", description: "Sleek design for apparel and accessories.", tag: 'Popular' },
+      { name: "Modern Furniture Store", link: "https://furniture.salesmanpro.site", description: "Contemporary furniture designs.", tag: 'Standard' },
+      { name: "Modern Fashion Store", link: "https://fashion.salesmanpro.site", description: "Trendy and stylish clothing designs.", tag: 'Standard' },
+      { name: "Business Directory", link: "https://directory-listings.salesmanpro.site", description: "List businesses and services.", tag: 'Standard' },
+      { name: "Food Delivery", link: "https://restaurant-food-delivery.salesmanpro.site", description: "Showcase restaurant menus and delivery options.", tag: 'Standard' },
+      { name: "Product Marketplace", link: "https://marketplace.salesmanpro.site", description: "Create a marketplace for products.", tag: 'Standard' }
       // { name: "Digital Goods Store (v2)", link: "https://digital-shop.salesmanpro.site", description: "Optimized for selling software and courses.", tag: 'New' },
       // { name: "Artisan Marketplace (v3)", link: "https://artisan-shop.salesmanpro.site", description: "Focuses on handcrafted and unique items.", tag: 'Standard' },
     ]
@@ -192,6 +197,13 @@ const SITE_CATEGORIES: Category[] = [
         { name: "Security Consulting", link: "https://security-services-2.salesmanpro.site", description: "Security Consulting site.", tag: 'Standard'},
       ]
     },
+    {
+      name: "Delivery & Logistics",
+      icon: "🚚",
+      variants: [
+        { name: "Delivery Service", link: "https://delivery-logistics.salesmanpro.site", description: "Manage deliveries and logistics.", tag: 'Standard' }
+      ]
+    }
     // { name: "Other",
     //   icon: "🌐",
     //   variants: [
