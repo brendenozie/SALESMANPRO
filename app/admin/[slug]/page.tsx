@@ -361,33 +361,35 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
 
     // --- Student Dashboard ---
     if (userRole === 'STUDENT' || userRole === 'SENIOR') {
-      let studentDashboardData: StudentDashboardData;
+      let studentDashboardData: any;
       try {
         isLoading = true;
         const res = await fetch(
-          `${apiBaseUrl}/dashboard/student?userId=${encodeURIComponent(currentUserId)}`,
+          `${apiBaseUrl}/admin/dashboard/student/${slug}?userId=${encodeURIComponent(currentUserId)}`,
           { cache: 'no-store', headers: { cookie: cookiesHeader } }
         );
         isLoading = false;
         if (res.ok) {
           const data = (await res.json()).data;
-          const parsed = StudentDashboardSchema.safeParse(data);
-          if (!parsed.success) {
-            error = 'Student dashboard data is invalid!';
-            logError(error, parsed.error);
-            studentDashboardData = getFallbackDashboardData('student') as StudentDashboardData;
-          } else {
-            studentDashboardData = parsed.data;
-          }
+            console.log("[AdminDashboardPage] Raw Student API response:", data);
+            studentDashboardData = data;
+          // const parsed = StudentDashboardSchema.safeParse(data);
+          // if (!parsed.success) {
+          //   error = 'Student dashboard data is invalid!';
+          //   logError(error, parsed.error);
+          //   studentDashboardData = getFallbackDashboardData('student');
+          // } else {
+          //   studentDashboardData = parsed.data;
+          // }
         } else {
           error = `Failed to fetch student dashboard data: ${res.statusText}`;
           logError(error);
-          studentDashboardData = getFallbackDashboardData('student') as StudentDashboardData;
+          studentDashboardData = getFallbackDashboardData('student');
         }
       } catch (err) {
         error = 'Student dashboard fetch error';
         logError(error, err);
-        studentDashboardData = getFallbackDashboardData('student') as StudentDashboardData;
+        studentDashboardData = getFallbackDashboardData('student');
       }
       if (isLoading) return <LoadingDashboard />;
       // if (error) return <ErrorDashboard error={error} />;
