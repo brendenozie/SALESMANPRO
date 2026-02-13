@@ -21,9 +21,9 @@ import SaaSDashboardClient from '@/components/admin/SaaSDashboardClient';
 import TravelDashboardClient from '@/components/admin/TravelDashboardClient';
 import ServiceProviderDashboard from '@/components/admin/ServiceProviderDashboard';
 import BookingAppointmentsDashboard from '@/components/admin/BookingAppointmentsDashboard';
-import TutorDashboard, { TutorDashboardData } from '@/components/admin/TutorDashboard';
+import TutorDashboard from '@/components/admin/TutorDashboard';
 import StudentDashboard, { StudentDashboardData } from '@/components/admin/StudentDashboard';
-import PrincipalDashboard, { PrincipalDashboardData } from '@/components/admin/PrincipalDashboard';
+import PrincipalDashboard from '@/components/admin/PrincipalDashboard';
 import UncategorizedDashboard from '@/components/admin/AdminDashClient';
 import PlaygroupDashboard from '@/components/admin/PlaygroupDashboard';
 import DriverShiftClientDashboard from '@/components/admin/DriverShiftClientDashboard';
@@ -242,37 +242,62 @@ const StudentDashboardSchema = z.object({
   }))
 });
 
-const PrincipalDashboardSchema = z.object({
+// import { z } from "zod";
+
+export const PrincipalDashboardSchema = z.object({
+  // Top level KPI cards
   principalStats: z.array(z.object({
     title: z.string(),
     value: z.string(),
     description: z.string(),
     color: z.string()
   })),
+
+  // Student and Teacher of the week
+  spotlight: z.object({
+    student: z.string(),
+    teacher: z.string()
+  }),
+
+  // The main Area Chart (Academic vs Effectiveness)
+  trendData: z.object({
+    series: z.array(z.object({
+      name: z.string(),
+      data: z.array(z.number())
+    })),
+    categories: z.array(z.string())
+  }),
+
+  // The new Academic Volatility / Drill-down logic
+  impactReport: z.array(z.object({
+    courseName: z.string(),
+    change: z.number(),
+    currentAvg: z.number(),
+    keyExam: z.string()
+  })),
+
+  // Operational items (Optional depending on if you include them in the final return)
   quickActions: z.array(z.object({
     label: z.string(),
     href: z.string()
-  })),
+  })).optional(),
+
   announcements: z.array(z.object({
-    id: z.number(),
+    id: z.union([z.string(), z.number()]),
     text: z.string(),
-    type: z.string()
-  })),
+    type: z.string() // 'info' | 'warning' | etc
+  })).optional(),
+
   recentStaffMessages: z.array(z.object({
     id: z.string(),
     name: z.string(),
     message: z.string(),
     time: z.string()
-  })),
-  performanceOverviewData: z.object({
-    series: z.array(z.object({ name: z.string(), data: z.array(z.number()) })),
-    categories: z.array(z.string())
-  }),
-  attendanceInsightsData: z.object({
-    series: z.array(z.number()),
-    labels: z.array(z.string())
-  })
+  })).optional(),
 });
+
+// Infer the type for use in your React Props
+export type PrincipalDashboardData = z.infer<typeof PrincipalDashboardSchema>;
 
 // (You can add more schemas for TutorDashboard and other dashboards as needed)
 interface DashboardProps {
@@ -391,79 +416,101 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
       isPrincipalLike
     ) {
       if (isPrincipalLike) {
-        let principalDashboardData: PrincipalDashboardData;
+        let principalDashboardData: any;
         try {
-          isLoading = true;
-          const res = await fetch(
-            `${apiBaseUrl}/admin/dashboard/principle/${slug}?userId=${encodeURIComponent(currentUserId)}&companyId=${encodeURIComponent(companyId)}`,
-            { cache: 'no-store', headers: { cookie: cookiesHeader } }
-          );
-          isLoading = false;
-          if (res.ok) {
-            const data = await res.json();
-            // const parsed = PrincipalDashboardSchema.safeParse(data);
-            const parsed = PrincipalDashboardSchema.safeParse(data.data);
+  isLoading = true;
+  // Note: Ensure the URL spelling matches your folder structure (principal vs principle)
+  const res = await fetch(
+    `${apiBaseUrl}/admin/dashboard/principle/${slug}?userId=${encodeURIComponent(currentUserId)}&companyId=${encodeURIComponent(companyId)}`,
+    { cache: 'no-store', headers: { cookie: cookiesHeader } }
+  );
+  isLoading = false;
 
-            if (!parsed.success) {
-              error = 'Principal dashboard data is invalid!';
-              logError(error, parsed.error);
-              principalDashboardData = getFallbackDashboardData('principal') as PrincipalDashboardData;
-            } else {
-              principalDashboardData = {
-                ...parsed.data,
-                announcements: parsed.data.announcements.map((a: any) => ({
-                  ...a,
-                  type: a.type === 'info' ? 'info' : 'warning'
-                }))
-              };
-              console.log("[AdminDashboardPage] Fetched principal dashboard data:", principalDashboardData);
-            }
-          } else {
-            error = `Failed to fetch principal dashboard data: ${res.statusText}`;
-            logError(error);
-            principalDashboardData = getFallbackDashboardData('principal') as PrincipalDashboardData;
-          }
-        } catch (err) {
-          error = 'Principal dashboard fetch error';
-          logError(error, err);
-          principalDashboardData = getFallbackDashboardData('principal') as PrincipalDashboardData;
-        }
+  if (res.ok) {
+    const jsonResponse =( await res.json());
+    
+    console.log("[AdminDashboardPage] Raw Principal API response:", jsonResponse);
+    // Validate against the new schema (validating the nested 'data' property)
+    const parsed = PrincipalDashboardSchema.safeParse(jsonResponse.data);
+
+    if (!parsed.success) {
+      error = 'Principal dashboard data validation failed!';
+      logError(error, parsed.error);
+      // It's helpful to see exactly what failed in development
+      console.error("Zod Issues:", parsed.error.format()); 
+      principalDashboardData = getFallbackDashboardData('principal');
+    } else {
+      // --- Data Transformation Layer ---
+      principalDashboardData = {
+        ...parsed.data,
+        // Map Prisma Announcement types to UI types (info/warning/error)
+        announcements: parsed.data.announcements?.map((a: any) => ({
+          id: a.id,
+          text: a.summary || a.title, // Use summary as display text
+          type: (a.type === 'ALERT' || a.type === 'POLICY_UPDATE') ? 'warning' : 'info'
+        })) || [],
+        
+        // Ensure recentStaffMessages has a fallback if the API returns null
+        recentStaffMessages: parsed.data.recentStaffMessages || [],
+        
+        // trendData and impactReport are passed through as-is from the validated schema
+      };
+
+      console.log("[AdminDashboardPage] Successfully synced Principal Analytics:", {
+        trendPoints: principalDashboardData.trendData.series[0].data.length,
+        volatilityCount: principalDashboardData.impactReport.length
+      });
+    }
+  } else {
+    error = `Principal API Error: ${res.status} ${res.statusText}`;
+    logError(error);
+    principalDashboardData = getFallbackDashboardData('principal');
+  }
+} catch (err) {
+  error = 'Critical failure fetching Principal dashboard';
+  logError(error, err);
+  principalDashboardData = getFallbackDashboardData('principal');
+}
         if (isLoading) return <LoadingDashboard />;
         // if (error) return <ErrorDashboard error={error} />;
         return (
           <PrincipalDashboard
-            {...principalDashboardData}
-            companyId={companyId}
-            currentUserId={currentUserId}
+            // {...principalDashboardData}
+            data={principalDashboardData}
+            // companyId={companyId}
+            // currentUserId={currentUserId}
           />
         );
       } else {
         // Tutor Dashboard (runtime validation omitted for brevity)
-        let tutorDashboardData: TutorDashboardData;
+        let tutorDashboardData: any;
         try {
           isLoading = true;
           const res = await fetch(
-            `${apiBaseUrl}/dashboard/tutor?userId=${encodeURIComponent(currentUserId)}`,
+            `${apiBaseUrl}/admin/dashboard/educator/${slug}?userId=${encodeURIComponent(currentUserId)}`,
             { cache: 'no-store', headers: { cookie: cookiesHeader } }
           );
           isLoading = false;
           if (res.ok) {
-            tutorDashboardData = await res.json() as TutorDashboardData;
+            let resData = await res.json();
+            console.log("[AdminDashboardPage] Raw Tutor API response:", resData);
+            tutorDashboardData = resData.data; // Assuming API returns { data: { ...tutorDashboardData } }
           } else {
             error = `Failed to fetch tutor dashboard data: ${res.statusText}`;
             logError(error);
-            tutorDashboardData = getFallbackDashboardData('tutor') as TutorDashboardData;
+            tutorDashboardData = getFallbackDashboardData('tutor');
           }
         } catch (err) {
           error = 'Tutor dashboard fetch error';
           logError(error, err);
-          tutorDashboardData = getFallbackDashboardData('tutor') as TutorDashboardData;
+          tutorDashboardData = getFallbackDashboardData('tutor');
         }
         if (isLoading) return <LoadingDashboard />;
         // if (error) return <ErrorDashboard error={error} />;
         return (
           <TutorDashboard
-            {...tutorDashboardData}
+            // {...tutorDashboardData}
+            data={tutorDashboardData}
             companyId={companyId}
             currentUserId={currentUserId}
           />
