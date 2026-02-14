@@ -26,6 +26,7 @@ export type TimetableEntry = {
   classroomId: string;
   classroom: { id: string; name: string; academicLevelId: string } | null; // NEW: Flattened from course relation
   educators: { id: string; name: string; email: string; roleInCourse?: string }[]; // NEW: Flattened from course relation, array of educators with their role in the course
+  educator:{ id: string; name: string; email: string; roleInCourse?: string; user?: { id: string; name: string } }; // Assuming one educator per lesson for simplicity, can be expanded to array if needed
   educatorId: string;
   educatorName: string; // Flattened from educator relation
   educatorEmail: string; // Flattened from educator relation
@@ -122,6 +123,7 @@ const generateSampleTimetableData = (companyId: string): {
       classroomId: 'CLS002',
       classroom: { id: 'CLS002', name: 'Room 102', academicLevelId: 'AL006' },
       educators: [{ id: 'EDU001', name: 'Mr. John Doe', email: 'john.doe@school.com', roleInCourse: 'Lead Instructor' }],
+      educator: { id: 'EDU001', name: 'Mr. John Doe', email: 'john.doe@school.com', roleInCourse: 'Lead Instructor' },
       educatorId: 'EDU001',
       educatorName: 'Mr. John Doe',
       educatorEmail: 'john.doe@school.com',
@@ -146,6 +148,7 @@ const generateSampleTimetableData = (companyId: string): {
       classroomId: 'CLS003',
       classroom: { id: 'CLS003', name: 'Lab A', academicLevelId: 'AL007' },
       educators: [{ id: 'EDU002', name: 'Ms. Jane Smith', email: 'jane.smith@school.com', roleInCourse: "Co-Instructor" }],
+      educator: { id: 'EDU002', name: 'Ms. Jane Smith', email: 'jane.smith@school.com', roleInCourse: "Co-Instructor" },
       educatorId: 'EDU002',
       educatorName: 'Ms. Jane Smith',
       educatorEmail: 'jane.smith@school.com',
@@ -170,6 +173,7 @@ const generateSampleTimetableData = (companyId: string): {
       classroomId: 'CLS002',
       classroom: { id: 'CLS002', name: 'Room 102', academicLevelId: 'AL006' },
       educators: [{ id: 'EDU001', name: 'Mr. John Doe', email: 'john.doe@school.com', roleInCourse: 'Lead Instructor' }],
+      educator: { id: 'EDU001', name: 'Mr. John Doe', email: 'john.doe@school.com', roleInCourse: 'Lead Instructor' },
       educatorId: 'EDU001',
       educatorName: 'Mr. John Doe',
       educatorEmail: 'john.doe@school.com',
@@ -194,6 +198,7 @@ const generateSampleTimetableData = (companyId: string): {
       classroomId: 'CLS001',
       classroom: { id: 'CLS001', name: 'Room 101', academicLevelId: 'AL003' },
       educators: [{ id: 'EDU003', name: 'Dr. Alex Lee', email: 'alex.lee@school.com', roleInCourse: 'Assistant Instructor' }],
+      educator: { id: 'EDU003', name: 'Dr. Alex Lee', email: 'alex.lee@school.com', roleInCourse: 'Assistant Instructor' },
       educatorId: 'EDU003',
       educatorName: 'Dr. Alex Lee',
       educatorEmail: 'alex.lee@school.com',

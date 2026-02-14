@@ -127,7 +127,7 @@ export default function SortableLessonCard({
         
         <div className="flex items-center gap-1.5 text-xs opacity-80 truncate">
           <UserIcon className="h-3 w-3 flex-shrink-0" />
-          <span className="truncate">{entry.educatorName || entry.educators?.[0]?.name || 'No Educator Assigned'}</span>
+          <span className="truncate">{entry.educators?.[0]?.name || entry.educator?.name || entry.educator?.user?.name || entry.educatorName || 'No Educator Assigned'}</span>
         </div>
 
         {entry.classroom && (

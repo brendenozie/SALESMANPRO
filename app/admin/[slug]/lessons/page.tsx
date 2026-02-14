@@ -58,6 +58,7 @@ const generateSampleTimetableData = (companyId: string): {
       classroomId: 'CLS002',
       classroom: { id: 'CLS002', name: 'Room 202', academicLevelId: 'AL006' },
       educators: [{ id: 'EDU001', name: 'Mr. John Doe', email: 'john.doe@school.com', roleInCourse: 'Lead Instructor' }],
+      educator: { id: 'EDU001', name: 'Mr. John Doe', email: 'john.doe@school.com', roleInCourse: 'Lead Instructor' },
       educatorId: 'EDU001',
       educatorName: 'Mr. John Doe',
       educatorEmail: 'john.doe@school.com',
@@ -82,6 +83,7 @@ const generateSampleTimetableData = (companyId: string): {
       classroomId: 'CLS003',
       classroom: { id: 'CLS003', name: 'Lab A', academicLevelId: 'AL007' },
       educators: [{ id: 'EDU002', name: 'Ms. Jane Smith', email: 'jane.smith@school.com', roleInCourse:"Co-Instructor" }],
+      educator: { id: 'EDU002', name: 'Ms. Jane Smith', email: 'jane.smith@school.com', roleInCourse: "Co-Instructor" },
       educatorId: 'EDU002',
       educatorName: 'Ms. Jane Smith',
       educatorEmail: 'jane.smith@school.com',
@@ -106,6 +108,7 @@ const generateSampleTimetableData = (companyId: string): {
       classroomId: 'CLS002',
       classroom: { id: 'CLS002', name: 'Room 202', academicLevelId: 'AL006' },
       educators: [{ id: 'EDU001', name: 'Mr. John Doe', email: 'john.doe@school.com', roleInCourse: 'Lead Instructor' }],
+      educator: { id: 'EDU001', name: 'Mr. John Doe', email: 'john.doe@school.com', roleInCourse: 'Lead Instructor' },
       educatorId: 'EDU001',
       educatorName: 'Mr. John Doe',
       educatorEmail: 'john.doe@school.com',
@@ -130,6 +133,7 @@ const generateSampleTimetableData = (companyId: string): {
       classroomId: 'CLS001',
       classroom: { id: 'CLS001', name: 'Room 101', academicLevelId: 'AL003' },
       educators: [{ id: 'EDU003', name: 'Dr. Alex Lee', email: 'alex.lee@school.com', roleInCourse: 'Assistant Instructor' }],
+      educator: { id: 'EDU003', name: 'Dr. Alex Lee', email: 'alex.lee@school.com', roleInCourse: 'Assistant Instructor' },
       educatorId: 'EDU003',
       educatorName: 'Dr. Alex Lee',
       educatorEmail: 'alex.lee@school.com',
@@ -168,6 +172,7 @@ export default async function TimetableManagerPage({ params }: PageProps) {
     );
     if (timetableRes.ok) {
       initialTimetable = (await timetableRes.json()).data as any[];
+      console.log(`[TimetableManagerPage] Fetched timetable entries with course and educator info.`, initialTimetable);
     } else {
       console.error(
         "[TimetableManagerPage] Failed to fetch timetable →",

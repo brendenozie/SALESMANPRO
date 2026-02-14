@@ -127,7 +127,7 @@ export default function LessonFormModal({
   const [formData, setFormData] = useState({
     id: '',
     courseId: entryData?.courseId || '',
-    educatorId: entryData?.educatorId || entryData?.educators?.[0]?.id || '',
+    educatorId: entryData?.educatorId || entryData?.educator?.id || '',
     academicLevelId: entryData?.academicLevelId || entryData?.academicLevel?.id || '',
     classroomId: entryData?.classroomId || entryData?.classroom?.id || '',
     dayOfWeek: selectedDayOfWeek || 'Monday',
