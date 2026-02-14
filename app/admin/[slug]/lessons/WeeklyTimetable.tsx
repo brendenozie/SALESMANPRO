@@ -25,6 +25,7 @@ export type TimetableEntry = {
   // courseClassrooms: { id: string; name: string; academicLevelId: string }[]; // NEW: Flattened from course relation
   classroomId: string;
   classroom: { id: string; name: string; academicLevelId: string } | null; // NEW: Flattened from course relation
+  educators: { id: string; name: string; email: string; roleInCourse?: string }[]; // NEW: Flattened from course relation, array of educators with their role in the course
   educatorId: string;
   educatorName: string; // Flattened from educator relation
   educatorEmail: string; // Flattened from educator relation
@@ -43,6 +44,8 @@ export type CourseOption = {
   title: string;
   code: string; // NEW: Course code
   academicLevels: { id: string; name: string; sortOrder?: number }[];
+  classrooms: { id: string; name: string; academicLevelId: string }[]; // NEW: Classrooms associated with the course
+  educators: { id: string; name: string; email: string; roleInCourse?: string }[]; // NEW: Educators associated with the course, including their role (e.g., Lead Instructor, Assistant)
 };
 
 export type EducatorOption = {
@@ -93,9 +96,9 @@ const generateSampleTimetableData = (companyId: string): {
   ];
 
   const courses: CourseOption[] = [
-    { id: 'CRS001', title: 'Algebra I', code: 'MATH101', academicLevels: [{ id: 'AL006', name: 'Grade 9' }] },
-    { id: 'CRS002', title: 'Literary Analysis', code: 'ENG203', academicLevels: [{ id: 'AL007', name: 'High School - Freshman' }] },
-    { id: 'CRS003', title: 'Elementary Math', code: 'MATH100', academicLevels: [{ id: 'AL003', name: 'Grade 1' }] },
+    { id: 'CRS001', title: 'Algebra I', code: 'MATH101', academicLevels: [{ id: 'AL006', name: 'Grade 9' }], classrooms: [{ id: 'CLS002', name: 'Room 102', academicLevelId: 'AL006' }], educators: [{ id: 'EDU001', name: 'Mr. John Doe', email: 'john.doe@school.com', roleInCourse: 'Lead Instructor' }] },
+    { id: 'CRS002', title: 'Literary Analysis', code: 'ENG203', academicLevels: [{ id: 'AL007', name: 'High School - Freshman' }], classrooms: [{ id: 'CLS003', name: 'Lab A', academicLevelId: 'AL007' }], educators: [{ id: 'EDU002', name: 'Ms. Jane Smith', email: 'jane.smith@school.com', roleInCourse: "" }] },
+    { id: 'CRS003', title: 'Elementary Math', code: 'MATH100', academicLevels: [{ id: 'AL003', name: 'Grade 1' }], classrooms: [{ id: 'CLS001', name: 'Room 101', academicLevelId: 'AL003' }], educators: [{ id: 'EDU003', name: 'Dr. Alex Lee', email:'alex.lee@school.com', roleInCourse:'Assistant Instructor'}] },
   ];
 
   const classRooms: ClassroomOption[] = [
@@ -118,6 +121,7 @@ const generateSampleTimetableData = (companyId: string): {
       // courseClassrooms: [{ id: 'CLS002', name: 'Room 102', academicLevelId: 'AL006' }],
       classroomId: 'CLS002',
       classroom: { id: 'CLS002', name: 'Room 102', academicLevelId: 'AL006' },
+      educators: [{ id: 'EDU001', name: 'Mr. John Doe', email: 'john.doe@school.com', roleInCourse: 'Lead Instructor' }],
       educatorId: 'EDU001',
       educatorName: 'Mr. John Doe',
       educatorEmail: 'john.doe@school.com',
@@ -141,6 +145,7 @@ const generateSampleTimetableData = (companyId: string): {
       // courseClassrooms: [{ id: 'CLS003', name: 'Lab A', academicLevelId: 'AL007' }],
       classroomId: 'CLS003',
       classroom: { id: 'CLS003', name: 'Lab A', academicLevelId: 'AL007' },
+      educators: [{ id: 'EDU002', name: 'Ms. Jane Smith', email: 'jane.smith@school.com', roleInCourse: "Co-Instructor" }],
       educatorId: 'EDU002',
       educatorName: 'Ms. Jane Smith',
       educatorEmail: 'jane.smith@school.com',
@@ -164,6 +169,7 @@ const generateSampleTimetableData = (companyId: string): {
       // courseClassrooms: [{ id: 'CLS002', name: 'Room 102', academicLevelId: 'AL006' }],
       classroomId: 'CLS002',
       classroom: { id: 'CLS002', name: 'Room 102', academicLevelId: 'AL006' },
+      educators: [{ id: 'EDU001', name: 'Mr. John Doe', email: 'john.doe@school.com', roleInCourse: 'Lead Instructor' }],
       educatorId: 'EDU001',
       educatorName: 'Mr. John Doe',
       educatorEmail: 'john.doe@school.com',
@@ -187,6 +193,7 @@ const generateSampleTimetableData = (companyId: string): {
       // courseClassrooms: [{ id: 'CLS001', name: 'Room 101', academicLevelId: 'AL003' }],
       classroomId: 'CLS001',
       classroom: { id: 'CLS001', name: 'Room 101', academicLevelId: 'AL003' },
+      educators: [{ id: 'EDU003', name: 'Dr. Alex Lee', email: 'alex.lee@school.com', roleInCourse: 'Assistant Instructor' }],
       educatorId: 'EDU003',
       educatorName: 'Dr. Alex Lee',
       educatorEmail: 'alex.lee@school.com',
@@ -241,7 +248,7 @@ const getUTCTimeString = (isoString: string): string => {
 
 const checkConflict = (
   entries: TimetableEntry[],
-  newLesson: { id?: string; educatorId: string; dayOfWeek: string; startTime: string; endTime: string }
+  newLesson: { id?: string; educatorId: string; classroomId: string; academicLevelId: string; dayOfWeek: string; startTime: string; endTime: string }
 ) => {
   // Convert ISO strings to numeric timestamps for easier comparison
   const newStart = new Date(newLesson.startTime).getTime();
@@ -251,8 +258,8 @@ const checkConflict = (
     // 1. Skip the lesson itself if we are editing an existing one
     if (existing.id === newLesson.id) return false;
 
-    // 2. Check if it's the same educator on the same day
-    if (existing.educatorId === newLesson.educatorId && existing.dayOfWeek === newLesson.dayOfWeek) {
+    // 2. Check if it's the same educator on the same day and same classroom && existing.classroomId === newLesson.classroomId
+    if (existing.educatorId === newLesson.educatorId && existing.dayOfWeek === newLesson.dayOfWeek ) {
       const existingStart = new Date(existing.startTime).getTime();
       const existingEnd = new Date(existing.endTime).getTime();
 
@@ -378,6 +385,8 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
       const conflict = checkConflict(timetable, {
         id: draggedLesson.id,
         educatorId: draggedLesson.educatorId,
+        classroomId: draggedLesson.classroomId,
+        academicLevelId: draggedLesson.academicLevelId,
         dayOfWeek: targetDayOfWeek,
         startTime: proposedStart,
         endTime: proposedEnd
@@ -469,6 +478,8 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
     const conflict = checkConflict(timetable, {
       id: lessonData.id,
       educatorId: lessonData.educatorId,
+      classroomId: lessonData.classroomId,
+      academicLevelId: lessonData.academicLevelId,
       dayOfWeek: lessonData.dayOfWeek,
       startTime: lessonData.startTime,
       endTime: lessonData.endTime

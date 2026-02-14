@@ -38,9 +38,9 @@ const generateSampleTimetableData = (companyId: string): {
   ];
 
   const courses: CourseOption[] = [
-    { id: 'CRS001', title: 'Algebra I', code: 'MATH101', academicLevels: [{ id: 'AL006', name: 'Grade 9' }] },
-    { id: 'CRS002', title: 'Literary Analysis', code: 'ENG203', academicLevels: [{ id: 'AL007', name: 'High School - Freshman' }] },
-    { id: 'CRS003', title: 'Elementary Math', code: 'MATH100', academicLevels: [{ id: 'AL003', name: 'Grade 1' }] },
+    { id: 'CRS001', title: 'Algebra I', code: 'MATH101', academicLevels: [{ id: 'AL006', name: 'Grade 9' }], classrooms: [{ id: 'CLS002', name: 'Room 202', academicLevelId: 'AL006' }], educators: [{ id: 'EDU001', name: 'Mr. John Doe', email: 'john.doe@school.com', roleInCourse: 'Lead Instructor' }] },
+    { id: 'CRS002', title: 'Literary Analysis', code: 'ENG203', academicLevels: [{ id: 'AL007', name: 'High School - Freshman' }], classrooms: [{ id: 'CLS003', name: 'Lab A', academicLevelId: 'AL007' }], educators: [{ id: 'EDU002', name: 'Ms. Jane Smith', email: 'jane.smith@school.com', roleInCourse:"" }] },
+    { id: 'CRS003', title: 'Elementary Math', code: 'MATH100', academicLevels: [{ id: 'AL003', name: 'Grade 1' }], classrooms: [{ id: 'CLS001', name: 'Room 101', academicLevelId: 'AL003' }], educators:[{ id:'EDU003', name:'Dr. Alex Lee', email:'alex.lee@school.com', roleInCourse:'Assistant Instructor'}] },
   ];
 
   const dummyDate = '1970-01-01T'; // For storing time components as Date objects
@@ -57,6 +57,7 @@ const generateSampleTimetableData = (companyId: string): {
       // courseClassrooms: [{ id: 'CLS002', name: 'Room 202', academicLevelId: 'AL006' }],
       classroomId: 'CLS002',
       classroom: { id: 'CLS002', name: 'Room 202', academicLevelId: 'AL006' },
+      educators: [{ id: 'EDU001', name: 'Mr. John Doe', email: 'john.doe@school.com', roleInCourse: 'Lead Instructor' }],
       educatorId: 'EDU001',
       educatorName: 'Mr. John Doe',
       educatorEmail: 'john.doe@school.com',
@@ -80,6 +81,7 @@ const generateSampleTimetableData = (companyId: string): {
       // courseClassrooms: [{ id: 'CLS001', name: 'Room 101', academicLevelId: 'AL007' }],
       classroomId: 'CLS003',
       classroom: { id: 'CLS003', name: 'Lab A', academicLevelId: 'AL007' },
+      educators: [{ id: 'EDU002', name: 'Ms. Jane Smith', email: 'jane.smith@school.com', roleInCourse:"Co-Instructor" }],
       educatorId: 'EDU002',
       educatorName: 'Ms. Jane Smith',
       educatorEmail: 'jane.smith@school.com',
@@ -103,6 +105,7 @@ const generateSampleTimetableData = (companyId: string): {
       // courseClassrooms: [{ id: 'CLS002', name: 'Room 202', academicLevelId: 'AL006' }],
       classroomId: 'CLS002',
       classroom: { id: 'CLS002', name: 'Room 202', academicLevelId: 'AL006' },
+      educators: [{ id: 'EDU001', name: 'Mr. John Doe', email: 'john.doe@school.com', roleInCourse: 'Lead Instructor' }],
       educatorId: 'EDU001',
       educatorName: 'Mr. John Doe',
       educatorEmail: 'john.doe@school.com',
@@ -126,6 +129,7 @@ const generateSampleTimetableData = (companyId: string): {
       // courseClassrooms: [{ id: 'CLS001', name: 'Room 101', academicLevelId: 'AL003' }],
       classroomId: 'CLS001',
       classroom: { id: 'CLS001', name: 'Room 101', academicLevelId: 'AL003' },
+      educators: [{ id: 'EDU003', name: 'Dr. Alex Lee', email: 'alex.lee@school.com', roleInCourse: 'Assistant Instructor' }],
       educatorId: 'EDU003',
       educatorName: 'Dr. Alex Lee',
       educatorEmail: 'alex.lee@school.com',
@@ -163,9 +167,7 @@ export default async function TimetableManagerPage({ params }: PageProps) {
       { headers: { cookie: cookieHeader }, next: { revalidate: 60 } } // SSR on every request
     );
     if (timetableRes.ok) {
-      initialTimetable = (await timetableRes.json()) as any[];
-      console.log(`[TimetableManagerPage] Fetched timetable entries.`,initialTimetable);
-      
+      initialTimetable = (await timetableRes.json()).data as any[];
     } else {
       console.error(
         "[TimetableManagerPage] Failed to fetch timetable →",
@@ -182,12 +184,14 @@ export default async function TimetableManagerPage({ params }: PageProps) {
     );
     if (coursesRes.ok) {
       const fetchedCourses = (await coursesRes.json()).data as any[];
-      
+      console.log(`[TimetableManagerPage] Fetched courses for dropdowns.`, fetchedCourses);
       allCourses = fetchedCourses.map(c => ({
         id: c.id,
         title: c.title,
         code: c.code, // Include course code
         academicLevels: c.academicLevels, // This should now be an array of {id, name}
+        classrooms: c.classrooms, // This should now be an array of {id, name, academicLevelId}
+        educators: c.educators, // This should now be an array of {id, name, email, roleInCourse}
       }));
     } else {
       console.error(
@@ -254,7 +258,7 @@ export default async function TimetableManagerPage({ params }: PageProps) {
   }
 
   // If no data was fetched from the API, generate and use sample data
-  if (fetchError  || initialTimetable.length === 0 && allCourses.length === 0 && allEducators.length === 0 && allAcademicLevels.length === 0) {
+  if (fetchError  || initialTimetable.length === 0 && allCourses.length === 0 && allEducators.length === 0 && allAcademicLevels.length === 0 && allClassrooms.length === 0) {
     console.log("[TimetableManagerPage] No data fetched, generating sample data...");
     const { sampleTimetableEntries, sampleCourses, sampleEducators, sampleAcademicLevels } = generateSampleTimetableData(companyId);
     initialTimetable = sampleTimetableEntries;

@@ -115,11 +115,19 @@ export default function LessonFormModal({
   selectedTimeSlot,
   allEntries,
 }: LessonFormModalProps) {
+
+   console.log('Rendering LessonFormModal with entryData:', entryData);
+   console.log('All entries for conflict checking:', allEntries);
+   console.log('Selected Day:', selectedDayOfWeek, 'Selected Time Slot:', selectedTimeSlot);
+   console.log('All Classrooms:', allClassrooms);
+   console.log('All Educators:', allEducators);
+   
+
   
   const [formData, setFormData] = useState({
     id: '',
     courseId: entryData?.courseId || '',
-    educatorId: entryData?.educatorId || '',
+    educatorId: entryData?.educatorId || entryData?.educators?.[0]?.id || '',
     academicLevelId: entryData?.academicLevelId || entryData?.academicLevel?.id || '',
     classroomId: entryData?.classroomId || entryData?.classroom?.id || '',
     dayOfWeek: selectedDayOfWeek || 'Monday',
@@ -196,18 +204,19 @@ export default function LessonFormModal({
   //   setError(null);
   // }, [isOpen, entryData, selectedDayOfWeek, selectedTimeSlot]);
 
-  /* --- Cascading Filters --- */
-  const filteredClassrooms = useMemo(() => 
-    allClassrooms.filter(c => c.academicLevelId === formData.academicLevelId),
-    [formData.academicLevelId, allClassrooms]
-  );
-
   const filteredCourses = useMemo(() => {
     if (!formData.academicLevelId) return [];
     return allCourses.filter(course =>
       course.academicLevels?.some(l => l.id === formData.academicLevelId)
     );
   }, [formData.academicLevelId, allCourses]);
+
+  
+  /* --- Cascading Filters --- */
+  const filteredClassrooms = useMemo(() => 
+    allClassrooms.filter(c => ((c.academicLevelId === formData.academicLevelId) || (c.academicLevel?.id === formData.academicLevelId) )),
+    [formData.academicLevelId, allClassrooms]
+  );
 
 
   useEffect(() => {
@@ -290,7 +299,8 @@ export default function LessonFormModal({
     }
     if (conflict) return;
 
-    const selectedClass = allClassrooms.find(c => c.id === formData.classroomId);
+    const selectedClass = allClassrooms.find(c => (c.id === formData.classroomId || c.id === entryData?.classroomId || c.id === entryData?.classroom?.id)); 
+
     await onSave({
       ...formData,
       companyId,
@@ -327,7 +337,7 @@ export default function LessonFormModal({
                     : `${conflict.educatorName} is already teaching ${conflict.courseTitle}`}
                 </p>
               </div>
-            ) : formData.classroomId && formData.educatorId ? (
+            ) : ((formData.classroomId && formData.educatorId) || (entryData && entryData.classroom?.id && entryData.educatorId)) ? (
               <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl">
                 <CheckCircleIcon className="h-5 w-5 text-emerald-400 mb-2" />
                 <p className="text-xs font-medium text-emerald-200 uppercase tracking-tighter">Slot Available</p>

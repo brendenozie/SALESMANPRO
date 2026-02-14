@@ -10,6 +10,7 @@ export interface ClassroomOption {
   id: string;
   name: string;
   academicLevelId?: string;
+  academicLevel?: AcademicLevelOption;
 }
 interface PageProps {
   params:Promise<{ slug: string }>
