@@ -45,19 +45,19 @@ import { ClassroomOption } from '../teachers/page';
     const newStart = new Date(currentForm.startTime).getTime();
     const newEnd = new Date(currentForm.endTime).getTime();
 
-    const teacherConflict = allEntries.find(ex => 
+    const teacherConflict = allEntries.length > 0 ? allEntries.find(ex => 
       ex.id !== currentForm.id &&
       ex.dayOfWeek === currentForm.dayOfWeek &&
       ex.educatorId === currentForm.educatorId &&
       (newStart < new Date(ex.endTime).getTime() && newEnd > new Date(ex.startTime).getTime())
-    );
+    ) : null;
 
-    const roomConflict = allEntries.find(ex => 
+    const roomConflict =  allEntries.length > 0 ? allEntries.find(ex => 
       ex.id !== currentForm.id &&
       ex.dayOfWeek === currentForm.dayOfWeek &&
       ex.classroom?.id === currentForm.classroomId &&
       (newStart < new Date(ex.endTime).getTime() && newEnd > new Date(ex.startTime).getTime())
-    );
+    ) : null;
 
     return { teacherConflict, roomConflict };
   };
@@ -248,7 +248,7 @@ export default function LessonFormModal({
     const start = toMinutes(formData.startTime);
     const end = toMinutes(formData.endTime);
 
-    const conflictingEntry = allEntries.find(entry => {
+    const conflictingEntry =  allEntries.length > 0 ? allEntries.find(entry => {
       if (entry.id === formData.id) return false;
       if (entry.dayOfWeek !== formData.dayOfWeek) return false;
 
@@ -261,7 +261,7 @@ export default function LessonFormModal({
       const educatorConflict = formData.educatorId && entry.educatorId === formData.educatorId;
 
       return classroomConflict || educatorConflict;
-    });
+    }) : null;
 
     if (!conflictingEntry) return null;
 
