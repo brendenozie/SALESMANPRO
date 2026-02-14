@@ -18,6 +18,10 @@ export type ClassroomType = {
   name: string;
   capacity?: number;
   academicLevelId: string;
+  academicLevel?: {
+    id: string;
+    name: string;
+  };
   companyId: string;
   createdAt: string;
 };
@@ -149,7 +153,7 @@ export default function ClassroomsClient({ initialClassrooms, academicLevels, co
               <tr key={cls.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 font-medium text-gray-900">{cls.name}</td>
                 <td className="px-6 py-4 text-gray-600">
-                  {academicLevels.find(l => l.id === cls.academicLevelId)?.name || 'N/A'}
+                  {cls.academicLevel ? cls.academicLevel.name : 'N/A'}
                 </td>
                 <td className="px-6 py-4 text-gray-600">{cls.capacity || 'Unlimited'}</td>
                 <td className="px-6 py-4 text-right space-x-2">

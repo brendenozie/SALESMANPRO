@@ -19,7 +19,9 @@ const CLASSROOM_LIST_SELECT = {
 // GET /api/classrooms
 export const GET = withApiHandler(async (request, context) => {
   // OPTIMIZATION: Get companyId from verified user context, not searchParams
-  const companyId = context.user?.companyId;
+  // const companyId = context.user?.companyId;
+  const { searchParams } = new URL(request.url);
+  const companyId = searchParams.get("companyId") || context.user?.companyId;
 
   if (!companyId) {
     return formatResponse(false, null, "Unauthorized: No company context found", 401);

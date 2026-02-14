@@ -45,7 +45,7 @@ const generateSampleCoursesData = (companyId: string): {
   const courses: CourseType[] = [
     {
       id: 'CRS001',
-      title: 'Algebra I',
+      title: 'Algebra II',
       description: 'Foundational course in algebraic concepts, including linear equations, inequalities, and functions.',
       imageUrl: 'https://placehold.co/100x100/ADD8E6/00008B?text=Alg',
       code: 'MATH101', // NEW

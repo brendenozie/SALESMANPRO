@@ -336,7 +336,7 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
   const [activeId, setActiveId] = useState<string | null>(null);
 
   const filteredLessons = useMemo(
-    () => timetable.filter(entry => {
+    () => timetable.length > 0 ? timetable.filter(entry => {
       const matchesCourse = selectedCourseId === 'All' || entry.courseId === selectedCourseId;
       const matchesEducator = selectedEducatorId === 'All' || entry.educatorId === selectedEducatorId;
       // Filter by academic level: check if any of the course's academic levels match the selected filter
@@ -352,7 +352,7 @@ export default function WeeklyTimetable({ initialTimetable, allCourses, allEduca
                                (entry.classroom && entry.classroom.id === selectedClassroomId);
 
       return matchesCourse && matchesEducator && matchesAcademicLevel && matchesClassroom;
-    }),
+    }) : [],
     [timetable, selectedCourseId, selectedEducatorId, selectedAcademicLevelId, selectedClassroomId]
   );
 

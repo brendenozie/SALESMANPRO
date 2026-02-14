@@ -31,6 +31,8 @@ export default async function ClassroomsManagementPage({ params }: PageProps) {
     if (classRes.ok) classrooms = (await classRes.json()).data;
     if (levelsRes.ok) academicLevels = (await levelsRes.json()).data;
 
+    console.log("Fetched Classrooms:", classrooms); 
+
   } catch (err) {
     console.error("Fetch error:", err);
   }

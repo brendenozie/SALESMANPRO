@@ -15,7 +15,7 @@ const ClassroomFormModal: React.FC<Props> = ({ classroomData, academicLevels, on
   const [formData, setFormData] = useState({
     id: classroomData?.id || '',
     name: classroomData?.name || '',
-    academicLevelId: classroomData?.academicLevelId || '',
+    academicLevelId: classroomData?.academicLevelId || classroomData?.academicLevel?.id || '',
     capacity: classroomData?.capacity || 30,
   });
 

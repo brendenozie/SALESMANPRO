@@ -254,7 +254,7 @@ export default async function TimetableManagerPage({ params }: PageProps) {
   }
 
   // If no data was fetched from the API, generate and use sample data
-  if (fetchError || initialTimetable.length === 0 && allCourses.length === 0 && allEducators.length === 0 && allAcademicLevels.length === 0) {
+  if (fetchError ){///|| initialTimetable.length === 0 && allCourses.length === 0 && allEducators.length === 0 && allAcademicLevels.length === 0) {
     console.log("[TimetableManagerPage] No data fetched, generating sample data...");
     const { sampleTimetableEntries, sampleCourses, sampleEducators, sampleAcademicLevels } = generateSampleTimetableData(companyId);
     initialTimetable = sampleTimetableEntries;
