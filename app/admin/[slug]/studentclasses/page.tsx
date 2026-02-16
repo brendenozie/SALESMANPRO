@@ -54,6 +54,7 @@ export default async function StudentClassesServerPage({ params }: PageProps) {
 
     if (res.ok) {
       classesPageData = (await res.json()).data as StudentClassesPageData;
+      console.log("[StudentClassesServerPage] Fetched classes data:", classesPageData);
       classesPageData.studentId = studentId; // Ensure studentId is passed down
       // classesPageData.companyId = companyId; // Ensure companyId is passed down
     } else {

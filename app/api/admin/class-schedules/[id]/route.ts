@@ -22,7 +22,7 @@ const SCHEDULE_SELECT = {
 };
 
 // --- GET: Single Schedule
-const getClassSchedule = async (_req: Request, context: { params: { id: string }; user?: any }) => {
+const getClassSchedule = async (_req: Request, context: { params: { id: string, companyId: string }; user?: any }) => {
   const { id, companyId } = context.params;
   // const companyId = context.user?.companyId;
 
@@ -37,7 +37,7 @@ const getClassSchedule = async (_req: Request, context: { params: { id: string }
 };
 
 // --- PATCH: Update Schedule
-const updateClassSchedule = async (req: Request, context: { params: { id: string }; user?: any }) => {
+const updateClassSchedule = async (req: Request, context: { params: { id: string, companyId: string }; user?: any }) => {
   const { id, companyId } = context.params;
   // const companyId = context.user?.companyId;
   const body = await req.json();
@@ -76,7 +76,7 @@ const updateClassSchedule = async (req: Request, context: { params: { id: string
 };
 
 // --- DELETE: Remove Schedule
-const deleteClassSchedule = async (_req: Request, context: { params: { id: string }; user?: any }) => {
+const deleteClassSchedule = async (_req: Request, context: { params: { id: string, companyId: string }; user?: any }) => {
   const { id, companyId } = context.params;
   // const companyId = context.user?.companyId;
 

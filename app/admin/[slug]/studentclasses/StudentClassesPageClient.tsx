@@ -58,6 +58,9 @@ export default function StudentClassesPageClient({
     if (grade.includes('A')) return 'bg-green-100 text-green-800';
     if (grade.includes('B')) return 'bg-blue-100 text-blue-800';
     if (grade.includes('C')) return 'bg-yellow-100 text-yellow-800';
+    if (isNaN(Number(grade))) return 'bg-gray-100 text-gray-800'; // For "N/A"
+    if (Number(grade) >= 80) return 'bg-green-100 text-green-800';
+    if (Number(grade) >= 65) return 'bg-blue-100 text-blue-800';
     return 'bg-red-100 text-red-800';
   }, []);
 

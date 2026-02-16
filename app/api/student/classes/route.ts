@@ -1,133 +1,187 @@
-// app/api/student/classes/route.ts
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
-
 import { formatResponse } from "@/lib/formatResponse";
 
 const getHandler = async (request: Request) => {
-
   const { searchParams } = new URL(request.url);
-  const studentId = searchParams.get("studentId");
+  const userId = searchParams.get("studentId");
 
-  if (!studentId) {
-    return formatResponse(false, null, "Missing studentId (User ID)", 400);
+  if (!userId) {
+    return formatResponse(false, null, "Missing studentId", 400);
   }
 
   try {
-    // Fetch student details
+    // 1. Get the Student and their active Grade/Room
     const student = await prisma.student.findUnique({
-      where: { userId: studentId },
+      where: { userId: userId },
       select: {
         id: true,
         companyId: true,
-        user: { select: { name: true, email: true } },
+        user: { select: { name: true } },
         StudentAcademicLevel: {
-          select: { academicLevel: { select: { id:true, name: true } }, classRoom: { select: { id: true,name: true } } },
-          take: 1,
           orderBy: { assignedAt: "desc" },
-        },
-      },
+          take: 1,
+          select: {
+            academicLevelId: true,
+            classRoomId: true,
+            academicLevel: { select: { name: true } },
+            classRoom: { select: { name: true } }
+          }
+        }
+      }
     });
 
-    if (!student || !student.user) {
-      return formatResponse(false, null, "Student not found or not associated with this company", 404);
+    const activeLevel = student?.StudentAcademicLevel[0];
+    if (!student || !activeLevel || !student.companyId) {
+      return formatResponse(false, null, "No academic level assigned", 404);
     }
 
-    // Fetch course enrollments
-    const enrollments = await prisma.courseEnrollment.findMany({
+    const { academicLevelId, classRoomId, } = activeLevel;
+
+    // 2. Fetch all Courses linked to this Academic Level (e.g., Grade 3)
+    // We filter by AcademicLevel because that's the "Parent" of the Classroom
+    // ... inside the try block of your GET handler
+
+    // 1. Fetch courses with nested schedules filtered by the student's classroom
+    const courses = await prisma.course.findMany({
       where: {
-        studentId: student.id,
-        status: "ENROLLED",
         companyId: student.companyId,
+        academicLevels: {
+          some: { academicLevelId: academicLevelId }
+        }
       },
-      select: {
-        courseId: true,
-        progress: true,
-        grade: true,
-        course: {
-          select: {
-            id: true,
-            title: true,
-            CourseEducatorAssignment: {
-              select: { educator: { select: { user: { select: { name: true } } } } },
-              take: 1,
-              orderBy: { createdAt: "asc" },
-            },
-            classSchedules: {
-              select: {
-                dayOfWeek: true,
-                startTime: true,
-                endTime: true,
-                topic: true,
-                meetingLink: true,
-              },
-              orderBy: [{ dayOfWeek: "asc" }, { startTime: "asc" }],
-            },
-            Exam: {
-              select: { id: true, title: true, date: true, type: true, totalPoints: true },
-              where: { OR: [{ type: "HOMEWORK" }, { type: "PROJECT" }, { type: "QUIZ" }] },
-            },
-          },
+      include: {
+        CourseEducatorAssignment: {
+          where: { classRoomId: classRoomId },
+          // include: { educator: { include: { user: { select: { name: true } } } } },
+          take: 1
         },
-      },
+        // FETCH THE SCHEDULES HERE
+        classSchedules: {
+          where: { classroomId: classRoomId },
+          include: {
+            educator: { include: { user: { select: { name: true } } } },
+            // classroom: { select: { name: true } }
+          },
+          orderBy: [
+            { dayOfWeek: "asc" },
+            { startTime: "asc" }
+          ]
+        },
+        assignments: {
+          where: {
+            status: "Published",
+            dueDate: { gte: new Date() },
+            OR: [{ classroomId: classRoomId }, { classroomId: null }]
+          },
+          orderBy: { dueDate: "asc" }
+        },
+        grades: {
+          where: { studentId: student.id },
+          orderBy: { createdAt: "desc" },
+          take: 1
+        }
+      }
     });
 
-    // Build response data
-    const studentEnrolledClasses = enrollments.map((enrollment) => {
-      const course = enrollment.course;
-      if (!course) return null;
-
-      // Format schedule
-      const daysMap: Record<string, string[]> = {};
-      course.classSchedules.forEach((cs) => {
-        const startTime = new Date(cs.startTime).toLocaleTimeString("en-US", {
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: true,
-        });
-        const endTime = new Date(cs.endTime).toLocaleTimeString("en-US", {
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: true,
-        });
-        daysMap[cs.dayOfWeek] = [...(daysMap[cs.dayOfWeek] || []), `${startTime} - ${endTime}`];
-      });
-
-      const sortedDays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-      const formattedSchedule = sortedDays
-        .filter((day) => daysMap[day])
-        .map((day) => `${day.substring(0, 3)}, ${daysMap[day].join(", ")}`)
-        .join(" | ");
-
-      // Assignments
-      const now = new Date();
-      const upcomingAssignments = course.Exam.filter((a) => new Date(a.date) > now).sort(
-        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-      );
+    // 2. Transform the data and format the schedule string
+    const studentEnrolledClasses = courses.map((course) => {
+      const assignment = course.CourseEducatorAssignment[0];
+      const recentGrade = course.grades[0];
+      
+      // Format the schedule array into a readable string: "Mon 08:00, Wed 10:00"
+      const formattedSchedule = course.classSchedules.length > 0
+        ? course.classSchedules.map(s => {
+            const time = new Date(s.startTime).toLocaleTimeString('en-US', { 
+              hour: '2-digit', 
+              minute: '2-digit', 
+              hour12: true 
+            });
+            return `${s.dayOfWeek.slice(0, 3)} ${time}`;
+          }).join(", ")
+        : "No schedule set";
 
       return {
         id: course.id,
         name: course.title,
-        teacher: course.CourseEducatorAssignment[0]?.educator?.user?.name || "N/A",
-        schedule: formattedSchedule || "No regular schedule",
-        currentGrade: enrollment.grade !== null ? enrollment.grade.toFixed(2) : "N/A",
-        progress: enrollment.progress,
-        upcomingAssignmentsCount: upcomingAssignments.length,
-        nextAssignmentDue:
-          upcomingAssignments.length > 0
-            ? new Date(upcomingAssignments[0].date).toLocaleDateString("en-US", { month: "short", day: "numeric" })
-            : "None",
+        teacher: course.classSchedules[0]?.educator?.user?.name || "TBA",
+        schedule: formattedSchedule, // <--- Replaced placeholder
+        room: activeLevel.classRoom?.name || "General",
+        currentGrade: recentGrade ? `${recentGrade.gradeValue}%` : "N/A",
+        upcomingAssignmentsCount: course.assignments.length,
+        nextAssignmentDue: course.assignments[0] 
+          ? course.assignments[0].dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) 
+          : "None"
       };
-    }).filter(Boolean);
+    });
+
+    // const courses = await prisma.course.findMany({
+    //   where: {
+    //     companyId: student.companyId,
+    //     academicLevels: {
+    //       some: { academicLevelId: academicLevelId }
+    //     }
+    //   },
+    //   include: {
+    //     // Fetch the specific teacher for THIS student's classroom
+    //     CourseEducatorAssignment: {
+    //       where: { classRoomId: classRoomId },
+    //       include: { educator: { include: { user: { select: { name: true } } } } },
+    //       take: 1
+    //     },
+    //     // Fetch upcoming assignments from the CourseAssignment model
+    //     assignments: {
+    //       where: {
+    //         status: "Published",
+    //         dueDate: { gte: new Date() },
+    //         OR: [
+    //           { classroomId: classRoomId },
+    //           { classroomId: null } // General assignments for the whole grade
+    //         ]
+    //       },
+    //       orderBy: { dueDate: "asc" }
+    //     },
+    //     // Fetch Grades for this specific student in this course
+    //     grades: {
+    //       where: { studentId: student.id },
+    //       orderBy: { createdAt: "desc" },
+    //       take: 1
+    //     }
+    //   }
+    // });
+
+    // // 3. Transform for Frontend
+    // const studentEnrolledClasses = courses.map((course) => {
+    //   const assignment = course.CourseEducatorAssignment[0];
+    //   const recentGrade = course.grades[0];
+      
+    //   // Calculate schedule (Look into Course's classSchedules)
+    //   // For this example, we assume schedules are linked to the classroom
+    //   const nextAssignment = course.assignments[0];
+
+    //   return {
+    //     id: course.id,
+    //     name: course.title,
+    //     teacher: assignment?.educator?.user?.name || "TBA",
+    //     schedule: "View Schedule", // You can expand this with classSchedules query
+    //     room: activeLevel.classRoom?.name || "General",
+    //     currentGrade: recentGrade ? `${recentGrade.gradeValue}%` : "N/A",
+    //     upcomingAssignmentsCount: course.assignments.length,
+    //     nextAssignmentDue: nextAssignment 
+    //       ? nextAssignment.dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) 
+    //       : "None"
+    //   };
+    // });
 
     return formatResponse(true, {
-      studentName: student.user.name || student.user.email,
-      studentGradeLevel: student.StudentAcademicLevel[0]?.academicLevel?.name || "N/A",
+      studentName: student.user.name,
+      studentGradeLevel: `${activeLevel.classRoom?.name || ""} (${activeLevel.academicLevel?.name})`.trim(),
       enrolledClasses: studentEnrolledClasses,
     });
+
   } catch (error) {
-    console.error("Error fetching student classes:", error);
-    return formatResponse(false, null, "Failed to fetch student classes", 500);
+    console.error("Fetch Classes Error:", error);
+    return formatResponse(false, null, "Internal Server Error", 500);
   }
 };
 
