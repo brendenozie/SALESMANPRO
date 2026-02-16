@@ -58,10 +58,12 @@ const getAssignments = async (req: Request) => {
         // 3. Fetch assignments filtered by Classroom
         assignments: {
           where: {
-            status: "Published",
+            // status: "Published",
             OR: [
               { classroomId: classRoomId }, // Room-specific homework
               { classroomId: null },        // General course-wide assignments
+              { status: "Upcoming" },      // New filter for upcoming assignments
+              { status: "Published" },     // Include published assignments regardless of room
             ],
           },
           include: {
@@ -77,7 +79,7 @@ const getAssignments = async (req: Request) => {
               },
             },
           },
-          orderBy: { dueDate: "asc" },
+          orderBy: { startTime: "asc" },
         },
       },
     });
@@ -97,7 +99,7 @@ const getAssignments = async (req: Request) => {
           else if (submission.submittedAt !== null) status = "Submitted";
         }
 
-        if (status === "Not Submitted" && new Date(assignment.dueDate) < now) {
+        if (status === "Not Submitted" && new Date(assignment.endTime || assignment.dueDate) < now) {
           status = "Overdue";
         }
 
@@ -107,7 +109,8 @@ const getAssignments = async (req: Request) => {
           classId: course.id,
           className: course.title,
           teacher: teacherName,
-          dueDate: assignment.dueDate.toISOString(),
+          dueDate: assignment.endTime?.toISOString() || assignment.dueDate?.toISOString() || null,
+          startTime: assignment.startTime?.toISOString(),
           status,
           type: assignment.type,
           totalPoints: assignment.maxGrade,

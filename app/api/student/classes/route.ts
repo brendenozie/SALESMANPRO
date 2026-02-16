@@ -71,11 +71,12 @@ const getHandler = async (request: Request) => {
         },
         assignments: {
           where: {
-            status: "Published",
-            dueDate: { gte: new Date() },
-            OR: [{ classroomId: classRoomId }, { classroomId: null }]
+            // startTime: { gte: new Date() },
+            // endTime: { gte: new Date() },
+            // dueDate: { gte: new Date() },
+            OR: [{ classroomId: classRoomId }, { classroomId: null }, { status: "Upcoming" }, { status: "Published" }]
           },
-          orderBy: { dueDate: "asc" }
+          orderBy: { startTime: "asc" }
         },
         grades: {
           where: { studentId: student.id },
@@ -111,7 +112,7 @@ const getHandler = async (request: Request) => {
         currentGrade: recentGrade ? `${recentGrade.gradeValue}%` : "N/A",
         upcomingAssignmentsCount: course.assignments.length,
         nextAssignmentDue: course.assignments[0] 
-          ? course.assignments[0].dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) 
+          ? course.assignments[0].endTime?.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) 
           : "None"
       };
     });
