@@ -66,7 +66,8 @@ const getHandler = async (request: Request) => {
           orderBy: [
             { dayOfWeek: "asc" },
             { startTime: "asc" }
-          ]
+          ],
+          take: 1
         },
         assignments: {
           where: {
@@ -105,7 +106,7 @@ const getHandler = async (request: Request) => {
         id: course.id,
         name: course.title,
         teacher: course.classSchedules[0]?.educator?.user?.name || "TBA",
-        schedule: formattedSchedule, // <--- Replaced placeholder
+        schedule: formattedSchedule, 
         room: activeLevel.classRoom?.name || "General",
         currentGrade: recentGrade ? `${recentGrade.gradeValue}%` : "N/A",
         upcomingAssignmentsCount: course.assignments.length,
