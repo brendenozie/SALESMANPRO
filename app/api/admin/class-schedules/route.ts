@@ -51,11 +51,11 @@ export const GET = withApiHandler(async (request: Request, context) => {
 }, { requireAuth: true });
 
 export const POST = withApiHandler(async (request: Request, context) => {
-  const companyId = context.user?.companyId;
+  // const companyId = context.user?.companyId;
   const body = await request.json();
   const { 
     courseId, educatorId, classroomId, academicLevelId, 
-    dayOfWeek, startTime, endTime, topic, meetingLink 
+    dayOfWeek, startTime, endTime, topic, meetingLink, companyId 
   } = body;
 
   // 1. Basic Validation

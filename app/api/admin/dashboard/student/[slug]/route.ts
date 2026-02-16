@@ -13,12 +13,11 @@ export async function GET(
   }
 
   try {
-    // 1. Fetch Student with all necessary relations
+    // 1. Fetch Student and their current Classroom Anchor
     const student = await prisma.student.findUnique({
       where: { userId: userId },
       include: {
         user: true,
-        // Get the current classroom and academic level name
         StudentAcademicLevel: {
           include: {
             academicLevel: true,
@@ -27,28 +26,6 @@ export async function GET(
           orderBy: { assignedAt: 'desc' },
           take: 1,
         },
-        // Get courses and nested assignments
-        enrolledCourses: {
-          include: {
-            course: {
-              include: {
-                CourseEducatorAssignment: {
-                  include: { educator: { include: { user: true } } }
-                },
-                // Fetch upcoming assignments for these courses
-                assignments: {
-                  where: { 
-                    status: "Published",
-                    dueDate: { gte: new Date() } 
-                  },
-                  orderBy: { dueDate: 'asc' },
-                  take: 3
-                }
-              }
-            }
-          }
-        },
-        // Get actual grades for the GPA/Performance section
         Grade: {
           include: { course: true },
           orderBy: { createdAt: 'desc' },
@@ -57,34 +34,42 @@ export async function GET(
       }
     });
 
-    if (!student) {
-      return NextResponse.json({ error: "Student not found" }, { status: 404 });
+    if (!student || !student.StudentAcademicLevel[0]) {
+      return NextResponse.json({ error: "Student or Classroom assignment not found" }, { status: 404 });
     }
 
+    const currentLevelEntry = student.StudentAcademicLevel[0];
+    const classroomId = currentLevelEntry.classRoomId;
+    const academicLevelId = currentLevelEntry.academicLevelId;
     const companyId = student.companyId;
-    const currentLevel = student.StudentAcademicLevel[0];
 
-    // 2. Fetch Relevant Announcements based on targeting
-    // Filtering by audience (ALL or STUDENT or specific Student ID)
-    const announcements = await prisma.announcement.findMany({
-      where: {
-        companyId: companyId as string,
-        status: "PUBLISHED",
-        OR: [
-          { audience: "ALL" },
-          { audience: "STUDENT", targetStudentIds: { has: student.id } },
-          { audience: "ACADEMIC_LEVEL", targetAcademicLevelIds: { has: currentLevel?.academicLevelId } }
-        ]
-      },
-      orderBy: { publishedAt: 'desc' },
-      take: 4
+    // 2. Load Courses assigned to this CLASSROOM (instead of enrollment table)
+    // We use CourseEducatorAssignment because it links Courses + Educators to specific Classrooms
+    const classroomCourses = await prisma.courseEducatorAssignment.findMany({
+      where: { classRoomId: classroomId as string },
+      include: {
+        course: {
+          include: {
+            assignments: {
+              where: {
+                status: "Published",
+                dueDate: { gte: new Date() }
+              },
+              orderBy: { dueDate: 'asc' },
+              take: 3
+            }
+          }
+        },
+        educator: { include: { user: true } }
+      }
     });
 
-    // 3. Fetch Timetable for the student's enrolled courses
-    const courseIds = student.enrolledCourses.map(ec => ec.courseId);
+    const courseIds = classroomCourses.map(c => c.courseId);
+
+    // 3. Fetch Timetable specifically for this Classroom
     const timetable = await prisma.classSchedule.findMany({
       where: {
-        courseId: { in: courseIds },
+        classroomId: classroomId,
         companyId: companyId as string,
       },
       include: { 
@@ -94,54 +79,73 @@ export async function GET(
       orderBy: { startTime: 'asc' }
     });
 
-    // 4. Data Transformation for the Frontend
+    // 4. Fetch Targeted Announcements
+    const announcements = await prisma.announcement.findMany({
+      where: {
+        companyId: companyId as string,
+        status: "PUBLISHED",
+        OR: [
+          { audience: "ALL" },
+          { audience: "STUDENT", targetStudentIds: { has: student.id } },
+          { audience: "ACADEMIC_LEVEL", targetAcademicLevelIds: { has: academicLevelId } }
+        ]
+      },
+      orderBy: { publishedAt: 'desc' },
+      take: 4
+    });
+
+    // 5. Data Transformation
     const responseData = {
       studentName: `${student.firstName} ${student.lastName}`,
-      studentGradeLevel: currentLevel?.academicLevel?.name || student.currentClass || "General Student",
+      studentGradeLevel: `${currentLevelEntry.classRoom?.name || "No Classroom"} - ${currentLevelEntry.academicLevel?.name}`,
       
       studentStats: [
         { 
-          title: 'Current GPA', 
-          value: student.enrolledCourses.length > 0 ? (student.enrolledCourses.reduce((acc, curr) => acc + (curr.grade || 0), 0) / student.enrolledCourses.length / 25).toFixed(1) : "0.0", 
-          description: 'Calculated from courses', 
+          title: 'GPA', 
+          value: student.Grade.length > 0 ? (student.Grade.reduce((acc, curr) => acc + (Number(curr.gradeValue) || 0), 0) / student.Grade.length).toFixed(1) : "N/A", 
+          description: 'Overall performance', 
           color: 'bg-blue-50' 
         },
         { 
           title: 'Assignments Due', 
-          value: student.enrolledCourses.reduce((acc, curr) => acc + curr.course.assignments.length, 0).toString(), 
-          description: 'Upcoming deadlines', 
+          value: classroomCourses.reduce((acc, curr) => acc + curr.course.assignments.length, 0).toString(), 
+          description: 'Across all subjects', 
           color: 'bg-purple-50' 
         },
         { 
-          title: 'Classes Today', 
+          title: 'Classroom Hours', 
           value: timetable.length.toString(), 
-          description: 'Scheduled today', 
+          description: 'Daily sessions', 
           color: 'bg-yellow-50' 
         },
         { 
           title: 'Attendance', 
-          value: '98%', // Placeholder: logic depends on AttendanceRecord count
-          description: 'Term average', 
+          value: '98%', // You would query AttendanceRecord where studentId and classroomId match
+          description: 'Current term', 
           color: 'bg-green-50' 
         },
       ],
 
-      upcomingAssignments: student.enrolledCourses.flatMap(ec => 
-        ec.course.assignments.map(a => ({
+      // Map assignments from the classroom courses
+      upcomingAssignments: classroomCourses.flatMap(cc => 
+        cc.course.assignments.map(a => ({
           id: a.id,
           title: a.title,
-          class: ec.course.title,
+          class: cc.course.title,
           dueDate: a.dueDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
           status: 'Pending'
         }))
       ).sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()).slice(0, 4),
 
-      myCourses: student.enrolledCourses.map(ec => ({
-        id: ec.course.id,
-        name: ec.course.title,
-        teacher: ec.course.CourseEducatorAssignment[0]?.educator.user?.name || "TBD",
-        schedule: "Regular Session",
-        currentGrade: ec.grade ? `${ec.grade}%` : "N/A"
+      // Map courses based on the Classroom context
+      myCourses: classroomCourses.map(cc => ({
+        id: cc.course.id,
+        name: cc.course.title,
+        teacher: cc.educator.user?.name || "TBD",
+        schedule: "Classroom Session",
+        // Note: For grades, you might still check CourseEnrollment if you keep it for grade storage,
+        // otherwise query student.Grade filtered by courseId.
+        currentGrade: "See details" 
       })),
 
       recentGrades: student.Grade.map(g => ({
@@ -155,7 +159,7 @@ export async function GET(
       personalTimetable: timetable.map(slot => ({
         time: `${new Date(slot.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
         event: slot.course.title,
-        location: slot.classroom?.name || "Online"
+        location: slot.classroom?.name || "Room assigned"
       })),
 
       studentAnnouncements: announcements.map(ann => ({

@@ -23,8 +23,8 @@ const SCHEDULE_SELECT = {
 
 // --- GET: Single Schedule
 const getClassSchedule = async (_req: Request, context: { params: { id: string }; user?: any }) => {
-  const { id } = context.params;
-  const companyId = context.user?.companyId;
+  const { id, companyId } = context.params;
+  // const companyId = context.user?.companyId;
 
   const schedule = await prisma.classSchedule.findUnique({
     where: { id, companyId }, // Security: Scoped to company
@@ -38,8 +38,8 @@ const getClassSchedule = async (_req: Request, context: { params: { id: string }
 
 // --- PATCH: Update Schedule
 const updateClassSchedule = async (req: Request, context: { params: { id: string }; user?: any }) => {
-  const { id } = context.params;
-  const companyId = context.user?.companyId;
+  const { id, companyId } = context.params;
+  // const companyId = context.user?.companyId;
   const body = await req.json();
 
   if (body.dayOfWeek && !VALID_DAYS.has(body.dayOfWeek)) {
@@ -77,8 +77,8 @@ const updateClassSchedule = async (req: Request, context: { params: { id: string
 
 // --- DELETE: Remove Schedule
 const deleteClassSchedule = async (_req: Request, context: { params: { id: string }; user?: any }) => {
-  const { id } = context.params;
-  const companyId = context.user?.companyId;
+  const { id, companyId } = context.params;
+  // const companyId = context.user?.companyId;
 
   try {
     await prisma.classSchedule.delete({ where: { id, companyId } });

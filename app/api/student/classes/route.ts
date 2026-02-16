@@ -22,7 +22,7 @@ const getHandler = async (request: Request) => {
         companyId: true,
         user: { select: { name: true, email: true } },
         StudentAcademicLevel: {
-          select: { academicLevel: { select: { name: true } } },
+          select: { academicLevel: { select: { id:true, name: true } }, classRoom: { select: { id: true,name: true } } },
           take: 1,
           orderBy: { assignedAt: "desc" },
         },
