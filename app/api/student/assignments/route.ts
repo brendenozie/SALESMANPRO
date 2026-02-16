@@ -1,188 +1,168 @@
-// app/api/student/assignments/route.ts
 import prisma from "@/server/db/prismadb";
 import { withApiHandler } from "@/lib/hooks/withApiHandler";
 import { formatResponse } from "@/lib/formatResponse";
 
-// ✅ GET student assignments
+// ✅ GET student assignments based on Classroom & Academic Level
 const getAssignments = async (req: Request) => {
-
   const { searchParams } = new URL(req.url);
-  const studentId = searchParams.get("studentId");
+  const userId = searchParams.get("studentId"); // Passed as userId from frontend
   const courseId = searchParams.get("courseId");
 
-  if (!studentId) {
+  if (!userId) {
     return formatResponse(false, null, "Missing studentId", 400);
-  } 
-
-  const student = await prisma.student.findUnique({
-    where: { userId: studentId },
-    select: {
-      id: true,
-      companyId: true,
-      user: { select: { name: true, email: true } },
-      StudentAcademicLevel: {
-        orderBy: { updatedAt: "desc" },
-        take: 1,
-        select: { academicLevel: { select: { name: true } } },
-      },
-    },
-  });
-
-  if (!student || !student.user) {
-    return formatResponse(false, null, "Student not found", 404);
   }
 
-  const enrolledCourses = await prisma.courseEnrollment.findMany({
-    where: {
-      studentId,
-      companyId: student.companyId,
-      status: "ENROLLED",
-      ...(courseId && { courseId }),
-    },
-    select: {
-      course: {
-        select: {
-          id: true,
-          title: true,
-          CourseEducatorAssignment: {
-            select: { educator: { select: { user: { select: { name: true } } } } },
-          },
-          assignments: {
-            where: { status: "Published" },
-            select: {
-              id: true,
-              title: true,
-              description: true,
-              dueDate: true,
-              type: true,
-              maxGrade: true,
-              submissions: {
-                where: { studentId },
-                select: {
-                  id: true,
-                  submissionUrl: true,
-                  submissionContent: true,
-                  grade: true,
-                  comments: true,
-                  submittedAt: true,
-                },
-              },
-            },
-            orderBy: { dueDate: "asc" },
+  try {
+    // 1. Fetch Student and their current Classroom/Grade anchor
+    const student = await prisma.student.findUnique({
+      where: { userId: userId },
+      select: {
+        id: true,
+        companyId: true,
+        user: { select: { name: true, email: true } },
+        StudentAcademicLevel: {
+          orderBy: { assignedAt: "desc" },
+          take: 1,
+          select: {
+            academicLevelId: true,
+            classRoomId: true,
+            academicLevel: { select: { name: true } },
           },
         },
       },
-    },
-  });
-
-  const now = new Date();
-  const assignments = enrolledCourses.flatMap((enrollment) => {
-    const course = enrollment.course;
-    if (!course) return [];
-
-    const teacherName =
-      course.CourseEducatorAssignment[0]?.educator?.user?.name || "N/A";
-
-    return course.assignments.map((assignment) => {
-      const submission = assignment.submissions[0] || null;
-      let status = "Not Submitted";
-
-      if (submission) {
-        if (submission.grade !== null) status = "Graded";
-        else if (submission.submittedAt !== null) status = "Submitted";
-      }
-
-      if (
-        status === "Not Submitted" &&
-        assignment.dueDate < now
-      ) {
-        status = "Overdue";
-      }
-
-      return {
-        id: assignment.id,
-        name: assignment.title,
-        classId: course.id,
-        className: course.title,
-        teacher: teacherName,
-        dueDate: assignment.dueDate.toISOString(),
-        status,
-        type: assignment.type,
-        totalPoints: assignment.maxGrade,
-        grade: submission?.grade ?? null,
-        feedback: submission?.comments ?? null,
-        submissionUrl: submission?.submissionUrl ?? null,
-        submissionContent: submission?.submissionContent ?? null,
-        description: assignment.description,
-        submittedAt: submission?.submittedAt?.toISOString() ?? null,
-      };
     });
-  });
 
-  return formatResponse(true, {
-    studentName: student.user.name || student.user.email,
-    studentGradeLevel: student.StudentAcademicLevel[0]?.academicLevel?.name ?? "N/A",
-    assignments,
-  });
+    const activeLevel = student?.StudentAcademicLevel[0];
+
+    if (!student || !activeLevel || !student.companyId) {
+      return formatResponse(false, null, "Student or Classroom assignment not found", 404);
+    }
+
+    const { academicLevelId, classRoomId } = activeLevel;
+
+    // 2. Fetch Courses linked to this Student's Grade
+    const courses = await prisma.course.findMany({
+      where: {
+        companyId: student.companyId,
+        academicLevels: { some: { academicLevelId } },
+        ...(courseId && { id: courseId }),
+      },
+      select: {
+        id: true,
+        title: true,
+        CourseEducatorAssignment: {
+          where: { classRoomId: classRoomId },
+          select: { educator: { select: { user: { select: { name: true } } } } },
+          take: 1,
+        },
+        // 3. Fetch assignments filtered by Classroom
+        assignments: {
+          where: {
+            status: "Published",
+            OR: [
+              { classroomId: classRoomId }, // Room-specific homework
+              { classroomId: null },        // General course-wide assignments
+            ],
+          },
+          include: {
+            submissions: {
+              where: { studentId: student.id },
+              select: {
+                id: true,
+                submissionUrl: true,
+                submissionContent: true,
+                grade: true,
+                comments: true,
+                submittedAt: true,
+              },
+            },
+          },
+          orderBy: { dueDate: "asc" },
+        },
+      },
+    });
+
+    const now = new Date();
+
+    // 4. Flatten assignments for the frontend
+    const assignments = courses.flatMap((course) => {
+      const teacherName = course.CourseEducatorAssignment[0]?.educator?.user?.name || "TBA";
+
+      return course.assignments.map((assignment) => {
+        const submission = assignment.submissions[0] || null;
+        let status = "Not Submitted";
+
+        if (submission) {
+          if (submission.grade !== null) status = "Graded";
+          else if (submission.submittedAt !== null) status = "Submitted";
+        }
+
+        if (status === "Not Submitted" && new Date(assignment.dueDate) < now) {
+          status = "Overdue";
+        }
+
+        return {
+          id: assignment.id,
+          name: assignment.title,
+          classId: course.id,
+          className: course.title,
+          teacher: teacherName,
+          dueDate: assignment.dueDate.toISOString(),
+          status,
+          type: assignment.type,
+          totalPoints: assignment.maxGrade,
+          grade: submission?.grade ?? null,
+          feedback: submission?.comments ?? null,
+          submissionUrl: submission?.submissionUrl ?? null,
+          submissionContent: submission?.submissionContent ?? null,
+          description: assignment.description,
+          submittedAt: submission?.submittedAt?.toISOString() ?? null,
+        };
+      });
+    });
+
+    return formatResponse(true, {
+      studentName: student.user.name || student.user.email,
+      studentGradeLevel: activeLevel.academicLevel.name,
+      assignments,
+    });
+  } catch (error) {
+    console.error("GET Assignments Error:", error);
+    return formatResponse(false, null, "Internal Server Error", 500);
+  }
 };
 
 // ✅ POST student submission
 const submitAssignment = async (req: Request) => {
+  const { studentId, assignmentId, submissionUrl, submissionContent, companyId } = await req.json();
 
-  const { studentId, assignmentId, submissionUrl, submissionContent, companyId } =
-    await req.json();
-
-  if (!studentId || !assignmentId || !companyId || (!submissionUrl && !submissionContent)) {
+  if (!studentId || !assignmentId || !companyId) {
     return formatResponse(false, null, "Missing required data", 400);
   }
 
-  const assignment = await prisma.courseAssignment.findUnique({
-    where: { id: assignmentId, companyId },
-    select: { courseId: true, dueDate: true },
-  });
+  try {
+    const assignment = await prisma.courseAssignment.findUnique({
+      where: { id: assignmentId },
+      select: { courseId: true },
+    });
 
-  if (!assignment) {
-    return formatResponse(false, null, "Assignment not found", 404);
-  }
+    if (!assignment) {
+      return formatResponse(false, null, "Assignment not found", 404);
+    }
 
-  const enrollment = await prisma.courseEnrollment.findFirst({
-    where: {
-      studentId,
-      courseId: assignment.courseId,
-      companyId,
-      status: "ENROLLED",
-    },
-  });
-
-  if (!enrollment) {
-    return formatResponse(
-      false,
-      null,
-      "Student not enrolled in this course or unauthorized",
-      403
-    );
-  }
-
-  const existing = await prisma.assignmentSubmission.findUnique({
-    where: { assignmentId_studentId: { assignmentId, studentId } },
-  });
-
-  const now = new Date();
-  let submission;
-
-  if (existing) {
-    submission = await prisma.assignmentSubmission.update({
-      where: { id: existing.id },
-      data: {
+    // Upsert submission
+    const now = new Date();
+    const submission = await prisma.assignmentSubmission.upsert({
+      where: {
+        assignmentId_studentId: { assignmentId, studentId },
+      },
+      update: {
         submissionUrl,
         submissionContent,
         submittedAt: now,
         updatedAt: now,
       },
-    });
-  } else {
-    submission = await prisma.assignmentSubmission.create({
-      data: {
+      create: {
         studentId,
         assignmentId,
         courseId: assignment.courseId,
@@ -190,13 +170,14 @@ const submitAssignment = async (req: Request) => {
         submissionContent,
         submittedAt: now,
         companyId,
-        createdAt: now,
-        updatedAt: now,
       },
     });
-  }
 
-  return formatResponse(true, { message: "Assignment submitted", submission });
+    return formatResponse(true, { message: "Assignment submitted successfully", submission });
+  } catch (error) {
+    console.error("POST Submission Error:", error);
+    return formatResponse(false, null, "Failed to submit assignment", 500);
+  }
 };
 
 export const GET = withApiHandler(getAssignments);
