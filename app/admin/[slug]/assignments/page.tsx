@@ -217,7 +217,7 @@ export default async function ExamsManagerPage({ params }: PageProps) {
       }
     });
     if (examsRes.ok) {
-      const data = (await examsRes.json()).data;
+      const data = (await examsRes.json()).data.assignments;
       console.log("Fetched Exams Data:");
       console.log(data);
       initialAssignments = data as AssignmentData[];

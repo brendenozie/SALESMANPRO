@@ -85,8 +85,7 @@ export const GET = withApiHandler(async (req: Request) => {
 export const POST = withApiHandler(async (req: Request) => {
   const body = await req.json();
   const { 
-    courseId, companyId, title, description, dueDate, 
-    maxGrade, createdBy, type, status, isOnline, classroomId,
+    courseId, companyId, title, description, dueDate, maxGrade, createdById, type, status, isOnline, classroomId,
     durationMinutes, autoGrade 
   } = body;
 
@@ -104,7 +103,7 @@ export const POST = withApiHandler(async (req: Request) => {
         autoGrade: !!autoGrade,
         course: { connect: { id: courseId } },
         company: companyId ? { connect: { id: companyId } } : undefined,
-        createdBy: { connect: { id: createdBy } },
+        createdBy: { connect: { id: createdById } },
         classroom: classroomId ? { connect: { id: classroomId } } : undefined,
       },
       // Only include minimal data for the confirmation response

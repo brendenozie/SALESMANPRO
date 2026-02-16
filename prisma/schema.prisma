@@ -3110,6 +3110,7 @@ enum EnrollmentStatus {
 
 enum AssignmentStatus {
   Draft
+  Upcoming
   Published
   Archived
 }

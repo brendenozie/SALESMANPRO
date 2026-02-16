@@ -181,13 +181,13 @@ export default function AssignmentsPageClient({
 
         try {
           const res = await fetch(
-            `${apiBaseUrl}/admin/assignments?companyId=${companyId}`,
+            `${apiBaseUrl}/admin/course-assignments?companyId=${companyId}`,
             { credentials: 'include' }
           );
 
           if (!res.ok) throw new Error('Failed to load assignments');
 
-          const data = await res.json();
+          const data = (await res.json()).data;
           setAssignments(data);
         } catch (err: any) {
           setError(err.message || 'Error loading assignments');
@@ -203,8 +203,8 @@ export default function AssignmentsPageClient({
     const isEdit = Boolean(assignmentData.id);
 
     const url = isEdit
-      ? `${apiBaseUrl}/admin/assignments/${assignmentData.id}`
-      : `${apiBaseUrl}/admin/assignments`;
+      ? `${apiBaseUrl}/admin/course-assignments/${assignmentData.id}`
+      : `${apiBaseUrl}/admin/course-assignments`;
 
     const method = isEdit ? 'PATCH' : 'POST';
 
@@ -229,7 +229,7 @@ export default function AssignmentsPageClient({
   const handleDeleteAssignment = async (id: string) => {
     if (!confirm('Delete assignment?')) return;
 
-    await fetch(`${apiBaseUrl}/admin/assignments/${id}`, {
+    await fetch(`${apiBaseUrl}/admin/course-assignments/${id}`, {
       method: 'DELETE',
       credentials: 'include',
     });
@@ -278,9 +278,9 @@ export default function AssignmentsPageClient({
         {/* Stats Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard label="Total" value={assignments.length} icon={DocumentDuplicateIcon} color="text-blue-600" bg="bg-blue-50" />
-          <StatCard label="Upcoming" value={assignments.filter(a => new Date(a.dueDate) > new Date()).length} icon={ClockIcon} color="text-amber-600" bg="bg-amber-50" />
-          <StatCard label="Live/Published" value={assignments.filter(a => a.isPublished).length} icon={CheckBadgeIcon} color="text-emerald-600" bg="bg-emerald-50" />
-          <StatCard label="Online" value={assignments.filter(a => a.isOnline).length} icon={GlobeAltIcon} color="text-purple-600" bg="bg-purple-50" />
+          <StatCard label="Upcoming" value={assignments.length > 0 ? assignments.filter(a => new Date(a.dueDate) > new Date()).length : 0} icon={ClockIcon} color="text-amber-600" bg="bg-amber-50" />
+          <StatCard label="Live/Published" value={assignments.length > 0 ? assignments.filter(a => a.isPublished).length : 0} icon={CheckBadgeIcon} color="text-emerald-600" bg="bg-emerald-50" />
+          <StatCard label="Online" value={assignments.length > 0 ? assignments.filter(a => a.isOnline).length : 0} icon={GlobeAltIcon} color="text-purple-600" bg="bg-purple-50" />
         </div>
 
         {/* Filter Toolbar */}
