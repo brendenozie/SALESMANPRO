@@ -3,6 +3,10 @@ import React, { useState } from 'react';
 import { PencilSquareIcon, TrashIcon, MapPinIcon, AcademicCapIcon, BoltIcon } from '@heroicons/react/24/outline';
 import Image from 'next/image';
 
+const loader = ({ src }: { src: string }) => {
+  return src;
+}
+
 export default function ChildrenClientPage({ initialData, adminSlug }: any) {
   const [children] = useState(initialData);
 
@@ -19,6 +23,7 @@ export default function ChildrenClientPage({ initialData, adminSlug }: any) {
                 <Image
                   src={child.profileImageUrl}
                   alt={child.name}
+                  loader={loader}
                   width={80}
                   height={80}
                   className="rounded-2xl object-cover ring-4 ring-slate-50"
