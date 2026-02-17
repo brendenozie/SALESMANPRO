@@ -23,6 +23,7 @@ import ServiceProviderDashboard from '@/components/admin/ServiceProviderDashboar
 import BookingAppointmentsDashboard from '@/components/admin/BookingAppointmentsDashboard';
 import TutorDashboard from '@/components/admin/TutorDashboard';
 import StudentDashboard, { StudentDashboardData } from '@/components/admin/StudentDashboard';
+import ParentDashboard, { ParentDashboardData } from '@/components/admin/ParentDashboard';
 import PrincipalDashboard from '@/components/admin/PrincipalDashboard';
 import UncategorizedDashboard from '@/components/admin/AdminDashClient';
 import PlaygroupDashboard from '@/components/admin/PlaygroupDashboard';
@@ -398,6 +399,43 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
           {...studentDashboardData}
           companyId={companyId}
           currentUserId={currentUserId}
+        />
+      );
+    }
+
+    if (userRole === 'PARENT') {
+      // For simplicity, we'll reuse the StudentDashboard with a different prop to indicate parent view
+      let studentDashboardData: any;
+      try {
+        isLoading = true;
+        const res = await fetch(
+          `${apiBaseUrl}/admin/dashboard/student/${slug}?userId=${encodeURIComponent(currentUserId)}&view=parent`,
+          { cache: 'no-store', headers: { cookie: cookiesHeader } }
+        );
+        isLoading = false;
+        if (res.ok) {
+          const data = (await res.json()).data;
+            console.log("[AdminDashboardPage] Raw Parent API response:", data);
+            studentDashboardData = data;
+          // You can add a separate Zod schema for parent view if the data shape differs
+        } else {
+          error = `Failed to fetch parent dashboard data: ${res.statusText}`;
+          logError(error);
+          studentDashboardData = getFallbackDashboardData('student'); // You might want a separate fallback for parents
+        }
+      } catch (err) {
+        error = 'Parent dashboard fetch error';
+        logError(error, err);
+        studentDashboardData = getFallbackDashboardData('student');
+      }
+      if (isLoading) return <LoadingDashboard />;
+      // if (error) return <ErrorDashboard error={error} />;
+      return (
+        <ParentDashboard
+          {...studentDashboardData}
+          companyId={companyId}
+          currentUserId={currentUserId}
+          isParentView={true} // Indicate this is a parent view for conditional rendering inside StudentDashboard
         />
       );
     }

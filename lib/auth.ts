@@ -28,7 +28,7 @@ async function findExistingUserByEmail(email: string) {
   return user || null;
 }
 
-// ✅ Utility: find Student/Educator by login code (passwordless flow)
+// ✅ Utility: find Student/Educator/Parent by login code (passwordless flow)
 async function findUserByLoginCode(loginCode: string) {
   const student = await prisma.student.findUnique({
     where: { loginCode },
@@ -41,6 +41,30 @@ async function findUserByLoginCode(loginCode: string) {
     include: { user: true },
   });
   if (educator) return { user: educator.user, role: "EDUCATOR" };
+
+  const consumer = await prisma.consumer.findUnique({
+    where: { loginCode },
+    include: { user: true },
+  });
+  if (consumer) return { user: consumer.user, role: "CONSUMER" };
+
+  const salesAgent = await prisma.salesAgent.findUnique({
+    where: { loginCode },
+    include: { user: true },
+  });
+  if (salesAgent) return { user: salesAgent.user, role: "SALES_AGENT" };
+
+  const client = await prisma.client.findUnique({
+    where: { loginCode },
+    include: { user: true },
+  });
+  if (client) return { user: client.user, role: "CLIENT" };
+
+  const parent = await prisma.parent.findUnique({
+    where: { loginCode },
+    include: { user: true },
+  });
+  if (parent) return { user: parent.user, role: "PARENT" };
 
   return null;
 }
