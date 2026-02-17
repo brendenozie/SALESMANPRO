@@ -1,109 +1,139 @@
 import { notFound } from 'next/navigation';
-import {
-  UsersIcon,
-  AcademicCapIcon,
-  ClockIcon,
-  CheckBadgeIcon,
+import { 
+  CalendarDaysIcon, 
+  ClockIcon, 
+  MapPinIcon, 
+  UserIcon,
+  ChevronLeftIcon,
+  InformationCircleIcon 
 } from '@heroicons/react/24/outline';
-import ChildrenClientPage from './ChildrenClientPage';
-import { cookies } from "next/headers";
-import { getAuthSession } from '@/lib/auth';
+import Link from 'next/link';
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
+const DAYS = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"];
 
-// --- Interface for Child Profile ---
-export interface ChildProfile {
-  id: string;
-  userId: string;
-  name: string;
-  age: number;
-  grade: string;
-  schoolName: string;
-  profileImageUrl?: string;
-  attendance: number;
-  avgGrade: string;
-  pendingAssignments: number;
-  lastActivity: string;
-}
+export default async function StudentSchedulePage({ 
+  params 
+}: { 
+  params: Promise<{ adminSlug: string; studentId: string }> 
+}) {
+  const { adminSlug, studentId } = await params;
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
-const SummaryCard = ({ title, value, icon: Icon, colorClass }: any) => (
-  <div className={`p-6 rounded-2xl shadow-sm border border-white/20 backdrop-blur-md transition-all duration-300 hover:shadow-lg ${colorClass} text-white`}>
-    <div className="flex justify-between items-start">
-      <div>
-        <p className="text-sm font-medium opacity-80">{title}</p>
-        <h3 className="text-3xl font-bold mt-1">{value}</h3>
-      </div>
-      <Icon className="h-8 w-8 opacity-40" />
-    </div>
-  </div>
-);
-
-export default async function ParentChildrenPage({ params }: { params: Promise<{ adminSlug: string }> }) {
-  const { adminSlug } = await params;
-  const cookieheader = (await cookies()).toString();
-
-  const session = await getAuthSession();
-    const parentId = session?.user?.id || adminSlug; // Fallback to adminSlug if session is not available
-  
-  const response = await fetch(`${apiBaseUrl}/parent/children?userId=${parentId}`, {
-    cache: 'no-store', // Ensures we get fresh data every time the page is visited
-    headers: {
-      Cookie: cookieheader,
-    },
+  const response = await fetch(`${baseUrl}/api/parent/student-classes?studentId=${studentId}`, {
+    cache: 'no-store',
   });
 
-  const result = (await response.json());
+  const result = await response.json();
+  if (!result.success) return notFound();
 
-  console.log("API Result:", result); // Debug log to check the API response
+  const { studentName, enrolledClasses } = result.data;
 
-  if (!result.success) {
-    console.error("API Fetch Error:", result.message);
-    return notFound();
-  }
+  // 1. Group schedules by Day of the Week
+  const weeklyTimetable: Record<string, any[]> = {};
+  DAYS.forEach(day => weeklyTimetable[day] = []);
 
-  const { stats, children } = result.data;
+  enrolledClasses.forEach((course: any) => {
+    course.classSchedules?.forEach((slot: any) => {
+      weeklyTimetable[slot.dayOfWeek.toUpperCase()].push({
+        ...slot,
+        courseName: course.name,
+        room: course.room
+      });
+    });
+  });
+
+  // 2. Sort each day by Start Time
+  DAYS.forEach(day => {
+    weeklyTimetable[day].sort((a, b) => 
+      new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
+    );
+  });
 
   return (
-    <div className="p-4 sm:p-8 space-y-8 bg-[#fdfeff] min-h-screen">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
-            My Children <span className="text-indigo-600">✨</span>
-          </h1>
-          <p className="text-slate-500 mt-1">Track your children's academic progress and daily activities.</p>
+    <div className="p-4 sm:p-8 max-w-7xl mx-auto space-y-8 bg-[#fdfeff] min-h-screen">
+      {/* Header */}
+      <div className="flex flex-col gap-4">
+        <Link 
+          href={`/admin/${adminSlug}/parentchildren`}
+          className="flex items-center text-sm font-medium text-slate-500 hover:text-indigo-600 transition w-fit"
+        >
+          <ChevronLeftIcon className="h-4 w-4 mr-1" /> Back to Children
+        </Link>
+        
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">
+              Class Schedule: <span className="text-indigo-600">{studentName}</span>
+            </h1>
+            <p className="text-slate-500 mt-1">Weekly timetable and classroom locations.</p>
+          </div>
+          <div className="hidden md:flex items-center gap-2 bg-indigo-50 px-4 py-2 rounded-2xl text-indigo-700 text-sm font-semibold">
+            <CalendarDaysIcon className="h-5 w-5" />
+            Active Term
+          </div>
         </div>
       </div>
 
-      {/* 2. Using Stats from the API */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <SummaryCard 
-          title="Total Children" 
-          value={stats.totalChildren} 
-          icon={UsersIcon} 
-          colorClass="bg-indigo-600" 
-        />
-        <SummaryCard 
-          title="Avg. Attendance" 
-          value={`${stats.avgFamilyAttendance}%`} 
-          icon={CheckBadgeIcon} 
-          colorClass="bg-emerald-500" 
-        />
-        <SummaryCard 
-          title="Pending Tasks" 
-          value={stats.totalFamilyPending} 
-          icon={ClockIcon} 
-          colorClass="bg-amber-500" 
-        />
-        <SummaryCard 
-          title="Overall Status" 
-          value="Healthy" 
-          icon={AcademicCapIcon} 
-          colorClass="bg-rose-500" 
-        />
+      {/* Weekly Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        {DAYS.slice(0, 5).map((day) => (
+          <div key={day} className="space-y-4">
+            <div className="bg-slate-900 text-white p-3 rounded-2xl shadow-sm text-center">
+              <h3 className="text-xs font-bold uppercase tracking-widest">{day.slice(0, 3)}</h3>
+            </div>
+
+            <div className="space-y-3">
+              {weeklyTimetable[day].length > 0 ? (
+                weeklyTimetable[day].map((session, idx) => {
+                  const startTime = new Date(session.startTime).toLocaleTimeString('en-US', { 
+                    hour: '2-digit', minute: '2-digit', hour12: true 
+                  });
+                  const endTime = new Date(session.endTime).toLocaleTimeString('en-US', { 
+                    hour: '2-digit', minute: '2-digit', hour12: true 
+                  });
+
+                  return (
+                    <div key={idx} className="bg-white border border-slate-100 p-4 rounded-2xl shadow-sm hover:border-indigo-200 transition-all group">
+                      <div className="flex flex-col gap-2">
+                        <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md w-fit">
+                          {startTime}
+                        </span>
+                        <h4 className="font-bold text-slate-800 text-sm leading-tight group-hover:text-indigo-600">
+                          {session.courseName}
+                        </h4>
+                        
+                        <div className="space-y-1">
+                          <div className="flex items-center text-[11px] text-slate-500">
+                            <MapPinIcon className="h-3 w-3 mr-1 text-slate-400" />
+                            {session.room}
+                          </div>
+                          <div className="flex items-center text-[11px] text-slate-500">
+                            <UserIcon className="h-3 w-3 mr-1 text-slate-400" />
+                            {session.educator?.user?.name || "TBA"}
+                          </div>
+                        </div>
+                        <p className="text-[9px] text-slate-300 font-medium">Ends {endTime}</p>
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <div className="py-8 text-center bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase">No Classes</p>
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
       </div>
 
-      {/* 3. Passing dynamic data to the Client Page */}
-      <ChildrenClientPage adminSlug={adminSlug} initialData={children} />
+      {/* Weekend Note */}
+      <div className="bg-amber-50 border border-amber-100 p-4 rounded-2xl flex items-start gap-3">
+        <InformationCircleIcon className="h-5 w-5 text-amber-500 mt-0.5" />
+        <p className="text-sm text-amber-800">
+          <strong>Note:</strong> Weekend classes (Saturday/Sunday) are currently hidden. Contact administration if your child has weekend extracurricular activities.
+        </p>
+      </div>
     </div>
   );
 }

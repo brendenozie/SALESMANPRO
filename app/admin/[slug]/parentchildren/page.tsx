@@ -41,9 +41,10 @@ const SummaryCard = ({ title, value, icon: Icon, colorClass }: any) => (
 export default async function ParentChildrenPage({ params }: { params: Promise<{ adminSlug: string }> }) {
   const { adminSlug } = await params;
   const cookieheader = (await cookies()).toString();
+  const MOCK_PARENT_ID = "685084cc4da288b5c3156e4a"; // Replace with actual parent ID from session or params
 
   const session = await getAuthSession();
-    const parentId = session?.user?.id || adminSlug; // Fallback to adminSlug if session is not available
+    const parentId = session?.user?.id || MOCK_PARENT_ID; // Fallback to adminSlug if session is not available
   
   const response = await fetch(`${apiBaseUrl}/parent/children?userId=${parentId}`, {
     cache: 'no-store', // Ensures we get fresh data every time the page is visited
