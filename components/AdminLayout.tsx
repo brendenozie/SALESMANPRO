@@ -16,7 +16,7 @@ interface MenuItem {
   subItems?: MenuItem[];
 }
 
-type Role = 'STUDENT' | 'EDUCATOR' | string;
+type Role = 'STUDENT' | 'EDUCATOR' | 'PARENT' | string;
 type CategoryType = string;
 type MenuMap = Record<string, MenuItem[]>;
 
@@ -34,6 +34,8 @@ function getMenuItemsFor(userRole: Role, categoryType: CategoryType, allCategory
     case 'SENIOR':
     case 'STUDENT':
       return allCategoryMenus.Student ?? defaultFallbackMenu;
+    case 'PARENT':
+      return allCategoryMenus.Parent ?? defaultFallbackMenu;
     case 'EDUCATOR':
       if (isPrincipalCategory(categoryType)) {
         return allCategoryMenus.Principal ?? allCategoryMenus.Educator ?? defaultFallbackMenu;
@@ -126,7 +128,7 @@ export default function AdminLayout({ children, params }: {
           </div>
           <div>
             <p className="font-semibold capitalize">{userRole.toLowerCase() === 'consumer' ? 'Admin' : userRole}</p>
-            <p className="text-xs text-white/70">{storeFormData?.name || 'Company'}</p>
+            <p className="text-xs text-white/70">{storeFormData?.name == 'Teacher' || storeFormData?.name == "Students" ? '' : storeFormData?.name || 'Company'}</p>
           </div>
         </div>
 

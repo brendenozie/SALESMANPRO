@@ -54,11 +54,11 @@ async function findUserByLoginCode(loginCode: string) {
   });
   if (salesAgent) return { user: salesAgent.user, role: "SALES_AGENT" };
 
-  const client = await prisma.client.findUnique({
-    where: { loginCode },
-    include: { user: true },
-  });
-  if (client) return { user: client.user, role: "CLIENT" };
+  // const client = await prisma.client.findUnique({
+  //   where: { loginCode },
+  //   include: { user: true },
+  // });
+  // if (client) return { user: client.user, role: "CLIENT" };
 
   const parent = await prisma.parent.findUnique({
     where: { loginCode },

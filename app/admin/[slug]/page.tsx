@@ -87,7 +87,7 @@ const allowedRoles = [
   'TEACHER', 'LECTURER', 'TUTOR', 'HEAD_TEACHER', 'PRINCIPAL', 'HEAD_OF_SCHOOL',
   'SCHOOL_HEAD', 'EDUCATIONAL_ADMIN', 'EDUCATIONAL_LEADER', 'EDUCATIONAL_MANAGER',
   'EDUCATIONAL_COORDINATOR', 'EDUCATIONAL_DIRECTOR', 'EDUCATIONAL_SUPERVISOR',
-  'EDUCATIONAL_ADMINISTRATOR', 'EDUCATIONAL_OFFICER', 'DRIVER'
+  'EDUCATIONAL_ADMINISTRATOR', 'EDUCATIONAL_OFFICER', 'DRIVER', 'PARENT'
 ];
 
 const educatorRoles = [
@@ -98,7 +98,7 @@ const educatorRoles = [
 ];
 
 // --- Fallback Data Utility ---
-function getFallbackDashboardData(type: 'student' | 'principal' | 'tutor') {
+function getFallbackDashboardData(type: 'student' | 'principal' | 'tutor' | 'parent' | 'default') {
   if (type === 'student') {
     return {
       studentStats: [
@@ -322,7 +322,7 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
     if (!session?.user?.id || !allowedRoles.includes(userRole)) redirect('/');
 
     const companyId =
-      ['STUDENT', 'EDUCATOR', 'JUNIOR', 'SENIOR', 'DRIVER'].includes(userRole)
+      ['STUDENT', 'EDUCATOR', 'JUNIOR', 'SENIOR', 'DRIVER', 'PARENT'].includes(userRole)
         ? session.user.id
         : slug;
     const currentUserId = session.user.id;
@@ -338,7 +338,7 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
     isLoading = false;
 
     if (
-      userRole !== 'STUDENT' && !company && !['EDUCATOR', 'JUNIOR', 'SENIOR', 'DRIVER'].includes(userRole)
+      userRole !== 'STUDENT' && !company && !['EDUCATOR', 'JUNIOR', 'SENIOR', 'DRIVER', 'PARENT'].includes(userRole)
     ) {
       redirect('/dashboard');
     }
