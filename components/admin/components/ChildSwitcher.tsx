@@ -17,6 +17,8 @@ interface ChildSwitcherProps {
   onChildChange: (child: Child) => void;
 }
 
+const loader = ({ src, width, quality }: { src: string; width: number; quality?: number }) => `${src}?w=${width}&q=${quality || 75}`;
+
 export default function ChildSwitcher({ childrenList, selectedChild, onChildChange }: ChildSwitcherProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -51,6 +53,7 @@ export default function ChildSwitcher({ childrenList, selectedChild, onChildChan
               <Image 
                 src={selectedChild.avatar} 
                 alt={selectedChild.name} 
+                loader={loader}
                 fill 
                 className="object-cover"
               />
