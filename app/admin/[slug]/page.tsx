@@ -423,42 +423,43 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
             const data = responseJson.data;
             
             console.log("[AdminDashboardPage] New Parent API response:", data);
+            parentDashboardData = data;
 
             // 2. Mapping the new API response to the ParentDashboard props
             // Since our API returns a list of children, we'll focus on the first child 
             // for the main dashboard view, or you can iterate if desired.
-            const primaryChild = data.children[0]; 
+            // const primaryChild = data.children[0]; 
 
-            parentDashboardData = {
-              studentName: primaryChild?.name || "Student",
-              studentGradeLevel: primaryChild?.gradeLevel || "N/A",
-              classroomName: primaryChild?.roomName || "Unassigned",
-              studentStats: [
-                { 
-                  title: 'Assignments Due', 
-                  value: primaryChild?.totalPendingTasks || 0, 
-                  description: 'Across all subjects', 
-                  color: 'border-purple-100' 
-                },
-                { 
-                  title: 'Recent Grade', 
-                  value: primaryChild?.recentGrade || 'N/A', 
-                  description: 'Latest performance', 
-                  color: 'border-blue-100' 
-                },
-                { 
-                  title: 'Attendance', 
-                  value: primaryChild?.lastAttendance || 'No Data', 
-                  description: 'Last recorded status', 
-                  color: 'border-yellow-100' 
-                }
-              ],
-              // These will be populated by the classroom courses link in our detailed API
-              upcomingAssignments: primaryChild?.upcomingAssignments || [],
-              myCourses: primaryChild?.courses || [],
-              personalTimetable: primaryChild?.timetable || [],
-              studentAnnouncements: data.stats?.announcements || []
-            };
+            // parentDashboardData = {
+            //   studentName: primaryChild?.name || "Student",
+            //   studentGradeLevel: primaryChild?.gradeLevel || "N/A",
+            //   classroomName: primaryChild?.roomName || "Unassigned",
+            //   studentStats: [
+            //     { 
+            //       title: 'Assignments Due', 
+            //       value: primaryChild?.totalPendingTasks || 0, 
+            //       description: 'Across all subjects', 
+            //       color: 'border-purple-100' 
+            //     },
+            //     { 
+            //       title: 'Recent Grade', 
+            //       value: primaryChild?.recentGrade || 'N/A', 
+            //       description: 'Latest performance', 
+            //       color: 'border-blue-100' 
+            //     },
+            //     { 
+            //       title: 'Attendance', 
+            //       value: primaryChild?.lastAttendance || 'No Data', 
+            //       description: 'Last recorded status', 
+            //       color: 'border-yellow-100' 
+            //     }
+            //   ],
+            //   // These will be populated by the classroom courses link in our detailed API
+            //   upcomingAssignments: primaryChild?.upcomingAssignments || [],
+            //   myCourses: primaryChild?.courses || [],
+            //   personalTimetable: primaryChild?.timetable || [],
+            //   studentAnnouncements: data.stats?.announcements || []
+            // };
 
           } else {
             error = `Failed to fetch parent dashboard: ${res.statusText}`;
@@ -477,9 +478,11 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
 
         return (
           <ParentDashboard
-            {...parentDashboardData}
-            companyId={companyId}
-            currentUserId={currentUserId}
+            rawApiData={parentDashboardData}
+            adminSlug={slug}
+            // {...parentDashboardData}
+            // companyId={companyId}
+            // currentUserId={currentUserId}
           />
         );
       }
