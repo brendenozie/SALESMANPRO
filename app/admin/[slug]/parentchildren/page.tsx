@@ -8,7 +8,6 @@ import {
 import ChildrenClientPage from './ChildrenClientPage';
 import { cookies } from "next/headers";
 import { getAuthSession } from '@/lib/auth';
-import { m } from 'framer-motion';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 

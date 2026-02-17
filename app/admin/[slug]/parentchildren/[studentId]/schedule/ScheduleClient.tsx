@@ -11,29 +11,13 @@ import Link from 'next/link';
 
 const DAYS = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"];
 
-export default async function StudentSchedulePage({ 
+export default async function ScheduleClient({ 
   params 
 }: { 
   params: Promise<{ adminSlug: string; studentId: string }> 
 }) {
   const { adminSlug, studentId } = await params;
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-  const { studentId } = await params;
-    // const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
-    const cookieheader = (await cookies()).toString();
-    const MOCK_PARENT_ID = "685084cc4da288b5c3156e4a"; // Replace with actual parent ID from session or params
-  
-    const session = await getAuthSession();
-    // const parentId = session?.user?.id || MOCK_PARENT_ID; // Fallback to adminSlug if session is not available
-    
-    // 1. Fetch data from our student-classes API
-    const response = await fetch(`${apiBaseUrl}/parent/student-classes?studentId=${studentId}`, {
-      cache: 'no-store',
-      headers: {
-        Cookie: cookieheader,
-      },
-    });
-  
 
   const response = await fetch(`${baseUrl}/api/parent/student-classes?studentId=${studentId}`, {
     cache: 'no-store',
