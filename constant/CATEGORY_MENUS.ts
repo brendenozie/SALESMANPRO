@@ -1278,9 +1278,9 @@ export const getCategoryMenus = (adminSlug: string, accessLevel: string) => ({
   "Parent": [
     { label: "Dashboard", href: `/admin/${adminSlug}`, icon: HomeIcon },
     { label: "My Children", href: `/admin/${adminSlug}/parentchildren`, icon: UsersIcon },
-    { label: "Child Assignments", href: `/admin/${adminSlug}/parentassignments`, icon: DocumentTextIcon },
-    { label: "Child Grades", href: `/admin/${adminSlug}/parentgrades`, icon: ChartBarIcon },
-    { label: "Schedule", href: `/admin/${adminSlug}/parentschedule`, icon: CalendarIcon },
+    // { label: "Child Assignments", href: `/admin/${adminSlug}/parentassignments`, icon: DocumentTextIcon },
+    // { label: "Child Grades", href: `/admin/${adminSlug}/parentgrades`, icon: ChartBarIcon },
+    // { label: "Schedule", href: `/admin/${adminSlug}/parentschedule`, icon: CalendarIcon },
     { label: "Messages", href: `/admin/${adminSlug}/parentmessages`, icon: ChatBubbleBottomCenterTextIcon },
     { label: "Resources", href: `/admin/${adminSlug}/parentresources`, icon: PresentationChartBarIcon },
   ],

@@ -1,6 +1,5 @@
 'use client';
 import React from 'react';
-import { ResponsiveContainer, LineChart, Line, YAxis, XAxis, Tooltip } from 'recharts';
 import { ArrowUpIcon, ArrowDownIcon } from '@heroicons/react/20/solid';
 
 export default function GradesClientPage({ initialData }: any) {
@@ -41,12 +40,12 @@ export default function GradesClientPage({ initialData }: any) {
               {/* Sparkline Chart */}
               <div className="flex-1 h-32 w-full">
                 <p className="text-xs font-bold text-slate-400 uppercase mb-2">Performance Trend</p>
-                <ResponsiveContainer width="100%" height="100%">
+                {/* <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={data.history}>
                     <Line type="monotone" dataKey="score" stroke={isImproving ? "#4f46e5" : "#f43f5e"} strokeWidth={3} dot={{ r: 4, fill: '#fff', strokeWidth: 2 }} />
                     <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
                   </LineChart>
-                </ResponsiveContainer>
+                </ResponsiveContainer> */}
               </div>
             </div>
 
