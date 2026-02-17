@@ -8,6 +8,7 @@ import {
 import ChildrenClientPage from './ChildrenClientPage';
 import { cookies } from "next/headers";
 import { getAuthSession } from '@/lib/auth';
+import { m } from 'framer-motion';
 
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";//process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000/api";
 
@@ -39,7 +40,7 @@ const SummaryCard = ({ title, value, icon: Icon, colorClass }: any) => (
 );
 
 export default async function ParentChildrenPage({ params }: { params: Promise<{ adminSlug: string }> }) {
-  const { adminSlug } = await params;
+  // const { adminSlug } = await params;
   const cookieheader = (await cookies()).toString();
   const MOCK_PARENT_ID = "685084cc4da288b5c3156e4a"; // Replace with actual parent ID from session or params
 
@@ -104,7 +105,7 @@ export default async function ParentChildrenPage({ params }: { params: Promise<{
       </div>
 
       {/* 3. Passing dynamic data to the Client Page */}
-      <ChildrenClientPage adminSlug={adminSlug} initialData={children} />
+      <ChildrenClientPage adminSlug={MOCK_PARENT_ID} initialData={children} />
     </div>
   );
 }
