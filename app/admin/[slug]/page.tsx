@@ -22,8 +22,8 @@ import TravelDashboardClient from '@/components/admin/TravelDashboardClient';
 import ServiceProviderDashboard from '@/components/admin/ServiceProviderDashboard';
 import BookingAppointmentsDashboard from '@/components/admin/BookingAppointmentsDashboard';
 import TutorDashboard from '@/components/admin/TutorDashboard';
-import StudentDashboard, { StudentDashboardData } from '@/components/admin/StudentDashboard';
-import ParentDashboard, { ParentDashboardData } from '@/components/admin/ParentDashboard';
+import StudentDashboard from '@/components/admin/StudentDashboard';
+import ParentDashboard from '@/components/admin/ParentDashboard';
 import PrincipalDashboard from '@/components/admin/PrincipalDashboard';
 import UncategorizedDashboard from '@/components/admin/AdminDashClient';
 import PlaygroupDashboard from '@/components/admin/PlaygroupDashboard';
@@ -404,41 +404,121 @@ export default async function AdminDashboardPage({ params }: DashboardProps) {
     }
 
     if (userRole === 'PARENT') {
-      // For simplicity, we'll reuse the StudentDashboard with a different prop to indicate parent view
-      let studentDashboardData: any;
-      try {
-        isLoading = true;
-        const res = await fetch(
-          `${apiBaseUrl}/admin/dashboard/student/${slug}?userId=${encodeURIComponent(currentUserId)}&view=parent`,
-          { cache: 'no-store', headers: { cookie: cookiesHeader } }
-        );
-        isLoading = false;
-        if (res.ok) {
-          const data = (await res.json()).data;
-            console.log("[AdminDashboardPage] Raw Parent API response:", data);
-            studentDashboardData = data;
-          // You can add a separate Zod schema for parent view if the data shape differs
-        } else {
-          error = `Failed to fetch parent dashboard data: ${res.statusText}`;
-          logError(error);
-          studentDashboardData = getFallbackDashboardData('student'); // You might want a separate fallback for parents
+        let parentDashboardData: any;
+        let isLoading = true;
+
+        try {
+          // 1. Using the new optimized summary API that traverses the Classroom-Subject link
+          // We pass currentUserId which is the Parent's ID
+          const res = await fetch(
+            `${apiBaseUrl}/admin/dashboard/parent/${slug}?userId=${encodeURIComponent(currentUserId)}`,
+            { 
+              cache: 'no-store', 
+              headers: { cookie: cookiesHeader } 
+            }
+          );
+
+          if (res.ok) {
+            const responseJson = await res.json();
+            const data = responseJson.data;
+            
+            console.log("[AdminDashboardPage] New Parent API response:", data);
+
+            // 2. Mapping the new API response to the ParentDashboard props
+            // Since our API returns a list of children, we'll focus on the first child 
+            // for the main dashboard view, or you can iterate if desired.
+            const primaryChild = data.children[0]; 
+
+            parentDashboardData = {
+              studentName: primaryChild?.name || "Student",
+              studentGradeLevel: primaryChild?.gradeLevel || "N/A",
+              classroomName: primaryChild?.roomName || "Unassigned",
+              studentStats: [
+                { 
+                  title: 'Assignments Due', 
+                  value: primaryChild?.totalPendingTasks || 0, 
+                  description: 'Across all subjects', 
+                  color: 'border-purple-100' 
+                },
+                { 
+                  title: 'Recent Grade', 
+                  value: primaryChild?.recentGrade || 'N/A', 
+                  description: 'Latest performance', 
+                  color: 'border-blue-100' 
+                },
+                { 
+                  title: 'Attendance', 
+                  value: primaryChild?.lastAttendance || 'No Data', 
+                  description: 'Last recorded status', 
+                  color: 'border-yellow-100' 
+                }
+              ],
+              // These will be populated by the classroom courses link in our detailed API
+              upcomingAssignments: primaryChild?.upcomingAssignments || [],
+              myCourses: primaryChild?.courses || [],
+              personalTimetable: primaryChild?.timetable || [],
+              studentAnnouncements: data.stats?.announcements || []
+            };
+
+          } else {
+            error = `Failed to fetch parent dashboard: ${res.statusText}`;
+            logError(error);
+            parentDashboardData = getFallbackDashboardData('parent');
+          }
+        } catch (err) {
+          error = 'Parent dashboard fetch error';
+          logError(err instanceof Error ? err.message : 'Unknown error');
+          parentDashboardData = getFallbackDashboardData('parent');
+        } finally {
+          isLoading = false;
         }
-      } catch (err) {
-        error = 'Parent dashboard fetch error';
-        logError(error, err);
-        studentDashboardData = getFallbackDashboardData('student');
+
+        if (isLoading) return <LoadingDashboard />;
+
+        return (
+          <ParentDashboard
+            {...parentDashboardData}
+            companyId={companyId}
+            currentUserId={currentUserId}
+          />
+        );
       }
-      if (isLoading) return <LoadingDashboard />;
-      // if (error) return <ErrorDashboard error={error} />;
-      return (
-        <ParentDashboard
-          {...studentDashboardData}
-          companyId={companyId}
-          currentUserId={currentUserId}
-          isParentView={true} // Indicate this is a parent view for conditional rendering inside StudentDashboard
-        />
-      );
-    }
+    // if (userRole === 'PARENT') {
+    //   // For simplicity, we'll reuse the StudentDashboard with a different prop to indicate parent view
+    //   let studentDashboardData: any;
+    //   try {
+    //     isLoading = true;
+    //     const res = await fetch(
+    //       `${apiBaseUrl}/admin/dashboard/parent/${slug}?userId=${encodeURIComponent(currentUserId)}&view=parent`,
+    //       { cache: 'no-store', headers: { cookie: cookiesHeader } }
+    //     );
+    //     isLoading = false;
+    //     if (res.ok) {
+    //       const data = (await res.json()).data;
+    //         console.log("[AdminDashboardPage] Raw Parent API response:", data);
+    //         studentDashboardData = data;
+    //       // You can add a separate Zod schema for parent view if the data shape differs
+    //     } else {
+    //       error = `Failed to fetch parent dashboard data: ${res.statusText}`;
+    //       logError(error);
+    //       studentDashboardData = getFallbackDashboardData('student'); // You might want a separate fallback for parents
+    //     }
+    //   } catch (err) {
+    //     error = 'Parent dashboard fetch error';
+    //     logError(error, err);
+    //     studentDashboardData = getFallbackDashboardData('student');
+    //   }
+    //   if (isLoading) return <LoadingDashboard />;
+    //   // if (error) return <ErrorDashboard error={error} />;
+    //   return (
+    //     <ParentDashboard
+    //       {...studentDashboardData}
+    //       companyId={companyId}
+    //       currentUserId={currentUserId}
+    //       isParentView={true} // Indicate this is a parent view for conditional rendering inside StudentDashboard
+    //     />
+    //   );
+    // }
 
     if (userRole === 'DRIVER') {
       return (
