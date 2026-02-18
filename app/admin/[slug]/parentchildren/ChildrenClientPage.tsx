@@ -109,6 +109,17 @@ export default function ChildrenClientPage({ initialData, adminSlug }: any) {
                 </div>
                 <ArrowRightIcon className="h-4 w-4 opacity-0 group-hover/link:opacity-100 transition-opacity" />
               </Link>
+
+              <Link 
+                href={getDetailPath(child.id, 'attendance')}
+                className="flex items-center justify-between p-3 rounded-xl bg-slate-50 hover:bg-rose-600 hover:text-white transition-all group/link"
+              >
+                <div className="flex items-center gap-3">
+                  <BoltIcon className="h-5 w-5 text-rose-500 group-hover/link:text-white" />
+                  <span className="text-sm font-medium">Attendance</span>
+                </div>
+                <ArrowRightIcon className="h-4 w-4 opacity-0 group-hover/link:opacity-100 transition-opacity" />
+              </Link>
             </div>
           </div>
 
