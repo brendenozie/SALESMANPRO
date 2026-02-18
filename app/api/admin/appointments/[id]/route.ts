@@ -40,6 +40,7 @@ const baseSelect = {
   createdAt: true,
   user: { select: { name: true, email: true } },
   doctor: { select: { User: { select: { name: true } } } },
+  company:true,
 };
 
 // --------------------
@@ -119,7 +120,7 @@ export const PUT = withApiHandler(async (request, context) => {
   });
 
   
-    try { await cacheDel(`admin:appointments:${'global' || 'global'}:*`); } catch (e) {}
+    try { await cacheDel(`admin:appointments:${updated.company?.id || 'global'}:*`); } catch (e) {}
     return NextResponse.json(formatAppointmentData(updated), { status: 200 });
 });
 
@@ -134,23 +135,24 @@ export const DELETE = withApiHandler(async (_request, context) => {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const deleted = await prisma.appointment.deleteMany({
-    where:
-      user.role === "ADMIN"
-        ? { id }
-        : { id, doctorId: user.id },
+  const existing = await prisma.appointment.findFirst({
+    where: { id: id, ...(user.role !== "ADMIN" ? { doctorId: user.id } : {}) },
+    select: { companyId: true }
   });
 
-  if (!deleted.count) {
+  if (!existing) {
     return NextResponse.json({ error: "Appointment not found" }, { status: 404 });
   }
 
-  
-    try { await cacheDel(`admin:appointments:${'global' || 'global'}:*`); } catch (e) {}
-    return NextResponse.json({ message: "Appointment deleted successfully" }, { status: 200 });
+  await prisma.appointment.deleteMany({
+    where: { id: id, ...(user.role !== "ADMIN" ? { doctorId: user.id } : {}) }
+  });
+
+  try { await cacheDel(`admin:appointments:${existing?.companyId || 'global'}:*`); } catch (e) {}
+  return NextResponse.json({ message: "Appointment deleted successfully" }, { status: 200 });
 });
 // import { NextResponse } from "next/server";
-,
+
 //     status: appt.status,
 //     service: appt.service ?? "N/A",
 //     createdAt: appt.createdAt?.toISOString() ?? "N/A",
