@@ -35,7 +35,7 @@ export default function ChildrenClientPage({ initialData, adminSlug }: any) {
             <div className="flex items-center gap-4">
               <div className="relative">
                 <Image
-                  src={child.profileImageUrl || 'https://images.unsplash.com/photo-1519238263530-99bbe18d5d67?q=80&w=200'}
+                  src={child.profileImageUrl || `https://via.placeholder.com/150/C0C0C0/FFFFFF?text=${child.name.charAt(0)}`}
                   alt={child.name}
                   loader={loader}
                   width={80}
@@ -114,15 +114,15 @@ export default function ChildrenClientPage({ initialData, adminSlug }: any) {
 
           {/* Footer Actions */}
           <div className="px-6 py-4 bg-slate-50/50 flex items-center justify-between">
-             <Link 
+             {/* <Link 
                 href={`/admin/${adminSlug}/parentchildren/${child.id}`}
                 className="text-xs font-bold text-indigo-600 hover:underline uppercase tracking-widest"
               >
                 Full Profile
-              </Link>
+              </Link> */}
             
             <div className="flex gap-1">
-              <button 
+              {/* <button 
                 title="Edit Student Info"
                 className="p-2 hover:bg-white hover:shadow-sm rounded-lg transition text-slate-400 hover:text-indigo-600"
               >
@@ -133,7 +133,7 @@ export default function ChildrenClientPage({ initialData, adminSlug }: any) {
                 className="p-2 hover:bg-white hover:shadow-sm rounded-lg transition text-slate-400 hover:text-rose-600"
               >
                 <TrashIcon className="h-5 w-5" />
-              </button>
+              </button> */}
             </div>
           </div>
         </div>

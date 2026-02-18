@@ -11,22 +11,24 @@ import Link from 'next/link';
 
 const DAYS = ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"];
 
-export default async function ScheduleClient({ 
-  params 
+export default  function ScheduleClient({adminSlug, 
+  studentName, enrolledClasses 
 }: { 
-  params: Promise<{ adminSlug: string; studentId: string }> 
+  adminSlug: string;
+  studentName: string; 
+  enrolledClasses: any[]; 
 }) {
-  const { adminSlug, studentId } = await params;
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
+  // const { adminSlug, studentId } = await params;
+  // const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
-  const response = await fetch(`${baseUrl}/api/parent/student-classes?studentId=${studentId}`, {
-    cache: 'no-store',
-  });
+  // const response = await fetch(`${baseUrl}/api/parent/student-classes?studentId=${studentId}`, {
+  //   cache: 'no-store',
+  // });
 
-  const result = await response.json();
-  if (!result.success) return notFound();
+  // const result = await response.json();
+  // if (!result.success) return notFound();
 
-  const { studentName, enrolledClasses } = result.data;
+  // const { studentName, enrolledClasses } = result.data;
 
   // 1. Group schedules by Day of the Week
   const weeklyTimetable: Record<string, any[]> = {};

@@ -127,7 +127,7 @@ export default function AdminLayout({ children, params }: {
             <span className="text-xl font-bold text-white">{(userRole || 'A').charAt(0)}</span>
           </div>
           <div>
-            <p className="font-semibold capitalize">{userRole.toLowerCase() === 'consumer' ? 'Admin' : userRole}</p>
+            <p className="font-semibold capitalize">{userRole.toLowerCase() === 'consumer' ? 'Admin' : (userRole.toLowerCase() == 'senior'|| userRole.toLowerCase() === 'junior') ? 'Student' : userRole}</p>
             <p className="text-xs text-white/70">{storeFormData?.name == 'Teacher' || storeFormData?.name == "Students" ? '' : storeFormData?.name || 'Company'}</p>
           </div>
         </div>
